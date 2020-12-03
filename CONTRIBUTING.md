@@ -1,11 +1,11 @@
-#CONTRIBUTION PROCESS
+# CONTRIBUTION PROCESS
 
 To contribute to this repository, please create a branch on your local 
 clone, push that branch to the repository, and create a Pull Request (PR)
 for that branch. No commits can be directly added onto `master` - all 
 must come via a Pull Request.
 
-###Reviewers
+### Reviewers
 All PRs must be approved by at least 2 reviewers before they can be merged.
 Any team members can act as reviewers, but it is suggested that in general
 each PR should have one reviewer from the 'software development' angle, and
@@ -13,7 +13,7 @@ one reviewer from the 'data science' angle. All team members (dependent on
 their notifications settings) will be notified of new PRs, and are encouraged
 to provide additional review comments whenever they can.
 
-###Work items
+### Work items
 Please link each PR to a work item from the current sprint. If no work items
 are linked, the PR cannot be merged - a new work item should be raised in 
 order to facilitate capturing the work being done.
@@ -25,7 +25,7 @@ to the commit, and therefore the PR.
 Otherwise you can manually link items at the point of PR creation, or 
 afterwards, if necessary.
 
-###Formatting
+### Formatting
 Please adhere to PEP8 (https://www.python.org/dev/peps/pep-0008/), the 
 Python Style Guide. In particular, please
 
@@ -39,11 +39,11 @@ trivial - if in doubt, err on the side of more documentation. See
 https://www.python.org/dev/peps/pep-0257/ for full guidance on writing docstrings.
 Note the use of triple-double quotes (""") to start and end docstrings.  
 
-###Testing
+### Testing
 All PRs should also contain tests that test the functionality within 
 the PR. 
 
-###Continuous integration
+### Continuous integration
 In the near future, Continuous Integration tests will run on each PR, to 
 ensure that all tests pass before the PR can be merged into `master`. 
 More details will be available when this is in place.
