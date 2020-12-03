@@ -1,5 +1,4 @@
 # CONTRIBUTION PROCESS
-
 To contribute to this repository, please create a branch on your local 
 clone, push that branch to the repository, and create a Pull Request (PR)
 for that branch. No commits can be directly added onto `master` - all 
