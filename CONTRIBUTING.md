@@ -23,6 +23,8 @@ to the commit, and therefore the PR.
 
 Otherwise you can manually link items at the point of PR creation, or
 afterwards, if necessary.
+#DS- Should there be more details added to the branch naming scheme other than the sprint work item number?
+#DS- How will the Azure Devops work items and Git by manually linked afterwards if a commit message is not referenced?
 
 ### Formatting
 Please adhere to PEP8 (https://www.python.org/dev/peps/pep-0008/), the
@@ -34,16 +36,17 @@ Python Style Guide. In particular, please
 1) Place import statements at the top of the file, after any module comments
 and docstrings.
 1) Include a docstring for each function unless the function is extremely
-trivial - if in doubt, err on the side of more documentation. See 
+trivial - if in doubt, err on the side of more documentation. See
 https://www.python.org/dev/peps/pep-0257/ for full guidance on writing docstrings.
 Note the use of triple-double quotes (""") to start and end docstrings.  
 
 ### Testing
 All PRs should also contain tests that test the functionality within
 the PR.
-#DS- What kind of testing package or infrastructure will be utilized (e.g. unittest, pytest, robot)?
+#DS- What kind of testing package or testing framework should be utilized (e.g. unittest, pytest, robot)? This should be specified.
 
 ### Continuous integration
 In the near future, Continuous Integration tests will run on each PR, to
 ensure that all tests pass before the PR can be merged into `master`.
 More details will be available when this is in place.
+#DS- More information should be made available for new developers not familiar with CI techniques.
