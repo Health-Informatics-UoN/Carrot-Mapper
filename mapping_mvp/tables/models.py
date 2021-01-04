@@ -10,19 +10,19 @@ class localDB(models.Model):
     term = models.CharField(max_length = 256, unique = False)
 
     def __str__(self):
-        local = f'{self.term}'
+        local = f'{self.localDB_name, self.localDB_table, self.localDB_value, self.localDB_column, self.term}'
         return local
 
-class vocab(models.Model):
+class controlledVocab(models.Model):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    term = models.ForeignKey(localDB, on_delete=models.CASCADE)
+    term = models.CharField(max_length = 256, unique = True)
 
     def __str__(self):
-        vocab = f'{self.term} - {self.id}'
+        vocab = f'{self.term}'
         return(vocab)
 
 class omopMapping(models.Model):
-    controlled_vocab_id = models.ForeignKey(vocab, on_delete=models.CASCADE)
+    controlled_vocab_id = models.ForeignKey(controlledVocab, on_delete=models.CASCADE)
     omop_table = models.CharField(max_length = 265, unique = False)
     omop_column = models.CharField(max_length = 265, unique = False)
     omop_value = models.CharField(max_length = 265, unique = False)
