@@ -2,6 +2,7 @@
 .python-version
 */.pyc
 *.DS_Store
+*.sqlite3
 
-*/mapping_mvp/db.sqlite3
 */mapping_mvp/tables/migrations/
+*/__pycache__/*
