@@ -1,0 +1,37 @@
+[
+{
+  "model": "tables.localdb",
+  "pk": 1,
+  "fields": {
+    "localDB_name": "alspac",
+    "localDB_table": "patients",
+    "localDB_column": "male",
+    "localDB_value": "Y",
+    "term": "gender_m"
+  }
+},
+{
+  "model": "tables.controlledvocab",
+  "pk": 1,
+  "fields": {
+    "term": "gender_m"
+  }
+},
+{
+  "model": "tables.controlledvocab",
+  "pk": 2,
+  "fields": {
+    "term": "gender_f"
+  }
+},
+{
+  "model": "tables.omopmapping",
+  "pk": 1,
+  "fields": {
+    "controlled_vocab_id": 1,
+    "omop_table": "person",
+    "omop_column": "gender",
+    "omop_value": "4855"
+  }
+}
+]
