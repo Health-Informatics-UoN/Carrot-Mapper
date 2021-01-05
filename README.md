@@ -1,19 +1,11 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+# Introduction
+This repository contains information and code for the CO-CONNECT Mapping Pipeline.
 
-# Getting Started (edited)
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+# Getting Started
+To run the mapping pipeline Django MVP:
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
-
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
-
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [PyCharm](https://www.jetbrains.com/pycharm/)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
+1.	Clone this repository
+2.	Create a Python virtual environment and install Django
+3.	Create a new superuser for testing (python manage.py createsuperuser)
+4.	Initialise the demo data (python manage.py loaddata initial_data/tables_app_data.json)
+5.  Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
