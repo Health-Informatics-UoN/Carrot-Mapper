@@ -1,5 +1,4 @@
 from django.db import models
-import uuid
 
 # Create model which defines the local databases' data
 class LocalDB(models.Model):
@@ -12,14 +11,14 @@ class LocalDB(models.Model):
     def __str__(self):
         return f'{self.localDB_name, self.localDB_table, self.localDB_value, self.localDB_column, self.term}'
 
-
+# Create model which defines the controlled vocabulary list
 class ControlledVocab(models.Model):
-    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     term = models.CharField(max_length = 256, unique = True)
 
     def __str__(self):
         return f'{self.term}'
 
+# Create model which defines the OMOP mapping values
 class OmopMapping(models.Model):
     controlled_vocab_id = models.ForeignKey(ControlledVocab, on_delete=models.CASCADE)
     omop_table = models.CharField(max_length = 265, unique = False)
