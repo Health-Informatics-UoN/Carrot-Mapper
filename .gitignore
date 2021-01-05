@@ -1,6 +1,6 @@
 
 .python-version
-*/.pyc
+*.pyc
 *.DS_Store
 *.sqlite3
 
