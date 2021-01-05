@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <meta charset="utf-8">
+  <title>Index</title>
+</head>
+<body>
+
+  <h1>MappingDB</h1>
+
+  <h2>LocalDB Entries</h2>
+
+  <table class="table">
+    <tr>
+      <th>Name</th>
+      <th>Table</th>
+      <th>Column</th>
+      <th>Value</th>
+      <th>Assigned Term</th>
+    </tr>
+
+    {% for i in loc %}
+    <tr>
+
+      <th>{{i.localDB_name}}</th>
+      <th>{{i.localDB_table}}</th>
+      <th>{{i.localDB_column}}</th>
+      <th>{{i.localDB_value}}</th>
+      <th>{{i.term}}</th>
+    </tr>
+    {% endfor %}
+
+  </table>
+
+  <h2>ControlledVocab Entries</h2>
+
+  {% for i in vocab %}
+  <li>{{i}}</li>
+  {% endfor %}
+
+  <h2>OmopMapping Entries</h2>
+
+  <table class="table">
+    <tr>
+      <th>Assigned Term</th>
+      <th>OMOP Table</th>
+      <th>OMOP Column</th>
+      <th>OMOP Value</th>
+    </tr>
+
+    {% for i in omop %}
+    <tr>
+      <th>{{i.controlled_vocab_id}}</th>
+      <th>{{i.omop_table}}</th>
+      <th>{{i.omop_column}}</th>
+      <th>{{i.omop_value}}</th>
+    </tr>
+
+    {% endfor %}
+
+
+  </table>
+
+</body>
+</html>
