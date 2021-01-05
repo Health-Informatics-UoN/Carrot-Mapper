@@ -4,5 +4,5 @@
 *.DS_Store
 *.sqlite3
 
-mapping_mvp/tables/migrations/*
+**/migrations
 */__pycache__/*
