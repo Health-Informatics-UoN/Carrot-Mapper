@@ -1,13 +1,18 @@
 from django.db import models
 
-# 1:many
-# where a parent record in one table can potentially reference several child records in another table.
-# Therefore 1:many relationships allows zero child records, a single child record or multiple child records.
-#
-# Each table-field combination in the source data can map to multiple locations in Omop
-# e.g. PANTHER:PATIENT:GENDER could map to both PATIENT:GENDER_CONCEPT_ID and OBSERVATION:GENDER_CONCEPT_ID
+# Relationship is many:many because;
+# Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
+# Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
 
-# For every row in Source, reference Mapping multiple times
+# DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
+class Source(models.Model):
+    dataset = models.CharField(max_length=64)
+    table = models.CharField(max_length=64)
+    field = models.CharField(max_length=64)
+    mapping = models.ManyToManyField('Mapping')
+
+    def __str__(self):
+        return f'{self.dataset, self.table, self.field, self.mapping}'
 
 # DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
 class Mapping(models.Model):
@@ -17,15 +22,7 @@ class Mapping(models.Model):
     def __str__(self):
         return f'{self.table, self.field}'
 
-# DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
-class Source(models.Model):
-    dataset = models.CharField(max_length=64)
-    table = models.CharField(max_length=64)
-    field = models.CharField(max_length=64)
-    mapping = models.ManyToManyField(Mapping)
 
-    def __str__(self):
-        return f'{self.dataset, self.table, self.field}'
 
 
 
