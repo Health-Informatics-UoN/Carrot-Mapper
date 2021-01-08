@@ -12,7 +12,7 @@ class Source(models.Model):
     mapping = models.ManyToManyField('Mapping')
 
     def __str__(self):
-        return f'{self.dataset, self.table, self.field, self.mapping}'
+        return f'{self.dataset, self.table, self.field}'
 
 # DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
 class Mapping(models.Model):

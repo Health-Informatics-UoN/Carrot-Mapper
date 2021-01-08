@@ -9,10 +9,6 @@ def index(locdb):
     mapping = Mapping.objects.all()
     source = Source.objects.all()
 
-    print("SOURCE DATA", source)
-
-    x = source.mapping.all()
-
     # Create quick context dict
     context = {
         'source':source,
