@@ -1,0 +1,6 @@
+local_db_name,local_table_name,local_column_name,local_value,omop_table,omop_column,omop_value,omop_column,omop_value,pk,ignore
+trust a,day of swab,nhs number,<any value>,person,person_id,<any value>,,,yes,
+trust a,day of swab,date of birth,<any value>,person,,<any value>,,,,
+trust a,day of swab,cough,Y,observation,observation_concept_id,4126096,concept_id,4188539,,
+trust a,day of swab,sore_throat,N,observation,observation_concept_id,4168068,,,,yes
+Evaluation Only. Created with Aspose.Cells for .NET.Copyright 2003 - 2020 Aspose Pty Ltd.

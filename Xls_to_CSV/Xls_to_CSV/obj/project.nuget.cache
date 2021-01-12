@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "eu72vSSd6rSB61Y9J9PghlfoT6HQ+6r0lTHM8aq3MboaaekjqVCAHnK+90fdlVS8wCBDiCC6oRUfkBflM4AFsg==",
+  "success": true,
+  "projectFilePath": "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/Xls_to_CSV.csproj",
+  "expectedPackageFiles": [
+    "/Users/vasilikipanagi/.nuget/packages/aspose.cells/20.12.0/aspose.cells.20.12.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/freespire.xls/10.10.0/freespire.xls.10.10.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/microsoft.netcore.platforms/3.1.0/microsoft.netcore.platforms.3.1.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/microsoft.win32.systemevents/4.7.0/microsoft.win32.systemevents.4.7.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/system.drawing.common/4.7.0/system.drawing.common.4.7.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/system.text.encoding.codepages/4.7.0/system.text.encoding.codepages.4.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}

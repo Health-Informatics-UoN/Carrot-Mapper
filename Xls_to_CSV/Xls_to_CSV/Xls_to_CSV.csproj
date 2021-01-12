@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FreeSpire.XLS" Version="10.10.0" />
+    <PackageReference Include="Aspose.Cells" Version="20.12.0" />
+  </ItemGroup>
+</Project>

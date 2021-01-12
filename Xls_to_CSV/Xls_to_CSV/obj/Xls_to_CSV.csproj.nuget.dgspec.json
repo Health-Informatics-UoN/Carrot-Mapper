@@ -1,0 +1,70 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/Xls_to_CSV.csproj": {}
+  },
+  "projects": {
+    "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/Xls_to_CSV.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/Xls_to_CSV.csproj",
+        "projectName": "Xls_to_CSV",
+        "projectPath": "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/Xls_to_CSV.csproj",
+        "packagesPath": "/Users/vasilikipanagi/.nuget/packages/",
+        "outputPath": "/Users/vasilikipanagi/Projects/Xls_to_CSV/Xls_to_CSV/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/vasilikipanagi/.config/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
+          "dependencies": {
+            "Aspose.Cells": {
+              "target": "Package",
+              "version": "[20.12.0, )"
+            },
+            "FreeSpire.XLS": {
+              "target": "Package",
+              "version": "[10.10.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/5.0.101/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
