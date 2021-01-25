@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import LocalDB, ControlledVocab, OmopMapping
+from .models import Source, Mapping
 
-admin.site.register(LocalDB)
-admin.site.register(ControlledVocab)
-admin.site.register(OmopMapping)
+admin.site.register(Source)
+admin.site.register(Mapping)

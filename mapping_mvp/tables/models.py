@@ -1,29 +1,23 @@
 from django.db import models
 
-# Create model which defines the local databases' data
-class LocalDB(models.Model):
-    localDB_name = models.CharField(max_length = 256, unique = False)
-    localDB_table = models.CharField(max_length = 265, unique = False)
-    localDB_column = models.CharField(max_length = 256, unique = False)
-    localDB_value = models.CharField(max_length = 256, unique = False)
-    term = models.CharField(max_length = 256, unique = False)
+# Relationship is many:many because;
+# Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
+# Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
+
+# DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
+class Source(models.Model):
+    dataset = models.CharField(max_length=64)
+    table = models.CharField(max_length=64)
+    field = models.CharField(max_length=64)
+    mapping = models.ManyToManyField('Mapping')
 
     def __str__(self):
-        return f'{self.localDB_name, self.localDB_table, self.localDB_value, self.localDB_column, self.term}'
+        return f'{self.dataset, self.table, self.field}'
 
-# Create model which defines the controlled vocabulary list
-class ControlledVocab(models.Model):
-    term = models.CharField(max_length = 256, unique = True)
-
-    def __str__(self):
-        return f'{self.term}'
-
-# Create model which defines the OMOP mapping values
-class OmopMapping(models.Model):
-    controlled_vocab_id = models.ForeignKey(ControlledVocab, on_delete=models.CASCADE)
-    omop_table = models.CharField(max_length = 265, unique = False)
-    omop_column = models.CharField(max_length = 265, unique = False)
-    omop_value = models.CharField(max_length = 265, unique = False)
+# DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
+class Mapping(models.Model):
+    table = models.CharField(max_length=64)
+    field = models.CharField(max_length=64)
 
     def __str__(self):
-        return f'{self.omop_table, self.omop_column} - {self.omop_value}'
+        return f'{self.table, self.field}'
