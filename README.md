@@ -1,12 +1,36 @@
-# Introduction
-This repository contains information and code for the CO-CONNECT Mapping Pipeline.
 
-# Getting Started
-To run the mapping pipeline Django MVP:
+# Introduction 
+This repository includes a demo in three separate applications using Python,Java and C#, for the purpose of anonymising PII using salting and the SHA-256 hashing algorithm.
 
-1.	Clone this repository
-2.	Create a Python virtual environment and install Django
-3.	Create a new superuser for testing (python manage.py createsuperuser)
-4.	Initialise the demo data (python manage.py loaddata initial_data/tables_app_data.json)
-5.  Make migrations to load demo data into your local SQLite db
-6.  Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
+ - pseudoanon python file
+ - Hashing_java 
+ - Hashing (C#)
+
+# Getting Started 
+To run the code on this repository:
+
+ 1. Clone the repository and navigate to the project directory
+ 2. For the python code run the following command in your terminal:
+	
+```python
+python pseudoanon.py
+```
+ 3. For the Java project, navigate to Hashing_java and run: 
+ ```
+java -jar Hashing_java.jar
+ ```
+ 
+ 4. For the C# project:
+	 - Navigate to hashing folder
+	 - Open hashing.csproj in Visual Studio 
+	 - Run the app using the IDE
+## Description
+
+The code in this repository has the following functions:
+
+ 1. Takes in a number of datasets (For the purpose of the demo these are two datasets which include dummy data).
+ 2. Generates a unique Salt for each dataset/data provider provided (If we assume that in this case each dataset is from a separate data provider). For security purposes the salt generated is 256 bit.
+ 3. Appends the Salt to the original string to be anonymised.
+ 4. Takes in the string with the salt and applies the SHA-256 hashing algorithm.
+ 5. Prints out the original string and the hashed string for visualisation purposes.
+ 
