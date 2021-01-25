@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
-from tables.models import Source, Mapping
 
-# Simple view to pull all records from the dummy database for display on index.html
-def index(locdb):
+from .models import Mapping, Source
+
+
+def index(request):
 
     # Pull in all entries in each database (model)
     mapping = Mapping.objects.all()
@@ -15,4 +15,4 @@ def index(locdb):
         'mapping':mapping,
     }
 
-    return render(locdb, 'tables/index.html', context)
+    return render(request, 'mapping/index.html', context)
