@@ -13,18 +13,17 @@ their notifications settings) will be notified of new PRs, and are encouraged
 to provide additional review comments whenever they can.
 
 ### Work items
-Please link each PR to a work item from the current sprint. If no work items
+Please link each PR to the ID number of a work item from the current sprint. If no work items
 are linked, the PR cannot be merged - a new work item should be raised in
-order to facilitate capturing the work being done.
+order to facilitate capturing the work being done. The proposed format for naming branches is <ticket_id>-work_description, i.e. 29973-docker-configuration.
 
-If you reference a work item by id in a commit message - e.g. #12345
-Fixed issue where data was eaten by a grue - DevOps will auto link the item
-to the commit, and therefore the PR.
+
+If you reference a work item by ID in a commit message - e.g. "#12345
+Fixed issue where data was eaten by a grue" - DevOps will auto link the item
+to the commit, and therefore to the pull request. 
 
 Otherwise you can manually link items at the point of PR creation, or
 afterwards, if necessary.
-#DS- Should there be more details added to the branch naming scheme other than the sprint work item number?
-#DS- How will the Azure Devops work items and Git by manually linked afterwards if a commit message is not referenced?
 
 ### Formatting
 Please adhere to PEP8 (https://www.python.org/dev/peps/pep-0008/), the
@@ -38,15 +37,14 @@ and docstrings.
 1) Include a docstring for each function unless the function is extremely
 trivial - if in doubt, err on the side of more documentation. See
 https://www.python.org/dev/peps/pep-0257/ for full guidance on writing docstrings.
-Note the use of triple-double quotes (""") to start and end docstrings.  
+Note the use of triple-double quotes (""") to start and end docstrings.
+1) The command line tool "black" can be used to format scripts properly. See https://pypi.org/project/black/ for download details.
 
 ### Testing
 All PRs should also contain tests that test the functionality within
-the PR.
-#DS- What kind of testing package or testing framework should be utilized (e.g. unittest, pytest, robot)? This should be specified.
+the PR. If writing pure Python code, pytest. If Django code, then Django's testing library. If .NET, then xunit.
 
 ### Continuous integration
 In the near future, Continuous Integration tests will run on each PR, to
 ensure that all tests pass before the PR can be merged into `master`.
 More details will be available when this is in place.
-#DS- More information should be made available for new developers not familiar with CI techniques.
