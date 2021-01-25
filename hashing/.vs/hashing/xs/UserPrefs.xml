@@ -1,0 +1,25 @@
+﻿<Properties StartupConfiguration="{16C8BE05-31B0-4399-B843-F20A699F5E91}|Default">
+  <MonoDevelop.Ide.ItemProperties.hashing PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Hash.cs">
+    <Files>
+      <File FileName="Hash.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="hashing" expanded="True">
+            <Node name="hashing" expanded="True">
+              <Node name="Hash.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

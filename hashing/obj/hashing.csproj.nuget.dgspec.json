@@ -1,0 +1,70 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj": {}
+  },
+  "projects": {
+    "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+        "projectName": "hashing",
+        "projectPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+        "packagesPath": "/Users/vasilikipanagi/.nuget/packages/",
+        "outputPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/vasilikipanagi/.config/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
+          "dependencies": {
+            "CsvHelper": {
+              "target": "Package",
+              "version": "[20.0.0, )"
+            },
+            "Microsoft.Data.Analysis": {
+              "target": "Package",
+              "version": "[0.4.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/5.0.102/RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
