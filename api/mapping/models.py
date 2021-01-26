@@ -14,13 +14,11 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-
 class DataPartners(BaseModel):
     name = models.CharField(max_length=64)
 
     def __str__(self):
         return self.name
-
 
 class ScanReport(BaseModel):
     name = models.CharField(max_length=256)
@@ -29,9 +27,8 @@ class ScanReport(BaseModel):
     def __str__(self):
         return self.name
 
-
 class ScanReportFieldOverviewRecord(BaseModel):
-    scan_report = models.Foreign(ScanReport)
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
     table = models.CharField(max_length=256)
     field = models.CharField(max_length=64)
     description_column = models.CharField(max_length=256)
@@ -39,13 +36,13 @@ class ScanReportFieldOverviewRecord(BaseModel):
     max_length = models.IntegerField()
     nrows = models.IntegerField()
     nrows_checked = models.IntegerField()
-    fraction_empty = models.DecimalField()
+    fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
-    fraction_unique = models.DecimalField()
+    fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
 
 
 class ScanReportValueRecord(BaseModel):
-    scan_report_field_overview_records = models.ForeignField(ScanReportFieldOverviewRecord)
+    scan_report_field_overview_records = models.ForeignKey(ScanReportFieldOverviewRecord, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
 
