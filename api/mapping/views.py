@@ -97,6 +97,7 @@ class ScanReportFormView(FormView): # When is it best to use FormView?
         #         fraction_unique = field_data['Fraction unique'],
         # )
         #
-        # field_overview.save()
+
+        # Presumably I'll need to iterate row-wise over field_overview to save this into the model ScanReportFieldOverviewRecord?
 
         return super().form_valid(form)
