@@ -1,6 +1,10 @@
 from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.views.generic import ListView
+from django.views.generic.edit import FormView
 
-from .models import Mapping, Source
+from .forms import ScanReportForm
+from .models import Mapping, Source, ScanReport
 
 
 def index(request):
@@ -16,3 +20,27 @@ def index(request):
     }
 
     return render(request, 'mapping/index.html', context)
+
+
+class ScanReportListView(ListView):
+    model = ScanReport
+
+
+class ScanReportFormView(FormView):
+    form_class = ScanReportForm
+    template_name = 'mapping/upload_scan_report.html'
+    success_url = reverse_lazy('scan-report-list')
+
+    def form_valid(self, form):
+        scan_report = ScanReport.objects.create(
+            name='{}, {}'.format(
+                form.cleaned_data['data_partner'],
+                form.cleaned_data['dataset'],
+            )
+        )
+        scan_report.save()
+
+        # TODO Process form and parse scan report.
+        print(form.cleaned_data['scan_report_file'])
+
+        return super().form_valid(form)

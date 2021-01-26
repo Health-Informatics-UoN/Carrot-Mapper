@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>WhiteRabbit Scan Reports</h2>
+
+  {% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data Partner</th>
+        <th scope="col">Dataset</th>
+        <th scope="col">&nbsp;</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for object in object_list %}
+    <tr>
+        <th>&nbsp;</th>
+        <th>{{ object.name }}</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+  {% else %}
+    <p>There are no books in the library.</p>
+  {% endif %}
+
+<a href="{% url 'scan-report-form' %}" class="btn btn-primary">Upload ScanReport</a>
+{% endblock %}
