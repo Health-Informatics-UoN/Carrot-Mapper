@@ -29,6 +29,15 @@
           "lib/netstandard2.1/CsvHelper.dll": {}
         }
       },
+      "LumenWorksCsvReader/4.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/LumenWorks.Framework.IO.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/LumenWorks.Framework.IO.dll": {}
+        }
+      },
       "Microsoft.CSharp/4.5.0": {
         "type": "package",
         "compile": {
@@ -179,6 +188,35 @@
         "lib/netstandard2.0/CsvHelper.xml",
         "lib/netstandard2.1/CsvHelper.dll",
         "lib/netstandard2.1/CsvHelper.xml"
+      ]
+    },
+    "LumenWorksCsvReader/4.0.0": {
+      "sha512": "CP6bPmDbmV5yT7YwfGxN8Agrdj0nB82b2UitfrnTghqyfF4DXD4UXl8MoCXBz4Ja17bUYqpEDd+qaavh7lwUxg==",
+      "type": "package",
+      "path": "lumenworkscsvreader/4.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net20/LumenWorks.Framework.IO.dll",
+        "lib/net20/LumenWorks.Framework.IO.pdb",
+        "lib/net20/LumenWorks.Framework.IO.xml",
+        "lib/net35/LumenWorks.Framework.IO.dll",
+        "lib/net35/LumenWorks.Framework.IO.pdb",
+        "lib/net35/LumenWorks.Framework.IO.xml",
+        "lib/net45/LumenWorks.Framework.IO.dll",
+        "lib/net45/LumenWorks.Framework.IO.pdb",
+        "lib/net45/LumenWorks.Framework.IO.xml",
+        "lib/net461/LumenWorks.Framework.IO.dll",
+        "lib/net461/LumenWorks.Framework.IO.pdb",
+        "lib/net461/LumenWorks.Framework.IO.xml",
+        "lib/netstandard1.3/LumenWorks.Framework.IO.dll",
+        "lib/netstandard1.3/LumenWorks.Framework.IO.pdb",
+        "lib/netstandard1.3/LumenWorks.Framework.IO.xml",
+        "lib/netstandard2.0/LumenWorks.Framework.IO.dll",
+        "lib/netstandard2.0/LumenWorks.Framework.IO.pdb",
+        "lib/netstandard2.0/LumenWorks.Framework.IO.xml",
+        "lumenworkscsvreader.4.0.0.nupkg.sha512",
+        "lumenworkscsvreader.nuspec"
       ]
     },
     "Microsoft.CSharp/4.5.0": {
@@ -584,6 +622,7 @@
   "projectFileDependencyGroups": {
     ".NETCoreApp,Version=v3.1": [
       "CsvHelper >= 20.0.0",
+      "LumenWorksCsvReader >= 4.0.0",
       "Microsoft.Data.Analysis >= 0.4.0"
     ]
   },
@@ -593,11 +632,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+      "projectUniqueName": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj",
       "projectName": "hashing",
-      "projectPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+      "projectPath": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj",
       "packagesPath": "/Users/vasilikipanagi/.nuget/packages/",
-      "outputPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/obj/",
+      "outputPath": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/vasilikipanagi/.config/NuGet/NuGet.Config"
@@ -627,6 +666,10 @@
           "CsvHelper": {
             "target": "Package",
             "version": "[20.0.0, )"
+          },
+          "LumenWorksCsvReader": {
+            "target": "Package",
+            "version": "[4.0.0, )"
           },
           "Microsoft.Data.Analysis": {
             "target": "Package",

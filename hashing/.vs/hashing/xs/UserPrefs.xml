@@ -2,13 +2,14 @@
   <MonoDevelop.Ide.ItemProperties.hashing PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Hash.cs">
     <Files>
-      <File FileName="Hash.cs" Line="1" Column="1" />
+      <File FileName="Hash.cs" Line="62" Column="6" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="hashing" expanded="True">
             <Node name="hashing" expanded="True">
+              <Node name="data" expanded="True" />
               <Node name="Hash.cs" selected="True" />
             </Node>
           </Node>

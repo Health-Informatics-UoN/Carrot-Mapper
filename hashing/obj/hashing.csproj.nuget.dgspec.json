@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj": {}
+    "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj": {}
   },
   "projects": {
-    "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj": {
+    "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+        "projectUniqueName": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj",
         "projectName": "hashing",
-        "projectPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+        "projectPath": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj",
         "packagesPath": "/Users/vasilikipanagi/.nuget/packages/",
-        "outputPath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/obj/",
+        "outputPath": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/vasilikipanagi/.config/NuGet/NuGet.Config"
@@ -41,6 +41,10 @@
             "CsvHelper": {
               "target": "Package",
               "version": "[20.0.0, )"
+            },
+            "LumenWorksCsvReader": {
+              "target": "Package",
+              "version": "[4.0.0, )"
             },
             "Microsoft.Data.Analysis": {
               "target": "Package",

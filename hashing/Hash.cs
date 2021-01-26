@@ -4,7 +4,7 @@ using System;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Text;
-
+using LumenWorks.Framework.IO.Csv;
 
 namespace hashing
 {
@@ -16,13 +16,13 @@ namespace hashing
             string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
             string path1 = Path.Combine(projectDirectory, @"data/dataset_1");
             string path2 = Path.Combine(projectDirectory, @"data/dataset_2");
-
+            string path3= Path.Combine(projectDirectory, @"data/salts");
             var reader = new StreamReader(path1 + ".csv");
 
             var reader2 = new StreamReader(path2 + ".csv");
             //Read in datasets
             //Print out datasets with hashed id
-            DataTable table1 = anonymiseDataset(reader);
+            DataTable table1 = anonymiseDataset(reader,path3);
 
 
             foreach (DataRow dataRow in table1.Rows)
@@ -32,7 +32,7 @@ namespace hashing
                     Console.WriteLine(item);
                 }
             }
-            DataTable table2 = anonymiseDataset(reader2);
+            DataTable table2 = anonymiseDataset(reader2,path3);
             foreach (DataRow dataRow in table2.Rows)
             {
                 foreach (var item in dataRow.ItemArray)
@@ -42,13 +42,13 @@ namespace hashing
             }
 
         }
-        public static DataTable anonymiseDataset(StreamReader reader)
+        public static DataTable anonymiseDataset(StreamReader reader,string path)
         {
             DataTable dataTable = new DataTable();
             string[] headers = reader.ReadLine().Split(',');
             //Generate a salt for each dataset with a size of 256
-            string salt = GenerateSalt(256);
-
+            string salt = GenerateSalt(path);
+            
             foreach (string header in headers)
             {
                 dataTable.Columns.Add(header);
@@ -77,19 +77,20 @@ namespace hashing
 
 
             }
-            Console.WriteLine("Start");
             return dataTable;
 
         }
-        private static string GenerateSalt(int size)
+        private static string GenerateSalt(string path)
         {
-            //Generate a cryptographic random number.
-            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-            byte[] buff = new byte[size];
-            rng.GetBytes(buff);
-
-            // Return a Base64 string representation of the random number.
-            return Convert.ToBase64String(buff);
+            var csvTable = new DataTable();
+            using (var csvReader = new CsvReader(new StreamReader(System.IO.File.OpenRead(path+".csv")), true))
+            {
+                csvTable.Load(csvReader);
+                string salt = csvTable.Columns[1].ToString();
+                
+                return salt;
+            }
+            
         }
         static string ComputeSha256Hash(string data)
         {

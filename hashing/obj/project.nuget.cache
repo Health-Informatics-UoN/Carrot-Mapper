@@ -1,11 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "J6TgdlevwtC5wX4Frttx1eyEWwR9pyJCd2AEWhCPo3w7OTaBdr0hH7dmdZhoWDo+KezdTai+/V7prwt6XUOElw==",
+  "dgSpecHash": "2TuVJF5udwm/Esv5lbj1FEnz4BpOZgoMiNiBC/Q0dkDbr+ibvmcu38a8ZZgy3gmCrW8wUaBi9nKAMLhNmt3DHA==",
   "success": true,
-  "projectFilePath": "/Users/vasilikipanagi/Documents/GitHub/mapping-pipeline/hashing/hashing.csproj",
+  "projectFilePath": "/Users/vasilikipanagi/Documents/Git/mapping-pipeline/hashing/hashing.csproj",
   "expectedPackageFiles": [
     "/Users/vasilikipanagi/.nuget/packages/apache.arrow/0.14.1/apache.arrow.0.14.1.nupkg.sha512",
     "/Users/vasilikipanagi/.nuget/packages/csvhelper/20.0.0/csvhelper.20.0.0.nupkg.sha512",
+    "/Users/vasilikipanagi/.nuget/packages/lumenworkscsvreader/4.0.0/lumenworkscsvreader.4.0.0.nupkg.sha512",
     "/Users/vasilikipanagi/.nuget/packages/microsoft.csharp/4.5.0/microsoft.csharp.4.5.0.nupkg.sha512",
     "/Users/vasilikipanagi/.nuget/packages/microsoft.data.analysis/0.4.0/microsoft.data.analysis.0.4.0.nupkg.sha512",
     "/Users/vasilikipanagi/.nuget/packages/microsoft.ml.dataview/1.0.0/microsoft.ml.dataview.1.0.0.nupkg.sha512",
