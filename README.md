@@ -29,8 +29,7 @@ java -jar Hashing_java.jar
 The code in this repository has the following functions:
 
  1. Takes in a number of datasets (For the purpose of the demo these are two datasets which include dummy data).
- 2. Generates a unique Salt for each dataset/data provider provided (If we assume that in this case each dataset is from a separate data provider). For security purposes the salt generated is 256 bit.
- 3. Appends the Salt to the original string to be anonymised.
- 4. Takes in the string with the salt and applies the SHA-256 hashing algorithm.
- 5. Prints out the original string and the hashed string for visualisation purposes.
+ 2. Appends the Salt(generated seperately and stored in a CSV file) to the original string to be anonymised.
+ 3. Takes in the string with the salt and applies the SHA-256 hashing algorithm.
+ 4. Prints out the original string and the hashed string for visualisation purposes.
  
