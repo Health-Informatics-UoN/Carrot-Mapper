@@ -44,6 +44,7 @@ class ScanReportFormView(FormView): # When is it best to use FormView?
                 form.cleaned_data['dataset'],
             ),
 
+            # Need some clarity here - do we want to save the whole .xlsx scan report 'as-in' in the database?
             # Also save the user uploaded Scan Report to the model ScanReport
             # Not sure if this has saved b/c you can't view the data from Django Admin
             # The file name appears in the correct field but errors on click
