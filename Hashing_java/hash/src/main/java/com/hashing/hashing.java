@@ -3,8 +3,6 @@ package com.hashing;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,17 +21,21 @@ public class hashing {
     String directory=System.getProperty("user.dir");
     //Read CSV files in List
     BufferedReader br = new BufferedReader(new FileReader(directory+"/data/dataset_1.csv"));
-    BufferedReader br2 = new BufferedReader(new FileReader(directory+"/data/dataset_2.csv"));
-    anonymise(br);
-    anonymise(br2);
-   
-    br.close();
+    // BufferedReader br2 = new BufferedReader(new FileReader(directory+"/data/dataset_2.csv"));
+    BufferedReader saltfile = new BufferedReader(new FileReader(directory+"/data/salts.csv"));
+    anonymise(br,saltfile);
+    // anonymise(br2,saltfile);
+    
+   br.close();
+   saltfile.close();
+    
 
 
 
     }
-    public static void anonymise(BufferedReader br) throws IOException {
+    public static void anonymise(BufferedReader br, BufferedReader saltfile) throws IOException {
         List<List<String>> records = new ArrayList<>();
+        List<List<String>> saltrecord = new ArrayList<>();
 
         String line;
         while ((line = br.readLine()) != null) {
@@ -41,15 +43,20 @@ public class hashing {
             String[] values = line.split(COMMA_DELIMITER);
             records.add(Arrays.asList(values));
         }
-        //Create a Secure random number generator for the salt
-        SecureRandom random= new SecureRandom();
-        byte salt[]= new byte[256];
-        random.nextBytes(salt);
-        //Print out salt for demo
-        // String encoded= org.apache.commons.codec.binary.Base64.encodeBase64String(salt);
-        // System.out.println(encoded);
         
-        //For each record append salt to id and hash the resulting value
+        while ((line = saltfile.readLine()) != null) {
+    
+            String[] saltvalue = line.split(COMMA_DELIMITER);
+            saltrecord.add(Arrays.asList(saltvalue));
+            
+        }
+        System.out.println();
+        System.out.println(saltrecord);
+        List <String> saltvalues=saltrecord.get(0);
+        
+        String salt=saltvalues.get(1);
+        System.out.println(salt);
+         //For each record append salt to id and hash the resulting value
         for(int i=1;i<records.size(); i++){
             
             String element=records.get(i).get(0)+salt;
@@ -60,6 +67,7 @@ public class hashing {
             System.out.println(sha256hex);
     
         }
+       
         
     }
 
