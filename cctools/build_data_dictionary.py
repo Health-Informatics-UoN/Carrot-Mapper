@@ -12,7 +12,7 @@ scan_path = "~/Documents/phenobase/PANTHER_WhiteRabbit_ScanReport_v1.0_MCC-1..xl
 # Load in scan report
 scan_report = pd.read_excel(scan_path, sheet_name='Field Overview', engine='openpyxl')
 
-# The 'Table Overview' sheet contains the information on which tables in the Scan Report at actual data tables (and not White Rabbit summary statistics)
+# The 'Table Overview' sheet contains the information on which tables in the Scan Report are actual data tables (and not White Rabbit summary statistics)
 tables = (pd.read_excel(scan_path, sheet_name='Table Overview', engine='openpyxl') >> select(X.Table))
 
 # Data tables present in the scan report
