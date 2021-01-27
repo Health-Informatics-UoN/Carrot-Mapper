@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.decorators import login_required
 
 
 class ScanReportForm(forms.Form):

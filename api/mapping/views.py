@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import FormView
 from xlsx2csv import Xlsx2csv
+from django.contrib.auth.decorators import login_required
 
 from .forms import ScanReportForm
 from .models import Mapping, Source, ScanReport, ScanReportField, \
@@ -13,6 +14,7 @@ from .models import Mapping, Source, ScanReport, ScanReportField, \
 
 
 # We probably need to deprecate this function
+@login_required
 def index(request):
 
     # Pull in all entries in each database (model)
