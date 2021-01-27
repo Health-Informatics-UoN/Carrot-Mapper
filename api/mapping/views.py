@@ -81,10 +81,13 @@ class ScanReportFormView(FormView):  # When is it best to use FormView?
             for row in reader:
 
                 if row[0] != '':
-                    scan_report_table, _ = ScanReportTable.objects.get_or_create(
+
+                    scan_report_table, has_created = ScanReportTable.objects.get_or_create(
                         scan_report=scan_report,
                         name=row[0],
                     )
+
+                    # print('<<<< {} {}'.format(row[0], has_created))
 
                     ScanReportField.objects.create(
                         scan_report_table=scan_report_table,
@@ -98,27 +101,41 @@ class ScanReportFormView(FormView):  # When is it best to use FormView?
                         nunique_values=1,
                         fraction_unique=0.5
                     )
-                print(row)
+                # print(row)
 
-        for sheet in xlsx.workbook.sheets[2:]:
-            scan_report_table = ScanReportTable.objects.get(
-                scan_report=scan_report,
-                name=sheet['name']
-            )
+        for idx, sheet in enumerate(xlsx.workbook.sheets):
+            try:
+                scan_report_table = ScanReportTable.objects.get(
+                    scan_report=scan_report,
+                    name=sheet['name']
+                )
+            except ScanReportTable.DoesNotExist:
+                continue
 
             if scan_report_table is None:
                 continue
 
+            if idx < 2:
+                continue
+
             filepath = "/tmp/{}".format(sheet['name'])
 
+            xlsx.convert(filepath, sheetid=idx)
+
             with open(filepath, 'rt') as f:
-                reader = csv.DictReader(f)
+                reader = csv.reader(f)
                 for row in reader:
 
                     num_columns = len(row)
+                    print('>>> num columns: {}'.format(num_columns))
 
-                    for i in range(num_columns/2):
-                        print('{} {} {}'.format(sheet['name'], row[i * 2], row[i * 2 + 1]))
+                    for i in range(num_columns):
+
+                        if i % 2 == 0:
+
+                            if not row[i] == '':
+
+                                print('>>> {} {} {}'.format(sheet['name'], row[i], row[i + 1]))
 
                     # if row[0] != '':
                     #     scan_report_table, _ = ScanReportTable.objects.get_or_create(
