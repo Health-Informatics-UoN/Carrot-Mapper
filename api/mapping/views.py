@@ -1,33 +1,58 @@
+import csv
+import tempfile
+
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.views.generic.edit import FormView
+from xlsx2csv import Xlsx2csv
 
 from .forms import ScanReportForm
-from .models import Mapping, Source, ScanReport, ScanReportFieldOverviewRecord
-import pandas as pd
-import os
+from .models import Mapping, Source, ScanReport, ScanReportField, \
+    ScanReportTable
+
 
 def index(request):
-
     # Pull in all entries in each database (model)
     mapping = Mapping.objects.all()
     source = Source.objects.all()
 
     # Create quick context dict
     context = {
-        'source':source,
-        'mapping':mapping,
+        'source': source,
+        'mapping': mapping,
     }
 
     return render(request, 'mapping/index.html', context)
+
+
+class ScanReportTableListView(ListView):
+    model = ScanReportTable
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('name')
+        search_term = self.request.GET.get('search', None)
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term)
+        return qs
+
+
+class ScanReportFieldListView(ListView):
+    model = ScanReportField
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('name')
+        search_term = self.request.GET.get('search', None)
+        if search_term is not None:
+            qs = qs.filter(scan_report_table__id=search_term)
+        return qs
 
 
 class ScanReportListView(ListView):
     model = ScanReport
 
 
-class ScanReportFormView(FormView): # When is it best to use FormView?
+class ScanReportFormView(FormView):  # When is it best to use FormView?
 
     form_class = ScanReportForm
     template_name = 'mapping/upload_scan_report.html'
@@ -36,67 +61,88 @@ class ScanReportFormView(FormView): # When is it best to use FormView?
     def form_valid(self, form):
 
         scan_report = ScanReport.objects.create(
-            # This concats the data partner and dataset name fields in the
-            # ScanReportFormView into 'name' to save into the model: ScanReport$name
-            # Why are we concatting fields? Can't we have the required fields in the model?
-            name = '{}, {}'.format(
-                form.cleaned_data['data_partner'],
-                form.cleaned_data['dataset'],
-            ),
-
-            # Need some clarity here - do we want to save the whole .xlsx scan report 'as-in' in the database?
-            # Also save the user uploaded Scan Report to the model ScanReport
-            # Not sure if this has saved b/c you can't view the data from Django Admin
-            # The file name appears in the correct field but errors on click
-            # I think this code is merely passing the file name string into the file field...
-            file = form.cleaned_data['scan_report_file']
-
+            data_partner=form.cleaned_data['data_partner'],
+            dataset=form.cleaned_data['dataset'],
+            file=form.cleaned_data['scan_report_file']
         )
 
-        scan_report.save() # Save all form data to model ScanReport
-        print(form.cleaned_data) # Print the form's dictionary for dev/debugging
+        scan_report.save()  # Save all form data to model ScanReport
 
+        xlsx = Xlsx2csv(
+            form.cleaned_data['scan_report_file'],
+            outputencoding="utf-8"
+        )
 
-        # TODO Process form and parse scan report.
+        filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]['name'])
+        xlsx.convert(filepath)
 
-        # Load in the Field Overview data
-        field_data = pd.read_excel(form.cleaned_data['scan_report_file'], sheet_name='Field Overview', engine='openpyxl', na_filter=True)
-        field_data = field_data.head() # Only pick out the top 5 rows for testing
+        with open(filepath, 'rt') as f:
+            reader = csv.reader(f)
+            for row in reader:
 
-        # Define Field Overview sheet column types (matches field type in ScanReport)
-        # This just makes sure that read_excel doesn't do any weird parsing of data types when we load in the data
-        convert_dict = {
-                'Table': str,
-                'Field': str,
-                'Description': str,
-                'Type': str,
-                'Max length': int,
-                'N rows': int,
-                'N rows checked': int,
-                'Fraction empty': float,
-                'N unique values': int,
-                'Fraction unique': float
-               }
+                if row[0] != '':
+                    scan_report_table, _ = ScanReportTable.objects.get_or_create(
+                        scan_report=scan_report,
+                        name=row[0],
+                    )
 
-        field_data = field_data.astype(convert_dict)
+                    ScanReportField.objects.create(
+                        scan_report_table=scan_report_table,
+                        name=row[1],
+                        description_column=row[2],
+                        type_column=row[3],
+                        max_length=1,
+                        nrows=1,
+                        nrows_checked=1,
+                        fraction_empty=1,
+                        nunique_values=1,
+                        fraction_unique=0.5
+                    )
+                print(row)
 
-        print(field_data)
+        for sheet in xlsx.workbook.sheets[2:]:
+            scan_report_table = ScanReportTable.objects.get(
+                scan_report=scan_report,
+                name=sheet['name']
+            )
 
+            if scan_report_table is None:
+                continue
 
-        # field_overview = ScanReportFieldOverviewRecord.objects.create(
-        #         scan_report = I don't know how to link field_data with the user's text input from the form (which ultimately saves to the ScanReport model)
-        #         table = field_data['Table'],
-        #         field = field_data['Field'],
-        #         description_column = field_data['Description'],
-        #         type_column = field_data['Type'],
-        #         max_length = field_data['Max length'],
-        #         nrows = field_data['N rows'],
-        #         nrows_checked = field_data['N rows checked'],
-        #         fraction_empty = field_data['Fraction empty'],
-        #         nunique_values = field_data['N unique values'],
-        #         fraction_unique = field_data['Fraction unique'],
-        # )
-        #
+            filepath = "/tmp/{}".format(sheet['name'])
+
+            with open(filepath, 'rt') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+
+                    num_columns = len(row)
+
+                    for i in range(num_columns/2):
+                        print('{} {} {}'.format(sheet['name'], row[i * 2], row[i * 2 + 1]))
+
+                    # if row[0] != '':
+                    #     scan_report_table, _ = ScanReportTable.objects.get_or_create(
+                    #         scan_report=scan_report,
+                    #         name=row[0],
+                    #     )
+                    #
+                    #     ScanReportField.objects.create(
+                    #         scan_report_table=scan_report_table,
+                    #         name=row[1],
+                    #         description_column=row[2],
+                    #         type_column=row[3],
+                    #         max_length=1,
+                    #         nrows=1,
+                    #         nrows_checked=1,
+                    #         fraction_empty=1,
+                    #         nunique_values=1,
+                    #         fraction_unique=0.5
+                    #     )
+                    # print(row)
+
+            print(sheet['name'])
+
+        # for sheet in xlsx.workbook.sheets:
 
         # Presumably I'll need to iterate row-wise over field_overview to save this into the model ScanReportFieldOverviewRecord?
 

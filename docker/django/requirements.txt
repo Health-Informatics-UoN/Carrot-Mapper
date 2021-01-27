@@ -3,3 +3,4 @@ redis
 celery
 pandas
 openpyxl
+xlsx2csv

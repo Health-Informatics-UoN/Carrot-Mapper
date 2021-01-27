@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>Tables</h2>
+
+  {% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">&nbsp;</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for object in object_list %}
+    <tr>
+        <td><a href="{% url 'fields' %}?search={{ object.id }}">{{ object.name }}</a></td>
+        <td>&nbsp;</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+  {% else %}
+    <p>There are no scan reports in the database.</p>
+  {% endif %}
+
+{% endblock %}

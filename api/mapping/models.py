@@ -14,23 +14,35 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+
 class DataPartners(BaseModel):
     name = models.CharField(max_length=64)
 
     def __str__(self):
         return self.name
 
+
 class ScanReport(BaseModel):
     name = models.CharField(max_length=256)
+    data_partner = models.CharField(max_length=128)
+    dataset = models.CharField(max_length=128)
     file = models.FileField()
 
     def __str__(self):
         return self.name
 
-class ScanReportFieldOverviewRecord(BaseModel):
+
+class ScanReportTable(BaseModel):
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
-    table = models.CharField(max_length=256)
-    field = models.CharField(max_length=64)
+    name = models.CharField(max_length=256)
+
+    def __str__(self):
+        return self.name
+
+
+class ScanReportField(BaseModel):
+    scan_report_table = models.ForeignKey(ScanReportTable, on_delete=models.CASCADE)
+    name = models.CharField(max_length=64)
     description_column = models.CharField(max_length=256)
     type_column = models.CharField(max_length=32)
     max_length = models.IntegerField()
@@ -41,8 +53,8 @@ class ScanReportFieldOverviewRecord(BaseModel):
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
 
 
-class ScanReportValueRecord(BaseModel):
-    scan_report_field_overview_records = models.ForeignKey(ScanReportFieldOverviewRecord, on_delete=models.CASCADE)
+class ScanReportValue(BaseModel):
+    scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
 

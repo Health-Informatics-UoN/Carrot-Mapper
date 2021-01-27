@@ -1,3 +1,3 @@
 
-def save_scan_report(name, file):
+def process_scan_report(name, file):
     pass
