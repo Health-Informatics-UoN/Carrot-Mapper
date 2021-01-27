@@ -23,13 +23,13 @@ class DataPartners(BaseModel):
 
 
 class ScanReport(BaseModel):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256) # Don't think we need this field
     data_partner = models.CharField(max_length=128)
     dataset = models.CharField(max_length=128)
     file = models.FileField()
 
     def __str__(self):
-        return self.name
+        return f'{self.data_partner, self.dataset}'
 
 
 class ScanReportTable(BaseModel):
@@ -37,7 +37,7 @@ class ScanReportTable(BaseModel):
     name = models.CharField(max_length=256)
 
     def __str__(self):
-        return self.name
+        return f'{self.scan_report, self.name}'
 
 
 class ScanReportField(BaseModel):
@@ -51,7 +51,6 @@ class ScanReportField(BaseModel):
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
-
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
