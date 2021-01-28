@@ -123,3 +123,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/mapping/scanreports/'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During development only
+
