@@ -1,17 +1,8 @@
 {% block content %}
-<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-<!------ Include the above in your HEAD tag ---------->
-
   <h2>Sign up</h2>
-  <div class="span3">
-    <form method="post"> 
+  <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary pull-right">Sign Up</button>
-
-    <div class="clearfix"></div>
-    </form>
-  
+    <button type="submit">Sign Up</button>
+  </form>
 {% endblock %}
