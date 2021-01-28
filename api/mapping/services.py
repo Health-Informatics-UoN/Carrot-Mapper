@@ -7,11 +7,12 @@ from .models import ScanReport, ScanReportTable, ScanReportField, \
 
 
 def process_scan_report_sheet_table(filename):
-    """
-    This function reads a csv file representing a scan report table sheet,
-    and extract the data in the format below.
 
-    -- table sheet csv --
+    """
+    This function converts a White Rabbit scan report to CSV and extract the
+    data into the format below.
+
+    -- Example Table Sheet CSV --
     column a,frequency,column c,frequency
     apple,20,orange,5
     banana,3,plantain,50
@@ -45,10 +46,14 @@ def process_scan_report_sheet_table(filename):
 
                 continue
 
+            # Works through pairs of value/frequency columns
             for col_idx, col in enumerate(row):
 
                 if col_idx % 2 == 0:
 
+                    # As we move down rows, checks that there's data there
+                    # This is required b/c value/frequency col pairs differ
+                    # in the number of rows
                     if row[col_idx] == '' and row[col_idx + 1] == '':
 
                         continue
@@ -60,6 +65,7 @@ def process_scan_report_sheet_table(filename):
 
 def process_scan_report(form):
 
+    # Create an entry in ScanReport for the uploaded Scan Report
     scan_report = ScanReport.objects.create(
         data_partner=form.cleaned_data['data_partner'],
         dataset=form.cleaned_data['dataset'],
@@ -67,14 +73,15 @@ def process_scan_report(form):
         # Does this save the entire file to the database (as a legit .xlsx file)?
     )
 
-    scan_report.save()  # Save all form data to model ScanReport
+    # Save all form data to model ScanReport
+    scan_report.save()
 
     xlsx = Xlsx2csv(
         form.cleaned_data['scan_report_file'],
         outputencoding="utf-8"
     )
 
-    # Path to 1st sheet in scan report (i.e. Field Overview sheet), convert to CSV
+    # Path to 1st sheet in scan report (i.e. Field Overview) convert to CSV
     filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]['name'])
     xlsx.convert(filepath)
 
@@ -83,9 +90,12 @@ def process_scan_report(form):
         next(reader)  # Skip header row
 
         # For each row in the Field Overview sheet
+        # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
-            # If the value in the first column (i.e. the Table col) is not blank;
+
+            # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
+            # Checks for blank b/c White Rabbit seperates tables with blank row
             if row[0] != '':
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
                     scan_report=scan_report,
@@ -93,10 +103,9 @@ def process_scan_report(form):
                     name=row[0],
                 )
 
-                # Add each row of data for the Table to the model ScanReportField
+                # Add each field in Field Overview to the model ScanReportField
                 ScanReportField.objects.create(
                     scan_report_table=scan_report_table,
-                    # This links ScanReportField to its parent in ScanReportTable
                     name=row[1],
                     description_column=row[2],
                     type_column=row[3],
@@ -115,7 +124,8 @@ def process_scan_report(form):
         if idxsheet < 2:
             continue
 
-        # GET table name from ScanReportTable that was saved in the previous step when scanning the Field Overview sheet
+        # GET table name from ScanReportTable that was saved in the previous
+        # step when scanning the Field Overview sheet
         scan_report_table = ScanReportTable.objects.get(
             scan_report=scan_report,
             name=sheet['name']
@@ -131,20 +141,20 @@ def process_scan_report(form):
 
         results = process_scan_report_sheet_table(filename)
 
+        # For each row in a data sheet:
         for result in results:
 
+            # Grab the Scan Report Field
             scan_report_field = ScanReportField.object.get(
                 name=result[0],
                 scan_report_table=scan_report_table,
                 scan_report_table__scan_report=scan_report,
             )
 
+            # Save each row of values/frequencies to the model ScanReportValue
+            # This can take some time if the scan report is large
             ScanReportValue.objects.create(
                 scan_report_field=scan_report_field,
                 value=result[1],
                 frequency=result[2],
             )
-
-    # for sheet in xlsx.workbook.sheets:
-
-    # Presumably I'll need to iterate row-wise over field_overview to save this into the model ScanReportFieldOverviewRecord?
