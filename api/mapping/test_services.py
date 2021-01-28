@@ -7,8 +7,12 @@ class ServiceTests(TestCase):
 
     def test_process_scan_report_sheet_table(self):
 
-        filename = '/api/mapping/data/test.csv'
+            # Tell it what file you want to process
+            filename = '/api/mapping/data/value_frequency_test_data.csv'
 
-        result = process_scan_report_sheet_table(filename)
+            # Run the test on filename
+            # This function is in services.py
+            result = process_scan_report_sheet_table(filename)
+
 
         self.assertIs(4, len(result))
