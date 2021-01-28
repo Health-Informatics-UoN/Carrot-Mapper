@@ -37,4 +37,19 @@ services:
     image: redis
     restart: unless-stopped
 
-
+  celery_worker:
+    build: ./docker/django
+    restart: unless-stopped
+    command: celery -A api worker -l info
+    env_file:
+      - .env
+    volumes:
+      - ./api:/api
+    depends_on:
+      - api
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1M"
+        max-file: "10"

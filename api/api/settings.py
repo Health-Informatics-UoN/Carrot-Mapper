@@ -125,3 +125,5 @@ STATIC_URL = '/static/'
 LOGIN_REDIRECT_URL = '/mapping/scanreports/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During development only
 
+CELERY_TIMEZONE = 'UTC'
+CELERY_BROKER_URL = 'redis://redis'

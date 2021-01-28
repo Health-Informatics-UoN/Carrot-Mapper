@@ -18,6 +18,7 @@ from .models import Mapping, Source, ScanReport, ScanReportField, \
 
 # We probably need to deprecate this function
 from .services import process_scan_report
+from .tasks import process_scan_report_task
 
 
 @login_required
@@ -70,7 +71,18 @@ class ScanReportFormView(FormView):  # When is it best to use FormView?
 
     def form_valid(self, form):
 
-        process_scan_report(form)
+        # Create an entry in ScanReport for the uploaded Scan Report
+        scan_report = ScanReport.objects.create(
+            data_partner=form.cleaned_data['data_partner'],
+            dataset=form.cleaned_data['dataset'],
+            file=form.cleaned_data['scan_report_file']
+            # Does this save the entire file to the database (as a legit .xlsx file)?
+        )
+
+        # Save all form data to model ScanReport
+        scan_report.save()
+
+        process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
 

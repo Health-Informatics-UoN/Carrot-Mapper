@@ -63,21 +63,12 @@ def process_scan_report_sheet_table(filename):
     return result
 
 
-def process_scan_report(form):
+def process_scan_report(scan_report_id):
 
-    # Create an entry in ScanReport for the uploaded Scan Report
-    scan_report = ScanReport.objects.create(
-        data_partner=form.cleaned_data['data_partner'],
-        dataset=form.cleaned_data['dataset'],
-        file=form.cleaned_data['scan_report_file']
-        # Does this save the entire file to the database (as a legit .xlsx file)?
-    )
-
-    # Save all form data to model ScanReport
-    scan_report.save()
+    scan_report = ScanReport.objects.get(pk=scan_report_id)
 
     xlsx = Xlsx2csv(
-        form.cleaned_data['scan_report_file'],
+        scan_report.file,
         outputencoding="utf-8"
     )
 
@@ -153,8 +144,14 @@ def process_scan_report(form):
 
             # Save each row of values/frequencies to the model ScanReportValue
             # This can take some time if the scan report is large
+
+            if result[2] == '':
+                frequency = 0
+            else:
+                frequency = result[2]
+
             ScanReportValue.objects.create(
                 scan_report_field=scan_report_field,
                 value=result[1],
-                frequency=result[2],
+                frequency=frequency,
             )
