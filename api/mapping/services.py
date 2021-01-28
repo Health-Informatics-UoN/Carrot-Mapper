@@ -127,6 +127,7 @@ def process_scan_report(form):
 
         # Get the filepath to the converted CSV files
         filename = "/tmp/{}".format(sheet['name'])
+        xlsx.convert(filename, sheetid=idxsheet+1)
 
         results = process_scan_report_sheet_table(filename)
 
@@ -134,7 +135,7 @@ def process_scan_report(form):
 
             scan_report_field = ScanReportField.object.get(
                 name=result[0],
-                scan_report_table=scan_report,
+                scan_report_table=scan_report_table,
                 scan_report_table__scan_report=scan_report,
             )
 
