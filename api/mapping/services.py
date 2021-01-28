@@ -145,10 +145,10 @@ def process_scan_report(form):
         for result in results:
 
             # Grab the Scan Report Field
-            scan_report_field = ScanReportField.object.get(
-                name=result[0],
+            scan_report_field = ScanReportField.objects.get(
                 scan_report_table=scan_report_table,
                 scan_report_table__scan_report=scan_report,
+                name=result[0],
             )
 
             # Save each row of values/frequencies to the model ScanReportValue

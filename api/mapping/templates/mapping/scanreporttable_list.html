@@ -8,6 +8,8 @@
 <table class="table">
     <thead>
     <tr>
+        <th>Data Provider</th>
+        <th>Dataset Name</th>
         <th scope="col">Name</th>
         <th scope="col">&nbsp;</th>
     </tr>
@@ -16,6 +18,8 @@
 
     {% for object in object_list %}
     <tr>
+        <td>{{ object.scan_report.data_partner }}</td>
+        <td>{{ object.scan_report.dataset }}</td>
         <td><a href="{% url 'fields' %}?search={{ object.id }}">{{ object.name }}</a></td>
         <td>&nbsp;</td>
     </tr>
