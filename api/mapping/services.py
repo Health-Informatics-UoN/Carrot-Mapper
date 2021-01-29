@@ -159,4 +159,5 @@ def process_scan_report(scan_report_id):
 
 def run_usagi():
     print('Running Usagi...')
-    subprocess.Popen('java -jar Usagi.jar', shell=True, cwd="/api/mapping/data/usagi")
+    p1 = subprocess.Popen('java -jar Usagi.jar run ~/Documents/phenobase/usagi.properties', cwd="/api/mapping/data/usagi", shell=True, stdout=subprocess.PIPE)
+    p1.stdout.read()
