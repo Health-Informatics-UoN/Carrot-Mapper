@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+{% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+  {% endif %}
+
+  {% if next %}
+    {% if user.is_authenticated %}
+      <p>Your account doesn't have access to this page. To proceed,
+      please login with an account that has access.</p>
+    {% else %}
+      <p>Please login to see this page.</p>
+    {% endif %}
+  {% endif %}
+
+  <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <table>
+      <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+      </tr>
+    </table>
+    <input type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+  </form>
+
+  {# Assumes you setup the password_reset view in your URLconf #}
+  <p><a href="{% url 'password_reset' %}">Lost password?</a></p>
+
+  <!-- <form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Sign Up</button>
+</form> -->
+
+{% endblock %}
