@@ -1,5 +1,5 @@
 import csv
-
+import subprocess
 from xlsx2csv import Xlsx2csv
 
 from .models import ScanReport, ScanReportTable, ScanReportField, \
@@ -155,3 +155,8 @@ def process_scan_report(scan_report_id):
                 value=result[1],
                 frequency=frequency,
             )
+
+
+def run_usagi():
+    print('Running Usagi...')
+    subprocess.Popen('java -jar Usagi.jar', shell=True, cwd="/api/mapping/data/usagi")
