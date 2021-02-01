@@ -33,6 +33,12 @@ docker-compose exec api python manage.py makemigrations
 docker-compose exec api python manage.py migrate
 ```
 
+To stop, without removing all the containers use `stop`:
+```bash
+docker-compose stop
+```
+You can alternatively use `down` to remove everything (changes made within the containers).
+
 # Pages
 
 ## Admin 
