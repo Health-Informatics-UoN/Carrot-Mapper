@@ -13,7 +13,7 @@ from django.contrib.auth.forms import UserCreationForm
 
 from .forms import ScanReportForm
 from .models import Mapping, Source, ScanReport, ScanReportField, \
-    ScanReportTable
+    ScanReportTable, ScanReportValue
 
 
 # We probably need to deprecate this function
@@ -57,6 +57,17 @@ class ScanReportFieldListView(ListView):
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
         return qs
+
+class ScanReportValueListView(ListView):
+    model = ScanReportValue
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('scan_report_field')
+        search_term = self.request.GET.get('search', None)
+        if search_term is not None:
+            qs = qs.filter(scan_report_field__id=search_term)
+        return qs
+
 
 
 class ScanReportListView(ListView):

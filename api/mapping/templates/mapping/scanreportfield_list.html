@@ -33,7 +33,7 @@
             <td>{{ object.scan_report_table.scan_report.dataset }}</td>
             <td>{{ object.scan_report_table.name }}</td>
 <!--            <td>{{ object.name }}</td>-->
-            <td><a href="{% url 'fields' %}?search={{ object }}">{{ object.name }}</a></td>
+            <td><a href="{% url 'values' %}?search={{ object.id }}">{{ object.name }}</a></td>
 
             <td><input type="radio"></td>
             <td><input type="radio"></td>

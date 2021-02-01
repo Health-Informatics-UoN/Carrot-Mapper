@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('fields/', views.ScanReportFieldListView.as_view(), name='fields'),
+    path('values/', views.ScanReportValueListView.as_view(), name='values'),
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
     path('signup/', views.SignUpView.as_view(), name='signup'),

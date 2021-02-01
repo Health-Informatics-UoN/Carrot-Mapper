@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan Reports</a></li>
+  </ol>
+</nav>
+
+<h2>Values</h2>
+
+{% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+
+        <th scope="col">Table</th>
+        <th scope="col">Field</th>
+        <th scope="col">Value</th>
+        <th scope="col">Frequency</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for object in object_list %}
+    <tr>
+        <form>
+            <td>{{ object.scan_report_field.scan_report_table.name }}</td>
+            <td>{{ object.scan_report_field.name }}</td>
+            <td>{{ object.value }}</td>
+            <td>{{ object.frequency }}</td>
+
+        </form>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<input type="submit" class="btn btn-primary" value="Update">
+
+
+{% else %}
+<p>There are no fields in the library.</p>
+{% endif %}
+
+{% endblock %}
