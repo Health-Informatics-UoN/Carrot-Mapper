@@ -75,10 +75,11 @@ class ScanReportFormView(FormView):  # When is it best to use FormView?
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data['data_partner'],
             dataset=form.cleaned_data['dataset'],
-            file=form.cleaned_data['scan_report_file']
+            file=form.cleaned_data['scan_report_file'],
+
             # Does this save the entire file to the database (as a legit .xlsx file)?
         )
-
+        scan_report.author=self.request.user
         # Save all form data to model ScanReport
         scan_report.save()
 

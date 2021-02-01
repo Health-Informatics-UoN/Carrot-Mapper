@@ -10,7 +10,10 @@
     <tr>
         <th scope="col">Data Partner</th>
         <th scope="col">Dataset</th>
+        <th scope="col">Added by</th>
+        <th scope="col">Date</th>
         <th scope="col">&nbsp;</th>
+
     </tr>
     </thead>
     <tbody>
@@ -19,6 +22,9 @@
     <tr>
         <td><a href="{% url 'tables' %}?search={{ object.id }}">{{ object.data_partner }}</a></td>
         <td>{{ object.dataset }}</td>
+        <td>{{ object.author }}</td>
+        <td>{{ object.created_at }}</td>
+
         <td>&nbsp;</td>
     </tr>
     {% endfor %}
@@ -31,8 +37,3 @@
 
 <a href="{% url 'scan-report-form' %}" class="btn btn-primary">Upload ScanReport</a>
 {% endblock %}
-<!-- <form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Sign Up</button>
-</form> -->

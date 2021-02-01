@@ -25,7 +25,9 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
+            {% if user.is_authenticated %}
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
+
                 <li class="nav-item active">
                     <a class="nav-link" aria-current="page" href="#">Home</a>
                 </li>
@@ -36,12 +38,13 @@
                     <a class="nav-link disabled" href="#" tabindex="-1"
                        aria-disabled="true">Disabled</a>
                 </li>
-              {% if user.is_authenticated %}
-                <li>User: {{ user.get_username }}</li>
+                <li>
+                    <a class="nav-link disabled" href="#" tabindex="-1"
+                       aria-disabled="true">{{ user.get_username }}</a>
+                </li>
+
                 <li class="nav-item"><a class="nav-link" href="{% url 'logout'%}">Logout</a></li>
-                 {% else %}
-        <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
-                {% endif %} 
+
             </ul>
             <form class="d-flex">
                 <input class="form-control me-2" type="search"
@@ -49,6 +52,7 @@
                 <button class="btn btn-outline-success" type="submit">Search
                 </button>
             </form>
+            {% endif %}
         </div>
     </div>
 </nav>
