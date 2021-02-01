@@ -1,7 +1,17 @@
+# Table of Contents
+1. [Introduction](#introduction)
+1. [Getting Started](#getting-started)
+   1. [Manually](#manually)
+   1. [Docker](#docker)
+1. [Pages]
+   1. [Admin](#admin)
+   1. [Signup](#signup)
+   1. [ScanReports](#scanreports)
+
 # Introduction
 This repository contains information and code for the CO-CONNECT Mapping Pipeline.
 
-# Getting Started
+# Getting Started <a name="getting-started"></a>
 
 ## Manually
 To run the mapping pipeline Django MVP:
@@ -22,3 +32,16 @@ docker-compose up -d --build
 docker-compose exec api python manage.py makemigrations
 docker-compose exec api python manage.py migrate
 ```
+
+# Pages
+
+## Admin 
+Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
+
+## Signup
+Sign up an account so that you're able to login
+[http://127.0.0.1:8080/mapping/signup/](http://127.0.0.1:8080/mapping/signup/)
+
+## ScanReports
+To access the scanreports route, go to:
+[http://127.0.0.1:8080/mapping/scanreports/](http://127.0.0.1:8080/mapping/scanreports/)
