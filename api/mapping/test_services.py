@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .services import process_scan_report_sheet_table, run_usagi
+from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi
 
 class ServiceTests(TestCase):
 
@@ -13,6 +13,12 @@ class ServiceTests(TestCase):
         result = process_scan_report_sheet_table(filename)
 
         self.assertIs(4, len(result))
+
+    # Run this to build Usagi's index for the first time
+    # Takes a long time to run!
+    def test_build_usagi_index(self):
+        x = build_usagi_index()
+        print(x)
 
     def test_run_usagi(self):
         x = run_usagi()

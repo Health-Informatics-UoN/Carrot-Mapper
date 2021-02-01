@@ -22,3 +22,14 @@ docker-compose up -d --build
 docker-compose exec api python manage.py makemigrations
 docker-compose exec api python manage.py migrate
 ```
+
+## Usagi
+
+To run Usagi you will need to build an index from Athena vocabularies. Download the vocabs, unzip, and place them in `/data/usagi/vocabs`. Place Usagi.jar from the Software Team Teams channel into `/data/usagi`.
+
+Run `docker-compose exec api python manage.py test mapping.test_services.ServiceTests.test_build_usagi_index` to build the index.
+Note that this can take a long time to run!
+
+Once you've built the index, you can test that Usagi is running with:
+`docker-compose exec api python manage.py test mapping.test_services.ServiceTests.test_run_usagi`
+

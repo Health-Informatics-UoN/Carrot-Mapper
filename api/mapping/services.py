@@ -1,5 +1,6 @@
 import csv
 import subprocess
+import sys
 from xlsx2csv import Xlsx2csv
 
 from .models import ScanReport, ScanReportTable, ScanReportField, \
@@ -157,7 +158,31 @@ def process_scan_report(scan_report_id):
             )
 
 
+def build_usagi_index():
+
+    # Run Usagi. Replace 'run' with 'build' to create index for the first time.
+    # Index stored in data/usagi/mainIndex
+    p = subprocess.Popen('java -jar Usagi.jar build usagi_build_index.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    # Print console output to screen so you can see it's working (or not!)
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        if not isinstance(line, (str)):
+            line = line.decode('utf-8')
+        stdout.append(line)
+        print(line)
+        if (line == '' and p.poll() != None):
+            break
+
 def run_usagi():
-    print('Running Usagi...')
-    p1 = subprocess.Popen('java -jar Usagi.jar run ~/Documents/phenobase/usagi.properties', cwd="/api/mapping/data/usagi", shell=True, stdout=subprocess.PIPE)
-    p1.stdout.read()
+    p = subprocess.Popen('java -jar Usagi.jar run usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        if not isinstance(line, (str)):
+            line = line.decode('utf-8')
+        stdout.append(line)
+        print(line)
+        if (line == '' and p.poll() != None):
+            break

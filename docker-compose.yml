@@ -45,6 +45,7 @@ services:
       - .env
     volumes:
       - ./api:/api
+      - ./data/usagi:/usagi
     depends_on:
       - api
       - redis
