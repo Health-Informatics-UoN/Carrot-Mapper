@@ -1,4 +1,4 @@
-# Table of Contents
+### Table of Contents
 1. [Introduction](#introduction)
 1. [Getting Started](#getting-started)
    1. [Manually](#manually)
