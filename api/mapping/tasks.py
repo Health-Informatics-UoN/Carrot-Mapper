@@ -2,7 +2,7 @@
 
 from celery import shared_task
 from .models import ScanReport
-from .services import process_scan_report
+from .services import process_scan_report, run_usagi
 
 
 @shared_task
@@ -36,3 +36,6 @@ def rename_scanreport(scanreport_id, name):
 def process_scan_report_task(scan_report_id):
     process_scan_report(scan_report_id)
 
+@shared_task
+def run_usagi_task(scan_report_id):
+    run_usagi(scan_report_id)

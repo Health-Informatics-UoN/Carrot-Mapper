@@ -16,11 +16,10 @@ from .models import Mapping, Source, ScanReport, ScanReportField, \
     ScanReportTable, ScanReportValue
 
 
+from .services import process_scan_report, run_usagi
+from .tasks import process_scan_report_task, run_usagi
+
 # We probably need to deprecate this function
-from .services import process_scan_report
-from .tasks import process_scan_report_task
-
-
 @login_required
 def index(request):
 
@@ -36,6 +35,14 @@ def index(request):
 
     return render(request, 'mapping/index.html', context)
 
+
+def testusagi(request, scan_report_id):
+
+    results = run_usagi(scan_report_id)
+    print(results)
+    context = {}
+
+    return render(request, 'mapping/index.html', context)
 
 class ScanReportTableListView(ListView):
     model = ScanReportTable
@@ -64,17 +71,23 @@ class ScanReportValueListView(ListView):
     def get_queryset(self):
         qs = super().get_queryset().order_by('scan_report_field')
         search_term = self.request.GET.get('search', None)
-        if search_term is not None:
-            qs = qs.filter(scan_report_field__id=search_term)
+        search_value = self.request.GET.get('value', None)
+        if search_term == "table":
+            qs = qs.filter(scan_report_field__scan_report_table__id=search_value)
+        else:
+            qs = qs.filter(scan_report_field__id=search_value)
+
         return qs
 
-
+    def get_context_data(self, **kwargs):
+        context = super(ScanReportValueListView, self).get_context_data(**kwargs)
+        context.update({"table_id": 113})
+        return context
 
 class ScanReportListView(ListView):
     model = ScanReport
 
-
-class ScanReportFormView(FormView):  # When is it best to use FormView?
+class ScanReportFormView(FormView):
 
     form_class = ScanReportForm
     template_name = 'mapping/upload_scan_report.html'

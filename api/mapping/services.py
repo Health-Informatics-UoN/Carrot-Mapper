@@ -1,14 +1,15 @@
 import csv
 import subprocess
 import sys
+import os
 from xlsx2csv import Xlsx2csv
+import pandas as pd
 
 from .models import ScanReport, ScanReportTable, ScanReportField, \
     ScanReportValue
 
 
 def process_scan_report_sheet_table(filename):
-
     """
     This function converts a White Rabbit scan report to CSV and extract the
     data into the format below.
@@ -42,7 +43,6 @@ def process_scan_report_sheet_table(filename):
         for row_idx, row in enumerate(reader):
 
             if row_idx == 0:
-
                 column_names = row
 
                 continue
@@ -56,7 +56,6 @@ def process_scan_report_sheet_table(filename):
                     # This is required b/c value/frequency col pairs differ
                     # in the number of rows
                     if row[col_idx] == '' and row[col_idx + 1] == '':
-
                         continue
 
                     result.append((column_names[col_idx], row[col_idx], row[col_idx + 1]))
@@ -65,7 +64,6 @@ def process_scan_report_sheet_table(filename):
 
 
 def process_scan_report(scan_report_id):
-
     scan_report = ScanReport.objects.get(pk=scan_report_id)
 
     xlsx = Xlsx2csv(
@@ -129,7 +127,7 @@ def process_scan_report(scan_report_id):
 
         # Get the filepath to the converted CSV files
         filename = "/tmp/{}".format(sheet['name'])
-        xlsx.convert(filename, sheetid=idxsheet+1)
+        xlsx.convert(filename, sheetid=idxsheet + 1)
 
         results = process_scan_report_sheet_table(filename)
 
@@ -159,10 +157,10 @@ def process_scan_report(scan_report_id):
 
 
 def build_usagi_index():
-
-    # Run Usagi. Replace 'run' with 'build' to create index for the first time.
+    # Use 'build' to create index for the first time.
     # Index stored in data/usagi/mainIndex
-    p = subprocess.Popen('java -jar Usagi.jar build usagi_build_index.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen('java -jar Usagi.jar build usagi_build_index.properties', cwd="/data/usagi", shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     # Print console output to screen so you can see it's working (or not!)
     stdout = []
@@ -175,8 +173,36 @@ def build_usagi_index():
         if (line == '' and p.poll() != None):
             break
 
-def run_usagi():
-    p = subprocess.Popen('java -jar Usagi.jar run usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+def run_usagi(scan_report_id):
+
+    # Return values as dataframe then save to .CSV
+    s = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report__id=scan_report_id)
+    dat = pd.DataFrame.from_dict(s.values('scan_report_field__name', 'value', 'frequency'))
+    dat = dat[~dat.scan_report_field__name.str.contains("ID")] # Temporary Filter
+    dat = dat[~dat.scan_report_field__name.str.contains("Date")] # Temporary Filter
+    dat = dat.head(10)
+    dat.to_csv('/data/usagi/usagi_input/usagi_input_data.csv', index=False)
+    print(dat)
+
+    # Create Usagi Properties File
+    f = open("/data/usagi/usagi_input/usagi.properties", "w+")
+
+    # Input/Output file paths
+    f.write("usagiFolder=/data/usagi/mainIndex/\n")
+    f.write("mappingFile=/data/usagi/usagi_output/usagi_output.csv\n")
+    f.write("vocabFolder=/data/usagi/vocabs/\n")
+    f.write("sourceFile=/data/usagi/usagi_input/usagi_input_data.csv\n")
+    f.write("sourceNameColumn=" + "scan_report_field__name\n") # sourcenamedescription is actually the *description* of the column (i.e. if we had a dictionary)
+    f.write("sourceCodeColumn=" + "value\n") # correct
+    f.write("sourceFrequencyColumn=" + "frequency\n")
+    f.write("fieldID=" + "value\n") # what the col name is called
+    f.write("fieldDesc=" + "scan_report_field__name\n") # column description
+
+    f.close()
+
+    # Run Usagi
+    p = subprocess.Popen('java -jar Usagi.jar run /data/usagi/usagi_input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout = []
     while True:
         line = p.stdout.readline()
@@ -186,3 +212,7 @@ def run_usagi():
         print(line)
         if (line == '' and p.poll() != None):
             break
+
+    # Clean up inputs
+    # os.remove('/data/usagi/usagi_input/usagi_input_data.csv')
+    # os.remove('/data/usagi/usagi_input/usagi.properties')

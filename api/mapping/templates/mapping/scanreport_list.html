@@ -10,7 +10,9 @@
     <tr>
         <th scope="col">Data Partner</th>
         <th scope="col">Dataset</th>
-        <th scope="col">&nbsp;</th>
+        <th scope="col">Data Dictionary</th>
+        <th>Uploaded On</th>
+
     </tr>
     </thead>
     <tbody>
@@ -19,7 +21,9 @@
     <tr>
         <td><a href="{% url 'tables' %}?search={{ object.id }}">{{ object.data_partner }}</a></td>
         <td>{{ object.dataset }}</td>
-        <td>&nbsp;</td>
+        <td><p style="color:lightgrey">Present/Not Present</p></td>
+        <td>{{ object.created_at }}</td>
+
     </tr>
     {% endfor %}
     </tbody>

@@ -10,7 +10,7 @@
 </nav>
 
 <h2>Fields</h2>
-
+{{ table_id }}
 {% if object_list %}
 <table class="table">
     <thead>
@@ -19,8 +19,8 @@
         <th>Dataset Name</th>
         <th scope="col">Table</th>
         <th scope="col">Field</th>
-        <th scope="col">Primary key</th>
-        <th scope="col">Date event</th>
+        <th scope="col">Patient ID</th>
+        <th scope="col">Date Event</th>
         <th scope="col">Ignore</th>
     </tr>
     </thead>
@@ -32,9 +32,7 @@
             <td>{{ object.scan_report_table.scan_report.data_partner }}</td>
             <td>{{ object.scan_report_table.scan_report.dataset }}</td>
             <td>{{ object.scan_report_table.name }}</td>
-<!--            <td>{{ object.name }}</td>-->
             <td><a href="{% url 'values' %}?search={{ object.id }}">{{ object.name }}</a></td>
-
             <td><input type="radio"></td>
             <td><input type="radio"></td>
             <td><input type="checkbox"></td>
@@ -45,11 +43,11 @@
     {% endfor %}
     </tbody>
 </table>
+
+
 <input type="submit" class="btn btn-primary" value="Update">
 <input type="submit" class="btn btn-secondary" value="Run NLP">
 <input type="submit" class="btn btn-secondary" value="Run Usagi">
-
-
 {% else %}
 <p>There are no books in the library.</p>
 {% endif %}

@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('fields/', views.ScanReportFieldListView.as_view(), name='fields'),
     path('values/', views.ScanReportValueListView.as_view(), name='values'),

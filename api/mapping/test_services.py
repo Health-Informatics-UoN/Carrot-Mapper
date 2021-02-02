@@ -20,6 +20,7 @@ class ServiceTests(TestCase):
         x = build_usagi_index()
         print(x)
 
+    # Run this to get Usagi going
     def test_run_usagi(self):
         x = run_usagi()
         print(x)
