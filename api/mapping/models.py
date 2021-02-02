@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.conf import settings
 
 """
 Relationship is many:many because;
@@ -27,9 +29,15 @@ class ScanReport(BaseModel):
     data_partner = models.CharField(max_length=128)
     dataset = models.CharField(max_length=128)
     file = models.FileField()
+    author=models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
-        return f'{self.data_partner, self.dataset}'
+        return f'{self.data_partner, self.dataset,self.author}'
 
 
 class ScanReportTable(BaseModel):
@@ -51,6 +59,7 @@ class ScanReportField(BaseModel):
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
+
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)

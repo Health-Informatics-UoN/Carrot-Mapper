@@ -1,12 +1,10 @@
-from django.urls import path,include
 from django.contrib.auth.decorators import login_required
-from django.contrib import admin
-from django.contrib.auth import views as auth_views
+from django.urls import path
 
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('fields/', views.ScanReportFieldListView.as_view(), name='fields'),
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
