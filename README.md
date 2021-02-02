@@ -41,6 +41,8 @@ You can alternatively use `down` to remove everything (changes made within the c
 
 # Pages
 
+:warning: If you run manually the port is `8000`, with the docker container, port `8000` (in the container) is forwarded to `8080` (local)
+
 ## Admin 
 Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
 
