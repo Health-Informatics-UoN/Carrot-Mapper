@@ -7,7 +7,7 @@ Relationship is many:many because;
 Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
 Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
 """
-User=settings.AUTH_USER_MODEL
+
 
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,7 +29,12 @@ class ScanReport(BaseModel):
     data_partner = models.CharField(max_length=128)
     dataset = models.CharField(max_length=128)
     file = models.FileField()
-    author=models.ForeignKey(User,on_delete=models.CASCADE,blank=True, null=True)
+    author=models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
@@ -54,6 +59,7 @@ class ScanReportField(BaseModel):
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
+
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
