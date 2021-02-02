@@ -3,7 +3,7 @@
 1. [Getting Started](#getting-started)
    1. [Manually](#manually)
    1. [Docker](#docker)
-1. [Pages]
+1. [Pages](#pages)
    1. [Admin](#admin)
    1. [Signup](#signup)
    1. [ScanReports](#scanreports)
