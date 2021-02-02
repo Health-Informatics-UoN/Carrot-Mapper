@@ -87,6 +87,5 @@ class ClassificationSystem(BaseModel):
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
     """
     name = models.CharField(max_length=64)#128?
-    
     def __str__(self):
         return name
