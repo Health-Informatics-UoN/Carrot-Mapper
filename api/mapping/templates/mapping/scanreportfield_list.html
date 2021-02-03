@@ -32,7 +32,8 @@
                 <th scope="col">Is Date Event</th>
                 <th scope="col">Ignore?</th>
                 <th scope="col">Classification System</th>
-                <th></th>
+                <th>Edit</th>
+                <th>Structural Mapping</th>
             </tr>
             </thead>
             <tbody>
@@ -48,9 +49,11 @@
                 <td>{{ object.is_date_event }}</td>
                 <td>{{ object.is_ignore }}</td>
                 <td>{{ object.classification_system.name }}</td>
-                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit
-                    Field</a></td>
-                <td></td>
+                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
+                <td>{% for object in object.mapping.all %}
+                    <b>{{object.table}}</b>
+                    {{object.field|linebreaks}}
+                    {% endfor %}</td>
             </tr>
             {% endfor %}
             </tbody>

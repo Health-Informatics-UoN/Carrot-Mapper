@@ -106,10 +106,14 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_date_event',
         'is_ignore',
         'classification_system',
+        'mapping'
     ]
 
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
+
+class ScanReportStructuralMappingUpdateView(UpdateView):
+    model = ScanReportField
 
 
 class ScanReportListView(ListView):
