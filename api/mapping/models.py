@@ -17,6 +17,17 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class ClassificationSystem(BaseModel):
+    """
+    Class for 'classification system', i.e. SNOMED or ICD-10 etc.
+    """
+
+    name = models.CharField(max_length=64)#128?
+
+    def __str__(self):
+        return self.name
+
+
 class DataPartners(BaseModel):
     name = models.CharField(max_length=64)
 
@@ -45,7 +56,7 @@ class ScanReportTable(BaseModel):
     name = models.CharField(max_length=256)
 
     def __str__(self):
-        return f'{self.scan_report, self.name}'
+        return self.name
 
 
 class ScanReportField(BaseModel):
@@ -59,12 +70,25 @@ class ScanReportField(BaseModel):
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
+    is_patient_id = models.BooleanField(default=False)
+    is_date_event = models.BooleanField(default=False)
+    is_ignore = models.BooleanField(default=False)
+    classification_system = models.ForeignKey(
+        ClassificationSystem,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.name
 
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
+
+    def __str__(self):
+        return self.value
 
 
 class Source(BaseModel):
@@ -90,11 +114,3 @@ class Mapping(BaseModel):
     def __str__(self):
         return f'{self.table, self.field}'
 
-
-class ClassificationSystem(BaseModel):
-    """
-    Class for 'classification system', i.e. SNOMED or ICD-10 etc.
-    """
-    name = models.CharField(max_length=64)#128?
-    def __str__(self):
-        return name
