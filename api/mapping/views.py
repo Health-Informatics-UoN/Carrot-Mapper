@@ -19,7 +19,6 @@ from django.views.generic.edit import UpdateView
 from .forms import ScanReportForm, UserCreateForm
 from .models import Mapping, Source, ScanReport, ScanReportField, \
     ScanReportTable
-# We probably need to deprecate this function
 from .tasks import process_scan_report_task
 
 
@@ -106,15 +105,18 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_date_event',
         'is_ignore',
         'classification_system',
-        'mapping'
     ]
 
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 class ScanReportStructuralMappingUpdateView(UpdateView):
-    model = ScanReportField
-
+    model = Mapping
+    template = "/mapping/mapping_form.html"
+    fields = [
+        'table',
+        'field',
+    ]
 
 class ScanReportListView(ListView):
     model = ScanReport

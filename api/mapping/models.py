@@ -42,8 +42,6 @@ class Mapping(BaseModel):
     def __str__(self):
         return f'{self.table, self.field}'
 
-
-
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -73,6 +71,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True
     )
+
 
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
@@ -107,7 +106,6 @@ class ScanReportField(BaseModel):
         blank=True
     )
     mapping = models.ManyToManyField(Mapping)
-
     def __str__(self):
         return self.name
 
