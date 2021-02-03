@@ -3,55 +3,89 @@
 {% block body %}
 
 <nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan reports</a></li>
-  </ol>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
+            {{ scan_report_table.name }}</a></li>
+    </ol>
 </nav>
 
 <h2>Fields</h2>
 
 {% if object_list %}
-<table class="table">
-    <thead>
-    <tr>
-        <th>Data Provider</th>
-        <th>Dataset Name</th>
-        <th scope="col">Table</th>
-        <th scope="col">Field</th>
-        <th scope="col">Primary key</th>
-        <th scope="col">Date event</th>
-        <th scope="col">Ignore</th>
-    </tr>
-    </thead>
-    <tbody>
-
-    {% for object in object_list %}
-    <tr>
-        <form>
-            <td>{{ object.scan_report_table.scan_report.data_partner }}</td>
-            <td>{{ object.scan_report_table.scan_report.dataset }}</td>
-            <td>{{ object.scan_report_table.name }}</td>
-<!--            <td>{{ object.name }}</td>-->
-            <td><a href="{% url 'fields' %}?search={{ object }}">{{ object.name }}</a></td>
-
-            <td><input type="radio"></td>
-            <td><input type="radio"></td>
-            <td><input type="checkbox"></td>
-            <td></td>
-            <td></td>
-        </form>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<input type="submit" class="btn btn-primary" value="Update">
-<input type="submit" class="btn btn-secondary" value="Run NLP">
-<input type="submit" class="btn btn-secondary" value="Run Usagi">
-
-
-{% else %}
-<p>There are no books in the library.</p>
+<!---
+    https://stackoverflow.com/a/27305613/10192378
+    <form method="POST">
+      {% csrf_token %}
+      --->
+<form id="my_form">
+    <div class="form-group">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Field</th>
+                <th scope="col">Is Patient ID</th>
+                <th scope="col">Is Date Event</th>
+                <th scope="col">Ignore?</th>
+                <th scope="col">Classification System</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for object in object_list %}
+            <tr>
+                <td><a href="{% url 'fields' %}?search={{ object.id }}">
+                    {{ object.name }}</a></td>
+                <td>
+                    {% if object.is_patient_id %}
+                    <i class="bi bi-check"></i> Yes
+                    {% endif %}
+                </td>
+                <td>{{ object.is_date_event }}</td>
+                <td>{{ object.is_ignore }}</td>
+                <td>{{ object.classification_system.name }}</td>
+                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit
+                    Field</a></td>
+                <td></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="form-row">
+            <!---
+            <input type="submit" class="btn btn-primary"  value="Update">
+            <input type="submit" class="btn btn-secondary"  value="Run NLP">
+            <input type="submit" class="btn btn-secondary"  value="Run Usagi">
+            --->
+            <input type="submit" class="btn btn-primary" name="update"
+                   value="Update">
+            <input type="submit" class="btn btn-secondary" name="run_nlp"
+                   value="Run NLP">
+            <input type="submit" class="btn btn-secondary" name="run_usagi"
+                   value="Run Usagi">
+            <input type="button" class="btn btn-success float-end" name='test'
+                   id="test" value="Test Form">
+        </div>
+    </div>
+</form>
 {% endif %}
+
+<script type="text/javascript">
+    $("#test").click(function () {
+
+        var msg = "Classification System..\n";
+        $('.select-classification').each(
+            function (index) {
+                msg += index + ":" + $(this).val() + "\n";
+            }
+        );
+        alert(msg);
+    });
+
+</script>
 
 {% endblock %}

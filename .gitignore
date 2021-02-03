@@ -3,6 +3,8 @@
 *.pyc
 *.DS_Store
 *.sqlite3
+*.env
 
 **/migrations
 */__pycache__/*
+
