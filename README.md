@@ -3,6 +3,7 @@
 1. [Getting Started](#getting-started)
    1. [Manually](#manually)
    1. [Docker](#docker)
+   1. [Refreshing](#refreshing) 
 1. [Pages](#pages)
    1. [Admin](#admin)
    1. [Signup](#signup)
@@ -31,9 +32,13 @@ To run the mapping pipeline Django MVP:
 Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
 
 ```bash
+#build the docker images, and start running (as daemon, remove `-d` for without) 
 docker-compose up -d --build
+# refresh migrations
 docker-compose exec api python manage.py makemigrations
 docker-compose exec api python manage.py migrate
+# make superuser
+docker-compose exec api python manage.py createsuperuser
 ```
 
 To stop, without removing all the containers use `stop`:
@@ -41,6 +46,15 @@ To stop, without removing all the containers use `stop`:
 docker-compose stop
 ```
 You can alternatively use `down` to remove everything (changes made within the containers).
+
+## Refreshing
+
+A couple of tips for refreshing/cache clearing if you have picked up large changes..
+* Remove `api/db.sqlite3`
+* Remove migration files e.g. `0001_initial.py` from `api/mapping/migrations/`
+  * :warning: keep `__init__.py`
+  * :bulb: `ls api/mapping/migrations/ | grep -v __init__.py | xargs rm` 
+
 
 # Pages
 
