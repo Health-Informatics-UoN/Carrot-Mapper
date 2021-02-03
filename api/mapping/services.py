@@ -87,7 +87,8 @@ def process_scan_report(scan_report_id):
             # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
-            if row[0] != '':
+            if row and row[0] != '':
+
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
                     scan_report=scan_report,
                     # This links ScanReportTable to ScanReport
