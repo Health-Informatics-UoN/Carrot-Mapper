@@ -13,8 +13,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import FormView, UpdateView
 
 from .forms import ScanReportForm, UserCreateForm
 from .models import Mapping, Source, ScanReport, ScanReportField, \
@@ -111,12 +110,13 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 class ScanReportStructuralMappingUpdateView(UpdateView):
-    model = Mapping
-    template = "/mapping/mapping_form.html"
+    model = ScanReportField
     fields = [
-        'table',
-        'field',
+        'mapping'
     ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 class ScanReportListView(ListView):
     model = ScanReport
