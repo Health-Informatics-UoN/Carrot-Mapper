@@ -2,11 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 
-"""
-Relationship is many:many because;
-Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
-Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
-"""
+
 
 
 class BaseModel(models.Model):
@@ -16,6 +12,35 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+"""
+Relationship is many:many because;
+Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
+Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
+"""
+
+
+class Source(BaseModel):
+    """
+    DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
+    """
+    dataset = models.CharField(max_length=64)
+    table = models.CharField(max_length=64)
+    field = models.CharField(max_length=64)
+    mapping = models.ManyToManyField('Mapping')
+
+    def __str__(self):
+        return f'{self.dataset, self.table, self.field}'
+
+
+class Mapping(BaseModel):
+    """
+    DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
+    """
+    table = models.CharField(max_length=64)
+    field = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f'{self.table, self.field}'
 
 class ClassificationSystem(BaseModel):
     """
@@ -46,6 +71,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True
     )
+
 
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
@@ -79,7 +105,7 @@ class ScanReportField(BaseModel):
         null=True,
         blank=True
     )
-
+    mapping = models.ManyToManyField(Mapping)
     def __str__(self):
         return self.name
 
@@ -92,27 +118,4 @@ class ScanReportValue(BaseModel):
     def __str__(self):
         return self.value
 
-
-class Source(BaseModel):
-    """
-    DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
-    """
-    dataset = models.CharField(max_length=64)
-    table = models.CharField(max_length=64)
-    field = models.CharField(max_length=64)
-    mapping = models.ManyToManyField('Mapping')
-
-    def __str__(self):
-        return f'{self.dataset, self.table, self.field}'
-
-
-class Mapping(BaseModel):
-    """
-    DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
-    """
-    table = models.CharField(max_length=64)
-    field = models.CharField(max_length=64)
-
-    def __str__(self):
-        return f'{self.table, self.field}'
 

@@ -13,13 +13,11 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView
-from django.views.generic.edit import UpdateView
+from django.views.generic.edit import FormView, UpdateView
 
 from .forms import ScanReportForm, UserCreateForm
 from .models import Mapping, Source, ScanReport,ScanReportValue, ScanReportField, \
     ScanReportTable
-# We probably need to deprecate this function
 from .tasks import process_scan_report_task
 
 
@@ -111,6 +109,14 @@ class ScanReportFieldUpdateView(UpdateView):
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
+class ScanReportStructuralMappingUpdateView(UpdateView):
+    model = ScanReportField
+    fields = [
+        'mapping'
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 class ScanReportListView(ListView):
     model = ScanReport

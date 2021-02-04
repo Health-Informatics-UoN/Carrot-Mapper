@@ -4,3 +4,4 @@ celery
 pandas
 openpyxl
 xlsx2csv
+django-select2
