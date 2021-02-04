@@ -15,9 +15,9 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 
-from .forms import ScanReportForm, UserCreateForm
-from .models import Mapping, Source, ScanReport,ScanReportValue, ScanReportField, \
-    ScanReportTable
+from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
+from .models import Source, ScanReport,ScanReportValue, ScanReportField, \
+    ScanReportTable, OmopTable, OmopField, MappingRule
 from .tasks import process_scan_report_task
 
 
@@ -64,7 +64,6 @@ class ScanReportTableListView(ListView):
 
         return context
 
-
 class ScanReportFieldListView(ListView):
     model = ScanReportField
 
@@ -96,7 +95,6 @@ class ScanReportFieldListView(ListView):
 
         return context
 
-
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -104,15 +102,6 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_date_event',
         'is_ignore',
         'classification_system',
-    ]
-
-    def get_success_url(self):
-        return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
-
-class ScanReportStructuralMappingUpdateView(UpdateView):
-    model = ScanReportField
-    fields = [
-        'mapping'
     ]
 
     def get_success_url(self):
@@ -129,8 +118,30 @@ class ScanReportValueView(ListView):
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
+    
 
-class ScanReportFormView(FormView):  # When is it best to use FormView?
+class AddMappingRuleFormView(FormView):
+
+    form_class = AddMappingRuleForm
+    template_name = 'mapping/mappingrule_form.html'
+    success_url = reverse_lazy('fields')
+
+    def form_valid(self, form):
+
+        scan_report_field = ScanReportField.objects.get(
+            pk = self.kwargs.get('pk')
+        )
+
+        mapping = MappingRule.objects.create(
+            omop_field=form.cleaned_data['omop_field'],
+            scan_report_field=form.cleaned_data['scan_report_field']
+        )
+
+        mapping.save()
+        return super().form_valid(form)
+
+
+class ScanReportFormView(FormView):
 
     form_class = ScanReportForm
     template_name = 'mapping/upload_scan_report.html'

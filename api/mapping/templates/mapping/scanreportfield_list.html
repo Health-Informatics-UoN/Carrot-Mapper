@@ -51,12 +51,12 @@
                 <td>{{ object.is_ignore }}</td>
                 <td>{{ object.classification_system.name }}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
-                <td>{% for object in object.mapping.all %}
+                <td>{% for object in object.new_mapping.all %}
 
                     <b>{{object.table}}</b>
                     {{object.field|linebreaks}}
                     {% endfor %}</td>
-                <td><a href="{% url 'scan-report-mapping-update' object.id %}">Edit Structural Mapping</a></td>
+                <td><a href="{% url 'create-mapping-form' object.id %}">Add Structural Mapping</a></td>
             </tr>
             {% endfor %}
             </tbody>
