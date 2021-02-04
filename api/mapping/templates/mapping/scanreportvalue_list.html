@@ -11,10 +11,11 @@
             {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
             {{ scan_report_table.name }}</a></li>
+         
     </ol>
 </nav>
 
-<h2>Fields</h2>
+<h2>Values</h2>
 
 {% if object_list %}
 <!---
@@ -28,29 +29,16 @@
             <thead>
             <tr>
                 <th scope="col">Field</th>
-                <th scope="col">Is Patient ID</th>
-                <th scope="col">Is Date Event</th>
-                <th scope="col">Ignore?</th>
-                <th scope="col">Classification System</th>
+                
                 <th></th>
             </tr>
             </thead>
             <tbody>
             {% for object in object_list %}
             <tr>
-                <td><a href="{% url 'values' %}?search={{ object.id }}">
-                    {{ object.name }}</a></td>
                 <td>
-                    {% if object.is_patient_id %}
-                    <i class="bi bi-check"></i> Yes
-                    {% endif %}
-                </td>
-                <td>{{ object.is_date_event }}</td>
-                <td>{{ object.is_ignore }}</td>
-                <td>{{ object.classification_system.name }}</td>
-                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit
-                    Field</a></td>
-                <td></td>
+                    {{ object.value}}</a></td>
+               
             </tr>
             {% endfor %}
             </tbody>

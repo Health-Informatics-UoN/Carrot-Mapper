@@ -17,7 +17,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.edit import UpdateView
 
 from .forms import ScanReportForm, UserCreateForm
-from .models import Mapping, Source, ScanReport, ScanReportField, \
+from .models import Mapping, Source, ScanReport,ScanReportValue, ScanReportField, \
     ScanReportTable
 # We probably need to deprecate this function
 from .tasks import process_scan_report_task
@@ -115,6 +115,14 @@ class ScanReportFieldUpdateView(UpdateView):
 class ScanReportListView(ListView):
     model = ScanReport
 
+class ScanReportValueView(ListView):
+    model = ScanReportValue
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('scan_report_field__id')
+         search_term = self.request.GET.get('search', None)
+         if search_term is not None:
+             qs = qs.filter(scan_report_field=search_term)
+         return qs
 
 class ScanReportFormView(FormView):  # When is it best to use FormView?
 
