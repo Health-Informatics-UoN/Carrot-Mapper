@@ -39,13 +39,13 @@ body {
 
 /* increase the gap between the brand and the first link to pages in the nav bar */
 .navbar .navbar-brand{
-    padding-right: 60px;
+    padding-right: 40px;
 }
 
 /* make some snazy 90s-like theme for the nav bar */
 .bg-co-connect {
-    background:  linear-gradient(180deg,rgba(0,0,0,0) 0 96px, var(--co-connect-tertiary) 96px 100%),
-		 linear-gradient(110deg,white 0 90px, var(--co-connect-primary-light) 150px , var(--co-connect-primary) 400px 80%,var(--co-connect-secondary));
+    background:  linear-gradient(180deg,rgba(0,0,0,0) 0 66px, var(--co-connect-tertiary) 66px 100%),
+		 linear-gradient(110deg,white 0 40px, var(--co-connect-primary-light) 80px , var(--co-connect-primary) 200px 80%,var(--co-connect-secondary));
 }
 
 /* change the navbar link colors  and mouse-over actions */
