@@ -23,7 +23,7 @@
 /* our primary colours based on the recommended colour-coding above */
 :root {
     --co-connect-primary: #475da7;
-    --co-connect-primary-light: #475da766;/* 66 == alpha transparency */
+    --co-connect-primary-light: #c4c6e2;
     --co-connect-secondary: #3db28c;
     --co-connect-tertiary: #3c3c3b;
 }
