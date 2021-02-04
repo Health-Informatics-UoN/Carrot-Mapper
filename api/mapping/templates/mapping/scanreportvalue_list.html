@@ -28,8 +28,8 @@
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">Field</th>
-                
+                <th scope="col">Value</th>
+                <th scope="col">Frequency</th>
                 <th></th>
             </tr>
             </thead>
@@ -38,8 +38,10 @@
             <tr>
                 <td>
                     {{ object.value}}</a></td>
-               
+                    
+                <td>{{ object.frequency }}</td>
             </tr>
+            
             {% endfor %}
             </tbody>
         </table>
