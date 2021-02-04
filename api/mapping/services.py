@@ -36,8 +36,18 @@ def process_scan_report_sheet_table(filename):
 
         column_names = []
 
-        reader = csv.reader(f)
+        #reader = csv.reader(f)
 
+        # == Comment - Calum 4/2/2020
+        # * This is a fix for the following error..
+        #    _csv.Error: line contains NUL
+        # * It's coming from hidden ^O or ^M  / NULL bytes in the excell/csv
+        # * Temp fix may slow down the code a lot for large files
+        # * Using pandas would deal with these type of things
+        
+        reader = csv.reader(x.replace('\0', '') for x in f)
+       
+        
         for row_idx, row in enumerate(reader):
 
             if row_idx == 0:

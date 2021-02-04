@@ -44,8 +44,10 @@ class ScanReportTableListView(ListView):
     def get_queryset(self):
         qs = super().get_queryset().order_by('name')
         search_term = self.request.GET.get('search', None)
-        if search_term is not None:
+        if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
+            
+                
         return qs
 
     def get_context_data(self, **kwargs):
