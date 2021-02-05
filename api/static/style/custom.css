@@ -1,0 +1,65 @@
+/*
+  == primary pallete == 
+  Sea Green
+  C71 M0 Y56 K0
+  #3db28c
+  Midnight Blue
+  #29235c
+
+  == secondary pallete == 
+  Midnight Blue
+  #29235c
+  Duck Egg Blue
+  #addad9
+  Slate Grey
+  #3c3c3b
+  Light Grey
+  #d0d3d4
+  Orange
+  #f98e2b
+  
+*/
+
+/* our primary colours based on the recommended colour-coding above */
+:root {
+    --co-connect-primary: #475da7;
+    --co-connect-primary-light: #c4c6e2;
+    --co-connect-secondary: #3db28c;
+    --co-connect-tertiary: #3c3c3b;
+}
+
+/* add paddign to the top of the body so the content doesnt get hidden up the navbar */
+body {
+    padding-top: 120px;
+}
+/* increase the font-size of the nav bar*/
+.navbar {
+    font-size: 22px;
+}
+
+/* increase the gap between the brand and the first link to pages in the nav bar */
+.navbar .navbar-brand{
+    padding-right: 40px;
+}
+
+/* make some snazy 90s-like theme for the nav bar */
+.bg-co-connect {
+    background:  linear-gradient(180deg,rgba(0,0,0,0) 0 66px, var(--co-connect-tertiary) 66px 100%),
+		 linear-gradient(110deg,white 0 40px, var(--co-connect-primary-light) 80px , var(--co-connect-primary) 200px 80%,var(--co-connect-secondary));
+}
+
+/* change the navbar link colors  and mouse-over actions */
+.nav-link{
+	color:white !important;
+    }
+.nav-link:hover{
+    color:rgba(256,256,256,0.5) !important;
+}
+
+
+/* bit of a hack for the "mobile phone view" */
+@media (max-width: 768px) {
+    .navbar-collapse {
+	padding-top:20px;
+    }
+}
