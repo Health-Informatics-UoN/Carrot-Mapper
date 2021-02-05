@@ -99,10 +99,14 @@ def process_scan_report(scan_report_id):
             # Checks for blank b/c White Rabbit seperates tables with blank row
             if row and row[0] != '':
 
+                # This links ScanReportTable to ScanReport
+                # [:31] is because excel is a pile of s***
+                # - sheet names are truncated to 31 characters 
+                name = row[0][:31]
+                
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
                     scan_report=scan_report,
-                    # This links ScanReportTable to ScanReport
-                    name=row[0],
+                    name=name,
                 )
 
                 # Add each field in Field Overview to the model ScanReportField
@@ -119,6 +123,10 @@ def process_scan_report(scan_report_id):
                     fraction_unique=row[9]
                 )
 
+
+    #implement a check for duplicate sheets due to sheet names truncated to [:31] characters
+    #check_for_duplicates()
+                
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
