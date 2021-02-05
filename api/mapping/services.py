@@ -124,9 +124,6 @@ def process_scan_report(scan_report_id):
                 )
 
 
-    #implement a check for duplicate sheets due to sheet names truncated to [:31] characters
-    #check_for_duplicates()
-                
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
