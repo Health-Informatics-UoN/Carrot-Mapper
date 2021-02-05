@@ -127,12 +127,18 @@ def process_scan_report(scan_report_id):
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
-
+        
         if idxsheet < 2:
             continue
 
+        #skip these sheets at the end of the scan report
+        if sheet['name'] == '_':
+            continue
+
+        
         # GET table name from ScanReportTable that was saved in the previous
         # step when scanning the Field Overview sheet
+
         scan_report_table = ScanReportTable.objects.get(
             scan_report=scan_report,
             name=sheet['name']
