@@ -34,7 +34,6 @@
                 <th scope="col">Classification System</th>
                 <th>Edit</th>
                 <th>Structural Mapping</th>
-                <th>Edit Structural Mappings</th>
             </tr>
             </thead>
             <tbody>
@@ -51,12 +50,14 @@
                 <td>{{ object.is_ignore }}</td>
                 <td>{{ object.classification_system.name }}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
-                <td>{% for object in object.new_mapping.all %}
+                <td>
 
-                    <b>{{object.table}}</b>
-                    {{object.field|linebreaks}}
-                    {% endfor %}</td>
-                <td><a href="{% url 'create-mapping-form' object.id %}">Add Structural Mapping</a></td>
+                    <a href="{% url 'view-structural-mapping' object.id %}">View Structural Mapping</a>
+                    <br>
+                    <a href="{% url 'create-mapping-form' object.id %}">Add Structural Mapping</a>
+
+                </td>
+                <td></td>
             </tr>
             {% endfor %}
             </tbody>

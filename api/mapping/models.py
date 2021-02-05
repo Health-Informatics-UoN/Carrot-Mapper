@@ -42,19 +42,6 @@ class Mapping(BaseModel):
     def __str__(self):
         return f'{self.table, self.field}'
 
-# Models for rule mapping
-class OmopTable(BaseModel):
-    table = models.CharField(max_length=64)
-
-    def __str__(self):
-        return self.table
-
-class OmopField(BaseModel):
-    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
-    field = models.CharField(max_length=64)
-
-    def __str__(self):
-        return f'{self.table, self.field}'
 
 
 class ClassificationSystem(BaseModel):
@@ -124,12 +111,27 @@ class ScanReportField(BaseModel):
     def __str__(self):
         return self.name
 
+# Models for rule mapping
+class OmopTable(BaseModel):
+    table = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.table
+
+class OmopField(BaseModel):
+    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
+    field = models.CharField(max_length=64)
+
+    def __str__(self):
+        return f'{self.table, self.field}'
+
+
 class MappingRule(BaseModel):
     omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.omop_table, self.omop_field}'
+        return f'{self.omop_field, self.scan_report_field}'
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)

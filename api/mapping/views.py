@@ -118,7 +118,7 @@ class ScanReportValueView(ListView):
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
-    
+
 
 class AddMappingRuleFormView(FormView):
 
@@ -129,16 +129,27 @@ class AddMappingRuleFormView(FormView):
     def form_valid(self, form):
 
         scan_report_field = ScanReportField.objects.get(
-            pk = self.kwargs.get('pk')
+            pk=self.kwargs.get('pk')
         )
 
         mapping = MappingRule.objects.create(
             omop_field=form.cleaned_data['omop_field'],
-            scan_report_field=form.cleaned_data['scan_report_field']
+            scan_report_field=scan_report_field
         )
 
         mapping.save()
         return super().form_valid(form)
+
+class StructuralMappingListView(ListView):
+    model = MappingRule
+
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('scan_report_field__id')
+         search_term = self.kwargs.get('pk')
+         print('SEARCH TERM >>>>> ', search_term)
+         if search_term is not None:
+             qs = qs.filter(scan_report_field=search_term)
+         return qs
 
 
 class ScanReportFormView(FormView):

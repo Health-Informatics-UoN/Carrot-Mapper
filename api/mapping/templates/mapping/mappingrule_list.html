@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+    </ol>
+</nav>
+
+<h2>Mapping Rules</h2>
+
+
+{% if object_list %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Source Field</th>
+        <th scope="col">OMOP Table</th>
+        <th scope="col">OMOP Field</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+    <tr>
+        <td>{{ object.scan_report_field }}</td>
+        <td>{{ object.omop_field.table }}</td>
+        <td>{{ object.omop_field.field }}</td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>There are currently no structural mappings for this field.</p>
+{% endif %}
+
+{% endblock %}
