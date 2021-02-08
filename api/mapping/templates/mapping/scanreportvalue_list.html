@@ -26,41 +26,50 @@
       {% csrf_token %}
       --->
 <form id="my_form">
-    <div class="form-group">
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">Value</th>
-                <th scope="col">Frequency</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for object in object_list %}
-            <tr>
-                <td>
-                    {{ object.value}}</a></td>
-                    
-                <td>{{ object.frequency }}</td>
-            </tr>
-            
-            {% endfor %}
-            </tbody>
-        </table>
-        <div class="form-row">
-            <!---
-            <input type="submit" class="btn btn-primary"  value="Update">
-            <input type="submit" class="btn btn-secondary"  value="Run NLP">
-            <input type="submit" class="btn btn-secondary"  value="Run Usagi">
-            --->
-            <input type="submit" class="btn btn-primary" name="update"
-                   value="Update">
-            <input type="submit" class="btn btn-secondary" name="run_nlp"
-                   value="Run NLP">
-            <input type="submit" class="btn btn-secondary" name="run_usagi"
-                   value="Run Usagi">
-        </div>
+  <div class="form-group">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Value</th>
+          <th scope="col">Frequency</th>
+	  <th>Edit</th>
+	  <th scope="col"> ConceptID </th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for object in object_list %}
+        <tr>
+          <td>
+            {{ object.value}}</td>
+	  
+	  <td>{{ object.frequency }}</td>
+	  <td><a href="{% url 'scan-report-value-update' object.id %}">Edit Value</a></td>
+	  <td>
+	    <form action="/" method="post">
+	      <!--- <label for="conceptid">Enter: </label>--->
+	      <input id="conceptid" type="text" name="conceptid" value="{{ object.conceptID }}">
+	    </form>
+	  </td>
+	  
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="form-row">
+      <!---
+          <input type="submit" class="btn btn-primary"  value="Update">
+          <input type="submit" class="btn btn-secondary"  value="Run NLP">
+          <input type="submit" class="btn btn-secondary"  value="Run Usagi">
+          --->
+          <input type="submit" class="btn btn-primary" name="update"
+                 value="Update">
+          <input type="submit" class="btn btn-secondary" name="run_nlp"
+                 value="Run NLP">
+          <input type="submit" class="btn btn-secondary" name="run_usagi"
+                 value="Run Usagi">
     </div>
+  </div>
 </form>
 {% endif %}
 
