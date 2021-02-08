@@ -46,10 +46,14 @@
 	  <td>{{ object.frequency }}</td>
 	  <td><a href="{% url 'scan-report-value-update' object.id %}">Edit Value</a></td>
 	  <td>
-	    <form action="/" method="post">
-	      <!--- <label for="conceptid">Enter: </label>--->
+
+	    <!---
+	    <form action='#' method="post">
+	      {% csrf_token %}
 	      <input id="conceptid" type="text" name="conceptid" value="{{ object.conceptID }}">
 	    </form>
+	    --->
+	    
 	  </td>
 	  
         </tr>

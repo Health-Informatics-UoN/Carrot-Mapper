@@ -54,15 +54,6 @@ class ClassificationSystem(BaseModel):
     def __str__(self):
         return self.name
 
-# class ConceptID(BaseModel):
-#     """
-#     Class for the conceptID
-#     """
-#     name = models.CharField(max_length=64)#128?
-
-#     def __str__(self):
-#         return self.name
-
 
 class DataPartners(BaseModel):
     name = models.CharField(max_length=64)
@@ -82,8 +73,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True
     )
-
-
+    
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
 
@@ -146,12 +136,6 @@ class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
-    #conceptID = models.ForeignKey(
-    #    ConceptID,
-    #    on_delete=models.CASCADE,
-    #    null=True,
-    #    blank=True
-    #)
     conceptID = models.CharField(max_length=32)
     
     def __str__(self):
