@@ -7,8 +7,8 @@ from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
 from django.urls import reverse
+from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
@@ -16,24 +16,15 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
-from .models import Source, ScanReport,ScanReportValue, ScanReportField, \
-    ScanReportTable, OmopTable, OmopField, MappingRule
+from .models import ScanReport, ScanReportValue, ScanReportField, \
+    ScanReportTable, MappingRule
 from .tasks import process_scan_report_task
 
 
 @login_required
 def home(request):
-    # Pull in all entries in each database (model)
-    mapping = Mapping.objects.all()
-    source = Source.objects.all()
 
-    # Create quick context dict
-    context = {
-        'source': source,
-        'mapping': mapping,
-    }
-
-    return render(request, 'mapping/home.html', context)
+    return render(request, 'mapping/home.html', {})
 
 
 class ScanReportTableListView(ListView):
@@ -44,8 +35,8 @@ class ScanReportTableListView(ListView):
         search_term = self.request.GET.get('search', None)
         if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
-            
-                
+
+
         return qs
 
     def get_context_data(self, **kwargs):
@@ -141,6 +132,13 @@ class AddMappingRuleFormView(FormView):
 
         mapping.save()
         return super().form_valid(form)
+
+    def get_success_url(self):
+        scan_report_field = ScanReportField.objects.get(
+            pk=self.kwargs.get('pk')
+        )
+
+        return "{}?search={}".format(reverse('fields'), scan_report_field.scan_report_table.id)
 
 
 class StructuralMappingDeleteView(DeleteView):

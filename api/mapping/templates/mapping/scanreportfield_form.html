@@ -14,25 +14,4 @@
     <input type="submit" value="Update">
 </form>
 
-<form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
-    <div class="mb-3">
-        {{ form.data_partner.errors }}
-        <label class="form-label">{{ form.data_partner.label }}</label>
-        {{ form.data_partner }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.dataset.errors }}
-        <label class="form-label">{{ form.dataset.label}}</label>
-        {{ form.dataset }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.scan_report_file.errors }}
-        <label class="form-label">{{ form.scan_report_file.label }}</label>
-        {{ form.scan_report_file }}
-    </div>
-
-    <button type="submit" class="btn btn-primary">Submit</button>
-</form>
 {% endblock %}
