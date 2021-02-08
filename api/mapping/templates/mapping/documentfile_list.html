@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+
+<h2>Files</h2>
+
+{% if object_list %}
+<!---
+    https://stackoverflow.com/a/27305613/10192378
+    <form method="POST">
+      {% csrf_token %}
+      --->
+<form id="my_form">
+    <div class="form-group">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">File Name</th>
+                <th scope="col">File Size</th>
+                <th scope="col">Added on</th>
+
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for object in object_list %}
+            <tr>
+                <td><a href="{{MEDIA_URL}}{{object.document_file}}">
+                    {{object.document_file}}
+                </a>
+                   
+                </td>
+                <td>
+                    {{object.size}}
+                </td>
+                
+                <td>
+                    {{object.created_at}}
+                </td>
+                <td>
+                    
+                </td>
+                
+                
+
+            </tr>
+            
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="form-row">
+            <!---
+            <input type="submit" class="btn btn-primary"  value="Update">
+            <input type="submit" class="btn btn-secondary"  value="Run NLP">
+            <input type="submit" class="btn btn-secondary"  value="Run Usagi">
+            --->
+            <!-- <a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Document</a> -->
+
+            
+        </div>
+    </div>
+</form>
+{% endif %}
+
+<script type="text/javascript">
+    $("#test").click(function () {
+
+        var msg = "Classification System..\n";
+        $('.select-classification').each(
+            function (index) {
+                msg += index + ":" + $(this).val() + "\n";
+            }
+        );
+        alert(msg);
+    });
+
+</script>
+
+{% endblock %}

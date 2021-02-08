@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>Upload Document</h2>
+
+<form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
+    <div class="mb-3">
+        {{ form.data_partner.errors }}
+        <label class="form-label">{{ form.data_partner.label }}</label>
+        {{ form.data_partner }}
+    </div>
+    <div class="mb-3">
+        {{ form.document_type.errors }}
+        <label class="form-label">{{ form.document_type.label }}</label>
+        {{ form.document_type }}
+    </div>
+    <div class="mb-3">
+        {{ form.document_file.errors }}
+        <label class="form-label">{{ form.document_file.label}}</label>
+        {{ form.document_file }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+{% endblock %}

@@ -15,9 +15,9 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 
-from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
+from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm,DocumentForm
 from .models import Source, ScanReport,ScanReportValue, ScanReportField, \
-    ScanReportTable, OmopTable, OmopField, MappingRule
+    ScanReportTable, OmopTable, OmopField, MappingRule,Mapping,Document,DocumentFile
 from .tasks import process_scan_report_task
 
 
@@ -185,6 +185,40 @@ class ScanReportFormView(FormView):
 
         return super().form_valid(form)
 
+
+class DocumentFormView(FormView):  # When is it best to use FormView?
+
+    form_class = DocumentForm
+    template_name = 'mapping/upload_document.html'
+    success_url = reverse_lazy('document-list')
+
+    def form_valid(self, form):
+        # Create an entry in ScanReport for the uploaded Scan Report
+        document = Document.objects.create(
+            data_partner=form.cleaned_data['data_partner'],
+            document_type=form.cleaned_data['document_type'],
+
+        )
+        document.owner = self.request.user
+
+        document.save()
+        document_file=DocumentFile.objects.create(
+            document_file=form.cleaned_data['document_file'],
+            size=20,
+            
+            document=document
+            
+        )
+        
+        document_file.save()
+        return super().form_valid(form)
+
+class DocumentListView(ListView):
+    model = Document
+    
+class FileListView(ListView):
+    model = DocumentFile
+   
 
 class SignUpView(generic.CreateView):
     form_class = UserCreateForm

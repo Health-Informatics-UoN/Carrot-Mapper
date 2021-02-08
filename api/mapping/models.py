@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-
+import os
 
 
 
@@ -141,4 +141,31 @@ class ScanReportValue(BaseModel):
     def __str__(self):
         return self.value
 
+class Document(BaseModel):
 
+    data_partner = models.CharField(max_length=64)
+    owner=models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True
+        )
+    document_type=models.CharField(max_length=64)
+
+    def __str__(self):
+       
+        return f'{self.data_partner, self.owner,self.document_type}'
+        
+class DocumentFile(BaseModel):
+    document_file=models.FileField()
+    size=models.IntegerField()
+    document=models.ForeignKey(
+            Document,
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True)
+    
+    def __str__(self):
+        self.document_file.name = os.path.basename(self.document_file.name)
+
+        return f'{self.document_file,self.size,self.created_at,self.document_file.name}'

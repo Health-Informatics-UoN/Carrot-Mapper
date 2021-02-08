@@ -5,6 +5,15 @@ from django.core.exceptions import ValidationError
 
 from mapping.models import OmopTable, OmopField, ScanReportField, MappingRule
 
+PARTNERS=(
+    ("NHS Trust", "NHS Trust"), 
+    ("Panther", "Panther"), 
+    
+    )
+DOCUMENT_TYPES=(
+    ("Scan Report", "Scan Report"), 
+    ("Data Dictionary", "Data Dictionary"), 
+)
 class ScanReportForm(forms.Form):
 
     data_partner = forms.CharField(
@@ -59,3 +68,19 @@ class UserCreateForm(UserCreationForm):
             if User.objects.filter(email=self.cleaned_data['email']).exists():
                 raise ValidationError(self.fields['email'].error_messages['exists'])
             return self.cleaned_data['email']
+
+class DocumentForm(forms.Form):
+    data_partner = forms.ChoiceField(
+        label="Data Partner name",
+        choices=PARTNERS
+    )
+    document_type = forms.ChoiceField(
+        label="Document Type",
+        choices=DOCUMENT_TYPES
+    )
+    document_file = forms.FileField(
+        label="Document",
+        widget=forms.FileInput(
+            attrs={'class': 'form-control'}
+        )
+    )
