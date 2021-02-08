@@ -53,9 +53,9 @@
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
                 <td>
 
-                    <a href="{% url 'view-structural-mapping' object.id %}">View Structural Mapping</a>
-                    <br>
-                    <a href="{% url 'create-mapping-form' object.id %}">Add Structural Mapping</a>
+                    <a href="{% url 'view-structural-mapping' object.id %}"><button type="button" class="btn btn-primary">View</button></a>
+
+                    <a href="{% url 'create-mapping-form' object.id %}"><button type="button" class="btn btn-success">Add</button></a>
 
                 </td>
                 <td></td>
