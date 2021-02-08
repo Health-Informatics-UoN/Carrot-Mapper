@@ -21,6 +21,7 @@
         <th scope="col">Source Field</th>
         <th scope="col">OMOP Table</th>
         <th scope="col">OMOP Field</th>
+        <th>Delete</th>
 
     </tr>
     </thead>
@@ -30,6 +31,8 @@
         <td>{{ object.scan_report_field }}</td>
         <td>{{ object.omop_field.table }}</td>
         <td>{{ object.omop_field.field }}</td>
+        <td><a href="{% url 'structural-mapping-delete' object.id %}">Delete Mapping</a>
+</td>
 
     </tr>
     {% endfor %}

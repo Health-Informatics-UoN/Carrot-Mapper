@@ -13,7 +13,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView, UpdateView
+from django.views.generic.edit import FormView, UpdateView, DeleteView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
 from .models import Source, ScanReport,ScanReportValue, ScanReportField, \
@@ -141,6 +141,16 @@ class AddMappingRuleFormView(FormView):
 
         mapping.save()
         return super().form_valid(form)
+
+
+class StructuralMappingDeleteView(DeleteView):
+    # specify the model you want to use
+    model = MappingRule
+
+    # can specify success url
+    # url to redirect after sucessfully
+    # deleting object
+    success_url = reverse_lazy('fields')
 
 class StructuralMappingListView(ListView):
     model = MappingRule
