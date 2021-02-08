@@ -142,12 +142,15 @@ class AddMappingRuleFormView(FormView):
 
 
 class StructuralMappingDeleteView(DeleteView):
-    # specify the model you want to use
     model = MappingRule
 
-    # can specify success url
-    # url to redirect after sucessfully
-    # deleting object
+    def get_success_url(self):
+        scan_report_field = ScanReportField.objects.get(
+            pk=self.kwargs.get('pk')
+        )
+
+        return "{}?search={}".format(reverse('fields'), scan_report_field.scan_report_table.id)
+
     success_url = reverse_lazy('fields')
 
 class StructuralMappingListView(ListView):

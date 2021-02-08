@@ -12,6 +12,14 @@
 
 <h2>Mapping Rules</h2>
 
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan Reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+    </ol>
+</nav>
 
 {% if object_list %}
 
