@@ -99,10 +99,14 @@ def process_scan_report(scan_report_id):
             # Checks for blank b/c White Rabbit seperates tables with blank row
             if row and row[0] != '':
 
+                # This links ScanReportTable to ScanReport
+                # [:31] is because excel is a pile of s***
+                # - sheet names are truncated to 31 characters 
+                name = row[0][:31]
+                
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
                     scan_report=scan_report,
-                    # This links ScanReportTable to ScanReport
-                    name=row[0],
+                    name=name,
                 )
 
                 # Add each field in Field Overview to the model ScanReportField
@@ -119,15 +123,22 @@ def process_scan_report(scan_report_id):
                     fraction_unique=row[9]
                 )
 
+
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
-
+        
         if idxsheet < 2:
             continue
 
+        #skip these sheets at the end of the scan report
+        if sheet['name'] == '_':
+            continue
+
+        
         # GET table name from ScanReportTable that was saved in the previous
         # step when scanning the Field Overview sheet
+
         scan_report_table = ScanReportTable.objects.get(
             scan_report=scan_report,
             name=sheet['name']

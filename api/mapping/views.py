@@ -103,7 +103,7 @@ class ScanReportFieldUpdateView(UpdateView):
 class ScanReportListView(ListView):
     model = ScanReport
 
-class ScanReportValueView(ListView):
+class ScanReportValueListView(ListView):
     model = ScanReportValue
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
@@ -112,6 +112,34 @@ class ScanReportValueView(ListView):
              qs = qs.filter(scan_report_field=search_term)
          return qs
 
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        if len(self.get_queryset()) > 0:
+            #scan_report = self.get_queryset()[0].scan_report_table.scan_report
+            #scan_report_table = self.get_queryset()[0].scan_report_table
+            scan_report = self.get_queryset()[0].scan_report_field.scan_report_table.scan_report
+            scan_report_table = self.get_queryset()[0].scan_report_field.scan_report_table
+            scan_report_field = self.get_queryset()[0].scan_report_field
+            scan_report_value = self.get_queryset()[0]
+        else:
+            scan_report = None
+            scan_report_table = None
+            scan_report_field = None
+            scan_report_value = None
+            
+        context.update({
+            'scan_report': scan_report,
+            'scan_report_table': scan_report_table,
+            'scan_report_field': scan_report_field,
+            'scan_report_value': scan_report_value,
+        })
+        
+        return context
+         
+         
 
 class AddMappingRuleFormView(FormView):
 
@@ -163,7 +191,6 @@ class StructuralMappingListView(ListView):
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
-
 
 class ScanReportFormView(FormView):
 
