@@ -36,7 +36,7 @@
         <td>{{ object.scan_report_field }}</td>
         <td>{{ object.omop_field.table }}</td>
         <td>{{ object.omop_field.field }}</td>
-        <td><a href="{% url 'structural-mapping-delete' object.id %}">Delete Mapping</a>
+        <td><a href="{% url 'structural-mapping-delete' object.id %}"><button type="button" class="btn btn-danger">Delete Structural Mapping</button></a>
 </td>
 
     </tr>
