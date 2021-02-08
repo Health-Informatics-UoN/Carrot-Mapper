@@ -3,8 +3,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
+from mapping.models import OmopTable, OmopField, ScanReportField, MappingRule
 
 class ScanReportForm(forms.Form):
+
     data_partner = forms.CharField(
         label="Data Partner name",
         widget=forms.TextInput(
@@ -23,6 +25,18 @@ class ScanReportForm(forms.Form):
             attrs={'class': 'form-control'}
         )
     )
+
+class AddMappingRuleForm(forms.Form):
+
+    omop_table = forms.ModelChoiceField(
+        label='OMOP Table',
+        queryset=OmopTable.objects.all()
+    )
+    omop_field = forms.ModelChoiceField(
+        label='OMOP Field',
+        queryset=OmopField.objects.all()
+    )
+
 
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(required=True,

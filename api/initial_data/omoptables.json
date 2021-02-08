@@ -1,0 +1,353 @@
+[
+  {
+    "model": "mapping.omoptable",
+    "pk": 1634,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.433Z",
+      "updated_at": "2021-02-08T12:56:23.433Z",
+      "table": "attribute_definition"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1635,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.450Z",
+      "updated_at": "2021-02-08T12:56:23.450Z",
+      "table": "care_site"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1636,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.467Z",
+      "updated_at": "2021-02-08T12:56:23.467Z",
+      "table": "cdm_source"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1637,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.486Z",
+      "updated_at": "2021-02-08T12:56:23.486Z",
+      "table": "cohort"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1638,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.503Z",
+      "updated_at": "2021-02-08T12:56:23.503Z",
+      "table": "cohort_attribute"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1639,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.520Z",
+      "updated_at": "2021-02-08T12:56:23.520Z",
+      "table": "cohort_definition"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1640,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.537Z",
+      "updated_at": "2021-02-08T12:56:23.537Z",
+      "table": "concept"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1641,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.555Z",
+      "updated_at": "2021-02-08T12:56:23.555Z",
+      "table": "concept_ancestor"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1642,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.573Z",
+      "updated_at": "2021-02-08T12:56:23.573Z",
+      "table": "concept_class"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1643,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.589Z",
+      "updated_at": "2021-02-08T12:56:23.589Z",
+      "table": "concept_relationship"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1644,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.607Z",
+      "updated_at": "2021-02-08T12:56:23.607Z",
+      "table": "concept_synonym"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1645,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.625Z",
+      "updated_at": "2021-02-08T12:56:23.625Z",
+      "table": "condition_era"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1646,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.643Z",
+      "updated_at": "2021-02-08T12:56:23.643Z",
+      "table": "condition_occurrence"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1647,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.660Z",
+      "updated_at": "2021-02-08T12:56:23.660Z",
+      "table": "cost"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1648,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.698Z",
+      "updated_at": "2021-02-08T12:56:23.698Z",
+      "table": "death"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1649,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.714Z",
+      "updated_at": "2021-02-08T12:56:23.714Z",
+      "table": "device_exposure"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1650,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.732Z",
+      "updated_at": "2021-02-08T12:56:23.732Z",
+      "table": "domain"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1651,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.751Z",
+      "updated_at": "2021-02-08T12:56:23.751Z",
+      "table": "dose_era"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1652,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.768Z",
+      "updated_at": "2021-02-08T12:56:23.768Z",
+      "table": "drug_era"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1653,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.786Z",
+      "updated_at": "2021-02-08T12:56:23.786Z",
+      "table": "drug_exposure"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1654,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.808Z",
+      "updated_at": "2021-02-08T12:56:23.808Z",
+      "table": "drug_strength"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1655,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.825Z",
+      "updated_at": "2021-02-08T12:56:23.825Z",
+      "table": "fact_relationship"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1656,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.842Z",
+      "updated_at": "2021-02-08T12:56:23.842Z",
+      "table": "location"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1657,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.862Z",
+      "updated_at": "2021-02-08T12:56:23.862Z",
+      "table": "measurement"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1658,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.883Z",
+      "updated_at": "2021-02-08T12:56:23.883Z",
+      "table": "metadata"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1659,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.903Z",
+      "updated_at": "2021-02-08T12:56:23.903Z",
+      "table": "note"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1660,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.924Z",
+      "updated_at": "2021-02-08T12:56:23.924Z",
+      "table": "note_nlp"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1661,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.949Z",
+      "updated_at": "2021-02-08T12:56:23.949Z",
+      "table": "observation"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1662,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.976Z",
+      "updated_at": "2021-02-08T12:56:23.976Z",
+      "table": "observation_period"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1663,
+    "fields": {
+      "created_at": "2021-02-08T12:56:23.998Z",
+      "updated_at": "2021-02-08T12:56:23.998Z",
+      "table": "payer_plan_period"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1664,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.016Z",
+      "updated_at": "2021-02-08T12:56:24.016Z",
+      "table": "person"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1665,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.035Z",
+      "updated_at": "2021-02-08T12:56:24.035Z",
+      "table": "procedure_occurrence"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1666,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.055Z",
+      "updated_at": "2021-02-08T12:56:24.055Z",
+      "table": "provider"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1667,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.074Z",
+      "updated_at": "2021-02-08T12:56:24.074Z",
+      "table": "relationship"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1668,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.093Z",
+      "updated_at": "2021-02-08T12:56:24.093Z",
+      "table": "source_to_concept_map"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1669,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.115Z",
+      "updated_at": "2021-02-08T12:56:24.115Z",
+      "table": "specimen"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1670,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.136Z",
+      "updated_at": "2021-02-08T12:56:24.136Z",
+      "table": "visit_detail"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1671,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.156Z",
+      "updated_at": "2021-02-08T12:56:24.156Z",
+      "table": "visit_occurrence"
+    }
+  },
+  {
+    "model": "mapping.omoptable",
+    "pk": 1672,
+    "fields": {
+      "created_at": "2021-02-08T12:56:24.176Z",
+      "updated_at": "2021-02-08T12:56:24.176Z",
+      "table": "vocabulary"
+    }
+  }
+]
