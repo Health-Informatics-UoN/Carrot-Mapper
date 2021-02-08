@@ -161,6 +161,8 @@ class AddMappingRuleFormView(FormView):
         mapping.save()
         return super().form_valid(form)
 
+
+
     def get_success_url(self):
         scan_report_field = ScanReportField.objects.get(
             pk=self.kwargs.get('pk')
@@ -191,6 +193,28 @@ class StructuralMappingListView(ListView):
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        if len(self.get_queryset()) > 0:
+            scan_report = self.get_queryset()[0].scan_report_field.scan_report_table.scan_report
+            scan_report_table = self.get_queryset()[0].scan_report_field.scan_report_table
+            scan_report_field = self.get_queryset()[0]
+        else:
+            scan_report = None
+            scan_report_table = None
+            scan_report_field = None
+
+        context.update({
+            'scan_report': scan_report,
+            'scan_report_table': scan_report_table,
+            'scan_report_field': scan_report_field,
+        })
+
+        return context
+
 
 class ScanReportFormView(FormView):
 

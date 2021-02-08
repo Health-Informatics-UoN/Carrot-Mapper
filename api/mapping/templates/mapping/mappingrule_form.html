@@ -3,11 +3,26 @@
 {% block body %}
 
 <h2>Add Structural Mapping</h2>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
+            {{ scan_report_table.name }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
+            {{ scan_report_field.name }}</a></li>
+
+    </ol>
+</nav>
+
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Update">
-</form>
 
+    <input type="submit" class="btn btn-primary" value="Add Structural Mapping">
+</form>
 
 {% endblock %}

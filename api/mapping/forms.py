@@ -38,6 +38,8 @@ class AddMappingRuleForm(forms.Form):
     )
 
 
+
+
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(required=True,
                             label='Email',
