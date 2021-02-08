@@ -2,16 +2,24 @@
 
 {% block body %}
 
-<h2>Edit Field</h2>
+<h2>Update Field</h2>
 
-{{ object.scan_report_table.scan_report.data_partner }}
-{{ object.scan_report_table.scan_report.dataset }}
-{{ object.scan_report_table.name }}
-{{ object.name }}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ object.scan_report.id }}">
+            {{ object.scan_report_table.scan_report.data_partner }} - {{ object.scan_report_table.scan_report.dataset }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ object.scan_report_table.id }}">
+            {{ object.scan_report_table.name }}</a></li>
+        <li class="breadcrumb-item">{{ object.name }}</li>
+    </ol>
+</nav>
 
 <form method="post">{% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" value="Update">
+    <input type="submit"   class="btn btn-danger" value="Update '{{object.name}}'">
 </form>
 
 {% endblock %}
