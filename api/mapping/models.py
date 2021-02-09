@@ -136,7 +136,7 @@ class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
-    conceptID = models.CharField(max_length=32)
+    conceptID = models.IntegerField()
     
     def __str__(self):
         return self.value
