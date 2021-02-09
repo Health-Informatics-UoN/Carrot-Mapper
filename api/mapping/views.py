@@ -104,18 +104,6 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
-class ScanReportValueUpdateView(UpdateView):
-    model = ScanReportValue
-    fields = [
-        'value',
-        'frequency',
-        'conceptID',
-    ]
-
-    def get_success_url(self):
-        return "{}?search={}".format(reverse('values'), self.object.scan_report_field.id)
-
-
     
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
