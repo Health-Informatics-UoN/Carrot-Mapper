@@ -3,7 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from mapping.models import OmopTable, OmopField, ScanReportField, MappingRule
+from mapping.models import OmopTable, OmopField,DocumentType,DataPartners
+
 
 class ScanReportForm(forms.Form):
 
@@ -74,3 +75,26 @@ class UserCreateForm(UserCreationForm):
             if User.objects.filter(email=self.cleaned_data['email']).exists():
                 raise ValidationError(self.fields['email'].error_messages['exists'])
             return self.cleaned_data['email']
+
+class DocumentForm(forms.Form):
+    data_partner = forms.ModelChoiceField(
+        label="Data Partner name",
+        queryset=DataPartners.objects.all()
+
+    )
+    document_type = forms.ModelChoiceField(
+        label="Document Type",
+        queryset=DocumentType.objects.all()
+    )
+    document_file = forms.FileField(
+        label="Document",
+        widget=forms.FileInput(
+            attrs={'class': 'form-control'}
+        )
+    )
+    description = forms.CharField(
+        label="Document Description",
+        widget=forms.TextInput(
+            attrs={'class': 'form-control'}
+        )
+    )
