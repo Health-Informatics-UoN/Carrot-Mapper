@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.urls import path
-
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 from .views import StructuralMappingDeleteView
 
@@ -16,5 +17,12 @@ urlpatterns = [
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    path('documents/create/', login_required(views.DocumentFormView.as_view()), name='document-form'),
+    path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),
+    path('file/', login_required(views.FileListView.as_view()), name='file-list'),
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
 ]
+if settings.DEBUG: # new
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
