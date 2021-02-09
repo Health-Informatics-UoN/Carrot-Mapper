@@ -73,7 +73,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True
     )
-    
+
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
 
