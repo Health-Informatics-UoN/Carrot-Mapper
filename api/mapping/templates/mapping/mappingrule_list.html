@@ -2,15 +2,20 @@
 
 {% block body %}
 
+<h2>Mapping Rules for {{ scan_report_field.scan_report_field.name }}</h2>
+
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
+            {{ scan_report_table.name }}</a></li>
+        <li class="breadcrumb-item">{{ scan_report_field.scan_report_field.name }}</li>
     </ol>
 </nav>
-
-<h2>Mapping Rules</h2>
 
 
 {% if object_list %}
@@ -21,7 +26,7 @@
         <th scope="col">Source Field</th>
         <th scope="col">OMOP Table</th>
         <th scope="col">OMOP Field</th>
-        <th>Delete</th>
+        <th></th>
 
     </tr>
     </thead>
@@ -31,7 +36,7 @@
         <td>{{ object.scan_report_field }}</td>
         <td>{{ object.omop_field.table }}</td>
         <td>{{ object.omop_field.field }}</td>
-        <td><a href="{% url 'structural-mapping-delete' object.id %}">Delete Mapping</a>
+        <td><a href="{% url 'structural-mapping-delete' object.id %}"><button type="button" class="btn btn-danger">Delete Structural Mapping</button></a>
 </td>
 
     </tr>

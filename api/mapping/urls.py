@@ -21,6 +21,7 @@ urlpatterns = [
     path('files/', login_required(views.DocumentListView.as_view()), name='document-list'),
     path('file/', login_required(views.FileListView.as_view()), name='file-list'),
 
+    path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
 ]
 if settings.DEBUG: # new
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
