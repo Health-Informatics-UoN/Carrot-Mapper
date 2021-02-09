@@ -26,28 +26,40 @@
   {% csrf_token %}
   {{ formset.management_form }}
   
-  <div class="form-group">
-    <table class="table">
+  <div><!--- class="form-group">--->
+    <table class="table" style="float:left;">
       <thead>
 	<tr>
           <th scope="col">Value</th>
           <th scope="col">Frequency</th>
-	  <th scope="col"> ConceptID </th>
-	  <!---
-	  <th></th>
-	  <th scope="col"> Delete? </th>
-	  --->
+	  <th scope="col">ConceptID</th>
 	</tr>
       </thead>
-      
       <tbody>
-	{% for form in formset %}
+	{% for object in object_list %}
 	<tr>
-	  {% for field in form %}
 	  <td>
-	    {{ field }}
+	    {{ object.value }}
 	  </td>
-	  {% endfor %}
+	  <td>
+	    {{ object.frequency }}
+	  </td>
+	  <td>
+	    {## set i to be the index of the value we're on ##} 
+	    {% with i=forloop.counter %}
+	    {## loop over the formset (editable fields) ##}
+	    {% for form in formset  %}
+	      {% if forloop.counter == i%}
+	        {% for field in form %}
+	         {% if forloop.first %}
+	          {{field}}
+	         {% endif %}
+	        {% endfor %} 
+	      {% endif %}
+	    {% endfor %}
+	    {% endwith %}
+	  </td>
+
 	</tr>
 	{% endfor %}
       </tbody>

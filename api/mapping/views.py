@@ -15,8 +15,7 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 
-from extra_views import FormSetView, ModelFormSetView
-from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSetFactory
+from extra_views import ModelFormSetView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
 from .models import Source, Mapping, ScanReport,ScanReportValue, ScanReportField, \
@@ -142,6 +141,7 @@ class ScanReportListView(ListView):
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ['value','frequency','conceptID']
+    fields = ['conceptID']
     factory_kwargs = { 'can_delete': False, 'extra': False}
     
     def get_queryset(self):
