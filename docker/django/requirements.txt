@@ -5,3 +5,4 @@ pandas
 openpyxl
 xlsx2csv
 django-select2
+django-extra-views

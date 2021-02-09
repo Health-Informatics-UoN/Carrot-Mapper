@@ -15,6 +15,9 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 
+from extra_views import FormSetView, ModelFormSetView
+from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSetFactory
+
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
 from .models import Source, Mapping, ScanReport,ScanReportValue, ScanReportField, \
     ScanReportTable, OmopTable, OmopField, MappingRule
@@ -136,8 +139,11 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 class ScanReportListView(ListView):
     model = ScanReport
 
-class ScanReportValueListView(ListView):
+class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
+    fields = ['value','frequency','conceptID']
+    factory_kwargs = { 'can_delete': False, 'extra': False}
+    
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.request.GET.get('search', None)

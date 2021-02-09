@@ -17,78 +17,44 @@
     </ol>
 </nav>
 
+
+
 <h2>Values</h2>
 
-{% if object_list %}
-<!---
-    https://stackoverflow.com/a/27305613/10192378
-    <form method="POST">
-      {% csrf_token %}
-      --->
-<form id="my_form">
+
+<form class="" method="post">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  
   <div class="form-group">
     <table class="table">
       <thead>
-        <tr>
+	<tr>
           <th scope="col">Value</th>
           <th scope="col">Frequency</th>
-	  <th>Edit</th>
 	  <th scope="col"> ConceptID </th>
-          <th></th>
-        </tr>
+	  <!---
+	  <th></th>
+	  <th scope="col"> Delete? </th>
+	  --->
+	</tr>
       </thead>
+      
       <tbody>
-        {% for object in object_list %}
-        <tr>
-          <td>
-            {{ object.value}}</td>
-	  
-	  <td>{{ object.frequency }}</td>
-	  <td><a href="{% url 'scan-report-value-update' object.id %}">Edit Value</a></td>
+	{% for form in formset %}
+	<tr>
+	  {% for field in form %}
 	  <td>
-
-	    <!---
-	    <form action='#' method="post">
-	      {% csrf_token %}
-	      <input id="conceptid" type="text" name="conceptid" value="{{ object.conceptID }}">
-	    </form>
-	    --->
-	    
+	    {{ field }}
 	  </td>
-	  
-        </tr>
-        {% endfor %}
+	  {% endfor %}
+	</tr>
+	{% endfor %}
       </tbody>
     </table>
-    <div class="form-row">
-      <!---
-          <input type="submit" class="btn btn-primary"  value="Update">
-          <input type="submit" class="btn btn-secondary"  value="Run NLP">
-          <input type="submit" class="btn btn-secondary"  value="Run Usagi">
-          --->
-          <input type="submit" class="btn btn-primary" name="update"
-                 value="Update">
-          <input type="submit" class="btn btn-secondary" name="run_nlp"
-                 value="Run NLP">
-          <input type="submit" class="btn btn-secondary" name="run_usagi"
-                 value="Run Usagi">
-    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>
-{% endif %}
-
-<script type="text/javascript">
-    $("#test").click(function () {
-
-        var msg = "Classification System..\n";
-        $('.select-classification').each(
-            function (index) {
-                msg += index + ":" + $(this).val() + "\n";
-            }
-        );
-        alert(msg);
-    });
-
-</script>
+    
 
 {% endblock %}
