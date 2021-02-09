@@ -241,10 +241,10 @@ class DocumentFormView(FormView):  # When is it best to use FormView?
     success_url = reverse_lazy('document-list')
 
     def form_valid(self, form):
-        # Create an entry in ScanReport for the uploaded Scan Report
         document = Document.objects.create(
             data_partner=form.cleaned_data['data_partner'],
             document_type=form.cleaned_data['document_type'],
+            description=form.cleaned_data['description'],
 
         )
         document.owner = self.request.user
@@ -263,10 +263,25 @@ class DocumentFormView(FormView):  # When is it best to use FormView?
 
 class DocumentListView(ListView):
     model = Document
+
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('data_partner')
+         return qs
+   
     
 class FileListView(ListView):
     model = DocumentFile
+
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('document_id')
+         search_term = self.request.GET.get('search', None)
+         if search_term is not None:
+             qs = qs.filter(document=search_term)
+         return qs
    
+
+
+
 
 class SignUpView(generic.CreateView):
     form_class = UserCreateForm

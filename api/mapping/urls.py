@@ -18,9 +18,8 @@ urlpatterns = [
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', login_required(views.DocumentFormView.as_view()), name='document-form'),
-    path('files/', login_required(views.DocumentListView.as_view()), name='document-list'),
+    path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),
     path('file/', login_required(views.FileListView.as_view()), name='file-list'),
-
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
 ]
 if settings.DEBUG: # new

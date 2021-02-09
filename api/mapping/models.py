@@ -43,7 +43,6 @@ class Mapping(BaseModel):
         return f'{self.table, self.field}'
 
 
-
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -60,6 +59,13 @@ class DataPartners(BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class DocumentType(BaseModel):
+    type = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.type
 
 
 class ScanReport(BaseModel):
@@ -141,19 +147,28 @@ class ScanReportValue(BaseModel):
         return self.value
 
 class Document(BaseModel):
-
-    data_partner = models.CharField(max_length=64)
+    data_partner = models.ForeignKey(
+            DataPartners, 
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True)
     owner=models.ForeignKey(
             settings.AUTH_USER_MODEL,
             on_delete=models.CASCADE,
             blank=True,
             null=True
         )
-    document_type=models.CharField(max_length=64)
+    document_type=models.ForeignKey(
+            DocumentType, 
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True   
+    )
+    description=models.CharField(max_length=256)
 
     def __str__(self):
        
-        return f'{self.data_partner, self.owner,self.document_type}'
+        return f'{self.data_partner, self.owner,self.document_type,self.description}'
         
 class DocumentFile(BaseModel):
     document_file=models.FileField()

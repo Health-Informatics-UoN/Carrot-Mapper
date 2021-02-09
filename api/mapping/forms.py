@@ -3,17 +3,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 
-from mapping.models import OmopTable, OmopField, ScanReportField, MappingRule
+from mapping.models import OmopTable, OmopField,DocumentType,DataPartners
 
-PARTNERS=(
-    ("NHS Trust", "NHS Trust"), 
-    ("Panther", "Panther"), 
-    
-    )
-DOCUMENT_TYPES=(
-    ("Scan Report", "Scan Report"), 
-    ("Data Dictionary", "Data Dictionary"), 
-)
+
 class ScanReportForm(forms.Form):
 
     data_partner = forms.CharField(
@@ -85,17 +77,24 @@ class UserCreateForm(UserCreationForm):
             return self.cleaned_data['email']
 
 class DocumentForm(forms.Form):
-    data_partner = forms.ChoiceField(
+    data_partner = forms.ModelChoiceField(
         label="Data Partner name",
-        choices=PARTNERS
+        queryset=DataPartners.objects.all()
+
     )
-    document_type = forms.ChoiceField(
+    document_type = forms.ModelChoiceField(
         label="Document Type",
-        choices=DOCUMENT_TYPES
+        queryset=DocumentType.objects.all()
     )
     document_file = forms.FileField(
         label="Document",
         widget=forms.FileInput(
+            attrs={'class': 'form-control'}
+        )
+    )
+    description = forms.CharField(
+        label="Document Description",
+        widget=forms.TextInput(
             attrs={'class': 'form-control'}
         )
     )

@@ -3,7 +3,7 @@
 {% block body %}
 
 
-<h2>Files</h2>
+<h2>Documents</h2>
 
 {% if object_list %}
 <!---
@@ -39,7 +39,7 @@
                 </td>
                 
                 <td>
-                    <a href="{% url 'file-list' %}">file</a>
+                    <a href="{% url 'file-list' %}?search={{ object.id}}">file</a>
                 </td>
                 
                 
@@ -55,14 +55,14 @@
             <input type="submit" class="btn btn-secondary"  value="Run NLP">
             <input type="submit" class="btn btn-secondary"  value="Run Usagi">
             --->
-            <a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Document</a>
+            
 
             
         </div>
     </div>
 </form>
 {% endif %}
-
+<a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Documents</a>
 <script type="text/javascript">
     $("#test").click(function () {
 
