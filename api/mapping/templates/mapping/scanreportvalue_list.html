@@ -21,9 +21,8 @@
 
 <h2>Values</h2>
 
-
 <form class="" method="post">
-  {% csrf_token %}
+  {% csrf_token %} 
   {{ formset.management_form }}
   
   <div><!--- class="form-group">--->
@@ -51,9 +50,7 @@
 	    {% for form in formset  %}
 	      {% if forloop.counter == i%}
 	        {% for field in form %}
-	         {% if forloop.first %}
 	          {{field}}
-	         {% endif %}
 	        {% endfor %} 
 	      {% endif %}
 	    {% endfor %}
