@@ -15,9 +15,13 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 
+
+from extra_views import ModelFormSetView
+
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm,DocumentForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
-    ScanReportTable, MappingRule, OmopTable, OmopField,DocumentFile,Document
+    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
+
 from .tasks import process_scan_report_task
 
 
@@ -35,7 +39,6 @@ class ScanReportTableListView(ListView):
         search_term = self.request.GET.get('search', None)
         if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
-
 
         return qs
 
@@ -100,11 +103,27 @@ class ScanReportFieldUpdateView(UpdateView):
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
+
+    
+class ScanReportStructuralMappingUpdateView(UpdateView):
+    model = ScanReportField
+    fields = [
+        'mapping'
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
+
+
 class ScanReportListView(ListView):
     model = ScanReport
 
-class ScanReportValueListView(ListView):
+class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
+    fields = ['value','frequency','conceptID']
+    fields = ['conceptID']
+    factory_kwargs = { 'can_delete': False, 'extra': False}
+    
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.request.GET.get('search', None)
@@ -185,7 +204,6 @@ class StructuralMappingListView(ListView):
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.kwargs.get('pk')
-         print('SEARCH TERM >>>>> ', search_term)
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
@@ -210,6 +228,19 @@ class StructuralMappingListView(ListView):
         })
 
         return context
+
+
+class StructuralMappingTableListView(ListView):
+    model = MappingRule
+    template_name = "mapping/mappingrulesscanreport_list.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('id')
+        search_term = self.kwargs.get('pk')
+        if search_term is not None:
+            qs = qs.filter(scan_report_field__scan_report_table__scan_report__id=search_term)
+            return qs
+
 
 
 class ScanReportFormView(FormView):

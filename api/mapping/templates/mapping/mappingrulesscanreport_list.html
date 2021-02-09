@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<!--Structural mapping rules at the scan report level-->
+<h2>Structural Mapping Rules</h2>
+
+
+{% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Data Partner</th>
+        <th scope="col">Dataset</th>
+        <th scope="col">Source Table</th>
+        <th scope="col">Source Field</th>
+        <th scope="col">Destination Table</th>
+        <th scope="col">Destination Field</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+    <tr>
+        <td>{{ object.scan_report_field.scan_report_table.scan_report.data_partner }}</td>
+        <td>{{ object.scan_report_field.scan_report_table.scan_report.dataset }}</td>
+        <td>{{ object.scan_report_field.scan_report_table }}</td>
+        <td>{{ object.scan_report_field }}</td>
+        <td>{{ object.omop_field.table }}</td>
+        <td>{{ object.omop_field.field }}</td>
+</td>
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>There are currently no structural mappings for this scan report.</p>
+{% endif %}
+
+{% endblock %}
