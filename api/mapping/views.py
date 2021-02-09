@@ -15,9 +15,13 @@ from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 
+from extra_views import ModelFormSetView
+
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
+
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField
+
 from .tasks import process_scan_report_task
 
 
@@ -99,11 +103,39 @@ class ScanReportFieldUpdateView(UpdateView):
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
+
+class ScanReportValueUpdateView(UpdateView):
+    model = ScanReportValue
+    fields = [
+        'value',
+        'frequency',
+        'conceptID',
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('values'), self.object.scan_report_field.id)
+
+
+    
+class ScanReportStructuralMappingUpdateView(UpdateView):
+    model = ScanReportField
+    fields = [
+        'mapping'
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
+
+
 class ScanReportListView(ListView):
     model = ScanReport
 
-class ScanReportValueListView(ListView):
+class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
+    fields = ['value','frequency','conceptID']
+    fields = ['conceptID']
+    factory_kwargs = { 'can_delete': False, 'extra': False}
+    
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.request.GET.get('search', None)
