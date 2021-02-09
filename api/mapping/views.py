@@ -13,11 +13,11 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
-    ScanReportTable, MappingRule
+    ScanReportTable, MappingRule, OmopTable, OmopField
 from .tasks import process_scan_report_task
 
 
@@ -129,23 +129,20 @@ class ScanReportValueListView(ListView):
             scan_report_table = None
             scan_report_field = None
             scan_report_value = None
-            
+
         context.update({
             'scan_report': scan_report,
             'scan_report_table': scan_report_table,
             'scan_report_field': scan_report_field,
             'scan_report_value': scan_report_value,
         })
-        
+
         return context
-         
-         
+
 
 class AddMappingRuleFormView(FormView):
-
     form_class = AddMappingRuleForm
     template_name = 'mapping/mappingrule_form.html'
-    success_url = reverse_lazy('fields')
 
     def form_valid(self, form):
 
@@ -159,9 +156,8 @@ class AddMappingRuleFormView(FormView):
         )
 
         mapping.save()
+
         return super().form_valid(form)
-
-
 
     def get_success_url(self):
         scan_report_field = ScanReportField.objects.get(
@@ -274,3 +270,9 @@ def password_reset_request(request):
     return render(request=request,
                   template_name="/registration/password_reset.html",
                   context={"password_reset_form": password_reset_form})
+
+
+def load_omop_fields(request):
+    omop_table_id = request.GET.get('omop_table')
+    omop_fields = OmopField.objects.filter(table_id=omop_table_id).order_by('field')
+    return render(request, 'mapping/omop_table_dropdown_list_options.html', {'omop_fields': omop_fields})

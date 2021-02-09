@@ -26,18 +26,31 @@ class ScanReportForm(forms.Form):
         )
     )
 
+
 class AddMappingRuleForm(forms.Form):
 
     omop_table = forms.ModelChoiceField(
         label='OMOP Table',
         queryset=OmopTable.objects.all()
     )
+
     omop_field = forms.ModelChoiceField(
         label='OMOP Field',
         queryset=OmopField.objects.all()
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['omop_field'].queryset = OmopField.objects.none()
 
+        if 'omop_table' in self.data:
+            try:
+                omop_table_id = int(self.data.get('omop_table'))
+                self.fields['omop_field'].queryset = OmopField.objects.filter(table_id=omop_table_id).order_by('field')
+            except (ValueError, TypeError):
+                pass  # invalid input from the client; ignore and fallback to empty City queryset
+        # elif self.instance.pk:
+        #     self.fields['omop_field'].queryset = self.instance.omop_table.omop_field_set.order_by('field')
 
 
 class UserCreateForm(UserCreationForm):

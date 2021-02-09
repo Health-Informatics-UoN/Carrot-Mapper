@@ -18,11 +18,29 @@
     </ol>
 </nav>
 
-<form method="post">
+<form method="post" id="mappingRuleForm" data-omop-fields-url="{% url 'ajax_load_omop_fields' %}">
     {% csrf_token %}
     {{ form.as_p }}
 
     <input type="submit" class="btn btn-primary" value="Add Structural Mapping">
 </form>
+
+  <script>
+    $("#id_omop_table").change(function () {
+      var url = $("#mappingRuleForm").attr("data-omop-fields-url");  // get the url of the `load_cities` view
+      var omop_table_id = $(this).val();  // get the selected country ID from the HTML input
+
+      $.ajax({                       // initialize an AJAX request
+        url: url,                    // set the url of the request (= localhost:8000/hr/ajax/load-cities/)
+        data: {
+          'omop_table': omop_table_id       // add the country id to the GET parameters
+        },
+        success: function (data) {   // `data` is the return of the `load_cities` view function
+          $("#id_omop_field").html(data);  // replace the contents of the city input with the data that came from the server
+        }
+      });
+
+    });
+  </script>
 
 {% endblock %}

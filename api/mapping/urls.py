@@ -16,4 +16,5 @@ urlpatterns = [
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
 ]
