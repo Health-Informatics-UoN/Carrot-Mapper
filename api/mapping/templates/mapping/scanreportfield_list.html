@@ -44,10 +44,14 @@
                     {{ object.name }}</a></td>
                 <td>
                     {% if object.is_patient_id %}
-                    <i class="bi bi-check"></i> Yes
+                    <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>
-                <td>{{ object.is_date_event }}</td>
+                <td>
+                    {% if object.is_date_event %}
+                    <i class="bi bi-check">Yes</i>
+                    {% endif %}
+                </td>
                 <td>{{ object.is_ignore }}</td>
                 <td>{{ object.classification_system.name }}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
