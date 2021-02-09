@@ -16,7 +16,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
-from .models import Source, ScanReport,ScanReportValue, ScanReportField, \
+from .models import Source, Mapping, ScanReport,ScanReportValue, ScanReportField, \
     ScanReportTable, OmopTable, OmopField, MappingRule
 from .tasks import process_scan_report_task
 
