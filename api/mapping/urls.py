@@ -14,6 +14,7 @@ urlpatterns = [
     path('fields/<int:pk>/mapping_rules/', views.StructuralMappingListView.as_view(), name='view-structural-mapping'),
     path('fields/<int:pk>/mapping_rules/delete', StructuralMappingDeleteView.as_view(), name='structural-mapping-delete'),
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
+    path('scanreports/<int:pk>/mapping_rules', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
