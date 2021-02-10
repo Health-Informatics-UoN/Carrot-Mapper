@@ -31,7 +31,7 @@ jobs:
           echo HYDROML_DB_PASSWORD=${POSTGRES_PASSWORD}
           echo PROJECT_NAME=api
           cat .env
-      #- name: Check .env file
-      #  run: ls . && cat .env
+      - name: Check .env file
+        run: ls . && cat .env
       #- name: Build the docker-compose stack
       #  run: docker-compose up --build 
