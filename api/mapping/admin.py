@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import DocumentType, Source,DataPartners, ScanReport, \
     ScanReportTable, \
     ScanReportField, ScanReportValue,\
-    ClassificationSystem, OmopTable, OmopField, MappingRule,Document,DocumentFile
+    ClassificationSystem, OmopTable, OmopField, MappingRule, Document, DocumentFile, DataDictionary
 
 admin.site.register(DataPartners)
 admin.site.register(DocumentType)
@@ -18,3 +18,4 @@ admin.site.register(OmopField)
 admin.site.register(MappingRule)
 admin.site.register(Document)
 admin.site.register(DocumentFile)
+admin.site.register(DataDictionary)

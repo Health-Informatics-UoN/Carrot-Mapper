@@ -184,3 +184,13 @@ class DocumentFile(BaseModel):
         self.document_file.name = os.path.basename(self.document_file.name)
 
         return f'{self.document_file,self.size,self.created_at,self.document_file.name}'
+
+class DataDictionary(BaseModel):
+    table = models.CharField(max_length=128)
+    field = models.CharField(max_length=128)
+    field_description = models.CharField(max_length=128)
+    value_code = models.CharField(max_length=128)
+    value_description = models.CharField(max_length=128)
+
+    def __str__(self):
+        return f'{self.table, self.field, self.value_code}'
