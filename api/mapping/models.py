@@ -240,9 +240,9 @@ class DocumentFile(BaseModel):
 class DataDictionary(BaseModel):
     table = models.CharField(max_length=128)
     field = models.CharField(max_length=128)
-    field_description = models.CharField(max_length=256)
+    field_description = models.TextField()
     value_code = models.CharField(max_length=128)
-    value_description = models.CharField(max_length=256)
+    value_description = models.TextField()
 
     def __str__(self):
         return f'{self.table, self.field, self.value_code}'
