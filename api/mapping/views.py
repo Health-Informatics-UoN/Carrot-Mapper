@@ -297,8 +297,7 @@ class ScanReportFormView(FormView):
 
         scan_report.save()
 
-        # process_scan_report_task.delay(scan_report.id)
-        process_scan_report_task(scan_report.id)
+        process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
 

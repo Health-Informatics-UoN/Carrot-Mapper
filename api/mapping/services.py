@@ -176,6 +176,6 @@ def process_scan_report(scan_report_id):
 
             ScanReportValue.objects.create(
                 scan_report_field=scan_report_field,
-                value=result[1],
+                value=result[1][:127],
                 frequency=frequency,
             )
