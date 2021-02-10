@@ -15,13 +15,14 @@ jobs:
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env 
           echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env 
           echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
+
+          echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
+          echo COCONNECT_DB_HOST=\${POSTGRES_HOST} >> .env  
+          echo COCONNECT_DB_PORT=\${POSTGRES_PORT} >> .env  
+          echo COCONNECT_DB_NAME=\${POSTGRES_DB} >> .env  
+          echo COCONNECT_DB_USER=\${POSTGRES_USER} >> .env  
+          echo COCONNECT_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env  
           
-          echo HYDROML_DB_ENGINE=django.contrib.gis.db.backends.postgis >> .env 
-          echo HYDROML_DB_HOST=\${POSTGRES_HOST} >> .env 
-          echo HYDROML_DB_PORT=\${POSTGRES_PORT} >> .env 
-          echo HYDROML_DB_NAME=\${POSTGRES_DB} >> .env 
-          echo HYDROML_DB_USER=\${POSTGRES_USER} >> .env 
-          echo HYDROML_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env 
           echo PROJECT_NAME=api >> .env 
           cat .env
       - name: Check .env file
