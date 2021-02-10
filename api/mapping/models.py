@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
-
+import os
 
 
 
@@ -46,7 +46,6 @@ class Mapping(BaseModel):
         return f'{self.table, self.field}'
 
 
-
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -65,6 +64,13 @@ class DataPartners(BaseModel):
         return self.name
 
 
+class DocumentType(BaseModel):
+    type = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.type
+
+
 class ScanReport(BaseModel):
     name = models.CharField(max_length=256) # Don't think we need this field
     data_partner = models.CharField(max_length=128)
@@ -76,7 +82,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True
     )
-    
+
     def __str__(self):
         return f'{self.data_partner, self.dataset,self.author}'
 
@@ -139,9 +145,45 @@ class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
-    conceptID = models.CharField(max_length=32)
+    conceptID = models.IntegerField(default=-1)
     
     def __str__(self):
         return self.value
 
+class Document(BaseModel):
+    data_partner = models.ForeignKey(
+            DataPartners, 
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True)
+    owner=models.ForeignKey(
+            settings.AUTH_USER_MODEL,
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True
+        )
+    document_type=models.ForeignKey(
+            DocumentType, 
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True   
+    )
+    description=models.CharField(max_length=256)
 
+    def __str__(self):
+       
+        return f'{self.data_partner, self.owner,self.document_type,self.description}'
+        
+class DocumentFile(BaseModel):
+    document_file=models.FileField()
+    size=models.IntegerField()
+    document=models.ForeignKey(
+            Document,
+            on_delete=models.CASCADE,
+            blank=True,
+            null=True)
+    
+    def __str__(self):
+        self.document_file.name = os.path.basename(self.document_file.name)
+
+        return f'{self.document_file,self.size,self.created_at,self.document_file.name}'

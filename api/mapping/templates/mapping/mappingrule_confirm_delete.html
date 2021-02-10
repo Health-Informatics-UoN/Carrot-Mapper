@@ -4,8 +4,9 @@
 
 
 <form method="post">{% csrf_token %}
-    <p>Are you sure you want to delete "{{ object }}"?</p>
-    <input type="submit" value="Confirm">
+    <p>Are you sure you want to delete the mapping between <em>source field </em><b>{{ object.scan_report_field.name }}</b>
+        and <em>OMOP field</em> <b>{{object.omop_field.table}} : {{object.omop_field.field}}?</b></p>
+    <input type="submit" class="btn btn-danger" value="Confirm Mapping Deletion">
 </form>
 
 

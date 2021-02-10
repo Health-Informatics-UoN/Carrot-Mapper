@@ -7,36 +7,28 @@ from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
-from django.urls import reverse_lazy
 from django.urls import reverse
+from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView, UpdateView, DeleteView
+from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 
-from extra_views import FormSetView, ModelFormSetView
-from extra_views import CreateWithInlinesView, UpdateWithInlinesView, InlineFormSetFactory
 
-from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm
-from .models import Source, Mapping, ScanReport,ScanReportValue, ScanReportField, \
-    ScanReportTable, OmopTable, OmopField, MappingRule
+from extra_views import ModelFormSetView
+
+from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm,DocumentForm
+from .models import ScanReport, ScanReportValue, ScanReportField, \
+    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
+
 from .tasks import process_scan_report_task
 
 
 @login_required
 def home(request):
-    # Pull in all entries in each database (model)
-    mapping = Mapping.objects.all()
-    source = Source.objects.all()
 
-    # Create quick context dict
-    context = {
-        'source': source,
-        'mapping': mapping,
-    }
-
-    return render(request, 'mapping/home.html', context)
+    return render(request, 'mapping/home.html', {})
 
 
 class ScanReportTableListView(ListView):
@@ -47,8 +39,7 @@ class ScanReportTableListView(ListView):
         search_term = self.request.GET.get('search', None)
         if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
-            
-                
+
         return qs
 
     def get_context_data(self, **kwargs):
@@ -113,18 +104,6 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
-class ScanReportValueUpdateView(UpdateView):
-    model = ScanReportValue
-    fields = [
-        'value',
-        'frequency',
-        'conceptID',
-    ]
-
-    def get_success_url(self):
-        return "{}?search={}".format(reverse('values'), self.object.scan_report_field.id)
-
-
     
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
@@ -142,6 +121,7 @@ class ScanReportListView(ListView):
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ['value','frequency','conceptID']
+    fields = ['conceptID']
     factory_kwargs = { 'can_delete': False, 'extra': False}
     
     def get_queryset(self):
@@ -168,23 +148,20 @@ class ScanReportValueListView(ModelFormSetView):
             scan_report_table = None
             scan_report_field = None
             scan_report_value = None
-            
+
         context.update({
             'scan_report': scan_report,
             'scan_report_table': scan_report_table,
             'scan_report_field': scan_report_field,
             'scan_report_value': scan_report_value,
         })
-        
+
         return context
-         
-         
+
 
 class AddMappingRuleFormView(FormView):
-
     form_class = AddMappingRuleForm
     template_name = 'mapping/mappingrule_form.html'
-    success_url = reverse_lazy('fields')
 
     def form_valid(self, form):
 
@@ -198,16 +175,27 @@ class AddMappingRuleFormView(FormView):
         )
 
         mapping.save()
+
         return super().form_valid(form)
+
+    def get_success_url(self):
+        scan_report_field = ScanReportField.objects.get(
+            pk=self.kwargs.get('pk')
+        )
+
+        return "{}?search={}".format(reverse('fields'), scan_report_field.scan_report_table.id)
 
 
 class StructuralMappingDeleteView(DeleteView):
-    # specify the model you want to use
     model = MappingRule
 
-    # can specify success url
-    # url to redirect after sucessfully
-    # deleting object
+    def get_success_url(self):
+        scan_report_field = ScanReportField.objects.get(
+            pk=self.kwargs.get('pk')
+        )
+
+        return "{}?search={}".format(reverse('fields'), scan_report_field.scan_report_table.id)
+
     success_url = reverse_lazy('fields')
 
 class StructuralMappingListView(ListView):
@@ -216,10 +204,44 @@ class StructuralMappingListView(ListView):
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.kwargs.get('pk')
-         print('SEARCH TERM >>>>> ', search_term)
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        if len(self.get_queryset()) > 0:
+            scan_report = self.get_queryset()[0].scan_report_field.scan_report_table.scan_report
+            scan_report_table = self.get_queryset()[0].scan_report_field.scan_report_table
+            scan_report_field = self.get_queryset()[0]
+        else:
+            scan_report = None
+            scan_report_table = None
+            scan_report_field = None
+
+        context.update({
+            'scan_report': scan_report,
+            'scan_report_table': scan_report_table,
+            'scan_report_field': scan_report_field,
+        })
+
+        return context
+
+
+class StructuralMappingTableListView(ListView):
+    model = MappingRule
+    template_name = "mapping/mappingrulesscanreport_list.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('id')
+        search_term = self.kwargs.get('pk')
+        if search_term is not None:
+            qs = qs.filter(scan_report_field__scan_report_table__scan_report__id=search_term)
+            return qs
+
+
 
 class ScanReportFormView(FormView):
 
@@ -241,6 +263,55 @@ class ScanReportFormView(FormView):
         process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
+
+
+class DocumentFormView(FormView):  # When is it best to use FormView?
+
+    form_class = DocumentForm
+    template_name = 'mapping/upload_document.html'
+    success_url = reverse_lazy('document-list')
+
+    def form_valid(self, form):
+        document = Document.objects.create(
+            data_partner=form.cleaned_data['data_partner'],
+            document_type=form.cleaned_data['document_type'],
+            description=form.cleaned_data['description'],
+
+        )
+        document.owner = self.request.user
+
+        document.save()
+        document_file=DocumentFile.objects.create(
+            document_file=form.cleaned_data['document_file'],
+            size=20,
+            
+            document=document
+            
+        )
+        
+        document_file.save()
+        return super().form_valid(form)
+
+class DocumentListView(ListView):
+    model = Document
+
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('data_partner')
+         return qs
+   
+    
+class FileListView(ListView):
+    model = DocumentFile
+
+    def get_queryset(self):
+         qs = super().get_queryset().order_by('document_id')
+         search_term = self.request.GET.get('search', None)
+         if search_term is not None:
+             qs = qs.filter(document=search_term)
+         return qs
+   
+
+
 
 
 class SignUpView(generic.CreateView):
@@ -279,3 +350,9 @@ def password_reset_request(request):
     return render(request=request,
                   template_name="/registration/password_reset.html",
                   context={"password_reset_form": password_reset_form})
+
+
+def load_omop_fields(request):
+    omop_table_id = request.GET.get('omop_table')
+    omop_fields = OmopField.objects.filter(table_id=omop_table_id).order_by('field')
+    return render(request, 'mapping/omop_table_dropdown_list_options.html', {'omop_fields': omop_fields})
