@@ -29,4 +29,12 @@ jobs:
       - name: Build the docker-compose stack
         run: docker-compose build 
       - name: Run the dokcer-compose stack
-        run: docker-compose up 
+        run: |
+          docker-compose up -d
+          sleep 30
+          if `docker-compose logs | grep -i django` then;
+              exit 1
+          else
+             echo "No errors found!"
+          fi 
+          docker-compose down
