@@ -172,13 +172,15 @@ def process_scan_report(scan_report_id):
 
 
 def import_data_dictionary():
-    filepath = "/data/twins_data_dictionary.csv"
+    filepath = "/data/mini_twins_data_dictionary.csv"
 
     with open(filepath, 'rt') as f:
         reader = csv.reader(f)
         next(reader)  # Skip header row
 
+        # Assumes that the input columns are in the same order as the Twins data dictionary
         for row in reader:
+            print(row)
             DataDictionary.objects.create(
                 table=row[0],
                 field=row[1],
@@ -186,4 +188,9 @@ def import_data_dictionary():
                 value_code=row[3],
                 value_description=row[4]
             )
+
+    dict_entries = DataDictionary.objects.get(pk=1)
+    print('>>>>> ', dict_entries)
+
+
 
