@@ -12,8 +12,7 @@
             {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
             {{ scan_report_table.name }}</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
-            {{ scan_report_field.name }}</a></li>
+        <li class="breadcrumb-item">{{ scan_report_field.name }}</li>
 
     </ol>
 </nav>

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'extra_views',
     'mapping',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -86,8 +87,12 @@ WSGI_APPLICATION = 'api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv('COCONNECT_DB_ENGINE'),
+        'HOST': os.getenv('COCONNECT_DB_HOST'),
+        'PORT': os.getenv('COCONNECT_DB_PORT'),
+        'NAME':  os.getenv('COCONNECT_DB_NAME'),
+        'USER': os.getenv('COCONNECT_DB_USER'),
+        'PASSWORD': os.getenv('COCONNECT_DB_PASSWORD'),
     }
 }
 

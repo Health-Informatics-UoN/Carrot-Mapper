@@ -1,11 +1,13 @@
 from django.contrib import admin
 
-from .models import DocumentType, Source,DataPartners, ScanReport, \
+from .models import DocumentType, Source, DataPartner, ScanReport, \
     ScanReportTable, \
-    ScanReportField, ScanReportValue,\
-    ClassificationSystem, OmopTable, OmopField, MappingRule, Document, DocumentFile, DataDictionary
+    ScanReportField, ScanReportValue, \
+    ClassificationSystem, OmopTable, OmopField, MappingRule, Document, \
+    DocumentFile, DataDictionary
 
-admin.site.register(DataPartners)
+
+admin.site.register(DataPartner)
 admin.site.register(DocumentType)
 admin.site.register(ScanReport)
 admin.site.register(ScanReportTable)

@@ -46,6 +46,7 @@ def process_scan_report_sheet_table(filename):
 
         reader = csv.reader(x.replace('\0', '') for x in f)
 
+
         for row_idx, row in enumerate(reader):
 
             if row_idx == 0:
@@ -95,7 +96,7 @@ def process_scan_report(scan_report_id):
             if row and row[0] != '':
                 # This links ScanReportTable to ScanReport
                 # [:31] is because excel is a pile of s***
-                # - sheet names are truncated to 31 characters 
+                # - sheet names are truncated to 31 characters
                 name = row[0][:31]
 
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
@@ -128,16 +129,19 @@ def process_scan_report(scan_report_id):
         if sheet['name'] == '_':
             continue
 
+
         # GET table name from ScanReportTable that was saved in the previous
         # step when scanning the Field Overview sheet
 
-        scan_report_table = ScanReportTable.objects.get(
-            scan_report=scan_report,
-            name=sheet['name']
-            # 'name' here refers to the field name in ScanReportTable
-        )
+        print('>>>> {}'.format(sheet['name']))
 
-        if scan_report_table is None:
+        try:
+            scan_report_table = ScanReportTable.objects.get(
+                scan_report=scan_report,
+                name=sheet['name']
+                # 'name' here refers to the field name in ScanReportTable
+            )
+        except ScanReportTable.DoesNotExist:
             continue
 
         # Get the filepath to the converted CSV files
@@ -166,13 +170,13 @@ def process_scan_report(scan_report_id):
 
             ScanReportValue.objects.create(
                 scan_report_field=scan_report_field,
-                value=result[1],
+                value=result[1][:127],
                 frequency=frequency,
             )
 
 
-def import_data_dictionary():
-    filepath = "/data/mini_twins_data_dictionary.csv"
+def import_data_dictionary(filepath):
+    filepath = filepath
 
     with open(filepath, 'rt') as f:
         reader = csv.reader(f)
@@ -182,24 +186,10 @@ def import_data_dictionary():
         for row in reader:
             print(row)
             
-            # DataDictionary.objects.create(
-            #     table=row[0],
-            #     field=row[1],
-            #     field_description=row[2],
-            #     value_code=row[3],
-            #     value_description=row[4]
-            # )
-
             DataDictionary.objects.create(
-                table="aa",
-                field="bb",
-                field_description="cc",
-                value_code="dd",
-                value_description="ee"
+                table=row[0],
+                field=row[1],
+                field_description=row[2],
+                value_code=row[3],
+                value_description=row[4]
             )
-
-    dict_entries = DataDictionary.objects.get(pk=1)
-    print('>>>>> ', dict_entries)
-
-
-
