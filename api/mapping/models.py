@@ -6,9 +6,6 @@ import os
 
 
 class BaseModel(models.Model):
-    """
-    comment helllo
-    """
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
