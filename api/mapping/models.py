@@ -1,8 +1,8 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.conf import settings
 import os
-
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
+from django.db.models.constraints import UniqueConstraint
 
 
 class BaseModel(models.Model):
@@ -11,12 +11,6 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
-"""
-Relationship is many:many because;
-Each pair of source data tables/fields can potentially be related to many tables/fields in OMOP
-Each pair of tables/fields in OMOP can be related to many different pairs of tables/fields in the source data
-"""
 
 
 class Source(BaseModel):
@@ -28,6 +22,11 @@ class Source(BaseModel):
     field = models.CharField(max_length=64)
     mapping = models.ManyToManyField('Mapping')
 
+    class Meta:
+        db_table = 'source'
+        verbose_name = 'Source'
+        verbose_name_plural = 'Sources'
+
     def __str__(self):
         return f'{self.dataset, self.table, self.field}'
 
@@ -38,6 +37,11 @@ class Mapping(BaseModel):
     """
     table = models.CharField(max_length=64)
     field = models.CharField(max_length=64)
+
+    class Meta:
+        db_table = 'mapping'
+        verbose_name = 'Mapping'
+        verbose_name_plural = 'Mappings'
 
     def __str__(self):
         return f'{self.table, self.field}'
@@ -54,34 +58,68 @@ class ClassificationSystem(BaseModel):
         return self.name
 
 
-class DataPartners(BaseModel):
+class DataPartner(BaseModel):
     name = models.CharField(max_length=64)
+
+    class Meta:
+        db_table = 'datapartner'
+        verbose_name = 'Data Partner'
+        verbose_name_plural = 'Data Partners'
+        constraints = [
+            UniqueConstraint(
+                fields=['name'],
+                name='datapartner_name_unique',
+            )
+        ]
 
     def __str__(self):
         return self.name
 
 
 class DocumentType(BaseModel):
-    type = models.CharField(max_length=64)
+    name = models.CharField(max_length=64)
+
+    class Meta:
+        db_table = 'documenttype'
+        verbose_name = 'Document Type'
+        verbose_name_plural = 'Document Types'
+        constraints = [
+            UniqueConstraint(
+                fields=['name'],
+                name='documenttype_name_unique',
+            )
+        ]
 
     def __str__(self):
-        return self.type
+        return self.name
 
 
 class ScanReport(BaseModel):
-    name = models.CharField(max_length=256) # Don't think we need this field
-    data_partner = models.CharField(max_length=128)
-    dataset = models.CharField(max_length=128)
-    file = models.FileField()
-    author=models.ForeignKey(
+    # data_partner = models.CharField(max_length=128)
+    data_partner = models.ForeignKey(
+        DataPartner,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         blank=True,
         null=True
     )
+    name = models.CharField(
+        max_length=256
+    )
+    dataset = models.CharField(
+        max_length=128
+    )
+    file = models.FileField(
+
+    )
 
     def __str__(self):
-        return f'{self.data_partner, self.dataset,self.author}'
+        return f'#{self.id}'
 
 
 class ScanReportTable(BaseModel):
@@ -138,39 +176,48 @@ class MappingRule(BaseModel):
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
 
+
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
-    conceptID = models.IntegerField(default=-1)
-    
+    conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
+
     def __str__(self):
         return self.value
 
+
 class Document(BaseModel):
     data_partner = models.ForeignKey(
-            DataPartners, 
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True)
-    owner=models.ForeignKey(
-            settings.AUTH_USER_MODEL,
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True
-        )
-    document_type=models.ForeignKey(
-            DocumentType, 
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True   
+        DataPartner,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
-    description=models.CharField(max_length=256)
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+
+    document_type = models.ForeignKey(
+        DocumentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+
+    description = models.CharField(
+        max_length=256,
+    )
 
     def __str__(self):
-       
-        return f'{self.data_partner, self.owner,self.document_type,self.description}'
-        
+
+        return f'#{self.id}'
+
+
 class DocumentFile(BaseModel):
     document_file=models.FileField()
     size=models.IntegerField()
@@ -179,7 +226,7 @@ class DocumentFile(BaseModel):
             on_delete=models.CASCADE,
             blank=True,
             null=True)
-    
+
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
 

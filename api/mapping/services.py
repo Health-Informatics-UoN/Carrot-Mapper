@@ -44,10 +44,10 @@ def process_scan_report_sheet_table(filename):
         # * It's coming from hidden ^O or ^M  / NULL bytes in the excell/csv
         # * Temp fix may slow down the code a lot for large files
         # * Using pandas would deal with these type of things
-        
+
         reader = csv.reader(x.replace('\0', '') for x in f)
-       
-        
+
+
         for row_idx, row in enumerate(reader):
 
             if row_idx == 0:
@@ -101,9 +101,9 @@ def process_scan_report(scan_report_id):
 
                 # This links ScanReportTable to ScanReport
                 # [:31] is because excel is a pile of s***
-                # - sheet names are truncated to 31 characters 
+                # - sheet names are truncated to 31 characters
                 name = row[0][:31]
-                
+
                 scan_report_table, _ = ScanReportTable.objects.get_or_create(
                     scan_report=scan_report,
                     name=name,
@@ -127,7 +127,7 @@ def process_scan_report(scan_report_id):
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
-        
+
         if idxsheet < 2:
             continue
 
@@ -135,17 +135,19 @@ def process_scan_report(scan_report_id):
         if sheet['name'] == '_':
             continue
 
-        
+
         # GET table name from ScanReportTable that was saved in the previous
         # step when scanning the Field Overview sheet
 
-        scan_report_table = ScanReportTable.objects.get(
-            scan_report=scan_report,
-            name=sheet['name']
-            # 'name' here refers to the field name in ScanReportTable
-        )
+        print('>>>> {}'.format(sheet['name']))
 
-        if scan_report_table is None:
+        try:
+            scan_report_table = ScanReportTable.objects.get(
+                scan_report=scan_report,
+                name=sheet['name']
+                # 'name' here refers to the field name in ScanReportTable
+            )
+        except ScanReportTable.DoesNotExist:
             continue
 
         # Get the filepath to the converted CSV files

@@ -2,15 +2,17 @@
 
 {% block body %}
 
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'document-list' %}">Documents</a>
+        </li>
+    </ol>
+</nav>
 
 <h2>Documents</h2>
 
 {% if object_list %}
-<!---
-    https://stackoverflow.com/a/27305613/10192378
-    <form method="POST">
-      {% csrf_token %}
-      --->
 <form id="my_form">
     <div class="form-group">
         <table class="table">
@@ -19,62 +21,27 @@
                 <th scope="col">Data Partner</th>
                 <th scope="col">Document Type</th>
                 <th scope="col">Added on</th>
-
-                <th></th>
+                <th scope="col">Added by</th>
+                <th>&nbsp;</th>
             </tr>
             </thead>
             <tbody>
             {% for object in object_list %}
             <tr>
-                <td>
-                    {{object.data_partner}}
-                
-                   
-                </td>
-                <td>
-                    {{object.document_type}}
-                </td>
-                <td>
-                    {{object.created_at}}
-                </td>
-                
-                <td>
-                    <a href="{% url 'file-list' %}?search={{ object.id}}">file</a>
-                </td>
-                
-                
-
+                <td>{{object.data_partner}}</td>
+                <td>{{object.document_type}}</td>
+                <td>{{object.created_at}}</td>
+                <td>{{object.owner}}</td>
+                <td><a href="{% url 'file-list' %}?search={{ object.id}}">Files</a></td>
             </tr>
-            
             {% endfor %}
             </tbody>
         </table>
-        <div class="form-row">
-            <!---
-            <input type="submit" class="btn btn-primary"  value="Update">
-            <input type="submit" class="btn btn-secondary"  value="Run NLP">
-            <input type="submit" class="btn btn-secondary"  value="Run Usagi">
-            --->
-            
-
-            
-        </div>
     </div>
 </form>
+{% else %}
+<p>No documents available.</p>
 {% endif %}
-<a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Documents</a>
-<script type="text/javascript">
-    $("#test").click(function () {
-
-        var msg = "Classification System..\n";
-        $('.select-classification').each(
-            function (index) {
-                msg += index + ":" + $(this).val() + "\n";
-            }
-        );
-        alert(msg);
-    });
-
-</script>
+<a class="btn btn-primary" href="{% url 'document-form'%}">New document</a>
 
 {% endblock %}
