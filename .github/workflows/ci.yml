@@ -4,6 +4,8 @@ on: [pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      RUNNER_ALLOW_RUNASROOT=true
     steps:
       - uses: actions/checkout@v2
       - name: Make envfile
@@ -41,7 +43,10 @@ jobs:
              echo "No errors found!"
           fi 
           docker-compose down
-      - uses: actions/upload-artifact@v2
-        with:
-          name: my-artifact
-          path: .
+      - name: check files
+        run: ls -ltr
+          
+      #- uses: actions/upload-artifact@v2
+      #  with:
+      #    name: my-artifact
+      #    path: .
