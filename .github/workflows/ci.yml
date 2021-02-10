@@ -26,27 +26,30 @@ jobs:
           
           echo PROJECT_NAME=api >> .env 
           cat .env
-      - name: Check .env file
-        run: ls . && cat .env
       - name: Build the docker-compose stack
         run: docker-compose build 
       - name: Run the dokcer-compose stack
         run: |
+          #startup the stack
           docker-compose up -d
-          sleep 30
+          #give it a minute to start properly
+          sleep 1m
+          #check the logs for errors
           if docker-compose logs | grep -i -q ERROR  ; then
+              #print the errors before causing a fail
               docker-compose logs | grep -i ERROR
-              docker-compose logs api 
               echo "Errors found"
-              #exit 1
+              exit 1
           else
              echo "No errors found!"
-          fi 
+          fi
+          #put the logs into a file
+          docker-compose logs >> logs.out
+          #shutdown the stack
           docker-compose down
-      - name: check files
-        run: ls -ltr
-          
-      #- uses: actions/upload-artifact@v2
-      #  with:
-      #    name: my-artifact
-      #    path: .
+      #save the logs so they can be further checked 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: logs.out
+          retention-days: 1
