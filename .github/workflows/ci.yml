@@ -25,8 +25,6 @@ jobs:
           echo PROJECT_NAME=api
           cat .env
       - name: Check .env file
-        run: ls .
-        run: pwd
-        run: cat .env
+        run: ls . && cat .env
       - name: Build the docker-compose stack
         run: docker-compose up --build 
