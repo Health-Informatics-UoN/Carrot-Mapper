@@ -5,6 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      uses: actions/checkout@v2
       - name: Make envfile
         run: |
           touch .env
@@ -28,5 +29,4 @@ jobs:
         run: pwd
         run: cat .env
       - name: Build the docker-compose stack
-        uses: actions/checkout@v2
         run: docker-compose up --build 
