@@ -181,12 +181,21 @@ def import_data_dictionary():
         # Assumes that the input columns are in the same order as the Twins data dictionary
         for row in reader:
             print(row)
+            
+            # DataDictionary.objects.create(
+            #     table=row[0],
+            #     field=row[1],
+            #     field_description=row[2],
+            #     value_code=row[3],
+            #     value_description=row[4]
+            # )
+
             DataDictionary.objects.create(
-                table=row[0],
-                field=row[1],
-                field_description=row[2],
-                value_code=row[3],
-                value_description=row[4]
+                table="aa",
+                field="bb",
+                field_description="cc",
+                value_code="dd",
+                value_description="ee"
             )
 
     dict_entries = DataDictionary.objects.get(pk=1)

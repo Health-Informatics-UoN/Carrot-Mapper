@@ -4,13 +4,13 @@ from django.conf import settings
 import os
 
 
-
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
+
 
 """
 Relationship is many:many because;
@@ -48,7 +48,7 @@ class ClassificationSystem(BaseModel):
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
     """
 
-    name = models.CharField(max_length=64)#128?
+    name = models.CharField(max_length=64)  # 128?
 
     def __str__(self):
         return self.name
@@ -69,11 +69,11 @@ class DocumentType(BaseModel):
 
 
 class ScanReport(BaseModel):
-    name = models.CharField(max_length=256) # Don't think we need this field
+    name = models.CharField(max_length=256)  # Don't think we need this field
     data_partner = models.CharField(max_length=128)
     dataset = models.CharField(max_length=128)
     file = models.FileField()
-    author=models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         blank=True,
@@ -81,7 +81,7 @@ class ScanReport(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.data_partner, self.dataset,self.author}'
+        return f'{self.data_partner, self.dataset, self.author}'
 
 
 class ScanReportTable(BaseModel):
@@ -116,12 +116,14 @@ class ScanReportField(BaseModel):
     def __str__(self):
         return self.name
 
+
 # Models for rule mapping
 class OmopTable(BaseModel):
     table = models.CharField(max_length=64)
 
     def __str__(self):
         return self.table
+
 
 class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
@@ -138,52 +140,55 @@ class MappingRule(BaseModel):
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
 
+
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
     value = models.CharField(max_length=32)
     frequency = models.IntegerField()
     conceptID = models.IntegerField(default=-1)
-    
+
     def __str__(self):
         return self.value
 
+
 class Document(BaseModel):
     data_partner = models.ForeignKey(
-            DataPartners, 
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True)
-    owner=models.ForeignKey(
-            settings.AUTH_USER_MODEL,
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True
-        )
-    document_type=models.ForeignKey(
-            DocumentType, 
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True   
+        DataPartners,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
     )
-    description=models.CharField(max_length=256)
+    document_type = models.ForeignKey(
+        DocumentType,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    description = models.CharField(max_length=256)
 
     def __str__(self):
-       
-        return f'{self.data_partner, self.owner,self.document_type,self.description}'
-        
+        return f'{self.data_partner, self.owner, self.document_type, self.description}'
+
+
 class DocumentFile(BaseModel):
-    document_file=models.FileField()
-    size=models.IntegerField()
-    document=models.ForeignKey(
-            Document,
-            on_delete=models.CASCADE,
-            blank=True,
-            null=True)
-    
+    document_file = models.FileField()
+    size = models.IntegerField()
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True)
+
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
 
-        return f'{self.document_file,self.size,self.created_at,self.document_file.name}'
+        return f'{self.document_file, self.size, self.created_at, self.document_file.name}'
+
 
 class DataDictionary(BaseModel):
     table = models.CharField(max_length=128)
