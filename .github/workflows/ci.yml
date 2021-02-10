@@ -32,7 +32,9 @@ jobs:
         run: |
           docker-compose up -d
           sleep 30
-          if `docker-compose logs | grep -i django` then;
+          if docker-compose logs | grep -i -q ERROR  ; then
+              docker-compose logs | grep -i -q ERROR
+              echo "Errors found"
               exit 1
           else
              echo "No errors found!"
