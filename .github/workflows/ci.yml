@@ -7,9 +7,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Make envfile
+        env:
+          TEST_SECRET: ${{ secrets.POSTGRES_PASSWORD }}   
         run: |
           touch .env
           echo "password"
+          echo ${TEST_SECRET}
+          echo ${#TEST_SECRET}
           echo ${{ secrets.POSTGRES_PASSWORD }}
           echo "worked?"
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
