@@ -5,7 +5,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      RUNNER_ALLOW_RUNASROOT=true
+      RUNNER_ALLOW_RUNASROOT: true
     steps:
       - uses: actions/checkout@v2
       - name: Make envfile
