@@ -35,6 +35,7 @@ jobs:
           sleep 30
           if docker-compose logs | grep -i -q ERROR  ; then
               docker-compose logs | grep -i ERROR
+              docker-compose logs api 
               echo "Errors found"
               exit 1
           else
