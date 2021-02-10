@@ -17,14 +17,14 @@ jobs:
           echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
           
           echo HYDROML_DB_ENGINE=django.contrib.gis.db.backends.postgis
-          echo HYDROML_DB_HOST=${POSTGRES_HOST}
-          echo HYDROML_DB_PORT=${POSTGRES_PORT}
-          echo HYDROML_DB_NAME=${POSTGRES_DB}
-          echo HYDROML_DB_USER=${POSTGRES_USER}
-          echo HYDROML_DB_PASSWORD=${POSTGRES_PASSWORD}
+          echo HYDROML_DB_HOST=${{POSTGRES_HOST}}
+          echo HYDROML_DB_PORT=${{POSTGRES_PORT}}
+          echo HYDROML_DB_NAME=${{POSTGRES_DB}}
+          echo HYDROML_DB_USER=${{POSTGRES_USER}}
+          echo HYDROML_DB_PASSWORD=${{POSTGRES_PASSWORD}}
           echo PROJECT_NAME=api
           cat .env
       - name: Check .env file
         run: ls . && cat .env
-      - name: Build the docker-compose stack
-        run: docker-compose up --build 
+      #- name: Build the docker-compose stack
+      #  run: docker-compose up --build 
