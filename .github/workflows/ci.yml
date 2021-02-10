@@ -14,8 +14,6 @@ jobs:
           echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env 
           echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env 
           echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
-          echo POSTGRES_HOST=db >> .env 
-          echo POSTGRES_PORT=5432 >> .env 
 
           echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
           echo COCONNECT_DB_HOST=\${POSTGRES_HOST} >> .env  
@@ -26,24 +24,24 @@ jobs:
           
           echo PROJECT_NAME=api >> .env 
           cat .env
+      - name: Check .env file
+        run: ls . && cat .env
+      - name: Build the docker-compose stack
+        run: docker-compose build 
+      - name: Run the dokcer-compose stack
+        run: |
+          docker-compose up -d
+          sleep 30
+          if docker-compose logs | grep -i -q ERROR  ; then
+              docker-compose logs | grep -i ERROR
+              docker-compose logs api 
+              echo "Errors found"
+              #exit 1
+          else
+             echo "No errors found!"
+          fi 
+          docker-compose down
       - uses: actions/upload-artifact@v2
         with:
           name: my-artifact
-          path: .env
-      # - name: Check .env file
-      #   run: ls . && cat .env
-      # - name: Build the docker-compose stack
-      #   run: docker-compose build 
-      # - name: Run the dokcer-compose stack
-      #   run: |
-      #     docker-compose up -d
-      #     sleep 30
-      #     if docker-compose logs | grep -i -q ERROR  ; then
-      #         docker-compose logs | grep -i ERROR
-      #         docker-compose logs api 
-      #         echo "Errors found"
-      #         exit 1
-      #     else
-      #        echo "No errors found!"
-      #     fi 
-      #     docker-compose down
+          path: .
