@@ -171,7 +171,7 @@ def process_scan_report(scan_report_id):
             )
 
 
-def process_data_dictionary():
+def import_data_dictionary():
     filepath = "/data/twins_data_dictionary.csv"
 
     with open(filepath, 'rt') as f:
@@ -186,3 +186,4 @@ def process_data_dictionary():
                 value_code=row[3],
                 value_description=row[4]
             )
+

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .services import process_scan_report_sheet_table, process_data_dictionary
+from .services import process_scan_report_sheet_table, import_data_dictionary
 
 
 class ServiceTests(TestCase):
@@ -17,6 +17,6 @@ class ServiceTests(TestCase):
 
             self.assertIs(4, len(result))
 
-    def test_process_data_dictionary(self):
-        x = process_data_dictionary()
+    def test_import_data_dictionary(self):
+        x = import_data_dictionary()
         print(x)
