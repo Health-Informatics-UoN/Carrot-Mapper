@@ -5,6 +5,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Make envfile
+        run: |
+          touch .env
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+          echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env 
+          echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env 
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env 
+          echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env 
+          echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
+          
+          echo HYDROML_DB_ENGINE=django.contrib.gis.db.backends.postgis
+          echo HYDROML_DB_HOST=${POSTGRES_HOST}
+          echo HYDROML_DB_PORT=${POSTGRES_PORT}
+          echo HYDROML_DB_NAME=${POSTGRES_DB}
+          echo HYDROML_DB_USER=${POSTGRES_USER}
+          echo HYDROML_DB_PASSWORD=${POSTGRES_PASSWORD}
+          echo PROJECT_NAME=api
+          cat .env
+      - name: Check .env file
+        run: ls .
+        run: pwd
+        run: cat .env
       - name: Build the docker-compose stack
+        uses: actions/checkout@v2
         run: docker-compose up --build 
