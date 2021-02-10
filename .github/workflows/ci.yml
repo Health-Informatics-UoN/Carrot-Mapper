@@ -26,5 +26,7 @@ jobs:
           cat .env
       - name: Check .env file
         run: ls . && cat .env
-      #- name: Build the docker-compose stack
-      #  run: docker-compose up --build 
+      - name: Build the docker-compose stack
+        run: docker-compose build 
+      - name: Run the dokcer-compose stack
+        run: docker-compose up 
