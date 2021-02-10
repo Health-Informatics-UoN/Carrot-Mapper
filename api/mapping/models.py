@@ -179,7 +179,7 @@ class MappingRule(BaseModel):
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
-    value = models.CharField(max_length=32)
+    value = models.CharField(max_length=128)
     frequency = models.IntegerField()
     conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
 
