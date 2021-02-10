@@ -7,15 +7,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Make envfile
-        env:
-          TEST_SECRET: ${{ secrets.POSTGRES_PASSWORD }}   
         run: |
           touch .env
-          echo "password"
-          echo ${TEST_SECRET}
-          echo ${#TEST_SECRET}
-          echo ${{ secrets.POSTGRES_PASSWORD }}
-          echo "worked?"
           echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
           echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env 
           echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env 
@@ -33,5 +26,5 @@ jobs:
           cat .env
       - name: Check .env file
         run: ls . && cat .env
-      #- name: Build the docker-compose stack
-      #  run: docker-compose up --build 
+      - name: Build the docker-compose stack
+        run: docker-compose up --build 
