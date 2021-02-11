@@ -18,7 +18,7 @@ from django.views.generic.edit import FormView, UpdateView, DeleteView, \
 from extra_views import ModelFormSetView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
-    DocumentForm
+    DocumentForm,DocumentFileForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
 from .tasks import process_scan_report_task
@@ -337,15 +337,31 @@ class DocumentListView(ListView):
         return qs
 
 
-class FileListView(ListView):
+class DocumentFileListView(ListView):
     model = DocumentFile
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('document_id')
-        search_term = self.request.GET.get('search', None)
-        if search_term is not None:
-            qs = qs.filter(document=search_term)
-        return qs
+         qs = super().get_queryset()
+         search_term = self.kwargs.get('pk')
+         if search_term is not None:
+             qs = qs.filter(document__id=search_term)
+         return qs
+
+
+class DocumentFileFormView(FormView):
+    form_class = DocumentFileForm
+    template_name = 'mapping/upload_document_file.html'
+    success_url = reverse_lazy('document-list')
+    
+    def form_valid(self, form):
+        document_file=DocumentFile.objects.create(
+            document_file=form.cleaned_data['document_file'],
+            size=20,
+            document=form.cleaned_data['document']
+        )
+        document_file.save()
+        self.pk = document_file.pk
+        return super().form_valid(form)
 
 
 class SignUpView(generic.CreateView):

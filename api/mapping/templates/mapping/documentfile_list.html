@@ -10,7 +10,7 @@
     </ol>
 </nav>
 
-<h2>Files</h2>
+<h2>Document File Versions</h2>
 
 {% if object_list %}
 <form id="my_form">
@@ -50,4 +50,6 @@
     </div>
 </form>
 {% endif %}
+<a class="btn btn-primary" href="{% url 'file-form'%}">Upload New Version</a>
+
 {% endblock %}

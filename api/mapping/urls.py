@@ -20,7 +20,8 @@ urlpatterns = [
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', login_required(views.DocumentFormView.as_view()), name='document-form'),
     path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),
-    path('file/', login_required(views.FileListView.as_view()), name='file-list'),
+    path('file/<int:pk>/', login_required(views.DocumentFileListView.as_view()), name='file-list'),
+    path('file/create/', login_required(views.DocumentFileFormView.as_view()), name='file-form'),
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
 ]
 if settings.DEBUG: # new
