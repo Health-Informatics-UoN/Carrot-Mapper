@@ -1,16 +1,27 @@
 {% extends "base.html" %}
 
 {% block body %}
-
+<style>
+    .dot {
+      height: 10px;
+      width: 10px;
+      background-color:rgb(109, 201, 16);
+      border-radius: 50%;
+      display: inline-block;
+    }
+ </style>
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'document-list' %}">Documents</a>
         </li>
+
+        
     </ol>
 </nav>
 
 <h2>Document File Versions</h2>
+ 
 
 {% if object_list %}
 <form id="my_form">
@@ -21,7 +32,8 @@
                 <th scope="col">Name</th>
                 <th scope="col">Size</th>
                 <th scope="col">Added on</th>
-                <th scope="col">Added by</th>
+                <th scope="col">Status</th>
+
                 <th>&nbsp;</th>
             </tr>
             </thead>
@@ -38,10 +50,22 @@
                 <td>
                     {{object.created_at}}
                 </td>
+                
+               
                 <td>
-                    {{object.owner}}
+                    {% if object.status %}
+                    <i class="bi bi-check">{{object.status}}</i>
+                    {% endif %}
                 </td>
                 <td>
+                    <td><a href="{% url 'status-update' object.id %}">Edit Status</a></td>
+                </td>
+                <td>
+                    
+                    <a href="{% url 'file-form' object.document.id%}">Upload New Version</a>
+
+                     
+
                 </td>
             </tr>
             {% endfor %}
@@ -50,6 +74,5 @@
     </div>
 </form>
 {% endif %}
-<a class="btn btn-primary" href="{% url 'file-form'%}">Upload New Version</a>
 
 {% endblock %}

@@ -35,7 +35,7 @@
                 <td>{{object.created_at}}</td>
                 <td>{{object.owner}}</td>
                 <td> 
-                    <a href="{% url 'file-list' object.id %}">Document Versions</a>
+                    <a href="{% url 'file-list' object.id %}">View {{object.document_type}} versions</a>
                 </td>
             </tr>
             {% endfor %}
@@ -46,6 +46,6 @@
 {% else %}
 <p>No documents available.</p>
 {% endif %}
-<a class="btn btn-primary" href="{% url 'document-form'%}">New document</a>
+<a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Document</a>
 
 {% endblock %}

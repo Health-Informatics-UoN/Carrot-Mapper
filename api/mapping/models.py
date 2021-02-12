@@ -4,7 +4,10 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
-
+STATUS_CHOICES = [
+        ("Active", 'Active'),
+        ("Archived", 'Archived'),
+    ]
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -226,8 +229,9 @@ class DocumentFile(BaseModel):
             on_delete=models.CASCADE,
             blank=True,
             null=True)
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES)
 
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
 
-        return f'{self.document_file,self.size,self.created_at,self.document_file.name}'
+        return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'

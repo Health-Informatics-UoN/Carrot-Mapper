@@ -105,6 +105,7 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
+
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -349,19 +350,37 @@ class DocumentFileListView(ListView):
 
 
 class DocumentFileFormView(FormView):
+    model=DocumentFile
     form_class = DocumentFileForm
     template_name = 'mapping/upload_document_file.html'
-    success_url = reverse_lazy('document-list')
+    # success_url=reverse_lazy('document-list')
     
     def form_valid(self, form):
         document_file=DocumentFile.objects.create(
             document_file=form.cleaned_data['document_file'],
             size=20,
-            document=form.cleaned_data['document']
+            document=form.cleaned_data['document'],
+            # status="Inactive"
         )
+
         document_file.save()
-        self.pk = document_file.pk
+    
         return super().form_valid(form)
+    def get_success_url(self, **kwargs):
+     self.object=self.kwargs.get('pk')
+     return reverse("file-list", kwargs={'pk': self.object})
+
+
+class DocumentFileStatusUpdateView(UpdateView):
+    model = DocumentFile
+    # success_url=reverse_lazy('file-list')
+    fields = [
+        'status'
+    ]
+
+    def get_success_url(self, **kwargs):
+    # obj = form.instance or self.object
+     return reverse("file-list", kwargs={'pk': self.object.document_id})
 
 
 class SignUpView(generic.CreateView):
