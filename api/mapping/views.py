@@ -34,7 +34,7 @@ class ScanReportTableListView(ListView):
     model = ScanReportTable
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('name')
+        qs = super().get_queryset()
         search_term = self.request.GET.get('search', None)
         if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
@@ -64,7 +64,7 @@ class ScanReportFieldListView(ListView):
     model = ScanReportField
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('name')
+        qs = super().get_queryset()
         search_term = self.request.GET.get('search', None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
@@ -325,7 +325,6 @@ class DocumentFormView(FormView):  # When is it best to use FormView?
             document=document
 
         )
-
         document_file.save()
         return super().form_valid(form)
 
@@ -366,6 +365,7 @@ class DocumentFileFormView(FormView):
         document_file.save()
     
         return super().form_valid(form)
+
     def get_success_url(self, **kwargs):
      self.object=self.kwargs.get('pk')
      return reverse("file-list", kwargs={'pk': self.object})

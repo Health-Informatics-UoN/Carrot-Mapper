@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
 STATUS_CHOICES = [
-        ("Active", 'Active'),
+        ("Live", 'Live'),
         ("Archived", 'Archived'),
     ]
 class BaseModel(models.Model):

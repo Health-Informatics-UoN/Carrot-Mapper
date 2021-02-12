@@ -33,6 +33,8 @@
                 <th scope="col">Size</th>
                 <th scope="col">Added on</th>
                 <th scope="col">Status</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Upload</th>
 
                 <th>&nbsp;</th>
             </tr>
@@ -50,22 +52,16 @@
                 <td>
                     {{object.created_at}}
                 </td>
-                
-               
                 <td>
                     {% if object.status %}
                     <i class="bi bi-check">{{object.status}}</i>
                     {% endif %}
                 </td>
                 <td>
-                    <td><a href="{% url 'status-update' object.id %}">Edit Status</a></td>
+                    <a href="{% url 'status-update' object.id %}">Change Status</a>
                 </td>
                 <td>
-                    
                     <a href="{% url 'file-form' object.document.id%}">Upload New Version</a>
-
-                     
-
                 </td>
             </tr>
             {% endfor %}
