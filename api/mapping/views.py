@@ -325,6 +325,7 @@ class PasswordsChangeView(PasswordChangeView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy('password-success')
 
+# just making changes
 
 def password_success(request):
     return render(request, 'registration/password-success.html', {})
