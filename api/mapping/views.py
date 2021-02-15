@@ -341,7 +341,7 @@ class DocumentFileListView(ListView):
     model = DocumentFile
 
     def get_queryset(self):
-         qs = super().get_queryset()
+         qs = super().get_queryset().order_by('status')
          search_term = self.kwargs.get('pk')
          if search_term is not None:
              qs = qs.filter(document__id=search_term)
