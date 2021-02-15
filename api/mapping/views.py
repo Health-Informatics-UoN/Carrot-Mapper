@@ -127,7 +127,7 @@ class ScanReportValueListView(ModelFormSetView):
     factory_kwargs = {'can_delete': False, 'extra': False}
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('scan_report_field__id')
+         qs = super().get_queryset()
          search_term = self.request.GET.get('search', None)
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
@@ -223,7 +223,7 @@ class StructuralMappingListView(ListView):
     model = MappingRule
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('scan_report_field__id')
+         qs = super().get_queryset()
          search_term = self.kwargs.get('pk')
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
@@ -278,7 +278,7 @@ class StructuralMappingTableListView(ListView):
         search_term = self.kwargs.get('pk')
         if search_term is not None:
             # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list).order_by('name')
+            qs = qs.filter(id__in=mappingrule_id_list)
             return qs
 
 
