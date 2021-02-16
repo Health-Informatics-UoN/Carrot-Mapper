@@ -184,6 +184,10 @@ def import_data_dictionary(filepath):
 
         # Assumes that the input columns are in the same order as the Twins data dictionary
         for row in reader:
+
+            if row[0][0] == '':
+                continue
+
             print(row)
             
             DataDictionary.objects.create(
