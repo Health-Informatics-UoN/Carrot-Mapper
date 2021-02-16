@@ -2,7 +2,6 @@
 
 {% block body %}
 
-
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
@@ -18,11 +17,6 @@
 <h2>Fields</h2>
 
 {% if object_list %}
-<!---
-    https://stackoverflow.com/a/27305613/10192378
-    <form method="POST">
-      {% csrf_token %}
-      --->
 <form id="my_form">
     <div class="form-group">
         <table class="table">
@@ -34,7 +28,7 @@
                 <th scope="col">Ignore?</th>
                 <th scope="col">Classification System</th>
                 <th>Edit</th>
-                <th>Structural Mapping</th>
+                <th colspan="2">Structural Mapping</th>
             </tr>
             </thead>
             <tbody>
@@ -52,34 +46,31 @@
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>
-                <td>{{ object.is_ignore }}</td>
+                <td>
+                    {% if object.is_ignore %}
+                    <i class="bi bi-check">Yes</i>
+                    {% endif %}
+                </td>
                 <td>{{ object.classification_system.name }}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
                 <td>
-
-                    <a href="{% url 'view-structural-mapping' object.id %}"><button type="button" class="btn btn-primary">View</button></a>
-
-                    <a href="{% url 'create-mapping-form' object.id %}"><button type="button" class="btn btn-success">Add</button></a>
-
+                    <a href="{% url 'view-structural-mapping' object.id %}">View</a>
                 </td>
-                <td></td>
+                <td>
+                    <a href="{% url 'create-mapping-form' object.id %}">Add</a>
+                </td>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-        <div class="form-row">
-            <!---
-            <input type="submit" class="btn btn-primary"  value="Update">
-            <input type="submit" class="btn btn-secondary"  value="Run NLP">
-            <input type="submit" class="btn btn-secondary"  value="Run Usagi">
-            --->
+        <!--<div class="form-row">
             <input type="submit" class="btn btn-primary" name="update"
                    value="Update">
             <input type="submit" class="btn btn-secondary" name="run_nlp"
                    value="Run NLP">
             <input type="submit" class="btn btn-secondary" name="run_usagi"
                    value="Run Usagi">
-        </div>
+        </div>-->
     </div>
 </form>
 {% endif %}

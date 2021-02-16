@@ -13,15 +13,14 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.generic import ListView
-from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
-
-
+from django.views.generic.edit import FormView, UpdateView, DeleteView, \
+    CreateView
 from extra_views import ModelFormSetView
 
-from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm,DocumentForm
+from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
+    DocumentForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
-
 from .tasks import process_scan_report_task
 
 
@@ -59,6 +58,7 @@ class ScanReportTableListView(ListView):
 
         return context
 
+
 class ScanReportFieldListView(ListView):
     model = ScanReportField
 
@@ -90,6 +90,7 @@ class ScanReportFieldListView(ListView):
 
         return context
 
+
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -103,7 +104,6 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
-    
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -117,19 +117,19 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 class ScanReportListView(ListView):
     model = ScanReport
 
+
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ['value','frequency','conceptID']
     fields = ['conceptID']
-    factory_kwargs = { 'can_delete': False, 'extra': False}
-    
+    factory_kwargs = {'can_delete': False, 'extra': False}
+
     def get_queryset(self):
          qs = super().get_queryset().order_by('scan_report_field__id')
          search_term = self.request.GET.get('search', None)
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
          return qs
-
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -161,6 +161,25 @@ class ScanReportValueListView(ModelFormSetView):
 class AddMappingRuleFormView(FormView):
     form_class = AddMappingRuleForm
     template_name = 'mapping/mappingrule_form.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        scan_report_field = ScanReportField.objects.get(
+            pk=self.kwargs.get('pk')
+        )
+
+        scan_report = scan_report_field.scan_report_table.scan_report
+        scan_report_table = scan_report_field.scan_report_table
+        scan_report_field = scan_report_field
+
+        context.update({
+            'scan_report': scan_report,
+            'scan_report_table': scan_report_table,
+            'scan_report_field': scan_report_field,
+        })
+
+        return context
 
     def form_valid(self, form):
 
@@ -197,6 +216,7 @@ class StructuralMappingDeleteView(DeleteView):
 
     success_url = reverse_lazy('fields')
 
+
 class StructuralMappingListView(ListView):
     model = MappingRule
 
@@ -230,20 +250,37 @@ class StructuralMappingListView(ListView):
 
 
 class StructuralMappingTableListView(ListView):
-    model = MappingRule
+    # model = MappingRule
+    model = ScanReportField
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        scan_report = ScanReport.objects.get(pk=self.kwargs.get('pk'))
+
+        context.update({
+            'scan_report': scan_report,
+        })
+
+        return context
+
     def get_queryset(self):
-        qs = super().get_queryset().order_by('id')
+        scan_report = ScanReport.objects.get(pk=self.kwargs.get('pk'))
+
+        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+
+        qs = super().get_queryset()
         search_term = self.kwargs.get('pk')
         if search_term is not None:
-            qs = qs.filter(scan_report_field__scan_report_table__scan_report__id=search_term)
+            # qs = qs.filter(scan_report_table__scan_report__id=search_term)
+            qs = qs.filter(id__in=mappingrule_id_list).order_by('name')
             return qs
 
 
-
 class ScanReportFormView(FormView):
-
     form_class = ScanReportForm
     template_name = 'mapping/upload_scan_report.html'
     success_url = reverse_lazy('scan-report-list')
@@ -265,7 +302,6 @@ class ScanReportFormView(FormView):
 
 
 class DocumentFormView(FormView):  # When is it best to use FormView?
-
     form_class = DocumentForm
     template_name = 'mapping/upload_document.html'
     success_url = reverse_lazy('document-list')
@@ -283,34 +319,32 @@ class DocumentFormView(FormView):  # When is it best to use FormView?
         document_file=DocumentFile.objects.create(
             document_file=form.cleaned_data['document_file'],
             size=20,
-            
+
             document=document
-            
+
         )
-        
+
         document_file.save()
         return super().form_valid(form)
+
 
 class DocumentListView(ListView):
     model = Document
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('data_partner')
-         return qs
-   
-    
+        qs = super().get_queryset().order_by('data_partner')
+        return qs
+
+
 class FileListView(ListView):
     model = DocumentFile
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('document_id')
-         search_term = self.request.GET.get('search', None)
-         if search_term is not None:
-             qs = qs.filter(document=search_term)
-         return qs
-   
-
-
+        qs = super().get_queryset().order_by('document_id')
+        search_term = self.request.GET.get('search', None)
+        if search_term is not None:
+            qs = qs.filter(document=search_term)
+        return qs
 
 
 class SignUpView(generic.CreateView):
