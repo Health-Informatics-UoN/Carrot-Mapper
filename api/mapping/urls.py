@@ -22,6 +22,8 @@ urlpatterns = [
     path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),
     path('file/', login_required(views.FileListView.as_view()), name='file-list'),
     path('ajax/load-omop-fields/', login_required(views.load_omop_fields), name='ajax_load_omop_fields'),
+    path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
+    path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]
 if settings.DEBUG: # new
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
