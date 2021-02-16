@@ -32,7 +32,7 @@
         <td>{{ object.author }}</td>
         <td>{{ object.created_at }}</td>
         <td><a href="{% url 'tables-structural-mapping' object.id %}">
-            <button type="button" class="btn btn-info">View Structural Map</button></a>
+            <button type="button" class="btn btn-info">View rules</button></a>
 <!--            <a href=""><button type="button" class="btn btn-info">View Term Map</button></a>-->
         </td>
     </tr>
@@ -41,9 +41,8 @@
 </table>
 
 {% else %}
-<p>There are no books in the library.</p>
+<p>No scan reports available.</p>
 {% endif %}
 
-<a href="{% url 'scan-report-form' %}" class="btn btn-primary">Upload
-    ScanReport</a>
+<a href="{% url 'scan-report-form' %}" class="btn btn-primary">New scan report</a>
 {% endblock %}

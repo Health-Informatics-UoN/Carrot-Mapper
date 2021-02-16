@@ -2,7 +2,15 @@
 
 {% block body %}
 
-<h2>Upload Document</h2>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'document-list' %}">Documents</a>
+        </li>
+    </ol>
+</nav>
+
+<h2>New document</h2>
 
 <form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
     <div class="mb-3">
@@ -16,14 +24,14 @@
         {{ form.document_type }}
     </div>
     <div class="mb-3">
-        {{ form.document_file.errors }}
-        <label class="form-label">{{ form.document_file.label}}</label>
-        {{ form.document_file }}
-    </div>
-    <div class="mb-3">
         {{ form.description.errors }}
         <label class="form-label">{{ form.description.label}}</label>
         {{ form.description }}
+    </div>
+    <div class="mb-3">
+        {{ form.document_file.errors }}
+        <label class="form-label">{{ form.document_file.label}}</label>
+        {{ form.document_file }}
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
