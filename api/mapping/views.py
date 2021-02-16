@@ -21,7 +21,7 @@ from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
     DocumentForm,DocumentFileForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
-from .tasks import process_scan_report_task
+from .tasks import process_scan_report_task, import_data_dictionary_task
 
 
 @login_required
@@ -302,7 +302,7 @@ class ScanReportFormView(FormView):
         return super().form_valid(form)
 
 
-class DocumentFormView(FormView):  # When is it best to use FormView?
+class DocumentFormView(FormView):
     form_class = DocumentForm
     template_name = 'mapping/upload_document.html'
     success_url = reverse_lazy('document-list')
@@ -320,11 +320,14 @@ class DocumentFormView(FormView):  # When is it best to use FormView?
         document_file=DocumentFile.objects.create(
             document_file=form.cleaned_data['document_file'],
             size=20,
-
             document=document
-
         )
         document_file.save()
+
+        # This code will be required later to import a data dictionary into the DataDictionary model
+        # filepath = document_file.document_file.path
+        # import_data_dictionary_task.delay(filepath)
+
         return super().form_valid(form)
 
 

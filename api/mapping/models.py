@@ -55,7 +55,7 @@ class ClassificationSystem(BaseModel):
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
     """
 
-    name = models.CharField(max_length=64)#128?
+    name = models.CharField(max_length=64)  # 128?
 
     def __str__(self):
         return self.name
@@ -98,6 +98,7 @@ class DocumentType(BaseModel):
 
 
 class ScanReport(BaseModel):
+
     # data_partner = models.CharField(max_length=128)
     data_partner = models.ForeignKey(
         DataPartner,
@@ -105,6 +106,7 @@ class ScanReport(BaseModel):
         blank=True,
         null=True,
     )
+
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -157,12 +159,14 @@ class ScanReportField(BaseModel):
     def __str__(self):
         return self.name
 
+
 # Models for rule mapping
 class OmopTable(BaseModel):
     table = models.CharField(max_length=64)
 
     def __str__(self):
         return self.table
+
 
 class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
@@ -192,6 +196,7 @@ class ScanReportValue(BaseModel):
 
 class Document(BaseModel):
     data_partner = models.ForeignKey(
+
         DataPartner,
         on_delete=models.CASCADE,
         blank=True,
@@ -235,3 +240,16 @@ class DocumentFile(BaseModel):
         self.document_file.name = os.path.basename(self.document_file.name)
 
         return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'
+        return f'{self.document_file, self.size, self.created_at, self.document_file.name}'
+
+
+class DataDictionary(BaseModel):
+    table = models.CharField(max_length=128)
+    field = models.CharField(max_length=128)
+    field_description = models.TextField()
+    value_code = models.CharField(max_length=128)
+    value_description = models.TextField()
+
+    def __str__(self):
+        return f'{self.table, self.field, self.value_code}'
+
