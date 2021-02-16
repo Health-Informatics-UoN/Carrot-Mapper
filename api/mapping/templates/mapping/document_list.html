@@ -22,6 +22,8 @@
                 <th scope="col">Document Type</th>
                 <th scope="col">Added on</th>
                 <th scope="col">Added by</th>
+                <th scope="col">Version</th>
+
                 <th>&nbsp;</th>
             </tr>
             </thead>
@@ -32,7 +34,9 @@
                 <td>{{object.document_type}}</td>
                 <td>{{object.created_at}}</td>
                 <td>{{object.owner}}</td>
-                <td><a href="{% url 'file-list' %}?search={{ object.id}}">Files</a></td>
+                <td> 
+                    <a href="{% url 'file-list' object.id %}">View {{object.document_type}} versions</a>
+                </td>
             </tr>
             {% endfor %}
             </tbody>
@@ -42,6 +46,6 @@
 {% else %}
 <p>No documents available.</p>
 {% endif %}
-<a class="btn btn-primary" href="{% url 'document-form'%}">New document</a>
+<a class="btn btn-primary" href="{% url 'document-form'%}">Upload New Document</a>
 
 {% endblock %}

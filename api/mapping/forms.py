@@ -2,63 +2,48 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document
 
 
 class ScanReportForm(forms.Form):
     data_partner = forms.ModelChoiceField(
         label="Data Partner",
-        queryset=DataPartner.objects.order_by('name'),
-        widget=forms.Select(
-            attrs={'class': 'form-control'}
-        )
+        queryset=DataPartner.objects.order_by("name"),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
-    # data_partner = forms.CharField(
-    #     label="Data Partner name",
-    #     widget=forms.TextInput(
-    #         attrs={'class': 'form-control'}
-    #     )
-    # )
+    
     dataset = forms.CharField(
-        label="Dataset name",
-        widget=forms.TextInput(
-            attrs={'class': 'form-control'}
-        )
+        label="Dataset name", widget=forms.TextInput(attrs={"class": "form-control"})
     )
     scan_report_file = forms.FileField(
         label="WhiteRabbit ScanReport",
-        widget=forms.FileInput(
-            attrs={'class': 'form-control'}
-        )
+        widget=forms.FileInput(attrs={"class": "form-control"}),
     )
 
 
 class AddMappingRuleForm(forms.Form):
     omop_table = forms.ModelChoiceField(
-        label='OMOP Table',
+        label="OMOP Table",
         queryset=OmopTable.objects.all(),
-        widget=forms.Select(
-            attrs={'class': 'form-control'}
-        )
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     omop_field = forms.ModelChoiceField(
-        label='OMOP Field',
+        label="OMOP Field",
         queryset=OmopField.objects.all(),
-        widget=forms.Select(
-            attrs={'class': 'form-control'}
-        )
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['omop_field'].queryset = OmopField.objects.none()
+        self.fields["omop_field"].queryset = OmopField.objects.none()
 
-        if 'omop_table' in self.data:
+        if "omop_table" in self.data:
             try:
-                omop_table_id = int(self.data.get('omop_table'))
-                self.fields['omop_field'].queryset = OmopField.objects.filter(
-                    table_id=omop_table_id).order_by('field')
+                omop_table_id = int(self.data.get("omop_table"))
+                self.fields["omop_field"].queryset = OmopField.objects.filter(
+                    table_id=omop_table_id
+                ).order_by("field")
             except (ValueError, TypeError):
                 pass  # invalid input from the client; ignore and fallback to empty City queryset
         # elif self.instance.pk:
@@ -66,9 +51,9 @@ class AddMappingRuleForm(forms.Form):
 
 
 class UserCreateForm(UserCreationForm):
-    email = forms.EmailField(required=True,
-                             label='Email',
-                             error_messages={'exists': 'Oops'})
+    email = forms.EmailField(
+        required=True, label="Email", error_messages={"exists": "Oops"}
+    )
 
     class Meta:
         model = User
@@ -82,40 +67,40 @@ class UserCreateForm(UserCreationForm):
         return user
 
     def clean_email(self):
-        if User.objects.filter(email=self.cleaned_data['email']).exists():
-            raise ValidationError(
-                self.fields['email'].error_messages['exists'])
-        return self.cleaned_data['email']
+        if User.objects.filter(email=self.cleaned_data["email"]).exists():
+            raise ValidationError(self.fields["email"].error_messages["exists"])
+        return self.cleaned_data["email"]
 
 
 class DocumentForm(forms.Form):
     data_partner = forms.ModelChoiceField(
         label="Data Partner",
-        queryset=DataPartner.objects.order_by('name'),
-        widget=forms.Select(
-            attrs={'class': 'form-control'}
-        )
+        queryset=DataPartner.objects.order_by("name"),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     document_type = forms.ModelChoiceField(
         label="Type",
-        queryset=DocumentType.objects.order_by('name'),
-        widget=forms.Select(
-            attrs={'class': 'form-control'}
-        )
+        queryset=DocumentType.objects.order_by("name"),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
 
     description = forms.CharField(
-        label="Description",
-        widget=forms.TextInput(
-            attrs={'class': 'form-control'}
-        )
+        label="Description", widget=forms.TextInput(attrs={"class": "form-control"})
     )
 
     document_file = forms.FileField(
-        label="File",
-        widget=forms.FileInput(
-            attrs={'class': 'form-control'}
-        )
+        label="File", widget=forms.FileInput(attrs={"class": "form-control"})
     )
 
+
+class DocumentFileForm(forms.Form):
+
+    document_file = forms.FileField(
+        label="Document", widget=forms.FileInput(attrs={"class": "form-control"})
+    )
+    document = forms.ModelChoiceField(label="Document", queryset=Document.objects.all())
+    description = forms.CharField(
+        label="Document Description",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )

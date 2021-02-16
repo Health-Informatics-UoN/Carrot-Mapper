@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 
 {% block body %}
-
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'document-list' %}">Documents</a>
         </li>
+
+        
     </ol>
 </nav>
 
-<h2>Files</h2>
+<h2>Document File Versions</h2>
+ 
 
 {% if object_list %}
 <form id="my_form">
@@ -21,7 +23,10 @@
                 <th scope="col">Name</th>
                 <th scope="col">Size</th>
                 <th scope="col">Added on</th>
-                <th scope="col">Added by</th>
+                <th scope="col">Status</th>
+                <th scope="col">Edit</th>
+                <th scope="col">Upload</th>
+
                 <th>&nbsp;</th>
             </tr>
             </thead>
@@ -39,9 +44,15 @@
                     {{object.created_at}}
                 </td>
                 <td>
-                    {{object.owner}}
+                    {% if object.status %}
+                    <i class="bi bi-check">{{object.status}}</i>
+                    {% endif %}
                 </td>
                 <td>
+                    <a href="{% url 'status-update' object.id %}">Change Status</a>
+                </td>
+                <td>
+                    <a href="{% url 'file-form' object.document.id%}">Upload New Version</a>
                 </td>
             </tr>
             {% endfor %}
@@ -50,4 +61,5 @@
     </div>
 </form>
 {% endif %}
+
 {% endblock %}

@@ -19,7 +19,7 @@ from django.views.generic.edit import FormView, UpdateView, DeleteView, \
 from extra_views import ModelFormSetView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
-    DocumentForm
+    DocumentForm,DocumentFileForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
 from .tasks import process_scan_report_task, import_data_dictionary_task
@@ -34,7 +34,7 @@ class ScanReportTableListView(ListView):
     model = ScanReportTable
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('name')
+        qs = super().get_queryset()
         search_term = self.request.GET.get('search', None)
         if search_term is not None and search_term is not '':
             qs = qs.filter(scan_report__id=search_term)
@@ -64,7 +64,7 @@ class ScanReportFieldListView(ListView):
     model = ScanReportField
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('name')
+        qs = super().get_queryset()
         search_term = self.request.GET.get('search', None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
@@ -105,6 +105,7 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
+
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -126,7 +127,7 @@ class ScanReportValueListView(ModelFormSetView):
     factory_kwargs = {'can_delete': False, 'extra': False}
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('scan_report_field__id')
+         qs = super().get_queryset()
          search_term = self.request.GET.get('search', None)
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
@@ -222,7 +223,7 @@ class StructuralMappingListView(ListView):
     model = MappingRule
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('scan_report_field__id')
+         qs = super().get_queryset()
          search_term = self.kwargs.get('pk')
          if search_term is not None:
              qs = qs.filter(scan_report_field=search_term)
@@ -277,7 +278,7 @@ class StructuralMappingTableListView(ListView):
         search_term = self.kwargs.get('pk')
         if search_term is not None:
             # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list).order_by('name')
+            qs = qs.filter(id__in=mappingrule_id_list)
             return qs
 
 
@@ -322,7 +323,6 @@ class DocumentFormView(FormView):
             size=20,
             document=document
         )
-
         document_file.save()
 
         # This code will be required later to import a data dictionary into the DataDictionary model
@@ -340,15 +340,50 @@ class DocumentListView(ListView):
         return qs
 
 
-class FileListView(ListView):
+class DocumentFileListView(ListView):
     model = DocumentFile
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('document_id')
-        search_term = self.request.GET.get('search', None)
-        if search_term is not None:
-            qs = qs.filter(document=search_term)
-        return qs
+         qs = super().get_queryset().order_by('status')
+         search_term = self.kwargs.get('pk')
+         if search_term is not None:
+             qs = qs.filter(document__id=search_term)
+         return qs
+
+
+class DocumentFileFormView(FormView):
+    model=DocumentFile
+    form_class = DocumentFileForm
+    template_name = 'mapping/upload_document_file.html'
+    # success_url=reverse_lazy('document-list')
+    
+    def form_valid(self, form):
+        document_file=DocumentFile.objects.create(
+            document_file=form.cleaned_data['document_file'],
+            size=20,
+            document=form.cleaned_data['document'],
+            # status="Inactive"
+        )
+
+        document_file.save()
+    
+        return super().form_valid(form)
+
+    def get_success_url(self, **kwargs):
+     self.object=self.kwargs.get('pk')
+     return reverse("file-list", kwargs={'pk': self.object})
+
+
+class DocumentFileStatusUpdateView(UpdateView):
+    model = DocumentFile
+    # success_url=reverse_lazy('file-list')
+    fields = [
+        'status'
+    ]
+
+    def get_success_url(self, **kwargs):
+    # obj = form.instance or self.object
+     return reverse("file-list", kwargs={'pk': self.object.document_id})
 
 
 class SignUpView(generic.CreateView):
