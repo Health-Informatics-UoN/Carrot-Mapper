@@ -325,8 +325,9 @@ class DocumentFormView(FormView):
 
         document_file.save()
 
-        filepath = document_file.document_file.path
-        import_data_dictionary_task.delay(filepath)
+        # This code will be required later to import a data dictionary into the DataDictionary model
+        # filepath = document_file.document_file.path
+        # import_data_dictionary_task.delay(filepath)
 
         return super().form_valid(form)
 
