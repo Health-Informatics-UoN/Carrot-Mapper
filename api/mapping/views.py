@@ -26,7 +26,6 @@ from .tasks import process_scan_report_task, import_data_dictionary_task
 
 @login_required
 def home(request):
-
     return render(request, 'mapping/home.html', {})
 
 
