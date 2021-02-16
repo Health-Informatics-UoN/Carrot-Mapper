@@ -2,7 +2,7 @@
 
 from celery import shared_task
 from .models import ScanReport
-from .services import process_scan_report
+from .services import process_scan_report, import_data_dictionary
 
 
 @shared_task
@@ -35,4 +35,9 @@ def rename_scanreport(scanreport_id, name):
 @shared_task
 def process_scan_report_task(scan_report_id):
     process_scan_report(scan_report_id)
+
+
+@shared_task
+def import_data_dictionary_task(filepath):
+    import_data_dictionary(filepath)
 

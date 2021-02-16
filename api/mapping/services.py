@@ -3,11 +3,10 @@ import csv
 from xlsx2csv import Xlsx2csv
 
 from .models import ScanReport, ScanReportTable, ScanReportField, \
-    ScanReportValue
+    ScanReportValue, DataDictionary
 
 
 def process_scan_report_sheet_table(filename):
-
     """
     This function converts a White Rabbit scan report to CSV and extract the
     data into the format below.
@@ -36,7 +35,7 @@ def process_scan_report_sheet_table(filename):
 
         column_names = []
 
-        #reader = csv.reader(f)
+        # reader = csv.reader(f)
 
         # == Comment - Calum 4/2/2020
         # * This is a fix for the following error..
@@ -51,7 +50,6 @@ def process_scan_report_sheet_table(filename):
         for row_idx, row in enumerate(reader):
 
             if row_idx == 0:
-
                 column_names = row
 
                 continue
@@ -65,7 +63,6 @@ def process_scan_report_sheet_table(filename):
                     # This is required b/c value/frequency col pairs differ
                     # in the number of rows
                     if row[col_idx] == '' and row[col_idx + 1] == '':
-
                         continue
 
                     result.append((column_names[col_idx], row[col_idx], row[col_idx + 1]))
@@ -74,7 +71,6 @@ def process_scan_report_sheet_table(filename):
 
 
 def process_scan_report(scan_report_id):
-
     scan_report = ScanReport.objects.get(pk=scan_report_id)
 
     xlsx = Xlsx2csv(
@@ -98,7 +94,6 @@ def process_scan_report(scan_report_id):
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
             if row and row[0] != '':
-
                 # This links ScanReportTable to ScanReport
                 # [:31] is because excel is a pile of s***
                 # - sheet names are truncated to 31 characters
@@ -123,7 +118,6 @@ def process_scan_report(scan_report_id):
                     fraction_unique=row[9]
                 )
 
-
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
@@ -131,7 +125,7 @@ def process_scan_report(scan_report_id):
         if idxsheet < 2:
             continue
 
-        #skip these sheets at the end of the scan report
+        # skip these sheets at the end of the scan report
         if sheet['name'] == '_':
             continue
 
@@ -152,7 +146,7 @@ def process_scan_report(scan_report_id):
 
         # Get the filepath to the converted CSV files
         filename = "/tmp/{}".format(sheet['name'])
-        xlsx.convert(filename, sheetid=idxsheet+1)
+        xlsx.convert(filename, sheetid=idxsheet + 1)
 
         results = process_scan_report_sheet_table(filename)
 
@@ -178,4 +172,28 @@ def process_scan_report(scan_report_id):
                 scan_report_field=scan_report_field,
                 value=result[1][:127],
                 frequency=frequency,
+            )
+
+
+def import_data_dictionary(filepath):
+    filepath = filepath
+
+    with open(filepath, 'rt') as f:
+        reader = csv.reader(f)
+        next(reader)  # Skip header row
+
+        # Assumes that the input columns are in the same order as the Twins data dictionary
+        for row in reader:
+
+            if row[0][0] == '':
+                continue
+
+            print(row)
+            
+            DataDictionary.objects.create(
+                table=row[0],
+                field=row[1],
+                field_description=row[2],
+                value_code=row[3],
+                value_description=row[4]
             )

@@ -4,7 +4,8 @@ from .models import DocumentType, Source, DataPartner, ScanReport, \
     ScanReportTable, \
     ScanReportField, ScanReportValue, \
     ClassificationSystem, OmopTable, OmopField, MappingRule, Document, \
-    DocumentFile
+    DocumentFile, DataDictionary
+
 
 admin.site.register(DataPartner)
 admin.site.register(DocumentType)
@@ -19,3 +20,4 @@ admin.site.register(OmopField)
 admin.site.register(MappingRule)
 admin.site.register(Document)
 admin.site.register(DocumentFile)
+admin.site.register(DataDictionary)
