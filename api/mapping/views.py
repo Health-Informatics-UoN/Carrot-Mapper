@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import send_mail, BadHeaderError
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
@@ -355,12 +355,13 @@ class SignUpView(generic.CreateView):
     template_name = 'registration/signup.html'
 
 
-class PasswordsChangeView(PasswordChangeView):
-    form_class = PasswordChangeForm
-    success_url = reverse_lazy('password-success')
+class CCPasswordChangeView(PasswordChangeView):
+    pass
 
-def password_success(request):
-    return render(request, 'registration/password-success.html', {})
+
+class CCPasswordChangeDoneView(PasswordChangeDoneView):
+    pass
+
 
 def password_reset_request(request):
     if request.method == "POST":
