@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import send_mail, BadHeaderError
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
@@ -389,6 +390,14 @@ class SignUpView(generic.CreateView):
     form_class = UserCreateForm
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
+
+
+class CCPasswordChangeView(PasswordChangeView):
+    pass
+
+
+class CCPasswordChangeDoneView(PasswordChangeDoneView):
+    pass
 
 
 def password_reset_request(request):
