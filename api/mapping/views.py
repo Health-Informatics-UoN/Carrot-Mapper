@@ -290,9 +290,9 @@ class StructuralMappingTableListView(ListView):
             
         if return_type == 'csv':
             #covert our dictiionary into a csv
-            result = ",".join(f"{key}" for key in output.keys())
+            result = ",".join(f'"{key}"' for key in output.keys())
             for irow in range(len(output['rule_id'])):
-                result+='\n'+ ",".join(f"{output[key][irow]}" for key in output.keys())
+                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
 
             response = HttpResponse(result, content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
@@ -332,9 +332,9 @@ class StructuralMappingTableListView(ListView):
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
 
     
-        result = ",".join(f"{key}" for key in output.keys())
+        result = ",".join(f'"{key}"' for key in output.keys())
         for irow in range(len(output['rule_id'])):
-            result+='\n'+ ",".join(f"{output[key][irow]}" for key in output.keys())
+            result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
             
         response = HttpResponse(result, content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
