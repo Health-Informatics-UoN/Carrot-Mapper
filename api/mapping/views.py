@@ -24,6 +24,8 @@ from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
 from .tasks import process_scan_report_task, import_data_dictionary_task
 
+import json
+
 
 @login_required
 def home(request):
@@ -256,14 +258,53 @@ class StructuralMappingTableListView(ListView):
     model = ScanReportField
     template_name = "mapping/mappingrulesscanreport_list.html"
 
-    def download_sm(self,request,pk):
+    def download_structural_mapping(self,request,pk,return_type='csv'):
         scan_report = ScanReport.objects.get(pk=pk)
         mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
         mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
 
         qs = super().get_queryset().filter(id__in=mappingrule_id_list)
-        print (qs)
         
+        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','term_mapping','coding_system','operation']}
+
+
+        for obj in qs:
+            for rule in obj.mappingrule_set.all():
+                output['rule_id'].append(rule.id)
+                output['destination_table'].append(rule.omop_field.table.table)
+                output['destination_field'].append(rule.omop_field.field)
+                output['source_table'].append(obj.scan_report_table.name)
+                output['source_field'].append(obj.name)
+
+                #this needs to be updated if there is a coding system
+                output['coding_system'].append("user defined")
+                                
+                is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
+                is_mapped = 'y' if is_mapped else 'n'
+                output['term_mapping'].append(is_mapped)
+
+                output['operation'].append(rule.operation)               
+
+        #define the name of the output file
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
+            
+        if return_type == 'csv':
+            #covert our dictiionary into a csv
+            result = ",".join(f"{key}" for key in output.keys())
+            for irow in range(len(output['rule_id'])):
+                result+='\n'+ ",".join(f"{output[key][irow]}" for key in output.keys())
+            
+            response = HttpResponse(result, content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            return response
+        elif return_type == 'json':
+            response = HttpResponse(json.dumps(output), content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            return response
+        else:
+            #implement other return types if needed
+            return redirect(request.path)
+
         
     def download_tm(self,request,pk):
         pass
@@ -272,15 +313,14 @@ class StructuralMappingTableListView(ListView):
 
         pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
-            self.download_sm(request,pk)
+            return self.download_structural_mapping(request,pk)
         elif request.POST.get('download-tm') is not None:
-            self.download_tm(request,pk)
+            return self.download_tm(request,pk)
         else:
             #define more buttons to click
             pass
-            
-        
 
+        
         return redirect(request.path)
 
     
