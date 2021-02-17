@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+    </ol>
+</nav>
+
+<h2>Data Dictionary</h2>
+
+{% if object_list %}
+<form id="my_form">
+    <div class="form-group">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Source Table</th>
+                <th scope="col">Source Field</th>
+                <th scope="col">Source Value</th>
+                <th scope="col">Dictionary Table</th>
+                <th scope="col">Dictionary Field</th>
+                <th scope="col">Dictionary Field Description</th>
+                <th scope="col">Dictionary Value Code</th>
+                <th scope="col">Dictionary Value Description</th>
+                <th scope="col">Edit</th>
+
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for object in object_list %}
+            <tr>
+            <td>{{ object.source_value.scan_report_field.scan_report_table }}</td>
+            <td>{{ object.source_value.scan_report_field }}</td>
+            <td>{{ object.source_value }}</td>
+            <td>{{ object.dictionary_table }}</td>
+            <td>{{ object.dictionary_field }}</td>
+            <td>{{ object.dictionary_field_description }}</td>
+            <td>{{ object.dictionary_value_code }}</td>
+            <td>{{ object.dictionary_value_description }}</td>
+            <td><a href="{% url 'update-data-dictionary' object.id %}">Edit</a></td>
+               
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <!--<div class="form-row">
+            <input type="submit" class="btn btn-primary" name="update"
+                   value="Update">
+            <input type="submit" class="btn btn-secondary" name="run_nlp"
+                   value="Run NLP">
+            <input type="submit" class="btn btn-secondary" name="run_usagi"
+                   value="Run Usagi">
+        </div>-->
+    </div>
+</form>
+{% endif %}
+
+{% endblock %}

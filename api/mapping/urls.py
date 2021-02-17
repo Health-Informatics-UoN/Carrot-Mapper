@@ -17,6 +17,10 @@ urlpatterns = [
     path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
     path('scanreports/<int:pk>/mapping_rules', login_required(views.StructuralMappingTableListView.as_view()), name='tables-structural-mapping'),
     path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
+    
+    path('datadictionary/', login_required(views.DataDictionaryListView.as_view()), name='data-dictionary'),
+    path('datadictionary/<int:pk>/update', login_required(views.DataDictionaryUpdateView.as_view()), name='update-data-dictionary'),
+
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', login_required(views.DocumentFormView.as_view()), name='document-form'),
     path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),

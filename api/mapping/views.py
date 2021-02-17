@@ -21,7 +21,7 @@ from extra_views import ModelFormSetView
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
     DocumentForm,DocumentFileForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
-    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
+    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document, DataDictionary
 from .tasks import process_scan_report_task, import_data_dictionary_task
 
 
@@ -372,6 +372,33 @@ class DocumentFileFormView(FormView):
     def get_success_url(self, **kwargs):
      self.object=self.kwargs.get('pk')
      return reverse("file-list", kwargs={'pk': self.object})
+
+    
+class DataDictionaryListView(ListView):
+        model = DataDictionary
+        paginate_by = 10
+        ordering = ['-dictionary_table']
+
+        def get_queryset(self):
+            qs = super().get_queryset()
+            search_term = self.request.GET.get('search', None)
+            if search_term is not None:
+                qs = qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+            return qs
+
+
+class DataDictionaryUpdateView(UpdateView):
+    model = DataDictionary
+    fields = [
+        'dictionary_table',
+        'dictionary_field',
+        'dictionary_field_description',
+        'dictionary_value_code',
+        'dictionary_value_description'
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('data-dictionary'), self.object.source_value.scan_report_field.scan_report_table.scan_report.id)
 
 
 class DocumentFileStatusUpdateView(UpdateView):
