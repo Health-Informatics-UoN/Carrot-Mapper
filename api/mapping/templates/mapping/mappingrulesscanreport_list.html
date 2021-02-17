@@ -24,6 +24,7 @@
         <th scope="col">Destination Field</th>
         <th scope="col">Source Table</th>
         <th scope="col">Source Field</th>
+        <th scope="col">Operation</th>
         <th scope="col">Logic</th>
     </tr>
     </thead>
@@ -36,7 +37,8 @@
                 <td>{{ mr.omop_field.table.table }}</td>
                 <td>{{ mr.omop_field.field }}</td>
                 <td>{{ object.scan_report_table }}</td>
-                <td>{{ object }}</td>
+                <td>{{ object.name }}</td>
+                <td>{{ mr.operation }}</td>
                 <td>
                     {% for value in object.scanreportvalue_set.all %}
                         {% if value.conceptID > 0 %}

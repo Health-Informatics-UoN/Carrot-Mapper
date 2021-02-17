@@ -5,9 +5,19 @@ from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
 STATUS_CHOICES = [
-        ("LIVE", 'Live'),
-        ("ARCHIVED", 'Archived'),
-    ]
+    ("LIVE", 'Live'),
+    ("ARCHIVED", 'Archived'),
+]
+
+OPERATION_NONE = 'NONE'
+OPERATION_EXTRACT_YEAR = 'EXTRACT_YEAR'
+
+OPERATION_CHOICES = [
+    (OPERATION_NONE, 'No operation'),
+    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field')
+]
+
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -177,8 +187,21 @@ class OmopField(BaseModel):
 
 
 class MappingRule(BaseModel):
-    omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
-    scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
+
+    scan_report_field = models.ForeignKey(
+        ScanReportField,
+        on_delete=models.CASCADE
+    )
+
+    operation = models.CharField(
+        max_length=32,
+        choices=OPERATION_CHOICES,
+        default=OPERATION_NONE,
+    )
 
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
@@ -252,4 +275,3 @@ class DataDictionary(BaseModel):
 
     def __str__(self):
         return f'{self.table, self.field, self.value_code}'
-

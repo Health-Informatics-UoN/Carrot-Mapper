@@ -105,7 +105,6 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
-
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -191,7 +190,8 @@ class AddMappingRuleFormView(FormView):
 
         mapping = MappingRule.objects.create(
             omop_field=form.cleaned_data['omop_field'],
-            scan_report_field=scan_report_field
+            operation=form.cleaned_data['operation'],
+            scan_report_field=scan_report_field,
         )
 
         mapping.save()
@@ -356,7 +356,7 @@ class DocumentFileFormView(FormView):
     form_class = DocumentFileForm
     template_name = 'mapping/upload_document_file.html'
     # success_url=reverse_lazy('document-list')
-    
+
     def form_valid(self, form):
         document_file=DocumentFile.objects.create(
             document_file=form.cleaned_data['document_file'],
@@ -366,7 +366,7 @@ class DocumentFileFormView(FormView):
         )
 
         document_file.save()
-    
+
         return super().form_valid(form)
 
     def get_success_url(self, **kwargs):
