@@ -293,10 +293,11 @@ class StructuralMappingTableListView(ListView):
             result = ",".join(f"{key}" for key in output.keys())
             for irow in range(len(output['rule_id'])):
                 result+='\n'+ ",".join(f"{output[key][irow]}" for key in output.keys())
-            
+
             response = HttpResponse(result, content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
+        #not used but here if we want it for the api...
         elif return_type == 'json':
             response = HttpResponse(json.dumps(output), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
@@ -306,8 +307,39 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
 
         
-    def download_tm(self,request,pk):
-        pass
+    def download_term_mapping(self,request,pk):
+         #define the name of the output file
+
+        scan_report = ScanReport.objects.get(pk=pk)
+        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+
+        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+
+        output = { name:[] for name in ['rule_id','source_term','destination_term']}
+
+        for rule in mappingrule_list:
+            for obj in rule.scan_report_field.scanreportvalue_set.all():
+                if obj.conceptID == -1:
+                    continue
+                
+                output['rule_id'].append(rule.id)
+                output['source_term'].append(obj.value)
+                output['destination_term'].append(obj.conceptID)
+
+
+        return_type = 'csv'
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
+
+    
+        result = ",".join(f"{key}" for key in output.keys())
+        for irow in range(len(output['rule_id'])):
+            result+='\n'+ ",".join(f"{output[key][irow]}" for key in output.keys())
+            
+        response = HttpResponse(result, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        return response
+
     
     def post(self,request,*args, **kwargs):
 
@@ -315,7 +347,7 @@ class StructuralMappingTableListView(ListView):
         if request.POST.get('download-sm') is not None:
             return self.download_structural_mapping(request,pk)
         elif request.POST.get('download-tm') is not None:
-            return self.download_tm(request,pk)
+            return self.download_term_mapping(request,pk)
         else:
             #define more buttons to click
             pass
