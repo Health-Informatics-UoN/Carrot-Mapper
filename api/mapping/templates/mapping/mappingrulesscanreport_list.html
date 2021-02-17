@@ -14,6 +14,14 @@
 
 <h2>Mapping Rules</h2>
 
+
+<form method="post">{% csrf_token %}
+  <button type="submit" class="btn btn-primary" name='download-sm' >Download SM</button>
+  <button type="submit" class="btn btn-primary" name='download-tm' >Download TM</button>
+</form>
+
+
+
 {% if object_list %}
 <table class="table">
     <thead>

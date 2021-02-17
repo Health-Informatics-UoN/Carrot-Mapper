@@ -256,7 +256,36 @@ class StructuralMappingTableListView(ListView):
     model = ScanReportField
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def download_sm(self,request,pk):
+        scan_report = ScanReport.objects.get(pk=pk)
+        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+
+        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+        print (qs)
+        
+        
+    def download_tm(self,request,pk):
+        pass
+    
+    def post(self,request,*args, **kwargs):
+
+        pk = self.kwargs.get('pk')
+        if request.POST.get('download-sm') is not None:
+            self.download_sm(request,pk)
+        elif request.POST.get('download-tm') is not None:
+            self.download_tm(request,pk)
+        else:
+            #define more buttons to click
+            pass
+            
+        
+
+        return redirect(request.path)
+
+    
     def get_context_data(self, **kwargs):
+                
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
 
