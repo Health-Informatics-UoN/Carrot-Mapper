@@ -400,6 +400,10 @@ class DataDictionaryUpdateView(UpdateView):
     def get_success_url(self):
         return "{}?search={}".format(reverse('data-dictionary'), self.object.source_value.scan_report_field.scan_report_table.scan_report.id)
 
+def MergeDictionary(request):
+    context = {}
+
+    return render(request, 'mapping/mergedictionary.html', context)
 
 class DocumentFileStatusUpdateView(UpdateView):
     model = DocumentFile

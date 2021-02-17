@@ -18,9 +18,9 @@
         <table class="table">
             <thead>
             <tr>
-                <th scope="col">Source Table</th>
-                <th scope="col">Source Field</th>
-                <th scope="col">Source Value</th>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Table</p></th>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Field</p></th>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Value</p></th>
                 <th scope="col">Dictionary Table</th>
                 <th scope="col">Dictionary Field</th>
                 <th scope="col">Dictionary Field Description</th>
@@ -34,9 +34,9 @@
 
             {% for object in object_list %}
             <tr>
-            <td>{{ object.source_value.scan_report_field.scan_report_table }}</td>
-            <td>{{ object.source_value.scan_report_field }}</td>
-            <td>{{ object.source_value }}</td>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value.scan_report_field.scan_report_table }}</p></td>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value.scan_report_field }}</p></td>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value }}</p></td>
             <td>{{ object.dictionary_table }}</td>
             <td>{{ object.dictionary_field }}</td>
             <td>{{ object.dictionary_field_description }}</td>
@@ -48,14 +48,28 @@
             {% endfor %}
             </tbody>
         </table>
-        <!--<div class="form-row">
-            <input type="submit" class="btn btn-primary" name="update"
-                   value="Update">
-            <input type="submit" class="btn btn-secondary" name="run_nlp"
-                   value="Run NLP">
-            <input type="submit" class="btn btn-secondary" name="run_usagi"
-                   value="Run Usagi">
-        </div>-->
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+<br>
+
+<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge External Dictionary</a>
+
     </div>
 </form>
 {% endif %}
