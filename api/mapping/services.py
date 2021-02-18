@@ -197,3 +197,65 @@ def import_data_dictionary(filepath):
                 value_code=row[3],
                 value_description=row[4]
             )
+
+
+def build_usagi_index():
+    # Use 'build' to create index for the first time.
+    # Index stored in data/usagi/mainIndex
+    p = subprocess.Popen('java -jar Usagi.jar build usagi_build_index.properties', cwd="/data/usagi", shell=True,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    # Print console output to screen so you can see it's working (or not!)
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        if not isinstance(line, (str)):
+            line = line.decode('utf-8')
+        stdout.append(line)
+        print(line)
+        if (line == '' and p.poll() != None):
+            break
+
+
+def run_usagi(scan_report_id):
+
+    # Return values as dataframe then save to .CSV
+    s = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report__id=scan_report_id)
+    dat = pd.DataFrame.from_dict(s.values('scan_report_field__name', 'value', 'frequency'))
+    dat = dat[~dat.scan_report_field__name.str.contains("ID")] # Temporary Filter
+    dat = dat[~dat.scan_report_field__name.str.contains("Date")] # Temporary Filter
+    dat = dat.head(10)
+    dat.to_csv('/data/usagi/usagi_input/usagi_input_data.csv', index=False)
+    print(dat)
+
+    # Create Usagi Properties File
+    f = open("/data/usagi/usagi_input/usagi.properties", "w+")
+
+    # Input/Output file paths
+    f.write("usagiFolder=/data/usagi/mainIndex/\n")
+    f.write("mappingFile=/data/usagi/usagi_output/usagi_output.csv\n")
+    f.write("vocabFolder=/data/usagi/vocabs/\n")
+    f.write("sourceFile=/data/usagi/usagi_input/usagi_input_data.csv\n")
+    f.write("sourceNameColumn=" + "scan_report_field__name\n") # sourcenamedescription is actually the *description* of the column (i.e. if we had a dictionary)
+    f.write("sourceCodeColumn=" + "value\n") # correct
+    f.write("sourceFrequencyColumn=" + "frequency\n")
+    f.write("fieldID=" + "value\n") # what the col name is called
+    f.write("fieldDesc=" + "scan_report_field__name\n") # column description
+
+    f.close()
+
+    # Run Usagi
+    p = subprocess.Popen('java -jar Usagi.jar run /data/usagi/usagi_input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        if not isinstance(line, (str)):
+            line = line.decode('utf-8')
+        stdout.append(line)
+        print(line)
+        if (line == '' and p.poll() != None):
+            break
+
+    # Clean up inputs
+    # os.remove('/data/usagi/usagi_input/usagi_input_data.csv')
+    # os.remove('/data/usagi/usagi_input/usagi.properties')
