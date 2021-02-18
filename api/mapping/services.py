@@ -2,6 +2,8 @@ import csv
 
 from xlsx2csv import Xlsx2csv
 
+import subprocess
+
 from .models import ScanReport, ScanReportTable, ScanReportField, \
     ScanReportValue, DataDictionary
 
