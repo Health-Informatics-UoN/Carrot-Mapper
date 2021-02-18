@@ -45,8 +45,17 @@
                 <td>{{ mr.omop_field.table.table }}</td>
                 <td>{{ mr.omop_field.field }}</td>
                 <td>{{ object.scan_report_table }}</td>
-                <td>{{ object.name }}</td>
-                <td>{{ mr.operation }}</td>
+                <td> {{ object.name }}</td>
+		{% if mr.operation == "CUSTOM" %}
+		<td>
+		  <a href='javascript:void(0)' class="btn-custom-operation text-warning"> {{ mr.operation }}</a>
+		  <div id='custom_content' hidden>
+		    <pre>{{ mr.custom_operation }}</pre>
+		  </div>
+		</td>
+		{% else %}
+		<td>{{ mr.operation }} </td>
+		{% endif %}
                 <td>
                     {% for value in object.scanreportvalue_set.all %}
                         {% if value.conceptID > 0 %}
@@ -63,5 +72,17 @@
 {% else %}
 <p>There are currently no rules for this scan report.</p>
 {% endif %}
+
+
+<script>
+  $(".btn-custom-operation").click(function(){
+	if($(this).next('div').attr('hidden')){
+	      $(this).next('div').prop('hidden', false);
+	}
+	else{
+	      $(this).next('div').prop('hidden',true);
+	}
+  });
+</script>
 
 {% endblock %}

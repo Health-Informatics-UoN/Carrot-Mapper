@@ -11,10 +11,12 @@ STATUS_CHOICES = [
 
 OPERATION_NONE = 'NONE'
 OPERATION_EXTRACT_YEAR = 'EXTRACT_YEAR'
+OPERATION_CUSTOM = 'CUSTOM'
 
 OPERATION_CHOICES = [
     (OPERATION_NONE, 'No operation'),
-    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field')
+    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field'),
+    (OPERATION_CUSTOM, 'Custom SQL command')
 ]
 
 
@@ -203,6 +205,11 @@ class MappingRule(BaseModel):
         default=OPERATION_NONE,
     )
 
+    custom_operation = models.CharField(
+        max_length=100000,
+    )
+
+    
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
 

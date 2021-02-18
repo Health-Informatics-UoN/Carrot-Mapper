@@ -193,6 +193,7 @@ class AddMappingRuleFormView(FormView):
         mapping = MappingRule.objects.create(
             omop_field=form.cleaned_data['omop_field'],
             operation=form.cleaned_data['operation'],
+            custom_operation=form.cleaned_data['custom'],
             scan_report_field=scan_report_field,
         )
 
@@ -283,7 +284,10 @@ class StructuralMappingTableListView(ListView):
                 is_mapped = 'y' if is_mapped else 'n'
                 output['term_mapping'].append(is_mapped)
 
-                output['operation'].append(rule.operation)               
+                output['operation'].append(rule.operation)
+
+                print (rule.custom)
+
 
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"

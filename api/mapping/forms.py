@@ -40,6 +40,12 @@ class AddMappingRuleForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
+    custom = forms.CharField(
+        label='Custom SQL',
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control"})
+    )   
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["omop_field"].queryset = OmopField.objects.none()

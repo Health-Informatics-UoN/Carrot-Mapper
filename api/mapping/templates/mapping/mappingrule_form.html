@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block body %}
+<style>
+  .hide {
+      display: none !important;
+  }
+</style>
+
+
 
 <h2>Add Structural Mapping</h2>
 <nav aria-label="breadcrumb">
@@ -24,7 +31,22 @@
     <input type="submit" class="btn btn-primary" value="Add Structural Mapping">
 </form>
 
-  <script>
+<script>
+
+  $("textarea#id_custom").addClass('hide');
+  $("label[for=id_custom]").addClass('hide');
+  
+  $("#id_operation").change(function() {
+	if ($(this).val() == "CUSTOM"){
+	      $("textarea#id_custom").removeClass('hide');
+	      $("label[for=id_custom]").removeClass('hide');
+	}
+	else{
+	      $("textarea#id_custom").addClass('hide');
+	      $("label[for=id_custom]").addClass('hide');
+	}
+  })
+  
     $("#id_omop_table").change(function () {
       var url = $("#mappingRuleForm").attr("data-omop-fields-url");  // get the url of the `load_cities` view
       var omop_table_id = $(this).val();  // get the selected country ID from the HTML input
