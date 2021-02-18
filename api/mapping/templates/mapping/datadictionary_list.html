@@ -7,11 +7,9 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
-    </ol>
+            <li class="breadcrumb-item">{{ scan_report.data_partner }} - {{ scan_report.dataset }}</li>
 </nav>
-
-<h2>Data Dictionary</h2>
-
+<h2>Data Dictionary for {{ scan_report.data_partner }} - {{ scan_report.dataset }}</h2>
 {% if object_list %}
 <form id="my_form">
     <div class="form-group">
@@ -26,6 +24,7 @@
                 <th scope="col">Dictionary Field Description</th>
                 <th scope="col">Dictionary Value Code</th>
                 <th scope="col">Dictionary Value Description</th>
+                <th scope="col">Definition Fixed</th>
                 <th scope="col">Edit</th>
 
             </tr>
@@ -42,6 +41,7 @@
             <td>{{ object.dictionary_field_description }}</td>
             <td>{{ object.dictionary_value_code }}</td>
             <td>{{ object.dictionary_value_description }}</td>
+            <td>{{ object.definition_fixed }}</td>
             <td><a href="{% url 'update-data-dictionary' object.id %}">Edit</a></td>
                
             </tr>
@@ -68,7 +68,7 @@
 </div>
 <br>
 
-<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge External Dictionary</a>
+<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
 
     </div>
 </form>

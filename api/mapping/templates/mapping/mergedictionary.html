@@ -5,5 +5,12 @@
 
 <h2>Merge Data Dictionary</h2>
 <p>Use this page to merge an external data dictionary into the CO-CONNECT app.</p>
+<p>Fields whose definitions you've marked as fixed <em><b>will not</b></em> be overwritten by the merge.</p>
+<br>
+ <form class="form-group" method="post">
+    {% csrf_token %}
+    {{form|linebreaks}}
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
 
 {% endblock %}

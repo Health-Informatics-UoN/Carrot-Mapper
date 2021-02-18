@@ -239,8 +239,8 @@ class DocumentFile(BaseModel):
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
 
-        return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'
-        return f'{self.document_file, self.size, self.created_at, self.document_file.name}'
+        # return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'
+        return f'{self.document_file, self.status}'
 
 
 class DataDictionary(BaseModel):
@@ -251,6 +251,7 @@ class DataDictionary(BaseModel):
     dictionary_field_description = models.TextField(blank=True)
     dictionary_value_code = models.CharField(max_length=128, blank=True)
     dictionary_value_description = models.TextField(blank=True)
+    definition_fixed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.source_value, self.dictionary_table, self.dictionary_field, self.dictionary_value_code}'
