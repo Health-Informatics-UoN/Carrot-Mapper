@@ -24,6 +24,9 @@ from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
 from .tasks import process_scan_report_task, import_data_dictionary_task
 
+from .services import process_scan_report, run_usagi
+from .tasks import process_scan_report_task, run_usagi
+
 
 @login_required
 def home(request):
