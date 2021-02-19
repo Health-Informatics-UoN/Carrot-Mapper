@@ -286,7 +286,6 @@ class StructuralMappingTableListView(ListView):
 
                 output['operation'].append(rule.operation)
 
-                print (rule.custom)
 
 
         #define the name of the output file
