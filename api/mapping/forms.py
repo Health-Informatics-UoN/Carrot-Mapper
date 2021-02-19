@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, OPERATION_CHOICES
 
 
 class ScanReportForm(forms.Form):
@@ -31,6 +31,12 @@ class AddMappingRuleForm(forms.Form):
     omop_field = forms.ModelChoiceField(
         label="OMOP Field",
         queryset=OmopField.objects.all(),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    operation = forms.ChoiceField(
+        label='Operation',
+        choices=OPERATION_CHOICES,
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
