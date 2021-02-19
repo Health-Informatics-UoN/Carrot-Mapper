@@ -12,6 +12,9 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, \
@@ -24,14 +27,14 @@ from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
 from .tasks import process_scan_report_task, import_data_dictionary_task
 
-import json
 
+import json
 
 @login_required
 def home(request):
     return render(request, 'mapping/home.html', {})
 
-
+@method_decorator(login_required,name='dispatch')
 class ScanReportTableListView(ListView):
     model = ScanReportTable
 
@@ -62,6 +65,7 @@ class ScanReportTableListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFieldListView(ListView):
     model = ScanReportField
 
@@ -94,6 +98,7 @@ class ScanReportFieldListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -107,6 +112,7 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
@@ -116,11 +122,12 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
-
+@method_decorator(login_required,name='dispatch')
 class ScanReportListView(ListView):
     model = ScanReport
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ['value','frequency','conceptID']
@@ -161,6 +168,7 @@ class ScanReportValueListView(ModelFormSetView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class AddMappingRuleFormView(FormView):
     form_class = AddMappingRuleForm
     template_name = 'mapping/mappingrule_form.html'
@@ -209,6 +217,7 @@ class AddMappingRuleFormView(FormView):
         return "{}?search={}".format(reverse('fields'), scan_report_field.scan_report_table.id)
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingDeleteView(DeleteView):
     model = MappingRule
 
@@ -222,6 +231,7 @@ class StructuralMappingDeleteView(DeleteView):
     success_url = reverse_lazy('fields')
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
     model = MappingRule
 
@@ -254,6 +264,7 @@ class StructuralMappingListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ListView):
     # model = MappingRule
     model = ScanReportField
@@ -386,6 +397,7 @@ class StructuralMappingTableListView(ListView):
             return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFormView(FormView):
     form_class = ScanReportForm
     template_name = 'mapping/upload_scan_report.html'
@@ -407,6 +419,7 @@ class ScanReportFormView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFormView(FormView):
     form_class = DocumentForm
     template_name = 'mapping/upload_document.html'
@@ -436,6 +449,7 @@ class DocumentFormView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentListView(ListView):
     model = Document
 
@@ -444,6 +458,7 @@ class DocumentListView(ListView):
         return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileListView(ListView):
     model = DocumentFile
 
@@ -455,6 +470,7 @@ class DocumentFileListView(ListView):
          return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileFormView(FormView):
     model=DocumentFile
     form_class = DocumentFileForm
@@ -478,6 +494,7 @@ class DocumentFileFormView(FormView):
      return reverse("file-list", kwargs={'pk': self.object})
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileStatusUpdateView(UpdateView):
     model = DocumentFile
     # success_url=reverse_lazy('file-list')
@@ -496,12 +513,33 @@ class SignUpView(generic.CreateView):
     template_name = 'registration/signup.html'
 
 
-class CCPasswordChangeView(PasswordChangeView):
-    pass
+@method_decorator(login_required,name='dispatch')
+class CCPasswordChangeView(FormView):
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('password_change_done')
+    template_name = 'registration/password_change_form.html'
+    
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class CCPasswordChangeDoneView(PasswordChangeDoneView):
-    pass
+    template_name = 'registration/password_change_done.html'
+    
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 def password_reset_request(request):
