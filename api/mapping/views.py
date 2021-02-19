@@ -112,10 +112,7 @@ class ScanReportFieldUpdateView(UpdateView):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 
 
-<<<<<<< HEAD
-=======
 @method_decorator(login_required,name='dispatch')
->>>>>>> origin/master
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = [
