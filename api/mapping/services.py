@@ -179,37 +179,37 @@ def process_scan_report(scan_report_id):
 
             DataDictionary.objects.create(
                 source_value=ScanReportValue.objects.latest('id'),
-                dictionary_table=row[0],
-                dictionary_field=row[1],
-                dictionary_field_description=row[2],
-                dictionary_value_code=row[3],
-                dictionary_value_description=row[4]
-                
+                dictionary_table=None,
+                dictionary_field=None,
+                dictionary_field_description=None,
+                dictionary_value_code=None,
+                dictionary_value_description=None,
+                definition_fixed=False,
             )
 
 
-def import_data_dictionary(filepath):
-    filepath = filepath
+# def import_data_dictionary(filepath):
+#     filepath = filepath
 
-    with open(filepath, 'rt') as f:
-        reader = csv.reader(f)
-        next(reader)  # Skip header row
+#     with open(filepath, 'rt') as f:
+#         reader = csv.reader(f)
+#         next(reader)  # Skip header row
 
-        # Assumes that the input columns are in the same order as the Twins data dictionary
-        for row in reader:
+#         # Assumes that the input columns are in the same order as the Twins data dictionary
+#         for row in reader:
 
-            if row[0][0] == '':
-                continue
+#             if row[0][0] == '':
+#                 continue
 
-            print(row)
+#             print(row)
             
-            DataDictionary.objects.create(
-                dictionry_table=row[0],
-                dictionary_field=row[1],
-                dictionry_field_description=row[2],
-                dictionary_value_code=row[3],
-                dictionry_value_description=row[4]
-            )
+#             DataDictionary.objects.create(
+#                 dictionry_table=row[0],
+#                 dictionary_field=row[1],
+#                 dictionry_field_description=row[2],
+#                 dictionary_value_code=row[3],
+#                 dictionry_value_description=row[4]
+#             )
 
 
 def build_usagi_index():

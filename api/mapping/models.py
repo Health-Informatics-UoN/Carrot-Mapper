@@ -246,11 +246,11 @@ class DocumentFile(BaseModel):
 class DataDictionary(BaseModel):
 
     source_value = models.ForeignKey(ScanReportValue, on_delete=models.CASCADE)
-    dictionary_table = models.CharField(max_length=128, blank=True)
-    dictionary_field = models.CharField(max_length=128, blank=True)
-    dictionary_field_description = models.TextField(blank=True)
-    dictionary_value_code = models.CharField(max_length=128, blank=True)
-    dictionary_value_description = models.TextField(blank=True)
+    dictionary_table = models.CharField(max_length=128, blank=True, null=True)
+    dictionary_field = models.CharField(max_length=128, blank=True, null=True)
+    dictionary_field_description = models.TextField(blank=True, null=True)
+    dictionary_value_code = models.CharField(max_length=128, blank=True, null=True)
+    dictionary_value_description = models.TextField(blank=True, null=True)
     definition_fixed = models.BooleanField(default=False)
 
     def __str__(self):
