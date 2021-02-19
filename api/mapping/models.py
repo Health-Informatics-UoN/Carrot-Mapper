@@ -239,17 +239,20 @@ class DocumentFile(BaseModel):
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
 
-        return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'
-        return f'{self.document_file, self.size, self.created_at, self.document_file.name}'
+        # return f'{self.document_file,self.size,self.created_at,self.document_file.name,self.status}'
+        return f'{self.document_file, self.status}'
 
 
 class DataDictionary(BaseModel):
-    table = models.CharField(max_length=128)
-    field = models.CharField(max_length=128)
-    field_description = models.TextField()
-    value_code = models.CharField(max_length=128)
-    value_description = models.TextField()
+
+    source_value = models.ForeignKey(ScanReportValue, on_delete=models.CASCADE)
+    dictionary_table = models.CharField(max_length=128, blank=True)
+    dictionary_field = models.CharField(max_length=128, blank=True)
+    dictionary_field_description = models.TextField(blank=True)
+    dictionary_value_code = models.CharField(max_length=128, blank=True)
+    dictionary_value_description = models.TextField(blank=True)
+    definition_fixed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.table, self.field, self.value_code}'
+        return f'{self.source_value, self.dictionary_table, self.dictionary_field, self.dictionary_value_code}'
 

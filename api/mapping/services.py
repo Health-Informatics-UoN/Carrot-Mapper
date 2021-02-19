@@ -176,6 +176,10 @@ def process_scan_report(scan_report_id):
                 frequency=frequency,
             )
 
+            DataDictionary.objects.create(
+                source_value = ScanReportValue.objects.latest('id')
+            )
+
 
 def import_data_dictionary(filepath):
     filepath = filepath
@@ -193,11 +197,11 @@ def import_data_dictionary(filepath):
             print(row)
             
             DataDictionary.objects.create(
-                table=row[0],
-                field=row[1],
-                field_description=row[2],
-                value_code=row[3],
-                value_description=row[4]
+                dictionry_table=row[0],
+                dictionary_field=row[1],
+                dictionry_field_description=row[2],
+                dictionary_value_code=row[3],
+                dictionry_value_description=row[4]
             )
 
 

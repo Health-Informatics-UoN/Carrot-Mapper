@@ -19,9 +19,9 @@ from django.views.generic.edit import FormView, UpdateView, DeleteView, \
 from extra_views import ModelFormSetView
 
 from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
-    DocumentForm,DocumentFileForm
+    DocumentForm,DocumentFileForm, DictionarySelectForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
-    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document
+    ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document, DataDictionary
 from .tasks import process_scan_report_task, import_data_dictionary_task
 
 from .services import process_scan_report, run_usagi
@@ -375,6 +375,62 @@ class DocumentFileFormView(FormView):
     def get_success_url(self, **kwargs):
      self.object=self.kwargs.get('pk')
      return reverse("file-list", kwargs={'pk': self.object})
+
+    
+class DataDictionaryListView(ListView):
+        model = DataDictionary
+        paginate_by = 10
+        ordering = ['-dictionary_table']
+
+        def get_queryset(self):
+            qs = super().get_queryset()
+            search_term = self.request.GET.get('search', None)
+            if search_term is not None:
+                qs = qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+            return qs
+
+        def get_context_data(self, **kwargs):
+
+            # Call the base implementation first to get a context
+            context = super().get_context_data(**kwargs)
+
+            if len(self.get_queryset()) > 0:
+                scan_report = self.get_queryset()[0].source_value.scan_report_field.scan_report_table.scan_report
+            else:
+                scan_report = None
+
+            context.update({
+                'scan_report': scan_report,
+            })
+
+            return context
+
+class DataDictionaryUpdateView(UpdateView):
+    model = DataDictionary
+    fields = [
+        'dictionary_table',
+        'dictionary_field',
+        'dictionary_field_description',
+        'dictionary_value_code',
+        'dictionary_value_description',
+        'definition_fixed',
+    ]
+
+    def get_success_url(self):
+        return "{}?search={}".format(reverse('data-dictionary'), self.object.source_value.scan_report_field.scan_report_table.scan_report.id)
+
+
+class DictionarySelectFormView(FormView):
+
+    form_class = DictionarySelectForm
+    template_name = 'mapping/mergedictionary.html'
+    success_url = reverse_lazy('data-dictionary')
+
+    def form_valid(self, form):
+        
+        # Adapt logic in services.py to merge data dictionary file into DataDictionary model
+
+        return super().form_valid(form)
 
 
 class DocumentFileStatusUpdateView(UpdateView):

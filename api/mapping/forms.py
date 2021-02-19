@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile
 
 
 class ScanReportForm(forms.Form):
@@ -104,3 +104,7 @@ class DocumentFileForm(forms.Form):
         label="Document Description",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+
+class DictionarySelectForm(forms.Form):
+    
+    document = forms.ModelChoiceField(label="Data Dictionary Document", queryset=DocumentFile.objects.filter(status__icontains="Live"), to_field_name="document")
