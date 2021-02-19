@@ -11,7 +11,7 @@ class ScanReportForm(forms.Form):
         queryset=DataPartner.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    
+
     dataset = forms.CharField(
         label="Dataset name", widget=forms.TextInput(attrs={"class": "form-control"})
     )
@@ -70,6 +70,32 @@ class UserCreateForm(UserCreationForm):
         if User.objects.filter(email=self.cleaned_data["email"]).exists():
             raise ValidationError(self.fields["email"].error_messages["exists"])
         return self.cleaned_data["email"]
+
+
+class PasswordChangeForm(forms.Form):
+    old_password = forms.CharField(
+        label="Old Password",
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "current-password", "autofocus": True}
+        ),
+    )
+    new_password1 = forms.CharField(
+        label=("New password"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+    new_password2 = forms.CharField(
+        label=("Confirm New password"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+    )
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data["old_password"]
+        if not self.user.check_password(old_password):
+            raise ValidationError(
+                self.error_messages["password_incorrect"],
+                code="password_incorrect",
+            )
+        return old_password
 
 
 class DocumentForm(forms.Form):
