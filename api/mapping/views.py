@@ -22,7 +22,7 @@ from .forms import ScanReportForm, UserCreateForm, AddMappingRuleForm, \
     DocumentForm,DocumentFileForm, DictionarySelectForm
 from .models import ScanReport, ScanReportValue, ScanReportField, \
     ScanReportTable, MappingRule, OmopTable, OmopField, DocumentFile, Document, DataDictionary
-from .tasks import process_scan_report_task, import_data_dictionary_task
+from .tasks import process_scan_report_task, import_data_dictionary_task, run_usagi_task
 
 from .services import process_scan_report, run_usagi
 from .tasks import process_scan_report_task, run_usagi
@@ -495,3 +495,12 @@ def load_omop_fields(request):
     omop_table_id = request.GET.get('omop_table')
     omop_fields = OmopField.objects.filter(table_id=omop_table_id).order_by('field')
     return render(request, 'mapping/omop_table_dropdown_list_options.html', {'omop_fields': omop_fields})
+
+
+def testusagi(request, scan_report_id):
+
+    results = run_usagi(scan_report_id)
+    print(results)
+    context = {}
+
+    return render(request, 'mapping/index.html', context)

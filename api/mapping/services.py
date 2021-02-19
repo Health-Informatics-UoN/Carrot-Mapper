@@ -3,6 +3,7 @@ from xlsx2csv import Xlsx2csv
 import subprocess
 import sys
 import os
+import pandas as pd
 
 from .models import ScanReport, ScanReportTable, ScanReportField, \
     ScanReportValue, DataDictionary
@@ -177,7 +178,13 @@ def process_scan_report(scan_report_id):
             )
 
             DataDictionary.objects.create(
-                source_value = ScanReportValue.objects.latest('id')
+                source_value=ScanReportValue.objects.latest('id'),
+                dictionary_table=row[0],
+                dictionary_field=row[1],
+                dictionary_field_description=row[2],
+                dictionary_value_code=row[3],
+                dictionary_value_description=row[4]
+                
             )
 
 
@@ -223,13 +230,27 @@ def build_usagi_index():
             break
 
 
-def run_usagi():
+def run_usagi(scan_report_id):
 
     print('RUNNING USAGI....')
 
+    dict = DataDictionary.objects.filter(source_value__scan_report_field__scan_report_table__scan_report__id=scan_report_id)
+    dict_df = pd.DataFrame.from_dict(dict.values('source_value__scan_report_field__scan_report_table__scan_report__data_partner__name',
+                                                'source_value__scan_report_field__scan_report_table__scan_report__dataset',
+                                                'source_value__scan_report_field__scan_report_table__name',
+                                                'source_value__scan_report_field__name',
+                                                'source_value__value', 
+                                                'source_value__frequency',
+                                                'dictionary_field_description',
+                                                'dictionary_value_description'))
+
+    dict_df.columns = ['DataPartner', 'DataSet', 'Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'ValueDescription']
+    dict_df.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
+    
+    print(dict_df)
     # Return values as dataframe then save to .CSV
     # s = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report__id=scan_report_id)
-    # dat = pd.DataFrame.from_dict(s.values('scan_report_field__name', 'value', 'frequency'))
+    # dat = pd.DataFrame.from_dict(dict.values('scan_report_field__name', 'value', 'frequency'))
     # dat = dat[~dat.scan_report_field__name.str.contains("ID")] # Temporary Filter
     # dat = dat[~dat.scan_report_field__name.str.contains("Date")] # Temporary Filter
     # dat = dat.head(10)
@@ -253,18 +274,20 @@ def run_usagi():
     # f.close()
 
     # Run Usagi
-    p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    stdout = []
-    while True:
-        line = p.stdout.readline()
-        if not isinstance(line, (str)):
-            line = line.decode('utf-8')
-        stdout.append(line)
-        print(line)
-        if (line == '' and p.poll() != None):
-            break
+    # stdout = []
+    # while True:
+    #     line = p.stdout.readline()
+    #     if not isinstance(line, (str)):
+    #         line = line.decode('utf-8')
+    #     stdout.append(line)
+    #     print(line)
+    #     if (line == '' and p.poll() != None):
+    #         break
 
     # Clean up inputs
     # os.remove('/data/usagi/usagi_input/usagi_input_data.csv')
     # os.remove('/data/usagi/usagi_input/usagi.properties')
+
+    print('USAGI FINISHED!')
