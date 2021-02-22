@@ -27,6 +27,7 @@ from .tasks import process_scan_report_task, run_usagi_task
 from .services import process_scan_report, run_usagi
 from .tasks import process_scan_report_task, run_usagi
 
+import pandas as pd
 
 @login_required
 def home(request):
@@ -379,14 +380,19 @@ class DocumentFileFormView(FormView):
     
 class DataDictionaryListView(ListView):
         model = DataDictionary
-        paginate_by = 10
-        ordering = ['-dictionary_table']
+        ordering = ['-source_value']
 
         def get_queryset(self):
             qs = super().get_queryset()
             search_term = self.request.GET.get('search', None)
+            negatives = ["N", "No", "", "0"] # Eventually get these data from a model
             if search_term is not None:
-                qs = qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+                qs = qs.filter(
+                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term).filter(
+                        source_value__scan_report_field__is_patient_id=False).filter(
+                            source_value__scan_report_field__is_date_event=False).filter(
+                                source_value__scan_report_field__is_ignore=False
+                            ).exclude(source_value__value__in=negatives)
             return qs
 
         def get_context_data(self, **kwargs):

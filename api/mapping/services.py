@@ -179,11 +179,6 @@ def process_scan_report(scan_report_id):
 
             DataDictionary.objects.create(
                 source_value=ScanReportValue.objects.latest('id'),
-                dictionary_table=None,
-                dictionary_field=None,
-                dictionary_field_description=None,
-                dictionary_value_code=None,
-                dictionary_value_description=None,
                 definition_fixed=False,
             )
 
@@ -229,11 +224,11 @@ def build_usagi_index():
         if (line == '' and p.poll() != None):
             break
 
-
 def run_usagi(scan_report_id):
 
     print('RUNNING USAGI....')
 
+    # Grab data from DataDictionary
     dict = DataDictionary.objects.filter(source_value__scan_report_field__scan_report_table__scan_report__id=scan_report_id)
     dict_df = pd.DataFrame.from_dict(dict.values('source_value__scan_report_field__scan_report_table__scan_report__data_partner__name',
                                                 'source_value__scan_report_field__scan_report_table__scan_report__dataset',
@@ -242,38 +237,35 @@ def run_usagi(scan_report_id):
                                                 'source_value__value', 
                                                 'source_value__frequency',
                                                 'dictionary_field_description',
-                                                'dictionary_value_description'))
+                                                'dictionary_value_description',
+                                                'source_value__scan_report_field__is_patient_id',
+                                                'source_value__scan_report_field__is_date_event',
+                                                'source_value__scan_report_field__is_ignore'))
 
-    dict_df.columns = ['DataPartner', 'DataSet', 'Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'ValueDescription']
-    dict_df.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
-    
-    print(dict_df)
-    # Return values as dataframe then save to .CSV
-    # s = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report__id=scan_report_id)
-    # dat = pd.DataFrame.from_dict(dict.values('scan_report_field__name', 'value', 'frequency'))
-    # dat = dat[~dat.scan_report_field__name.str.contains("ID")] # Temporary Filter
-    # dat = dat[~dat.scan_report_field__name.str.contains("Date")] # Temporary Filter
-    # dat = dat.head(10)
-    # dat.to_csv('/data/usagi/usagi_input/usagi_input_data.csv', index=False)
-    # print(dat)
+    # Name columns
+    dict_df.columns = ['DataPartner', 'DataSet', 'Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'ValueDescription', 'PatientID', 'IsDate', 'IsIgnore']
 
-    # # Create Usagi Properties File
-    # f = open("/data/usagi/usagi_input/usagi.properties", "w+")
 
-    # # Input/Output file paths
-    # f.write("usagiFolder=/data/usagi/mainIndex/\n")
-    # f.write("mappingFile=/data/usagi/usagi_output/usagi_output.csv\n")
-    # f.write("vocabFolder=/data/usagi/vocabs/\n")
-    # f.write("sourceFile=/data/usagi/usagi_input/usagi_input_data.csv\n")
-    # f.write("sourceNameColumn=" + "scan_report_field__name\n") # sourcenamedescription is actually the *description* of the column (i.e. if we had a dictionary)
-    # f.write("sourceCodeColumn=" + "value\n") # correct
-    # f.write("sourceFrequencyColumn=" + "frequency\n")
-    # f.write("fieldID=" + "value\n") # what the col name is called
-    # f.write("fieldDesc=" + "scan_report_field__name\n") # column description
 
-    # f.close()
+    # Filter out any values (rows) where the parent field has been set to PatientID/Date/Ignore when mapping
+    # Also removes all values which are blank/N/No/0 etc as these terms aren't mapped
+    foo = dict_df.loc[((dict_df['PatientID'] != True) & 
+                        (dict_df['IsDate'] != True) & 
+                        (dict_df['IsIgnore'] != True) & 
+                        (dict_df['Value'] != '') & 
+                        (dict_df['Value'] != 'N') &
+                        (dict_df['Value'] != 'No') &
+                        (dict_df['Value'] != '0'))]
 
-    # Run Usagi
+    foo = foo.drop(columns=['PatientID', 'IsDate', 'IsIgnore'])
+    print(foo)
+
+    # foo.to_csv('/data/usagi/input/FULL_usagi_input_data.csv', index=False)
+
+    # foo = foo.head(10)
+    # foo.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
+
+    # # Run Usagi
     # p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     # stdout = []

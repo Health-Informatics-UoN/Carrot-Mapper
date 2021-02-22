@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .services import process_scan_report_sheet_table, import_data_dictionary, build_usagi_index, run_usagi
+from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi
 
 
 class ServiceTests(TestCase):

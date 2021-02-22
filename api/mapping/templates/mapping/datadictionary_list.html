@@ -68,10 +68,13 @@
 </div>
 <br>
 
-<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
-
     </div>
+<br>
 </form>
+
+<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
+<a href="" class="btn btn-primary">Run Usagi</a><br><br>
+
 {% endif %}
 
 {% endblock %}
