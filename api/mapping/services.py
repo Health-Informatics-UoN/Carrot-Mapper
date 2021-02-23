@@ -245,11 +245,9 @@ def run_usagi(scan_report_id):
     # Name columns
     dict_df.columns = ['DataPartner', 'DataSet', 'Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'ValueDescription', 'PatientID', 'IsDate', 'IsIgnore']
 
-
-
     # Filter out any values (rows) where the parent field has been set to PatientID/Date/Ignore when mapping
     # Also removes all values which are blank/N/No/0 etc as these terms aren't mapped
-    foo = dict_df.loc[((dict_df['PatientID'] != True) & 
+    df = dict_df.loc[((dict_df['PatientID'] != True) & 
                         (dict_df['IsDate'] != True) & 
                         (dict_df['IsIgnore'] != True) & 
                         (dict_df['Value'] != '') & 
@@ -257,26 +255,29 @@ def run_usagi(scan_report_id):
                         (dict_df['Value'] != 'No') &
                         (dict_df['Value'] != '0'))]
 
-    foo = foo.drop(columns=['PatientID', 'IsDate', 'IsIgnore'])
-    print(foo)
+    df = df.drop(columns=['PatientID', 'IsDate', 'IsIgnore'])
 
-    # foo.to_csv('/data/usagi/input/FULL_usagi_input_data.csv', index=False)
+    bad_index = df['ValueDescription'].isnull()
+    df['ValueDescription'][bad_index] = df['Value'][bad_index]
 
-    # foo = foo.head(10)
-    # foo.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
+    bad_index = df['FieldDesc'].isnull()
+    df['FieldDesc'][bad_index] = df['Field'][bad_index]
 
+    df = df.head(10)
+    df.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
+    
     # # Run Usagi
-    # p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    # stdout = []
-    # while True:
-    #     line = p.stdout.readline()
-    #     if not isinstance(line, (str)):
-    #         line = line.decode('utf-8')
-    #     stdout.append(line)
-    #     print(line)
-    #     if (line == '' and p.poll() != None):
-    #         break
+    stdout = []
+    while True:
+        line = p.stdout.readline()
+        if not isinstance(line, (str)):
+            line = line.decode('utf-8')
+        stdout.append(line)
+        print(line)
+        if (line == '' and p.poll() != None):
+            break
 
     # Clean up inputs
     # os.remove('/data/usagi/usagi_input/usagi_input_data.csv')
