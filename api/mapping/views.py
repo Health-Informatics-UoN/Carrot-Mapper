@@ -276,7 +276,7 @@ class StructuralMappingTableListView(ListView):
 
         qs = super().get_queryset().filter(id__in=mappingrule_id_list)
         
-        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','term_mapping','coding_system','operation']}
+        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
 
         for obj in qs:
@@ -286,7 +286,8 @@ class StructuralMappingTableListView(ListView):
                 output['destination_field'].append(rule.omop_field.field)
                 output['source_table'].append(obj.scan_report_table.name)
                 output['source_field'].append(obj.name)
-
+                output['source_field_indexer'].append(obj.is_patient_id)
+                
                 #this needs to be updated if there is a coding system
                 output['coding_system'].append("user defined")
                                 
