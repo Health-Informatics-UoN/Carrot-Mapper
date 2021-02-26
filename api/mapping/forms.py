@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, OPERATION_CHOICES
 
@@ -88,20 +89,17 @@ class PasswordChangeForm(forms.Form):
     new_password1 = forms.CharField(
         label=("New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        validators=[password_validation.validate_password]
+
     )
+   
     new_password2 = forms.CharField(
         label=("Confirm New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        validators=[password_validation.validate_password]
     )
 
-    def clean_old_password(self):
-        old_password = self.cleaned_data["old_password"]
-        if not self.user.check_password(old_password):
-            raise ValidationError(
-                self.error_messages["password_incorrect"],
-                code="password_incorrect",
-            )
-        return old_password
+ 
 
 
 class DocumentForm(forms.Form):
