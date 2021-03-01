@@ -205,14 +205,7 @@ class AddMappingRuleFormView(FormView):
             operation=form.cleaned_data['operation'],
             scan_report_field=scan_report_field,
         )
-        
-        print(created)
         mapping.save()
-        if MappingRule.objects.filter(omop_field=mapping.omop_field,operation=mapping.operation,scan_report_field=mapping.scan_report_field).exists():
-            messages.error(self.request,"mapping already exists")
-        
-            
-
         return super().form_valid(form)
 
     def get_success_url(self):
