@@ -38,6 +38,9 @@
                 <td><a href="{% url 'values' %}?search={{ object.id }}">
                     {{ object.name }}</a></td>
                 <td>
+                    {{ object.type_column }}
+                </td>
+                <td>
                     {% if object.is_patient_id %}
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
