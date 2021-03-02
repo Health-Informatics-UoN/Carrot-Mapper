@@ -20,7 +20,8 @@ urlpatterns = [
     
     path('datadictionary/', login_required(views.DataDictionaryListView.as_view()), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', login_required(views.DataDictionaryUpdateView.as_view()), name='update-data-dictionary'),
-    path('datadictionary/merge', login_required(views.DictionarySelectFormView.as_view()), name='merge-data-dictionary'),
+    path('datadictionary/merge/', login_required(views.merge_dictionary), name='merge-data-dictionary'),
+    
     path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),

@@ -223,7 +223,7 @@ class Document(BaseModel):
 
     def __str__(self):
 
-        return f'#{self.id}'
+        return f'{self.data_partner, self.document_type}'
 
 
 class DocumentFile(BaseModel):
@@ -254,5 +254,5 @@ class DataDictionary(BaseModel):
     definition_fixed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.source_value, self.dictionary_table, self.dictionary_field, self.dictionary_value_code}'
+        return f'{self.source_value, self.dictionary_table, self.dictionary_field, self.dictionary_field_description, self.dictionary_value_code, self.dictionary_value_description, self.definition_fixed}'
 

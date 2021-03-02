@@ -10,6 +10,9 @@
             <li class="breadcrumb-item">{{ scan_report.data_partner }} - {{ scan_report.dataset }}</li>
 </nav>
 <h2>Data Dictionary for {{ scan_report.data_partner }} - {{ scan_report.dataset }}</h2>
+
+{{ scan_report }}
+
 {% if object_list %}
 <form id="my_form">
     <div class="form-group">
@@ -49,30 +52,13 @@
             </tbody>
         </table>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-        </span>
-
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
-</div>
 <br>
 
     </div>
 <br>
 </form>
 
-<a href="{% url 'merge-data-dictionary' %}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
+<a href="{% url 'merge-data-dictionary' %}?search={{ scan_report.id }}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
 <a href="" class="btn btn-primary">Run Usagi</a><br><br>
 
 {% endif %}

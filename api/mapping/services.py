@@ -5,8 +5,13 @@ import sys
 import os
 import pandas as pd
 
-from .models import ScanReport, ScanReportTable, ScanReportField, \
-    ScanReportValue, DataDictionary
+from .models import (
+    ScanReport,
+    ScanReportTable,
+    ScanReportField,
+    ScanReportValue,
+    DataDictionary,
+)
 
 
 def process_scan_report_sheet_table(filename):
@@ -47,8 +52,7 @@ def process_scan_report_sheet_table(filename):
         # * Temp fix may slow down the code a lot for large files
         # * Using pandas would deal with these type of things
 
-        reader = csv.reader(x.replace('\0', '') for x in f)
-
+        reader = csv.reader(x.replace("\0", "") for x in f)
 
         for row_idx, row in enumerate(reader):
 
@@ -65,10 +69,12 @@ def process_scan_report_sheet_table(filename):
                     # As we move down rows, checks that there's data there
                     # This is required b/c value/frequency col pairs differ
                     # in the number of rows
-                    if row[col_idx] == '' and row[col_idx + 1] == '':
+                    if row[col_idx] == "" and row[col_idx + 1] == "":
                         continue
 
-                    result.append((column_names[col_idx], row[col_idx], row[col_idx + 1]))
+                    result.append(
+                        (column_names[col_idx], row[col_idx], row[col_idx + 1])
+                    )
 
     return result
 
@@ -76,16 +82,13 @@ def process_scan_report_sheet_table(filename):
 def process_scan_report(scan_report_id):
     scan_report = ScanReport.objects.get(pk=scan_report_id)
 
-    xlsx = Xlsx2csv(
-        scan_report.file,
-        outputencoding="utf-8"
-    )
+    xlsx = Xlsx2csv(scan_report.file, outputencoding="utf-8")
 
     # Path to 1st sheet in scan report (i.e. Field Overview) convert to CSV
-    filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]['name'])
+    filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
     xlsx.convert(filepath)
 
-    with open(filepath, 'rt') as f:
+    with open(filepath, "rt") as f:
         reader = csv.reader(f)
         next(reader)  # Skip header row
 
@@ -96,7 +99,7 @@ def process_scan_report(scan_report_id):
             # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
-            if row and row[0] != '':
+            if row and row[0] != "":
                 # This links ScanReportTable to ScanReport
                 # [:31] is because excel is a pile of s***
                 # - sheet names are truncated to 31 characters
@@ -118,7 +121,7 @@ def process_scan_report(scan_report_id):
                     nrows_checked=row[6],
                     fraction_empty=row[7],
                     nunique_values=row[8],
-                    fraction_unique=row[9]
+                    fraction_unique=row[9],
                 )
 
     # For sheets past the first two in the scan Report
@@ -129,26 +132,25 @@ def process_scan_report(scan_report_id):
             continue
 
         # skip these sheets at the end of the scan report
-        if sheet['name'] == '_':
+        if sheet["name"] == "_":
             continue
-
 
         # GET table name from ScanReportTable that was saved in the previous
         # step when scanning the Field Overview sheet
 
-        print('>>>> {}'.format(sheet['name']))
+        print(">>>> {}".format(sheet["name"]))
 
         try:
             scan_report_table = ScanReportTable.objects.get(
                 scan_report=scan_report,
-                name=sheet['name']
+                name=sheet["name"]
                 # 'name' here refers to the field name in ScanReportTable
             )
         except ScanReportTable.DoesNotExist:
             continue
 
         # Get the filepath to the converted CSV files
-        filename = "/tmp/{}".format(sheet['name'])
+        filename = "/tmp/{}".format(sheet["name"])
         xlsx.convert(filename, sheetid=idxsheet + 1)
 
         results = process_scan_report_sheet_table(filename)
@@ -166,7 +168,7 @@ def process_scan_report(scan_report_id):
             # Save each row of values/frequencies to the model ScanReportValue
             # This can take some time if the scan report is large
 
-            if result[2] == '':
+            if result[2] == "":
                 frequency = 0
             else:
                 frequency = result[2]
@@ -178,109 +180,96 @@ def process_scan_report(scan_report_id):
             )
 
             DataDictionary.objects.create(
-                source_value=ScanReportValue.objects.latest('id'),
+                source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
             )
-
-
-# def import_data_dictionary(filepath):
-#     filepath = filepath
-
-#     with open(filepath, 'rt') as f:
-#         reader = csv.reader(f)
-#         next(reader)  # Skip header row
-
-#         # Assumes that the input columns are in the same order as the Twins data dictionary
-#         for row in reader:
-
-#             if row[0][0] == '':
-#                 continue
-
-#             print(row)
-            
-#             DataDictionary.objects.create(
-#                 dictionry_table=row[0],
-#                 dictionary_field=row[1],
-#                 dictionry_field_description=row[2],
-#                 dictionary_value_code=row[3],
-#                 dictionry_value_description=row[4]
-#             )
 
 
 def build_usagi_index():
     # Use 'build' to create index for the first time.
     # Index stored in data/usagi/mainIndex
-    p = subprocess.Popen('java -jar Usagi.jar build usagi_build_index.properties', cwd="/data/usagi", shell=True,
-                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    p = subprocess.Popen(
+        "java -jar Usagi.jar build usagi_build_index.properties",
+        cwd="/data/usagi",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
 
     # Print console output to screen so you can see it's working (or not!)
     stdout = []
     while True:
         line = p.stdout.readline()
         if not isinstance(line, (str)):
-            line = line.decode('utf-8')
+            line = line.decode("utf-8")
         stdout.append(line)
         print(line)
-        if (line == '' and p.poll() != None):
+        if line == "" and p.poll() != None:
             break
+
 
 def run_usagi(scan_report_id):
 
-    print('RUNNING USAGI....')
+    print("RUNNING USAGI....")
 
     # Grab data from DataDictionary
-    dict = DataDictionary.objects.filter(source_value__scan_report_field__scan_report_table__scan_report__id=scan_report_id)
-    dict_df = pd.DataFrame.from_dict(dict.values('source_value__scan_report_field__scan_report_table__scan_report__data_partner__name',
-                                                'source_value__scan_report_field__scan_report_table__scan_report__dataset',
-                                                'source_value__scan_report_field__scan_report_table__name',
-                                                'source_value__scan_report_field__name',
-                                                'source_value__value', 
-                                                'source_value__frequency',
-                                                'dictionary_field_description',
-                                                'dictionary_value_description',
-                                                'source_value__scan_report_field__is_patient_id',
-                                                'source_value__scan_report_field__is_date_event',
-                                                'source_value__scan_report_field__is_ignore'))
+    # This filters out all entries in the dictionary
+    # which are marked PatientID/DateEvent/Ignore
+    dict = (
+        DataDictionary.objects.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=scan_report_id
+        )
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value='List truncated...')
+    )
+
+    dict_df = pd.DataFrame.from_dict(
+        dict.values(
+            "source_value__scan_report_field__scan_report_table__scan_report__data_partner__name",
+            "source_value__scan_report_field__scan_report_table__scan_report__dataset",
+            "source_value__scan_report_field__scan_report_table__name",
+            "source_value__scan_report_field__name",
+            "source_value__value",
+            "source_value__frequency",
+            "dictionary_field_description",
+            "dictionary_value_description",
+        )
+    )
 
     # Name columns
-    dict_df.columns = ['DataPartner', 'DataSet', 'Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'ValueDescription', 'PatientID', 'IsDate', 'IsIgnore']
+    dict_df.columns = [
+        "DataPartner",
+        "DataSet",
+        "Table",
+        "Field",
+        "Value",
+        "Frequency",
+        "FieldDesc",
+        "ValueDescription",
+    ]
 
-    # Filter out any values (rows) where the parent field has been set to PatientID/Date/Ignore when mapping
-    # Also removes all values which are blank/N/No/0 etc as these terms aren't mapped
-    df = dict_df.loc[((dict_df['PatientID'] != True) & 
-                        (dict_df['IsDate'] != True) & 
-                        (dict_df['IsIgnore'] != True) & 
-                        (dict_df['Value'] != '') & 
-                        (dict_df['Value'] != 'N') &
-                        (dict_df['Value'] != 'No') &
-                        (dict_df['Value'] != '0'))]
+    df = dict_df
 
-    df = df.drop(columns=['PatientID', 'IsDate', 'IsIgnore'])
+    # df = df.head(10)
+    df.to_csv("/data/usagi/input/usagi_input_data.csv", index=False)
 
-    bad_index = df['ValueDescription'].isnull()
-    df['ValueDescription'][bad_index] = df['Value'][bad_index]
-
-    bad_index = df['FieldDesc'].isnull()
-    df['FieldDesc'][bad_index] = df['Field'][bad_index]
-
-    df = df.head(10)
-    df.to_csv('/data/usagi/input/usagi_input_data.csv', index=False)
-    
     # # Run Usagi
-    p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # p = subprocess.Popen('java -jar dist/Usagi.jar run input/usagi.properties', cwd="/data/usagi", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    stdout = []
-    while True:
-        line = p.stdout.readline()
-        if not isinstance(line, (str)):
-            line = line.decode('utf-8')
-        stdout.append(line)
-        print(line)
-        if (line == '' and p.poll() != None):
-            break
+    # stdout = []
+    # while True:
+    #     line = p.stdout.readline()
+    #     if not isinstance(line, (str)):
+    #         line = line.decode('utf-8')
+    #     stdout.append(line)
+    #     print(line)
+    #     if (line == '' and p.poll() != None):
+    #         break
 
     # Clean up inputs
     # os.remove('/data/usagi/usagi_input/usagi_input_data.csv')
     # os.remove('/data/usagi/usagi_input/usagi.properties')
 
-    print('USAGI FINISHED!')
+    print("USAGI FINISHED!")
