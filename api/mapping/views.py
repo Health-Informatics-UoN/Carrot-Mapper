@@ -1,9 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import message, send_mail, BadHeaderError
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -29,6 +30,7 @@ from .tasks import process_scan_report_task, import_data_dictionary_task
 
 
 import json
+
 
 @login_required
 def home(request):
@@ -198,14 +200,12 @@ class AddMappingRuleFormView(FormView):
             pk=self.kwargs.get('pk')
         )
 
-        mapping = MappingRule.objects.create(
+        mapping,created = MappingRule.objects.get_or_create(
             omop_field=form.cleaned_data['omop_field'],
             operation=form.cleaned_data['operation'],
             scan_report_field=scan_report_field,
         )
-
         mapping.save()
-
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -501,7 +501,7 @@ class DocumentFileStatusUpdateView(UpdateView):
     ]
 
     def get_success_url(self, **kwargs):
-    # obj = form.instance or self.object
+
      return reverse("file-list", kwargs={'pk': self.object.document_id})
 
 

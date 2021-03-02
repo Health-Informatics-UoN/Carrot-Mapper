@@ -4,9 +4,12 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
+
+STATUS_LIVE='LIVE'
+STATUS_ARCHIVED='ARCHIVED'
 STATUS_CHOICES = [
-    ("LIVE", 'Live'),
-    ("ARCHIVED", 'Archived'),
+    (STATUS_LIVE, 'Live'),
+    (STATUS_ARCHIVED, 'Archived'),
 ]
 
 OPERATION_NONE = 'NONE'
@@ -257,7 +260,7 @@ class DocumentFile(BaseModel):
             on_delete=models.CASCADE,
             blank=True,
             null=True)
-    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default="Archived")
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default=STATUS_ARCHIVED)
 
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)
