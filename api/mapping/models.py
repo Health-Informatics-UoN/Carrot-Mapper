@@ -8,7 +8,7 @@ from django.db.models.constraints import UniqueConstraint
 STATUS_LIVE='LIVE'
 STATUS_ARCHIVED='ARCHIVED'
 STATUS_CHOICES = [
-    (STATUS_LIVE, 'Live'),
+    (STATUS_LIVE, "Live"),
     (STATUS_ARCHIVED, 'Archived'),
 ]
 
@@ -163,6 +163,7 @@ class ScanReportField(BaseModel):
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(default=False)
+
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,
