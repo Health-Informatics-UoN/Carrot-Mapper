@@ -4,10 +4,23 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
 
+
+STATUS_LIVE='LIVE'
+STATUS_ARCHIVED='ARCHIVED'
 STATUS_CHOICES = [
-        ("LIVE", 'Live'),
-        ("ARCHIVED", 'Archived'),
-    ]
+    (STATUS_LIVE, 'Live'),
+    (STATUS_ARCHIVED, 'Archived'),
+]
+
+OPERATION_NONE = 'NONE'
+OPERATION_EXTRACT_YEAR = 'EXTRACT_YEAR'
+
+OPERATION_CHOICES = [
+    (OPERATION_NONE, 'No operation'),
+    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field')
+]
+
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -149,6 +162,7 @@ class ScanReportField(BaseModel):
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
+    pass_from_source = models.BooleanField(default=False)
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,
@@ -177,8 +191,21 @@ class OmopField(BaseModel):
 
 
 class MappingRule(BaseModel):
-    omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
-    scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
+
+    scan_report_field = models.ForeignKey(
+        ScanReportField,
+        on_delete=models.CASCADE
+    )
+
+    operation = models.CharField(
+        max_length=32,
+        choices=OPERATION_CHOICES,
+        default=OPERATION_NONE,
+    )
 
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
@@ -234,7 +261,7 @@ class DocumentFile(BaseModel):
             on_delete=models.CASCADE,
             blank=True,
             null=True)
-    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default="Archived")
+    status=models.CharField(max_length=20,choices=STATUS_CHOICES,default=STATUS_ARCHIVED)
 
     def __str__(self):
         self.document_file.name = os.path.basename(self.document_file.name)

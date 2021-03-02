@@ -1,9 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.core.mail import send_mail, BadHeaderError
+from django.core.mail import message, send_mail, BadHeaderError
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -12,6 +13,9 @@ from django.urls import reverse
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views import generic
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
@@ -46,11 +50,14 @@ from .tasks import process_scan_report_task, run_usagi
 import pandas as pd
 
 
+import json
+
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
 
-
+@method_decorator(login_required,name='dispatch')
 class ScanReportTableListView(ListView):
     model = ScanReportTable
 
@@ -83,6 +90,7 @@ class ScanReportTableListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFieldListView(ListView):
     model = ScanReportField
 
@@ -117,13 +125,15 @@ class ScanReportFieldListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     fields = [
-        "is_patient_id",
-        "is_date_event",
-        "is_ignore",
-        "classification_system",
+        'is_patient_id',
+        'is_date_event',
+        'is_ignore',
+        'pass_from_source',
+        'classification_system',
     ]
 
     def get_success_url(self):
@@ -131,7 +141,7 @@ class ScanReportFieldUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
-
+@method_decorator(login_required,name='dispatch')
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = ["mapping"]
@@ -141,11 +151,12 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
-
+@method_decorator(login_required,name='dispatch')
 class ScanReportListView(ListView):
     model = ScanReport
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ["value", "frequency", "conceptID"]
@@ -153,11 +164,11 @@ class ScanReportValueListView(ModelFormSetView):
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-            qs = qs.filter(scan_report_field=search_term)
-        return qs
+         qs = super().get_queryset().order_by('id')
+         search_term = self.request.GET.get('search', None)
+         if search_term is not None:
+             qs = qs.filter(scan_report_field=search_term)
+         return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -192,6 +203,7 @@ class ScanReportValueListView(ModelFormSetView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class AddMappingRuleFormView(FormView):
     form_class = AddMappingRuleForm
     template_name = "mapping/mappingrule_form.html"
@@ -219,13 +231,12 @@ class AddMappingRuleFormView(FormView):
 
         scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
 
-        mapping = MappingRule.objects.create(
-            omop_field=form.cleaned_data["omop_field"],
+        mapping,created = MappingRule.objects.get_or_create(
+            omop_field=form.cleaned_data['omop_field'],
+            operation=form.cleaned_data['operation'],
             scan_report_field=scan_report_field,
         )
-
         mapping.save()
-
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -236,6 +247,7 @@ class AddMappingRuleFormView(FormView):
         )
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingDeleteView(DeleteView):
     model = MappingRule
 
@@ -249,6 +261,7 @@ class StructuralMappingDeleteView(DeleteView):
     success_url = reverse_lazy("fields")
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
     model = MappingRule
 
@@ -287,12 +300,113 @@ class StructuralMappingListView(ListView):
         return context
 
 
+@method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ListView):
     # model = MappingRule
     model = ScanReportField
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def download_structural_mapping(self,request,pk,return_type='csv'):
+        scan_report = ScanReport.objects.get(pk=pk)
+        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+
+        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+        
+        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
+
+
+        for obj in qs:
+            for rule in obj.mappingrule_set.all():
+                output['rule_id'].append(rule.id)
+                output['destination_table'].append(rule.omop_field.table.table)
+                output['destination_field'].append(rule.omop_field.field)
+                output['source_table'].append(obj.scan_report_table.name)
+                output['source_field'].append(obj.name)
+                output['source_field_indexer'].append(obj.is_patient_id)
+                
+                #this needs to be updated if there is a coding system
+                output['coding_system'].append("user defined")
+                                
+                is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
+                is_mapped = 'y' if is_mapped else 'n'
+                output['term_mapping'].append(is_mapped)
+
+                output['operation'].append(rule.operation)               
+
+        #define the name of the output file
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
+            
+        if return_type == 'csv':
+            #covert our dictiionary into a csv
+            result = ",".join(f'"{key}"' for key in output.keys())
+            for irow in range(len(output['rule_id'])):
+                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+
+            response = HttpResponse(result, content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            return response
+        #not used but here if we want it for the api...
+        elif return_type == 'json':
+            response = HttpResponse(json.dumps(output), content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            return response
+        else:
+            #implement other return types if needed
+            return redirect(request.path)
+
+        
+    def download_term_mapping(self,request,pk):
+         #define the name of the output file
+
+        scan_report = ScanReport.objects.get(pk=pk)
+        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+
+        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+
+        output = { name:[] for name in ['rule_id','source_term','destination_term']}
+
+        for rule in mappingrule_list:
+            for obj in rule.scan_report_field.scanreportvalue_set.all():
+                if obj.conceptID == -1:
+                    continue
+                
+                output['rule_id'].append(rule.id)
+                output['source_term'].append(obj.value)
+                output['destination_term'].append(obj.conceptID)
+
+
+        return_type = 'csv'
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
+
+    
+        result = ",".join(f'"{key}"' for key in output.keys())
+        for irow in range(len(output['rule_id'])):
+            result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+            
+        response = HttpResponse(result, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        return response
+
+    
+    def post(self,request,*args, **kwargs):
+
+        pk = self.kwargs.get('pk')
+        if request.POST.get('download-sm') is not None:
+            return self.download_structural_mapping(request,pk)
+        elif request.POST.get('download-tm') is not None:
+            return self.download_term_mapping(request,pk)
+        else:
+            #define more buttons to click
+            pass
+
+        
+        return redirect(request.path)
+
+    
     def get_context_data(self, **kwargs):
+                
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
 
@@ -322,6 +436,7 @@ class StructuralMappingTableListView(ListView):
             return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class ScanReportFormView(FormView):
     form_class = ScanReportForm
     template_name = "mapping/upload_scan_report.html"
@@ -343,6 +458,7 @@ class ScanReportFormView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFormView(FormView):
     form_class = DocumentForm
     template_name = "mapping/upload_document.html"
@@ -369,6 +485,7 @@ class DocumentFormView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentListView(ListView):
     model = Document
 
@@ -377,6 +494,7 @@ class DocumentListView(ListView):
         return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileListView(ListView):
     model = DocumentFile
 
@@ -388,6 +506,7 @@ class DocumentFileListView(ListView):
         return qs
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileFormView(FormView):
     model = DocumentFile
     form_class = DocumentFileForm
@@ -478,14 +597,14 @@ class DictionarySelectFormView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class DocumentFileStatusUpdateView(UpdateView):
     model = DocumentFile
     # success_url=reverse_lazy('file-list')
     fields = ["status"]
 
     def get_success_url(self, **kwargs):
-        # obj = form.instance or self.object
-        return reverse("file-list", kwargs={"pk": self.object.document_id})
+     return reverse("file-list", kwargs={'pk': self.object.document_id})
 
 
 class SignUpView(generic.CreateView):
@@ -494,12 +613,33 @@ class SignUpView(generic.CreateView):
     template_name = "registration/signup.html"
 
 
-class CCPasswordChangeView(PasswordChangeView):
-    pass
+@method_decorator(login_required,name='dispatch')
+class CCPasswordChangeView(FormView):
+    form_class = PasswordChangeForm
+    success_url = reverse_lazy('password_change_done')
+    template_name = 'registration/password_change_form.html'
+    
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
 
+@method_decorator(login_required,name='dispatch')
 class CCPasswordChangeDoneView(PasswordChangeDoneView):
-    pass
+    template_name = 'registration/password_change_done.html'
+    
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 def password_reset_request(request):

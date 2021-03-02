@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
 {% block body %}
-
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'document-list' %}">Documents</a>
+        </li>
+        <li class="breadcrumb-item"><a href="{% url 'file-list' object.document.id %}">File Versions</a>
+        </li>
+    </ol>
+</nav>
 <h2>Update Status</h2>
 
 

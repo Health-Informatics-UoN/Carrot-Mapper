@@ -25,12 +25,12 @@ urlpatterns = [
     path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
-    path('documents/create/', login_required(views.DocumentFormView.as_view()), name='document-form'),
-    path('documents/', login_required(views.DocumentListView.as_view()), name='document-list'),
-    path('file/<int:pk>/', login_required(views.DocumentFileListView.as_view()), name='file-list'),
-    path('file/<int:pk>/update/', login_required(views.DocumentFileStatusUpdateView.as_view()), name='status-update'),
-    path('file/<int:pk>/create/', login_required(views.DocumentFileFormView.as_view()), name='file-form'),
-    path('ajax/load-omop-fields/', login_required(views.load_omop_fields), name='ajax_load_omop_fields'),
+    path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
+    path('documents/', views.DocumentListView.as_view(), name='document-list'),
+    path('file/<int:pk>/', views.DocumentFileListView.as_view(), name='file-list'),
+    path('file/<int:pk>/update/', views.DocumentFileStatusUpdateView.as_view(), name='status-update'),
+    path('file/<int:pk>/create/', views.DocumentFileFormView.as_view(), name='file-form'),
+    path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
     path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
     path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]

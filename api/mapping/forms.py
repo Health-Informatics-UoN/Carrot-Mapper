@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, OPERATION_CHOICES
 
 
 class ScanReportForm(forms.Form):
@@ -11,7 +12,7 @@ class ScanReportForm(forms.Form):
         queryset=DataPartner.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
-    
+
     dataset = forms.CharField(
         label="Dataset name", widget=forms.TextInput(attrs={"class": "form-control"})
     )
@@ -31,6 +32,12 @@ class AddMappingRuleForm(forms.Form):
     omop_field = forms.ModelChoiceField(
         label="OMOP Field",
         queryset=OmopField.objects.all(),
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
+
+    operation = forms.ChoiceField(
+        label='Operation',
+        choices=OPERATION_CHOICES,
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
@@ -70,6 +77,29 @@ class UserCreateForm(UserCreationForm):
         if User.objects.filter(email=self.cleaned_data["email"]).exists():
             raise ValidationError(self.fields["email"].error_messages["exists"])
         return self.cleaned_data["email"]
+
+
+class PasswordChangeForm(forms.Form):
+    old_password = forms.CharField(
+        label="Old Password",
+        widget=forms.PasswordInput(
+            attrs={"autocomplete": "current-password", "autofocus": True}
+        ),
+    )
+    new_password1 = forms.CharField(
+        label=("New password"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        validators=[password_validation.validate_password]
+
+    )
+   
+    new_password2 = forms.CharField(
+        label=("Confirm New password"),
+        widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
+        validators=[password_validation.validate_password]
+    )
+
+ 
 
 
 class DocumentForm(forms.Form):
