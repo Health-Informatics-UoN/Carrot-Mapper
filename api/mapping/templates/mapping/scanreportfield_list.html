@@ -27,6 +27,7 @@
                 <th scope="col">Is Patient ID</th>
                 <th scope="col">Is Date Event</th>
                 <th scope="col">Ignore?</th>
+                <th scope="col">Pass Source Value</th>
                 <th scope="col">Classification System</th>
                 <th>Edit</th>
                 <th colspan="2">Structural Mapping</th>
@@ -52,6 +53,11 @@
                 </td>
                 <td>
                     {% if object.is_ignore %}
+                    <i class="bi bi-check">Yes</i>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if object.pass_from_source %}
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>
