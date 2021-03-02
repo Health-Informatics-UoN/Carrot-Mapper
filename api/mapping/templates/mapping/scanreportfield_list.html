@@ -23,6 +23,7 @@
             <thead>
             <tr>
                 <th scope="col">Field</th>
+                <th scope="col">Data Type</th>
                 <th scope="col">Is Patient ID</th>
                 <th scope="col">Is Date Event</th>
                 <th scope="col">Ignore?</th>
@@ -36,6 +37,9 @@
             <tr>
                 <td><a href="{% url 'values' %}?search={{ object.id }}">
                     {{ object.name }}</a></td>
+                <td>
+                    {{ object.type_column }}
+                </td>
                 <td>
                     {% if object.is_patient_id %}
                     <i class="bi bi-check">Yes</i>
