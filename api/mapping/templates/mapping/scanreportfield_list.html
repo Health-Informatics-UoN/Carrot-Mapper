@@ -37,7 +37,7 @@
             {% for object in object_list %}
             <tr>
                 <td><a href="{% url 'values' %}?search={{ object.id }}">
-                    {{ object.name }}</a></td>
+                    {{ object.name| truncatechars:20 }}</a></td>
                 <td>
                     {{ object.type_column }}
                 </td>
