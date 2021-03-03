@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import message, send_mail, BadHeaderError
+from django.db.models import Case, CharField, Value, When
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -70,18 +71,18 @@ class ScanReportTableListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportFieldListView(ListView):
     model = ScanReportField
-
+   
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get('search', None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
+      
         return qs
-
+        
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report_table.scan_report
             scan_report_table = self.get_queryset()[0].scan_report_table
@@ -90,13 +91,14 @@ class ScanReportFieldListView(ListView):
             scan_report = None
             scan_report_table = None
             scan_report_field = None
-
+        
         context.update({
             'scan_report': scan_report,
             'scan_report_table': scan_report_table,
             'scan_report_field': scan_report_field,
-        })
 
+        })
+       
         return context
 
 
@@ -110,7 +112,7 @@ class ScanReportFieldUpdateView(UpdateView):
         'pass_from_source',
         'classification_system',
     ]
-
+   
     def get_success_url(self):
         return "{}?search={}".format(reverse('fields'), self.object.scan_report_table.id)
 

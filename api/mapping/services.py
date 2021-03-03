@@ -105,7 +105,7 @@ def process_scan_report(scan_report_id):
                 )
 
                 # Add each field in Field Overview to the model ScanReportField
-                ScanReportField.objects.create(
+                scanreport=ScanReportField.objects.create(
                     scan_report_table=scan_report_table,
                     name=row[1],
                     description_column=row[2],
@@ -115,8 +115,44 @@ def process_scan_report(scan_report_id):
                     nrows_checked=row[6],
                     fraction_empty=row[7],
                     nunique_values=row[8],
-                    fraction_unique=row[9]
+                    fraction_unique=row[9],
+                    ignore_column=row[10],
+                    is_patient_id = False,
+                    is_date_event=False,
+                    is_ignore=False,
+                    pass_from_source=False
                 )
+                if scanreport.ignore_column=='PatientID':
+                    scanreport.is_patient_id=True
+                else: 
+                    scanreport.is_patient_id=False
+                
+                if scanreport.ignore_column=='Date':
+                    scanreport.is_date_event=True
+                else: 
+                    scanreport.is_date_event=False
+                
+                if scanreport.ignore_column=='Ignore':
+                    scanreport.is_ignore=True
+                else: 
+                    scanreport.is_ignore=False
+                
+                if scanreport.ignore_column=='PassSource':
+                    scanreport.pass_from_source=True
+                else: 
+                    scanreport.pass_from_source=False
+                
+                scanreport.save()
+                    
+
+                
+
+
+
+                
+                
+                
+                
 
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
