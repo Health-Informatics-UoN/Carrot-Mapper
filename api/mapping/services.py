@@ -143,16 +143,6 @@ def process_scan_report(scan_report_id):
                     scanreport.pass_from_source=False
                 
                 scanreport.save()
-                    
-
-                
-
-
-
-                
-                
-                
-                
 
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
