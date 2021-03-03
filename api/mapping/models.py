@@ -160,7 +160,7 @@ class ScanReportField(BaseModel):
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
-    is_patient_id = models.BooleanField()
+    is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(default=False)
