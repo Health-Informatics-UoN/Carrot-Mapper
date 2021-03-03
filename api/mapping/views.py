@@ -785,8 +785,6 @@ def merge_dictionary(request):
         bad_index = x["Source_FieldDesc"].isnull()
         x["Source_FieldDesc"][bad_index] = x["Source_Field"][bad_index]
 
-        x.to_csv('/data/TEMP_full_join.csv')
-
         for index, row in x.iterrows():
             
             print(row['Source_Field'])
