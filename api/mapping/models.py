@@ -162,7 +162,7 @@ class ScanReportField(BaseModel):
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
-    pass_from_source = models.BooleanField(default=False,null=True)
+    #pass_from_source = models.BooleanField(null=True,blank=True)
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,
