@@ -529,7 +529,7 @@ class DocumentFileFormView(FormView):
         self.object = self.kwargs.get("pk")
         return reverse("file-list", kwargs={"pk": self.object})
 
-
+@method_decorator(login_required,name='dispatch')
 class DataDictionaryListView(ListView):
     model = DataDictionary
     ordering = ["-source_value"]
@@ -565,7 +565,7 @@ class DataDictionaryListView(ListView):
 
         return context
 
-
+@method_decorator(login_required,name='dispatch')
 class DataDictionaryUpdateView(UpdateView):
     model = DataDictionary
     fields = [
@@ -583,7 +583,7 @@ class DataDictionaryUpdateView(UpdateView):
             self.object.source_value.scan_report_field.scan_report_table.scan_report.id,
         )
 
-
+@method_decorator(login_required,name='dispatch')
 class DictionarySelectFormView(FormView):
 
     form_class = DictionarySelectForm
