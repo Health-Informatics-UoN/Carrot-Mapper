@@ -734,7 +734,7 @@ def merge_dictionary(request):
         "ValueDescription",
     ]
 
-    dict_df.to_csv('/data/TEMP_internal_dictionary.csv')
+    #dict_df.to_csv('/data/TEMP_internal_dictionary.csv')
 
     # There's no direct link in our models between an uploaded Document/File and a ScanReport
     # So, first grab the DataPartner value for the ScanReport ID (i.e. the search term)
