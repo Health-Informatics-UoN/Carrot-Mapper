@@ -738,8 +738,9 @@ def merge_dictionary(request):
 
     # There's no direct link in our models between an uploaded Document/File and a ScanReport
     # So, first grab the DataPartner value for the ScanReport ID (i.e. the search term)
-    scan_report_data_partner = ScanReport.objects.filter(id=search_term).values('data_partner')
-
+    #scan_report_data_partner = ScanReport.objects.filter(id=search_term).values('data_partner')
+    scan_report_data_partner = str(ScanReport.objects.filter(id=search_term)[0].data_partner)
+    
     # Return only those document files where the data partner matches scan_report_data_partner
     # Filter to return only LIVE data dictionaries
     files = DocumentFile.objects.filter(document__data_partner__in=scan_report_data_partner).filter(document__document_type__name="Data Dictionary").filter(status="LIVE").values_list("document_file", flat=True)
