@@ -7,20 +7,20 @@ from .views import StructuralMappingDeleteView
 
 urlpatterns = [
     path('', views.home, name='home'),
-    path('tables/', login_required(views.ScanReportTableListView.as_view()), name='tables'),
-    path('fields/', login_required(views.ScanReportFieldListView.as_view()), name='fields'),
-    path('fields/<int:pk>/update/', login_required(views.ScanReportFieldUpdateView.as_view()), name='scan-report-field-update'),
-    path('fields/<int:pk>/create_mapping/', login_required(views.AddMappingRuleFormView.as_view()), name='create-mapping-form'),
-    path('fields/<int:pk>/mapping_rules/', login_required(views.StructuralMappingListView.as_view()), name='view-structural-mapping'),
-    path('fields/<int:pk>/mapping_rules/delete', login_required(StructuralMappingDeleteView.as_view()), name='structural-mapping-delete'),
-    path('values/', login_required(views.ScanReportValueListView.as_view()), name='values'),
-    path('scanreports/', login_required(views.ScanReportListView.as_view()), name='scan-report-list'),
-    path('scanreports/<int:pk>/mapping_rules', login_required(views.StructuralMappingTableListView.as_view()), name='tables-structural-mapping'),
-    path('scanreports/create/', login_required(views.ScanReportFormView.as_view()), name='scan-report-form'),
+    path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
+    path('fields/', views.ScanReportFieldListView.as_view(), name='fields'),
+    path('fields/<int:pk>/update/', views.ScanReportFieldUpdateView.as_view(), name='scan-report-field-update'),
+    path('fields/<int:pk>/create_mapping/', views.AddMappingRuleFormView.as_view(), name='create-mapping-form'),
+    path('fields/<int:pk>/mapping_rules/', views.StructuralMappingListView.as_view(), name='view-structural-mapping'),
+    path('fields/<int:pk>/mapping_rules/delete', StructuralMappingDeleteView.as_view(), name='structural-mapping-delete'),
+    path('values/', views.ScanReportValueListView.as_view(), name='values'),
+    path('scanreports/', views.ScanReportListView.as_view(), name='scan-report-list'),
+    path('scanreports/<int:pk>/mapping_rules', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
+    path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
     
-    path('datadictionary/', login_required(views.DataDictionaryListView.as_view()), name='data-dictionary'),
-    path('datadictionary/<int:pk>/update', login_required(views.DataDictionaryUpdateView.as_view()), name='update-data-dictionary'),
-    path('datadictionary/merge/', login_required(views.merge_dictionary), name='merge-data-dictionary'),
+    path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
+    path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
+    path('datadictionary/merge/', views.merge_dictionary), name='merge-data-dictionary'),
     
     path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
 
