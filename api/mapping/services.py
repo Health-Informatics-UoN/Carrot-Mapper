@@ -90,9 +90,9 @@ def process_scan_report(scan_report_id):
 
     with open(filepath, "rt") as f:
         reader = csv.reader(f)
-        
-        i=next(reader)  # Skip header row
-        print(i)
+
+        next(reader)  # Skip header row
+
         # For each row in the Field Overview sheet
         # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
