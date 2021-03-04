@@ -21,6 +21,9 @@
         <th scope="col">Added by</th>
         <th scope="col">Date</th>
         <th scope="col">Maps</th>
+        <th scope="col">Data Dictionary</th>
+
+
     </tr>
     </thead>
     <tbody>
@@ -33,7 +36,9 @@
         <td>{{ object.created_at }}</td>
         <td><a href="{% url 'tables-structural-mapping' object.id %}">
             <button type="button" class="btn btn-info">View rules</button></a>
-<!--            <a href=""><button type="button" class="btn btn-info">View Term Map</button></a>-->
+        </td>
+        <td><a href="{% url 'data-dictionary' %}?search={{ object.id }}">
+        <button type="button" class="btn btn-success">View Dictionary</button></a>
         </td>
     </tr>
     {% endfor %}

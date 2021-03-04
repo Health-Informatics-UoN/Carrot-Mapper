@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from .services import process_scan_report_sheet_table, import_data_dictionary
+from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi
 
 
 class ServiceTests(TestCase):
@@ -19,4 +19,16 @@ class ServiceTests(TestCase):
 
     def test_import_data_dictionary(self):
         x = import_data_dictionary()
+        print(x)
+
+
+    # Run this to build Usagi's index for the first time
+    # Takes a long time to run!
+    def test_build_usagi_index(self):
+        x = build_usagi_index()
+        print(x)
+
+    # Run this to get Usagi going
+    def test_run_usagi(self):
+        x = run_usagi()
         print(x)

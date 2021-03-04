@@ -11,7 +11,8 @@ RUN apt-get update && \
         htop \
         wait-for-it \
         binutils \
-        gettext
+        gettext \
+        default-jre
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django

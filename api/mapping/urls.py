@@ -17,6 +17,13 @@ urlpatterns = [
     path('scanreports/', views.ScanReportListView.as_view(), name='scan-report-list'),
     path('scanreports/<int:pk>/mapping_rules', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
+    
+    path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
+    path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
+    path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
+    
+    path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
+
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
     path('documents/', views.DocumentListView.as_view(), name='document-list'),
