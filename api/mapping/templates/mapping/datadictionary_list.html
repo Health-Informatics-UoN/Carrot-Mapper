@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+            <li class="breadcrumb-item">{{ scan_report.data_partner }} - {{ scan_report.dataset }}</li>
+</nav>
+<h2>Data Dictionary for {{ scan_report.data_partner }} - {{ scan_report.dataset }}</h2>
+
+{{ scan_report }}
+
+{% if object_list %}
+<form id="my_form">
+    <div class="form-group">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Table</p></th>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Field</p></th>
+                <th scope="col"><p style="color:MediumSeaGreen;">Source Value</p></th>
+                <th scope="col">Dictionary Table</th>
+                <th scope="col">Dictionary Field</th>
+                <th scope="col">Dictionary Field Description</th>
+                <th scope="col">Dictionary Value Code</th>
+                <th scope="col">Dictionary Value Description</th>
+                <th scope="col">Definition Fixed</th>
+                <th scope="col">Edit</th>
+
+            </tr>
+            </thead>
+            <tbody>
+
+            {% for object in object_list %}
+            <tr>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value.scan_report_field.scan_report_table }}</p></td>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value.scan_report_field }}</p></td>
+            <td><p style="color:MediumSeaGreen;">{{ object.source_value }}</p></td>
+            <td>{{ object.dictionary_table }}</td>
+            <td>{{ object.dictionary_field }}</td>
+            <td>{{ object.dictionary_field_description }}</td>
+            <td>{{ object.dictionary_value_code }}</td>
+            <td>{{ object.dictionary_value_description }}</td>
+            <td>{{ object.definition_fixed }}</td>
+            <td><a href="{% url 'update-data-dictionary' object.id %}">Edit</a></td>
+               
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+<br>
+
+    </div>
+<br>
+</form>
+
+{% comment %} <a href="{% url 'merge-data-dictionary' %}?search={{ scan_report.id }}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a> {% endcomment %}
+<a href="" class="btn btn-primary">Run Usagi</a><br><br>
+
+{% endif %}
+
+{% endblock %}
