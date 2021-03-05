@@ -1,12 +1,12 @@
 /*
-  == primary pallete == 
+  == primary palette == 
   Sea Green
   C71 M0 Y56 K0
   #3db28c
   Midnight Blue
   #29235c
 
-  == secondary pallete == 
+  == secondary palette == 
   Midnight Blue
   #29235c
   Duck Egg Blue
@@ -36,8 +36,42 @@ body {
 .navbar {
     font-size: 22px;
 }
+/* change the button colours for each button type to the co-connect palette colours */
+.btn-info{
+    background-color: #475da7;
+    border: #475da7;
+    color: white;
+}
 
+.btn-success{
+    background-color: #3db28c;
+    border: #475da7;
+    color: white;
+}
 
+.btn-primary{
+    background-color: #475da7;
+    border: #475da7;
+    color: white;
+}
+
+.btn-info:hover{
+    background-color: #475da7;
+    border: #475da7;
+    color: white;
+}
+
+.btn-success:hover{
+    background-color: #3db28c;
+    border: #475da7;
+    color: white;
+}
+
+.btn-primary:hover{
+    background-color: #475da7;
+    border: #475da7;
+    color: white;
+}
 
 /* increase the gap between the brand and the first link to pages in the nav bar */
 .navbar .navbar-brand{
@@ -57,18 +91,13 @@ body {
 /* change the navbar link colors  and mouse-over actions */
 .nav-link{
 	color:#3c3c3b !important;
+    border-bottom:1.5px solid transparent;
     }
 .nav-link:hover{
     color:var(--co-connect-secondary)!important;
     border-bottom: 1.5px solid var(--co-connect-primary);
 
 }
-.nav-link a.active{
-    border-bottom: 1.5px solid var(--co-connect-primary);
-
-}
-
-
 
 
 /* bit of a hack for the "mobile phone view" */
