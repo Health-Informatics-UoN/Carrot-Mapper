@@ -306,7 +306,14 @@ class StructuralMappingTableListView(ListView):
     model = ScanReportField
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+
+    def test(self,_map):
+        #import coconnect
+        print (_map)
+        
+    
     def download_structural_mapping(self,request,pk,return_type='csv'):
+        return_type = 'json'
         scan_report = ScanReport.objects.get(pk=pk)
         mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
         mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
@@ -334,6 +341,7 @@ class StructuralMappingTableListView(ListView):
 
                 output['operation'].append(rule.operation)               
 
+                
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
             
@@ -348,6 +356,8 @@ class StructuralMappingTableListView(ListView):
             return response
         #not used but here if we want it for the api...
         elif return_type == 'json':
+            self.test(output)
+            return redirect(request.path)
             response = HttpResponse(json.dumps(output), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response

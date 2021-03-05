@@ -31,3 +31,4 @@ ENV PATH=/home/django/.local/bin:$PATH
 
 RUN pip install -r /requirements.txt
 
+RUN pip install git+https://github.com/CO-CONNECT/co-connect-tools.git@dev/TLTool
