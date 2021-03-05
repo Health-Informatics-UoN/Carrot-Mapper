@@ -90,12 +90,13 @@ def process_scan_report(scan_report_id):
 
     with open(filepath, "rt") as f:
         reader = csv.reader(f)
+
         next(reader)  # Skip header row
 
         # For each row in the Field Overview sheet
         # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
-
+            
             # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
@@ -109,9 +110,9 @@ def process_scan_report(scan_report_id):
                     scan_report=scan_report,
                     name=name,
                 )
-
-                # Add each field in Field Overview to the model ScanReportField
-                ScanReportField.objects.create(
+                
+                if len(row)<11:
+                    scanreport=ScanReportField.objects.create(
                     scan_report_table=scan_report_table,
                     name=row[1],
                     description_column=row[2],
@@ -122,7 +123,48 @@ def process_scan_report(scan_report_id):
                     fraction_empty=row[7],
                     nunique_values=row[8],
                     fraction_unique=row[9],
-                )
+                    
+                    )
+                else:
+                    # Add each field in Field Overview to the model ScanReportField
+                    scanreport=ScanReportField.objects.create(
+                    scan_report_table=scan_report_table,
+                    name=row[1],
+                    description_column=row[2],
+                    type_column=row[3],
+                    max_length=row[4],
+                    nrows=row[5],
+                    nrows_checked=row[6],
+                    fraction_empty=row[7],
+                    nunique_values=row[8],
+                    fraction_unique=row[9],
+                    ignore_column=row[10],
+                    is_patient_id = False,
+                    is_date_event=False,
+                    is_ignore=False,
+                    pass_from_source=False
+                    )
+                    if scanreport.ignore_column=='PatientID':
+                        scanreport.is_patient_id=True
+                    else: 
+                        scanreport.is_patient_id=False
+
+                    if scanreport.ignore_column=='Date':
+                        scanreport.is_date_event=True
+                    else: 
+                        scanreport.is_date_event=False
+
+                    if scanreport.ignore_column=='Ignore':
+                        scanreport.is_ignore=True
+                    else: 
+                        scanreport.is_ignore=False
+
+                    if scanreport.ignore_column=='PassSource':
+                        scanreport.pass_from_source=True
+                    else: 
+                        scanreport.pass_from_source=False
+
+                    scanreport.save()
 
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview

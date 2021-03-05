@@ -159,17 +159,18 @@ class ScanReportField(BaseModel):
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
     nunique_values = models.IntegerField()
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
+    ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
-    #pass_from_source = models.BooleanField(null=True,blank=True)
+    pass_from_source = models.BooleanField(null=True,blank=True)
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,
         null=True,
         blank=True
     )
-
+  
     def __str__(self):
         return self.name
 
