@@ -518,34 +518,14 @@ class DocumentFileFormView(FormView):
     # success_url=reverse_lazy('document-list')
 
     def form_valid(self, form):
-        print(form.cleaned_data)
-        print(type(form.cleaned_data))
-        if form.cleaned_data['document'].document_type == "Data Dictionary":
-            with open(form.cleaned_data['document_file']) as input_data_dictionary:
-                data_dictionary_csv = csv.reader(input_data_dictionary)
-                header = next(data_dictionary_csv)
-                column_names= ["Table Name","Column Name", "Column Description", "ValueCode","ValueDescription"]
-                if set(column_names) & set(header) == len(column_names):
-                    document_file = DocumentFile.objects.create(
-                        document_file=form.cleaned_data["document_file"],
-                        size=20,
-                        document=form.cleaned_data["document"],
-                        # status="Inactive"
-                    )
-                    document_file.save()
-                    return super().form_valid(form)
-                else:
-                    #raise(form.ValidationError("Please check your column names in your data dictionary"))
-                    return redirect("/datadictionary/error")
-        else:
-            document_file = DocumentFile.objects.create(
-                document_file=form.cleaned_data["document_file"],
-                size=20,
-                document=form.cleaned_data["document"],
-                # status="Inactive"
-            )
-            document_file.save()
-            return super().form_valid(form)
+        document_file = DocumentFile.objects.create(
+            document_file=form.cleaned_data["document_file"],
+            size=20,
+            document=form.cleaned_data["document"],
+            # status="Inactive"
+        )
+        document_file.save()
+        return super().form_valid(form)
 
     def get_success_url(self, **kwargs):
         self.object = self.kwargs.get("pk")
