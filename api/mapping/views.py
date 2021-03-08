@@ -479,7 +479,7 @@ class DocumentFormView(FormView):
             document_file=form.cleaned_data["document_file"], size=20, document=document
         )
         print(document_file)
-        #write logic checks for data dictionary's columns
+        # write logic checks for data dictionary's columns
         document_file.save()
 
         # This code will be required later to import a data dictionary into the DataDictionary model
@@ -535,7 +535,8 @@ class DocumentFileFormView(FormView):
                     document_file.save()
                     return super().form_valid(form)
                 else:
-                    pass
+                    #raise(form.ValidationError("Please check your column names in your data dictionary"))
+                    return redirect("/datadictionary/error")
         else:
             document_file = DocumentFile.objects.create(
                 document_file=form.cleaned_data["document_file"],
