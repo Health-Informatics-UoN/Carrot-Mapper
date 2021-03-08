@@ -143,7 +143,9 @@ class DocumentFileForm(forms.Form):
         header = data_dictionary_csv.split(',')
         column_names= ["Table Name","Column Name", "Column Description", "ValueCode","ValueDescription"]
 
-        if set(column_names) & set(header) == len(column_names):
+        print(set(column_names))
+
+        if set(column_names) == set(header):
             return self.cleaned_data['document_file']
         else:
             raise (forms.ValidationError("Please check your column names in your data dictionary"))
