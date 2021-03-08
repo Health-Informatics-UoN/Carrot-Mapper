@@ -144,9 +144,9 @@ class DocumentFileForm(forms.Form):
         column_names= ["Table Name","Column Name", "Column Description", "ValueCode","ValueDescription"]
 
         if set(column_names) & set(header) == len(column_names):
-            self.cleaned_data['document_file']
+            return self.cleaned_data['document_file']
         else:
-            raise(forms.ValidationError("Please check your column names in your data dictionary"))
+            raise (forms.ValidationError("Please check your column names in your data dictionary"))
 
 class DictionarySelectForm(forms.Form):
     document = forms.ModelChoiceField(label="Data Dictionary Document", queryset=DocumentFile.objects.filter(status__icontains="Live"), to_field_name="document")
