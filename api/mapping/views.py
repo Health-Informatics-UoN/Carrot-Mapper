@@ -1,3 +1,5 @@
+import csv
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
@@ -476,6 +478,8 @@ class DocumentFormView(FormView):
         document_file = DocumentFile.objects.create(
             document_file=form.cleaned_data["document_file"], size=20, document=document
         )
+        print(document_file)
+        #write logic checks for data dictionary's columns
         document_file.save()
 
         # This code will be required later to import a data dictionary into the DataDictionary model
@@ -514,16 +518,33 @@ class DocumentFileFormView(FormView):
     # success_url=reverse_lazy('document-list')
 
     def form_valid(self, form):
-        document_file = DocumentFile.objects.create(
-            document_file=form.cleaned_data["document_file"],
-            size=20,
-            document=form.cleaned_data["document"],
-            # status="Inactive"
-        )
-
-        document_file.save()
-
-        return super().form_valid(form)
+        print(form.cleaned_data)
+        print(type(form.cleaned_data))
+        if form.cleaned_data['document'].document_type == "Data Dictionary":
+            with open(form.cleaned_data['document_file']) as input_data_dictionary:
+                data_dictionary_csv = csv.reader(input_data_dictionary)
+                header = next(data_dictionary_csv)
+                column_names= ["Table Name","Column Name", "Column Description", "ValueCode","ValueDescription"]
+                if set(column_names) & set(header) == len(column_names):
+                    document_file = DocumentFile.objects.create(
+                        document_file=form.cleaned_data["document_file"],
+                        size=20,
+                        document=form.cleaned_data["document"],
+                        # status="Inactive"
+                    )
+                    document_file.save()
+                    return super().form_valid(form)
+                else:
+                    pass
+        else:
+            document_file = DocumentFile.objects.create(
+                document_file=form.cleaned_data["document_file"],
+                size=20,
+                document=form.cleaned_data["document"],
+                # status="Inactive"
+            )
+            document_file.save()
+            return super().form_valid(form)
 
     def get_success_url(self, **kwargs):
         self.object = self.kwargs.get("pk")
