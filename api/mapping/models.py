@@ -170,6 +170,8 @@ class ScanReportField(BaseModel):
         null=True,
         blank=True
     )
+
+   
   
     def __str__(self):
         return self.name
@@ -183,10 +185,17 @@ class OmopTable(BaseModel):
         return self.table
 
 
+class TermMap(BaseModel):
+    value = models.IntegerField(default=-1,null=True,blank=True)
+    def __str__(self):
+        return self.value
+
+
 class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
     field = models.CharField(max_length=64)
 
+    
     def __str__(self):
         return f'{self.table, self.field}'
 
@@ -207,6 +216,14 @@ class MappingRule(BaseModel):
         choices=OPERATION_CHOICES,
         default=OPERATION_NONE,
     )
+    
+    term_map = models.ForeignKey(TermMap,
+                                 on_delete=models.CASCADE,
+                                 null=True,
+                                 blank=True
+    )
+
+    
 
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
@@ -218,6 +235,8 @@ class ScanReportValue(BaseModel):
     frequency = models.IntegerField()
     conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
 
+    
+    
     def __str__(self):
         return self.value
 

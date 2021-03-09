@@ -20,10 +20,15 @@
   <button type="submit" class="btn btn-info" name='download-tm' >Download Term Mapping</button>
 </form>
 
-
+<button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
 
 {% if object_list %}
-<table class="table">
+
+<div class="container">
+  <div class="row mx-auto" id='placeholder-svg'>
+  </div>
+  <div class="row">
+  <table class="table">
     <thead>
     <tr>
         <!--<th scope="col">Data Partner</th>
@@ -33,7 +38,7 @@
         <th scope="col">Source Table</th>
         <th scope="col">Source Field</th>
         <th scope="col">Operation</th>
-        <th scope="col">Logic</th>
+        <th scope="col">Term Map</th>
     </tr>
     </thead>
     <tbody>
@@ -48,20 +53,52 @@
                 <td>{{ object.name }}</td>
                 <td>{{ mr.operation }}</td>
                 <td>
+		  {{ mr.term_map }} 
+		  <!---
                     {% for value in object.scanreportvalue_set.all %}
                         {% if value.conceptID > 0 %}
                             <p>{{ value.value }}: {{ value.conceptID }}</p>
                         {% endif %}
                     {% endfor %}
+	          --->
                 </td>
             </tr>
         {% endfor %}
    {% endfor %}
     </tbody>
 </table>
+  </div>
+  </div>
+
 
 {% else %}
 <p>There are currently no rules for this scan report.</p>
 {% endif %}
 
+
+  <script>
+    $("#view_svg").click(function () {
+
+	  $.ajax({
+		type: "POST",
+		url: window.location,
+		data: {
+		      'svg': true,
+		      'csrfmiddlewaretoken': '{{ csrf_token }}',
+		},
+		success: function (data) {
+		      var data = $("svg", data);
+		      $('#placeholder-svg').append(data);
+		},
+		error: function(XMLHttpRequest, textStatus, errorThrown){
+		      $('#placeholder-svg').html(errorThrown);
+		}
+	  });
+
+    
+    });
+  </script>
+
+
 {% endblock %}
+

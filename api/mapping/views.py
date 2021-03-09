@@ -21,7 +21,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 from extra_views import ModelFormSetView
 import os
-
+import sys
 from .forms import (
     ScanReportForm,
     UserCreateForm,
@@ -51,6 +51,12 @@ import pandas as pd
 
 
 import json
+
+
+import coconnect
+
+
+
 
 
 @login_required
@@ -159,8 +165,8 @@ class ScanReportListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
-    fields = ["value", "frequency", "conceptID"]
-    fields = ["conceptID"]
+    #fields = ["value", "frequency", "conceptID"]
+    fields = []#"conceptID"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
@@ -307,13 +313,23 @@ class StructuralMappingTableListView(ListView):
     template_name = "mapping/mappingrulesscanreport_list.html"
 
 
-    def test(self,_map):
-        #import coconnect
-        print (_map)
+    def json_to_svg(self,data):
+        from coconnect.cdm import dag
+        return dag.make_dag(data)
+            
+    def csv_to_json(self,_csv_data):
+        from io import StringIO
+        from coconnect.cdm import mapping_pipeline_helpers
+        
+        structural_mapping = mapping_pipeline_helpers\
+            .StructuralMapping\
+            .to_json(StringIO(_csv_data),
+                     destination_tables = ['person','condition_occurrence'])
+                             
+        return structural_mapping
         
     
     def download_structural_mapping(self,request,pk,return_type='csv'):
-        return_type = 'json'
         scan_report = ScanReport.objects.get(pk=pk)
         mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
         mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
@@ -336,28 +352,51 @@ class StructuralMappingTableListView(ListView):
                 output['coding_system'].append("user defined")
                                 
                 is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
-                is_mapped = 'y' if is_mapped else 'n'
-                output['term_mapping'].append(is_mapped)
+                #is_mapped = ''#'y' if is_mapped else 'n'
+                if is_mapped:
+                    term_mapping = {
+                        value.value : value.conceptID
+                        for value in obj.scanreportvalue_set.all()
+                        }
+                    output['term_mapping'].append(term_mapping)
+                else:
+                     output['term_mapping'].append(None)
 
                 output['operation'].append(rule.operation)               
 
-                
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
-            
+
+
         if return_type == 'csv':
             #covert our dictiionary into a csv
             result = ",".join(f'"{key}"' for key in output.keys())
             for irow in range(len(output['rule_id'])):
                 result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
 
-            response = HttpResponse(result, content_type='text/csv')
+            fname = f"{scan_report.data_partner}"\
+                f"_{scan_report.dataset}_structural_mapping.json"
+            
+            output = self.csv_to_json(result)
+            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         #not used but here if we want it for the api...
+        elif return_type == 'svg':
+            #covert our dictiionary into a csv
+            result = ",".join(f'"{key}"' for key in output.keys())
+            for irow in range(len(output['rule_id'])):
+                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+
+            fname = f"{scan_report.data_partner}"\
+                f"_{scan_report.dataset}_structural_mapping.json"
+            
+            output = self.csv_to_json(result)
+            svg_output = self.json_to_svg(output['person'][0])
+            
+            return HttpResponse(svg_output,content_type='image/svg+xml')
+                        
         elif return_type == 'json':
-            self.test(output)
-            return redirect(request.path)
             response = HttpResponse(json.dumps(output), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
@@ -407,7 +446,10 @@ class StructuralMappingTableListView(ListView):
             return self.download_structural_mapping(request,pk)
         elif request.POST.get('download-tm') is not None:
             return self.download_term_mapping(request,pk)
+        elif request.POST.get('svg') is not None:
+            return self.download_structural_mapping(request,pk,return_type='svg')
         else:
+            print (request.POST)
             #define more buttons to click
             pass
 
