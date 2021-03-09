@@ -29,6 +29,7 @@ from .forms import (
     DocumentForm,
     DocumentFileForm,
     DictionarySelectForm,
+    ScanReportAssertionForm
 )
 from .models import (
     ScanReport,
@@ -41,6 +42,7 @@ from .models import (
     DocumentFile,
     Document,
     DataDictionary,
+    ScanReportAssertion
 )
 from .tasks import process_scan_report_task, run_usagi_task
 
@@ -813,3 +815,32 @@ def merge_dictionary(request):
    
     else:
         print("No LIVE data dictionaries for this Data Partner!")
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionView(ListView):
+    model=ScanReportAssertion
+    def get_queryset(self):
+        qs=super().get_queryset()
+        search_term = self.request.GET.get("search", None)
+        if search_term is not None:
+            qs = qs.filter(scan_report=search_term)
+        return qs
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionFormView(FormView):
+    model=ScanReportAssertion
+    form_class = ScanReportAssertionForm
+    template_name = "mapping/scanreportassertion_form.html"
+    success_url=reverse_lazy('scan-report-assertion')
+
+    def form_valid(self, form):
+        assertion = ScanReportAssertion.objects.create(
+            negative_assertion=form.cleaned_data["negative_assertion"],
+            positive_assertion=form.cleaned_data["positive_assertion"],
+            scan_report=form.cleaned_data['scan_report']
+        )
+
+        assertion.save()
+
+        return super().form_valid(form)
+    

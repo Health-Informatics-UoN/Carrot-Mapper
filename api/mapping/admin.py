@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import DocumentType, Source, DataPartner, ScanReport, \
+from .models import DocumentType, ScanReportAssertion, Source, DataPartner, ScanReport, \
     ScanReportTable, \
     ScanReportField, ScanReportValue, \
     ClassificationSystem, OmopTable, OmopField, MappingRule, Document, \
@@ -21,3 +21,4 @@ admin.site.register(MappingRule)
 admin.site.register(Document)
 admin.site.register(DocumentFile)
 admin.site.register(DataDictionary)
+admin.site.register(ScanReportAssertion)

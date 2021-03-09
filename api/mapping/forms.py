@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES, ScanReport
 
 
 class ScanReportForm(forms.Form):
@@ -137,3 +137,14 @@ class DocumentFileForm(forms.Form):
 
 class DictionarySelectForm(forms.Form):
     document = forms.ModelChoiceField(label="Data Dictionary Document", queryset=DocumentFile.objects.filter(status__icontains="Live"), to_field_name="document")
+
+class ScanReportAssertionForm(forms.Form):
+    scan_report=forms.ModelChoiceField(label="Scan Report", queryset=ScanReport.objects.all())
+    negative_assertion=forms.CharField(
+        label="Negative Assertions",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+    positive_assertion=forms.CharField(
+        label="Positive Assertions",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )

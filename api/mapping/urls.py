@@ -17,6 +17,9 @@ urlpatterns = [
     path('scanreports/', views.ScanReportListView.as_view(), name='scan-report-list'),
     path('scanreports/<int:pk>/mapping_rules', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
+    path('scanreports/assertions/', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
+    path('scanreports/assertions/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
+
     
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
