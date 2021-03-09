@@ -11,8 +11,6 @@
 </nav>
 <h2>Data Dictionary for {{ scan_report.data_partner }} - {{ scan_report.dataset }}</h2>
 
-{{ scan_report }}
-
 {% if object_list %}
 <form id="my_form">
     <div class="form-group">
@@ -58,7 +56,7 @@
 <br>
 </form>
 
-{% comment %} <a href="{% url 'merge-data-dictionary' %}?search={{ scan_report.id }}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a> {% endcomment %}
+<a href="{% url 'merge-data-dictionary' %}?search={{ scan_report.id }}" class="btn btn-warning">Merge Dictionary Document    into {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a>
 <a href="" class="btn btn-primary">Run Usagi</a><br><br>
 
 {% endif %}
