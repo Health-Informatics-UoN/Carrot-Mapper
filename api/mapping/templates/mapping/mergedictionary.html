@@ -1,16 +1,22 @@
 {% extends "base.html" %}
 
 {% block body %}
-
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+          reports</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'data-dictionary' %}">Data Dictionary
+          </a></li>
+</nav>
 
 <h2>Merge Data Dictionary</h2>
-<p>Use this page to merge an external data dictionary into the CO-CONNECT app.</p>
-<p>Fields whose definitions you've marked as fixed <em><b>will not</b></em> be overwritten by the merge.</p>
-<br>
- <form class="form-group" method="post">
-    {% csrf_token %}
-    {{form|linebreaks}}
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li>{{ message }}!</li>
+    {% endfor %}
+  </ul>
+{% endif %}
 
 {% endblock %}
