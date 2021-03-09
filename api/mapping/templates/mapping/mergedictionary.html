@@ -1,22 +1,12 @@
 {% extends "base.html" %}
 
 {% block body %}
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-      <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-          reports</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'data-dictionary' %}">Data Dictionary
-          </a></li>
-</nav>
 
-<h2>Merge Data Dictionary</h2>
+
 {% if messages %}
-  <ul class="messages">
     {% for message in messages %}
-      <li>{{ message }}!</li>
+      <h6 style="color:rgb(240, 88, 88)">{{message}}</h6>
     {% endfor %}
-  </ul>
 {% endif %}
 
 {% endblock %}

@@ -813,12 +813,10 @@ def merge_dictionary(request):
         messages.success(request,"Merge was successful")
 
     elif len(files)>1:
-        print("Make sure there is only one LIVE version of a Data Dictionary")
-        messages.warning(request,"Make sure there is only one LIVE version of a Data Dictionary")
+        messages.warning(request, "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.")
 
     elif len(files)==0:
-         print("No LIVE data dictionaries for this Data Partner!")
-         messages.warning(request,"No LIVE data dictionaries for this Data Partner!")
+         messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
 
     return render(request, "mapping/mergedictionary.html")
 
