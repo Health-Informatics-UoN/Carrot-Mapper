@@ -92,14 +92,12 @@ class PasswordChangeForm(forms.Form):
         validators=[password_validation.validate_password]
 
     )
-   
+
     new_password2 = forms.CharField(
         label=("Confirm New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         validators=[password_validation.validate_password]
     )
-
- 
 
 
 class DocumentForm(forms.Form):
@@ -123,8 +121,6 @@ class DocumentForm(forms.Form):
         label="File", widget=forms.FileInput(attrs={"class": "form-control"})
     )
 
-    #clean_document_file(forms.Form)
-
     def clean_document_file(self):
         data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
         header = data_dictionary_csv.split(',')
@@ -137,7 +133,6 @@ class DocumentForm(forms.Form):
 
 
 class DocumentFileForm(forms.Form):
-
     document_file = forms.FileField(
         label="Document", widget=forms.FileInput(attrs={"class": "form-control"})
     )
@@ -149,18 +144,19 @@ class DocumentFileForm(forms.Form):
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
-    # clean_document_file(forms.Form)
-
     def clean_document_file(self):
 
         data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
         header = data_dictionary_csv.split(',')
-        column_names= ["Table Name","Column Name", "Column Description", "ValueCode","ValueDescription"]
+        column_names = ["Table Name", "Column Name", "Column Description", "ValueCode", "ValueDescription"]
 
         if set(column_names) == set(header):
             return self.cleaned_data['document_file']
         else:
             raise (forms.ValidationError("Please check your column names in your data dictionary"))
 
+
 class DictionarySelectForm(forms.Form):
-    document = forms.ModelChoiceField(label="Data Dictionary Document", queryset=DocumentFile.objects.filter(status__icontains="Live"), to_field_name="document")
+    document = forms.ModelChoiceField(label="Data Dictionary Document",
+                                      queryset=DocumentFile.objects.filter(status__icontains="Live"),
+                                      to_field_name="document")
