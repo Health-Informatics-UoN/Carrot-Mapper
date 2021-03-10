@@ -50,10 +50,7 @@ from .services import process_scan_report, run_usagi
 from .tasks import process_scan_report_task, run_usagi
 
 import pandas as pd
-
-
 import json
-
 
 @login_required
 def home(request):
@@ -134,7 +131,7 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_patient_id',
         'is_date_event',
         'is_ignore',
-        #'pass_from_source',
+        'pass_from_source',
         'classification_system',
     ]
 
@@ -723,7 +720,7 @@ def merge_dictionary(request):
                                             "dictionary_value_description",
                                             )
                                         )
-
+    
     # Name columns
     dict_df.columns = [
         "DataPartner",
@@ -740,22 +737,24 @@ def merge_dictionary(request):
 
     # There's no direct link in our models between an uploaded Document/File and a ScanReport
     # So, first grab the DataPartner value for the ScanReport ID (i.e. the search term)
-    #scan_report_data_partner = ScanReport.objects.filter(id=search_term).values('data_partner')
-    scan_report_data_partner = str(ScanReport.objects.filter(id=search_term)[0].data_partner)
+    scan_report_data_partner = ScanReport.objects.filter(id=search_term).values('data_partner')
+    # scan_report_data_partner = str(ScanReport.objects.filter(id=search_term)[0].data_partner)
     
     # Return only those document files where the data partner matches scan_report_data_partner
     # Filter to return only LIVE data dictionaries
+    
     files = DocumentFile.objects.filter(document__data_partner__in=scan_report_data_partner).filter(document__document_type__name="Data Dictionary").filter(status="LIVE").values_list("document_file", flat=True)
     files = list(files)
     
-    if len(files) > 0:
-
+    if len(files)==1:
+    
         # Load in uploaded data dictionary for joining (From the Documents section of the webapp)
         external_dictionary = pd.read_csv(os.path.join('media/', files[0]))
 
         # # Create an intermediate join table
         # # This ensures that each field in scan_report has a field description from the external dictionary
         field_join = pd.merge(dict_df, external_dictionary, how='left', left_on='Field', right_on='Column Name')
+        
         field_join_grp = field_join.groupby(['Field', 'Value']).first().reset_index()
 
         field_join_grp = field_join_grp[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Column Description']]
@@ -765,8 +764,9 @@ def merge_dictionary(request):
         # Join the intermediate join back to the external dictionary
         # This time on field and value
         x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['Column Name', 'ValueCode'])
+        
         x = x[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Table Name', 'Column Name', 'Column Description_x', 'ValueCode', 'ValueDescription']]
-
+        x=x.fillna(value="")
         x.columns = [
             "Source_Table",
             "Source_Field",
@@ -812,9 +812,16 @@ def merge_dictionary(request):
                 obj.dictionary_value_code=row['Dictionary_ValueCode']
                 obj.dictionary_value_description=row['Dictionary_ValueDescription']
                 obj.save()
-   
-    else:
-        print("No LIVE data dictionaries for this Data Partner!")
+        messages.success(request,"Merge was successful")
+
+    elif len(files)>1:
+        messages.warning(request, "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.")
+
+    elif len(files)==0:
+         messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
+
+    return render(request, "mapping/mergedictionary.html")
+
 
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionView(ListView):
@@ -826,7 +833,6 @@ class ScanReportAssertionView(ListView):
         return qs
     
    
-
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionFormView(FormView):
     model=ScanReportAssertion
@@ -845,14 +851,13 @@ class ScanReportAssertionFormView(FormView):
 
         return super().form_valid(form)
 
+
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionsUpdateView(UpdateView):
     model = ScanReportAssertion
-    # success_url=reverse_lazy('scan-report-assertion')
     fields = [
         "positive_assertion",
         "negative_assertion",
-       
     ]
 
     def get_success_url(self, **kwargs):
