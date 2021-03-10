@@ -821,10 +821,11 @@ class ScanReportAssertionView(ListView):
     model=ScanReportAssertion
     def get_queryset(self):
         qs=super().get_queryset()
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-            qs = qs.filter(scan_report=search_term)
+       
+        qs = qs.filter(scan_report=self.kwargs['pk'])
         return qs
+    
+   
 
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionFormView(FormView):
@@ -835,12 +836,25 @@ class ScanReportAssertionFormView(FormView):
 
     def form_valid(self, form):
         assertion = ScanReportAssertion.objects.create(
-            negative_assertion=form.cleaned_data["negative_assertion"],
             positive_assertion=form.cleaned_data["positive_assertion"],
+            negative_assertion=form.cleaned_data["negative_assertion"],
             scan_report=form.cleaned_data['scan_report']
         )
 
         assertion.save()
 
         return super().form_valid(form)
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionsUpdateView(UpdateView):
+    model = ScanReportAssertion
+    # success_url=reverse_lazy('scan-report-assertion')
+    fields = [
+        "positive_assertion",
+        "negative_assertion",
+       
+    ]
+
+    def get_success_url(self, **kwargs):
+     return reverse("scan-report-assertion", kwargs={'pk': self.object.scan_report.id})
     

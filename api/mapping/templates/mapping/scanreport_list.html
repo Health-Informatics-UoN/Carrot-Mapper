@@ -42,7 +42,7 @@
         <td><a href="{% url 'data-dictionary' %}?search={{ object.id }}">
         <button type="button" class="btn btn-success">View Dictionary</button></a>
         </td>
-        <td><a href="{% url 'scan-report-assertion' %}?search={{ object.id }}">
+        <td><a href="{% url 'scan-report-assertion' object.id %}">
             <button type="button" class="btn btn-success">View Assertions</button></a>
         </td>
     </tr>

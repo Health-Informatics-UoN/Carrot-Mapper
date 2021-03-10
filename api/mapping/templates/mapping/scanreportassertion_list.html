@@ -19,6 +19,7 @@
         <th scope="col">Scan Report</th>
         <th scope="col">Positive</th>
         <th scope="col">Negative</th>
+        <th scope="col">Edit Assertions</th>
       
 
 
@@ -30,6 +31,8 @@
         <td>{{object.scan_report}}</td>
         <td>{{object.positive_assertion}}</td>
         <td>{{object.negative_assertion}}</td>
+        <td><a href="{% url 'scan-report-assertion-update' object.id %}">Edit</a>
+        </td>
 
     </tr>
     {% endfor %}

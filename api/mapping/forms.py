@@ -140,11 +140,13 @@ class DictionarySelectForm(forms.Form):
 
 class ScanReportAssertionForm(forms.Form):
     scan_report=forms.ModelChoiceField(label="Scan Report", queryset=ScanReport.objects.all())
-    negative_assertion=forms.CharField(
-        label="Negative Assertions",
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-    )
+    
     positive_assertion=forms.CharField(
         label="Positive Assertions",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+    negative_assertion=forms.CharField(
+        label="Negative Assertions",
+        widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+   

@@ -18,15 +18,17 @@
         <label class="form-label">{{ form.scan_report.label }}</label>
         {{ form.scan_report }}
     </div>
-    <div class="mb-3">
-        {{ form.negative_assertion.errors }}
-        <label class="form-label">{{ form.negative_assertion.label }}</label>
-        {{ form.negative_assertion }}
-    </div>
+   
     <div class="mb-3">
         {{ form.positive_assertion.errors }}
         <label class="form-label">{{ form.positive_assertion.label }}</label>
         {{ form.positive_assertion }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.negative_assertion.errors }}
+        <label class="form-label">{{ form.negative_assertion.label }}</label>
+        {{ form.negative_assertion }}
     </div>
   
     <button type="submit" class="btn btn-primary">Submit</button>
