@@ -73,6 +73,37 @@ body {
     color: white;
 }
 
+
+.table {
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-family: sans-serif;
+    min-width: 400px;
+}
+
+.table thead tr {
+    color: #000000;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: 12px 15px;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.table tbody tr:last-of-type {
+    border-bottom: 1px solid  #000000;
+}
+
+
 /* increase the gap between the brand and the first link to pages in the nav bar */
 .navbar .navbar-brand{
     padding-right: 40px;
