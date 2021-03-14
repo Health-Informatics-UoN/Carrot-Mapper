@@ -185,12 +185,6 @@ class OmopTable(BaseModel):
         return self.table
 
 
-class TermMap(BaseModel):
-    value = models.IntegerField(default=-1,null=True,blank=True)
-    def __str__(self):
-        return self.value
-
-
 class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
     field = models.CharField(max_length=64)
@@ -217,12 +211,6 @@ class MappingRule(BaseModel):
         default=OPERATION_NONE,
     )
     
-    term_map = models.ForeignKey(TermMap,
-                                 on_delete=models.CASCADE,
-                                 null=True,
-                                 blank=True
-    )
-
     
 
     def __str__(self):

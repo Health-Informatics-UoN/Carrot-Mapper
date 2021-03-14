@@ -71,8 +71,8 @@ class ScanReportTableListView(ListView):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
         if search_term is not None and search_term is not "":
-            qs = qs.filter(scan_report__id=search_term)
-
+            qs = qs.filter(scan_report__id=search_term).order_by('name')
+            
         return qs
 
     def get_context_data(self, **kwargs):
@@ -165,8 +165,7 @@ class ScanReportListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
-    #fields = ["value", "frequency", "conceptID"]
-    fields = []#"conceptID"]
+    fields = ["conceptID"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
@@ -352,15 +351,17 @@ class StructuralMappingTableListView(ListView):
                 output['coding_system'].append("user defined")
                                 
                 is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
-                #is_mapped = ''#'y' if is_mapped else 'n'
-                if is_mapped:
-                    term_mapping = {
-                        value.value : value.conceptID
-                        for value in obj.scanreportvalue_set.all()
-                        }
-                    output['term_mapping'].append(term_mapping)
-                else:
-                     output['term_mapping'].append(None)
+                is_mapped = 'y' if is_mapped else 'n'
+                # if is_mapped:
+                #     term_mapping = {
+                #         value.value : value.conceptID
+                #         for value in obj.scanreportvalue_set.all()
+                #         if value.conceptID > -1
+                #         }
+                #     output['term_mapping'].append(term_mapping)
+                # else:
+                #      output['term_mapping'].append('')
+                output['term_mapping'].append(is_mapped)
 
                 output['operation'].append(rule.operation)               
 
@@ -374,12 +375,16 @@ class StructuralMappingTableListView(ListView):
             for irow in range(len(output['rule_id'])):
                 result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
 
-            fname = f"{scan_report.data_partner}"\
-                f"_{scan_report.dataset}_structural_mapping.json"
+            #fname = f"{scan_report.data_partner}"\
+            #    f"_{scan_report.dataset}_structural_mapping.json"
             
-            output = self.csv_to_json(result)
-            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
+            #output = self.csv_to_json(result)
+            #response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
+            #response['Content-Disposition'] = f'attachment; filename="{fname}"'
+
+            response = HttpResponse(result, content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            
             return response
         #not used but here if we want it for the api...
         elif return_type == 'svg':
@@ -397,7 +402,7 @@ class StructuralMappingTableListView(ListView):
             return HttpResponse(svg_output,content_type='image/svg+xml')
                         
         elif return_type == 'json':
-            response = HttpResponse(json.dumps(output), content_type='application/json')
+            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         else:
