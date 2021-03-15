@@ -143,9 +143,8 @@ class ScanReport(BaseModel):
 class ScanReportAssertion(BaseModel):
     scan_report=models.ForeignKey(ScanReport, on_delete=models.CASCADE)
     negative_assertion=models.CharField(max_length=64)
-    positive_assertion=models.CharField(max_length=64)
     def __str__(self):
-        return f'{self.scan_report,self.negative_assertion,self.positive_assertion}'
+        return f'{self.scan_report,self.negative_assertion}'
 
 
 class ScanReportTable(BaseModel):

@@ -841,8 +841,9 @@ class ScanReportAssertionFormView(FormView):
     success_url=reverse_lazy('scan-report-assertion')
 
     def form_valid(self, form):
+
+        
         assertion = ScanReportAssertion.objects.create(
-            positive_assertion=form.cleaned_data["positive_assertion"],
             negative_assertion=form.cleaned_data["negative_assertion"],
             scan_report=form.cleaned_data['scan_report']
         )
@@ -850,6 +851,11 @@ class ScanReportAssertionFormView(FormView):
         assertion.save()
 
         return super().form_valid(form)
+    def get_success_url(self, **kwargs):
+
+        return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
+        
+    
 
 
 @method_decorator(login_required,name='dispatch')
