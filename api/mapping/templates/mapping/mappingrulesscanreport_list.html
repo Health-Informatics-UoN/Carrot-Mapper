@@ -22,6 +22,8 @@
 
 <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
 
+
+
 {% if object_list %}
 
 <div class="container">
@@ -42,29 +44,28 @@
     </tr>
     </thead>
     <tbody>
-    {% for object in object_list %}
-        {% for mr in object.mappingrule_set.all %}
-            <tr>
-                <!--<td>{{ object.scan_report_field.scan_report_table.scan_report.data_partner }}</td>
-                <td>{{ object.scan_report_field.scan_report_table.scan_report.dataset }}</td>-->
-                <td>{{ mr.omop_field.table.table }}</td>
-                <td>{{ mr.omop_field.field }}</td>
-                <td>{{ object.scan_report_table }}</td>
-                <td>{{ object.name }}</td>
-                <td>{{ mr.operation }}</td>
-                <td>
-		  {{ mr.term_map }} 
-		  <!---
-                    {% for value in object.scanreportvalue_set.all %}
-                        {% if value.conceptID > 0 %}
-                            <p>{{ value.value }}: {{ value.conceptID }}</p>
-                        {% endif %}
-                    {% endfor %}
-	          --->
-                </td>
-            </tr>
-        {% endfor %}
-   {% endfor %}
+      {% for form in formset %}
+
+      <td> {{ form }} </td>
+
+      {% endfor %}
+      
+      <!-- {% for object in object_list %} -->
+      <!-- <td> NONE </td> -->
+      <!-- <td> NONE </td> -->
+      <!-- <td> {{ object.scan_report_table }} </td> -->
+      <!-- <td> {{ object.name }} </td> -->
+      <!-- <td> NONE </td> -->
+      <!-- <td> -->
+      <!-- 	{% for value in object.scanreportvalue_set.all %} -->
+      <!-- 	{% if value.conceptID > -1 %} -->
+      <!-- 	{{ value.value }} : {{ value.conceptID }} -->
+      <!-- 	<br> -->
+      <!-- 	{% endif %} -->
+      <!-- 	{% endfor %} -->
+      <!-- </td> -->
+      
+      <!-- {% endfor %} -->
     </tbody>
 </table>
   </div>

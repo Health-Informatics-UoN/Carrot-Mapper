@@ -28,7 +28,7 @@ from .forms import (
     AddMappingRuleForm,
     DocumentForm,
     DocumentFileForm,
-    DictionarySelectForm,
+    DictionarySelectForm
 )
 from .models import (
     ScanReport,
@@ -306,9 +306,15 @@ class StructuralMappingListView(ListView):
 
 
 @method_decorator(login_required,name='dispatch')
-class StructuralMappingTableListView(ListView):
+#class StructuralMappingTableListView(ListView):
+class StructuralMappingTableListView(ModelFormSetView):
     # model = MappingRule
     model = ScanReportField
+    #form_class = ScanReportForm
+    #fields = ["conceptID"]
+    exclude = []
+    factory_kwargs = {"can_delete": False, "extra": False}
+
     template_name = "mapping/mappingrulesscanreport_list.html"
 
 
@@ -480,16 +486,32 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        mappingrule_list = MappingRule.objects.filter(
-            scan_report_field__scan_report_table__scan_report=scan_report
-        )
-        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+        
+        #mappingrule_list = MappingRule.objects.filter(
+        #    scan_report_field__scan_report_table__scan_report=scan_report
+        #)
+        #mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
 
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
+
         if search_term is not None:
             # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list)
+            #qs = qs.filter(id__in=mappingrule_id_list)
+            qs = qs.filter(scan_report_table__scan_report__id=search_term)\
+                   .filter(scanreportvalue__conceptID__gte=0)\
+                   .distinct()
+
+            
+            
+            
+            #.order_by('name')
+            #for field in qs:
+            #    print (field)
+            #    for value in field.scanreportvalue_set.all():
+            #        print ("::",value)
+
+            
             return qs
 
 
@@ -560,6 +582,8 @@ class DocumentFileListView(ListView):
         search_term = self.kwargs.get("pk")
         if search_term is not None:
             qs = qs.filter(document__id=search_term)
+
+        
         return qs
 
 
