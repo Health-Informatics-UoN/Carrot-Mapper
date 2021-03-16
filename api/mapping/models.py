@@ -170,6 +170,8 @@ class ScanReportField(BaseModel):
         null=True,
         blank=True
     )
+    concept_id = models.IntegerField(default=-1) 
+
   
     def __str__(self):
         return self.name
