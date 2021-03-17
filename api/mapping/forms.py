@@ -92,14 +92,12 @@ class PasswordChangeForm(forms.Form):
         validators=[password_validation.validate_password]
 
     )
-   
+
     new_password2 = forms.CharField(
         label=("Confirm New password"),
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
         validators=[password_validation.validate_password]
     )
-
- 
 
 
 class DocumentForm(forms.Form):
@@ -123,17 +121,42 @@ class DocumentForm(forms.Form):
         label="File", widget=forms.FileInput(attrs={"class": "form-control"})
     )
 
+    def clean_document_file(self):
+        data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
+        header = data_dictionary_csv.split(',')
+        column_names = ["Table Name", "Column Name", "Column Description", "ValueCode", "ValueDescription"]
+
+        if set(column_names) == set(header):
+            return self.cleaned_data['document_file']
+        else:
+            raise (forms.ValidationError("Please check your column names in your data dictionary"))
+
 
 class DocumentFileForm(forms.Form):
-
     document_file = forms.FileField(
         label="Document", widget=forms.FileInput(attrs={"class": "form-control"})
     )
-    document = forms.ModelChoiceField(label="Document", queryset=Document.objects.all())
+    document = forms.ModelChoiceField(
+        label="Document", queryset=Document.objects.all()
+    )
     description = forms.CharField(
         label="Document Description",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
+    def clean_document_file(self):
+
+        data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
+        header = data_dictionary_csv.split(',')
+        column_names = ["Table Name", "Column Name", "Column Description", "ValueCode", "ValueDescription"]
+
+        if set(column_names) == set(header):
+            return self.cleaned_data['document_file']
+        else:
+            raise (forms.ValidationError("Please check your column names in your data dictionary"))
+
+
 class DictionarySelectForm(forms.Form):
-    document = forms.ModelChoiceField(label="Data Dictionary Document", queryset=DocumentFile.objects.filter(status__icontains="Live"), to_field_name="document")
+    document = forms.ModelChoiceField(label="Data Dictionary Document",
+                                      queryset=DocumentFile.objects.filter(status__icontains="Live"),
+                                      to_field_name="document")
