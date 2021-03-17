@@ -358,15 +358,7 @@ class StructuralMappingTableListView(ListView):
                                 
                 is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
                 is_mapped = 'y' if is_mapped else 'n'
-                # if is_mapped:
-                #     term_mapping = {
-                #         value.value : value.conceptID
-                #         for value in obj.scanreportvalue_set.all()
-                #         if value.conceptID > -1
-                #         }
-                #     output['term_mapping'].append(term_mapping)
-                # else:
-                #      output['term_mapping'].append('')
+
                 output['term_mapping'].append(is_mapped)
 
                 output['operation'].append(rule.operation)               
@@ -505,24 +497,22 @@ class StructuralMappingTableListView(ListView):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
         
-        #mappingrule_list = MappingRule.objects.filter(
-        #    scan_report_field__scan_report_table__scan_report=scan_report
-        #)
-        #mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+        mappingrule_list = MappingRule.objects.filter(
+           scan_report_field__scan_report_table__scan_report=scan_report
+        )
+        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
 
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
         if search_term is not None:
             # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            #qs = qs.filter(id__in=mappingrule_id_list)
-            qs = qs.filter(scan_report_table__scan_report__id=search_term)\
-                   .filter(scanreportvalue__conceptID__gte=0)\
-                   .distinct()
+            qs = qs.filter(id__in=mappingrule_id_list)
 
-            
-            
-            
+            #Calum - keep this commented code for now, could be useful for the future
+            #qs = qs.filter(scan_report_table__scan_report__id=search_term)\
+            #       .filter(scanreportvalue__conceptID__gte=0)\
+            #       .distinct()
             #.order_by('name')
             #for field in qs:
             #    print (field)
