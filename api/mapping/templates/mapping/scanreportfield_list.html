@@ -17,10 +17,7 @@
 <h2>Fields</h2>
 
 {% if object_list %}
-
-<form id="my_form" method="post">
-    {% csrf_token %} 
-     {{ formset.management_form }}
+<form id="my_form">
     <div class="form-group">
         <table class="table">
             <thead>
@@ -32,7 +29,6 @@
                 <th scope="col">Ignore?</th>
                 <th scope="col">Pass Source Value</th>
                 <th scope="col">Classification System</th>
-                <th scope="col">Concept ID</th>
                 <th>Edit</th>
                 <th colspan="2">Structural Mapping</th>
             </tr>
@@ -66,18 +62,6 @@
                     {% endif %}
                 </td>
                 <td>{{ object.classification_system.name }}</td>
-
-                <td> {## set i to be the index of the value we're on ##} 
-                        {% with i=forloop.counter %}
-                         {## loop over the formset (editable fields) ##}
-                            {% for form in formset  %}
-                            {% if forloop.counter == i%}
-                                {% for field in form %}
-                                    {{field}}
-                                {% endfor %} 
-                            {% endif %}
-                            {% endfor %}
-                        {% endwith %}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
                 <td>
                     <a href="{% url 'view-structural-mapping' object.id %}">View</a>
@@ -89,7 +73,6 @@
             {% endfor %}
             </tbody>
         </table>
-        <button type="submit" class="btn btn-primary">Save</button>
         <!--<div class="form-row">
             <input type="submit" class="btn btn-primary" name="update"
                    value="Update">

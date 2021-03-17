@@ -88,13 +88,11 @@ class ScanReportTableListView(ListView):
 
 
 @method_decorator(login_required,name='dispatch')
-class ScanReportFieldListView(ModelFormSetView):
+class ScanReportFieldListView(ListView):
     model = ScanReportField
-    fields = ["concept_id"]
-    factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by('id')
+        qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
@@ -122,7 +120,7 @@ class ScanReportFieldListView(ModelFormSetView):
         )
 
         return context
-   
+
 
 @method_decorator(login_required,name='dispatch')
 class ScanReportFieldUpdateView(UpdateView):
@@ -133,7 +131,6 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_ignore',
         'pass_from_source',
         'classification_system',
-    
     ]
 
     def get_success_url(self):
