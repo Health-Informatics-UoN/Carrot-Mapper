@@ -264,9 +264,8 @@ class StructuralMappingDeleteView(DeleteView):
 
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
-    #model = MappingRule
-    model = ScanReportField
-
+    model = MappingRule
+    
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
@@ -312,8 +311,10 @@ class StructuralMappingListView(ListView):
     
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ListView):
-    model = MappingRule
+    #model = MappingRule
+    model = ScanReportField
 
+    
     template_name = "mapping/mappingrulesscanreport_list.html"
 
 
