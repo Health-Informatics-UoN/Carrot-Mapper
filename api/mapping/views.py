@@ -264,7 +264,8 @@ class StructuralMappingDeleteView(DeleteView):
 
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
-    model = MappingRule
+    #model = MappingRule
+    model = ScanReportField
 
     def get_queryset(self):
         qs = super().get_queryset()
