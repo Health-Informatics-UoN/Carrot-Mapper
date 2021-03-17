@@ -301,15 +301,17 @@ class StructuralMappingListView(ListView):
         return context
 
 
-@method_decorator(login_required,name='dispatch')
-#class StructuralMappingTableListView(ListView):
-class StructuralMappingTableListView(ModelFormSetView):
-    # model = MappingRule
-    model = ScanReportField
+
+# Calum - adding this, if we want to switch to form list edit view
+#class StructuralMappingTableListView(ModelFormSetView):
+    #model = ScanReportField
     #form_class = ScanReportForm
-    #fields = ["conceptID"]
-    exclude = []
-    factory_kwargs = {"can_delete": False, "extra": False}
+    #exclude = []
+    #factory_kwargs = {"can_delete": False, "extra": False}
+    
+@method_decorator(login_required,name='dispatch')
+class StructuralMappingTableListView(ListView):
+    model = MappingRule
 
     template_name = "mapping/mappingrulesscanreport_list.html"
 
