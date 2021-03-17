@@ -449,6 +449,23 @@ class StructuralMappingTableListView(ModelFormSetView):
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
         return response
 
+    def download_pk_mapping(self,request,pk):
+
+        patient_id_fields = ScanReportField.objects.filter(scan_report_table__scan_report=pk)\
+                                             .filter(is_patient_id=True)
+        
+        patient_id_map = {
+            patient_field.scan_report_table.name : patient_field.name
+            for patient_field in patient_id_fields
+        }
+
+        scan_report = ScanReport.objects.get(pk=pk)
+        return_type = 'json'
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
+
+        response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        return response
     
     def post(self,request,*args, **kwargs):
 
@@ -457,10 +474,11 @@ class StructuralMappingTableListView(ModelFormSetView):
             return self.download_structural_mapping(request,pk)
         elif request.POST.get('download-tm') is not None:
             return self.download_term_mapping(request,pk)
+        elif request.POST.get('download-pk') is not None:
+            return self.download_pk_mapping(request,pk)
         elif request.POST.get('svg') is not None:
             return self.download_structural_mapping(request,pk,return_type='svg')
         else:
-            print (request.POST)
             #define more buttons to click
             pass
 
