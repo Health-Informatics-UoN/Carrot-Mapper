@@ -73,10 +73,15 @@ body {
     color: white;
 }
 
+.navbar{
+    box-shadow: 0 0 0.4rem rgb(0 0 0 / 10%), 0 0.4rem 0.4rem rgb(0 0 0 / 20%);
+}
+
 /* increase the gap between the brand and the first link to pages in the nav bar */
 .navbar .navbar-brand{
     padding-right: 40px;
 }
+
 
 .bg-co-connect {
     /*
