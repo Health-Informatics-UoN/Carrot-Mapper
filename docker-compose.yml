@@ -11,6 +11,7 @@ services:
     volumes:
       - ./api:/api
       - ./data:/data
+      - ./co-connect-tools:/co-connect-tools
     ports:
       - "8080:8000"
       - "9999:9999"

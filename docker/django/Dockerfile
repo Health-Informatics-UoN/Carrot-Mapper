@@ -36,4 +36,4 @@ RUN apt-get install graphviz -y
 USER django
 RUN echo "hiya"
 
-RUN pip install git+https://github.com/CO-CONNECT/co-connect-tools.git@feature/add/omop_db_inspect
+RUN pip install -e /co-connect-tools
