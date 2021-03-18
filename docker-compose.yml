@@ -3,9 +3,9 @@ version: '3.5'
 services:
 
   api:
-    build: ./docker/django/
-    #  dockerfile: ./docker/django/Dockerfile
-    #  context: .
+    build:
+      dockerfile: ./docker/django/Dockerfile
+      context: ./
     command: sh /entrypoint.sh
     env_file:
       - .env
@@ -13,7 +13,6 @@ services:
     volumes:
       - ./api:/api
       - ./data:/data
-      - ./co-connect-tools:/co-connect-tools
     ports:
       - "8080:8000"
       - "9999:9999"
@@ -41,7 +40,9 @@ services:
     restart: unless-stopped
 
   celery_worker:
-    build: ./docker/django
+    build:
+      dockerfile: ./docker/django/Dockerfile
+      context: ./
     restart: unless-stopped
     command: celery -A api worker -l info
     env_file:
