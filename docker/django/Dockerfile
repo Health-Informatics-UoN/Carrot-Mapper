@@ -34,6 +34,9 @@ RUN pip install -r /requirements.txt
 USER root
 
 RUN apt-get install graphviz -y
+COPY co-connect-tools/requirements.txt /requirements-cc.txt
+RUN pip install -r /requirements-cc.txt
+
 COPY co-connect-tools /coconnect
 RUN ls /coconnect
 RUN pip install -e /coconnect

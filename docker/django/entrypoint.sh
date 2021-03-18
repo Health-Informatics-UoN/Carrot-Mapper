@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pip install -e /coconnect
+
 wait-for-it ${POSTGRES_HOST}:${POSTGRES_PORT} -- echo "Database is ready! Listening on ${POSTGRES_HOST}:${POSTGRES_PORT}"
 
 cd /api
