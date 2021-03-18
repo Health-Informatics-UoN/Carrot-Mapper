@@ -32,8 +32,12 @@ ENV PATH=/home/django/.local/bin:$PATH
 RUN pip install -r /requirements.txt
 
 USER root
+
 RUN apt-get install graphviz -y
+COPY co-connect-tools /coconnect
+RUN ls /coconnect
+RUN pip install -e /coconnect
+
 USER django
 RUN echo "hiya"
 
-RUN pip install -e /co-connect-tools
