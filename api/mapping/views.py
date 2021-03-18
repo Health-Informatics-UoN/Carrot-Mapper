@@ -88,11 +88,12 @@ class ScanReportTableListView(ListView):
 
 
 @method_decorator(login_required,name='dispatch')
-class ScanReportFieldListView(ListView):
+class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
-
+    fields = ["concept_id"]
+    factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().order_by('id')
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
