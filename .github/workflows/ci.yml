@@ -26,11 +26,11 @@ jobs:
           echo COCONNECT_DB_USER=\${POSTGRES_USER} >> .env  
           echo COCONNECT_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env
 
-          echo OMOP_POSTGRES_HOST=${{ OMOP_POSTGRES_HOST }} >> .env 
-          echo OMOP_POSTGRES_USER=${{ OMOP_POSTGRES_USER }} >> .env  
-          echo OMOP_POSTGRES_PASSWORD=${{ OMOP_POSTGRES_PASSWORD }} >> .env  
-          echo OMOP_POSTGRES_PORT=${{ OMOP_POSTGRES_PORT }} >> .env  
-          echo OMOP_POSTGRES_DB=${{ OMOP_POSTGRES_DB }} >> .env  
+          echo OMOP_POSTGRES_HOST=${{ secrets.OMOP_POSTGRES_HOST }} >> .env 
+          echo OMOP_POSTGRES_USER=${{ secrets.OMOP_POSTGRES_USER }} >> .env  
+          echo OMOP_POSTGRES_PASSWORD=${{ secrets.OMOP_POSTGRES_PASSWORD }} >> .env  
+          echo OMOP_POSTGRES_PORT=${{ secrets.OMOP_POSTGRES_PORT }} >> .env  
+          echo OMOP_POSTGRES_DB=${{ secrets.OMOP_POSTGRES_DB }} >> .env  
           
           echo PROJECT_NAME=api >> .env 
           cat .env
