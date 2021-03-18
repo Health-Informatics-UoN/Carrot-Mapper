@@ -52,6 +52,14 @@ import json
 
 import coconnect
 
+
+from coconnect.tools.omop_db_inspect import OMOPDetails
+omop_lookup = OMOPDetails()
+
+print (omop_lookup.get_target_concept_id_and_table(378253))
+print (omop_lookup.get_target_concept_id_and_table(40305063))
+
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
@@ -453,7 +461,7 @@ class StructuralMappingTableListView(ListView):
 
         scan_report = ScanReport.objects.get(pk=pk)
         return_type = 'json'
-        fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_person_id_mapping.{return_type}"
 
         response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
@@ -507,7 +515,8 @@ class StructuralMappingTableListView(ListView):
 
         if search_term is not None:
             # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list)
+            qs = qs.filter(id__in=mappingrule_id_list)\
+            #       .order_by('mappingrule__omop_field__table__table')
 
             #Calum - keep this commented code for now, could be useful for the future
             #qs = qs.filter(scan_report_table__scan_report__id=search_term)\
