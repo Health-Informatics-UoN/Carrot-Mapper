@@ -8,6 +8,7 @@ jobs:
       RUNNER_ALLOW_RUNASROOT: true
     steps:
       - uses: actions/checkout@v2
+        submodules: 'recursive'
       - name: Make envfile
         run: |
           touch .env
@@ -16,13 +17,19 @@ jobs:
           echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env 
           echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env 
           echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
-
+          
           echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
           echo COCONNECT_DB_HOST=\${POSTGRES_HOST} >> .env  
           echo COCONNECT_DB_PORT=\${POSTGRES_PORT} >> .env  
           echo COCONNECT_DB_NAME=\${POSTGRES_DB} >> .env  
           echo COCONNECT_DB_USER=\${POSTGRES_USER} >> .env  
-          echo COCONNECT_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env  
+          echo COCONNECT_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env
+
+          echo OMOP_POSTGRES_HOST=${{ OMOP_POSTGRES_HOST }} >> .env 
+          echo OMOP_POSTGRES_USER=${{ OMOP_POSTGRES_USER }} >> .env  
+          echo OMOP_POSTGRES_PASSWORD=${{ OMOP_POSTGRES_PASSWORD }} >> .env  
+          echo OMOP_POSTGRES_PORT=${{ OMOP_POSTGRES_PORT }} >> .env  
+          echo OMOP_POSTGRES_DB=${{ OMOP_POSTGRES_DB }} >> .env  
           
           echo PROJECT_NAME=api >> .env 
           cat .env
