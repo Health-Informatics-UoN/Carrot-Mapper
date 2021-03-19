@@ -767,7 +767,7 @@ def merge_dictionary(request):
         x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['Column Name', 'ValueCode'])
         
         x = x[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Table Name', 'Column Name', 'Column Description_x', 'ValueCode', 'ValueDescription']]
-        x=x.fillna(value="")
+        # x=x.fillna(value="")
         x.columns = [
             "Source_Table",
             "Source_Field",
