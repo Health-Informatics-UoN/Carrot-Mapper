@@ -142,7 +142,8 @@ def process_scan_report(scan_report_id):
                     is_patient_id = False,
                     is_date_event=False,
                     is_ignore=False,
-                    pass_from_source=False
+                    pass_from_source=False,
+                    classification_system=row[11]
                     )
                     if scanreport.ignore_column=='PatientID':
                         scanreport.is_patient_id=True
