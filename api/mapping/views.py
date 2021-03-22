@@ -50,7 +50,11 @@ from .tasks import process_scan_report_task, run_usagi
 import pandas as pd
 import json
 
+from io import StringIO
+
 import coconnect
+from coconnect.tools import dag
+from coconnect.tools import mapping_pipeline_helpers
 
 
 from coconnect.tools.omop_db_inspect import OMOPDetails
@@ -327,12 +331,9 @@ class StructuralMappingTableListView(ListView):
 
 
     def json_to_svg(self,data):
-        from coconnect.cdm import dag
         return dag.make_dag(data)
             
     def csv_to_json(self,_csv_data):
-        from io import StringIO
-        from coconnect.cdm import mapping_pipeline_helpers
         
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
@@ -403,7 +404,7 @@ class StructuralMappingTableListView(ListView):
                 f"_{scan_report.dataset}_structural_mapping.json"
             
             output = self.csv_to_json(result)
-            svg_output = self.json_to_svg(output['person'][0])
+            svg_output = self.json_to_svg(output)
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
                         
