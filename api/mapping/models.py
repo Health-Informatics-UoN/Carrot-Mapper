@@ -15,10 +15,18 @@ STATUS_CHOICES = [
 OPERATION_NONE = 'NONE'
 OPERATION_EXTRACT_YEAR = 'EXTRACT_YEAR'
 
+from coconnect.cdm.operations import OperationTools
+
+allowed_operations = [
+    (x,x)
+    for x in dir(OperationTools)
+    if x.startswith("get") and callable(getattr(OperationTools,x))
+]
+
 OPERATION_CHOICES = [
     (OPERATION_NONE, 'No operation'),
-    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field')
 ]
+OPERATION_CHOICES.extend(allowed_operations)
 
 
 class BaseModel(models.Model):
