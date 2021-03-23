@@ -64,7 +64,7 @@
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>
-                <td>{{ object.classification_system.name }}</td>
+                <td>{{ object.classification_system }}</td>
                 <td> {## set i to be the index of the value we're on ##} 
                     {% with i=forloop.counter %}
                      {## loop over the formset (editable fields) ##}

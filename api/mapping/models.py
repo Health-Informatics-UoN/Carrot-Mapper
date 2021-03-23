@@ -164,7 +164,7 @@ class ScanReportField(BaseModel):
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
-    classification_system = models.CharField(max_length=64)
+    classification_system = models.CharField(max_length=64, blank=True, null=True)
     concept_id = models.IntegerField(default=-1,null=True,blank=True)
 
     def __str__(self):
