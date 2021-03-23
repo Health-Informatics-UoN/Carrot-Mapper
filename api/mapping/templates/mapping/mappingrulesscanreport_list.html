@@ -13,12 +13,16 @@
 </nav>
 
 
-<a href="{% url 'tables-structural-mapping' pk=scan_report.id %}"> All </a> // 
+
+<h2>Mapping Rules</h2>
+
+<a href="{% url 'tables-structural-mapping' pk=scan_report.id %}"> All </a> // <br>
+ 
  {% for omop_table in omop_tables %}
 <a href="{% url 'tables-structural-mapping-filter' pk=scan_report.id omop_table=omop_table %}"> {{ omop_table }} </a> // 
 {% endfor %}
 
-<h2>Mapping Rules</h2>
+<hr>
 
 
 <form method="post">{% csrf_token %}

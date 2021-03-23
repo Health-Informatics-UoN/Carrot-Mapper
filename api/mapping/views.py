@@ -625,7 +625,13 @@ class StructuralMappingTableListView(ListView):
 
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        omop_tables = [x.table for x in OmopTable.objects.all()]
+        omop_tables = [
+            x.omop_field.table.table
+            for x in StructuralMappingRule.objects.all()
+        ]
+        omop_tables = list(set(omop_tables))
+        omop_tables.sort()
+        
         
         context.update(
             {
