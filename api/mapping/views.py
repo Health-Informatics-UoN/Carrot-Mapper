@@ -334,11 +334,12 @@ class StructuralMappingTableListView(ListView):
         return dag.make_dag(data)
             
     def csv_to_json(self,_csv_data):
-        
+
+        print (_csv_data)
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(StringIO(_csv_data),
-                     destination_tables = ['person','condition_occurrence'])
+                     destination_tables = ['person'])
                              
         return structural_mapping
         
@@ -470,32 +471,31 @@ class StructuralMappingTableListView(ListView):
             
     def download_structural_mapping(self,request,pk,return_type='csv'):
         scan_report = ScanReport.objects.get(pk=pk)
-        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
-        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
 
-        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+        rules = StructuralMappingRule\
+            .objects\
+            .filter(scan_report=scan_report)
+
+        print (rules)
         
         output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
+        for rule in rules:
+            output['rule_id'].append(rule.id)
+            output['destination_table'].append(rule.omop_field.table.table)
+            output['destination_field'].append(rule.omop_field.field)
 
-        for obj in qs:
-            for rule in obj.mappingrule_set.all():
-                output['rule_id'].append(rule.id)
-                output['destination_table'].append(rule.omop_field.table.table)
-                output['destination_field'].append(rule.omop_field.field)
-                output['source_table'].append(obj.scan_report_table.name)
-                output['source_field'].append(obj.name)
-                output['source_field_indexer'].append(obj.is_patient_id)
-                
-                #this needs to be updated if there is a coding system
-                output['coding_system'].append("user defined")
-                                
-                is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
-                is_mapped = 'y' if is_mapped else 'n'
-
-                output['term_mapping'].append(is_mapped)
-
-                output['operation'].append(rule.operation)               
+            output['source_table'].append(rule.source_table.name)
+            output['source_field'].append(rule.source_field.name)
+            output['source_field_indexer'].append(rule.source_field.is_patient_id)
+            
+            #this needs to be updated if there is a coding system
+            output['coding_system'].append(None)#"user defined")
+            
+            output['term_mapping'].append(rule.term_mapping)
+            
+            output['operation'].append(None)#rule.operation)
+        print (output)
 
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
@@ -527,7 +527,8 @@ class StructuralMappingTableListView(ListView):
 
             fname = f"{scan_report.data_partner}"\
                 f"_{scan_report.dataset}_structural_mapping.json"
-            
+
+            print (result)
             output = self.csv_to_json(result)
             svg_output = self.json_to_svg(output)
             

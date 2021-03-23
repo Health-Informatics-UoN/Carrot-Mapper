@@ -27,10 +27,11 @@
 
 <form method="post">{% csrf_token %}
   <button type="submit" class="btn btn-success" name='generate' >Auto Generate</button>
-  <!---
-      <button type="submit" class="btn btn-success" name='retrieve' >Retrieve</button>
-  --->
+  <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View DAG</button>
+
 </form>
+
+
 
 {% if object_list %}
 
@@ -81,7 +82,6 @@
   <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
 </form>
 
-<button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
 
 
   <script>
