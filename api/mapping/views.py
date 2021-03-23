@@ -36,6 +36,7 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     MappingRule,
+    StructuralMappingRule,
     OmopTable,
     OmopField,
     DocumentFile,
@@ -59,10 +60,6 @@ from coconnect.tools import mapping_pipeline_helpers
 
 from coconnect.tools.omop_db_inspect import OMOPDetails
 omop_lookup = OMOPDetails()
-
-print (omop_lookup.get_target_concept_id_and_table(378253))
-print (omop_lookup.get_target_concept_id_and_table(40305063))
-
 
 @login_required
 def home(request):
@@ -323,9 +320,13 @@ class StructuralMappingListView(ListView):
     
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ListView):
-    #model = MappingRule
-    model = ScanReportField
+#class StructuralMappingTableListView(ModelFormSetView):
+    ### exclude = []
+    ### factory_kwargs = {"can_delete": False, "extra": False}
 
+    #model = MappingRule
+    #model = ScanReportField
+    model = StructuralMappingRule
     
     template_name = "mapping/mappingrulesscanreport_list.html"
 
@@ -342,7 +343,71 @@ class StructuralMappingTableListView(ListView):
                              
         return structural_mapping
         
-    
+
+    def generate(self,request,pk):
+        scan_report = ScanReport.objects.get(pk=pk)
+
+        #this is taking a long time to run/filter
+        #find all fields that have been mapped with a concept id (>=0, default=-1)
+        fields = ScanReportField.objects\
+                            .filter(scan_report_table__scan_report=scan_report)
+        #find fields that have a concept_id set,
+        #OR find fields that have at least one value with a concept_id set
+        fields = fields.filter(scanreportvalue__conceptID__gte=0)\
+            | fields.filter(concept_id__gte=0)
+        
+        #make unique
+        fields = fields.distinct()
+
+        #loop over found fields
+        for field in fields:
+            #get the field and associated table
+            source_field = field
+            source_table = field.scan_report_table
+
+            #add info here
+
+            #if the source field (column) has a concept_id set, use this..
+            if source_field.concept_id >= 0 :
+                concepts = source_field.concept_id
+            #otherwise find all field values with a concept_id set
+            else:
+                values = field.scanreportvalue_set\
+                              .all()\
+                              .filter(conceptID__gte=0)
+                
+                #map the source value to the raw value
+                concepts = {
+                    value.value: value.conceptID
+                    for value in values
+                }
+
+            #use the OmopDetails class to look up rules for these concepts
+            rules = omop_lookup.get_rules(concepts)
+
+            #loop over the rules it has found
+            for destination,term_mapping in rules.items():
+
+                #find associated omop tables with this field (destination field)
+                omop_fields = OmopField.objects\
+                                      .filter(field=destination)
+                
+                #loop over multiple fields
+                #example:  gender_concept_id appears in 'person' and in 'provider'
+                #          so need to use the field twice...
+                
+                for omop_field in omop_fields:
+                    #create a new model 
+                    mapping,created = StructuralMappingRule.objects.get_or_create(
+                        scan_report  = scan_report,
+                        omop_field   = omop_field,
+                        source_table = source_table,
+                        source_field = source_field,
+                        term_mapping = json.dumps(term_mapping,indent=6)#convert dict to str,
+                    )
+                    mapping.save()
+            
+            
     def download_structural_mapping(self,request,pk,return_type='csv'):
         scan_report = ScanReport.objects.get(pk=pk)
         mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
@@ -477,6 +542,9 @@ class StructuralMappingTableListView(ListView):
             return self.download_term_mapping(request,pk)
         elif request.POST.get('download-pk') is not None:
             return self.download_pk_mapping(request,pk)
+        elif request.POST.get('generate') is not None:
+            self.generate(request,pk)
+            return redirect(request.path)
         elif request.POST.get('svg') is not None:
             return self.download_structural_mapping(request,pk,return_type='svg')
         else:
@@ -505,30 +573,13 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        
-        mappingrule_list = MappingRule.objects.filter(
-           scan_report_field__scan_report_table__scan_report=scan_report
-        )
-        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
-
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
+        
         if search_term is not None:
-            # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list)\
-            #       .order_by('mappingrule__omop_field__table__table')
-
-            #Calum - keep this commented code for now, could be useful for the future
-            #qs = qs.filter(scan_report_table__scan_report__id=search_term)\
-            #       .filter(scanreportvalue__conceptID__gte=0)\
-            #       .distinct()
-            #.order_by('name')
-            #for field in qs:
-            #    print (field)
-            #    for value in field.scanreportvalue_set.all():
-            #        print ("::",value)
-
+            qs = qs.filter(scan_report__id=search_term)\
+                   .order_by('omop_field__table')#,'omop_field__field')
             
             return qs
 

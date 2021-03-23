@@ -16,14 +16,8 @@
 
 
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-info" name='download-sm' >Download Structural Mapping</button> 
-  <button type="submit" class="btn btn-info" name='download-tm' >Download Term Mapping</button>
-  <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
+  <button type="submit" class="btn btn-success" name='generate' >Auto Generate</button>
 </form>
-
-<button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
-
-
 
 {% if object_list %}
 
@@ -38,32 +32,25 @@
         <th scope="col">Dataset</th>-->
         <th scope="col">Destination Table</th>
         <th scope="col">Destination Field</th>
-        <th scope="col">Source Table</th>
-        <th scope="col">Source Field</th>
-        <th scope="col">Operation</th>
-        <th scope="col">Term Map</th>
+	<th scope="col">Source Table</th>
+	<th scope="col">Source Field</th>
+	<th scope="col">Term Map</th>
     </tr>
     </thead>
     <tbody>
       {% for object in object_list %}
-      {% for mr in object.mappingrule_set.all %}
       <tr>
-        <!--<td>{{ object.scan_report_field.scan_report_table.scan_report.data_partner }}</td>
-            <td>{{ object.scan_report_field.scan_report_table.scan_report.dataset }}</td>-->
-        <td>{{ mr.omop_field.table.table }}</td>
-        <td>{{ mr.omop_field.field }}</td>
-        <td>{{ object.scan_report_table }}</td>
-        <td>{{ object.name }}</td>
-        <td>{{ mr.operation }}</td>
-        <td>
-          {% for value in object.scanreportvalue_set.all %}
-          {% if value.conceptID > 0 %}
-          <p>{{ value.value }}: {{ value.conceptID }}</p>
-          {% endif %}
-          {% endfor %}
-        </td>
+        <!--- <td style="width: 25%">{{ object.omop_field. }}</td>--->
+        <td style="width: 20%">{{ object.omop_field.table }}</td>
+        <td style="width: 20%">{{ object.omop_field.field }}</td>
+        <td style="width: 20%">{{ object.source_table }}</td>
+        <td style="width: 20%">{{ object.source_field }}</td>
+        <td style="width: 20%">
+	  <pre> 
+	    {{ object.term_mapping }}
+	  </pre>
+	</td>
       </tr>
-      {% endfor %}
       {% endfor %}
     </tbody>
 </table>
@@ -74,6 +61,14 @@
 {% else %}
 <p>There are currently no rules for this scan report.</p>
 {% endif %}
+
+<form method="post">{% csrf_token %}
+  <button type="submit" class="btn btn-info" name='download-sm' >Download Structural Mapping</button> 
+  <button type="submit" class="btn btn-info" name='download-tm' >Download Term Mapping</button>
+  <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
+</form>
+
+<button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
 
 
   <script>
