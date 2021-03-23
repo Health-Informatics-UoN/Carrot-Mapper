@@ -625,8 +625,11 @@ class StructuralMappingTableListView(ListView):
 
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
+        omop_tables = [x.table for x in OmopTable.objects.all()]
+        
         context.update(
             {
+                "omop_tables" : omop_tables,
                 "scan_report": scan_report,
             }
         )
@@ -639,7 +642,7 @@ class StructuralMappingTableListView(ListView):
         
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
-        filter_term = self.kwargs.get("cdm_table")
+        filter_term = self.kwargs.get("omop_table")
         
         
         if search_term is not None:
