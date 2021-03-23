@@ -17,7 +17,6 @@
 <h2>Fields</h2>
 
 {% if object_list %}
-
 <form id="my_form" method="post">
     {% csrf_token %} 
      {{ formset.management_form }}
@@ -66,24 +65,23 @@
                     {% endif %}
                 </td>
                 <td>{{ object.classification_system.name }}</td>
-
                 <td> {## set i to be the index of the value we're on ##} 
-                        {% with i=forloop.counter %}
-                         {## loop over the formset (editable fields) ##}
-                            {% for form in formset  %}
-                            {% if forloop.counter == i%}
-                                {% for field in form %}
-                                    {{field}}
-                                {% endfor %} 
-                            {% endif %}
-                            {% endfor %}
-                        {% endwith %}</td>
+                    {% with i=forloop.counter %}
+                     {## loop over the formset (editable fields) ##}
+                        {% for form in formset  %}
+                        {% if forloop.counter == i%}
+                            {% for field in form %}
+                                {{field}}
+                            {% endfor %} 
+                        {% endif %}
+                        {% endfor %}
+                    {% endwith %}</td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
                 <td>
-                    <a href="{% url 'view-structural-mapping' object.id %}">View</a>
+                    <a href="{% url 'view-structural-mapping' object.id %}" class="btn btn-info">View</a>
                 </td>
                 <td>
-                    <a href="{% url 'create-mapping-form' object.id %}">Add</a>
+                    <a href="{% url 'create-mapping-form' object.id %}" class="btn btn-success">Add</a>
                 </td>
             </tr>
             {% endfor %}

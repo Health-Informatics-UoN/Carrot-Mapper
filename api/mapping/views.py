@@ -103,7 +103,6 @@ class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["concept_id"]
     factory_kwargs = {"can_delete": False, "extra": False}
-
     def get_queryset(self):
         qs = super().get_queryset().order_by('id')
         search_term = self.request.GET.get("search", None)
@@ -133,7 +132,7 @@ class ScanReportFieldListView(ModelFormSetView):
         )
 
         return context
-   
+
 
 @method_decorator(login_required,name='dispatch')
 class ScanReportFieldUpdateView(UpdateView):
@@ -144,7 +143,6 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_ignore',
         'pass_from_source',
         'classification_system',
-    
     ]
 
     def get_success_url(self):
@@ -917,7 +915,7 @@ def merge_dictionary(request):
         x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['Column Name', 'ValueCode'])
         
         x = x[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Table Name', 'Column Name', 'Column Description_x', 'ValueCode', 'ValueDescription']]
-        x=x.fillna(value="")
+        # x=x.fillna(value="")
         x.columns = [
             "Source_Table",
             "Source_Field",
