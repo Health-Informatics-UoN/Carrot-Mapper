@@ -21,14 +21,14 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
 from extra_views import ModelFormSetView
 import os
-
+import sys
 from .forms import (
     ScanReportForm,
     UserCreateForm,
     AddMappingRuleForm,
     DocumentForm,
     DocumentFileForm,
-    DictionarySelectForm,
+    DictionarySelectForm
 )
 from .models import (
     ScanReport,
@@ -36,6 +36,7 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     MappingRule,
+    StructuralMappingRule,
     OmopTable,
     OmopField,
     DocumentFile,
@@ -50,6 +51,16 @@ from .tasks import process_scan_report_task, run_usagi
 import pandas as pd
 import json
 
+from io import StringIO
+
+import coconnect
+from coconnect.tools import dag
+from coconnect.tools import mapping_pipeline_helpers
+
+
+from coconnect.tools.omop_db_inspect import OMOPDetails
+omop_lookup = OMOPDetails()
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
@@ -62,8 +73,8 @@ class ScanReportTableListView(ListView):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
         if search_term is not None and search_term is not "":
-            qs = qs.filter(scan_report__id=search_term)
-
+            qs = qs.filter(scan_report__id=search_term).order_by('name')
+            
         return qs
 
     def get_context_data(self, **kwargs):
@@ -157,7 +168,6 @@ class ScanReportListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
-    fields = ["value", "frequency", "conceptID"]
     fields = ["conceptID"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
@@ -262,7 +272,7 @@ class StructuralMappingDeleteView(DeleteView):
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
     model = MappingRule
-
+    
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
@@ -298,12 +308,104 @@ class StructuralMappingListView(ListView):
         return context
 
 
+
+# Calum - adding this, if we want to switch to form list edit view
+#class StructuralMappingTableListView(ModelFormSetView):
+    #model = ScanReportField
+    #form_class = ScanReportForm
+    #exclude = []
+    #factory_kwargs = {"can_delete": False, "extra": False}
+    
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ListView):
-    # model = MappingRule
-    model = ScanReportField
+#class StructuralMappingTableListView(ModelFormSetView):
+    ### exclude = []
+    ### factory_kwargs = {"can_delete": False, "extra": False}
+
+    #model = MappingRule
+    #model = ScanReportField
+    model = StructuralMappingRule
+    
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+
+    def json_to_svg(self,data):
+        return dag.make_dag(data)
+            
+    def csv_to_json(self,_csv_data):
+        
+        structural_mapping = mapping_pipeline_helpers\
+            .StructuralMapping\
+            .to_json(StringIO(_csv_data),
+                     destination_tables = ['person','condition_occurrence'])
+                             
+        return structural_mapping
+        
+
+    def generate(self,request,pk):
+        scan_report = ScanReport.objects.get(pk=pk)
+
+        #this is taking a long time to run/filter
+        #find all fields that have been mapped with a concept id (>=0, default=-1)
+        fields = ScanReportField.objects\
+                            .filter(scan_report_table__scan_report=scan_report)
+        #find fields that have a concept_id set,
+        #OR find fields that have at least one value with a concept_id set
+        fields = fields.filter(scanreportvalue__conceptID__gte=0)\
+            | fields.filter(concept_id__gte=0)
+        
+        #make unique
+        fields = fields.distinct()
+
+        #loop over found fields
+        for field in fields:
+            #get the field and associated table
+            source_field = field
+            source_table = field.scan_report_table
+
+            #add info here
+
+            #if the source field (column) has a concept_id set, use this..
+            if source_field.concept_id >= 0 :
+                concepts = source_field.concept_id
+            #otherwise find all field values with a concept_id set
+            else:
+                values = field.scanreportvalue_set\
+                              .all()\
+                              .filter(conceptID__gte=0)
+                
+                #map the source value to the raw value
+                concepts = {
+                    value.value: value.conceptID
+                    for value in values
+                }
+
+            #use the OmopDetails class to look up rules for these concepts
+            rules = omop_lookup.get_rules(concepts)
+
+            #loop over the rules it has found
+            for destination,term_mapping in rules.items():
+
+                #find associated omop tables with this field (destination field)
+                omop_fields = OmopField.objects\
+                                      .filter(field=destination)
+                
+                #loop over multiple fields
+                #example:  gender_concept_id appears in 'person' and in 'provider'
+                #          so need to use the field twice...
+                
+                for omop_field in omop_fields:
+                    #create a new model 
+                    mapping,created = StructuralMappingRule.objects.get_or_create(
+                        scan_report  = scan_report,
+                        omop_field   = omop_field,
+                        source_table = source_table,
+                        source_field = source_field,
+                        term_mapping = json.dumps(term_mapping,indent=6)#convert dict to str,
+                    )
+                    mapping.save()
+            
+            
     def download_structural_mapping(self,request,pk,return_type='csv'):
         scan_report = ScanReport.objects.get(pk=pk)
         mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
@@ -328,25 +430,49 @@ class StructuralMappingTableListView(ListView):
                                 
                 is_mapped = any([value.conceptID > -1 for value in obj.scanreportvalue_set.all()])
                 is_mapped = 'y' if is_mapped else 'n'
+
                 output['term_mapping'].append(is_mapped)
 
                 output['operation'].append(rule.operation)               
 
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
-            
+
+
         if return_type == 'csv':
             #covert our dictiionary into a csv
             result = ",".join(f'"{key}"' for key in output.keys())
             for irow in range(len(output['rule_id'])):
                 result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
 
+            #fname = f"{scan_report.data_partner}"\
+            #    f"_{scan_report.dataset}_structural_mapping.json"
+            
+            #output = self.csv_to_json(result)
+            #response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
+            #response['Content-Disposition'] = f'attachment; filename="{fname}"'
+
             response = HttpResponse(result, content_type='text/csv')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
+            
             return response
         #not used but here if we want it for the api...
+        elif return_type == 'svg':
+            #covert our dictiionary into a csv
+            result = ",".join(f'"{key}"' for key in output.keys())
+            for irow in range(len(output['rule_id'])):
+                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+
+            fname = f"{scan_report.data_partner}"\
+                f"_{scan_report.dataset}_structural_mapping.json"
+            
+            output = self.csv_to_json(result)
+            svg_output = self.json_to_svg(output)
+            
+            return HttpResponse(svg_output,content_type='image/svg+xml')
+                        
         elif return_type == 'json':
-            response = HttpResponse(json.dumps(output), content_type='application/json')
+            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         else:
@@ -387,6 +513,23 @@ class StructuralMappingTableListView(ListView):
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
         return response
 
+    def download_pk_mapping(self,request,pk):
+
+        patient_id_fields = ScanReportField.objects.filter(scan_report_table__scan_report=pk)\
+                                             .filter(is_patient_id=True)
+        
+        patient_id_map = {
+            patient_field.scan_report_table.name : patient_field.name
+            for patient_field in patient_id_fields
+        }
+
+        scan_report = ScanReport.objects.get(pk=pk)
+        return_type = 'json'
+        fname = f"{scan_report.data_partner}_{scan_report.dataset}_person_id_mapping.{return_type}"
+
+        response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        return response
     
     def post(self,request,*args, **kwargs):
 
@@ -395,6 +538,13 @@ class StructuralMappingTableListView(ListView):
             return self.download_structural_mapping(request,pk)
         elif request.POST.get('download-tm') is not None:
             return self.download_term_mapping(request,pk)
+        elif request.POST.get('download-pk') is not None:
+            return self.download_pk_mapping(request,pk)
+        elif request.POST.get('generate') is not None:
+            self.generate(request,pk)
+            return redirect(request.path)
+        elif request.POST.get('svg') is not None:
+            return self.download_structural_mapping(request,pk,return_type='svg')
         else:
             #define more buttons to click
             pass
@@ -421,16 +571,14 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        mappingrule_list = MappingRule.objects.filter(
-            scan_report_field__scan_report_table__scan_report=scan_report
-        )
-        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
-
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
+
+        
         if search_term is not None:
-            # qs = qs.filter(scan_report_table__scan_report__id=search_term)
-            qs = qs.filter(id__in=mappingrule_id_list)
+            qs = qs.filter(scan_report__id=search_term)\
+                   .order_by('omop_field__table')#,'omop_field__field')
+            
             return qs
 
 
@@ -501,6 +649,8 @@ class DocumentFileListView(ListView):
         search_term = self.kwargs.get("pk")
         if search_term is not None:
             qs = qs.filter(document__id=search_term)
+
+        
         return qs
 
 

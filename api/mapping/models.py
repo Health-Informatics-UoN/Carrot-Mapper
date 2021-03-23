@@ -15,10 +15,18 @@ STATUS_CHOICES = [
 OPERATION_NONE = 'NONE'
 OPERATION_EXTRACT_YEAR = 'EXTRACT_YEAR'
 
+from coconnect.cdm.operations import OperationTools
+
+allowed_operations = [
+    (x,x)
+    for x in dir(OperationTools)
+    if x.startswith("get") and callable(getattr(OperationTools,x))
+]
+
 OPERATION_CHOICES = [
     (OPERATION_NONE, 'No operation'),
-    (OPERATION_EXTRACT_YEAR, 'Extract the year from a date field')
 ]
+OPERATION_CHOICES.extend(allowed_operations)
 
 
 class BaseModel(models.Model):
@@ -166,7 +174,7 @@ class ScanReportField(BaseModel):
     pass_from_source = models.BooleanField(null=True,blank=True)
     classification_system = models.CharField(max_length=64, blank=True, null=True)
     concept_id = models.IntegerField(default=-1,null=True,blank=True)
-
+    
     def __str__(self):
         return self.name
 
@@ -183,9 +191,41 @@ class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
     field = models.CharField(max_length=64)
 
+    
     def __str__(self):
         return f'{self.table, self.field}'
 
+
+class StructuralMappingRule(BaseModel):
+
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
+
+    scan_report = models.ForeignKey(
+        ScanReport,
+        on_delete=models.CASCADE
+    )
+
+    source_table = models.ForeignKey(
+        ScanReportTable,
+        on_delete=models.CASCADE
+    )
+
+    source_field = models.ForeignKey(
+        ScanReportField,
+        on_delete=models.CASCADE
+    )
+
+    term_mapping = models.CharField(
+        max_length=10000,
+    )
+
+    def __str__(self):
+        return f'{self.term_mapping}'
+
+    
 
 class MappingRule(BaseModel):
     omop_field = models.ForeignKey(
@@ -203,7 +243,6 @@ class MappingRule(BaseModel):
         choices=OPERATION_CHOICES,
         default=OPERATION_NONE,
     )
-
     def __str__(self):
         return f'{self.omop_field, self.scan_report_field}'
 
@@ -214,6 +253,8 @@ class ScanReportValue(BaseModel):
     frequency = models.IntegerField()
     conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
 
+    
+    
     def __str__(self):
         return self.value
 

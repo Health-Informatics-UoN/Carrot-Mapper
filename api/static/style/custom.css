@@ -74,6 +74,11 @@ body {
 }
 
 
+.navbar{
+    box-shadow: 0 0 0.4rem rgb(0 0 0 / 10%), 0 0.4rem 0.4rem rgb(0 0 0 / 20%);
+}
+
+
 .table {
     border-collapse: collapse;
     margin: 25px 0;
@@ -108,6 +113,7 @@ body {
 .navbar .navbar-brand{
     padding-right: 40px;
 }
+
 
 .bg-co-connect {
     /*

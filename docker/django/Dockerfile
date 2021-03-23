@@ -21,13 +21,22 @@ RUN mkdir /api
 
 WORKDIR /api
 
-COPY requirements.txt /requirements.txt
-
-COPY entrypoint.sh /entrypoint.sh
+COPY ./docker/django/requirements.txt /requirements.txt
 
 USER django
 
 ENV PATH=/home/django/.local/bin:$PATH
 
 RUN pip install -r /requirements.txt
+
+USER root
+RUN apt-get install graphviz -y
+
+COPY --chown=django:django co-connect-tools/ /coconnect/
+USER django
+
+RUN pip install -e /coconnect/
+COPY ./docker/django/entrypoint.sh /entrypoint.sh
+
+RUN echo "hiya"
 

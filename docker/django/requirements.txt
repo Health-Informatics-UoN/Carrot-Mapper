@@ -10,3 +10,11 @@ psycopg2
 djangorestframework
 markdown
 django-filter
+
+#for coconnect tools, installing here speeds up docker build
+numpy
+coloredlogs
+Jinja2
+graphviz
+click
+sqlalchemy
