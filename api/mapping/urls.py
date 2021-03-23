@@ -15,7 +15,8 @@ urlpatterns = [
     path('fields/<int:pk>/mapping_rules/delete', StructuralMappingDeleteView.as_view(), name='structural-mapping-delete'),
     path('values/', views.ScanReportValueListView.as_view(), name='values'),
     path('scanreports/', views.ScanReportListView.as_view(), name='scan-report-list'),
-    path('scanreports/<int:pk>/mapping_rules', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
+    path('scanreports/<int:pk>/mapping_rules/', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
+    path('scanreports/<int:pk>/mapping_rules/<str:cdm_table>', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
     
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),

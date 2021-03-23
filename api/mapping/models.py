@@ -29,6 +29,8 @@ OPERATION_CHOICES = [
 OPERATION_CHOICES.extend(allowed_operations)
 
 
+
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -100,6 +102,23 @@ class DataPartner(BaseModel):
         return self.name
 
 
+# Models for rule mapping
+class OmopTable(BaseModel):
+    table = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.table
+
+
+class OmopField(BaseModel):
+    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
+    field = models.CharField(max_length=64)
+
+    
+    def __str__(self):
+        return f'{self.table, self.field}'
+
+    
 class DocumentType(BaseModel):
     name = models.CharField(max_length=64)
 
@@ -170,8 +189,34 @@ class ScanReportField(BaseModel):
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
+
+    
+    DATE_TYPE_CHOICES = [
+        (x.field,x.field)
+        for x in OmopField.objects.all()
+        if 'date' in x.field
+    ]
+    DATE_TYPE_CHOICES.sort()
+    #hack for now, this aint great
+    #DATE_TYPE_CHOICES = [
+    #    ('person','person'),
+    #    ('condition','condition'),
+    #    ('observation','observation'),
+    #    ('measurement','measurement')
+    #]
+    
+    date_type = models.CharField(
+        max_length=128,
+        choices=DATE_TYPE_CHOICES,
+        default="",
+        null=True,
+        blank=True
+    )
+
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
+
+
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,
@@ -185,21 +230,6 @@ class ScanReportField(BaseModel):
         return self.name
 
 
-# Models for rule mapping
-class OmopTable(BaseModel):
-    table = models.CharField(max_length=64)
-
-    def __str__(self):
-        return self.table
-
-
-class OmopField(BaseModel):
-    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
-    field = models.CharField(max_length=64)
-
-    
-    def __str__(self):
-        return f'{self.table, self.field}'
 
 
 class StructuralMappingRule(BaseModel):

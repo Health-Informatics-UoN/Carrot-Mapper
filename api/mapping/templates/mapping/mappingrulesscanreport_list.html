@@ -17,6 +17,9 @@
 
 <form method="post">{% csrf_token %}
   <button type="submit" class="btn btn-success" name='generate' >Auto Generate</button>
+  <!---
+      <button type="submit" class="btn btn-success" name='retrieve' >Retrieve</button>
+  --->
 </form>
 
 {% if object_list %}

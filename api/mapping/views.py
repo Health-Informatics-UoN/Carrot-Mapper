@@ -101,7 +101,7 @@ class ScanReportTableListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
-    fields = ["concept_id"]
+    fields = ["date_type","concept_id"]
     factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
         qs = super().get_queryset().order_by('id')
@@ -140,6 +140,7 @@ class ScanReportFieldUpdateView(UpdateView):
     fields = [
         'is_patient_id',
         'is_date_event',
+        'date_type',
         'is_ignore',
         'pass_from_source',
         'classification_system',
@@ -342,7 +343,68 @@ class StructuralMappingTableListView(ListView):
         return structural_mapping
         
 
+
+    def retrieve(self,request,pk):
+        scan_report = ScanReport.objects.get(pk=pk)
+
+        patient_id_fields = ScanReportField\
+            .objects\
+            .filter(scan_report_table__scan_report=scan_report)\
+            .filter(is_patient_id=True)
+
+        if len(patient_id_fields)>0:
+            patient_id_field = patient_id_fields[0]
+            omop_fields = OmopField.objects\
+                                   .filter(field='person_id')\
+                                   .filter(table__table__in=[
+                                       #only do it for these tables for now
+                                       'person',
+                                       'observation',
+                                       'conditon_occurrence',
+                                       'visit_occurrence',
+                                       'measurement',
+                                   ])
+            
+            for omop_field in omop_fields:
+                #create a new model 
+                mapping,created = StructuralMappingRule.objects.get_or_create(
+                    scan_report  = scan_report,
+                    omop_field   = omop_field,
+                    source_table = patient_id_field.scan_report_table,
+                    source_field = patient_id_field,
+                    term_mapping = "null"
+                )
+                mapping.save()
+
+        date_fields = ScanReportField\
+            .objects\
+            .filter(scan_report_table__scan_report=scan_report)\
+            .filter(date_type__gt=0)
+        
+
+        for date_field in date_fields:
+
+            omop_field = OmopField.objects\
+                                  .get(field=date_field.date_type)
+
+            mapping,created = StructuralMappingRule.objects.get_or_create(
+                scan_report  = scan_report,
+                omop_field   = omop_field,
+                source_table = date_field.scan_report_table,
+                source_field = date_field,
+                term_mapping = "null"
+            )
+            mapping.save()
+        
+
+        
     def generate(self,request,pk):
+
+        #retrieve old ones (dates and person ids)
+        self.retrieve(request,pk)
+
+        #do the rest... automatic lookup based on concept id
+        
         scan_report = ScanReport.objects.get(pk=pk)
 
         #this is taking a long time to run/filter
@@ -543,6 +605,9 @@ class StructuralMappingTableListView(ListView):
         elif request.POST.get('generate') is not None:
             self.generate(request,pk)
             return redirect(request.path)
+        elif request.POST.get('retrieve') is not None:
+            self.retrieve(request,pk)
+            return redirect(request.path)
         elif request.POST.get('svg') is not None:
             return self.download_structural_mapping(request,pk,return_type='svg')
         else:
@@ -571,13 +636,18 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
+        
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
-
+        filter_term = self.kwargs.get("cdm_table")
+        
         
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term)\
                    .order_by('omop_field__table')#,'omop_field__field')
+
+            if filter_term is not None:
+                qs = qs.filter(omop_field__table__table=filter_term)
             
             return qs
 
