@@ -193,8 +193,6 @@ class ScanReportField(BaseModel):
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
-
-    
     date_type = models.CharField(
         max_length=128,
         choices=DATE_TYPE_CHOICES,
@@ -202,7 +200,6 @@ class ScanReportField(BaseModel):
         null=True,
         blank=True
     )
-
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
     classification_system = models.CharField(max_length=64, blank=True, null=True)
