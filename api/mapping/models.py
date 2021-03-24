@@ -253,24 +253,24 @@ class StructuralMappingRule(BaseModel):
 
     
 
-class MappingRule(BaseModel):
-    omop_field = models.ForeignKey(
-        OmopField,
-        on_delete=models.CASCADE
-    )
+# class MappingRule(BaseModel):
+#     omop_field = models.ForeignKey(
+#         OmopField,
+#         on_delete=models.CASCADE
+#     )
 
-    scan_report_field = models.ForeignKey(
-        ScanReportField,
-        on_delete=models.CASCADE
-    )
+#     scan_report_field = models.ForeignKey(
+#         ScanReportField,
+#         on_delete=models.CASCADE
+#     )
 
-    operation = models.CharField(
-        max_length=32,
-        choices=OPERATION_CHOICES,
-        default=OPERATION_NONE,
-    )
-    def __str__(self):
-        return f'{self.omop_field, self.scan_report_field}'
+#     operation = models.CharField(
+#         max_length=32,
+#         choices=OPERATION_CHOICES,
+#         default=OPERATION_NONE,
+#     )
+#     def __str__(self):
+#         return f'{self.omop_field, self.scan_report_field}'
 
 
 class ScanReportValue(BaseModel):

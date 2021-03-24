@@ -35,7 +35,6 @@ from .models import (
     ScanReportValue,
     ScanReportField,
     ScanReportTable,
-    MappingRule,
     StructuralMappingRule,
     OmopTable,
     OmopField,
@@ -256,57 +255,57 @@ class AddMappingRuleFormView(FormView):
         )
 
 
-@method_decorator(login_required,name='dispatch')
-class StructuralMappingDeleteView(DeleteView):
-    model = MappingRule
+# @method_decorator(login_required,name='dispatch')
+# class StructuralMappingDeleteView(DeleteView):
+#     model = MappingRule
 
-    def get_success_url(self):
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
+#     def get_success_url(self):
+#         scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
 
-        return "{}?search={}".format(
-            reverse("fields"), scan_report_field.scan_report_table.id
-        )
+#         return "{}?search={}".format(
+#             reverse("fields"), scan_report_field.scan_report_table.id
+#         )
 
-    success_url = reverse_lazy("fields")
+#     success_url = reverse_lazy("fields")
 
 
-@method_decorator(login_required,name='dispatch')
-class StructuralMappingListView(ListView):
-    model = MappingRule
+# @method_decorator(login_required,name='dispatch')
+# class StructuralMappingListView(ListView):
+#     model = MappingRule
     
-    def get_queryset(self):
-        qs = super().get_queryset()
-        search_term = self.kwargs.get("pk")
-        if search_term is not None:
-            qs = qs.filter(scan_report_field=search_term)
-        return qs
+#     def get_queryset(self):
+#         qs = super().get_queryset()
+#         search_term = self.kwargs.get("pk")
+#         if search_term is not None:
+#             qs = qs.filter(scan_report_field=search_term)
+#         return qs
 
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
+#     def get_context_data(self, **kwargs):
+#         # Call the base implementation first to get a context
+#         context = super().get_context_data(**kwargs)
 
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table
-            scan_report_field = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
+#         if len(self.get_queryset()) > 0:
+#             scan_report = self.get_queryset()[
+#                 0
+#             ].scan_report_field.scan_report_table.scan_report
+#             scan_report_table = self.get_queryset()[
+#                 0
+#             ].scan_report_field.scan_report_table
+#             scan_report_field = self.get_queryset()[0]
+#         else:
+#             scan_report = None
+#             scan_report_table = None
+#             scan_report_field = None
 
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-            }
-        )
+#         context.update(
+#             {
+#                 "scan_report": scan_report,
+#                 "scan_report_table": scan_report_table,
+#                 "scan_report_field": scan_report_field,
+#             }
+#         )
 
-        return context
+#         return context
 
 
 
