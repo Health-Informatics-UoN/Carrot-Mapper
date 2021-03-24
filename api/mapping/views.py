@@ -333,13 +333,12 @@ class StructuralMappingTableListView(ListView):
     def json_to_svg(self,data):
         return dag.make_dag(data)
             
-    def csv_to_json(self,_csv_data):
-
-        print (_csv_data)
+    def csv_to_json(self,_csv_data,tables=None):
+        
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(StringIO(_csv_data),
-                     destination_tables = ['person'])
+                     destination_tables = tables)
                              
         return structural_mapping
         
@@ -476,7 +475,6 @@ class StructuralMappingTableListView(ListView):
             .objects\
             .filter(scan_report=scan_report)
 
-        print (rules)
         
         output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
@@ -495,7 +493,7 @@ class StructuralMappingTableListView(ListView):
             output['term_mapping'].append(rule.term_mapping)
             
             output['operation'].append(None)#rule.operation)
-        print (output)
+
 
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
@@ -528,8 +526,12 @@ class StructuralMappingTableListView(ListView):
             fname = f"{scan_report.data_partner}"\
                 f"_{scan_report.dataset}_structural_mapping.json"
 
-            print (result)
-            output = self.csv_to_json(result)
+
+            if 'omop_table' in self.kwargs:
+                output = self.csv_to_json(result,tables=[self.kwargs['omop_table']])
+            else:
+                output = self.csv_to_json(result)
+                
             svg_output = self.json_to_svg(output)
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
