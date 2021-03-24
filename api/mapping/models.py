@@ -194,7 +194,7 @@ class ScanReportField(BaseModel):
     DATE_TYPE_CHOICES = [
         (x.field,x.field)
         for x in OmopField.objects.all()
-        if 'date' in x.field
+        if 'datetime' in x.field
     ]
     DATE_TYPE_CHOICES.sort()
     #hack for now, this aint great

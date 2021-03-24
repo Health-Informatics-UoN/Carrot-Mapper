@@ -656,7 +656,7 @@ class StructuralMappingTableListView(ListView):
         
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term)\
-                   .order_by('omop_field__table')#,'omop_field__field')
+                   .order_by('omop_field__table','omop_field__field')
 
             if filter_term is not None:
                 qs = qs.filter(omop_field__table__table=filter_term)

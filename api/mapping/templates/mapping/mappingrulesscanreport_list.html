@@ -60,9 +60,11 @@
         <td style="width: 20%">{{ object.source_table }}</td>
         <td style="width: 20%">{{ object.source_field }}</td>
         <td style="width: 20%">
-	  <pre> 
-	    {{ object.term_mapping }}
-	  </pre>
+
+	  {% if object.term_mapping != "null" %}
+	  {{ object.term_mapping }}
+	  {% endif %}
+	  
 	</td>
       </tr>
       {% endfor %}
