@@ -212,64 +212,6 @@ class ScanReportValueListView(ModelFormSetView):
 
 
 @method_decorator(login_required,name='dispatch')
-class AddMappingRuleFormView(FormView):
-    form_class = AddMappingRuleForm
-    template_name = "mapping/mappingrule_form.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        scan_report = scan_report_field.scan_report_table.scan_report
-        scan_report_table = scan_report_field.scan_report_table
-        scan_report_field = scan_report_field
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-            }
-        )
-
-        return context
-
-    def form_valid(self, form):
-
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        mapping,created = MappingRule.objects.get_or_create(
-            omop_field=form.cleaned_data['omop_field'],
-            operation=form.cleaned_data['operation'],
-            scan_report_field=scan_report_field,
-        )
-        mapping.save()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        return "{}?search={}".format(
-            reverse("fields"), scan_report_field.scan_report_table.id
-        )
-
-
-@method_decorator(login_required,name='dispatch')
-class StructuralMappingDeleteView(DeleteView):
-    model = MappingRule
-
-    def get_success_url(self):
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        return "{}?search={}".format(
-            reverse("fields"), scan_report_field.scan_report_table.id
-        )
-
-    success_url = reverse_lazy("fields")
-
-
-@method_decorator(login_required,name='dispatch')
 class StructuralMappingListView(ListView):
     model = MappingRule
     
