@@ -466,7 +466,7 @@ class StructuralMappingTableListView(ListView):
                 
                 for omop_field in omop_fields:
                     #create a new model 
-                    mapping,created = StructuralMappingRule.objects.get_or_create(
+                    mapping,created = StructuralMappingRule.objects.update_or_create(
                         scan_report  = scan_report,
                         omop_field   = omop_field,
                         source_table = source_table,
@@ -646,7 +646,6 @@ class StructuralMappingTableListView(ListView):
         
         omop_tables = list(set(omop_tables))
         omop_tables.sort()
-
         
         context.update(
             {
