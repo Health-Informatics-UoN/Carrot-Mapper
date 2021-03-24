@@ -12,12 +12,26 @@
     </ol>
 </nav>
 
+
+
 <h2>Mapping Rules</h2>
+
+<a href="{% url 'tables-structural-mapping' pk=scan_report.id %}"> All </a> // <br>
+ 
+ {% for omop_table in omop_tables %}
+<a href="{% url 'tables-structural-mapping-filter' pk=scan_report.id omop_table=omop_table %}"> {{ omop_table }} </a> // 
+{% endfor %}
+
+<hr>
 
 
 <form method="post">{% csrf_token %}
   <button type="submit" class="btn btn-success" name='generate' >Auto Generate</button>
+  <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View DAG</button>
+
 </form>
+
+
 
 {% if object_list %}
 
@@ -25,7 +39,7 @@
   <div class="row mx-auto" id='placeholder-svg'>
   </div>
   <div class="row">
-  <table class="table">
+    <table class="table">
     <thead>
     <tr>
         <!--<th scope="col">Data Partner</th>
@@ -46,9 +60,11 @@
         <td style="width: 20%">{{ object.source_table }}</td>
         <td style="width: 20%">{{ object.source_field }}</td>
         <td style="width: 20%">
-	  <pre> 
-	    {{ object.term_mapping }}
-	  </pre>
+
+	  {% if object.term_mapping != "null" %}
+	  {{ object.term_mapping }}
+	  {% endif %}
+	  
 	</td>
       </tr>
       {% endfor %}
@@ -68,7 +84,6 @@
   <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
 </form>
 
-<button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View SVG</button>
 
 
   <script>

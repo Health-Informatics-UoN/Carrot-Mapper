@@ -29,6 +29,12 @@ OPERATION_CHOICES = [
 OPERATION_CHOICES.extend(allowed_operations)
 
 
+from coconnect.tools.omop_db_inspect import OMOPDetails
+df_omop = OMOPDetails.to_df()
+DATE_TYPE_CHOICES = df_omop[df_omop['field'].str.contains('datetime')]['field'].tolist()
+DATE_TYPE_CHOICES = [ (x,x) for x in DATE_TYPE_CHOICES]
+
+
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -100,6 +106,23 @@ class DataPartner(BaseModel):
         return self.name
 
 
+# Models for rule mapping
+class OmopTable(BaseModel):
+    table = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.table
+
+
+class OmopField(BaseModel):
+    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
+    field = models.CharField(max_length=64)
+
+    
+    def __str__(self):
+        return f'{self.table, self.field}'
+
+    
 class DocumentType(BaseModel):
     name = models.CharField(max_length=64)
 
@@ -170,6 +193,16 @@ class ScanReportField(BaseModel):
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
+
+    
+    date_type = models.CharField(
+        max_length=128,
+        choices=DATE_TYPE_CHOICES,
+        default="",
+        null=True,
+        blank=True
+    )
+
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
     classification_system = models.CharField(max_length=64, blank=True, null=True)
@@ -177,23 +210,6 @@ class ScanReportField(BaseModel):
     
     def __str__(self):
         return self.name
-
-
-# Models for rule mapping
-class OmopTable(BaseModel):
-    table = models.CharField(max_length=64)
-
-    def __str__(self):
-        return self.table
-
-
-class OmopField(BaseModel):
-    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
-    field = models.CharField(max_length=64)
-
-    
-    def __str__(self):
-        return f'{self.table, self.field}'
 
 
 class StructuralMappingRule(BaseModel):
