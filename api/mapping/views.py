@@ -101,9 +101,7 @@ class ScanReportTableListView(ListView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
-    fields = ["date_type","concept_id"]
-    fields = ["concept_id"]
-    fields = ["is_date_event"]
+    fields = ["is_patient_id","date_type","concept_id"]
     #exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
@@ -400,7 +398,9 @@ class StructuralMappingTableListView(ListView):
             mapping.save()
         
 
-        
+    def clean(self):
+        StructuralMappingRule.objects.all().delete()
+            
     def generate(self,request,pk):
 
         #retrieve old ones (dates and person ids)
@@ -446,7 +446,12 @@ class StructuralMappingTableListView(ListView):
                 }
 
             #use the OmopDetails class to look up rules for these concepts
-            rules = omop_lookup.get_rules(concepts)
+            try:
+                rules = omop_lookup.get_rules(concepts)
+            except Exception as e:
+                print (e)
+                print (f"{field} failed")
+                continue
 
             #loop over the rules it has found
             for destination,term_mapping in rules.items():
@@ -611,6 +616,9 @@ class StructuralMappingTableListView(ListView):
         elif request.POST.get('generate') is not None:
             self.generate(request,pk)
             return redirect(request.path)
+        elif request.POST.get('clean') is not None:
+            self.clean()
+            return redirect(request.path)
         elif request.POST.get('retrieve') is not None:
             self.retrieve(request,pk)
             return redirect(request.path)
@@ -633,11 +641,12 @@ class StructuralMappingTableListView(ListView):
 
         omop_tables = [
             x.omop_field.table.table
-            for x in StructuralMappingRule.objects.all()
+            for x in StructuralMappingRule.objects.all(scan_report=scan_report)
         ]
+        
         omop_tables = list(set(omop_tables))
         omop_tables.sort()
-        
+
         
         context.update(
             {
