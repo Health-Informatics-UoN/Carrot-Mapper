@@ -29,6 +29,10 @@ OPERATION_CHOICES = [
 OPERATION_CHOICES.extend(allowed_operations)
 
 
+from coconnect.tools.omop_db_inspect import OMOPDetails
+df_omop = OMOPDetails.to_df()
+DATE_TYPE_CHOICES = df_omop[df_omop['field'].str.contains('datetime')]['field'].tolist()
+DATE_TYPE_CHOICES = [ (x,x) for x in DATE_TYPE_CHOICES]
 
 
 class BaseModel(models.Model):
@@ -190,20 +194,6 @@ class ScanReportField(BaseModel):
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
 
-    
-    DATE_TYPE_CHOICES = [
-        (x.field,x.field)
-        for x in OmopField.objects.all()
-        if 'datetime' in x.field
-    ]
-    DATE_TYPE_CHOICES.sort()
-    #hack for now, this aint great
-    #DATE_TYPE_CHOICES = [
-    #    ('person','person'),
-    #    ('condition','condition'),
-    #    ('observation','observation'),
-    #    ('measurement','measurement')
-    #]
     
     date_type = models.CharField(
         max_length=128,
