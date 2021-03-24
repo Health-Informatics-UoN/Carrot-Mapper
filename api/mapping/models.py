@@ -195,14 +195,7 @@ class ScanReportField(BaseModel):
     is_date_event = models.BooleanField(default=False)
 
     
-    date_type = models.CharField(
-        max_length=128,
-        choices=DATE_TYPE_CHOICES,
-        default="",
-        null=True,
-        blank=True
-    )
-
+    
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
 
@@ -212,6 +205,14 @@ class ScanReportField(BaseModel):
         on_delete=models.CASCADE,
         null=True,
         blank=True
+    )
+
+    date_type = models.CharField(
+       max_length=128,
+       choices=DATE_TYPE_CHOICES,
+       default="",
+       null=True,
+       blank=True
     )
 
     concept_id = models.IntegerField(default=-1,null=True,blank=True) 

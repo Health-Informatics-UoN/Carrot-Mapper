@@ -102,6 +102,9 @@ class ScanReportTableListView(ListView):
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["date_type","concept_id"]
+    fields = ["concept_id"]
+    fields = ["is_date_event"]
+    #exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
         qs = super().get_queryset().order_by('id')
