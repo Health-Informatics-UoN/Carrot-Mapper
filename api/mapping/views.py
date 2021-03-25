@@ -334,11 +334,11 @@ class StructuralMappingTableListView(ListView):
     def json_to_svg(self,data):
         return dag.make_dag(data)
             
-    def csv_to_json(self,_csv_data,tables=None):
+    def get_final_json(self,_mapping_data,tables=None):
         
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
-            .to_json(StringIO(_csv_data),
+            .to_json(StringIO(json.dumps(_mapping_data)),
                      destination_tables = tables)
                              
         return structural_mapping
@@ -476,7 +476,7 @@ class StructuralMappingTableListView(ListView):
                     mapping.save()
             
             
-    def download_structural_mapping(self,request,pk,return_type='csv'):
+    def download_structural_mapping(self,request,pk,return_type='json'):
         scan_report = ScanReport.objects.get(pk=pk)
 
         rules = StructuralMappingRule\
@@ -484,68 +484,46 @@ class StructuralMappingTableListView(ListView):
             .filter(scan_report=scan_report)
 
         
-        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
+        outputs = []
+        #output={ name:None for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
         for rule in rules:
-            output['rule_id'].append(rule.id)
-            output['destination_table'].append(rule.omop_field.table.table)
-            output['destination_field'].append(rule.omop_field.field)
+            output = {}
+            output['rule_id'] = rule.id
+            output['destination_table'] = rule.omop_field.table.table
+            output['destination_field'] = rule.omop_field.field
 
-            output['source_table'].append(rule.source_table.name)
-            output['source_field'].append(rule.source_field.name)
-            output['source_field_indexer'].append(rule.source_field.is_patient_id)
+            output['source_table'] = rule.source_table.name
+            output['source_field'] = rule.source_field.name
+            output['source_field_indexer'] = rule.source_field.is_patient_id
             
             #this needs to be updated if there is a coding system
-            output['coding_system'].append(None)#"user defined")
-            
-            output['term_mapping'].append(rule.term_mapping)
-            
-            output['operation'].append(None)#rule.operation)
+            output['coding_system'] = None#"user defined")
 
+            output['term_mapping'] = json.loads(rule.term_mapping)
+            
+            output['operation'] = None#rule.operation)
+            outputs.append(output)
 
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
-
-
-        if return_type == 'csv':
-            #covert our dictiionary into a csv
-            result = ",".join(f'"{key}"' for key in output.keys())
-            for irow in range(len(output['rule_id'])):
-                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
-
-            #fname = f"{scan_report.data_partner}"\
-            #    f"_{scan_report.dataset}_structural_mapping.json"
-            
-            #output = self.csv_to_json(result)
-            #response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
-            #response['Content-Disposition'] = f'attachment; filename="{fname}"'
-
-            response = HttpResponse(result, content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="{fname}"'
-            
-            return response
-        #not used but here if we want it for the api...
-        elif return_type == 'svg':
-            #covert our dictiionary into a csv
-            result = ",".join(f'"{key}"' for key in output.keys())
-            for irow in range(len(output['rule_id'])):
-                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
-
+        
+        if return_type == 'svg':
             fname = f"{scan_report.data_partner}"\
                 f"_{scan_report.dataset}_structural_mapping.json"
 
-
             if 'omop_table' in self.kwargs:
-                output = self.csv_to_json(result,tables=[self.kwargs['omop_table']])
+                outputs = self.get_final_json(outputs,tables=[self.kwargs['omop_table']])
             else:
-                output = self.csv_to_json(result)
+                outputs = self.get_final_json(outputs)
                 
-            svg_output = self.json_to_svg(output)
+            svg_output = self.json_to_svg(outputs)
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
                         
         elif return_type == 'json':
-            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
+            outputs = self.get_final_json(outputs)
+            response = HttpResponse(json.dumps(outputs,indent=6), content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         else:
@@ -553,38 +531,38 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
 
         
-    def download_term_mapping(self,request,pk):
-         #define the name of the output file
+    # def download_term_mapping(self,request,pk):
+    #      #define the name of the output file
 
-        scan_report = ScanReport.objects.get(pk=pk)
-        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
-        mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
+    #     scan_report = ScanReport.objects.get(pk=pk)
 
-        qs = super().get_queryset().filter(id__in=mappingrule_id_list)
+    #     rules = StructuralMappingRule\
+    #         .objects\
+    #         .filter(scan_report=scan_report)
 
-        output = { name:[] for name in ['rule_id','source_term','destination_term']}
+    #     output = { name:[] for name in ['rule_id','source_term','destination_term']}
 
-        for rule in mappingrule_list:
-            for obj in rule.scan_report_field.scanreportvalue_set.all():
-                if obj.conceptID == -1:
-                    continue
+    #     for rule in rules:
+    #         for obj in rule.scan_report_field.scanreportvalue_set.all():
+    #             if obj.conceptID == -1:
+    #                 continue
                 
-                output['rule_id'].append(rule.id)
-                output['source_term'].append(obj.value)
-                output['destination_term'].append(obj.conceptID)
+    #             output['rule_id'].append(rule.id)
+    #             output['source_term'].append(obj.value)
+    #             output['destination_term'].append(obj.conceptID)
 
 
-        return_type = 'csv'
-        fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
+    #     return_type = 'csv'
+    #     fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
 
     
-        result = ",".join(f'"{key}"' for key in output.keys())
-        for irow in range(len(output['rule_id'])):
-            result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+    #     result = ",".join(f'"{key}"' for key in output.keys())
+    #     for irow in range(len(output['rule_id'])):
+    #         result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
             
-        response = HttpResponse(result, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
-        return response
+    #     response = HttpResponse(result, content_type='text/csv')
+    #     response['Content-Disposition'] = f'attachment; filename="{fname}"'
+    #     return response
 
     def download_pk_mapping(self,request,pk):
 
