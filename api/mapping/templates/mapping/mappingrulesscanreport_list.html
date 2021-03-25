@@ -16,23 +16,26 @@
 
 <h2>Mapping Rules</h2>
 
-<a href="{% url 'tables-structural-mapping' pk=scan_report.id %}"> All </a> // <br>
- 
- {% for omop_table in omop_tables %}
-<a href="{% url 'tables-structural-mapping-filter' pk=scan_report.id omop_table=omop_table %}"> {{ omop_table }} </a> // 
-{% endfor %}
-
-<hr>
-
-
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-success" name='generate' >Auto Generate</button>
+  <button type="submit" class="btn btn-success" name='generate' >Generate Mapping Rules</button>
   <button type="submit" class="btn btn-info" name='download-sm' >Download Mapping JSON</button>
-  <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View DAG</button>
-
+  <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View Map Diagram</button>
 </form>
 
 
+<hr>
+{% if object_list %}
+<h6>Filter On Destination Table</h6>
+<button type="submit" class="btn btn-info" name='generate' >
+  <a href="{% url 'tables-structural-mapping' pk=scan_report.id %}" style="color:#ffffff; text-decoration: none;"> All </a> 
+</button>
+
+ {% for omop_table in omop_tables %}
+ <button type="submit" class="btn btn-info" name='generate' >
+   <a href="{% url 'tables-structural-mapping-filter' pk=scan_report.id omop_table=omop_table %}" style="color:#ffffff; text-decoration: none;"> {{ omop_table }} </a>
+  </button> 
+{% endfor %}
+{% endif %}
 
 {% if object_list %}
 
@@ -79,6 +82,7 @@
 <p>There are currently no rules for this scan report.</p>
 {% endif %}
 
+{% if object_list %}
 <form method="post">{% csrf_token %}
   <button type="submit" class="btn btn-danger" name='clean' >Delete All</button>
 
@@ -89,6 +93,7 @@
   <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
   --->
 </form>
+{% endif %}
 
 
 
