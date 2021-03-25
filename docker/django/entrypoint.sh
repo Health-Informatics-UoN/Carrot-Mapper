@@ -1,6 +1,6 @@
 #!/bin/bash
 
-wait-for-it --timeout=20 ${POSTGRES_HOST}:${POSTGRES_PORT} -- echo "Database is ready! Listening on ${POSTGRES_HOST}:${POSTGRES_PORT}"
+wait-for-it --timeout=30 ${POSTGRES_HOST}:${POSTGRES_PORT} -- echo "Database is ready! Listening on ${POSTGRES_HOST}:${POSTGRES_PORT}"
 
 cd /api
 

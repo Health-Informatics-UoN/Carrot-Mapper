@@ -28,8 +28,7 @@
                 <th scope="col">Data Type</th>
 		        <th scope="col">Classification System</th>
                 <th scope="col">Is Patient ID</th>
-                <th scope="col">Is Date Event</th>
-                <th scope="col">Date Type</th>
+		<th scope="col">Date Type</th>
                 <th scope="col">Concept ID</th>
                 <th></th>
                 <th>Edit</th>
@@ -48,18 +47,7 @@
 		  {{ object.classification_system }}
 		</td>
 
-                <td>
-                    {% if object.is_patient_id %}
-                    <i class="bi bi-check">Yes</i>
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if object.is_date_event %}
-                    <i class="bi bi-check">Yes</i>
-                    {% endif %}
-                </td>
-
+ 
                 {## set i to be the index of the value we're on ##} 
                     {% with i=forloop.counter %}
                      {## loop over the formset (editable fields) ##}

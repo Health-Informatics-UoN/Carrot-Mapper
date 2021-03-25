@@ -193,17 +193,25 @@ class ScanReportField(BaseModel):
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
-    date_type = models.CharField(
-        max_length=128,
-        choices=DATE_TYPE_CHOICES,
-        default="",
-        null=True,
-        blank=True
-    )
+
+    
+    
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
+
+
     classification_system = models.CharField(max_length=64, blank=True, null=True)
-    concept_id = models.IntegerField(default=-1,null=True,blank=True)
+
+
+    date_type = models.CharField(
+       max_length=128,
+       choices=DATE_TYPE_CHOICES,
+       default="",
+       null=True,
+       blank=True
+    )
+
+    concept_id = models.IntegerField(default=-1,null=True,blank=True) 
     
     def __str__(self):
         return self.name

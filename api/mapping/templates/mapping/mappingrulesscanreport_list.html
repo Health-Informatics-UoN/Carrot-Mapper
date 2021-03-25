@@ -18,6 +18,7 @@
 
 <form method="post">{% csrf_token %}
   <button type="submit" class="btn btn-success" name='generate' >Generate Mapping Rules</button>
+  <button type="submit" class="btn btn-info" name='download-sm' >Download Mapping JSON</button>
   <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View Map Diagram</button>
 </form>
 
@@ -83,9 +84,14 @@
 
 {% if object_list %}
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-info" name='download-sm' >Download Structural Mapping</button> 
+  <button type="submit" class="btn btn-danger" name='clean' >Delete All</button>
+
+  <!---
   <button type="submit" class="btn btn-info" name='download-tm' >Download Term Mapping</button>
+  --->
+  <!---
   <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
+  --->
 </form>
 {% endif %}
 
