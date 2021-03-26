@@ -200,12 +200,8 @@ class ScanReportField(BaseModel):
     pass_from_source = models.BooleanField(null=True,blank=True)
 
 
-    classification_system = models.ForeignKey(
-        ClassificationSystem,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
+    classification_system = models.CharField(max_length=64, blank=True, null=True)
+
 
     date_type = models.CharField(
        max_length=128,
@@ -219,8 +215,6 @@ class ScanReportField(BaseModel):
     
     def __str__(self):
         return self.name
-
-
 
 
 class StructuralMappingRule(BaseModel):
