@@ -7,8 +7,7 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-            reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan reports</a></li>
         <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ object.scan_report.id }}">
             {{ object.scan_report_table.scan_report.data_partner }} - {{ object.scan_report_table.scan_report.dataset }}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ object.scan_report_table.id }}">

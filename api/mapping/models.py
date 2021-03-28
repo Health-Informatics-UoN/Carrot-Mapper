@@ -205,8 +205,7 @@ class ScanReportField(BaseModel):
 
     is_ignore = models.BooleanField(default=False)
     pass_from_source = models.BooleanField(null=True,blank=True)
-
-
+    map_terms_in_field = models.BooleanField(null=True,blank=True)
     classification_system = models.ForeignKey(
         ClassificationSystem,
         on_delete=models.CASCADE,

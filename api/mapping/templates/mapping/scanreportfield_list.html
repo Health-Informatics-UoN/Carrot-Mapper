@@ -29,6 +29,7 @@
 		        <th scope="col">Classification System</th>
                 <th scope="col">Is Patient ID</th>
                 <th scope="col">Is Date Event</th>
+                <th scope="col">Map Out Terms</th>
                 <th scope="col">Date Type</th>
                 <th scope="col">Concept ID</th>
                 <th></th>
@@ -56,6 +57,11 @@
 
                 <td>
                     {% if object.is_date_event %}
+                    <i class="bi bi-check">Yes</i>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if object.map_terms_in_field %}
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>

@@ -142,6 +142,7 @@ class ScanReportFieldUpdateView(UpdateView):
         'date_type',
         'is_ignore',
         'pass_from_source',
+        'map_terms_in_field',
         'classification_system',
     ]
 
@@ -772,9 +773,12 @@ class DataDictionaryListView(ListView):
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
+                # .filter(source_value__scan_report_field__pass_from_source=False)
+                # .distinct(source_value__scan_report_field__map_terms_in_field=False)
                 .exclude(source_value__value='List truncated...')
             )
-        return qs
+            qs_distinct = qs.filter(source_value__scan_report_field__map_terms_in_field=True).distinct('source_value')
+        return qs.union(qs, qs_distinct, all=True)
 
     def get_context_data(self, **kwargs):
 
