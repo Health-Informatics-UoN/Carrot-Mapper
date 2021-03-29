@@ -769,19 +769,33 @@ class DataDictionaryListView(ListView):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
+
+            # Get distinct ScanReportFields
+            # These are fields where conceptID != -1
             qs_1 = (
                 qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+                .filter(~Q(source_value__scan_report_field__concept_id=-1)).distinct("source_value__scan_report_field").order_by("source_value__scan_report_field")
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
-                .filter(~Q(source_value__scan_report_field__concept_id=-1)).distinct("source_value__scan_report_field")
                 .exclude(source_value__value='List truncated...')
             )
-            # print(qs_1)
-            # qs_distinct = qs.filter(source_value__scan_report_field__map_field_only=True).distinct("source_value__scan_report_field")
-            # qs_total = qs_1.union(qs_distinct, all=True) #.order_by("source_value_id")
+
+            qs_2 = (
+                qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+                .filter(Q(source_value__scan_report_field__concept_id=-1))
+                .filter(source_value__scan_report_field__is_patient_id=False)
+                .filter(source_value__scan_report_field__is_date_event=False)
+                .filter(source_value__scan_report_field__is_ignore=False)
+                .exclude(source_value__value='List truncated...')
+            )
+
+            print(qs_1)
+            print(qs_2)
+            qs_total = qs_1.union(qs_2, all=True)
             # print(qs_total)
-        return qs_1
+
+        return qs_total
 
     def get_context_data(self, **kwargs):
 
