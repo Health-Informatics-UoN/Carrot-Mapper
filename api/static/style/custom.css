@@ -30,7 +30,7 @@
 
 /* add paddign to the top of the body so the content doesnt get hidden up the navbar */
 body {
-    padding-top: 120px;
+    padding-top: 90px;
 }
 /* increase the font-size of the nav bar*/
 .navbar {

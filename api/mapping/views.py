@@ -6,7 +6,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import message, send_mail, BadHeaderError
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -366,7 +366,6 @@ class StructuralMappingTableListView(ModelFormSetView):
         return dag.make_dag(data)
             
     def get_final_json(self,_mapping_data,tables=None):
-        
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(StringIO(json.dumps(_mapping_data)),
@@ -481,8 +480,9 @@ class StructuralMappingTableListView(ModelFormSetView):
                 rules_set = omop_lookup.get_rules(concepts)
             except Exception as e:
                 #need to handle this better
-                print (e)
-                print (f"{field} failed")
+                #print (e)
+                messages.warning(request,e)
+                #print (f"{field} failed")
                 continue
 
             #loop over the destination and rule set for each domain found
@@ -504,7 +504,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                                               .get(table__table=destination_table,
                                                    field=unmapped_field)
                     except: #mapping.models.OmopField.DoesNotExist:
-                        print (f'{destination_table}::{unmapped_field} is somehow misssing')
+                        messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
+
                         continue
 
                     #attempt to find person_ids and date events
@@ -555,7 +556,7 @@ class StructuralMappingTableListView(ModelFormSetView):
                                               .get(table__table=destination_table,
                                                    field=destination_field)
                     except: #mapping.models.OmopField.DoesNotExist:
-                        print (f'{destination_table}::{destination_field} is somehow misssing')
+                        messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
                         continue
                         
                     #create a new model 
@@ -583,13 +584,11 @@ class StructuralMappingTableListView(ModelFormSetView):
         #output={ name:None for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
         for rule in rules:
-            
             #if these havent been defined, skip.....
             if rule.source_table is None:
                 continue
             if rule.source_field is None:
                 continue
-
             # skip if the rule hasnt been approved
             if not rule.approved:
                 continue
@@ -612,10 +611,14 @@ class StructuralMappingTableListView(ModelFormSetView):
             
             output['operation'] = None#rule.operation)
             outputs.append(output)
-
+            
+        if len(outputs) == 0:
+            messages.error(request,"Can't download or create json. Most likely because nothing has been approved.")
+            return redirect(request.path) 
+            
         #define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
-        
+
         if return_type == 'svg':
             fname = f"{scan_report.data_partner}"\
                 f"_{scan_report.dataset}_structural_mapping.json"
