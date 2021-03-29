@@ -329,16 +329,18 @@ class StructuralMappingTableListView(ModelFormSetView):
     
     template_name = "mapping/mappingrulesscanreport_list.html"
 
-    def construct_formsets(self):
+    #queryset = qs.filter()
+    #turn off this, dont use it
+    def construct_formset(self):
         """
         overide this function so we can edit the forms
         https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
         
         """
         formset_class = self.get_formset()
-        print ('keywords',self.get_formset_kwargs())
+
+        #too slow?
         formset = formset_class(**self.get_formset_kwargs())
-        return formset
         #loop over the formset
         for i,form in enumerate(formset):
             #find the source table
@@ -347,10 +349,16 @@ class StructuralMappingTableListView(ModelFormSetView):
             #these will be all source fields by default
             qs = form['source_field'].field.widget.choices.queryset
             #filter them to only allow ones associated with selected source_table
-            qs = qs.filter(scan_report_table=source_table_pk)
+            qs = qs.filter(scan_report_table=source_table_pk)\
+                .order_by('name')
             #modify and update the formset
             form['source_field'].field.widget.choices.queryset = qs
 
+            #order this crap
+            qs = form['source_table'].field.widget.choices.queryset
+            qs = qs.order_by('name')
+            form['source_table'].field.widget.choices.queryset = qs
+            
         #return the modified form set
         return formset
 
@@ -470,24 +478,53 @@ class StructuralMappingTableListView(ModelFormSetView):
 
             #use the OmopDetails class to look up rules for these concepts
             try:
-                rules = omop_lookup.get_rules(concepts)
+                rules_set = omop_lookup.get_rules(concepts)
             except Exception as e:
                 print (e)
                 print (f"{field} failed")
                 continue
+            
+            for destination_table,rules in rules_set.items():
 
-            #loop over the rules it has found
-            for destination,term_mapping in rules.items():
+                #find all fields for this destination table
+                all_destination_fields = omop_lookup.get_fields(destination_table)
 
-                #find associated omop tables with this field (destination field)
-                omop_fields = OmopField.objects\
-                                      .filter(field=destination)
+                unmapped_fields = list(set(all_destination_fields)
+                                       - set(rules.keys()))
+
+
+                for unmapped_field in unmapped_fields:
+
+                    try:
+                        omop_field = OmopField.objects\
+                                              .get(table__table=destination_table,
+                                                   field=unmapped_field)
+                    except: #mapping.models.OmopField.DoesNotExist:
+                        print (f'{destination_table}::{unmapped_field} is somehow misssing')
+                        continue
+                    
+                    #create a new model 
+                    mapping,created = StructuralMappingRule.objects.update_or_create(
+                        scan_report  = scan_report,
+                        omop_field   = omop_field,
+                        source_table = None,
+                        source_field = None,
+                        term_mapping = None
+                    )
+                    mapping.save()
+                    
                 
-                #loop over multiple fields
-                #example:  gender_concept_id appears in 'person' and in 'provider'
-                #          so need to use the field twice...
                 
-                for omop_field in omop_fields:
+                for destination_field,term_mapping in rules.items():
+
+                    try:
+                        omop_field = OmopField.objects\
+                                              .get(table__table=destination_table,
+                                                   field=destination_field)
+                    except: #mapping.models.OmopField.DoesNotExist:
+                        print (f'{destination_table}::{destination_field} is somehow misssing')
+                        continue
+                        
                     #create a new model 
                     mapping,created = StructuralMappingRule.objects.update_or_create(
                         scan_report  = scan_report,
@@ -497,7 +534,9 @@ class StructuralMappingTableListView(ModelFormSetView):
                         term_mapping = json.dumps(term_mapping,indent=6)#convert dict to str,
                     )
                     mapping.save()
+
             
+                    
             
     def download_structural_mapping(self,request,pk,return_type='json'):
         scan_report = ScanReport.objects.get(pk=pk)
@@ -511,11 +550,22 @@ class StructuralMappingTableListView(ModelFormSetView):
         #output={ name:None for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
         for rule in rules:
+            
+            #if these havent been defined, skip.....
+            if rule.source_table is None:
+                continue
+            if rule.source_field is None:
+                continue
+
+            # skip if the rule hasnt been approved
+            if not rule.approved:
+                continue
+            
             output = {}
             output['rule_id'] = rule.id
             output['destination_table'] = rule.omop_field.table.table
             output['destination_field'] = rule.omop_field.field
-
+            
             output['source_table'] = rule.source_table.name
             output['source_field'] = rule.source_field.name
             output['source_field_indexer'] = rule.source_field.is_patient_id
@@ -523,7 +573,9 @@ class StructuralMappingTableListView(ModelFormSetView):
             #this needs to be updated if there is a coding system
             output['coding_system'] = None#"user defined")
 
-            output['term_mapping'] = json.loads(rule.term_mapping)
+            output['term_mapping'] = None
+            if rule.term_mapping:
+                output['term_mapping'] = json.loads(rule.term_mapping)
             
             output['operation'] = None#rule.operation)
             outputs.append(output)
@@ -605,8 +657,8 @@ class StructuralMappingTableListView(ModelFormSetView):
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
         return response
     
-    def posty(self,request,*args, **kwargs):
-                
+    def post(self,request,*args, **kwargs):
+        #
         pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
             return self.download_structural_mapping(request,pk)
@@ -626,9 +678,7 @@ class StructuralMappingTableListView(ModelFormSetView):
         elif request.POST.get('svg') is not None:
             return self.download_structural_mapping(request,pk,return_type='svg')
         else:
-            #define more buttons to click
-            print ('ohhhh posted here')
-            print (request.POST)
+            super().post(request,*args, **kwargs)
             pass
 
         

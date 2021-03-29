@@ -64,23 +64,22 @@
     <tbody>
       {% for object in object_list %}
       <tr>
-        <!--- <td style="width: 25%">{{ object.omop_field. }}</td>--->
         <td style="width: 16.6%">{{ object.omop_field.table }}</td>
         <td style="width: 16.6%">{{ object.omop_field.field }}</td>
-	<!-- <td style="width: 16.6%"> -->
-	<!--   {## set i to be the index of the value we're on ##}  -->
-        <!--   {% with i=forloop.counter %} -->
-        <!--   {## loop over the formset (editable fields) ##} -->
-        <!--   {% for form in formset  %} -->
-        <!--     {% if forloop.counter == i%} -->
-        <!--      {% for field in form %} -->
-	<!--          {% if field.label == 'Source table' %} -->
-        <!--            {{field}} -->
-	<!--          {% endif %} -->
-        <!--       {% endfor %}  -->
-        <!--     {% endif %} -->
-        <!--   {% endfor %} -->
-	<!--   {% endwith %} -->
+	<td style="width: 16.6%">
+	  {## set i to be the index of the value we're on ##}
+          {% with i=forloop.counter %}
+          {## loop over the formset (editable fields) ##}
+          {% for form in formset  %}
+            {% if forloop.counter == i%}
+             {% for field in form %}
+	         {% if field.label == 'Source table' %}
+                   {{field}}
+	         {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+	  {% endwith %}
 	
         <td style="width: 16.6%">
 	  {## set i to be the index of the value we're on ##} 
@@ -88,32 +87,37 @@
           {## loop over the formset (editable fields) ##}
           {% for form in formset  %}
             {% if forloop.counter == i%}
-             {% for field in form %}
-	           <td> {{field}} <br> {{ field.label}} </td>
+          {% for field in form %}
+	  {% if field.label == 'Source field' %}
+	  {{ field }}
+	  {% endif %}
 	     {% endfor %} 
             {% endif %}
           {% endfor %}
 	  {% endwith %}
 	  
         <td style="width: 16.6%">
+	  {% if object.term_mapping %}
 	  {% if object.term_mapping != "null" %}
 	  {{ object.term_mapping }}
 	  {% endif %}
+	  {% endif %}
 	</td>
-	<!-- <td style="width: 16.6%"> -->
- <!-- {## set i to be the index of the value we're on ##}  -->
- <!--          {% with i=forloop.counter %} -->
- <!--          {## loop over the formset (editable fields) ##} -->
- <!--          {% for form in formset  %} -->
- <!--            {% if forloop.counter == i%} -->
- <!--             {% for field in form %} -->
- <!-- 	         {% if field.label == 'Approved' %} -->
- <!--                   {{field}} -->
- <!-- 	         {% endif %} -->
- <!--              {% endfor %}  -->
- <!--            {% endif %} -->
- <!--          {% endfor %} -->
- <!-- 	  {% endwith %} -->
+	
+	<td style="width: 16.6%">
+ {## set i to be the index of the value we're on ##}
+          {% with i=forloop.counter %}
+          {## loop over the formset (editable fields) ##}
+          {% for form in formset  %}
+            {% if forloop.counter == i%}
+             {% for field in form %}
+ 	         {% if field.label == 'Approved' or field.label == 'Id' %}
+                   {{field}}
+ 	         {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+ 	  {% endwith %}
 	</td>
       </tr>
       {% endfor %}
@@ -122,26 +126,16 @@
   </div>
 </div>
 
-<button type="submit" class="btn btn-primary">Save</button>
+  <button id="table_save_btn" type="submit" class="btn btn-success">Save</button>
+
+
+  <button type="submit" class="btn btn-danger" name='clean' >Delete All</button>
+  
 </form>
 
 {% else %}
 <p>There are currently no rules for this scan report.</p>
 {% endif %}
-
-{% if object_list %}
-<form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-danger" name='clean' >Delete All</button>
-
-  <!---
-  <button type="submit" class="btn btn-info" name='download-tm' >Download Term Mapping</button>
-  --->
-  <!---
-  <button type="submit" class="btn btn-info" name='download-pk' >Download Person ID Mapping</button>
-  --->
-</form>
-{% endif %}
-
 
 
   <script>
@@ -156,6 +150,7 @@
 		},
 		success: function (data) {
 		      var data = $("svg", data);
+		      $('#placeholder-svg').empty();
 		      $('#placeholder-svg').append(data);
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown){
@@ -165,6 +160,45 @@
 
     
     });
+
+
+    // $("select[name*='source_table']").each(function(i, obj) {
+    // 	  //$("select[name*='source_']").each(function(i, obj) {
+    // 	  var options = $(this).find("option");
+	  
+    // 	  options.detach().sort(function(a,b) {
+    // 		var at = $(a).text().toLowerCase();
+    // 		var bt = $(b).text().toLowerCase();         
+    // 		return (at > bt)?1:((at < bt)?-1:0);  
+    // 	  });
+    // 	  options.appendTo(obj); 
+    // });
+
+    //force people to save the table after changing select box
+    //important for source_table, need to refresh changes for source_field
+    //e.g. if source_table changed to gender, need to update source_field values
+    $("select[name*='source_table']").change(function(){
+	  $("#table_save_btn").click();
+    });
+    
+    
+    $("#id_omop_table").change(function () {
+	  var url = $("#mappingRuleForm").attr("data-omop-fields-url");  
+	  var omop_table_id = $(this).val();  
+	  
+	  $.ajax({
+		url: url,                
+		data: {
+		      'omop_table': omop_table_id 
+		},
+		success: function (data) {   
+		      $("#id_omop_field").html(data);  
+		}
+	  });
+	  
+    });
+
+    
   </script>
 
 
