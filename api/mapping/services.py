@@ -108,7 +108,7 @@ def process_scan_report(scan_report_id):
                 # [:31] is because excel is a pile of s***
                 # - sheet names are truncated to 31 characters
                 name = row[0][:31]
-                if len(row)<10:
+                if len(row)<=10:
                     scan_report = ScanReport.objects.get(pk=scan_report_id)
                     scan_report.delete()
                 if len(row)>=11:
@@ -218,7 +218,7 @@ def process_scan_report(scan_report_id):
                 source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
             )
-    return upload
+            
 
 def build_usagi_index():
     # Use 'build' to create index for the first time.

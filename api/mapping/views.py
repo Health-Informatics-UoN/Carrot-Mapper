@@ -101,6 +101,7 @@ class ScanReportTableListView(ListView):
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["is_patient_id","date_type","concept_id"]
+    fields = ["is_patient_id","is_date_event","concept_id"]
     #exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
@@ -316,19 +317,42 @@ class AddMappingRuleFormView(FormView):
     #form_class = ScanReportForm
     #exclude = []
     #factory_kwargs = {"can_delete": False, "extra": False}
-    
-@method_decorator(login_required,name='dispatch')
-class StructuralMappingTableListView(ListView):
-#class StructuralMappingTableListView(ModelFormSetView):
-    ### exclude = []
-    ### factory_kwargs = {"can_delete": False, "extra": False}
 
-    #model = MappingRule
-    #model = ScanReportField
+
+
+@method_decorator(login_required,name='dispatch')
+class StructuralMappingTableListView(ModelFormSetView):
+    fields = ['source_table','source_field','approved']
+    factory_kwargs = {"can_delete": False, "extra": False}
+    
     model = StructuralMappingRule
     
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def construct_formsets(self):
+        """
+        overide this function so we can edit the forms
+        https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
+        
+        """
+        formset_class = self.get_formset()
+        print ('keywords',self.get_formset_kwargs())
+        formset = formset_class(**self.get_formset_kwargs())
+        return formset
+        #loop over the formset
+        for i,form in enumerate(formset):
+            #find the source table
+            source_table_pk = form['source_table'].initial
+            #get the choices for the source field,
+            #these will be all source fields by default
+            qs = form['source_field'].field.widget.choices.queryset
+            #filter them to only allow ones associated with selected source_table
+            qs = qs.filter(scan_report_table=source_table_pk)
+            #modify and update the formset
+            form['source_field'].field.widget.choices.queryset = qs
+
+        #return the modified form set
+        return formset
 
     def json_to_svg(self,data):
         return dag.make_dag(data)
@@ -403,7 +427,7 @@ class StructuralMappingTableListView(ListView):
     def generate(self,request,pk):
 
         #retrieve old ones (dates and person ids)
-        self.retrieve(request,pk)
+        #self.retrieve(request,pk)
 
         #do the rest... automatic lookup based on concept id
         
@@ -581,8 +605,8 @@ class StructuralMappingTableListView(ListView):
         response['Content-Disposition'] = f'attachment; filename="{fname}"'
         return response
     
-    def post(self,request,*args, **kwargs):
-
+    def posty(self,request,*args, **kwargs):
+                
         pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
             return self.download_structural_mapping(request,pk)
@@ -603,6 +627,8 @@ class StructuralMappingTableListView(ListView):
             return self.download_structural_mapping(request,pk,return_type='svg')
         else:
             #define more buttons to click
+            print ('ohhhh posted here')
+            print (request.POST)
             pass
 
         
@@ -635,7 +661,6 @@ class StructuralMappingTableListView(ListView):
 
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
-
         
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")

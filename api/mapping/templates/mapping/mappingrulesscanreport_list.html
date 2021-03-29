@@ -39,10 +39,15 @@
 
 {% if object_list %}
 
-<div class="container">
+ 
+  <div class="container">
   <div class="row mx-auto" id='placeholder-svg'>
   </div>
   <div class="row">
+    
+    <form id="my_form" method="post">
+      {% csrf_token %}
+      {{ formset.management_form }}
     <table class="table">
     <thead>
     <tr>
@@ -53,30 +58,72 @@
 	<th scope="col">Source Table</th>
 	<th scope="col">Source Field</th>
 	<th scope="col">Term Map</th>
+	<th scope="col">Approved</th>
     </tr>
     </thead>
     <tbody>
       {% for object in object_list %}
       <tr>
         <!--- <td style="width: 25%">{{ object.omop_field. }}</td>--->
-        <td style="width: 20%">{{ object.omop_field.table }}</td>
-        <td style="width: 20%">{{ object.omop_field.field }}</td>
-        <td style="width: 20%">{{ object.source_table }}</td>
-        <td style="width: 20%">{{ object.source_field }}</td>
-        <td style="width: 20%">
-
+        <td style="width: 16.6%">{{ object.omop_field.table }}</td>
+        <td style="width: 16.6%">{{ object.omop_field.field }}</td>
+	<!-- <td style="width: 16.6%"> -->
+	<!--   {## set i to be the index of the value we're on ##}  -->
+        <!--   {% with i=forloop.counter %} -->
+        <!--   {## loop over the formset (editable fields) ##} -->
+        <!--   {% for form in formset  %} -->
+        <!--     {% if forloop.counter == i%} -->
+        <!--      {% for field in form %} -->
+	<!--          {% if field.label == 'Source table' %} -->
+        <!--            {{field}} -->
+	<!--          {% endif %} -->
+        <!--       {% endfor %}  -->
+        <!--     {% endif %} -->
+        <!--   {% endfor %} -->
+	<!--   {% endwith %} -->
+	
+        <td style="width: 16.6%">
+	  {## set i to be the index of the value we're on ##} 
+          {% with i=forloop.counter %}
+          {## loop over the formset (editable fields) ##}
+          {% for form in formset  %}
+            {% if forloop.counter == i%}
+             {% for field in form %}
+	           <td> {{field}} <br> {{ field.label}} </td>
+	     {% endfor %} 
+            {% endif %}
+          {% endfor %}
+	  {% endwith %}
+	  
+        <td style="width: 16.6%">
 	  {% if object.term_mapping != "null" %}
 	  {{ object.term_mapping }}
 	  {% endif %}
-	  
+	</td>
+	<!-- <td style="width: 16.6%"> -->
+ <!-- {## set i to be the index of the value we're on ##}  -->
+ <!--          {% with i=forloop.counter %} -->
+ <!--          {## loop over the formset (editable fields) ##} -->
+ <!--          {% for form in formset  %} -->
+ <!--            {% if forloop.counter == i%} -->
+ <!--             {% for field in form %} -->
+ <!-- 	         {% if field.label == 'Approved' %} -->
+ <!--                   {{field}} -->
+ <!-- 	         {% endif %} -->
+ <!--              {% endfor %}  -->
+ <!--            {% endif %} -->
+ <!--          {% endfor %} -->
+ <!-- 	  {% endwith %} -->
 	</td>
       </tr>
       {% endfor %}
     </tbody>
 </table>
   </div>
-  </div>
+</div>
 
+<button type="submit" class="btn btn-primary">Save</button>
+</form>
 
 {% else %}
 <p>There are currently no rules for this scan report.</p>
