@@ -29,7 +29,7 @@
 		        <th scope="col">Classification System</th>
                 <th scope="col">Is Patient ID</th>
                 <th scope="col">Is Date Event</th>
-                <th scope="col">Map Out Terms</th>
+                <th scope="col">Map Only Field</th>
                 <th scope="col">Date Type</th>
                 <th scope="col">Concept ID</th>
                 <th></th>
@@ -61,7 +61,7 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if object.map_terms_in_field %}
+                    {% if object.map_field_only %}
                     <i class="bi bi-check">Yes</i>
                     {% endif %}
                 </td>
