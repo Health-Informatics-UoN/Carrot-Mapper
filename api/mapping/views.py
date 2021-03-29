@@ -480,21 +480,25 @@ class StructuralMappingTableListView(ModelFormSetView):
             try:
                 rules_set = omop_lookup.get_rules(concepts)
             except Exception as e:
+                #need to handle this better
                 print (e)
                 print (f"{field} failed")
                 continue
-            
-            for destination_table,rules in rules_set.items():
 
+            #loop over the destination and rule set for each domain found
+            for destination_table,rules in rules_set.items():
                 #find all fields for this destination table
                 all_destination_fields = omop_lookup.get_fields(destination_table)
 
+                #find ones that havent been mapped
+                #this is going to be all except:
+                #<domain>_source_value, <domain>_concept_id, <domain>_source_concept_id
                 unmapped_fields = list(set(all_destination_fields)
                                        - set(rules.keys()))
 
-
+                #build some blank rules for these unmapped ones first
                 for unmapped_field in unmapped_fields:
-
+                    #find the omop field 
                     try:
                         omop_field = OmopField.objects\
                                               .get(table__table=destination_table,
@@ -502,13 +506,42 @@ class StructuralMappingTableListView(ModelFormSetView):
                     except: #mapping.models.OmopField.DoesNotExist:
                         print (f'{destination_table}::{unmapped_field} is somehow misssing')
                         continue
+
+                    #attempt to find person_ids and date events
+                    _source_table = None
+                    _source_field = None
+                    if omop_field.field == 'person_id':
+                        #look in the current source_table
+                        # the source_table is the table associated with
+                        # the field that has had a concept id set
+                        #
+                        # Look for any is_patient_id
+                        qs = source_table.scanreportfield_set\
+                                         .all()\
+                                         .filter(is_patient_id=True)
+                        # if any have been found
+                        # set the first of these found as the source field and table
+                        if len(qs)>0:
+                            _source_field = qs[0]
+                            _source_table = _source_field.scan_report_table
+                    # else try for date fields
+                    elif 'date' in omop_field.field:
+                        #look for is_date_events in the same table
+                        qs = source_table.scanreportfield_set\
+                                         .all()\
+                                         .filter(is_date_event=True)
+                        #set them
+                        if len(qs)>0:
+                            _source_field = qs[0]
+                            _source_table = _source_field.scan_report_table
+                        
                     
                     #create a new model 
                     mapping,created = StructuralMappingRule.objects.update_or_create(
                         scan_report  = scan_report,
                         omop_field   = omop_field,
-                        source_table = None,
-                        source_field = None,
+                        source_table = _source_table,
+                        source_field = _source_field,
                         term_mapping = None
                     )
                     mapping.save()
