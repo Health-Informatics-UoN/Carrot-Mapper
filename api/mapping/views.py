@@ -143,7 +143,6 @@ class ScanReportFieldUpdateView(UpdateView):
         'date_type',
         'is_ignore',
         'pass_from_source',
-        'map_field_only',
         'classification_system',
     ]
 
@@ -781,6 +780,8 @@ class DataDictionaryListView(ListView):
                 .exclude(source_value__value='List truncated...')
             )
 
+            # Get all ScanReportValues
+            # Filter out scan report fields which we've defined in qs_1
             qs_2 = (
                 qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
                 .filter(Q(source_value__scan_report_field__concept_id=-1))
@@ -790,10 +791,8 @@ class DataDictionaryListView(ListView):
                 .exclude(source_value__value='List truncated...')
             )
 
-            print(qs_1)
-            print(qs_2)
+            # Stick qs_1 and qs_2 together
             qs_total = qs_1.union(qs_2, all=True)
-            # print(qs_total)
 
         return qs_total
 
