@@ -344,4 +344,3 @@ class DataDictionary(BaseModel):
 
     def __str__(self):
         return f'{self.source_value, self.dictionary_table, self.dictionary_field, self.dictionary_field_description, self.dictionary_value_code, self.dictionary_value_description, self.definition_fixed}'
-

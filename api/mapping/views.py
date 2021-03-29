@@ -5,6 +5,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import message, send_mail, BadHeaderError
+from django.core import serializers
+from django.db.models.functions import Concat
+from django.db.models import CharField, Value as V
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -766,6 +770,16 @@ class DataDictionaryListView(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
+
+        # Create a concat field for NLP to work from
+        qs = qs.annotate(nlp_string=Concat("source_value__scan_report_field__name", 
+            V(', '),
+            "source_value__value",
+            V(', '),
+            "dictionary_field_description", 
+            V(', '),
+            "dictionary_value_description", output_field=CharField()))
+
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
 
@@ -788,11 +802,25 @@ class DataDictionaryListView(ListView):
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value='List truncated...')
+                .exclude(source_value__value='List truncated...')   
+                .exclude(source_value__value='N/A')
+                .exclude(source_value__value="No")
             )
 
             # Stick qs_1 and qs_2 together
-            qs_total = qs_1.union(qs_2, all=True)
+            qs_total = qs_1.union(qs_2)
+            for_json = qs_total.values('id', 
+                                    'source_value__value',
+                                    'source_value__scan_report_field__name', 
+                                    'nlp_string')
+
+    
+            serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
+ 
+
+            with open('/data/data.json', 'w') as json_file:
+                json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
+
 
         return qs_total
 
