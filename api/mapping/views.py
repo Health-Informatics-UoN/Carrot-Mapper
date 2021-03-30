@@ -33,7 +33,7 @@ from .forms import (
     AddMappingRuleForm,
     DocumentForm,
     DocumentFileForm,
-    DictionarySelectForm
+    DictionarySelectForm,
 )
 from .models import (
     ScanReport,
@@ -63,13 +63,16 @@ from coconnect.tools import mapping_pipeline_helpers
 
 
 from coconnect.tools.omop_db_inspect import OMOPDetails
+
 omop_lookup = OMOPDetails()
+
 
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class ScanReportTableListView(ListView):
     model = ScanReportTable
 
@@ -77,8 +80,8 @@ class ScanReportTableListView(ListView):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
         if search_term is not None and search_term is not "":
-            qs = qs.filter(scan_report__id=search_term).order_by('name')
-            
+            qs = qs.filter(scan_report__id=search_term).order_by("name")
+
         return qs
 
     def get_context_data(self, **kwargs):
@@ -102,13 +105,14 @@ class ScanReportTableListView(ListView):
         return context
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
-    fields = ["date_type","concept_id"]
+    fields = ["date_type", "concept_id"]
     factory_kwargs = {"can_delete": False, "extra": False}
+
     def get_queryset(self):
-        qs = super().get_queryset().order_by('id')
+        qs = super().get_queryset().order_by("id")
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
             qs = qs.filter(scan_report_table__id=search_term)
@@ -138,16 +142,16 @@ class ScanReportFieldListView(ModelFormSetView):
         return context
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     fields = [
-        'is_patient_id',
-        'is_date_event',
-        'date_type',
-        'is_ignore',
-        'pass_from_source',
-        'classification_system',
+        "is_patient_id",
+        "is_date_event",
+        "date_type",
+        "is_ignore",
+        "pass_from_source",
+        "classification_system",
     ]
 
     def get_success_url(self):
@@ -155,7 +159,8 @@ class ScanReportFieldUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = ["mapping"]
@@ -165,23 +170,24 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class ScanReportValueListView(ModelFormSetView):
     model = ScanReportValue
     fields = ["conceptID"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
-         qs = super().get_queryset().order_by('id')
-         search_term = self.request.GET.get('search', None)
-         if search_term is not None:
-             qs = qs.filter(scan_report_field=search_term)
-         return qs
+        qs = super().get_queryset().order_by("id")
+        search_term = self.request.GET.get("search", None)
+        if search_term is not None:
+            qs = qs.filter(scan_report_field=search_term)
+        return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
@@ -216,7 +222,7 @@ class ScanReportValueListView(ModelFormSetView):
         return context
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class AddMappingRuleFormView(FormView):
     form_class = AddMappingRuleForm
     template_name = "mapping/mappingrule_form.html"
@@ -244,9 +250,9 @@ class AddMappingRuleFormView(FormView):
 
         scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
 
-        mapping,created = MappingRule.objects.get_or_create(
-            omop_field=form.cleaned_data['omop_field'],
-            operation=form.cleaned_data['operation'],
+        mapping, created = MappingRule.objects.get_or_create(
+            omop_field=form.cleaned_data["omop_field"],
+            operation=form.cleaned_data["operation"],
             scan_report_field=scan_report_field,
         )
         mapping.save()
@@ -277,7 +283,7 @@ class AddMappingRuleFormView(FormView):
 # @method_decorator(login_required,name='dispatch')
 # class StructuralMappingListView(ListView):
 #     model = MappingRule
-    
+
 #     def get_queryset(self):
 #         qs = super().get_queryset()
 #         search_term = self.kwargs.get("pk")
@@ -313,336 +319,336 @@ class AddMappingRuleFormView(FormView):
 #         return context
 
 
-
 # Calum - adding this, if we want to switch to form list edit view
-#class StructuralMappingTableListView(ModelFormSetView):
-    #model = ScanReportField
-    #form_class = ScanReportForm
-    #exclude = []
-    #factory_kwargs = {"can_delete": False, "extra": False}
-    
-@method_decorator(login_required,name='dispatch')
+# class StructuralMappingTableListView(ModelFormSetView):
+# model = ScanReportField
+# form_class = ScanReportForm
+# exclude = []
+# factory_kwargs = {"can_delete": False, "extra": False}
+
+
+@method_decorator(login_required, name="dispatch")
 class StructuralMappingTableListView(ListView):
-#class StructuralMappingTableListView(ModelFormSetView):
+    # class StructuralMappingTableListView(ModelFormSetView):
     ### exclude = []
     ### factory_kwargs = {"can_delete": False, "extra": False}
 
-    #model = MappingRule
-    #model = ScanReportField
+    # model = MappingRule
+    # model = ScanReportField
     model = StructuralMappingRule
-    
+
     template_name = "mapping/mappingrulesscanreport_list.html"
 
-
-    def json_to_svg(self,data):
+    def json_to_svg(self, data):
         return dag.make_dag(data)
-            
-    def csv_to_json(self,_csv_data,tables=None):
-        
-        structural_mapping = mapping_pipeline_helpers\
-            .StructuralMapping\
-            .to_json(StringIO(_csv_data),
-                     destination_tables = tables)
-                             
+
+    def csv_to_json(self, _csv_data, tables=None):
+
+        structural_mapping = mapping_pipeline_helpers.StructuralMapping.to_json(
+            StringIO(_csv_data), destination_tables=tables
+        )
+
         return structural_mapping
-        
 
-
-    def retrieve(self,request,pk):
+    def retrieve(self, request, pk):
         scan_report = ScanReport.objects.get(pk=pk)
 
-        patient_id_fields = ScanReportField\
-            .objects\
-            .filter(scan_report_table__scan_report=scan_report)\
-            .filter(is_patient_id=True)
+        patient_id_fields = ScanReportField.objects.filter(
+            scan_report_table__scan_report=scan_report
+        ).filter(is_patient_id=True)
 
-        if len(patient_id_fields)>0:
+        if len(patient_id_fields) > 0:
             patient_id_field = patient_id_fields[0]
-            omop_fields = OmopField.objects\
-                                   .filter(field='person_id')\
-                                   .filter(table__table__in=[
-                                       #only do it for these tables for now
-                                       'person',
-                                       'observation',
-                                       'conditon_occurrence',
-                                       'visit_occurrence',
-                                       'measurement',
-                                   ])
-            
+            omop_fields = OmopField.objects.filter(field="person_id").filter(
+                table__table__in=[
+                    # only do it for these tables for now
+                    "person",
+                    "observation",
+                    "conditon_occurrence",
+                    "visit_occurrence",
+                    "measurement",
+                ]
+            )
+
             for omop_field in omop_fields:
-                #create a new model 
-                mapping,created = StructuralMappingRule.objects.get_or_create(
-                    scan_report  = scan_report,
-                    omop_field   = omop_field,
-                    source_table = patient_id_field.scan_report_table,
-                    source_field = patient_id_field,
-                    term_mapping = "null"
+                # create a new model
+                mapping, created = StructuralMappingRule.objects.get_or_create(
+                    scan_report=scan_report,
+                    omop_field=omop_field,
+                    source_table=patient_id_field.scan_report_table,
+                    source_field=patient_id_field,
+                    term_mapping="null",
                 )
                 mapping.save()
 
-        date_fields = ScanReportField\
-            .objects\
-            .filter(scan_report_table__scan_report=scan_report)\
-            .filter(date_type__gt=0)
-        
+        date_fields = ScanReportField.objects.filter(
+            scan_report_table__scan_report=scan_report
+        ).filter(date_type__gt=0)
 
         for date_field in date_fields:
 
-            omop_field = OmopField.objects\
-                                  .get(field=date_field.date_type)
+            omop_field = OmopField.objects.get(field=date_field.date_type)
 
-            mapping,created = StructuralMappingRule.objects.get_or_create(
-                scan_report  = scan_report,
-                omop_field   = omop_field,
-                source_table = date_field.scan_report_table,
-                source_field = date_field,
-                term_mapping = "null"
+            mapping, created = StructuralMappingRule.objects.get_or_create(
+                scan_report=scan_report,
+                omop_field=omop_field,
+                source_table=date_field.scan_report_table,
+                source_field=date_field,
+                term_mapping="null",
             )
             mapping.save()
-        
 
-        
-    def generate(self,request,pk):
+    def generate(self, request, pk):
 
-        #retrieve old ones (dates and person ids)
-        self.retrieve(request,pk)
+        # retrieve old ones (dates and person ids)
+        self.retrieve(request, pk)
 
-        #do the rest... automatic lookup based on concept id
-        
+        # do the rest... automatic lookup based on concept id
+
         scan_report = ScanReport.objects.get(pk=pk)
 
-        #this is taking a long time to run/filter
-        #find all fields that have been mapped with a concept id (>=0, default=-1)
-        fields = ScanReportField.objects\
-                            .filter(scan_report_table__scan_report=scan_report)
-        #find fields that have a concept_id set,
-        #OR find fields that have at least one value with a concept_id set
-        fields = fields.filter(scanreportvalue__conceptID__gte=0)\
-            | fields.filter(concept_id__gte=0)
-        
-        #make unique
+        # this is taking a long time to run/filter
+        # find all fields that have been mapped with a concept id (>=0, default=-1)
+        fields = ScanReportField.objects.filter(
+            scan_report_table__scan_report=scan_report
+        )
+        # find fields that have a concept_id set,
+        # OR find fields that have at least one value with a concept_id set
+        fields = fields.filter(scanreportvalue__conceptID__gte=0) | fields.filter(
+            concept_id__gte=0
+        )
+
+        # make unique
         fields = fields.distinct()
 
-        #loop over found fields
+        # loop over found fields
         for field in fields:
-            #get the field and associated table
+            # get the field and associated table
             source_field = field
             source_table = field.scan_report_table
 
-            #add info here
+            # add info here
 
-            #if the source field (column) has a concept_id set, use this..
-            if source_field.concept_id >= 0 :
+            # if the source field (column) has a concept_id set, use this..
+            if source_field.concept_id >= 0:
                 concepts = source_field.concept_id
-            #otherwise find all field values with a concept_id set
+            # otherwise find all field values with a concept_id set
             else:
-                values = field.scanreportvalue_set\
-                              .all()\
-                              .filter(conceptID__gte=0)
-                
-                #map the source value to the raw value
-                concepts = {
-                    value.value: value.conceptID
-                    for value in values
-                }
+                values = field.scanreportvalue_set.all().filter(conceptID__gte=0)
 
-            #use the OmopDetails class to look up rules for these concepts
+                # map the source value to the raw value
+                concepts = {value.value: value.conceptID for value in values}
+
+            # use the OmopDetails class to look up rules for these concepts
             rules = omop_lookup.get_rules(concepts)
 
-            #loop over the rules it has found
-            for destination,term_mapping in rules.items():
+            # loop over the rules it has found
+            for destination, term_mapping in rules.items():
 
-                #find associated omop tables with this field (destination field)
-                omop_fields = OmopField.objects\
-                                      .filter(field=destination)
-                
-                #loop over multiple fields
-                #example:  gender_concept_id appears in 'person' and in 'provider'
+                # find associated omop tables with this field (destination field)
+                omop_fields = OmopField.objects.filter(field=destination)
+
+                # loop over multiple fields
+                # example:  gender_concept_id appears in 'person' and in 'provider'
                 #          so need to use the field twice...
-                
+
                 for omop_field in omop_fields:
-                    #create a new model 
-                    mapping,created = StructuralMappingRule.objects.get_or_create(
-                        scan_report  = scan_report,
-                        omop_field   = omop_field,
-                        source_table = source_table,
-                        source_field = source_field,
-                        term_mapping = json.dumps(term_mapping,indent=6)#convert dict to str,
+                    # create a new model
+                    mapping, created = StructuralMappingRule.objects.get_or_create(
+                        scan_report=scan_report,
+                        omop_field=omop_field,
+                        source_table=source_table,
+                        source_field=source_field,
+                        term_mapping=json.dumps(
+                            term_mapping, indent=6
+                        ),  # convert dict to str,
                     )
                     mapping.save()
-            
-            
-    def download_structural_mapping(self,request,pk,return_type='csv'):
+
+    def download_structural_mapping(self, request, pk, return_type="csv"):
         scan_report = ScanReport.objects.get(pk=pk)
 
-        rules = StructuralMappingRule\
-            .objects\
-            .filter(scan_report=scan_report)
+        rules = StructuralMappingRule.objects.filter(scan_report=scan_report)
 
-        
-        output = { name:[] for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
+        output = {
+            name: []
+            for name in [
+                "rule_id",
+                "destination_table",
+                "destination_field",
+                "source_table",
+                "source_field",
+                "source_field_indexer",
+                "term_mapping",
+                "coding_system",
+                "operation",
+            ]
+        }
 
         for rule in rules:
-            output['rule_id'].append(rule.id)
-            output['destination_table'].append(rule.omop_field.table.table)
-            output['destination_field'].append(rule.omop_field.field)
+            output["rule_id"].append(rule.id)
+            output["destination_table"].append(rule.omop_field.table.table)
+            output["destination_field"].append(rule.omop_field.field)
 
-            output['source_table'].append(rule.source_table.name)
-            output['source_field'].append(rule.source_field.name)
-            output['source_field_indexer'].append(rule.source_field.is_patient_id)
-            
-            #this needs to be updated if there is a coding system
-            output['coding_system'].append(None)#"user defined")
-            
-            output['term_mapping'].append(rule.term_mapping)
-            
-            output['operation'].append(None)#rule.operation)
+            output["source_table"].append(rule.source_table.name)
+            output["source_field"].append(rule.source_field.name)
+            output["source_field_indexer"].append(rule.source_field.is_patient_id)
 
+            # this needs to be updated if there is a coding system
+            output["coding_system"].append(None)  # "user defined")
 
-        #define the name of the output file
+            output["term_mapping"].append(rule.term_mapping)
+
+            output["operation"].append(None)  # rule.operation)
+
+        # define the name of the output file
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
 
-
-        if return_type == 'csv':
-            #covert our dictiionary into a csv
+        if return_type == "csv":
+            # covert our dictiionary into a csv
             result = ",".join(f'"{key}"' for key in output.keys())
-            for irow in range(len(output['rule_id'])):
-                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+            for irow in range(len(output["rule_id"])):
+                result += "\n" + ",".join(
+                    f'"{output[key][irow]}"' for key in output.keys()
+                )
 
-            #fname = f"{scan_report.data_partner}"\
+            # fname = f"{scan_report.data_partner}"\
             #    f"_{scan_report.dataset}_structural_mapping.json"
-            
-            #output = self.csv_to_json(result)
-            #response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
-            #response['Content-Disposition'] = f'attachment; filename="{fname}"'
 
-            response = HttpResponse(result, content_type='text/csv')
-            response['Content-Disposition'] = f'attachment; filename="{fname}"'
-            
+            # output = self.csv_to_json(result)
+            # response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
+            # response['Content-Disposition'] = f'attachment; filename="{fname}"'
+
+            response = HttpResponse(result, content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename="{fname}"'
+
             return response
-        #not used but here if we want it for the api...
-        elif return_type == 'svg':
-            #covert our dictiionary into a csv
+        # not used but here if we want it for the api...
+        elif return_type == "svg":
+            # covert our dictiionary into a csv
             result = ",".join(f'"{key}"' for key in output.keys())
-            for irow in range(len(output['rule_id'])):
-                result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
+            for irow in range(len(output["rule_id"])):
+                result += "\n" + ",".join(
+                    f'"{output[key][irow]}"' for key in output.keys()
+                )
 
-            fname = f"{scan_report.data_partner}"\
+            fname = (
+                f"{scan_report.data_partner}"
                 f"_{scan_report.dataset}_structural_mapping.json"
+            )
 
-
-            if 'omop_table' in self.kwargs:
-                output = self.csv_to_json(result,tables=[self.kwargs['omop_table']])
+            if "omop_table" in self.kwargs:
+                output = self.csv_to_json(result, tables=[self.kwargs["omop_table"]])
             else:
                 output = self.csv_to_json(result)
-                
+
             svg_output = self.json_to_svg(output)
-            
-            return HttpResponse(svg_output,content_type='image/svg+xml')
-                        
-        elif return_type == 'json':
-            response = HttpResponse(json.dumps(output,indent=6), content_type='application/json')
-            response['Content-Disposition'] = f'attachment; filename="{fname}"'
+
+            return HttpResponse(svg_output, content_type="image/svg+xml")
+
+        elif return_type == "json":
+            response = HttpResponse(
+                json.dumps(output, indent=6), content_type="application/json"
+            )
+            response["Content-Disposition"] = f'attachment; filename="{fname}"'
             return response
         else:
-            #implement other return types if needed
+            # implement other return types if needed
             return redirect(request.path)
 
-        
-    def download_term_mapping(self,request,pk):
-         #define the name of the output file
+    def download_term_mapping(self, request, pk):
+        # define the name of the output file
 
         scan_report = ScanReport.objects.get(pk=pk)
-        mappingrule_list = MappingRule.objects.filter(scan_report_field__scan_report_table__scan_report=scan_report)
+        mappingrule_list = MappingRule.objects.filter(
+            scan_report_field__scan_report_table__scan_report=scan_report
+        )
         mappingrule_id_list = [mr.scan_report_field.id for mr in mappingrule_list]
 
         qs = super().get_queryset().filter(id__in=mappingrule_id_list)
 
-        output = { name:[] for name in ['rule_id','source_term','destination_term']}
+        output = {name: [] for name in ["rule_id", "source_term", "destination_term"]}
 
         for rule in mappingrule_list:
             for obj in rule.scan_report_field.scanreportvalue_set.all():
                 if obj.conceptID == -1:
                     continue
-                
-                output['rule_id'].append(rule.id)
-                output['source_term'].append(obj.value)
-                output['destination_term'].append(obj.conceptID)
 
+                output["rule_id"].append(rule.id)
+                output["source_term"].append(obj.value)
+                output["destination_term"].append(obj.conceptID)
 
-        return_type = 'csv'
+        return_type = "csv"
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
 
-    
         result = ",".join(f'"{key}"' for key in output.keys())
-        for irow in range(len(output['rule_id'])):
-            result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
-            
-        response = HttpResponse(result, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        for irow in range(len(output["rule_id"])):
+            result += "\n" + ",".join(f'"{output[key][irow]}"' for key in output.keys())
+
+        response = HttpResponse(result, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
         return response
 
-    def download_pk_mapping(self,request,pk):
+    def download_pk_mapping(self, request, pk):
 
-        patient_id_fields = ScanReportField.objects.filter(scan_report_table__scan_report=pk)\
-                                             .filter(is_patient_id=True)
-        
+        patient_id_fields = ScanReportField.objects.filter(
+            scan_report_table__scan_report=pk
+        ).filter(is_patient_id=True)
+
         patient_id_map = {
-            patient_field.scan_report_table.name : patient_field.name
+            patient_field.scan_report_table.name: patient_field.name
             for patient_field in patient_id_fields
         }
 
         scan_report = ScanReport.objects.get(pk=pk)
-        return_type = 'json'
+        return_type = "json"
         fname = f"{scan_report.data_partner}_{scan_report.dataset}_person_id_mapping.{return_type}"
 
-        response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        response = HttpResponse(
+            json.dumps(patient_id_map, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
         return response
-    
-    def post(self,request,*args, **kwargs):
 
-        pk = self.kwargs.get('pk')
-        if request.POST.get('download-sm') is not None:
-            return self.download_structural_mapping(request,pk)
-        elif request.POST.get('download-tm') is not None:
-            return self.download_term_mapping(request,pk)
-        elif request.POST.get('download-pk') is not None:
-            return self.download_pk_mapping(request,pk)
-        elif request.POST.get('generate') is not None:
-            self.generate(request,pk)
+    def post(self, request, *args, **kwargs):
+
+        pk = self.kwargs.get("pk")
+        if request.POST.get("download-sm") is not None:
+            return self.download_structural_mapping(request, pk)
+        elif request.POST.get("download-tm") is not None:
+            return self.download_term_mapping(request, pk)
+        elif request.POST.get("download-pk") is not None:
+            return self.download_pk_mapping(request, pk)
+        elif request.POST.get("generate") is not None:
+            self.generate(request, pk)
             return redirect(request.path)
-        elif request.POST.get('retrieve') is not None:
-            self.retrieve(request,pk)
+        elif request.POST.get("retrieve") is not None:
+            self.retrieve(request, pk)
             return redirect(request.path)
-        elif request.POST.get('svg') is not None:
-            return self.download_structural_mapping(request,pk,return_type='svg')
+        elif request.POST.get("svg") is not None:
+            return self.download_structural_mapping(request, pk, return_type="svg")
         else:
-            #define more buttons to click
+            # define more buttons to click
             pass
 
-        
         return redirect(request.path)
 
-    
     def get_context_data(self, **kwargs):
-                
+
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
 
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
         omop_tables = [
-            x.omop_field.table.table
-            for x in StructuralMappingRule.objects.all()
+            x.omop_field.table.table for x in StructuralMappingRule.objects.all()
         ]
         omop_tables = list(set(omop_tables))
         omop_tables.sort()
-        
-        
+
         context.update(
             {
-                "omop_tables" : omop_tables,
+                "omop_tables": omop_tables,
                 "scan_report": scan_report,
             }
         )
@@ -652,23 +658,22 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
         filter_term = self.kwargs.get("omop_table")
-        
-        
+
         if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term)\
-                   .order_by('omop_field__table','omop_field__field')
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "omop_field__table", "omop_field__field"
+            )
 
             if filter_term is not None:
                 qs = qs.filter(omop_field__table__table=filter_term)
-            
+
             return qs
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class ScanReportFormView(FormView):
     form_class = ScanReportForm
     template_name = "mapping/upload_scan_report.html"
@@ -690,7 +695,7 @@ class ScanReportFormView(FormView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DocumentFormView(FormView):
     form_class = DocumentForm
     template_name = "mapping/upload_document.html"
@@ -717,7 +722,7 @@ class DocumentFormView(FormView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DocumentListView(ListView):
     model = Document
 
@@ -726,7 +731,7 @@ class DocumentListView(ListView):
         return qs
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DocumentFileListView(ListView):
     model = DocumentFile
 
@@ -736,11 +741,10 @@ class DocumentFileListView(ListView):
         if search_term is not None:
             qs = qs.filter(document__id=search_term)
 
-        
         return qs
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DocumentFileFormView(FormView):
     model = DocumentFile
     form_class = DocumentFileForm
@@ -763,7 +767,8 @@ class DocumentFileFormView(FormView):
         self.object = self.kwargs.get("pk")
         return reverse("file-list", kwargs={"pk": self.object})
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class DataDictionaryListView(ListView):
     model = DataDictionary
     ordering = ["-source_value"]
@@ -772,13 +777,19 @@ class DataDictionaryListView(ListView):
         qs = super().get_queryset()
 
         # Create a concat field for NLP to work from
-        qs = qs.annotate(nlp_string=Concat("source_value__scan_report_field__name", 
-            V(', '),
-            "source_value__value",
-            V(', '),
-            "dictionary_field_description", 
-            V(', '),
-            "dictionary_value_description", output_field=CharField()))
+        # V is imported from models, used to comma separate other fields
+        qs = qs.annotate(
+            nlp_string=Concat(
+                "source_value__scan_report_field__name",
+                V(", "),
+                "source_value__value",
+                V(", "),
+                "dictionary_field_description",
+                V(", "),
+                "dictionary_value_description",
+                output_field=CharField(),
+            )
+        )
 
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
@@ -786,41 +797,48 @@ class DataDictionaryListView(ListView):
             # Get distinct ScanReportFields
             # These are fields where conceptID != -1
             qs_1 = (
-                qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
-                .filter(~Q(source_value__scan_report_field__concept_id=-1)).distinct("source_value__scan_report_field").order_by("source_value__scan_report_field")
+                qs.filter(
+                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+                )
+                .filter(~Q(source_value__scan_report_field__concept_id=-1))
+                .distinct("source_value__scan_report_field")
+                .order_by("source_value__scan_report_field")
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value='List truncated...')
+                .exclude(source_value__value="List truncated...")
             )
 
             # Get all ScanReportValues
             # Filter out scan report fields which we've defined in qs_1
             qs_2 = (
-                qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+                qs.filter(
+                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+                )
                 .filter(Q(source_value__scan_report_field__concept_id=-1))
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value='List truncated...')   
-                .exclude(source_value__value='N/A')
+                .exclude(source_value__value="List truncated...")
+                .exclude(source_value__value="N/A")
                 .exclude(source_value__value="No")
             )
 
             # Stick qs_1 and qs_2 together
             qs_total = qs_1.union(qs_2)
-            for_json = qs_total.values('id', 
-                                    'source_value__value',
-                                    'source_value__scan_report_field__name', 
-                                    'nlp_string')
 
-    
+            # Create object to convert to JSON
+            for_json = qs_total.values(
+                "id",
+                "source_value__value",
+                "source_value__scan_report_field__name",
+                "nlp_string",
+            )
+
             serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
- 
 
-            with open('/data/data.json', 'w') as json_file:
+            with open("/data/data.json", "w") as json_file:
                 json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
-
 
         return qs_total
 
@@ -830,7 +848,9 @@ class DataDictionaryListView(ListView):
         context = super().get_context_data(**kwargs)
 
         if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].source_value.scan_report_field.scan_report_table.scan_report
+            scan_report = self.get_queryset()[
+                0
+            ].source_value.scan_report_field.scan_report_table.scan_report
         else:
             scan_report = None
 
@@ -842,7 +862,8 @@ class DataDictionaryListView(ListView):
 
         return context
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class DataDictionaryUpdateView(UpdateView):
     model = DataDictionary
     fields = [
@@ -860,7 +881,8 @@ class DataDictionaryUpdateView(UpdateView):
             self.object.source_value.scan_report_field.scan_report_table.scan_report.id,
         )
 
-@method_decorator(login_required,name='dispatch')
+
+@method_decorator(login_required, name="dispatch")
 class DictionarySelectFormView(FormView):
 
     form_class = DictionarySelectForm
@@ -874,14 +896,14 @@ class DictionarySelectFormView(FormView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class DocumentFileStatusUpdateView(UpdateView):
     model = DocumentFile
     # success_url=reverse_lazy('file-list')
     fields = ["status"]
 
     def get_success_url(self, **kwargs):
-     return reverse("file-list", kwargs={'pk': self.object.document_id})
+        return reverse("file-list", kwargs={"pk": self.object.document_id})
 
 
 class SignUpView(generic.CreateView):
@@ -890,12 +912,12 @@ class SignUpView(generic.CreateView):
     template_name = "registration/signup.html"
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm
-    success_url = reverse_lazy('password_change_done')
-    template_name = 'registration/password_change_form.html'
-    
+    success_url = reverse_lazy("password_change_done")
+    template_name = "registration/password_change_form.html"
+
     @method_decorator(sensitive_post_parameters())
     @method_decorator(csrf_protect)
     def dispatch(self, *args, **kwargs):
@@ -903,7 +925,7 @@ class CCPasswordChangeView(FormView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
@@ -911,10 +933,10 @@ class CCPasswordChangeView(FormView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required,name='dispatch')
+@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeDoneView(PasswordChangeDoneView):
-    template_name = 'registration/password_change_done.html'
-    
+    template_name = "registration/password_change_done.html"
+
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
@@ -981,24 +1003,33 @@ def merge_dictionary(request):
 
     # Grab the scan report ID
     search_term = request.GET.get("search", None)
-    print('SEARCH TERM >>> ', search_term)
+    print("SEARCH TERM >>> ", search_term)
 
     # Grab the appropriate data dictionary which is built when a scan report is uploaded
-    dictionary = DataDictionary.objects.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term).filter(source_value__scan_report_field__is_patient_id=False).filter(source_value__scan_report_field__is_date_event=False).filter(source_value__scan_report_field__is_ignore=False).exclude(source_value__value='List truncated...')
-    
+    dictionary = (
+        DataDictionary.objects.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+        )
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value="List truncated...")
+    )
+
     # Convert QuerySet to dataframe
-    dict_df = pd.DataFrame.from_dict(dictionary.values(
-                                            "source_value__scan_report_field__scan_report_table__scan_report__data_partner__name",
-                                            "source_value__scan_report_field__scan_report_table__scan_report__dataset",
-                                            "source_value__scan_report_field__scan_report_table__name",
-                                            "source_value__scan_report_field__name",
-                                            "source_value__value",
-                                            "source_value__frequency",
-                                            "dictionary_field_description",
-                                            "dictionary_value_description",
-                                            )
-                                        )
-    
+    dict_df = pd.DataFrame.from_dict(
+        dictionary.values(
+            "source_value__scan_report_field__scan_report_table__scan_report__data_partner__name",
+            "source_value__scan_report_field__scan_report_table__scan_report__dataset",
+            "source_value__scan_report_field__scan_report_table__name",
+            "source_value__scan_report_field__name",
+            "source_value__value",
+            "source_value__frequency",
+            "dictionary_field_description",
+            "dictionary_value_description",
+        )
+    )
+
     # Name columns
     dict_df.columns = [
         "DataPartner",
@@ -1011,39 +1042,73 @@ def merge_dictionary(request):
         "ValueDescription",
     ]
 
-    #dict_df.to_csv('/data/TEMP_internal_dictionary.csv')
+    # dict_df.to_csv('/data/TEMP_internal_dictionary.csv')
 
     # There's no direct link in our models between an uploaded Document/File and a ScanReport
     # So, first grab the DataPartner value for the ScanReport ID (i.e. the search term)
-    scan_report_data_partner = ScanReport.objects.filter(id=search_term).values('data_partner')
+    scan_report_data_partner = ScanReport.objects.filter(id=search_term).values(
+        "data_partner"
+    )
     # scan_report_data_partner = str(ScanReport.objects.filter(id=search_term)[0].data_partner)
-    
+
     # Return only those document files where the data partner matches scan_report_data_partner
     # Filter to return only LIVE data dictionaries
-    
-    files = DocumentFile.objects.filter(document__data_partner__in=scan_report_data_partner).filter(document__document_type__name="Data Dictionary").filter(status="LIVE").values_list("document_file", flat=True)
+
+    files = (
+        DocumentFile.objects.filter(document__data_partner__in=scan_report_data_partner)
+        .filter(document__document_type__name="Data Dictionary")
+        .filter(status="LIVE")
+        .values_list("document_file", flat=True)
+    )
     files = list(files)
-    
-    if len(files)==1:
-    
+
+    if len(files) == 1:
+
         # Load in uploaded data dictionary for joining (From the Documents section of the webapp)
-        external_dictionary = pd.read_csv(os.path.join('media/', files[0]))
+        external_dictionary = pd.read_csv(os.path.join("media/", files[0]))
 
         # # Create an intermediate join table
         # # This ensures that each field in scan_report has a field description from the external dictionary
-        field_join = pd.merge(dict_df, external_dictionary, how='left', left_on='Field', right_on='Column Name')
-        
-        field_join_grp = field_join.groupby(['Field', 'Value']).first().reset_index()
+        field_join = pd.merge(
+            dict_df,
+            external_dictionary,
+            how="left",
+            left_on="Field",
+            right_on="Column Name",
+        )
 
-        field_join_grp = field_join_grp[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Column Description']]
+        field_join_grp = field_join.groupby(["Field", "Value"]).first().reset_index()
 
-        field_join_grp.to_csv('/data/TEMP_field_join_output.csv')
+        field_join_grp = field_join_grp[
+            ["Table", "Field", "Value", "Frequency", "FieldDesc", "Column Description"]
+        ]
+
+        field_join_grp.to_csv("/data/TEMP_field_join_output.csv")
 
         # Join the intermediate join back to the external dictionary
         # This time on field and value
-        x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['Column Name', 'ValueCode'])
-        
-        x = x[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Table Name', 'Column Name', 'Column Description_x', 'ValueCode', 'ValueDescription']]
+        x = pd.merge(
+            field_join_grp,
+            external_dictionary,
+            how="left",
+            left_on=["Field", "Value"],
+            right_on=["Column Name", "ValueCode"],
+        )
+
+        x = x[
+            [
+                "Table",
+                "Field",
+                "Value",
+                "Frequency",
+                "FieldDesc",
+                "Table Name",
+                "Column Name",
+                "Column Description_x",
+                "ValueCode",
+                "ValueDescription",
+            ]
+        ]
         # x=x.fillna(value="")
         x.columns = [
             "Source_Table",
@@ -1055,26 +1120,28 @@ def merge_dictionary(request):
             "Dictionary_ColumnName",
             "Dictionary_ColumnDesc",
             "Dictionary_ValueCode",
-            "Dictionary_ValueDescription"
+            "Dictionary_ValueDescription",
         ]
 
         # If data are missing from imported dictionary
         # replace with analagous descriptions to flesh out dictionary for Usagi
         bad_index = x["Dictionary_ValueDescription"].isnull()
-        x["Dictionary_ValueDescription"][bad_index] = x["Dictionary_ValueCode"][bad_index]
+        x["Dictionary_ValueDescription"][bad_index] = x["Dictionary_ValueCode"][
+            bad_index
+        ]
 
         bad_index = x["Source_FieldDesc"].isnull()
         x["Source_FieldDesc"][bad_index] = x["Source_Field"][bad_index]
 
         for index, row in x.iterrows():
-            
-            print(row['Source_Field'])
-            print(row['Source_Value'])
+
+            print(row["Source_Field"])
+            print(row["Source_Value"])
 
             obj = DataDictionary.objects.get(
-                source_value__scan_report_field__name=row['Source_Field'],
-                source_value__value=row['Source_Value']
-                )
+                source_value__scan_report_field__name=row["Source_Field"],
+                source_value__value=row["Source_Value"],
+            )
 
             print(type(obj))
 
@@ -1084,21 +1151,24 @@ def merge_dictionary(request):
                 continue
 
             else:
-                obj.dictionary_table=row['Dictionary_TableName']
-                obj.dictionary_field=row['Dictionary_ColumnName']
-                obj.dictionary_field_description=row['Dictionary_ColumnDesc']
-                obj.dictionary_value_code=row['Dictionary_ValueCode']
-                obj.dictionary_value_description=row['Dictionary_ValueDescription']
+                obj.dictionary_table = row["Dictionary_TableName"]
+                obj.dictionary_field = row["Dictionary_ColumnName"]
+                obj.dictionary_field_description = row["Dictionary_ColumnDesc"]
+                obj.dictionary_value_code = row["Dictionary_ValueCode"]
+                obj.dictionary_value_description = row["Dictionary_ValueDescription"]
                 obj.save()
-        messages.success(request,"Merge was successful")
+        messages.success(request, "Merge was successful")
 
-    elif len(files)>1:
-        messages.warning(request, "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.")
+    elif len(files) > 1:
+        messages.warning(
+            request,
+            "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.",
+        )
 
-    elif len(files)==0:
-         messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
+    elif len(files) == 0:
+        messages.warning(
+            request,
+            "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.",
+        )
 
     return render(request, "mapping/mergedictionary.html")
-
-
-   
