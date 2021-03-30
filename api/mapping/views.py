@@ -369,9 +369,13 @@ class StructuralMappingTableListView(ModelFormSetView):
         return dag.make_dag(data)
             
     def get_final_json(self,_mapping_data,tables=None):
+
+        _id_map = get_person_id_mapping(self)
+
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(StringIO(json.dumps(_mapping_data)),
+                     StringIO(json.dumps(_id_map)),
                      destination_tables = tables)
                              
         return structural_mapping
@@ -674,42 +678,8 @@ class StructuralMappingTableListView(ModelFormSetView):
             #implement other return types if needed
             return redirect(request.path)
 
-        
-    # def download_term_mapping(self,request,pk):
-    #      #define the name of the output file
-
-    #     scan_report = ScanReport.objects.get(pk=pk)
-
-    #     rules = StructuralMappingRule\
-    #         .objects\
-    #         .filter(scan_report=scan_report)
-
-    #     output = { name:[] for name in ['rule_id','source_term','destination_term']}
-
-    #     for rule in rules:
-    #         for obj in rule.scan_report_field.scanreportvalue_set.all():
-    #             if obj.conceptID == -1:
-    #                 continue
-                
-    #             output['rule_id'].append(rule.id)
-    #             output['source_term'].append(obj.value)
-    #             output['destination_term'].append(obj.conceptID)
-
-
-    #     return_type = 'csv'
-    #     fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
-
-    
-    #     result = ",".join(f'"{key}"' for key in output.keys())
-    #     for irow in range(len(output['rule_id'])):
-    #         result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
-            
-    #     response = HttpResponse(result, content_type='text/csv')
-    #     response['Content-Disposition'] = f'attachment; filename="{fname}"'
-    #     return response
-
-    def download_pk_mapping(self,request,pk):
-
+    def get_person_id_mapping(self):
+        pk = self.kwargs.get('pk')
         patient_id_fields = ScanReportField.objects.filter(scan_report_table__scan_report=pk)\
                                              .filter(is_patient_id=True)
         
@@ -718,23 +688,13 @@ class StructuralMappingTableListView(ModelFormSetView):
             for patient_field in patient_id_fields
         }
 
-        scan_report = ScanReport.objects.get(pk=pk)
-        return_type = 'json'
-        fname = f"{scan_report.data_partner}_{scan_report.dataset}_person_id_mapping.{return_type}"
-
-        response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
-        return response
+        return patient_id_map
     
     def post(self,request,*args, **kwargs):
         #
         pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
             return self.download_structural_mapping(request,pk)
-        elif request.POST.get('download-tm') is not None:
-            return self.download_term_mapping(request,pk)
-        elif request.POST.get('download-pk') is not None:
-            return self.download_pk_mapping(request,pk)
         elif request.POST.get('generate') is not None:
             self.generate(request,pk)
             return redirect(request.path)
