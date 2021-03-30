@@ -576,7 +576,22 @@ class StructuralMappingTableListView(ModelFormSetView):
                     except: #mapping.models.OmopField.DoesNotExist:
                         messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
                         continue
-                        
+
+
+                    #check if a blank rule exists already
+                    existing = StructuralMappingRule.objects.filter(
+                        scan_report  = scan_report,
+                        omop_field   = omop_field,
+                        source_table = None,
+                        source_field = None,
+                        term_mapping = None,
+                    )
+                    #if there are blank rules for this omop_field
+                    #delete the blank rule before we create one with
+                    #source_table, source_field and term_mapping set
+                    existing.delete()
+                    
+                    
                     #create a new model 
                     mapping,created = StructuralMappingRule.objects.update_or_create(
                         scan_report  = scan_report,
