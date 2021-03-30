@@ -15,7 +15,10 @@ urlpatterns = [
     path('scanreports/<int:pk>/mapping_rules/', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/<int:pk>/mapping_rules/<str:omop_table>', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping-filter'),
     path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
-    
+    path('scanreports/assertions/<int:pk>', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
+    path('scanreports/assertions/<int:pk>/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
+    path('scanreports/assertions/<int:pk>/update/', views.ScanReportAssertionsUpdateView.as_view(), name='scan-report-assertion-update'),
+
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
     path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
@@ -26,7 +29,7 @@ urlpatterns = [
     path('documents/', views.DocumentListView.as_view(), name='document-list'),
     path('file/<int:pk>/', views.DocumentFileListView.as_view(), name='file-list'),
     path('file/<int:pk>/update/', views.DocumentFileStatusUpdateView.as_view(), name='status-update'),
-    path('file/<int:pk>/create/', views.DocumentFileFormView.as_view(), name='file-form'),
+    path('file/create/', views.DocumentFileFormView.as_view(), name='file-form'),
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
     path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
     path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),

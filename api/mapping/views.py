@@ -28,13 +28,15 @@ from .forms import (
     AddMappingRuleForm,
     DocumentForm,
     DocumentFileForm,
-    DictionarySelectForm
+    DictionarySelectForm,
+    ScanReportAssertionForm
 )
 from .models import (
     ScanReport,
     ScanReportValue,
     ScanReportField,
     ScanReportTable,
+    ScanReportAssertion,
     StructuralMappingRule,
     OmopTable,
     OmopField,
@@ -817,6 +819,67 @@ class ScanReportFormView(FormView):
 
         return super().form_valid(form)
 
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionView(ListView):
+    model=ScanReportAssertion
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "scan_report_assertion": x,
+            }
+        )
+        return context
+
+    def get_queryset(self):
+        qs=super().get_queryset()
+
+        qs = qs.filter(scan_report=self.kwargs['pk'])
+        return qs
+
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionFormView(FormView):
+    model=ScanReport
+    form_class = ScanReportAssertionForm
+    template_name = "mapping/scanreportassertion_form.html"
+    # success_url=reverse_lazy('scan-report-assertion')
+
+    def form_valid(self, form):
+        scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
+
+        
+        assertion = ScanReportAssertion.objects.create(
+            negative_assertion=form.cleaned_data["negative_assertion"],
+            scan_report=scan_report
+        )
+
+        assertion.save()
+
+        return super().form_valid(form)
+    def get_success_url(self):
+        return "{}?search={}".format(
+            reverse("scan-report-assertion"), self.object.scan_report.id
+        )
+    # def get_success_url(self, **kwargs):
+
+    #     return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
+
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionsUpdateView(UpdateView):
+    model = ScanReportAssertion
+    fields = [
+        "negative_assertion",
+    ]
+
+    def get_success_url(self, **kwargs):
+     return reverse("scan-report-assertion", kwargs={'pk': self.object.scan_report.id})
+    
 
 @method_decorator(login_required,name='dispatch')
 class DocumentFormView(FormView):

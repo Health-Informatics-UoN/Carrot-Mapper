@@ -143,7 +143,6 @@ class DocumentType(BaseModel):
 
 class ScanReport(BaseModel):
 
-    # data_partner = models.CharField(max_length=128)
     data_partner = models.ForeignKey(
         DataPartner,
         on_delete=models.CASCADE,
@@ -168,7 +167,7 @@ class ScanReport(BaseModel):
     )
 
     def __str__(self):
-        return f'#{self.id}'
+        return f'#{self.id, self.dataset}'
 
 
 class ScanReportTable(BaseModel):
@@ -215,6 +214,18 @@ class ScanReportField(BaseModel):
     
     def __str__(self):
         return self.name
+
+
+class ScanReportAssertion(BaseModel):
+
+    scan_report=models.ForeignKey(
+        ScanReport,
+        on_delete=models.CASCADE
+    )
+    negative_assertion=models.CharField(max_length=64)
+
+    def __str__(self):
+        return f'{self.scan_report, self.negative_assertion}'
 
 
 class StructuralMappingRule(BaseModel):

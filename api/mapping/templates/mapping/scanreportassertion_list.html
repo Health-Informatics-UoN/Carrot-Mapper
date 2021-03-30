@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+            reports</a></li>
+    </ol>
+</nav>
+
+<h2>Positive/Negative Assertions</h2>
+
+{% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Scan Report</th>
+        <th scope="col">Negative</th>
+        <th scope="col">Edit Assertion</th>
+        <th scope="col">Add Assertion</th>
+
+      
+
+
+    </tr>
+    </thead>
+    <tbody>
+        {% for object in object_list %}
+    <tr>
+        <td>{{object.scan_report}}
+           
+        </td>
+        <td>{{object.negative_assertion}}</td>
+        <td>
+            <a href="{% url 'scan-report-assertion-update' object.id %}">Edit</a>
+        </td>
+        <td>
+            <a href="{% url 'scan-report-assertion-form' object.scan_report_id %}" class="btn btn-primary">Add Assertion</a>
+        </td>
+       
+
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{%else%}
+<p>No Scan Report assertions available.</p>
+
+{% endif %}
+
+
+
+
+{% endblock %}
