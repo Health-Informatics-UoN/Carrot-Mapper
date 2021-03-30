@@ -218,30 +218,40 @@ class ScanReportField(BaseModel):
 
 
 class StructuralMappingRule(BaseModel):
-
-    omop_field = models.ForeignKey(
-        OmopField,
-        on_delete=models.CASCADE
-    )
-
+    
     scan_report = models.ForeignKey(
         ScanReport,
         on_delete=models.CASCADE
     )
-
+    
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
+ 
     source_table = models.ForeignKey(
         ScanReportTable,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
     )
 
     source_field = models.ForeignKey(
         ScanReportField,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+        #limit_choices_to= {'scan_report_table': source_table}
     )
 
     term_mapping = models.CharField(
         max_length=10000,
+        blank=True,
+        null=True
     )
+
+    approved = models.BooleanField(default=False)
+   
 
     def __str__(self):
         return f'{self.term_mapping}'
