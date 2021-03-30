@@ -357,6 +357,9 @@ class StructuralMappingTableListView(ModelFormSetView):
             #order this crap
             qs = form['source_table'].field.widget.choices.queryset
             qs = qs.order_by('name')
+
+            pk = self.kwargs.get('pk')
+            qs = qs.filter(scan_report = pk)
             form['source_table'].field.widget.choices.queryset = qs
             
         #return the modified form set
@@ -496,13 +499,28 @@ class StructuralMappingTableListView(ModelFormSetView):
                 unmapped_fields = list(set(all_destination_fields)
                                        - set(rules.keys()))
 
+                #check for existing fields 
+                existing_fields = [
+                    x.omop_field.field
+                    for x in StructuralMappingRule\
+                    .objects\
+                    .filter(scan_report=scan_report)\
+                    .filter(source_field__isnull=False)\
+                    .filter(omop_field__table__table=destination_table)
+                ]
+                #remove them from unmapped_fields
+                unmapped_fields = list(set(unmapped_fields) - set(existing_fields))
+                                
                 #build some blank rules for these unmapped ones first
                 for unmapped_field in unmapped_fields:
+                   
                     #find the omop field 
                     try:
+
                         omop_field = OmopField.objects\
                                               .get(table__table=destination_table,
                                                    field=unmapped_field)
+                        
                     except: #mapping.models.OmopField.DoesNotExist:
                         messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
 
