@@ -50,7 +50,7 @@ from .tasks import process_scan_report_task, run_usagi
 import pandas as pd
 import json
 
-from io import StringIO
+from io import StringIO, BytesIO
 
 import coconnect
 from coconnect.tools import dag
@@ -370,12 +370,22 @@ class StructuralMappingTableListView(ModelFormSetView):
             
     def get_final_json(self,_mapping_data,tables=None):
 
-        _id_map = get_person_id_mapping(self)
+        _id_map = self.get_person_id_mapping()
 
+        #these two inputs shouldnt be so complicated
+        #it's because _mapping_data is read by pd.read_json(blah)
+        #and _id_map is read by json.loads(open(blah))
+        #
+        #all because with this function
+        #you can input these are paths to files
+
+        f_mapping = StringIO(json.dumps(_mapping_data))
+        f_ids = StringIO(json.dumps(_id_map))
+        
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
-            .to_json(StringIO(json.dumps(_mapping_data)),
-                     StringIO(json.dumps(_id_map)),
+            .to_json(f_mapping,
+                     f_ids,
                      destination_tables = tables)
                              
         return structural_mapping
@@ -665,7 +675,7 @@ class StructuralMappingTableListView(ModelFormSetView):
             else:
                 outputs = self.get_final_json(outputs)
                 
-            svg_output = self.json_to_svg(outputs)
+            svg_output = self.json_to_svg(outputs['cdm'])
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
                         
