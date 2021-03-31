@@ -823,8 +823,6 @@ class ScanReportFormView(FormView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionView(ListView):
     model=ScanReportAssertion
-    # context_object_name = 'scan-report-list'
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -849,7 +847,6 @@ class ScanReportAssertionFormView(FormView):
     model=ScanReportAssertion
     form_class = ScanReportAssertionForm
     template_name = "mapping/scanreportassertion_form.html"
-    #success_url=reverse_lazy('scan-report-assertion')
 
     def form_valid(self, form):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
@@ -859,20 +856,10 @@ class ScanReportAssertionFormView(FormView):
             negative_assertion=form.cleaned_data["negative_assertion"],
             scan_report=scan_report
         )
-
         assertion.save()
 
         return super().form_valid(form)
        
-    # def get_success_url(self, **kwargs):
-    #     self.object = self.kwargs.get("pk")
-    #     self.scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
-
-    #     return reverse_lazy("scan-report-assertion", kwargs={"pk": self.object})
-    # # def get_success_url(self):
-    #     return "{}?search={}".format(
-    #         reverse("scan-report-assertion"), ScanReport.objects.scan_report.id
-    #     )
     def get_success_url(self, **kwargs):
         return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
 
