@@ -192,16 +192,8 @@ class ScanReportField(BaseModel):
     ignore_column=models.CharField(max_length=64,blank=True,null=True)
     is_patient_id = models.BooleanField(default=False)
     is_date_event = models.BooleanField(default=False)
-
-    
-    
     is_ignore = models.BooleanField(default=False)
-    pass_from_source = models.BooleanField(null=True,blank=True)
-
-
     classification_system = models.CharField(max_length=64, blank=True, null=True)
-
-
     date_type = models.CharField(
        max_length=128,
        choices=DATE_TYPE_CHOICES,
@@ -209,7 +201,6 @@ class ScanReportField(BaseModel):
        null=True,
        blank=True
     )
-
     concept_id = models.IntegerField(default=-1,null=True,blank=True) 
     
     def __str__(self):
@@ -267,27 +258,6 @@ class StructuralMappingRule(BaseModel):
     def __str__(self):
         return f'{self.term_mapping}'
 
-    
-
-# class MappingRule(BaseModel):
-#     omop_field = models.ForeignKey(
-#         OmopField,
-#         on_delete=models.CASCADE
-#     )
-
-#     scan_report_field = models.ForeignKey(
-#         ScanReportField,
-#         on_delete=models.CASCADE
-#     )
-
-#     operation = models.CharField(
-#         max_length=32,
-#         choices=OPERATION_CHOICES,
-#         default=OPERATION_NONE,
-#     )
-#     def __str__(self):
-#         return f'{self.omop_field, self.scan_report_field}'
-
 
 class ScanReportValue(BaseModel):
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
@@ -295,8 +265,6 @@ class ScanReportValue(BaseModel):
     frequency = models.IntegerField()
     conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
 
-    
-    
     def __str__(self):
         return self.value
 
@@ -329,7 +297,6 @@ class Document(BaseModel):
     )
 
     def __str__(self):
-
         return f'{self.data_partner, self.document_type}'
 
 
