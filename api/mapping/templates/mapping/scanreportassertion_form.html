@@ -10,9 +10,10 @@
     </ol>
 </nav>
 
-<h2>Enter Assertions for {{scan_report}}</h2>
+<h2>Enter Assertions</h2>
 
-<form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
+<form method="post" action="#" enctype="multipart/form-data">
+    {% csrf_token %}
 
     <div class="mb-3">
         {{ form.negative_assertion.errors }}

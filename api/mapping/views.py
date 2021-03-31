@@ -823,6 +823,8 @@ class ScanReportFormView(FormView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionView(ListView):
     model=ScanReportAssertion
+    context_object_name = 'scan-report-list'
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -844,10 +846,10 @@ class ScanReportAssertionView(ListView):
 
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionFormView(FormView):
-    model=ScanReport
+    model=ScanReportAssertion
     form_class = ScanReportAssertionForm
     template_name = "mapping/scanreportassertion_form.html"
-    # success_url=reverse_lazy('scan-report-assertion')
+    #success_url=reverse_lazy('scan-report-assertion')
 
     def form_valid(self, form):
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
@@ -861,13 +863,19 @@ class ScanReportAssertionFormView(FormView):
         assertion.save()
 
         return super().form_valid(form)
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("scan-report-assertion"), self.object.scan_report.id
-        )
+       
     # def get_success_url(self, **kwargs):
+    #     self.object = self.kwargs.get("pk")
+    #     self.scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-    #     return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
+    #     return reverse_lazy("scan-report-assertion", kwargs={"pk": self.object})
+    # # def get_success_url(self):
+    #     return "{}?search={}".format(
+    #         reverse("scan-report-assertion"), ScanReport.objects.scan_report.id
+    #     )
+    def get_success_url(self, **kwargs):
+
+        return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
 
 
 @method_decorator(login_required,name='dispatch')
