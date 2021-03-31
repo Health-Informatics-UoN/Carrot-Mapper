@@ -19,7 +19,7 @@
         <th scope="col">Scan Report</th>
         <th scope="col">Negative</th>
         <th scope="col">Edit Assertion</th>
-        <th scope="col">Add Assertion</th>
+        
 
       
 
@@ -36,9 +36,7 @@
         <td>
             <a href="{% url 'scan-report-assertion-update' object.id %}">Edit</a>
         </td>
-        <td>
-            <a href="{% url 'scan-report-assertion-form' object.scan_report_id %}" class="btn btn-primary">Add Assertion</a>
-        </td>
+        
        
 
     </tr>
@@ -47,9 +45,9 @@
 </table>
 {%else%}
 <p>No Scan Report assertions available.</p>
- 
-{% endif %}
 
+{% endif %}
+<a href="{% url 'scan-report-assertion-form' scan_report.id %}" class="btn btn-primary">New Assertion</a>
 
 
 

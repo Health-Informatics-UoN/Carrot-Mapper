@@ -823,16 +823,18 @@ class ScanReportFormView(FormView):
 @method_decorator(login_required,name='dispatch')
 class ScanReportAssertionView(ListView):
     model=ScanReportAssertion
-    context_object_name = 'scan-report-list'
+    # context_object_name = 'scan-report-list'
 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
+        print(self.kwargs.get("pk"))
+        print(x)
         context.update(
             {
-                "scan_report_assertion": x,
+                "scan_report": x,
             }
         )
         return context
@@ -874,7 +876,6 @@ class ScanReportAssertionFormView(FormView):
     #         reverse("scan-report-assertion"), ScanReport.objects.scan_report.id
     #     )
     def get_success_url(self, **kwargs):
-
         return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
 
 

@@ -15,9 +15,9 @@ urlpatterns = [
     path('scanreports/<int:pk>/mapping_rules/', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping'),
     path('scanreports/<int:pk>/mapping_rules/<str:omop_table>', views.StructuralMappingTableListView.as_view(), name='tables-structural-mapping-filter'),
     path('scanreports/create/', views.ScanReportFormView.as_view(), name='scan-report-form'),
-    path('scanreports/assertions/<int:pk>', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
-    path('scanreports/assertions/<int:pk>/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
-     path('scanreports/assertions/<int:pk>/update/', views.ScanReportAssertionsUpdateView.as_view(), name='scan-report-assertion-update'),
+    path('scanreports/<int:pk>/assertions/', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
+    path('scanreports/<int:pk>/assertions/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
+    path('scanreports/assertions/<int:pk>/update/', views.ScanReportAssertionsUpdateView.as_view(), name='scan-report-assertion-update'),
 
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
