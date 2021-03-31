@@ -7,16 +7,18 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
+        <li class="breadcrumb-item"> <a>{{scan_report.dataset}}</a>
+        </li>
     </ol>
 </nav>
 
-<h2>Positive/Negative Assertions</h2>
+<h2>Negative Assertions for {{scan_report.dataset}}</h2>
 
 {% if object_list %}
 <table class="table">
     <thead>
     <tr>
-        <th scope="col">Scan Report</th>
+        
         <th scope="col">Negative</th>
         <th scope="col">Edit Assertion</th>
         
@@ -29,9 +31,7 @@
     <tbody>
         {% for object in object_list %}
     <tr>
-        <td>{{object.scan_report}}
-           
-        </td>
+        
         <td>{{object.negative_assertion}}</td>
         <td>
             <a href="{% url 'scan-report-assertion-update' object.id %}">Edit</a>

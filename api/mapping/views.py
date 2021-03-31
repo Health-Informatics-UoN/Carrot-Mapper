@@ -830,8 +830,6 @@ class ScanReportAssertionView(ListView):
         context = super().get_context_data(**kwargs)
 
         x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
-        print(self.kwargs.get("pk"))
-        print(x)
         context.update(
             {
                 "scan_report": x,
