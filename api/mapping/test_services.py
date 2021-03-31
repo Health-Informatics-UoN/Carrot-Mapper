@@ -32,3 +32,26 @@ class ServiceTests(TestCase):
     def test_run_usagi(self):
         x = run_usagi()
         print(x)
+        
+    def test_nlp(self):
+    
+        # POST 
+        url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+        payload="{\n  \"documents\": [\n    {\n      \"language\": \"en\",\n      \"id\": \"source_field\",\n      \"text\": \"Headache\"\n    }\n  ]\n}"            
+        headers = {
+            'Ocp-Apim-Subscription-Key': os.environ.get('NLP_API_KEY'),
+            'Content-Type': 'application/json; utf-8'
+        }
+
+        response = requests.post(url, headers=headers, data=payload)
+        print('POST STATUS CODE >>> ', response.status_code)
+        print('HEADERS >>> ', response.headers)
+        
+        # Add a short artificial wait to give the NLP service
+        # time to run the job
+        time.sleep(5)
+
+        # GET
+        get_response = requests.get(response.headers['operation-location'], headers=headers)
+        x = get_response.json()
+        print(json.dumps(x, indent=4))
