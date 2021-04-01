@@ -9,8 +9,7 @@ from django.conf import settings
 from django.core import serializers
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
-
-
+from django.forms.models import model_to_dict
 
 
 class ServiceTests(TestCase):
@@ -40,6 +39,7 @@ class ServiceTests(TestCase):
         x = run_usagi()
         print(x)
 
+    # Run this to get data back from Azure NLP for Health Services
     def test_nlp(self):
         
         user = User.objects.get_or_create(
@@ -62,12 +62,12 @@ class ServiceTests(TestCase):
         
         srt=ScanReportTable.objects.create(
             scan_report = sr,
-            name = "ScanReport Table"
+            name = "Occupation"
         )
         
         srf=ScanReportField.objects.create(
             scan_report_table = srt,
-            name = "Test",
+            name = "Occupation",
             description_column = "Test Field",
             type_column = "VARCHAR",
             max_length = 32,
@@ -87,24 +87,23 @@ class ServiceTests(TestCase):
         
         srv=ScanReportValue.objects.create(
             scan_report_field = srf,
-            value = "12345",
+            value = "Clinical Nurse",
             frequency = 5,
             conceptID = -1
         )
         
         obj = DataDictionary.objects.create(
             source_value=srv,
-            dictionary_table="Table A",
-            dictionary_field="Field B",
-            dictionary_field_description="Field A Description",
-            dictionary_value_code="12345",
-            dictionary_value_description="12345 value description",
+            dictionary_table="Occupation",
+            dictionary_field="Occupation",
+            dictionary_field_description="The occupation of the staff member",
+            dictionary_value_code="Clinical Nurse",
+            dictionary_value_description="This member of staff id a clinical nurse",
             definition_fixed=True
    
         )
         
         qs = DataDictionary.objects.all()
-        print('TYPE >>> ', type(qs))
 
         # Create a concat field for NLP to work from
         # V is imported from models, used to comma separate other fields
@@ -120,7 +119,8 @@ class ServiceTests(TestCase):
                 output_field=CharField(),
             )
         )
-   
+    
+        
         # Create object to convert to JSON
         for_json = qs.values(
             "id",
@@ -129,49 +129,59 @@ class ServiceTests(TestCase):
             "nlp_string",
         )
 
-        print(for_json)
+        print('QUERYSET FOR JSON >>> ', for_json)
         
-        # qs_json = serializers.serialize('json', for_json)
-        # print(qs_json)
+        documents = []
         
+        for row in for_json:
+            documents.append({
+                'language':'en',
+                'id':row['id'],
+                'text':row['nlp_string']
+            })
+            
+        print({"documents":documents})
         
-        # # POST
-        # url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
-        # payload = '{\n  "documents": [\n    {\n      "language": "en",\n      "id": "source_field",\n      "text": "Headache"\n    }\n  ]\n}'
-        # headers = {
-        #     "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
-        #     "Content-Type": "application/json; utf-8",
+        # What the JSON to MS NLP needs to look like
+        # using the above queryset as an example input string
+        
+        # {
+        # "documents": [
+        #     {
+        #     "language": "en",
+        #     "id": "1", 
+        #     "text": "Occupation, Clinical Nurse, The occupation of the staff member, This member of staff id a clinical nurse"
+        #     }
+        # ]
         # }
+        
+        
+        # POST
+        url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+        payload = json.dumps({"documents":documents})
+        headers = {
+            "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+            "Content-Type": "application/json; utf-8",
+        }
 
-        # response = requests.post(url, headers=headers, data=payload)
-        # print("POST STATUS CODE >>> ", response.status_code)
+        response = requests.post(url, headers=headers, data=payload)
+        print("POST STATUS CODE >>> ", response.status_code)
+        print("POST REASON >>> ", response.reason)
+        print(dir(response))
 
-        # # Add a short artificial wait to give the NLP service
-        # # time to run the job
-        # print('Short artifical wait...')
-        # time.sleep(5)
+        # Add a short artificial wait to give the NLP service
+        # time to run the job
+        print('Short artifical wait...')
+        time.sleep(10)
 
         # # GET
-        # get_response = requests.get(
-        #     response.headers["operation-location"], headers=headers
-        # )
-        # print('GET STATUS CODE >>> ', get_response.status_code)
-        # x = get_response.json()
-        # print(x.items())
+        get_response = requests.get(
+            response.headers["operation-location"], headers=headers
+        )
+        print('GET STATUS CODE >>> ', get_response.status_code)
+        x = get_response.json()
+        print(x.items())
 
-        # for item in x.items():
-        #     print(item)
-        #     print(type(item))
-            
-        # for key, value in x.items():
-        #     print(key, '->', value)
-            
-        # print(type(x['results']))
-        # print(x['results'].items())
-        # print(x['results'].keys())
-        
-        # print(type(x['results']['documents']))
-        # print(x['results']['documents'][1])
-        
+
 
         # print(json.dumps(x, indent=4))
