@@ -948,29 +948,24 @@ class DataDictionaryListView(ListView):
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
             
-            
-            # Get distinct ScanReportFields
-            # These are fields where conceptID != -1
             qs_1 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(~Q(source_value__scan_report_field__concept_id=-1))
-                .distinct("source_value__scan_report_field")
-                .order_by("source_value__scan_report_field")
+                .filter(source_value__scan_report_field__pass_from_source=True)
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
                 .exclude(source_value__value="List truncated...")
+                .distinct("source_value__scan_report_field")
+                .order_by("source_value__scan_report_field")
             )
-
-            # Get all ScanReportValues
-            # Filter out scan report fields which we've defined in qs_1
+            
             qs_2 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(Q(source_value__scan_report_field__concept_id=-1))
+                .filter(source_value__scan_report_field__pass_from_source=False)
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
@@ -978,7 +973,7 @@ class DataDictionaryListView(ListView):
                 .exclude(source_value__value="N/A")
                 .exclude(source_value__value="No")
             )
-
+    
             # Stick qs_1 and qs_2 together
             qs_total = qs_1.union(qs_2)
 
