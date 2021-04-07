@@ -945,8 +945,12 @@ class DataDictionaryListView(ListView):
             )
         )
         
+        
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
+            
+            assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+            neg_assertions = assertions.values_list("negative_assertion")
             
             qs_1 = (
                 qs.filter(
@@ -970,8 +974,7 @@ class DataDictionaryListView(ListView):
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
                 .exclude(source_value__value="List truncated...")
-                .exclude(source_value__value="N/A")
-                .exclude(source_value__value="No")
+                .exclude(source_value__value__in=neg_assertions)
             )
     
             # Stick qs_1 and qs_2 together
