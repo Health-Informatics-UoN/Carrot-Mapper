@@ -952,6 +952,7 @@ class DataDictionaryListView(ListView):
             assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
             neg_assertions = assertions.values_list("negative_assertion")
             
+            # Grabs ScanReportFields where pass_from_source=True, makes list distinct
             qs_1 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
@@ -965,6 +966,8 @@ class DataDictionaryListView(ListView):
                 .order_by("source_value__scan_report_field")
             )
             
+            # Grabs everything but removes all where pass_from_source=False
+            # Filters out negative assertions and 'List truncated...'            
             qs_2 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
