@@ -147,6 +147,7 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_date_event',
         'date_type',
         'is_ignore',
+        'pass_from_source',
         'classification_system',
     ]
 
