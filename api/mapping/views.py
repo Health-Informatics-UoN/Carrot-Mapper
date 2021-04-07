@@ -147,6 +147,7 @@ class ScanReportFieldUpdateView(UpdateView):
         'is_date_event',
         'date_type',
         'is_ignore',
+        'pass_from_source',
         'classification_system',
     ]
 
@@ -934,8 +935,8 @@ class DataDictionaryListView(ListView):
 
             serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
 
-            with open("/data/data.json", "w") as json_file:
-                json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
+            #with open("/data/data.json", "w") as json_file:
+            #    json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
 
         return qs_total
         
