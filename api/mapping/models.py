@@ -214,7 +214,7 @@ class ScanReportAssertion(BaseModel):
         ScanReport,
         on_delete=models.CASCADE
     )
-    negative_assertion=models.CharField(max_length=64)
+    negative_assertion=models.CharField(max_length=64, null=True, blank=True)
 
     def __str__(self):
         return f'{self.scan_report, self.negative_assertion}'
