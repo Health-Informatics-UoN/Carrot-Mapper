@@ -6,6 +6,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.core.mail import message, send_mail, BadHeaderError
 from django.db.models.query_utils import Q
+from django.db.models import CharField, Value as V
+from django.db.models.functions import Concat
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -52,7 +56,7 @@ from .tasks import process_scan_report_task, run_usagi
 import pandas as pd
 import json
 
-from io import StringIO
+from io import StringIO, BytesIO
 
 import coconnect
 from coconnect.tools import dag
@@ -371,9 +375,23 @@ class StructuralMappingTableListView(ModelFormSetView):
         return dag.make_dag(data)
             
     def get_final_json(self,_mapping_data,tables=None):
+
+        _id_map = self.get_person_id_mapping()
+
+        #these two inputs shouldnt be so complicated
+        #it's because _mapping_data is read by pd.read_json(blah)
+        #and _id_map is read by json.loads(open(blah))
+        #
+        #all because with this function
+        #you can input these are paths to files
+
+        f_mapping = StringIO(json.dumps(_mapping_data))
+        f_ids = StringIO(json.dumps(_id_map))
+        
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
-            .to_json(StringIO(json.dumps(_mapping_data)),
+            .to_json(f_mapping,
+                     f_ids,
                      destination_tables = tables)
                              
         return structural_mapping
@@ -663,7 +681,7 @@ class StructuralMappingTableListView(ModelFormSetView):
             else:
                 outputs = self.get_final_json(outputs)
                 
-            svg_output = self.json_to_svg(outputs)
+            svg_output = self.json_to_svg(outputs['cdm'])
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
                         
@@ -676,42 +694,8 @@ class StructuralMappingTableListView(ModelFormSetView):
             #implement other return types if needed
             return redirect(request.path)
 
-        
-    # def download_term_mapping(self,request,pk):
-    #      #define the name of the output file
-
-    #     scan_report = ScanReport.objects.get(pk=pk)
-
-    #     rules = StructuralMappingRule\
-    #         .objects\
-    #         .filter(scan_report=scan_report)
-
-    #     output = { name:[] for name in ['rule_id','source_term','destination_term']}
-
-    #     for rule in rules:
-    #         for obj in rule.scan_report_field.scanreportvalue_set.all():
-    #             if obj.conceptID == -1:
-    #                 continue
-                
-    #             output['rule_id'].append(rule.id)
-    #             output['source_term'].append(obj.value)
-    #             output['destination_term'].append(obj.conceptID)
-
-
-    #     return_type = 'csv'
-    #     fname = f"{scan_report.data_partner}_{scan_report.dataset}_term_mapping.{return_type}"
-
-    
-    #     result = ",".join(f'"{key}"' for key in output.keys())
-    #     for irow in range(len(output['rule_id'])):
-    #         result+='\n'+ ",".join(f'"{output[key][irow]}"' for key in output.keys())
-            
-    #     response = HttpResponse(result, content_type='text/csv')
-    #     response['Content-Disposition'] = f'attachment; filename="{fname}"'
-    #     return response
-
-    def download_pk_mapping(self,request,pk):
-
+    def get_person_id_mapping(self):
+        pk = self.kwargs.get('pk')
         patient_id_fields = ScanReportField.objects.filter(scan_report_table__scan_report=pk)\
                                              .filter(is_patient_id=True)
         
@@ -720,23 +704,13 @@ class StructuralMappingTableListView(ModelFormSetView):
             for patient_field in patient_id_fields
         }
 
-        scan_report = ScanReport.objects.get(pk=pk)
-        return_type = 'json'
-        fname = f"{scan_report.data_partner}_{scan_report.dataset}_person_id_mapping.{return_type}"
-
-        response = HttpResponse(json.dumps(patient_id_map,indent=6), content_type='application/json')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
-        return response
+        return patient_id_map
     
     def post(self,request,*args, **kwargs):
         #
         pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
             return self.download_structural_mapping(request,pk)
-        elif request.POST.get('download-tm') is not None:
-            return self.download_term_mapping(request,pk)
-        elif request.POST.get('download-pk') is not None:
-            return self.download_pk_mapping(request,pk)
         elif request.POST.get('generate') is not None:
             self.generate(request,pk)
             return redirect(request.path)
@@ -961,16 +935,74 @@ class DataDictionaryListView(ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        
+        # Create a concat field for NLP to work from
+        # V is imported from models, used to comma separate other fields
+        qs = qs.annotate(
+            nlp_string=Concat(
+                "source_value__scan_report_field__name",
+                V(", "),
+                "source_value__value",
+                V(", "),
+                "dictionary_field_description",
+                V(", "),
+                "dictionary_value_description",
+                output_field=CharField(),
+            )
+        )
+        
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
-            qs = (
-                qs.filter(source_value__scan_report_field__scan_report_table__scan_report__id=search_term)
+            
+            
+            # Get distinct ScanReportFields
+            # These are fields where conceptID != -1
+            qs_1 = (
+                qs.filter(
+                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+                )
+                .filter(~Q(source_value__scan_report_field__concept_id=-1))
+                .distinct("source_value__scan_report_field")
+                .order_by("source_value__scan_report_field")
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value='List truncated...')
+                .exclude(source_value__value="List truncated...")
             )
-        return qs
+
+            # Get all ScanReportValues
+            # Filter out scan report fields which we've defined in qs_1
+            qs_2 = (
+                qs.filter(
+                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+                )
+                .filter(Q(source_value__scan_report_field__concept_id=-1))
+                .filter(source_value__scan_report_field__is_patient_id=False)
+                .filter(source_value__scan_report_field__is_date_event=False)
+                .filter(source_value__scan_report_field__is_ignore=False)
+                .exclude(source_value__value="List truncated...")
+                .exclude(source_value__value="N/A")
+                .exclude(source_value__value="No")
+            )
+
+            # Stick qs_1 and qs_2 together
+            qs_total = qs_1.union(qs_2)
+
+            # Create object to convert to JSON
+            for_json = qs_total.values(
+                "id",
+                "source_value__value",
+                "source_value__scan_report_field__name",
+                "nlp_string",
+            )
+
+            serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
+
+            #with open("/data/data.json", "w") as json_file:
+            #    json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
+
+        return qs_total
+        
 
     def get_context_data(self, **kwargs):
 
