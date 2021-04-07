@@ -195,6 +195,7 @@ class ScanReportField(BaseModel):
     is_date_event = models.BooleanField(default=False)
     is_ignore = models.BooleanField(default=False)
     classification_system = models.CharField(max_length=64, blank=True, null=True)
+    pass_from_source = models.BooleanField(default=False, blank=True, null=True)
     date_type = models.CharField(
        max_length=128,
        choices=DATE_TYPE_CHOICES,
