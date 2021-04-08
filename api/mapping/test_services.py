@@ -209,11 +209,16 @@ class ServiceTests(TestCase):
                 
         print(get_response)
         
+        
+        codes = []
+        keep = ['ICD9','ICD10','SNOMEDCT_US']
         # Mad nested for loops to get at the data in the response
         for url in get_response:
             for dict_entry in url['documents']:
                 for entity in dict_entry['entities']:
                     if 'links' in entity.keys():
                         for link in entity['links']:
-                            print(entity['text'],link)
-                            
+                            if link['dataSource'] in keep:
+                                codes.append([dict_entry['id'], entity['text'], link['dataSource'], link['id']])
+                                
+        print(codes)
