@@ -32,13 +32,15 @@ from .forms import (
     AddMappingRuleForm,
     DocumentForm,
     DocumentFileForm,
-    DictionarySelectForm
+    DictionarySelectForm,
+    ScanReportAssertionForm
 )
 from .models import (
     ScanReport,
     ScanReportValue,
     ScanReportField,
     ScanReportTable,
+    ScanReportAssertion,
     StructuralMappingRule,
     OmopTable,
     OmopField,
@@ -793,6 +795,61 @@ class ScanReportFormView(FormView):
 
 
 @method_decorator(login_required,name='dispatch')
+class ScanReportAssertionView(ListView):
+    model=ScanReportAssertion
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "scan_report": x,
+            }
+        )
+        return context
+
+    def get_queryset(self):
+        qs=super().get_queryset()
+
+        qs = qs.filter(scan_report=self.kwargs['pk'])
+        return qs
+
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionFormView(FormView):
+    model=ScanReportAssertion
+    form_class = ScanReportAssertionForm
+    template_name = "mapping/scanreportassertion_form.html"
+
+    def form_valid(self, form):
+        scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
+
+        
+        assertion = ScanReportAssertion.objects.create(
+            negative_assertion=form.cleaned_data["negative_assertion"],
+            scan_report=scan_report
+        )
+        assertion.save()
+
+        return super().form_valid(form)
+       
+    def get_success_url(self, **kwargs):
+        return reverse("scan-report-assertion", kwargs={'pk': self.kwargs['pk']})
+
+
+@method_decorator(login_required,name='dispatch')
+class ScanReportAssertionsUpdateView(UpdateView):
+    model = ScanReportAssertion
+    fields = [
+        "negative_assertion",
+    ]
+
+    def get_success_url(self, **kwargs):
+     return reverse("scan-report-assertion", kwargs={'pk': self.object.scan_report.id})
+    
+
+@method_decorator(login_required,name='dispatch')
 class DocumentFormView(FormView):
     form_class = DocumentForm
     template_name = "mapping/upload_document.html"
@@ -888,40 +945,41 @@ class DataDictionaryListView(ListView):
             )
         )
         
+        
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
             
+            assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+            neg_assertions = assertions.values_list("negative_assertion")
             
-            # Get distinct ScanReportFields
-            # These are fields where conceptID != -1
+            # Grabs ScanReportFields where pass_from_source=True, makes list distinct
             qs_1 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(~Q(source_value__scan_report_field__concept_id=-1))
-                .distinct("source_value__scan_report_field")
-                .order_by("source_value__scan_report_field")
+                .filter(source_value__scan_report_field__pass_from_source=True)
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
                 .exclude(source_value__value="List truncated...")
+                .distinct("source_value__scan_report_field")
+                .order_by("source_value__scan_report_field")
             )
-
-            # Get all ScanReportValues
-            # Filter out scan report fields which we've defined in qs_1
+            
+            # Grabs everything but removes all where pass_from_source=False
+            # Filters out negative assertions and 'List truncated...'            
             qs_2 = (
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(Q(source_value__scan_report_field__concept_id=-1))
+                .filter(source_value__scan_report_field__pass_from_source=False)
                 .filter(source_value__scan_report_field__is_patient_id=False)
                 .filter(source_value__scan_report_field__is_date_event=False)
                 .filter(source_value__scan_report_field__is_ignore=False)
                 .exclude(source_value__value="List truncated...")
-                .exclude(source_value__value="N/A")
-                .exclude(source_value__value="No")
+                .exclude(source_value__value__in=neg_assertions)
             )
-
+    
             # Stick qs_1 and qs_2 together
             qs_total = qs_1.union(qs_2)
 
