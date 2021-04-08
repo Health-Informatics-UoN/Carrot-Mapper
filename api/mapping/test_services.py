@@ -67,8 +67,8 @@ class ServiceTests(TestCase):
         
         srf=ScanReportField.objects.create(
             scan_report_table = srt,
-            name = "Occupation",
-            description_column = "Test Field",
+            name = "Symptoms",
+            description_column = "Symptoms that patient has experienced",
             type_column = "VARCHAR",
             max_length = 32,
             nrows = 1,   
@@ -87,14 +87,14 @@ class ServiceTests(TestCase):
         
         srv1=ScanReportValue.objects.create(
             scan_report_field = srf,
-            value = "Clinical Nurse",
+            value = "Fever and headache",
             frequency = 5,
             conceptID = -1
         )
         
         srv2=ScanReportValue.objects.create(
             scan_report_field = srf,
-            value = "GP",
+            value = "Headache",
             frequency = 5,
             conceptID = -1
         )
@@ -108,33 +108,33 @@ class ServiceTests(TestCase):
         
         DataDictionary.objects.create(
             source_value=srv1,
-            dictionary_table="Occupation",
-            dictionary_field="Occupation",
-            dictionary_field_description="Staff member's job role",
-            dictionary_value_code="Clinical Nurse",
-            dictionary_value_description="Clinical nurse",
+            dictionary_table="PatientSymptoms",
+            dictionary_field="Symptom",
+            dictionary_field_description="What symptom the patient is experiencing",
+            dictionary_value_code="Yes",
+            dictionary_value_description="Fever",
             definition_fixed=True
    
         )
         
         DataDictionary.objects.create(
             source_value=srv2,
-            dictionary_table="Occupation",
-            dictionary_field="Occupation",
-            dictionary_field_description="Staff member's job role",
-            dictionary_value_code="GP",
-            dictionary_value_description="General practioner",
+            dictionary_table="PatientSymptoms",
+            dictionary_field="Symptom",
+            dictionary_field_description="What symptom the patient is experiencing",
+            dictionary_value_code="Yes",
+            dictionary_value_description="Headache",
             definition_fixed=True
    
         )
         
         DataDictionary.objects.create(
             source_value=srv3,
-            dictionary_table="Occupation",
-            dictionary_field="Occupation",
-            dictionary_field_description="Staff member's job role",
+            dictionary_table="PatientSymptoms",
+            dictionary_field="Symptom",
+            dictionary_field_description="Occupation",
             dictionary_value_code="Janitor",
-            dictionary_value_description="Janitor",
+            dictionary_value_description="Staff Occupation",
             definition_fixed=True
    
         )
@@ -145,8 +145,6 @@ class ServiceTests(TestCase):
         # V is imported from models, used to comma separate other fields
         qs = qs.annotate(
             nlp_string=Concat(
-                "source_value__value",
-                V(", "),
                 "dictionary_field_description",
                 V(", "),
                 "dictionary_value_description",
@@ -195,17 +193,27 @@ class ServiceTests(TestCase):
         # GET the response
         get_response = []
         for url in post_response_url:
-        
-            print('PROCESSING JOB >>>', url, '\n')
+            
+            print('PROCESSING JOB >>>', url)
             req = requests.get(url, headers=headers)
             job = req.json()
             
             while job['status'] == "notStarted":
                 req = requests.get(url, headers=headers)
+                job = req.json()
                 print("Waiting...")
-                time.sleep(2)
+                time.sleep(3)
             else:
                 get_response.append(job['results'])
-                print("Completed!")
+                print("Completed! \n")
                 
         print(get_response)
+        
+        # Mad nested for loops to get at the data in the response
+        for url in get_response:
+            for dict_entry in url['documents']:
+                for entity in dict_entry['entities']:
+                    if 'links' in entity.keys():
+                        for link in entity['links']:
+                            print(entity['text'],link)
+                            
