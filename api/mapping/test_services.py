@@ -1,6 +1,7 @@
 from django.test import TestCase
 from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi
 import time, requests, os, json, math
+import pandas as pd
 
 from .models import ScanReport, DataPartner, ScanReportTable, ScanReportField, ScanReportValue, DataDictionary
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -132,9 +133,9 @@ class ServiceTests(TestCase):
             source_value=srv3,
             dictionary_table="PatientSymptoms",
             dictionary_field="Symptom",
-            dictionary_field_description="Occupation",
-            dictionary_value_code="Janitor",
-            dictionary_value_description="Staff Occupation",
+            dictionary_field_description="What symptom the patient is experiencing",
+            dictionary_value_code="Yes",
+            dictionary_value_description="Sore throat",
             definition_fixed=True
    
         )
@@ -205,10 +206,7 @@ class ServiceTests(TestCase):
                 time.sleep(3)
             else:
                 get_response.append(job['results'])
-                print("Completed! \n")
-                
-        print(get_response)
-        
+                print("Completed! \n")        
         
         codes = []
         keep = ['ICD9','ICD10','SNOMEDCT_US']
