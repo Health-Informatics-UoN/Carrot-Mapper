@@ -201,46 +201,11 @@ class ServiceTests(TestCase):
             job = req.json()
             
             while job['status'] == "notStarted":
+                req = requests.get(url, headers=headers)
                 print("Waiting...")
                 time.sleep(2)
             else:
-                print('JOB RESULT >>> ', job['results'])
+                get_response.append(job['results'])
                 print("Completed!")
-        
-        # print('THE RESPONSE >>> ', get_response)
-            
-            # my_json = req.content.decode('utf8').replace("'", '"')
-            # data = json.loads(req.content)
-            # s = json.dumps(data, indent=4, sort_keys=True)
-            # print(s)
-                            
-     
-        # POST
-        # url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
-        # payload = json.dumps({"documents":documents})
-        # headers = {
-        #     "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
-        #     "Content-Type": "application/json; utf-8",
-        # }
-
-        # response = requests.post(url, headers=headers, data=payload)
-        # print("POST STATUS CODE >>> ", response.status_code)
-        # print("POST REASON >>> ", response.reason)
-        # print(dir(response))
-
-        # # Add a short artificial wait to give the NLP service
-        # # time to run the job
-        # print('Short artifical wait...')
-        # time.sleep(10)
-
-        # # # GET
-        # get_response = requests.get(
-        #     response.headers["operation-location"], headers=headers
-        # )
-        # print('GET STATUS CODE >>> ', get_response.status_code)
-        # x = get_response.json()
-        # print(x.items())
-
-
-
-        # print(json.dumps(x, indent=4))
+                
+        print(get_response)
