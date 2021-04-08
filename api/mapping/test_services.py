@@ -188,16 +188,16 @@ class ServiceTests(TestCase):
             chunk = {"documents":documents[i:i+chunk_size]}
             payload = json.dumps(chunk)
             response = requests.post(url, headers=headers, data=payload)
-            print(chunk, ' - ', response.status_code, response.reason)
+            print(response.status_code, response.reason)
             post_response_url.append(response.headers["operation-location"])
             time.sleep(5)
             
         # GET the response
         get_response = []
-        for i in post_response_url:
+        for url in post_response_url:
         
-            print('PROCESSING JOB >>>', i, '\n')
-            req = requests.get(i, headers=headers)
+            print('PROCESSING JOB >>>', url, '\n')
+            req = requests.get(url, headers=headers)
             job = req.json()
             
             while job['status'] == "notStarted":
