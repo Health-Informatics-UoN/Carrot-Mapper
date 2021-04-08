@@ -1,6 +1,6 @@
 from django.test import TestCase
 from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi
-import time, requests, os, json
+import time, requests, os, json, math
 
 from .models import ScanReport, DataPartner, ScanReportTable, ScanReportField, ScanReportValue, DataDictionary
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -85,32 +85,66 @@ class ServiceTests(TestCase):
             concept_id = None
         )
         
-        srv=ScanReportValue.objects.create(
+        srv1=ScanReportValue.objects.create(
             scan_report_field = srf,
             value = "Clinical Nurse",
             frequency = 5,
             conceptID = -1
         )
         
-        obj = DataDictionary.objects.create(
-            source_value=srv,
+        srv2=ScanReportValue.objects.create(
+            scan_report_field = srf,
+            value = "GP",
+            frequency = 5,
+            conceptID = -1
+        )
+        
+        srv3=ScanReportValue.objects.create(
+            scan_report_field = srf,
+            value = "Janitor",
+            frequency = 5,
+            conceptID = -1
+        )
+        
+        DataDictionary.objects.create(
+            source_value=srv1,
             dictionary_table="Occupation",
             dictionary_field="Occupation",
-            dictionary_field_description="The occupation of the staff member",
+            dictionary_field_description="Staff member's job role",
             dictionary_value_code="Clinical Nurse",
-            dictionary_value_description="This member of staff id a clinical nurse",
+            dictionary_value_description="Clinical nurse",
+            definition_fixed=True
+   
+        )
+        
+        DataDictionary.objects.create(
+            source_value=srv2,
+            dictionary_table="Occupation",
+            dictionary_field="Occupation",
+            dictionary_field_description="Staff member's job role",
+            dictionary_value_code="GP",
+            dictionary_value_description="General practioner",
+            definition_fixed=True
+   
+        )
+        
+        DataDictionary.objects.create(
+            source_value=srv3,
+            dictionary_table="Occupation",
+            dictionary_field="Occupation",
+            dictionary_field_description="Staff member's job role",
+            dictionary_value_code="Janitor",
+            dictionary_value_description="Janitor",
             definition_fixed=True
    
         )
         
         qs = DataDictionary.objects.all()
-
+        
         # Create a concat field for NLP to work from
         # V is imported from models, used to comma separate other fields
         qs = qs.annotate(
             nlp_string=Concat(
-                "source_value__scan_report_field__name",
-                V(", "),
                 "source_value__value",
                 V(", "),
                 "dictionary_field_description",
@@ -119,68 +153,93 @@ class ServiceTests(TestCase):
                 output_field=CharField(),
             )
         )
-    
         
+ 
         # Create object to convert to JSON
-        for_json = qs.values(
+        for_json = qs.values_list(
             "id",
             "source_value__value",
             "source_value__scan_report_field__name",
             "nlp_string",
         )
-
-        print('QUERYSET FOR JSON >>> ', for_json)
-        
+    
+        # Translate queryset into JSON-like dict for NLP
         documents = []
-        
         for row in for_json:
             documents.append({
                 'language':'en',
-                'id':row['id'],
-                'text':row['nlp_string']
+                'id':row[0],
+                'text':row[3]
             })
-            
-        print({"documents":documents})
         
-        # What the JSON to MS NLP needs to look like
-        # using the above queryset as an example input string
-        
-        # {
-        # "documents": [
-        #     {
-        #     "language": "en",
-        #     "id": "1", 
-        #     "text": "Occupation, Clinical Nurse, The occupation of the staff member, This member of staff id a clinical nurse"
-        #     }
-        # ]
-        # }
-        
-        
-        # POST
+        # Define NLP URL/headers
         url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
-        payload = json.dumps({"documents":documents})
         headers = {
-            "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
-            "Content-Type": "application/json; utf-8",
-        }
+                        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+                        "Content-Type": "application/json; utf-8",
+                    }
+        
+        
+        # POST Request(s)
+        # Short wait at end of submission to let the API catch up
+        chunk_size=2 # Set chunk size (max=10)
+        post_response_url = []
+        for i in range(0, len(documents), chunk_size):
+            chunk = {"documents":documents[i:i+chunk_size]}
+            payload = json.dumps(chunk)
+            response = requests.post(url, headers=headers, data=payload)
+            print(chunk, ' - ', response.status_code, response.reason)
+            post_response_url.append(response.headers["operation-location"])
+            time.sleep(5)
+            
+        # GET the response
+        get_response = []
+        for i in post_response_url:
+        
+            print('PROCESSING JOB >>>', i, '\n')
+            req = requests.get(i, headers=headers)
+            job = req.json()
+            
+            while job['status'] == "notStarted":
+                print("Waiting...")
+                time.sleep(2)
+            else:
+                print('JOB RESULT >>> ', job['results'])
+                print("Completed!")
+        
+        # print('THE RESPONSE >>> ', get_response)
+            
+            # my_json = req.content.decode('utf8').replace("'", '"')
+            # data = json.loads(req.content)
+            # s = json.dumps(data, indent=4, sort_keys=True)
+            # print(s)
+                            
+     
+        # POST
+        # url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+        # payload = json.dumps({"documents":documents})
+        # headers = {
+        #     "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        #     "Content-Type": "application/json; utf-8",
+        # }
 
-        response = requests.post(url, headers=headers, data=payload)
-        print("POST STATUS CODE >>> ", response.status_code)
-        print("POST REASON >>> ", response.reason)
-        print(dir(response))
+        # response = requests.post(url, headers=headers, data=payload)
+        # print("POST STATUS CODE >>> ", response.status_code)
+        # print("POST REASON >>> ", response.reason)
+        # print(dir(response))
 
-        # Add a short artificial wait to give the NLP service
-        # time to run the job
-        print('Short artifical wait...')
-        time.sleep(10)
+        # # Add a short artificial wait to give the NLP service
+        # # time to run the job
+        # print('Short artifical wait...')
+        # time.sleep(10)
 
-        # # GET
-        get_response = requests.get(
-            response.headers["operation-location"], headers=headers
-        )
-        print('GET STATUS CODE >>> ', get_response.status_code)
-        x = get_response.json()
-        print(x.items())
+        # # # GET
+        # get_response = requests.get(
+        #     response.headers["operation-location"], headers=headers
+        # )
+        # print('GET STATUS CODE >>> ', get_response.status_code)
+        # x = get_response.json()
+        # print(x.items())
 
 
 
