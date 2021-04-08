@@ -212,6 +212,7 @@ class ServiceTests(TestCase):
         
         codes = []
         keep = ['ICD9','ICD10','SNOMEDCT_US']
+        
         # Mad nested for loops to get at the data in the response
         for url in get_response:
             for dict_entry in url['documents']:
@@ -219,6 +220,7 @@ class ServiceTests(TestCase):
                     if 'links' in entity.keys():
                         for link in entity['links']:
                             if link['dataSource'] in keep:
-                                codes.append([dict_entry['id'], entity['text'], link['dataSource'], link['id']])
+                                codes.append([dict_entry['id'], entity['text'], entity['category'], entity['confidenceScore'], link['dataSource'], link['id']])
                                 
-        print(codes)
+        codes_df = pd.DataFrame(codes,columns=['key', 'entity', 'category', 'confidence', 'vocab', 'code'])
+        print(codes_df)
