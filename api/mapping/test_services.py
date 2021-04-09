@@ -161,6 +161,8 @@ class ServiceTests(TestCase):
             "source_value__scan_report_field__name",
             "nlp_string",
         )
+        
+        print(for_json)
     
         # Translate queryset into JSON-like dict for NLP
         documents = []
@@ -206,7 +208,9 @@ class ServiceTests(TestCase):
                 time.sleep(3)
             else:
                 get_response.append(job['results'])
-                print("Completed! \n")        
+                print("Completed! \n")    
+                    
+        print(get_response)
         
         codes = []
         keep = ['ICD9','ICD10','SNOMEDCT_US']
