@@ -426,7 +426,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                     omop_field   = omop_field,
                     source_table = patient_id_field.scan_report_table,
                     source_field = patient_id_field,
-                    term_mapping = "null"
+                    term_mapping = "null",
+                    approved = True,
                 )
                 mapping.save()
 
@@ -446,7 +447,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                 omop_field   = omop_field,
                 source_table = date_field.scan_report_table,
                 source_field = date_field,
-                term_mapping = "null"
+                term_mapping = "null",
+                approve = True,
             )
             mapping.save()
         
@@ -581,7 +583,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                         omop_field   = omop_field,
                         source_table = _source_table,
                         source_field = _source_field,
-                        term_mapping = None
+                        term_mapping = None,
+                        approved = True,
                     )
                     mapping.save()
                     
@@ -618,12 +621,11 @@ class StructuralMappingTableListView(ModelFormSetView):
                         omop_field   = omop_field,
                         source_table = source_table,
                         source_field = source_field,
-                        term_mapping = json.dumps(term_mapping,indent=6)#convert dict to str,
+                        term_mapping = json.dumps(term_mapping,indent=6),#convert dict to str,
+                        approved = True
                     )
                     mapping.save()
 
-            
-                    
             
     def download_structural_mapping(self,request,pk,return_type='json'):
         scan_report = ScanReport.objects.get(pk=pk)
