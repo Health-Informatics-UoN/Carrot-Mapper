@@ -12,6 +12,8 @@ from django.db.models.functions import Concat
 from django.db.models import CharField, Value as V
 from django.forms.models import model_to_dict
 
+import coconnect
+from coconnect.tools.omop_db_inspect import OMOPDetails
 
 class ServiceTests(TestCase):
     def test_process_scan_report_sheet_table(self):
@@ -209,9 +211,7 @@ class ServiceTests(TestCase):
             else:
                 get_response.append(job['results'])
                 print("Completed! \n")    
-                    
-        print(get_response)
-        
+                            
         codes = []
         keep = ['ICD9','ICD10','SNOMEDCT_US']
         
@@ -226,3 +226,10 @@ class ServiceTests(TestCase):
                                 
         codes_df = pd.DataFrame(codes,columns=['key', 'entity', 'category', 'confidence', 'vocab', 'code'])
         print(codes_df)
+        
+      
+    def test_get_omop(self):
+    
+        omop_lookup = OMOPDetails()
+        x = omop_lookup.get_rules(386661006)
+        print(x)        
