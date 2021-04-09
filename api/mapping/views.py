@@ -62,7 +62,8 @@ import coconnect
 from coconnect.tools import dag
 from coconnect.tools import mapping_pipeline_helpers
 
-
+#not sure this is the best practice to have this as a global
+#everytime something imports views.py this is going to get called
 from coconnect.tools.omop_db_inspect import OMOPDetails
 omop_lookup = OMOPDetails()
 

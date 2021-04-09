@@ -1,3 +1,4 @@
+
 import os
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -29,10 +30,12 @@ OPERATION_CHOICES = [
 OPERATION_CHOICES.extend(allowed_operations)
 
 
-from coconnect.tools.omop_db_inspect import OMOPDetails
-df_omop = OMOPDetails.to_df()
-DATE_TYPE_CHOICES = df_omop[df_omop['field'].str.contains('datetime')]['field'].tolist()
-DATE_TYPE_CHOICES = [ (x,x) for x in DATE_TYPE_CHOICES]
+#this is slow, could be done better
+#not needed, keep incase it is..
+#from coconnect.tools.omop_db_inspect import OMOPDetails
+#df_omop = OMOPDetails().cdm
+#DATE_TYPE_CHOICES = df_omop[df_omop['field'].str.contains('datetime')]['field'].tolist()
+#DATE_TYPE_CHOICES = [ (x,x) for x in DATE_TYPE_CHOICES]
 
 
 class BaseModel(models.Model):
@@ -195,9 +198,13 @@ class ScanReportField(BaseModel):
     is_ignore = models.BooleanField(default=False)
     classification_system = models.CharField(max_length=64, blank=True, null=True)
     pass_from_source = models.BooleanField(default=False, blank=True, null=True)
+
+    #this can be removed
+    #dont want to remove now as will have to mess with migrations
+    DATE_TYPE_CHOICES=[]
     date_type = models.CharField(
        max_length=128,
-       choices=DATE_TYPE_CHOICES,
+        choices=DATE_TYPE_CHOICES,
        default="",
        null=True,
        blank=True
