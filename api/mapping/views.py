@@ -511,8 +511,24 @@ class StructuralMappingTableListView(ModelFormSetView):
                 #print (f"{field} failed")
                 continue
 
+
+            #temp hack/filter!!
+            allowed_destination_tables = [
+                'person',
+                'condition_occurrence',
+                'observation',
+                'measurement'
+            ]
+            
             #loop over the destination and rule set for each domain found
             for destination_table,rules in rules_set.items():
+
+                #temp hack to stop generating rules for the 'big 4'
+                if destination_table not in allowed_destination_tables:
+                    continue
+
+                
+                
                 #find all fields for this destination table
                 all_destination_fields = omop_lookup.get_fields(destination_table)
 
