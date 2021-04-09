@@ -387,7 +387,7 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         f_mapping = StringIO(json.dumps(_mapping_data))
         f_ids = StringIO(json.dumps(_id_map))
-        
+
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(f_mapping,
