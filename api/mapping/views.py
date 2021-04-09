@@ -62,7 +62,10 @@ import coconnect
 from coconnect.tools import dag
 from coconnect.tools import mapping_pipeline_helpers
 
-
+#not sure this is the best practice to have this as a global
+#everytime something imports views.py this is going to get called
+#now that it looks up from the OMOPDb it can take a long time to init
+#~20 seconds, it used to be ~0.1 seconds when loading from .csv
 from coconnect.tools.omop_db_inspect import OMOPDetails
 omop_lookup = OMOPDetails()
 
@@ -387,7 +390,7 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         f_mapping = StringIO(json.dumps(_mapping_data))
         f_ids = StringIO(json.dumps(_id_map))
-        
+
         structural_mapping = mapping_pipeline_helpers\
             .StructuralMapping\
             .to_json(f_mapping,
@@ -510,8 +513,24 @@ class StructuralMappingTableListView(ModelFormSetView):
                 #print (f"{field} failed")
                 continue
 
+
+            #temp hack/filter!!
+            allowed_destination_tables = [
+                'person',
+                'condition_occurrence',
+                'observation',
+                'measurement'
+            ]
+            
             #loop over the destination and rule set for each domain found
             for destination_table,rules in rules_set.items():
+
+                #temp hack to stop generating rules for the 'big 4'
+                if destination_table not in allowed_destination_tables:
+                    continue
+
+                
+                
                 #find all fields for this destination table
                 all_destination_fields = omop_lookup.get_fields(destination_table)
 
@@ -543,9 +562,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                                               .get(table__table=destination_table,
                                                    field=unmapped_field)
                         
-                    except: #mapping.models.OmopField.DoesNotExist:
+                    except Exception as err: #mapping.models.OmopField.DoesNotExist:
                         messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
-
                         continue
 
                     #attempt to find person_ids and date events
@@ -596,8 +614,15 @@ class StructuralMappingTableListView(ModelFormSetView):
                         omop_field = OmopField.objects\
                                               .get(table__table=destination_table,
                                                    field=destination_field)
-                    except: #mapping.models.OmopField.DoesNotExist:
-                        messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
+                    except Exception as err:
+                        #remove message warnings about these now
+                        #rules are automatically generated for:
+                        # <domain>_source_value, <domain>_source_concept_id and <domain>_concept_id
+                        #sometimes one of these might not exist, e.g. for specimen
+                        #do not make a warning about this
+                        if all(x not in destination_field
+                               for x in ['_source_value','_source_concept_id','_concept_id']):
+                            messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
                         continue
 
 
