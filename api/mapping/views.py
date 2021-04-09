@@ -1206,7 +1206,7 @@ def merge_dictionary(request):
 
         # # Create an intermediate join table
         # # This ensures that each field in scan_report has a field description from the external dictionary
-        field_join = pd.merge(dict_df, external_dictionary, how='left', left_on='Field', right_on='Column Name')
+        field_join = pd.merge(dict_df, external_dictionary, how='left', left_on='Field', right_on='FieldName')
         
         field_join_grp = field_join.groupby(['Field', 'Value']).first().reset_index()
 
@@ -1216,7 +1216,7 @@ def merge_dictionary(request):
 
         # Join the intermediate join back to the external dictionary
         # This time on field and value
-        x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['Column Name', 'ValueCode'])
+        x = pd.merge(field_join_grp, external_dictionary, how='left', left_on=['Field', 'Value'], right_on=['FieldName', 'ValueCode'])
         
         x = x[['Table', 'Field', 'Value', 'Frequency', 'FieldDesc', 'Table Name', 'Column Name', 'Column Description_x', 'ValueCode', 'ValueDescription']]
         # x=x.fillna(value="")
