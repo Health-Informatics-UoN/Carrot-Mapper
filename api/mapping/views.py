@@ -62,11 +62,12 @@ import coconnect
 from coconnect.tools import dag
 from coconnect.tools import mapping_pipeline_helpers
 
-#not sure this is the best practice to have this as a global
-#everytime something imports views.py this is going to get called
-#now that it looks up from the OMOPDb it can take a long time to init
-#~20 seconds, it used to be ~0.1 seconds when loading from .csv
+
 from coconnect.tools.omop_db_inspect import OMOPDetails
+#to refresh/resync with loading from the database, switch to:
+# omop_lookup = OMOPDetails(load_from_db=True)
+#this will take longer, but it will recreate the csv dump of all the
+#omop fields
 omop_lookup = OMOPDetails()
 
 @login_required
