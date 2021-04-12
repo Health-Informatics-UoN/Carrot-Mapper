@@ -229,7 +229,6 @@ class ServiceTests(TestCase):
         
       
     def test_get_omop(self):
-    
         omop_lookup = OMOPDetails()
-        x = omop_lookup.get_rules(386661006)
+        x = omop_lookup.lookup_code("R50.9")
         print(x)        
