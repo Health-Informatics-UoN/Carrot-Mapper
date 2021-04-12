@@ -583,7 +583,7 @@ class StructuralMappingTableListView(ModelFormSetView):
                         if len(qs)>0:
                             _source_field = qs[0]
                             _source_table = _source_field.scan_report_table
-                            #create a new model 
+                        #update model 
                         mapping,created = StructuralMappingRule.objects.update_or_create(
                             scan_report  = scan_report,
                             omop_field   = omop_field,
@@ -603,7 +603,7 @@ class StructuralMappingTableListView(ModelFormSetView):
                         if len(qs)>0:
                             _source_field = qs[0]
                             _source_table = _source_field.scan_report_table
-                            #create a new model 
+                        #update model 
                         mapping,created = StructuralMappingRule.objects.update_or_create(
                             scan_report  = scan_report,
                             omop_field   = omop_field,
@@ -614,11 +614,6 @@ class StructuralMappingTableListView(ModelFormSetView):
                         )
                         mapping.save()
                         
-                    
-                
-                    
-                
-                
                 for destination_field,term_mapping in rules.items():
 
                     try:
