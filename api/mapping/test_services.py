@@ -109,6 +109,13 @@ class ServiceTests(TestCase):
             conceptID = -1
         )
         
+        srv4=ScanReportValue.objects.create(
+            scan_report_field = srf,
+            value = "Joint pain",
+            frequency = 5,
+            conceptID = -1
+        )
+        
         DataDictionary.objects.create(
             source_value=srv1,
             dictionary_table="PatientSymptoms",
@@ -141,6 +148,18 @@ class ServiceTests(TestCase):
             definition_fixed=True
    
         )
+        
+        DataDictionary.objects.create(
+                source_value=srv4,
+                dictionary_table="PatientSymptoms",
+                dictionary_field="Symptom",
+                dictionary_field_description="What symptom the patient is experiencing",
+                dictionary_value_code="Yes",
+                dictionary_value_description="Joint pain",
+                definition_fixed=True
+    
+            )
+        
         
         qs = DataDictionary.objects.all()
         
@@ -225,10 +244,48 @@ class ServiceTests(TestCase):
                                 codes.append([dict_entry['id'], entity['text'], entity['category'], entity['confidenceScore'], link['dataSource'], link['id']])
                                 
         codes_df = pd.DataFrame(codes,columns=['key', 'entity', 'category', 'confidence', 'vocab', 'code'])
-        print(codes_df)
+        print('CODES FROM NLP >>>>> \n', codes_df)
+        return codes_df
         
       
     def test_get_omop(self):
+        
+        # Load in OMOPDetails class from Co-Connect Tools
         omop_lookup = OMOPDetails()
-        x = omop_lookup.lookup_code("R50.9")
-        print(x)        
+        
+        # Load in test_nlp() method to generate a test dataframe
+        # of NLP entities for looking up standard codes
+        # This bit can take 20 seconds or so to run
+        test_nlp_data = ServiceTests.test_nlp(self)
+        
+        # This block looks up each concept *code* and returns
+        # OMOP standard codes
+        results = []
+        for index,row in test_nlp_data.iterrows():
+            results.append(omop_lookup.lookup_code(row['code']))
+        
+        # Stick all the results together, remove some unnecessary columns    
+        full_results = pd.concat(results,ignore_index=True).drop(
+            ['valid_start_date',
+             'valid_end_date',
+             'invalid_reason',
+             'relationship_id',], axis=1)     
+        full_results = test_nlp_data.merge(full_results, left_on='code', right_on='concept_code')  
+        print('RESULTS >>>>> \n', full_results)
+        
+    def test_omop(self):
+        
+        # Some test concept *codes*
+        dat = ['R50.9', '386661006', 'R51', '25064002']
+        
+         # Load in OMOPDetails class from Co-Connect Tools
+        omop_lookup = OMOPDetails()
+        
+        # This block looks up each concept *code* and returns
+        # OMOP standard codes
+        results = []
+        for i in dat:
+            results.append(omop_lookup.lookup_code(i))
+ 
+        full_results = pd.concat(results,ignore_index=True)
+        print(full_results)
