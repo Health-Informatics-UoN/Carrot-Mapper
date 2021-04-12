@@ -68,34 +68,10 @@
         <td style="width: 16.6%">{{ object.omop_field.table }}</td>
         <td style="width: 16.6%">{{ object.omop_field.field }}</td>
 	<td style="width: 16.6%">
-	  {## set i to be the index of the value we're on ##}
-          {% with i=forloop.counter %}
-          {## loop over the formset (editable fields) ##}
-          {% for form in formset  %}
-            {% if forloop.counter == i%}
-             {% for field in form %}
-	         {% if field.label == 'Source table' %}
-                   {{field}}
-	         {% endif %}
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-	  {% endwith %}
+    {{object.source_table}}
 	
         <td style="width: 16.6%">
-	  {## set i to be the index of the value we're on ##} 
-          {% with i=forloop.counter %}
-          {## loop over the formset (editable fields) ##}
-          {% for form in formset  %}
-            {% if forloop.counter == i%}
-          {% for field in form %}
-	  {% if field.label == 'Source field' %}
-	  {{ field }}
-	  {% endif %}
-	     {% endfor %} 
-            {% endif %}
-          {% endfor %}
-	  {% endwith %}
+          {{object.source_field}}
 	  
         <td style="width: 16.6%">
 	  {% if object.term_mapping %}
