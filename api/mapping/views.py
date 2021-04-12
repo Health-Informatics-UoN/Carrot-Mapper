@@ -583,6 +583,16 @@ class StructuralMappingTableListView(ModelFormSetView):
                         if len(qs)>0:
                             _source_field = qs[0]
                             _source_table = _source_field.scan_report_table
+                        #update model 
+                        mapping,created = StructuralMappingRule.objects.update_or_create(
+                            scan_report  = scan_report,
+                            omop_field   = omop_field,
+                            source_table = _source_table,
+                            source_field = _source_field,
+                            term_mapping = None,
+                            approved = True,
+                        )
+                        mapping.save()
                     # else try for date fields
                     elif 'date' in omop_field.field:
                         #look for is_date_events in the same table
@@ -593,21 +603,17 @@ class StructuralMappingTableListView(ModelFormSetView):
                         if len(qs)>0:
                             _source_field = qs[0]
                             _source_table = _source_field.scan_report_table
+                        #update model 
+                        mapping,created = StructuralMappingRule.objects.update_or_create(
+                            scan_report  = scan_report,
+                            omop_field   = omop_field,
+                            source_table = _source_table,
+                            source_field = _source_field,
+                            term_mapping = None,
+                            approved = True,
+                        )
+                        mapping.save()
                         
-                    
-                    #create a new model 
-                    mapping,created = StructuralMappingRule.objects.update_or_create(
-                        scan_report  = scan_report,
-                        omop_field   = omop_field,
-                        source_table = _source_table,
-                        source_field = _source_field,
-                        term_mapping = None,
-                        approved = True,
-                    )
-                    mapping.save()
-                    
-                
-                
                 for destination_field,term_mapping in rules.items():
 
                     try:
