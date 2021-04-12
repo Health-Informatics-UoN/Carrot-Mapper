@@ -116,6 +116,13 @@ class ServiceTests(TestCase):
             conceptID = -1
         )
         
+        srv5=ScanReportValue.objects.create(
+            scan_report_field = srf,
+            value = "Janitor",
+            frequency = 5,
+            conceptID = -1
+        )
+        
         DataDictionary.objects.create(
             source_value=srv1,
             dictionary_table="PatientSymptoms",
@@ -158,7 +165,18 @@ class ServiceTests(TestCase):
                 dictionary_value_description="Joint pain",
                 definition_fixed=True
     
-            )
+        )
+        
+        DataDictionary.objects.create(
+                source_value=srv4,
+                dictionary_table="Occupation",
+                dictionary_field="Occupation",
+                dictionary_field_description="Staff member occupation",
+                dictionary_value_code="Yes",
+                dictionary_value_description="Janitor",
+                definition_fixed=True
+    
+        )
         
         
         qs = DataDictionary.objects.all()
