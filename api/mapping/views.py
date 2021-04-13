@@ -378,7 +378,7 @@ class StructuralMappingTableListView(ModelFormSetView):
     def json_to_svg(self,data):
         return dag.make_dag(data)
             
-    def get_final_json(self,_mapping_data,tables=None):
+    def get_final_json(self,_mapping_data,tables=None,source_tables=None):
 
         _id_map = self.get_person_id_mapping()
 
@@ -389,6 +389,13 @@ class StructuralMappingTableListView(ModelFormSetView):
         #all because with this function
         #you can input these are paths to files
 
+        #print (type(_mapping_data))
+        #with open('mapping_data.json', 'w') as file:
+        #    file.write(json.dumps(_mapping_data))
+
+
+        #'destination_field': 'condition_source_concept_id', 'source_table': 'Questionnaire.csv', 'source_field
+        
         f_mapping = StringIO(json.dumps(_mapping_data))
         f_ids = StringIO(json.dumps(_id_map))
 
@@ -396,71 +403,44 @@ class StructuralMappingTableListView(ModelFormSetView):
             .StructuralMapping\
             .to_json(f_mapping,
                      f_ids,
-                     destination_tables = tables)
-                             
+                     filter_destination_tables = tables,
+                     filter_source_tables = source_tables)
+
         return structural_mapping
         
-
-
-    def retrieve(self,request,pk):
-        scan_report = ScanReport.objects.get(pk=pk)
-
-        patient_id_fields = ScanReportField\
-            .objects\
-            .filter(scan_report_table__scan_report=scan_report)\
-            .filter(is_patient_id=True)
-
-        if len(patient_id_fields)>0:
-            patient_id_field = patient_id_fields[0]
-            omop_fields = OmopField.objects\
-                                   .filter(field='person_id')\
-                                   .filter(table__table__in=[
-                                       #only do it for these tables for now
-                                       'person',
-                                       'observation',
-                                       'conditon_occurrence',
-                                       'visit_occurrence',
-                                       'measurement',
-                                   ])
-            
-            for omop_field in omop_fields:
-                #create a new model 
-                mapping,created = StructuralMappingRule.objects.get_or_create(
-                    scan_report  = scan_report,
-                    omop_field   = omop_field,
-                    source_table = patient_id_field.scan_report_table,
-                    source_field = patient_id_field,
-                    term_mapping = "null",
-                    approved = True,
-                )
-                mapping.save()
-
-        date_fields = ScanReportField\
-            .objects\
-            .filter(scan_report_table__scan_report=scan_report)\
-            .filter(date_type__gt=0)
-        
-
-        for date_field in date_fields:
-
-            omop_field = OmopField.objects\
-                                  .get(field=date_field.date_type)
-
-            mapping,created = StructuralMappingRule.objects.get_or_create(
-                scan_report  = scan_report,
-                omop_field   = omop_field,
-                source_table = date_field.scan_report_table,
-                source_field = date_field,
-                term_mapping = "null",
-                approve = True,
-            )
-            mapping.save()
-        
-
     def clean(self):
         StructuralMappingRule.objects.all().delete()
-            
-    def generate(self,request,pk):
+
+
+    #need a quality check if multiple date events are found in the table
+    def find_date_event(self,source_table):
+        #look for is_date_events in the same table
+        qs = source_table.scanreportfield_set\
+                         .all()\
+                         .filter(is_date_event=True)
+        #return if found
+        if len(qs)>0:
+            _source_field = qs[0]
+            return _source_field
+
+    #need a quality check for if multiple person ids are found in the table
+    def find_person_id(self,source_table):
+        #look in the current source_table
+        # the source_table is the table associated with
+        # the field that has had a concept id set
+        #
+        # Look for any is_patient_id
+        qs = source_table.scanreportfield_set\
+                         .all()\
+                         .filter(is_patient_id=True)
+        # if any have been found
+        if len(qs)>0:
+            _source_field = qs[0]
+            return _source_field
+        
+        
+    def generate(self,request):
+        pk = self.kwargs.get('pk')
 
         #retrieve old ones (dates and person ids)
         #self.retrieve(request,pk)
@@ -525,98 +505,11 @@ class StructuralMappingTableListView(ModelFormSetView):
             
             #loop over the destination and rule set for each domain found
             for destination_table,rules in rules_set.items():
-
                 #temp hack to stop generating rules for the 'big 4'
                 if destination_table not in allowed_destination_tables:
                     continue
 
-                
-                
-                #find all fields for this destination table
-                all_destination_fields = omop_lookup.get_fields(destination_table)
-
-                #find ones that havent been mapped
-                #this is going to be all except:
-                #<domain>_source_value, <domain>_concept_id, <domain>_source_concept_id
-                unmapped_fields = list(set(all_destination_fields)
-                                       - set(rules.keys()))
-
-                #check for existing fields 
-                existing_fields = [
-                    x.omop_field.field
-                    for x in StructuralMappingRule\
-                    .objects\
-                    .filter(scan_report=scan_report)\
-                    .filter(source_field__isnull=False)\
-                    .filter(omop_field__table__table=destination_table)
-                ]
-                #remove them from unmapped_fields
-                unmapped_fields = list(set(unmapped_fields) - set(existing_fields))
-                                
-                #build some blank rules for these unmapped ones first
-                for unmapped_field in unmapped_fields:
-                   
-                    #find the omop field 
-                    try:
-
-                        omop_field = OmopField.objects\
-                                              .get(table__table=destination_table,
-                                                   field=unmapped_field)
-                        
-                    except Exception as err: #mapping.models.OmopField.DoesNotExist:
-                        messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
-                        continue
-
-                    #attempt to find person_ids and date events
-                    _source_table = None
-                    _source_field = None
-                    if omop_field.field == 'person_id':
-                        #look in the current source_table
-                        # the source_table is the table associated with
-                        # the field that has had a concept id set
-                        #
-                        # Look for any is_patient_id
-                        qs = source_table.scanreportfield_set\
-                                         .all()\
-                                         .filter(is_patient_id=True)
-                        # if any have been found
-                        # set the first of these found as the source field and table
-                        if len(qs)>0:
-                            _source_field = qs[0]
-                            _source_table = _source_field.scan_report_table
-                        #update model 
-                        mapping,created = StructuralMappingRule.objects.update_or_create(
-                            scan_report  = scan_report,
-                            omop_field   = omop_field,
-                            source_table = _source_table,
-                            source_field = _source_field,
-                            term_mapping = None,
-                            approved = True,
-                        )
-                        mapping.save()
-                    # else try for date fields
-                    elif 'date' in omop_field.field:
-                        #look for is_date_events in the same table
-                        qs = source_table.scanreportfield_set\
-                                         .all()\
-                                         .filter(is_date_event=True)
-                        #set them
-                        if len(qs)>0:
-                            _source_field = qs[0]
-                            _source_table = _source_field.scan_report_table
-                        #update model 
-                        mapping,created = StructuralMappingRule.objects.update_or_create(
-                            scan_report  = scan_report,
-                            omop_field   = omop_field,
-                            source_table = _source_table,
-                            source_field = _source_field,
-                            term_mapping = None,
-                            approved = True,
-                        )
-                        mapping.save()
-                        
                 for destination_field,term_mapping in rules.items():
-
                     try:
                         omop_field = OmopField.objects\
                                               .get(table__table=destination_table,
@@ -629,23 +522,8 @@ class StructuralMappingTableListView(ModelFormSetView):
                         #do not make a warning about this
                         if all(x not in destination_field
                                for x in ['_source_value','_source_concept_id','_concept_id']):
-                            messages.warning(request,f'{destination_table}::{unmapped_field} is somehow misssing??')
+                            messages.warning(request,f'{destination_table}::{destination_field} is somehow misssing??')
                         continue
-
-
-                    #check if a blank rule exists already
-                    existing = StructuralMappingRule.objects.filter(
-                        scan_report  = scan_report,
-                        omop_field   = omop_field,
-                        source_table = None,
-                        source_field = None,
-                        term_mapping = None,
-                    )
-                    #if there are blank rules for this omop_field
-                    #delete the blank rule before we create one with
-                    #source_table, source_field and term_mapping set
-                    existing.delete()
-                    
                     
                     #create a new model 
                     mapping,created = StructuralMappingRule.objects.update_or_create(
@@ -658,13 +536,69 @@ class StructuralMappingTableListView(ModelFormSetView):
                     )
                     mapping.save()
 
-            
-    def download_structural_mapping(self,request,pk,return_type='json'):
+                    #add mapping for person id
+                    #find the field in the table that is marked as person_d
+                    person_id_source_field = self.find_person_id(source_table)
+                    #get the associated OmopField Object (aka destination_table::person_id)
+                    person_id_omop_field = OmopField.objects\
+                                                 .get(table__table=destination_table,
+                                                      field='person_id')
+                    #create/update a new rule for this
+                    #- this is going to be called multiple times needlessly,
+                    #  it could be broken out of this loop
+                    #  "update" should save us need to check if already exists
+                    mapping,created = StructuralMappingRule.objects.update_or_create(
+                        scan_report  = scan_report,
+                        omop_field   = person_id_omop_field,
+                        source_table = source_table,
+                        source_field = person_id_source_field,
+                        term_mapping = None,
+                        approved = True
+                    )
+                    mapping.save()
+
+                    primary_date_source_field = self.find_date_event(source_table)
+
+                    #this is just looking up a dictionary in the OmopDetails() class
+                    # e.g. { "person":"birth_datetime"... }
+                    #this could easily be in MappingPipelines 
+                    primary_date_omop_field = omop_lookup\
+                        .get_primary_date_field(omop_field.table.table)
+
+                    #get the actual omop field object
+                    primary_date_omop_field = OmopField.objects\
+                                                       .get(table__table=destination_table,
+                                                            field=primary_date_omop_field)
+                                        
+                    #make another mapping for this date object
+                    mapping,created = StructuralMappingRule.objects.update_or_create(
+                        scan_report  = scan_report,
+                        omop_field   = primary_date_omop_field,
+                        source_table = source_table,
+                        source_field = primary_date_source_field,
+                        term_mapping = None,
+                        approved = True
+                    )
+                    mapping.save()
+
+                    
+                #loop over rules
+            #loop over rules set
+        #loop over all fields containing a concept id
+
+    
+
+
+                    
+    def download_structural_mapping(self,request,return_type='json'):
+        pk = self.kwargs.get('pk')
+
         scan_report = ScanReport.objects.get(pk=pk)
 
         rules = StructuralMappingRule\
             .objects\
             .filter(scan_report=scan_report)
+        #.order_by('omop_field__table','omop_field__field','source_table__name','source_field__name')
 
         
         outputs = []
@@ -710,11 +644,22 @@ class StructuralMappingTableListView(ModelFormSetView):
             fname = f"{scan_report.data_partner}"\
                 f"_{scan_report.dataset}_structural_mapping.json"
 
-            if 'omop_table' in self.kwargs:
-                outputs = self.get_final_json(outputs,tables=[self.kwargs['omop_table']])
-            else:
-                outputs = self.get_final_json(outputs)
-                
+
+            tables = None
+            table = self.kwargs.get('omop_table')
+            if table is not None:
+                tables = [table]
+
+            source_tables = None
+            source_table = self.kwargs.get('source_table')
+            if source_table is not None:
+                source_tables = [source_table]
+
+            outputs = self.get_final_json(outputs,
+                                          tables=tables,
+                                          source_tables=source_tables
+            )
+
             svg_output = self.json_to_svg(outputs['cdm'])
             
             return HttpResponse(svg_output,content_type='image/svg+xml')
@@ -742,20 +687,16 @@ class StructuralMappingTableListView(ModelFormSetView):
     
     def post(self,request,*args, **kwargs):
         #
-        pk = self.kwargs.get('pk')
         if request.POST.get('download-sm') is not None:
-            return self.download_structural_mapping(request,pk)
+            return self.download_structural_mapping(request)
         elif request.POST.get('generate') is not None:
-            self.generate(request,pk)
+            self.generate(request)
             return redirect(request.path)
         elif request.POST.get('clean') is not None:
             self.clean()
             return redirect(request.path)
-        elif request.POST.get('retrieve') is not None:
-            self.retrieve(request,pk)
-            return redirect(request.path)
         elif request.POST.get('svg') is not None:
-            return self.download_structural_mapping(request,pk,return_type='svg')
+            return self.download_structural_mapping(request,return_type='svg')
         else:
             super().post(request,*args, **kwargs)
             pass
@@ -778,11 +719,39 @@ class StructuralMappingTableListView(ModelFormSetView):
         
         omop_tables = list(set(omop_tables))
         omop_tables.sort()
-        
+
+
+        #check to see if the user has asked to filter on a table
+        #e.g. person
+        filtered_omop_table = self.kwargs.get('omop_table')
+
+        source_tables = []
+        if filtered_omop_table:
+            #find all source tables that are mapping to this table
+            #so we can pass this context as an additional filter
+            source_tables = [
+                x.source_table.name
+                for x in StructuralMappingRule.objects\
+                .all()\
+                .filter(scan_report=scan_report, omop_field__table__table=filtered_omop_table)
+            ]
+            
+            source_tables = list(set(source_tables))
+            source_tables.sort()
+
+            #if there's only one source table
+            #dont bother allowing a filter on differing tables as its pointless
+            if len(source_tables) == 1:
+                source_tables = []
+
+            
         context.update(
             {
                 "omop_tables" : omop_tables,
                 "scan_report": scan_report,
+                "filtered_omop_table": filtered_omop_table,
+                "source_tables": source_tables,
+                
             }
         )
 
@@ -793,16 +762,21 @@ class StructuralMappingTableListView(ModelFormSetView):
         
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
-        filter_term = self.kwargs.get("omop_table")
-        
+        destination_table_filter_term = self.kwargs.get("omop_table")
+        source_table_filter_term = self.kwargs.get('source_table')
         
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term)\
-                   .order_by('omop_field__table','omop_field__field','source_field__name')
+                   .order_by('omop_field__table','omop_field__field','source_table__name','source_field__name')
 
-            if filter_term is not None:
-                qs = qs.filter(omop_field__table__table=filter_term)
-            
+            if destination_table_filter_term is not None:
+                qs = qs.filter(omop_field__table__table=destination_table_filter_term)
+
+                if source_table_filter_term is not None:
+                    qs = qs.filter(source_table__name=source_table_filter_term)
+                    
+                
+                
             return qs
 
 
