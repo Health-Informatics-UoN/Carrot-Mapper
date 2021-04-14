@@ -27,22 +27,20 @@
 <hr>
 {% if object_list %}
 <h6>Filter On Destination Table</h6>
-<button type="submit" class="btn btn-info" name='generate' >
+<button type="submit" class="btn btn-info"  >
   <a href="{% url 'tables-structural-mapping' pk=scan_report.id %}" style="color:#ffffff; text-decoration: none;"> All </a> 
 </button>
 
  {% for omop_table in omop_tables %}
- <button type="submit" class="btn btn-info" name='generate' >
-   <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=omop_table %}" style="color:#ffffff; text-decoration: none;"> {{ omop_table }} </a>
-  </button> 
+   <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=omop_table %}" class="btn btn-info"> {{ omop_table }} </a>
 {% endfor %}
 
+ {% if source_tables %}
  <br><br>
- <h6>Additionally Filter On Source Table</h6>
-{% for source_table in source_tables %}
- <button type="submit" class="btn btn-warning">
-   <a href="{% url 'tables-structural-mapping-filter-lvl2' pk=scan_report.id omop_table=filtered_omop_table source_table=source_table %}" style="text-decoration: none;"> {{ source_table }} </a>
- </button> 
+ <h6>Filter On Source Table</h6>
+ {% endif %}
+ {% for source_table in source_tables %}
+   <a href="{% url 'tables-structural-mapping-filter-lvl2' pk=scan_report.id omop_table=filtered_omop_table source_table=source_table %}" class="btn btn-dark"> {{ source_table }} </a>
  
 {% endfor %}
  
