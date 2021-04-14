@@ -1,11 +1,11 @@
+import csv
 from django import forms
+from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-import csv
 from xlsx2csv import Xlsx2csv
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES, ScanReport
+from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES
 
 
 class ScanReportForm(forms.Form):
