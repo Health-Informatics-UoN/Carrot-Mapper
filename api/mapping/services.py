@@ -93,9 +93,8 @@ def process_scan_report(scan_report_id):
 
     with open(filepath, "rt") as f:
         reader = csv.reader(f)
-
         next(reader)  # Skip header row
-
+    
         # For each row in the Field Overview sheet
         # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
@@ -112,7 +111,6 @@ def process_scan_report(scan_report_id):
                     scan_report = ScanReport.objects.get(pk=scan_report_id)
                     scan_report.delete()
                 if len(row)>=11:
-                    upload=True
                     scan_report_table, _ = ScanReportTable.objects.get_or_create(
                         scan_report=scan_report,
                         name=name,
@@ -218,8 +216,8 @@ def process_scan_report(scan_report_id):
                 source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
             )
+    
             
-
 def build_usagi_index():
     # Use 'build' to create index for the first time.
     # Index stored in data/usagi/mainIndex
