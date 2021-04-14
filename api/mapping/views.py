@@ -389,13 +389,6 @@ class StructuralMappingTableListView(ModelFormSetView):
         #all because with this function
         #you can input these are paths to files
 
-        #print (type(_mapping_data))
-        #with open('mapping_data.json', 'w') as file:
-        #    file.write(json.dumps(_mapping_data))
-
-
-        #'destination_field': 'condition_source_concept_id', 'source_table': 'Questionnaire.csv', 'source_field
-        
         f_mapping = StringIO(json.dumps(_mapping_data))
         f_ids = StringIO(json.dumps(_id_map))
 
