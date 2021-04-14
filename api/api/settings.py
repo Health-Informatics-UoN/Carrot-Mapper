@@ -140,3 +140,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 CELERY_TIMEZONE = 'UTC'
 CELERY_BROKER_URL = 'redis://redis'
+
+# NLP API KEY
+NLP_API_KEY=os.getenv('NLP_API_KEY')

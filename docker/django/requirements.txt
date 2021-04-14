@@ -10,6 +10,7 @@ psycopg2
 djangorestframework
 markdown
 django-filter
+requests
 
 #for coconnect tools, installing here speeds up docker build
 numpy
