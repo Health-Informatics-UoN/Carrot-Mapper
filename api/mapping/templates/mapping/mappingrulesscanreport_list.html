@@ -67,6 +67,7 @@
 	<th scope="col">Source Table</th>
 	<th scope="col">Source Field</th>
 	<th scope="col">Term Map</th>
+	<th scope="col">Operation</th>
 	<th scope="col">Approved</th>
     </tr>
     </thead>
@@ -90,6 +91,23 @@
 	</td>
 	
 	<td style="width: 16.6%">
+	  {% if 'date' in object.omop_field.field %}
+          {## set i to be the index of the value we're on ##}
+          {% with i=forloop.counter %}
+          {## loop over the formset (editable fields) ##}
+          {% for form in formset  %}
+            {% if forloop.counter == i%}
+             {% for field in form %}
+ 	         {% if field.label == 'Operation' or field.label == 'Id' %}
+                   {{field}}
+ 	         {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+ 	  {% endwith %}
+	  {% endif %}
+	</td> 
+	<td style="width: 16.6%">
  {## set i to be the index of the value we're on ##}
           {% with i=forloop.counter %}
           {## loop over the formset (editable fields) ##}
@@ -103,7 +121,7 @@
             {% endif %}
           {% endfor %}
  	  {% endwith %}
-	</td>
+	</td> 
       </tr>
       {% endfor %}
     </tbody>
