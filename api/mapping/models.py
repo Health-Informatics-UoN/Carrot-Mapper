@@ -272,10 +272,6 @@ class StructuralMappingRule(BaseModel):
 
     approved = models.BooleanField(default=False)
 
-
-    
-    
-
     def __str__(self):
         return f'{self.term_mapping}'
 
