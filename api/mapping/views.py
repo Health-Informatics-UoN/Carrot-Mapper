@@ -111,7 +111,7 @@ class ScanReportTableListView(ListView):
 class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["is_patient_id","date_type","concept_id"]
-    fields = ["is_patient_id","is_date_event","concept_id"]
+    fields = ["is_patient_id","is_birth_date","is_date_event","concept_id"]
     #exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
     def get_queryset(self):
@@ -416,6 +416,17 @@ class StructuralMappingTableListView(ModelFormSetView):
             _source_field = qs[0]
             return _source_field
 
+    #need a quality check if multiple date events are found in the table
+    def find_birth_event(self,source_table):
+        #look for is_date_events in the same table
+        qs = source_table.scanreportfield_set\
+                         .all()\
+                         .filter(is_birth_date=True)
+        #return if found
+        if len(qs)>0:
+            _source_field = qs[0]
+            return _source_field
+
     #need a quality check for if multiple person ids are found in the table
     def find_person_id(self,source_table):
         #look in the current source_table
@@ -550,8 +561,12 @@ class StructuralMappingTableListView(ModelFormSetView):
                     )
                     mapping.save()
 
-                    primary_date_source_field = self.find_date_event(source_table)
-
+                    primary_date_source_field = None
+                    if destination_table == 'person':
+                        primary_date_source_field = self.find_birth_event(source_table)
+                    else:
+                        primary_date_source_field = self.find_date_event(source_table)
+                        
                     #this is just looking up a dictionary in the OmopDetails() class
                     # e.g. { "person":"birth_datetime"... }
                     #this could easily be in MappingPipelines 
