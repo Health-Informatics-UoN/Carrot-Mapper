@@ -261,8 +261,16 @@ class StructuralMappingRule(BaseModel):
         null=True
     )
 
+
+    operation = models.CharField(
+        max_length=128,
+        choices=OPERATION_CHOICES,
+        default=OPERATION_NONE,
+        null=True,
+        blank=True
+    )
+
     approved = models.BooleanField(default=False)
-   
 
     def __str__(self):
         return f'{self.term_mapping}'

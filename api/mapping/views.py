@@ -332,7 +332,8 @@ class AddMappingRuleFormView(FormView):
 
 @method_decorator(login_required,name='dispatch')
 class StructuralMappingTableListView(ModelFormSetView):
-    fields = ['source_table','source_field','approved']
+    #fields = ['source_table','source_field','operation','approved']
+    fields = ['operation','approved']
     factory_kwargs = {"can_delete": False, "extra": False}
     
     model = StructuralMappingRule
@@ -341,39 +342,39 @@ class StructuralMappingTableListView(ModelFormSetView):
 
     #queryset = qs.filter()
     #turn off this, dont use it
-    def construct_formset(self):
-        """
-        overide this function so we can edit the forms
-        https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
+    # def construct_formset(self):
+    #     """
+    #     overide this function so we can edit the forms
+    #     https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
         
-        """
-        formset_class = self.get_formset()
+    #     """
+    #     formset_class = self.get_formset()
 
-        #too slow?
-        formset = formset_class(**self.get_formset_kwargs())
-        #loop over the formset
-        for i,form in enumerate(formset):
-            #find the source table
-            source_table_pk = form['source_table'].initial
-            #get the choices for the source field,
-            #these will be all source fields by default
-            qs = form['source_field'].field.widget.choices.queryset
-            #filter them to only allow ones associated with selected source_table
-            qs = qs.filter(scan_report_table=source_table_pk)\
-                .order_by('name')
-            #modify and update the formset
-            form['source_field'].field.widget.choices.queryset = qs
+    #     #too slow?
+    #     formset = formset_class(**self.get_formset_kwargs())
+    #     #loop over the formset
+    #     for i,form in enumerate(formset):
+    #         #find the source table
+    #         source_table_pk = form['source_table'].initial
+    #         #get the choices for the source field,
+    #         #these will be all source fields by default
+    #         qs = form['source_field'].field.widget.choices.queryset
+    #         #filter them to only allow ones associated with selected source_table
+    #         qs = qs.filter(scan_report_table=source_table_pk)\
+    #             .order_by('name')
+    #         #modify and update the formset
+    #         form['source_field'].field.widget.choices.queryset = qs
 
-            #order this crap
-            qs = form['source_table'].field.widget.choices.queryset
-            qs = qs.order_by('name')
+    #         #order this crap
+    #         qs = form['source_table'].field.widget.choices.queryset
+    #         qs = qs.order_by('name')
 
-            pk = self.kwargs.get('pk')
-            qs = qs.filter(scan_report = pk)
-            form['source_table'].field.widget.choices.queryset = qs
+    #         pk = self.kwargs.get('pk')
+    #         qs = qs.filter(scan_report = pk)
+    #         form['source_table'].field.widget.choices.queryset = qs
             
-        #return the modified form set
-        return formset
+    #     #return the modified form set
+    #     return formset
 
     def json_to_svg(self,data):
         return dag.make_dag(data)
@@ -637,8 +638,12 @@ class StructuralMappingTableListView(ModelFormSetView):
             output['term_mapping'] = None
             if rule.term_mapping:
                 output['term_mapping'] = json.loads(rule.term_mapping)
-            
-            output['operation'] = None#rule.operation)
+
+            #need to implement multiple operations, one day
+            operations = None
+            if rule.operation and rule.operation != 'NONE':
+                operations = [rule.operation]
+            output['operations'] = operations
             outputs.append(output)
             
         if len(outputs) == 0:
