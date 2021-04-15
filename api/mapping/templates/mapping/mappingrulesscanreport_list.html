@@ -91,7 +91,7 @@
 	</td>
 	
 	<td style="width: 16.6%">
-	  {% if 'date' in object.omop_field.field %}
+	  {% if 'date' in object.omop_field.field or 'source_value' in object.omop_field.field %}
           {## set i to be the index of the value we're on ##}
           {% with i=forloop.counter %}
           {## loop over the formset (editable fields) ##}
