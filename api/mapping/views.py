@@ -742,7 +742,6 @@ class StructuralMappingTableListView(ModelFormSetView):
         if filtered_omop_table:
             #find all source tables that are mapping to this table
             #so we can pass this context as an additional filter
-            
             source_tables = [
                 x.source_table.name
                 for x in StructuralMappingRule.objects\
