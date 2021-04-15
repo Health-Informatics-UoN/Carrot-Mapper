@@ -748,7 +748,6 @@ class StructuralMappingTableListView(ModelFormSetView):
                 for x in StructuralMappingRule.objects\
                 .all()\
                 .filter(scan_report=scan_report, omop_field__table__table=filtered_omop_table)
-                if x.source_table 
             ]
             
             source_tables = list(set(source_tables))
