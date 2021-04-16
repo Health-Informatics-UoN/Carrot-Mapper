@@ -35,7 +35,7 @@ class ScanReportForm(forms.Form):
             if set(set_header)==set(csv_header):
                 return self.cleaned_data['scan_report_file']
             else:
-                raise (forms.ValidationError("Please check the column names in your Scan Report"))
+                raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
         
       
 class AddMappingRuleForm(forms.Form):
