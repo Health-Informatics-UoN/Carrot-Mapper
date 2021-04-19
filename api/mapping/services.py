@@ -5,8 +5,9 @@ import sys
 import os
 import pandas as pd
 from django.contrib import messages
-
-
+import json
+import requests
+import time
 from .models import (
     ScanReport,
     ScanReportTable,
@@ -15,7 +16,7 @@ from .models import (
     DataDictionary,
 )
 
-
+from coconnect.tools.omop_db_inspect import OMOPDetails
 
 def process_scan_report_sheet_table(filename):
     """
@@ -304,3 +305,95 @@ def run_usagi(scan_report_id):
     # os.remove('/data/usagi/usagi_input/usagi.properties')
 
     print("USAGI FINISHED!")
+    
+def nlp_single_string(dict_string):
+    
+    """
+    This function allows you to pass a single text string to NLP
+    and return a list of all valid and standard OMOP codes for the
+    computed entity
+    
+    Returns a pandas dataframe
+    
+    """
+    
+    # Translate queryset into JSON-like dict for NLP
+    documents = []
+    documents.append(
+        {
+            "language": "en",
+            "id": 1,
+            "text": dict_string,
+        }
+    )
+
+    chunk = {"documents": documents}
+
+    # Define NLP URL/headers
+    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+    headers = {
+        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        "Content-Type": "application/json; utf-8",
+    }
+
+    payload = json.dumps(chunk)
+    response = requests.post(url, headers=headers, data=payload)
+    print(response.status_code, response.reason)
+    post_response_url = response.headers["operation-location"]
+    time.sleep(3)
+
+    print("PROCESSING JOB >>>", post_response_url)
+
+    req = requests.get(post_response_url, headers=headers)
+    job = req.json()
+
+    get_response = []
+    while job["status"] == "notStarted":
+        print(job["status"])
+        req = requests.get(post_response_url, headers=headers)
+        job = req.json()
+        print("Waiting...")
+        time.sleep(3)
+    else:
+        get_response.append(job["results"])
+        print("Completed! \n")
+
+    codes = []
+    keep = ["ICD9", "ICD10", "SNOMEDCT_US"]
+
+    # Mad nested for loops to get at the data in the response
+    for url in get_response:
+        for dict_entry in url["documents"]:
+            for entity in dict_entry["entities"]:
+                if "links" in entity.keys():
+                    for link in entity["links"]:
+                        if link["dataSource"] in keep:
+                            codes.append(
+                                [
+                                    dict_entry["id"],
+                                    entity["text"],
+                                    entity["category"],
+                                    entity["confidenceScore"],
+                                    link["dataSource"],
+                                    link["id"],
+                                ]
+                            )
+
+    codes_df = pd.DataFrame(
+        codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
+    )
+    print("CODES FROM NLP \n", codes_df)
+
+    # Load in OMOPDetails class from Co-Connect Tools
+    omop_lookup = OMOPDetails()
+
+    # This block looks up each concept *code* and returns
+    # OMOP standard codes
+    results = []
+    for index, row in codes_df.iterrows():
+        results.append(omop_lookup.lookup_code(row["code"]))
+
+    full_results = pd.concat(results, ignore_index=True)
+    print(full_results)
+    
+    return full_results
