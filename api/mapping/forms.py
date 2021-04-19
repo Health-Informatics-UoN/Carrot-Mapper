@@ -4,8 +4,11 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+
+from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
+                            DocumentFile, DocumentType, OmopField, OmopTable,
+                            ScanReport)
 from xlsx2csv import Xlsx2csv
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES
 
 
 class ScanReportForm(forms.Form):
@@ -38,41 +41,6 @@ class ScanReportForm(forms.Form):
                 raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
         
       
-class AddMappingRuleForm(forms.Form):
-    omop_table = forms.ModelChoiceField(
-        label="OMOP Table",
-        queryset=OmopTable.objects.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    omop_field = forms.ModelChoiceField(
-        label="OMOP Field",
-        queryset=OmopField.objects.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    operation = forms.ChoiceField(
-        label='Operation',
-        choices=OPERATION_CHOICES,
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["omop_field"].queryset = OmopField.objects.none()
-
-        if "omop_table" in self.data:
-            try:
-                omop_table_id = int(self.data.get("omop_table"))
-                self.fields["omop_field"].queryset = OmopField.objects.filter(
-                    table_id=omop_table_id
-                ).order_by("field")
-            except (ValueError, TypeError):
-                pass  # invalid input from the client; ignore and fallback to empty City queryset
-        # elif self.instance.pk:
-        #     self.fields['omop_field'].queryset = self.instance.omop_table.omop_field_set.order_by('field')
-
-
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(
         required=True, label="Email", error_messages={"exists": "Oops"}
