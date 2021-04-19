@@ -310,11 +310,5 @@ class ServiceTests(TestCase):
     def test_nlp_single_string(self):
         
         x = nlp_single_string(dict_string="the patient has a headache")
-        x.to_csv("test_csv.csv")
-        print(type(x))
-        print('LENGTH >>> ', len(x.index))
-        
-        assert(x, len(3))
-
-
-        return full_results
+        y = pd.read_csv("/data/tests/nlp_single_string_testdata.csv")
+        assert(x, y)
