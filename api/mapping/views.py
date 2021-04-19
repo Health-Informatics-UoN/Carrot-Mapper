@@ -611,7 +611,6 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         
         outputs = []
-        #output={ name:None for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
         for rule in rules:
             #if these havent been defined, skip.....
