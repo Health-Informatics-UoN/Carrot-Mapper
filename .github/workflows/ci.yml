@@ -9,14 +9,16 @@ jobs:
       RUNNER_ALLOW_RUNASROOT: true
     steps:
       - uses: actions/checkout@v2
-      - name: Install pylint
-        run: pip3 install pylint
-      - name: List changed files
-        run: |
-          echo `git diff origin/master --name-only | grep .py` >> changed.txt
-      - name: Check PEP8
-        run: |
-          cat changed.txt | xargs pylint
+      - run: git diff origin/master HEAD
+      - run: git diff origin/master HEAD --name-only
+      #- name: Install pylint
+      #  run: pip3 install pylint
+      #- name: List changed files
+      #  run: |
+      #    echo `git diff origin/master --name-only | grep .py` >> changed.txt
+      #- name: Check PEP8
+      #  run: |
+      #    cat changed.txt | xargs pylint
   build:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
