@@ -1,5 +1,10 @@
 from django.test import TestCase
-from .services import process_scan_report_sheet_table, build_usagi_index, run_usagi, nlp_single_string
+from .services import (
+    process_scan_report_sheet_table,
+    build_usagi_index,
+    run_usagi,
+    nlp_single_string,
+)
 import time, requests, os, json, math
 import pandas as pd
 
@@ -24,7 +29,6 @@ from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 class ServiceTests(TestCase):
-    
     def test_process_scan_report_sheet_table(self):
 
         # Tell it what file you want to process
@@ -306,7 +310,6 @@ class ServiceTests(TestCase):
         full_results = pd.concat(results, ignore_index=True)
         print(full_results)
 
-    
     def test_nlp_single_string(self):
         """
         This test method checks that the Azure Cognitive Services API
@@ -314,4 +317,4 @@ class ServiceTests(TestCase):
         """
         x = nlp_single_string(dict_string="the patient has a headache")
         y = pd.read_csv("/data/tests/nlp_single_string_testdata.csv")
-        assert(x, y)
+        assert (x, y)
