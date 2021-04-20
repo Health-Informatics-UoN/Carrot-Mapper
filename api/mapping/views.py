@@ -1187,13 +1187,18 @@ class NLPFormView(FormView):
     success_url = reverse_lazy("nlp")
 
     def form_valid(self, form):
-        # Create an entry in ScanReport for the uploaded Scan Report
-        nlp_query = NLPModel.objects.create(
+        
+        NLPModel.objects.create(
             user_string=form.cleaned_data["user_string"],
+            json_response = "holding data",
         )
-
-        nlp_single_string_task.delay(dict_string = form.cleaned_data["user_string"])
+        
+        
+        pk=NLPModel.objects.latest('id')
+        print('NLP MODEL PK >>> ', pk.id)
+        nlp_single_string_task.delay(pk = pk.id, dict_string = form.cleaned_data["user_string"])
         
         return super().form_valid(form)
+
     
     

@@ -310,7 +310,7 @@ def run_usagi(scan_report_id):
     print("USAGI FINISHED!")
 
 
-def nlp_single_string(dict_string):
+def nlp_single_string(pk, dict_string):
 
     """
     This function allows you to pass a single text string to NLP
@@ -364,6 +364,11 @@ def nlp_single_string(dict_string):
     else:
         get_response.append(job["results"])
         print("Completed! \n")
+        
+    resp = str(get_response[0])
+        
+    NLPModel.objects.update(id=pk,
+                            json_response=resp)
 
     # Define which codes we want to keep
     codes = []
