@@ -1171,3 +1171,7 @@ def merge_dictionary(request):
          messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
 
     return render(request, "mapping/mergedictionary.html")
+
+@login_required
+def nlp(request):
+    return render(request, "mapping/nlp.html", {})
