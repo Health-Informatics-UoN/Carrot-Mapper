@@ -1,10 +1,23 @@
 from django.contrib import admin
 
-from .models import DocumentType, Source, DataPartner, ScanReport, \
-    ScanReportTable, \
-    ScanReportField, ScanReportValue, ScanReportAssertion, \
-    ClassificationSystem, OmopTable, OmopField, Document, \
-    DocumentFile, DataDictionary, StructuralMappingRule
+from .models import (
+    DocumentType,
+    Source,
+    DataPartner,
+    ScanReport,
+    ScanReportTable,
+    ScanReportField,
+    ScanReportValue,
+    ScanReportAssertion,
+    ClassificationSystem,
+    OmopTable,
+    OmopField,
+    Document,
+    DocumentFile,
+    DataDictionary,
+    StructuralMappingRule,
+    NLPModel,
+)
 
 
 admin.site.register(DataPartner)
@@ -22,3 +35,4 @@ admin.site.register(StructuralMappingRule)
 admin.site.register(Document)
 admin.site.register(DocumentFile)
 admin.site.register(DataDictionary)
+admin.site.register(NLPModel)

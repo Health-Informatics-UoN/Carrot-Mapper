@@ -37,13 +37,14 @@ from django.views.generic.edit import (CreateView, DeleteView, FormView,
 from extra_views import ModelFormSetView
 
 from .forms import (DictionarySelectForm, DocumentFileForm, DocumentForm,
-                    ScanReportAssertionForm, ScanReportForm, UserCreateForm)
+                    ScanReportAssertionForm, ScanReportForm, UserCreateForm,
+                    NLPForm)
 from .models import (DataDictionary, Document, DocumentFile, OmopField,
                      OmopTable, ScanReport, ScanReportAssertion,
                      ScanReportField, ScanReportTable, ScanReportValue,
-                     StructuralMappingRule)
+                     StructuralMappingRule, NLPModel)
 from .services import process_scan_report, run_usagi
-from .tasks import process_scan_report_task, run_usagi, run_usagi_task
+from .tasks import process_scan_report_task, run_usagi, run_usagi_task, nlp_single_string_task
 
 #to refresh/resync with loading from the database, switch to:
 # omop_lookup = OMOPDetails(load_from_db=True)
@@ -1172,6 +1173,27 @@ def merge_dictionary(request):
 
     return render(request, "mapping/mergedictionary.html")
 
-@login_required
-def nlp(request):
-    return render(request, "mapping/nlp.html", {})
+
+
+@method_decorator(login_required,name='dispatch')
+class NLPListView(ListView):
+    model=NLPModel
+
+    
+@method_decorator(login_required,name='dispatch')
+class NLPFormView(FormView):
+    form_class = NLPForm
+    template_name = "mapping/nlpmodel_form.html"
+    success_url = reverse_lazy("nlp")
+
+    def form_valid(self, form):
+        # Create an entry in ScanReport for the uploaded Scan Report
+        nlp_query = NLPModel.objects.create(
+            user_string=form.cleaned_data["user_string"],
+        )
+
+        nlp_single_string_task.delay(dict_string = form.cleaned_data["user_string"])
+        
+        return super().form_valid(form)
+    
+    

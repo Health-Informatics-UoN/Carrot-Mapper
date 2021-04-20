@@ -14,6 +14,7 @@ from .models import (
     ScanReportField,
     ScanReportValue,
     DataDictionary,
+    NLPModel
 )
 
 from coconnect.tools.omop_db_inspect import OMOPDetails
