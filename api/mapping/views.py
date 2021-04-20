@@ -31,7 +31,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import (CreateView, DeleteView, FormView,
                                        UpdateView)
 from extra_views import ModelFormSetView
@@ -1201,4 +1201,25 @@ class NLPFormView(FormView):
         return super().form_valid(form)
 
     
+# @method_decorator(login_required,name='dispatch')
+# class NLPDetailView(DetailView):
+#     model = NLPModel
     
+#     def get_context_data(self, **kwargs):
+#         context = super(ViewJob, self).get_context_data(**kwargs)
+#         query = NLPModel.objects.get(pk=self.kwargs.get('pk'))
+        
+#         return context
+    
+@method_decorator(login_required,name='dispatch')
+class NLPDetailView(DetailView):
+    def get_context_data(self, **kwargs):
+        # context = super(NLPModel, self).get_context_data(**kwargs)
+        context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
+        
+        return render(request, 'mapping/nlpmodel_detail.html', context)
+    
+    # def get(self, request, *args, **kwargs):
+    #     query = get_object_or_404(NLPModel, pk=kwargs['pk'])
+    #     context = {'query': query}
+    #     return render(request, 'mapping/nlpmodel_detail.html', context)

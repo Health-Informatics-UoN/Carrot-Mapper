@@ -367,8 +367,10 @@ def nlp_single_string(pk, dict_string):
         
     resp = str(get_response[0])
         
-    NLPModel.objects.update(id=pk,
-                            json_response=resp)
+    # NLPModel.objects.update(pk=pk,
+    #                         json_response=resp)
+    
+    NLPModel.objects.filter(id=pk).update(json_response=resp)
 
     # Define which codes we want to keep
     codes = []
