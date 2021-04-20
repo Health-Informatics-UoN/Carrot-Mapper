@@ -336,6 +336,7 @@ def nlp_single_string(dict_string):
         "Content-Type": "application/json; utf-8",
     }
 
+    # Create payload, POST to the NLP servoce
     payload = json.dumps(chunk)
     response = requests.post(url, headers=headers, data=payload)
     print(response.status_code, response.reason)
@@ -344,9 +345,11 @@ def nlp_single_string(dict_string):
 
     print("PROCESSING JOB >>>", post_response_url)
 
+    # GET the response
     req = requests.get(post_response_url, headers=headers)
     job = req.json()
 
+    # Loop to wait for the job to finish running
     get_response = []
     while job["status"] != "succeeded":
         print(job["status"])
@@ -358,6 +361,7 @@ def nlp_single_string(dict_string):
         get_response.append(job["results"])
         print("Completed! \n")
 
+    # Define which codes we want to keep
     codes = []
     keep = ["ICD9", "ICD10", "SNOMEDCT_US"]
 
@@ -379,16 +383,18 @@ def nlp_single_string(dict_string):
                                 ]
                             )
 
+    # Create pandas datafram of results
     codes_df = pd.DataFrame(
         codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
     )
+    
     print("CODES FROM NLP \n", codes_df)
 
     # Load in OMOPDetails class from Co-Connect Tools
     omop_lookup = OMOPDetails()
 
     # This block looks up each concept *code* and returns
-    # OMOP standard codes
+    # OMOP standard conceptID
     results = []
     for index, row in codes_df.iterrows():
         results.append(omop_lookup.lookup_code(row["code"]))
