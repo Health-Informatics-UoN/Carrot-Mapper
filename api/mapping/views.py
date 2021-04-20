@@ -1213,11 +1213,21 @@ class NLPFormView(FormView):
     
 @method_decorator(login_required,name='dispatch')
 class NLPDetailView(DetailView):
-    def get_context_data(self, **kwargs):
-        # context = super(NLPModel, self).get_context_data(**kwargs)
-        context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
+    model = NLPModel
+    template_name='mapping/nlpmodel_detail.html'
+    
+    # queryset = NLPModel.objects.filter(pk=pk)
+    
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
+    #     return context
+    
+    # def get_context_data(self, **kwargs):
+    #     # context = super(NLPModel, self).get_context_data(**kwargs)
+    #     context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
         
-        return render(request, 'mapping/nlpmodel_detail.html', context)
+    #     return render(request, 'mapping/nlpmodel_detail.html', context)
     
     # def get(self, request, *args, **kwargs):
     #     query = get_object_or_404(NLPModel, pk=kwargs['pk'])

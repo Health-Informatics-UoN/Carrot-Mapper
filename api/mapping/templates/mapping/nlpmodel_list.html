@@ -14,7 +14,6 @@
     </thead>
     <tbody>
     {% for object in object_list %}
-    <tr>
         <td>{{ object.user_string|truncatechars:32 }}</td>
     </tr>
     {% endfor %}
