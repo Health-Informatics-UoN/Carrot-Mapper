@@ -348,7 +348,7 @@ def nlp_single_string(dict_string):
     job = req.json()
 
     get_response = []
-    while job["status"] == "notStarted":
+    while job["status"] != "succeeded":
         print(job["status"])
         req = requests.get(post_response_url, headers=headers)
         job = req.json()

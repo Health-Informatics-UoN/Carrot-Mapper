@@ -306,9 +306,12 @@ class ServiceTests(TestCase):
         full_results = pd.concat(results, ignore_index=True)
         print(full_results)
 
-    # Function to input a string, returns the conceptID
+    
     def test_nlp_single_string(self):
-        
+        """
+        This test method checks that the Azure Cognitive Services API
+        returns a 13-column, 3-row pandas dataframe for "headache"
+        """
         x = nlp_single_string(dict_string="the patient has a headache")
         y = pd.read_csv("/data/tests/nlp_single_string_testdata.csv")
         assert(x, y)
