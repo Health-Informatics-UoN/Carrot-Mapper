@@ -38,11 +38,8 @@ def nlp_single_string(pk, dict_string):
     # Create payload, POST to the NLP servoce
     payload = json.dumps(chunk)
     response = requests.post(url, headers=headers, data=payload)
-    print(response.status_code, response.reason)
     post_response_url = response.headers["operation-location"]
     time.sleep(3)
-
-    print("PROCESSING JOB >>>", post_response_url)
 
     # GET the response
     req = requests.get(post_response_url, headers=headers)
@@ -51,14 +48,11 @@ def nlp_single_string(pk, dict_string):
     # Loop to wait for the job to finish running
     get_response = []
     while job["status"] != "succeeded":
-        print(job["status"])
         req = requests.get(post_response_url, headers=headers)
         job = req.json()
-        print("Waiting...")
         time.sleep(3)
     else:
         get_response.append(job["results"])
-        print("Completed! \n")
 
     resp = str(get_response[0])
 
