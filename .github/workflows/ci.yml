@@ -9,6 +9,9 @@ jobs:
       RUNNER_ALLOW_RUNASROOT: true
     steps:
       - uses: actions/checkout@v2
+      - run: git status
+      - run: git branch -a
+      - run: git diff master HEAD
       - run: git diff origin/master HEAD
       - run: git diff origin/master HEAD --name-only
       #- name: Install pylint
