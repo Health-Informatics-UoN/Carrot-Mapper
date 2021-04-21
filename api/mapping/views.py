@@ -59,11 +59,10 @@ from .models import (
     StructuralMappingRule,
 )
 from .services import process_scan_report, run_usagi
+from .services_nlp import get_json_from_nlpmodel
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,
-    run_usagi,
-    run_usagi_task,
 )
 
 # to refresh/resync with loading from the database, switch to:
@@ -1260,11 +1259,14 @@ class NLPFormView(FormView):
 
     def form_valid(self, form):
 
+        # Create NLP model object on form submission
         NLPModel.objects.create(
             user_string=form.cleaned_data["user_string"],
             json_response="holding",
         )
 
+        # Grab the newly-created model object to get the PK
+        # Pass PK to Celery task which handles running the NLP code
         pk = NLPModel.objects.latest("id")
         print("NLP MODEL PK >>> ", pk.id)
         nlp_single_string_task.delay(
@@ -1282,59 +1284,12 @@ class NLPDetailView(DetailView):
     def get_context_data(self, **kwargs):
         query = NLPModel.objects.get(pk=self.kwargs.get("pk"))
 
-        # lil check to return something sensible if NLP hasn't finished running
+        # Small check to return something sensible if NLP hasn't finished running
         if query.json_response == "holding":
             context = {"user_string": query.user_string, "results": "Waiting"}
-
             return context
-
+        
         else:
-
-            # Define which codes we want to keep
-            codes = []
-            keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
-
-            json_response = ast.literal_eval(query.json_response)
-
-            # Mad nested for loops to get at the data in the response
-            for dict_entry in json_response["documents"]:
-                for entity in dict_entry["entities"]:
-                    if "links" in entity.keys():
-                        for link in entity["links"]:
-                            if link["dataSource"] in keep:
-                                codes.append(
-                                    [
-                                        dict_entry["id"],
-                                        entity["text"],
-                                        entity["category"],
-                                        entity["confidenceScore"],
-                                        link["dataSource"],
-                                        link["id"],
-                                    ]
-                                )
-
-            # Create pandas datafram of results
-            codes_df = pd.DataFrame(
-                codes,
-                columns=["key", "entity", "category", "confidence", "vocab", "code"],
-            )
-
-            # Load in OMOPDetails class from Co-Connect Tools
-            omop_lookup = OMOPDetails()
-
-            # This block looks up each concept *code* and returns
-            # OMOP standard conceptID
-            results = []
-            for index, row in codes_df.iterrows():
-                results.append(omop_lookup.lookup_code(row["code"]))
-
-            full_results = pd.concat(results, ignore_index=True)
-
-            full_results = full_results.merge(
-                codes_df, left_on="concept_code", right_on="code"
-            )
-            full_results = full_results.values.tolist()
-
-            context = {"user_string": query.user_string, "results": full_results}
-
+            json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
+            context = {"user_string": query.user_string, "results": json_response}
             return context
