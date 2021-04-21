@@ -529,3 +529,22 @@ class DataDictionary(BaseModel):
 
     def __str__(self):
         return self.id
+    
+
+class NLPModel(models.Model):
+    """
+    A temporary model to hold the results from NLP string searches
+    Created for Sprint 14
+    """
+    user_string = models.TextField(
+        max_length=1024,
+    )
+    
+    json_response = models.TextField(
+        max_length=4096,
+        blank=True,
+        null=True,
+    )
+    
+    def __str__(self):
+        return f'{self.id, self.user_string}'

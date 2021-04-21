@@ -5,6 +5,7 @@ from io import BytesIO, StringIO
 
 import coconnect
 import pandas as pd
+import ast
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
@@ -31,19 +32,21 @@ from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.views.generic.edit import (CreateView, DeleteView, FormView,
                                        UpdateView)
 from extra_views import ModelFormSetView
 
 from .forms import (DictionarySelectForm, DocumentFileForm, DocumentForm,
-                    ScanReportAssertionForm, ScanReportForm, UserCreateForm)
+                    ScanReportAssertionForm, ScanReportForm, UserCreateForm,
+                    NLPForm)
 from .models import (DataDictionary, Document, DocumentFile, OmopField,
                      OmopTable, ScanReport, ScanReportAssertion,
                      ScanReportField, ScanReportTable, ScanReportValue,
-                     StructuralMappingRule)
+                     StructuralMappingRule, NLPModel)
 from .services import process_scan_report, run_usagi
-from .tasks import process_scan_report_task, run_usagi, run_usagi_task
+from .tasks import process_scan_report_task, run_usagi, run_usagi_task, nlp_single_string_task
+
 
 #to refresh/resync with loading from the database, switch to:
 # omop_lookup = OMOPDetails(load_from_db=True)
@@ -1171,3 +1174,101 @@ def merge_dictionary(request):
          messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
 
     return render(request, "mapping/mergedictionary.html")
+
+
+
+@method_decorator(login_required,name='dispatch')
+class NLPListView(ListView):
+    model=NLPModel
+
+    
+@method_decorator(login_required,name='dispatch')
+class NLPFormView(FormView):
+    form_class = NLPForm
+    template_name = "mapping/nlpmodel_form.html"
+    success_url = reverse_lazy("nlp")
+
+    def form_valid(self, form):
+        
+        NLPModel.objects.create(
+            user_string=form.cleaned_data["user_string"],
+            json_response = "holding",
+        )
+        
+        
+        pk=NLPModel.objects.latest('id')
+        print('NLP MODEL PK >>> ', pk.id)
+        nlp_single_string_task.delay(pk = pk.id, dict_string = form.cleaned_data["user_string"])
+        
+        return super().form_valid(form)
+
+    
+@method_decorator(login_required,name='dispatch')
+class NLPDetailView(DetailView):
+    model = NLPModel
+    template_name='mapping/nlpmodel_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        query = NLPModel.objects.get(pk=self.kwargs.get('pk'))
+        
+        # lil check to return something sensible if NLP hasn't finished running
+        if query.json_response == "holding":
+            context = {
+                'user_string': query.user_string,
+                'results': "Waiting"
+                }
+        
+            return context
+        
+        else:
+        
+            #Define which codes we want to keep
+            codes = []
+            keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
+            
+            json_response = ast.literal_eval(query.json_response)
+
+            # Mad nested for loops to get at the data in the response
+            for dict_entry in json_response["documents"]:
+                for entity in dict_entry["entities"]:
+                    if "links" in entity.keys():
+                        for link in entity["links"]:
+                            if link["dataSource"] in keep:
+                                codes.append(
+                                    [
+                                        dict_entry["id"],
+                                        entity["text"],
+                                        entity["category"],
+                                        entity["confidenceScore"],
+                                        link["dataSource"],
+                                        link["id"],
+                                    ]
+                                )
+            
+            # Create pandas datafram of results
+            codes_df = pd.DataFrame(
+                codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
+            )
+
+            # Load in OMOPDetails class from Co-Connect Tools
+            omop_lookup = OMOPDetails()
+
+            # This block looks up each concept *code* and returns
+            # OMOP standard conceptID
+            results = []
+            for index, row in codes_df.iterrows():
+                results.append(omop_lookup.lookup_code(row["code"]))
+            
+            full_results = pd.concat(results, ignore_index=True)
+            
+            full_results = full_results.merge(codes_df, left_on="concept_code", right_on="code")
+            full_results = full_results.values.tolist()
+
+
+            context = {
+                'user_string': query.user_string,
+                'results': full_results
+            }
+            
+            return context
+

@@ -5,16 +5,19 @@ import sys
 import os
 import pandas as pd
 from django.contrib import messages
-
-
+import json
+import requests
+import time
 from .models import (
     ScanReport,
     ScanReportTable,
     ScanReportField,
     ScanReportValue,
     DataDictionary,
+    NLPModel
 )
 
+from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 def process_scan_report_sheet_table(filename):
@@ -97,7 +100,7 @@ def process_scan_report(scan_report_id):
         # For each row in the Field Overview sheet
         # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
-            
+
             # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
@@ -106,56 +109,56 @@ def process_scan_report(scan_report_id):
                 # [:31] is because excel is a pile of s***
                 # - sheet names are truncated to 31 characters
                 name = row[0][:31]
-                if len(row)<=10:
+                if len(row) <= 10:
                     scan_report = ScanReport.objects.get(pk=scan_report_id)
                     scan_report.delete()
-                if len(row)>=11:
+                if len(row) >= 11:
                     scan_report_table, _ = ScanReportTable.objects.get_or_create(
                         scan_report=scan_report,
                         name=name,
                     )
-                
+
                     # Add each field in Field Overview to the model ScanReportField
-                    scanreport=ScanReportField.objects.create(
-                    scan_report_table=scan_report_table,
-                    name=row[1],
-                    description_column=row[2],
-                    type_column=row[3],
-                    max_length=row[4],
-                    nrows=row[5],
-                    nrows_checked=row[6],
-                    fraction_empty=row[7],
-                    nunique_values=row[8],
-                    fraction_unique=row[9],
-                    ignore_column=row[10],
-                    is_patient_id = False,
-                    is_date_event=False,
-                    is_ignore=False,
-                    pass_from_source=False,
-                    classification_system=row[11]
+                    scanreport = ScanReportField.objects.create(
+                        scan_report_table=scan_report_table,
+                        name=row[1],
+                        description_column=row[2],
+                        type_column=row[3],
+                        max_length=row[4],
+                        nrows=row[5],
+                        nrows_checked=row[6],
+                        fraction_empty=row[7],
+                        nunique_values=row[8],
+                        fraction_unique=row[9],
+                        ignore_column=row[10],
+                        is_patient_id=False,
+                        is_date_event=False,
+                        is_ignore=False,
+                        pass_from_source=False,
+                        classification_system=row[11],
                     )
-                    if scanreport.ignore_column=='PatientID':
-                        scanreport.is_patient_id=True
-                    else: 
-                        scanreport.is_patient_id=False
+                    if scanreport.ignore_column == "PatientID":
+                        scanreport.is_patient_id = True
+                    else:
+                        scanreport.is_patient_id = False
 
-                    if scanreport.ignore_column=='Date':
-                        scanreport.is_date_event=True
-                    else: 
-                        scanreport.is_date_event=False
+                    if scanreport.ignore_column == "Date":
+                        scanreport.is_date_event = True
+                    else:
+                        scanreport.is_date_event = False
 
-                    if scanreport.ignore_column=='Ignore':
-                        scanreport.is_ignore=True
-                    else: 
-                        scanreport.is_ignore=False
+                    if scanreport.ignore_column == "Ignore":
+                        scanreport.is_ignore = True
+                    else:
+                        scanreport.is_ignore = False
 
-                    if scanreport.ignore_column=='PassSource':
-                        scanreport.pass_from_source=True
-                    else: 
-                        scanreport.pass_from_source=False
+                    if scanreport.ignore_column == "PassSource":
+                        scanreport.pass_from_source = True
+                    else:
+                        scanreport.pass_from_source = False
 
                     scanreport.save()
-                    
+
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
@@ -215,7 +218,8 @@ def process_scan_report(scan_report_id):
                 source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
             )
-    
+
+
 def build_usagi_index():
     # Use 'build' to create index for the first time.
     # Index stored in data/usagi/mainIndex
@@ -253,7 +257,7 @@ def run_usagi(scan_report_id):
         .filter(source_value__scan_report_field__is_patient_id=False)
         .filter(source_value__scan_report_field__is_date_event=False)
         .filter(source_value__scan_report_field__is_ignore=False)
-        .exclude(source_value__value='List truncated...')
+        .exclude(source_value__value="List truncated...")
     )
 
     dict_df = pd.DataFrame.from_dict(
@@ -304,3 +308,65 @@ def run_usagi(scan_report_id):
     # os.remove('/data/usagi/usagi_input/usagi.properties')
 
     print("USAGI FINISHED!")
+
+
+def nlp_single_string(pk, dict_string):
+
+    """
+    This function allows you to pass a single text string to NLP
+    and return a list of all valid and standard OMOP codes for the
+    computed entity
+
+    Returns a pandas dataframe
+
+    """
+
+    # Translate queryset into JSON-like dict for NLP
+    documents = []
+    documents.append(
+        {
+            "language": "en",
+            "id": 1,
+            "text": dict_string,
+        }
+    )
+
+    chunk = {"documents": documents}
+
+    # Define NLP URL/headers
+    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+    headers = {
+        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        "Content-Type": "application/json; utf-8",
+    }
+
+    # Create payload, POST to the NLP servoce
+    payload = json.dumps(chunk)
+    response = requests.post(url, headers=headers, data=payload)
+    print(response.status_code, response.reason)
+    post_response_url = response.headers["operation-location"]
+    time.sleep(3)
+
+    print("PROCESSING JOB >>>", post_response_url)
+
+    # GET the response
+    req = requests.get(post_response_url, headers=headers)
+    job = req.json()
+
+    # Loop to wait for the job to finish running
+    get_response = []
+    while job["status"] != "succeeded":
+        print(job["status"])
+        req = requests.get(post_response_url, headers=headers)
+        job = req.json()
+        print("Waiting...")
+        time.sleep(3)
+    else:
+        get_response.append(job["results"])
+        print("Completed! \n")
+        
+    resp = str(get_response[0])
+        
+    NLPModel.objects.filter(id=pk).update(json_response=resp)
+
+    return True
