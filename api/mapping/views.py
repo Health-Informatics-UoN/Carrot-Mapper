@@ -239,42 +239,6 @@ class StructuralMappingTableListView(ModelFormSetView):
 
     template_name = "mapping/mappingrulesscanreport_list.html"
 
-    # queryset = qs.filter()
-    # turn off this, dont use it
-    # def construct_formset(self):
-    #     """
-    #     overide this function so we can edit the forms
-    #     https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
-
-    #     """
-    #     formset_class = self.get_formset()
-
-    #     #too slow?
-    #     formset = formset_class(**self.get_formset_kwargs())
-    #     #loop over the formset
-    #     for i,form in enumerate(formset):
-    #         #find the source table
-    #         source_table_pk = form['source_table'].initial
-    #         #get the choices for the source field,
-    #         #these will be all source fields by default
-    #         qs = form['source_field'].field.widget.choices.queryset
-    #         #filter them to only allow ones associated with selected source_table
-    #         qs = qs.filter(scan_report_table=source_table_pk)\
-    #             .order_by('name')
-    #         #modify and update the formset
-    #         form['source_field'].field.widget.choices.queryset = qs
-
-    #         #order this crap
-    #         qs = form['source_table'].field.widget.choices.queryset
-    #         qs = qs.order_by('name')
-
-    #         pk = self.kwargs.get('pk')
-    #         qs = qs.filter(scan_report = pk)
-    #         form['source_table'].field.widget.choices.queryset = qs
-
-    #     #return the modified form set
-    #     return formset
-
     def json_to_svg(self, data):
         return dag.make_dag(data)
 
