@@ -1215,21 +1215,46 @@ class NLPFormView(FormView):
 class NLPDetailView(DetailView):
     model = NLPModel
     template_name='mapping/nlpmodel_detail.html'
+
+    # Define which codes we want to keep
+    # codes = []
+    # keep = ["ICD9", "ICD10", "SNOMEDCT_US"]
+
+    # # Mad nested for loops to get at the data in the response
+    # for url in get_response:
+    #     for dict_entry in url["documents"]:
+    #         for entity in dict_entry["entities"]:
+    #             if "links" in entity.keys():
+    #                 for link in entity["links"]:
+    #                     if link["dataSource"] in keep:
+    #                         codes.append(
+    #                             [
+    #                                 dict_entry["id"],
+    #                                 entity["text"],
+    #                                 entity["category"],
+    #                                 entity["confidenceScore"],
+    #                                 link["dataSource"],
+    #                                 link["id"],
+    #                             ]
+    #                         )
+
+    # # Create pandas datafram of results
+    # codes_df = pd.DataFrame(
+    #     codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
+    # )
+
+    # print("CODES FROM NLP \n", codes_df)
+
+    # # Load in OMOPDetails class from Co-Connect Tools
+    # omop_lookup = OMOPDetails()
+
+    # # This block looks up each concept *code* and returns
+    # # OMOP standard conceptID
+    # results = []
+    # for index, row in codes_df.iterrows():
+    #     results.append(omop_lookup.lookup_code(row["code"]))
+
+    # full_results = pd.concat(results, ignore_index=True)
+    # print(full_results)
     
-    # queryset = NLPModel.objects.filter(pk=pk)
-    
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
-    #     return context
-    
-    # def get_context_data(self, **kwargs):
-    #     # context = super(NLPModel, self).get_context_data(**kwargs)
-    #     context = NLPModel.objects.get(pk=self.kwargs.get('pk'))
-        
-    #     return render(request, 'mapping/nlpmodel_detail.html', context)
-    
-    # def get(self, request, *args, **kwargs):
-    #     query = get_object_or_404(NLPModel, pk=kwargs['pk'])
-    #     context = {'query': query}
-    #     return render(request, 'mapping/nlpmodel_detail.html', context)
+
