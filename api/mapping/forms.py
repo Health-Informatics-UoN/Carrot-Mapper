@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
                             DocumentFile, DocumentType, OmopField, OmopTable,
-                            ScanReport)
+                            ScanReport, VOCABULARY_CHOICES)
 from xlsx2csv import Xlsx2csv
 
 
@@ -36,10 +36,28 @@ class ScanReportForm(forms.Form):
             csv_header=next(reader)  # Get header row
             set_header=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
             if set(set_header)==set(csv_header):
+                for row in reader:
+                    flag_column=row[10]
+                    flag_column=flag_column.lower()
+                    classification_column=row[11]
+                    
+                    if (flag_column=='patientid') or (flag_column=='date') or (flag_column==''):
+                        pass
+                    else:
+                        raise (forms.ValidationError( "Check Flag column values. Valid options are: 'PatientID', 'Date' or blank"))
+                    
+                    if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
+                        pass
+                    else:
+                        raise (forms.ValidationError( "Check Classification column values. Valid options are:{}".format(list(VOCABULARY_CHOICES.values()))))
+                
                 return self.cleaned_data['scan_report_file']
             else:
                 raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
-        
+            
+            
+
+
       
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(
