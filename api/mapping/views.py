@@ -1,69 +1,50 @@
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordResetForm, PasswordChangeForm
-from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
-from django.core.mail import message, send_mail, BadHeaderError
-from django.db.models.query_utils import Q
-from django.db.models import CharField, Value as V
-from django.db.models.functions import Concat
-from django.core import serializers
-from django.core.serializers.json import DjangoJSONEncoder
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
-from django.urls import reverse
-from django.urls import reverse_lazy
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.debug import sensitive_post_parameters
-from django.views import generic
-from django.views.generic import ListView
-from django.views.generic.edit import FormView, UpdateView, DeleteView, CreateView
-from extra_views import ModelFormSetView
+import json
 import os
 import sys
-from .forms import (
-    ScanReportForm,
-    UserCreateForm,
-    AddMappingRuleForm,
-    DocumentForm,
-    DocumentFileForm,
-    DictionarySelectForm,
-    ScanReportAssertionForm
-)
-from .models import (
-    ScanReport,
-    ScanReportValue,
-    ScanReportField,
-    ScanReportTable,
-    ScanReportAssertion,
-    StructuralMappingRule,
-    OmopTable,
-    OmopField,
-    DocumentFile,
-    Document,
-    DataDictionary,
-)
-from .tasks import process_scan_report_task, run_usagi_task
-
-from .services import process_scan_report, run_usagi
-from .tasks import process_scan_report_task, run_usagi
-
-import pandas as pd
-import json
-
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 
 import coconnect
-from coconnect.tools import dag
-from coconnect.tools import mapping_pipeline_helpers
-
-
+import pandas as pd
+from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import (PasswordChangeDoneView,
+                                       PasswordChangeView)
+from django.core import serializers
+from django.core.mail import BadHeaderError, message, send_mail
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import CharField
+from django.db.models import Value as V
+from django.db.models.functions import Concat
+from django.db.models.query_utils import Q
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.views import generic
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.generic import ListView
+from django.views.generic.edit import (CreateView, DeleteView, FormView,
+                                       UpdateView)
+from extra_views import ModelFormSetView
+
+from .forms import (DictionarySelectForm, DocumentFileForm, DocumentForm,
+                    ScanReportAssertionForm, ScanReportForm, UserCreateForm)
+from .models import (DataDictionary, Document, DocumentFile, OmopField,
+                     OmopTable, ScanReport, ScanReportAssertion,
+                     ScanReportField, ScanReportTable, ScanReportValue,
+                     StructuralMappingRule)
+from .services import process_scan_report, run_usagi
+from .tasks import process_scan_report_task, run_usagi, run_usagi_task
+
 #to refresh/resync with loading from the database, switch to:
 # omop_lookup = OMOPDetails(load_from_db=True)
 #this will take longer, but it will recreate the csv dump of all the
@@ -221,113 +202,6 @@ class ScanReportValueListView(ModelFormSetView):
         )
 
         return context
-
-
-@method_decorator(login_required,name='dispatch')
-class AddMappingRuleFormView(FormView):
-    form_class = AddMappingRuleForm
-    template_name = "mapping/mappingrule_form.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        scan_report = scan_report_field.scan_report_table.scan_report
-        scan_report_table = scan_report_field.scan_report_table
-        scan_report_field = scan_report_field
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-            }
-        )
-
-        return context
-
-    def form_valid(self, form):
-
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        mapping,created = MappingRule.objects.get_or_create(
-            omop_field=form.cleaned_data['omop_field'],
-            operation=form.cleaned_data['operation'],
-            scan_report_field=scan_report_field,
-        )
-        mapping.save()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-        return "{}?search={}".format(
-            reverse("fields"), scan_report_field.scan_report_table.id
-        )
-
-
-# @method_decorator(login_required,name='dispatch')
-# class StructuralMappingDeleteView(DeleteView):
-#     model = MappingRule
-
-#     def get_success_url(self):
-#         scan_report_field = ScanReportField.objects.get(pk=self.kwargs.get("pk"))
-
-#         return "{}?search={}".format(
-#             reverse("fields"), scan_report_field.scan_report_table.id
-#         )
-
-#     success_url = reverse_lazy("fields")
-
-
-# @method_decorator(login_required,name='dispatch')
-# class StructuralMappingListView(ListView):
-#     model = MappingRule
-    
-#     def get_queryset(self):
-#         qs = super().get_queryset()
-#         search_term = self.kwargs.get("pk")
-#         if search_term is not None:
-#             qs = qs.filter(scan_report_field=search_term)
-#         return qs
-
-#     def get_context_data(self, **kwargs):
-#         # Call the base implementation first to get a context
-#         context = super().get_context_data(**kwargs)
-
-#         if len(self.get_queryset()) > 0:
-#             scan_report = self.get_queryset()[
-#                 0
-#             ].scan_report_field.scan_report_table.scan_report
-#             scan_report_table = self.get_queryset()[
-#                 0
-#             ].scan_report_field.scan_report_table
-#             scan_report_field = self.get_queryset()[0]
-#         else:
-#             scan_report = None
-#             scan_report_table = None
-#             scan_report_field = None
-
-#         context.update(
-#             {
-#                 "scan_report": scan_report,
-#                 "scan_report_table": scan_report_table,
-#                 "scan_report_field": scan_report_field,
-#             }
-#         )
-
-#         return context
-
-
-
-# Calum - adding this, if we want to switch to form list edit view
-#class StructuralMappingTableListView(ModelFormSetView):
-    #model = ScanReportField
-    #form_class = ScanReportForm
-    #exclude = []
-    #factory_kwargs = {"can_delete": False, "extra": False}
-
 
 
 @method_decorator(login_required,name='dispatch')
@@ -1037,6 +911,7 @@ class DataDictionaryListView(ListView):
 
         return context
 
+
 @method_decorator(login_required,name='dispatch')
 class DataDictionaryUpdateView(UpdateView):
     model = DataDictionary
@@ -1054,6 +929,7 @@ class DataDictionaryUpdateView(UpdateView):
             reverse("data-dictionary"),
             self.object.source_value.scan_report_field.scan_report_table.scan_report.id,
         )
+
 
 @method_decorator(login_required,name='dispatch')
 class DictionarySelectFormView(FormView):
@@ -1294,6 +1170,3 @@ def merge_dictionary(request):
          messages.warning(request, "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.")
 
     return render(request, "mapping/mergedictionary.html")
-
-
-   
