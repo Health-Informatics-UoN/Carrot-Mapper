@@ -155,5 +155,5 @@ class ScanReportAssertionForm(forms.Form):
 
 class NLPForm(forms.Form):
     user_string = forms.CharField(
-        label = "Text"
+        label = ""
     )
