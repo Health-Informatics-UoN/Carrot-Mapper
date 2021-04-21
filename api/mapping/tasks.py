@@ -2,7 +2,8 @@
 
 from celery import shared_task
 from .models import ScanReport, NLPModel
-from .services import process_scan_report, run_usagi, nlp_single_string
+from .services import process_scan_report, run_usagi
+from .services_nlp import nlp_single_string
 
 
 @shared_task
