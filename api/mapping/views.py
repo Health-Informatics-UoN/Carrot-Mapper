@@ -1,3 +1,4 @@
+import ast
 import json
 import os
 import sys
@@ -5,7 +6,6 @@ from io import BytesIO, StringIO
 
 import coconnect
 import pandas as pd
-import ast
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
@@ -31,7 +31,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import ListView, DetailView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 from extra_views import ModelFormSetView
 
@@ -39,15 +39,16 @@ from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
     DocumentForm,
+    NLPForm,
     ScanReportAssertionForm,
     ScanReportForm,
     UserCreateForm,
-    NLPForm,
 )
 from .models import (
     DataDictionary,
     Document,
     DocumentFile,
+    NLPModel,
     OmopField,
     OmopTable,
     ScanReport,
@@ -56,16 +57,14 @@ from .models import (
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule,
-    NLPModel,
 )
 from .services import process_scan_report, run_usagi
 from .tasks import (
+    nlp_single_string_task,
     process_scan_report_task,
     run_usagi,
     run_usagi_task,
-    nlp_single_string_task,
 )
-
 
 # to refresh/resync with loading from the database, switch to:
 # omop_lookup = OMOPDetails(load_from_db=True)
