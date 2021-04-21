@@ -1268,7 +1268,6 @@ class NLPFormView(FormView):
         # Grab the newly-created model object to get the PK
         # Pass PK to Celery task which handles running the NLP code
         pk = NLPModel.objects.latest("id")
-        print("NLP MODEL PK >>> ", pk.id)
         nlp_single_string_task.delay(
             pk=pk.id, dict_string=form.cleaned_data["user_string"]
         )
