@@ -9,9 +9,9 @@ jobs:
       RUNNER_ALLOW_RUNASROOT: true
     steps:
       - uses: actions/checkout@v2
+      - run: git fetch origin master:refs/remotes/origin/master
       - run: git status
       - run: git branch -a
-      - run: ls
       - run: git diff master HEAD
       - run: git diff origin/master HEAD
       - run: git diff origin/master HEAD --name-only
