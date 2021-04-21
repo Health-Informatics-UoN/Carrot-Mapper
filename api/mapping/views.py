@@ -678,7 +678,7 @@ class StructuralMappingTableListView(ModelFormSetView):
                         
         elif return_type == 'json':
             outputs = self.get_final_json(outputs)
-            response = HttpResponse(json.dumps(outputs,indent=6), content_type='application/json')
+            response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         else:
