@@ -1,4 +1,3 @@
-# Create your tasks here
 
 from celery import shared_task
 from .models import ScanReport, NLPModel
