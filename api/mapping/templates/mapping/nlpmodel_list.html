@@ -14,7 +14,7 @@
     </thead>
     <tbody>
     {% for object in object_list %}
-        <td>{{ object.user_string|truncatechars:32 }}</td>
+        <td><a href="{% url 'nlp-view-query' object.id %}"><em>"{{ object.user_string }}"</em></a></td>
     </tr>
     {% endfor %}
     </tbody>
