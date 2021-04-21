@@ -1260,6 +1260,8 @@ class NLPFormView(FormView):
     def form_valid(self, form):
 
         # Create NLP model object on form submission
+        # Very simple, just saves the user's string and a 
+        # raw str() of the JSON returned from the NLP service
         NLPModel.objects.create(
             user_string=form.cleaned_data["user_string"],
             json_response="holding",
@@ -1289,6 +1291,7 @@ class NLPDetailView(DetailView):
             return context
         
         else:
+            # Run method from services_nlp.py
             json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
             context = {"user_string": query.user_string, "results": json_response}
             return context
