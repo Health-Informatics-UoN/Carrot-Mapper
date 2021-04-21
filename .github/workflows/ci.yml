@@ -18,7 +18,11 @@ jobs:
           echo `git diff origin/master HEAD --name-only | grep .py` >> changed.txt
       - name: Check PEP8
         run: |
-          cat changed.txt | xargs pylint
+          while read file; do 
+             echo $file
+             pylint $file 
+          done < changed.txt
+
   build:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
