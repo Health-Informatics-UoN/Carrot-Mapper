@@ -10,9 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: git fetch origin master:refs/remotes/origin/master
-      - run: git status
-      - run: git branch -a
-      - run: git diff master HEAD
       - run: git diff origin/master HEAD
       - run: git diff origin/master HEAD --name-only
       #- name: Install pylint
