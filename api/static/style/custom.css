@@ -135,13 +135,16 @@ body {
     border-bottom: 1.5px solid var(--co-connect-primary);
 
 }
-
+.errorlist {
+    list-style: none;
+}
 .error-message {
     background-color: #fce4e4;
     border: 1px solid #fcc2c3;
     border-radius: 7px;
     padding: 5px 10px;
     margin-top: 5px;
+    text-align: center;
     
   }
 
