@@ -1,8 +1,8 @@
-# Create your tasks here
 
 from celery import shared_task
-from .models import ScanReport
+from .models import ScanReport, NLPModel
 from .services import process_scan_report, run_usagi
+from .services_nlp import nlp_single_string
 
 
 @shared_task
@@ -44,4 +44,8 @@ def process_scan_report_task(scan_report_id):
 @shared_task
 def run_usagi_task(scan_report_id):
     run_usagi(scan_report_id) 
+    
+@shared_task
+def nlp_single_string_task(pk, dict_string):
+    nlp_single_string(pk=pk, dict_string=dict_string)
 

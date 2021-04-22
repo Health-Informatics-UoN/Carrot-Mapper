@@ -5,16 +5,18 @@ import sys
 import os
 import pandas as pd
 from django.contrib import messages
-
-
+import json
+import requests
+import time
 from .models import (
     ScanReport,
     ScanReportTable,
     ScanReportField,
     ScanReportValue,
-    DataDictionary,
+    DataDictionary
 )
 
+from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 def process_scan_report_sheet_table(filename):
@@ -97,7 +99,7 @@ def process_scan_report(scan_report_id):
         # For each row in the Field Overview sheet
         # Saves an entry in ScanReportField for each Field in a Scan Report
         for row in reader:
-            
+
             # If the value in the first column (i.e. the Table Col) is not blank;
             # Save the table name as a new entry in the model ScanReportTable
             # Checks for blank b/c White Rabbit seperates tables with blank row
@@ -106,47 +108,46 @@ def process_scan_report(scan_report_id):
                 # [:31] is because excel is a pile of s***
                 # - sheet names are truncated to 31 characters
                 name = row[0][:31]
-                if len(row)<=10:
+                if len(row) <= 10:
                     scan_report = ScanReport.objects.get(pk=scan_report_id)
                     scan_report.delete()
-                if len(row)>=11:
+                if len(row) >= 11:
                     scan_report_table, _ = ScanReportTable.objects.get_or_create(
                         scan_report=scan_report,
                         name=name,
                     )
-                
-                    # Add each field in Field Overview to the model ScanReportField
-                    scanreport=ScanReportField.objects.create(
-                    scan_report_table=scan_report_table,
-                    name=row[1],
-                    description_column=row[2],
-                    type_column=row[3],
-                    max_length=row[4],
-                    nrows=row[5],
-                    nrows_checked=row[6],
-                    fraction_empty=row[7],
-                    nunique_values=row[8],
-                    fraction_unique=row[9],
-                    ignore_column=row[10],
-                    is_patient_id = False,
-                    is_date_event=False,
-                    is_ignore=False,
-                    pass_from_source=False,
-                    classification_system=row[11]
-                    )
-                    scanreport.ignore_column=scanreport.ignore_column.lower()
-                    if scanreport.ignore_column=='patientid':
-                        scanreport.is_patient_id=True
-                    else: 
-                        scanreport.is_patient_id=False
 
-                    if scanreport.ignore_column=='date':
-                        scanreport.is_date_event=True
-                    else: 
-                        scanreport.is_date_event=False
+                    # Add each field in Field Overview to the model ScanReportField
+                    scanreport = ScanReportField.objects.create(
+                        scan_report_table=scan_report_table,
+                        name=row[1],
+                        description_column=row[2],
+                        type_column=row[3],
+                        max_length=row[4],
+                        nrows=row[5],
+                        nrows_checked=row[6],
+                        fraction_empty=row[7],
+                        nunique_values=row[8],
+                        fraction_unique=row[9],
+                        ignore_column=row[10],
+                        is_patient_id=False,
+                        is_date_event=False,
+                        is_ignore=False,
+                        pass_from_source=False,
+                        classification_system=row[11],
+                    )
+                    if scanreport.ignore_column == "PatientID":
+                        scanreport.is_patient_id = True
+                    else:
+                        scanreport.is_patient_id = False
+
+                    if scanreport.ignore_column == "Date":
+                        scanreport.is_date_event = True
+                    else:
+                        scanreport.is_date_event = False
 
                     scanreport.save()
-                    
+
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     for idxsheet, sheet in enumerate(xlsx.workbook.sheets):
@@ -206,7 +207,8 @@ def process_scan_report(scan_report_id):
                 source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
             )
-    
+
+
 def build_usagi_index():
     # Use 'build' to create index for the first time.
     # Index stored in data/usagi/mainIndex
@@ -244,7 +246,7 @@ def run_usagi(scan_report_id):
         .filter(source_value__scan_report_field__is_patient_id=False)
         .filter(source_value__scan_report_field__is_date_event=False)
         .filter(source_value__scan_report_field__is_ignore=False)
-        .exclude(source_value__value='List truncated...')
+        .exclude(source_value__value="List truncated...")
     )
 
     dict_df = pd.DataFrame.from_dict(
