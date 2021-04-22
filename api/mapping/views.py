@@ -927,7 +927,6 @@ class DictionarySelectFormView(FormView):
     def form_valid(self, form):
 
         # Adapt logic in services.py to merge data dictionary file into DataDictionary model
-
         return super().form_valid(form)
 
 

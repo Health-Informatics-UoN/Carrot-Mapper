@@ -161,9 +161,15 @@ def merge_external_dictionary(scan_report_pk):
             request,
             "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.",
         )
+        
+        return request
 
     elif len(files) == 0:
         messages.warning(
             request,
             "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.",
         )
+        
+        return request
+    
+    return request
