@@ -136,6 +136,14 @@ body {
 
 }
 
+.error-message {
+    background-color: #fce4e4;
+    border: 1px solid #fcc2c3;
+    border-radius: 7px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    
+  }
 
 /* bit of a hack for the "mobile phone view" */
 @media (max-width: 768px) {

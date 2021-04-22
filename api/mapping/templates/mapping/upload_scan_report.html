@@ -18,9 +18,11 @@
     </div>
 
     <div class="mb-3">
-        {{ form.scan_report_file.errors }}
+
         <label class="form-label">{{ form.scan_report_file.label }}</label>
         {{ form.scan_report_file }}
+        <div class="error-message">{{ form.scan_report_file.errors }}</div>
+
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
