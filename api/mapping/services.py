@@ -213,6 +213,7 @@ def process_scan_report(scan_report_id):
                 frequency=frequency,
             )
 
+            # Create a DataDictionary object for each ScanReportValue
             DataDictionary.objects.create(
                 source_value=ScanReportValue.objects.latest("id"),
                 definition_fixed=False,
