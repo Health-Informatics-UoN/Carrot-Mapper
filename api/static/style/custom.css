@@ -142,9 +142,11 @@ body {
     background-color: #fce4e4;
     border: 1px solid #fcc2c3;
     border-radius: 7px;
-    padding: 5px 10px;
+    padding: 8px;
     margin-top: 5px;
-    text-align: center;
+    margin-bottom: 5px;
+    text-align:left;
+    
     
   }
 
