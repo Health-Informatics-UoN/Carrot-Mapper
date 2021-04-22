@@ -40,7 +40,6 @@ class ScanReportForm(forms.Form):
                     flag_column=row[10]
                     flag_column=flag_column.lower()
                     classification_column=row[11]
-                    
                     if (flag_column=='patientid') or (flag_column=='date') or (flag_column==''):
                         pass
                     else:
@@ -56,9 +55,6 @@ class ScanReportForm(forms.Form):
                 raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
             
             
-
-
-      
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(
         required=True, label="Email", error_messages={"exists": "Oops"}
