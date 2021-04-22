@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 import requests
 import time
 
@@ -59,3 +60,56 @@ def nlp_single_string(pk, dict_string):
     NLPModel.objects.filter(id=pk).update(json_response=resp)
 
     return True
+
+def get_json_from_nlpmodel(json):
+    
+    """
+    A small function to process the JSON string saved in NLPModel
+    """
+    
+    # Define which codes we want to keep. Add more here as required.
+    codes = []
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
+
+    json_response = json
+
+    # Mad nested for loops to get at the data in the response
+    for dict_entry in json_response["documents"]:
+        for entity in dict_entry["entities"]:
+            if "links" in entity.keys():
+                for link in entity["links"]:
+                    if link["dataSource"] in keep:
+                        codes.append(
+                            [
+                                dict_entry["id"],
+                                entity["text"],
+                                entity["category"],
+                                entity["confidenceScore"],
+                                link["dataSource"],
+                                link["id"],
+                            ]
+                        )
+
+    # Create pandas datafram of results
+    codes_df = pd.DataFrame(
+        codes,
+        columns=["key", "entity", "category", "confidence", "vocab", "code"],
+    )
+
+    # Load in OMOPDetails class from Co-Connect Tools
+    omop_lookup = OMOPDetails()
+
+    # This block looks up each concept *code* and returns
+    # OMOP standard conceptID
+    results = []
+    for index, row in codes_df.iterrows():
+        results.append(omop_lookup.lookup_code(row["code"]))
+
+    full_results = pd.concat(results, ignore_index=True)
+
+    full_results = full_results.merge(
+        codes_df, left_on="concept_code", right_on="code"
+    )
+    full_results = full_results.values.tolist()
+            
+    return full_results

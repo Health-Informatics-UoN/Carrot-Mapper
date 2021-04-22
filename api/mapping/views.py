@@ -58,12 +58,11 @@ from .models import (
     ScanReportValue,
     StructuralMappingRule,
 )
-from .services import process_scan_report, run_usagi
+from .services import process_scan_report
+from .services_nlp import get_json_from_nlpmodel
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,
-    run_usagi,
-    run_usagi_task,
 )
 
 # to refresh/resync with loading from the database, switch to:
@@ -239,42 +238,6 @@ class StructuralMappingTableListView(ModelFormSetView):
     model = StructuralMappingRule
 
     template_name = "mapping/mappingrulesscanreport_list.html"
-
-    # queryset = qs.filter()
-    # turn off this, dont use it
-    # def construct_formset(self):
-    #     """
-    #     overide this function so we can edit the forms
-    #     https://github.com/AndrewIngram/django-extra-views/blob/master/extra_views/formsets.py#L29
-
-    #     """
-    #     formset_class = self.get_formset()
-
-    #     #too slow?
-    #     formset = formset_class(**self.get_formset_kwargs())
-    #     #loop over the formset
-    #     for i,form in enumerate(formset):
-    #         #find the source table
-    #         source_table_pk = form['source_table'].initial
-    #         #get the choices for the source field,
-    #         #these will be all source fields by default
-    #         qs = form['source_field'].field.widget.choices.queryset
-    #         #filter them to only allow ones associated with selected source_table
-    #         qs = qs.filter(scan_report_table=source_table_pk)\
-    #             .order_by('name')
-    #         #modify and update the formset
-    #         form['source_field'].field.widget.choices.queryset = qs
-
-    #         #order this crap
-    #         qs = form['source_table'].field.widget.choices.queryset
-    #         qs = qs.order_by('name')
-
-    #         pk = self.kwargs.get('pk')
-    #         qs = qs.filter(scan_report = pk)
-    #         form['source_table'].field.widget.choices.queryset = qs
-
-    #     #return the modified form set
-    #     return formset
 
     def json_to_svg(self, data):
         return dag.make_dag(data)
@@ -702,10 +665,9 @@ class ScanReportFormView(FormView):
             dataset=form.cleaned_data["dataset"],
             file=form.cleaned_data["scan_report_file"],
         )
+        
         scan_report.author = self.request.user
-
         scan_report.save()
-
         process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
@@ -965,7 +927,6 @@ class DictionarySelectFormView(FormView):
     def form_valid(self, form):
 
         # Adapt logic in services.py to merge data dictionary file into DataDictionary model
-
         return super().form_valid(form)
 
 
@@ -1076,173 +1037,9 @@ def merge_dictionary(request):
 
     # Grab the scan report ID
     search_term = request.GET.get("search", None)
-    print("SEARCH TERM >>> ", search_term)
-
-    # Grab the appropriate data dictionary which is built when a scan report is uploaded
-    dictionary = (
-        DataDictionary.objects.filter(
-            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
-        )
-        .filter(source_value__scan_report_field__is_patient_id=False)
-        .filter(source_value__scan_report_field__is_date_event=False)
-        .filter(source_value__scan_report_field__is_ignore=False)
-        .exclude(source_value__value="List truncated...")
-    )
-
-    # Convert QuerySet to dataframe
-    dict_df = pd.DataFrame.from_dict(
-        dictionary.values(
-            "source_value__scan_report_field__scan_report_table__scan_report__data_partner__name",
-            "source_value__scan_report_field__scan_report_table__scan_report__dataset",
-            "source_value__scan_report_field__scan_report_table__name",
-            "source_value__scan_report_field__name",
-            "source_value__value",
-            "source_value__frequency",
-            "dictionary_field_description",
-            "dictionary_value_description",
-        )
-    )
-
-    # Name columns
-    dict_df.columns = [
-        "DataPartner",
-        "DataSet",
-        "Table",
-        "Field",
-        "Value",
-        "Frequency",
-        "FieldDesc",
-        "ValueDescription",
-    ]
-
-    # dict_df.to_csv('/data/TEMP_internal_dictionary.csv')
-
-    # There's no direct link in our models between an uploaded Document/File and a ScanReport
-    # So, first grab the DataPartner value for the ScanReport ID (i.e. the search term)
-    scan_report_data_partner = ScanReport.objects.filter(id=search_term).values(
-        "data_partner"
-    )
-    # scan_report_data_partner = str(ScanReport.objects.filter(id=search_term)[0].data_partner)
-
-    # Return only those document files where the data partner matches scan_report_data_partner
-    # Filter to return only LIVE data dictionaries
-
-    files = (
-        DocumentFile.objects.filter(document__data_partner__in=scan_report_data_partner)
-        .filter(document__document_type__name="Data Dictionary")
-        .filter(status="LIVE")
-        .values_list("document_file", flat=True)
-    )
-    files = list(files)
-
-    if len(files) == 1:
-
-        # Load in uploaded data dictionary for joining (From the Documents section of the webapp)
-        external_dictionary = pd.read_csv(os.path.join("media/", files[0]))
-
-        # # Create an intermediate join table
-        # # This ensures that each field in scan_report has a field description from the external dictionary
-        field_join = pd.merge(
-            dict_df,
-            external_dictionary,
-            how="left",
-            left_on="Field",
-            right_on="Column Name",
-        )
-
-        field_join_grp = field_join.groupby(["Field", "Value"]).first().reset_index()
-
-        field_join_grp = field_join_grp[
-            ["Table", "Field", "Value", "Frequency", "FieldDesc", "Column Description"]
-        ]
-
-        field_join_grp.to_csv("/data/TEMP_field_join_output.csv")
-
-        # Join the intermediate join back to the external dictionary
-        # This time on field and value
-        x = pd.merge(
-            field_join_grp,
-            external_dictionary,
-            how="left",
-            left_on=["Field", "Value"],
-            right_on=["Column Name", "ValueCode"],
-        )
-
-        x = x[
-            [
-                "Table",
-                "Field",
-                "Value",
-                "Frequency",
-                "FieldDesc",
-                "Table Name",
-                "Column Name",
-                "Column Description_x",
-                "ValueCode",
-                "ValueDescription",
-            ]
-        ]
-        # x=x.fillna(value="")
-        x.columns = [
-            "Source_Table",
-            "Source_Field",
-            "Source_Value",
-            "Source_Frequency",
-            "Source_FieldDesc",
-            "Dictionary_TableName",
-            "Dictionary_ColumnName",
-            "Dictionary_ColumnDesc",
-            "Dictionary_ValueCode",
-            "Dictionary_ValueDescription",
-        ]
-
-        # If data are missing from imported dictionary
-        # replace with analagous descriptions to flesh out dictionary for Usagi
-        bad_index = x["Dictionary_ValueDescription"].isnull()
-        x["Dictionary_ValueDescription"][bad_index] = x["Dictionary_ValueCode"][
-            bad_index
-        ]
-
-        bad_index = x["Source_FieldDesc"].isnull()
-        x["Source_FieldDesc"][bad_index] = x["Source_Field"][bad_index]
-
-        for index, row in x.iterrows():
-
-            print(row["Source_Field"])
-            print(row["Source_Value"])
-
-            obj = DataDictionary.objects.get(
-                source_value__scan_report_field__name=row["Source_Field"],
-                source_value__value=row["Source_Value"],
-            )
-
-            print(type(obj))
-
-            # If user has fixed the definition in the webapp
-            # don't overwrite the held definition with the external dictionary values
-            if obj.definition_fixed:
-                continue
-
-            else:
-                obj.dictionary_table = row["Dictionary_TableName"]
-                obj.dictionary_field = row["Dictionary_ColumnName"]
-                obj.dictionary_field_description = row["Dictionary_ColumnDesc"]
-                obj.dictionary_value_code = row["Dictionary_ValueCode"]
-                obj.dictionary_value_description = row["Dictionary_ValueDescription"]
-                obj.save()
-        messages.success(request, "Merge was successful")
-
-    elif len(files) > 1:
-        messages.warning(
-            request,
-            "There are currently more than 1 data dictionaries set as 'Live'. Please ensure only 1 dictionary is set to 'Live' to proceed.",
-        )
-
-    elif len(files) == 0:
-        messages.warning(
-            request,
-            "There are data dictionaries available for this data partner, but none of them are set to 'Live'. Please set a dictionary to 'Live'.",
-        )
+    
+    # This function is called from services_datadictionary.py
+    merge_external_dictionary(scan_report_pk=search_term)
 
     return render(request, "mapping/mergedictionary.html")
 
@@ -1260,13 +1057,17 @@ class NLPFormView(FormView):
 
     def form_valid(self, form):
 
+        # Create NLP model object on form submission
+        # Very simple, just saves the user's string and a 
+        # raw str() of the JSON returned from the NLP service
         NLPModel.objects.create(
             user_string=form.cleaned_data["user_string"],
             json_response="holding",
         )
 
+        # Grab the newly-created model object to get the PK
+        # Pass PK to Celery task which handles running the NLP code
         pk = NLPModel.objects.latest("id")
-        print("NLP MODEL PK >>> ", pk.id)
         nlp_single_string_task.delay(
             pk=pk.id, dict_string=form.cleaned_data["user_string"]
         )
@@ -1282,59 +1083,13 @@ class NLPDetailView(DetailView):
     def get_context_data(self, **kwargs):
         query = NLPModel.objects.get(pk=self.kwargs.get("pk"))
 
-        # lil check to return something sensible if NLP hasn't finished running
+        # Small check to return something sensible if NLP hasn't finished running
         if query.json_response == "holding":
             context = {"user_string": query.user_string, "results": "Waiting"}
-
             return context
-
+        
         else:
-
-            # Define which codes we want to keep
-            codes = []
-            keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
-
-            json_response = ast.literal_eval(query.json_response)
-
-            # Mad nested for loops to get at the data in the response
-            for dict_entry in json_response["documents"]:
-                for entity in dict_entry["entities"]:
-                    if "links" in entity.keys():
-                        for link in entity["links"]:
-                            if link["dataSource"] in keep:
-                                codes.append(
-                                    [
-                                        dict_entry["id"],
-                                        entity["text"],
-                                        entity["category"],
-                                        entity["confidenceScore"],
-                                        link["dataSource"],
-                                        link["id"],
-                                    ]
-                                )
-
-            # Create pandas datafram of results
-            codes_df = pd.DataFrame(
-                codes,
-                columns=["key", "entity", "category", "confidence", "vocab", "code"],
-            )
-
-            # Load in OMOPDetails class from Co-Connect Tools
-            omop_lookup = OMOPDetails()
-
-            # This block looks up each concept *code* and returns
-            # OMOP standard conceptID
-            results = []
-            for index, row in codes_df.iterrows():
-                results.append(omop_lookup.lookup_code(row["code"]))
-
-            full_results = pd.concat(results, ignore_index=True)
-
-            full_results = full_results.merge(
-                codes_df, left_on="concept_code", right_on="code"
-            )
-            full_results = full_results.values.tolist()
-
-            context = {"user_string": query.user_string, "results": full_results}
-
+            # Run method from services_nlp.py
+            json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
+            context = {"user_string": query.user_string, "results": json_response}
             return context
