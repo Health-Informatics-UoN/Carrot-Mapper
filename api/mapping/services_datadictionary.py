@@ -107,7 +107,7 @@ def merge_external_dictionary(request,scan_report_pk):
                 "ValueDescription",
             ]
         ]
-        # x=x.fillna(value="")
+        x=x.fillna(value="")
         x.columns = [
             "Source_Table",
             "Source_Field",

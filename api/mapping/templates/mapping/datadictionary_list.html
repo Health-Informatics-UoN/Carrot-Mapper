@@ -21,7 +21,7 @@
                 <th scope="col">Source Field</th>
                 <th scope="col">Source Value</th>
                 <th scope="col">Dictionary Field Description</th>
-                <th scope="col">Dictionary Value Code</th>
+                <th scope="col">Dictionary Value</th>
                 <th scope="col">Dictionary Value Description</th>
                 <th scope="col">Definition Fixed</th>
                 <th scope="col">Edit</th>
@@ -35,7 +35,7 @@
             <td>{{ object.source_value.scan_report_field|truncatechars:21|default_if_none:"" }}</td>
             <td>{{ object.source_value|default_if_none:"" }}</td>
             <td>{{ object.dictionary_field_description|default_if_none:"" }}</td>
-            <td>{{ object.dictionary_value_code|default_if_none:"" }}</td>
+            <td>{{ object.dictionary_value|default_if_none:"" }}</td>
             <td>{{ object.dictionary_value_description|default_if_none:"" }}</td>
             
             <td>
