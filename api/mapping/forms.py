@@ -108,7 +108,7 @@ class DocumentForm(forms.Form):
     def clean_document_file(self):
         data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
         header = data_dictionary_csv.split(',')
-        column_names = ["TableName", "FieldName", "FieldDescription", "FieldValue", "ValueDescription"]
+        column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
 
         if set(column_names) == set(header):
             return self.cleaned_data['document_file']
@@ -132,7 +132,7 @@ class DocumentFileForm(forms.Form):
 
         data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
         header = data_dictionary_csv.split(',')
-        column_names = ["TableName", "FieldName", "FieldDescription", "FieldValue", "ValueDescription"]
+        column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
 
         if set(column_names) == set(header):
             return self.cleaned_data['document_file']
