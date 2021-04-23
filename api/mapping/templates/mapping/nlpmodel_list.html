@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>NLP Query</h2>
+
+
+{% if object_list %}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Submitted String</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for object in object_list %}
+        <td><a href="{% url 'nlp-view-query' object.id %}"><em>"{{ object.user_string }}"</em></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<p>No NLP queries have been submitted.</p>
+{% endif %}
+
+<a href="{% url 'nlp-form' %}" class="btn btn-primary">New NLP Query</a>
+
+{% endblock %}

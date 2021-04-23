@@ -1,9 +1,14 @@
+import csv
 from django import forms
+from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
-from mapping.models import OmopTable, OmopField, DocumentType, DataPartner, Document, DocumentFile, OPERATION_CHOICES, ScanReport
+
+from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
+                            DocumentFile, DocumentType, OmopField, OmopTable,
+                            ScanReport)
+from xlsx2csv import Xlsx2csv
 
 
 class ScanReportForm(forms.Form):
@@ -20,43 +25,22 @@ class ScanReportForm(forms.Form):
         label="WhiteRabbit ScanReport",
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
+    def clean_scan_report_file(self):
+        xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
 
+        filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
+        xlsx.convert(filepath)
 
-class AddMappingRuleForm(forms.Form):
-    omop_table = forms.ModelChoiceField(
-        label="OMOP Table",
-        queryset=OmopTable.objects.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    omop_field = forms.ModelChoiceField(
-        label="OMOP Field",
-        queryset=OmopField.objects.all(),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    operation = forms.ChoiceField(
-        label='Operation',
-        choices=OPERATION_CHOICES,
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["omop_field"].queryset = OmopField.objects.none()
-
-        if "omop_table" in self.data:
-            try:
-                omop_table_id = int(self.data.get("omop_table"))
-                self.fields["omop_field"].queryset = OmopField.objects.filter(
-                    table_id=omop_table_id
-                ).order_by("field")
-            except (ValueError, TypeError):
-                pass  # invalid input from the client; ignore and fallback to empty City queryset
-        # elif self.instance.pk:
-        #     self.fields['omop_field'].queryset = self.instance.omop_table.omop_field_set.order_by('field')
-
-
+        with open(filepath, "rt") as f:
+            reader = csv.reader(f)
+            csv_header=next(reader)  # Get header row
+            set_header=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
+            if set(set_header)==set(csv_header):
+                return self.cleaned_data['scan_report_file']
+            else:
+                raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
+        
+      
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(
         required=True, label="Email", error_messages={"exists": "Oops"}
@@ -167,3 +151,9 @@ class ScanReportAssertionForm(forms.Form):
          label="Negative Assertions",
          widget=forms.TextInput(attrs={"class": "form-control"}),
      )    
+
+
+class NLPForm(forms.Form):
+    user_string = forms.CharField(
+        label = ""
+    )
