@@ -136,26 +136,26 @@ def process_scan_report(scan_report_id):
                         pass_from_source=False,
                         classification_system=row[11],
                     )
-                    if scanreport.ignore_column == "PatientID":
+                    scanreport.ignore_column=scanreport.ignore_column.lower()
+                    if scanreport.ignore_column == "patientid":
                         scanreport.is_patient_id = True
                     else:
                         scanreport.is_patient_id = False
 
-                    if scanreport.ignore_column == "Date":
+                    if scanreport.ignore_column == "date":
                         scanreport.is_date_event = True
                     else:
                         scanreport.is_date_event = False
 
-                    if scanreport.ignore_column == "Ignore":
-                        scanreport.is_ignore = True
+                    if scanreport.ignore_column == "ignore":
+                         scanreport.is_ignore = True
                     else:
-                        scanreport.is_ignore = False
+                         scanreport.is_ignore = False
 
-                    if scanreport.ignore_column == "PassSource":
-                        scanreport.pass_from_source = True
+                    if scanreport.ignore_column == "passsource":
+                         scanreport.pass_from_source = True
                     else:
-                        scanreport.pass_from_source = False
-
+                         scanreport.pass_from_source = False
                     scanreport.save()
 
     # For sheets past the first two in the scan Report

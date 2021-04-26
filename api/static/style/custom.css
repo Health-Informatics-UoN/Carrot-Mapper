@@ -135,7 +135,20 @@ body {
     border-bottom: 1.5px solid var(--co-connect-primary);
 
 }
-
+.errorlist {
+    list-style: none;
+}
+.error-message {
+    background-color: #fce4e4;
+    border: 1px solid #fcc2c3;
+    border-radius: 7px;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align:left;
+    
+    
+  }
 
 /* bit of a hack for the "mobile phone view" */
 @media (max-width: 768px) {

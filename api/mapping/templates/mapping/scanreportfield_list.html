@@ -38,17 +38,21 @@
             <tbody>
             {% for object in object_list %}
             <tr>
-                <td><a href="{% url 'values' %}?search={{ object.id }}">
-                    {{ object.name| truncatechars:20 }}</a></td>
+                {% if object.concept_id == -1 %}
+                    <td><a href="{% url 'values' %}?search={{ object.id }}">
+                        {{ object.name| truncatechars:20 }}</a>
+                    </td>
+                {% else %}
+                    <td>
+                        {{ object.name| truncatechars:20 }}
+                    </td>
+                {% endif %}
                 <td>
                     {{ object.type_column }}
                 </td>
-
 		<td>
 		  {{ object.classification_system }}
 		</td>
-
- 
                 {## set i to be the index of the value we're on ##} 
                     {% with i=forloop.counter %}
                      {## loop over the formset (editable fields) ##}
