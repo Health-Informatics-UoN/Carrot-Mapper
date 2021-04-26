@@ -146,6 +146,15 @@ def process_scan_report(scan_report_id):
                     else:
                         scanreport.is_date_event = False
 
+                    if scanreport.ignore_column == "Ignore":
+                         scanreport.is_ignore = True
+                    else:
+                         scanreport.is_ignore = False
+
+                    if scanreport.ignore_column == "PassSource":
+                         scanreport.pass_from_source = True
+                    else:
+                         scanreport.pass_from_source = False
                     scanreport.save()
 
     # For sheets past the first two in the scan Report

@@ -40,10 +40,10 @@ class ScanReportForm(forms.Form):
                     flag_column=row[10]
                     flag_column=flag_column.lower()
                     classification_column=row[11]
-                    if (flag_column=='patientid') or (flag_column=='date') or (flag_column==''):
+                    if (flag_column=='patientid') or (flag_column=='date') or (flag_column=='passsource') or (flag_column=='ignore') or (flag_column==''):
                         pass
                     else:
-                        raise (forms.ValidationError( "Check Flag column values. Valid options are: 'PatientID', 'Date' or blank"))
+                        raise (forms.ValidationError( "Check Flag column values. Valid options are: 'PatientID', 'Date', 'PassSource', 'Ignore' or blank"))
                     
                     if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
                         pass
