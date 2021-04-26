@@ -60,6 +60,7 @@ from .models import (
 )
 from .services import process_scan_report
 from .services_nlp import get_json_from_nlpmodel
+from .services_datadictionary import merge_external_dictionary
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,
@@ -905,7 +906,7 @@ class DataDictionaryUpdateView(UpdateView):
         "dictionary_table",
         "dictionary_field",
         "dictionary_field_description",
-        "dictionary_value_code",
+        "dictionary_value",
         "dictionary_value_description",
         "definition_fixed",
     ]
@@ -1039,7 +1040,7 @@ def merge_dictionary(request):
     search_term = request.GET.get("search", None)
     
     # This function is called from services_datadictionary.py
-    merge_external_dictionary(scan_report_pk=search_term)
+    merge_external_dictionary(request,scan_report_pk=search_term)
 
     return render(request, "mapping/mergedictionary.html")
 

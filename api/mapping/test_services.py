@@ -40,10 +40,6 @@ class ServiceTests(TestCase):
 
         self.assertIs(4, len(result))
 
-    def test_import_data_dictionary(self):
-        x = import_data_dictionary()
-        print(x)
-
     # Run this to build Usagi's index for the first time
     # Takes a long time to run!
     def test_build_usagi_index(self):

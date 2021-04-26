@@ -1,8 +1,10 @@
 
+import os
 import pandas as pd
+from django.contrib import messages
 from .models import DataDictionary, DocumentFile, ScanReport
 
-def merge_external_dictionary(scan_report_pk):
+def merge_external_dictionary(request,scan_report_pk):
     
     # Grab the appropriate data dictionary which is built when a scan report is uploaded
     dictionary = (
@@ -70,13 +72,13 @@ def merge_external_dictionary(scan_report_pk):
             external_dictionary,
             how="left",
             left_on="Field",
-            right_on="Column Name",
+            right_on="FieldName",
         )
-
-        field_join_grp = field_join.groupby(["Field", "Value"]).first().reset_index()
+        
+        field_join_grp = field_join.groupby(["Field", "Value_x"]).first().reset_index()
 
         field_join_grp = field_join_grp[
-            ["Table", "Field", "Value", "Frequency", "FieldDesc", "Column Description"]
+            ["Table", "Field", "Value_x", "Frequency", "FieldDesc", "FieldDescription"]
         ]
 
         field_join_grp.to_csv("/data/TEMP_field_join_output.csv")
@@ -87,25 +89,25 @@ def merge_external_dictionary(scan_report_pk):
             field_join_grp,
             external_dictionary,
             how="left",
-            left_on=["Field", "Value"],
-            right_on=["Column Name", "ValueCode"],
+            left_on=["Field", "Value_x"],
+            right_on=["FieldName", "Value"],
         )
 
         x = x[
             [
                 "Table",
                 "Field",
-                "Value",
+                "Value_x",
                 "Frequency",
                 "FieldDesc",
-                "Table Name",
-                "Column Name",
-                "Column Description_x",
-                "ValueCode",
+                "TableName",
+                "FieldName",
+                "FieldDescription_x",
+                "Value",
                 "ValueDescription",
             ]
         ]
-        # x=x.fillna(value="")
+        x=x.fillna(value="")
         x.columns = [
             "Source_Table",
             "Source_Field",
@@ -113,16 +115,16 @@ def merge_external_dictionary(scan_report_pk):
             "Source_Frequency",
             "Source_FieldDesc",
             "Dictionary_TableName",
-            "Dictionary_ColumnName",
-            "Dictionary_ColumnDesc",
-            "Dictionary_ValueCode",
+            "Dictionary_FieldName",
+            "Dictionary_FieldDesc",
+            "Dictionary_Value",
             "Dictionary_ValueDescription",
         ]
 
         # If data are missing from imported dictionary
         # replace with analagous descriptions to flesh out dictionary for Usagi
         bad_index = x["Dictionary_ValueDescription"].isnull()
-        x["Dictionary_ValueDescription"][bad_index] = x["Dictionary_ValueCode"][
+        x["Dictionary_ValueDescription"][bad_index] = x["Dictionary_Value"][
             bad_index
         ]
 
@@ -148,9 +150,9 @@ def merge_external_dictionary(scan_report_pk):
 
             else:
                 obj.dictionary_table = row["Dictionary_TableName"]
-                obj.dictionary_field = row["Dictionary_ColumnName"]
-                obj.dictionary_field_description = row["Dictionary_ColumnDesc"]
-                obj.dictionary_value_code = row["Dictionary_ValueCode"]
+                obj.dictionary_field = row["Dictionary_FieldName"]
+                obj.dictionary_field_description = row["Dictionary_FieldDesc"]
+                obj.dictionary_value = row["Dictionary_Value"]
                 obj.dictionary_value_description = row["Dictionary_ValueDescription"]
                 obj.save()
                 

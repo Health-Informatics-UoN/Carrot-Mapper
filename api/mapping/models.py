@@ -518,7 +518,7 @@ class DataDictionary(BaseModel):
         null=True,
     )
 
-    dictionary_value_code = models.CharField(
+    dictionary_value = models.CharField(
         max_length=128,
         blank=True,
         null=True,
