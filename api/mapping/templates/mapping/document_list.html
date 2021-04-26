@@ -30,8 +30,8 @@
             <tbody>
             {% for object in object_list %}
             <tr>
-                <td>{{object.data_partner}}</td>
-                <td>{{object.document_type}}</td>
+                <td>{{object.data_partner.name}}</td>
+                <td>{{object.document_type.name}}</td>
                 <td>{{object.created_at}}</td>
                 <td>{{object.owner}}</td>
                 <td> 

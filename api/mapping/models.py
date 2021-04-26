@@ -111,7 +111,7 @@ class ClassificationSystem(BaseModel):
     )
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
 
 
 class DataPartner(BaseModel):
@@ -134,7 +134,7 @@ class DataPartner(BaseModel):
         ]
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
 
 
 class OmopTable(BaseModel):
@@ -146,7 +146,7 @@ class OmopTable(BaseModel):
     )
 
     def __str__(self):
-        return str(self.table)
+        return str(self.id)
 
 
 class OmopField(BaseModel):
@@ -163,7 +163,7 @@ class OmopField(BaseModel):
     )
 
     def __str__(self):
-        return str(self.table)
+        return str(self.id)
 
 
 class DocumentType(BaseModel):
@@ -237,7 +237,7 @@ class ScanReportTable(BaseModel):
     )
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
 
 
 class ScanReportField(BaseModel):
@@ -335,7 +335,7 @@ class ScanReportField(BaseModel):
     )
 
     def __str__(self):
-        return str(self.name)
+        return str(self.id)
 
 
 class ScanReportAssertion(BaseModel):
