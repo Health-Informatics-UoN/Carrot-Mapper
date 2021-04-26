@@ -151,3 +151,9 @@ class ScanReportAssertionForm(forms.Form):
          label="Negative Assertions",
          widget=forms.TextInput(attrs={"class": "form-control"}),
      )    
+
+
+class NLPForm(forms.Form):
+    user_string = forms.CharField(
+        label = ""
+    )

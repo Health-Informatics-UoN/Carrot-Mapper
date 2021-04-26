@@ -8,6 +8,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
+    path('tables/<int:pk>/update/', views.ScanReportTableUpdateView.as_view(), name='scan-report-table-update'),
     path('fields/', views.ScanReportFieldListView.as_view(), name='fields'),
     path('fields/<int:pk>/update/', views.ScanReportFieldUpdateView.as_view(), name='scan-report-field-update'),
     path('values/', views.ScanReportValueListView.as_view(), name='values'),
@@ -24,6 +25,10 @@ urlpatterns = [
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
     path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
     path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
+    
+    path('nlp/', views.NLPListView.as_view(), name='nlp'),
+    path('nlp/create/', views.NLPFormView.as_view(), name='nlp-form'),
+    path('nlp/<int:pk>/', views.NLPDetailView.as_view(), name='nlp-view-query'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),

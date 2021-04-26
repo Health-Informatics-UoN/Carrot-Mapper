@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<h2>NLP Query Results</h2>
+<br>
+
+<h5>String: <em>"{{ user_string }}"</em> </h5>
+
+{% if results == "Waiting" %}
+
+<p>Results aren't ready yet - your job is in the NLP queue.</p>
+<p>If you still see this message after 10 minutes, your submission to the NLP service may have failed.</p>
+
+{% else %}
+
+<table>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">NLP Entity</th>
+            <th scope="col">NLP Type</th>
+            <th scope="col">NLP Confidence</th>
+            <th scope="col">NLP Vocab</th>
+            <th scope="col">NLP Vocab Code</th>
+            <th scope="col">OMOP Concept Name</th>
+            <th scope="col">OMOP ConceptID</th>
+    
+        </tr>
+        </thead>
+    {% for item in results %}
+      <tr>
+        <td>{{ item.14|title }}</td>
+        <td>{{ item.15 }}</td>
+        <td>{{ item.16 }}</td>
+        <td>{{ item.3 }}</td>
+        <td>{{ item.18 }}</td>
+        <td>{{ item.1 }}</td>
+        <td>{{ item.11 }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  {% endif %}
+
+{% endblock %}

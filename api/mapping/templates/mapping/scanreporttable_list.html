@@ -14,13 +14,15 @@
 
 <h2>Tables</h2>
 
+
 {% if object_list %}
 <table class="table">
     <thead>
     <tr>
         <th scope="col">Name</th>
-        <!--<th scope="col">Ignore?</th>
-        <th scope="col">&nbsp;</th>-->
+        <th scope="col">Person ID</th>
+        <th>Edit</th>
+
     </tr>
     </thead>
     <tbody>
@@ -29,8 +31,15 @@
     <tr>
         <td><a href="{% url 'fields' %}?search={{ object.id }}">
             {{ object.name }}</a></td>
-        <!--<td>False</td>
-        <td><a href="">Edit Table</a></td>-->
+
+	<td>
+	{% if object.person_id %}
+	{{ object.person_id }} 
+	{% endif %}
+	</td>
+
+	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
+	
     </tr>
     {% endfor %}
     </tbody>
