@@ -230,12 +230,12 @@ class ScanReportTable(BaseModel):
         max_length=256,
     )
 
-    person_id = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True
-    )
+    # person_id = models.ForeignKey(
+    #    "ScanReportField",
+    #    on_delete=models.DO_NOTHING,
+    #    null=True,
+    #    blank=True
+    # )
     
     def __str__(self):
         return self.name
