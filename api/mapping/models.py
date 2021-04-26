@@ -78,7 +78,7 @@ class Source(BaseModel):
         verbose_name_plural = 'Sources'
 
     def __str__(self):
-        return f'{self.dataset, self.table, self.field}'
+        return str(self.id)
 
 
 class Mapping(BaseModel):
@@ -99,7 +99,7 @@ class Mapping(BaseModel):
         verbose_name_plural = 'Mappings'
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class ClassificationSystem(BaseModel):
@@ -111,7 +111,7 @@ class ClassificationSystem(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class DataPartner(BaseModel):
@@ -134,7 +134,7 @@ class DataPartner(BaseModel):
         ]
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class OmopTable(BaseModel):
@@ -146,7 +146,7 @@ class OmopTable(BaseModel):
     )
 
     def __str__(self):
-        return self.table
+        return str(self.id)
 
 
 class OmopField(BaseModel):
@@ -163,7 +163,7 @@ class OmopField(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.table, self.field}'
+        return str(self.id)
 
 
 class DocumentType(BaseModel):
@@ -186,7 +186,7 @@ class DocumentType(BaseModel):
         ]
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class ScanReport(BaseModel):
@@ -220,7 +220,7 @@ class ScanReport(BaseModel):
     )
 
     def __str__(self):
-        return f'#{self.id, self.dataset}' # TODO Remove f-strings?
+        return str(self.id)
 
 
 class ScanReportTable(BaseModel):
@@ -237,7 +237,7 @@ class ScanReportTable(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class ScanReportField(BaseModel):
@@ -335,7 +335,7 @@ class ScanReportField(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return str(self.id)
 
 
 class ScanReportAssertion(BaseModel):
@@ -354,7 +354,7 @@ class ScanReportAssertion(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.scan_report, self.negative_assertion}'
+        return str(self.id)
 
 
 class StructuralMappingRule(BaseModel):
@@ -403,7 +403,7 @@ class StructuralMappingRule(BaseModel):
     approved = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.term_mapping}'
+        return str(self.id)
 
 
 class ScanReportValue(BaseModel):
@@ -427,7 +427,7 @@ class ScanReportValue(BaseModel):
     )  # TODO rename it to concept_id
 
     def __str__(self):
-        return self.value
+        return str(self.id)
 
 
 class Document(BaseModel):
@@ -460,7 +460,7 @@ class Document(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.data_partner, self.document_type}'
+        return str(self.id)
 
 
 class DocumentFile(BaseModel):
@@ -489,7 +489,7 @@ class DocumentFile(BaseModel):
     def __str__(self):
         # TODO @Vas is this needed?
         self.document_file.name = os.path.basename(self.document_file.name)
-        return f'{self.document_file, self.status}'
+        return str(self.id)
 
 
 class DataDictionary(BaseModel):
@@ -534,7 +534,7 @@ class DataDictionary(BaseModel):
     )
 
     def __str__(self):
-        return self.id
+        return str(self.id)
     
 
 class NLPModel(models.Model):
@@ -553,4 +553,4 @@ class NLPModel(models.Model):
     )
     
     def __str__(self):
-        return f'{self.id, self.user_string}'
+        return str(self.id)

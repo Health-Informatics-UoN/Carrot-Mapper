@@ -30,7 +30,7 @@
     {% for object in object_list %}
     <tr>
         <td><a href="{% url 'tables' %}?search={{ object.id }}">
-            {{ object.data_partner }}</a></td>
+            {{ object.data_partner.name }}</a></td>
         <td>{{ object.dataset }}</td>
         <td>{{ object.author }}</td>
         <td>{{ object.created_at }}</td>

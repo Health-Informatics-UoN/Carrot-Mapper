@@ -4,17 +4,20 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.forms.models import ModelChoiceField
 
 from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
                             DocumentFile, DocumentType, OmopField, OmopTable,
                             ScanReport, VOCABULARY_CHOICES)
 from xlsx2csv import Xlsx2csv
 
-
+class MyModelChoiceField(ModelChoiceField):
+    def label_from_instance(self, obj):
+        return obj.name
 class ScanReportForm(forms.Form):
-    data_partner = forms.ModelChoiceField(
+    data_partner = MyModelChoiceField(
         label="Data Partner",
-        queryset=DataPartner.objects.order_by("name"),
+        queryset=DataPartner.objects.order_by('name'),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
@@ -99,13 +102,13 @@ class PasswordChangeForm(forms.Form):
 
 
 class DocumentForm(forms.Form):
-    data_partner = forms.ModelChoiceField(
+    data_partner = MyModelChoiceField(
         label="Data Partner",
         queryset=DataPartner.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
-    document_type = forms.ModelChoiceField(
+    document_type = MyModelChoiceField(
         label="Type",
         queryset=DocumentType.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
