@@ -128,7 +128,7 @@ class DataPartner(BaseModel):
         ]
 
     def __str__(self):
-        return f'{self.name}'
+        return self.name
 
 
 class OmopTable(BaseModel):
