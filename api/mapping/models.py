@@ -528,7 +528,7 @@ class DataDictionary(BaseModel):
     )
 
     def __str__(self):
-        return f'{self.id}'
+        return self.id
     
 
 class NLPModel(models.Model):
