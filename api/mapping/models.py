@@ -230,12 +230,50 @@ class ScanReportTable(BaseModel):
         max_length=256,
     )
 
-    # person_id = models.ForeignKey(
-    #    "ScanReportField",
-    #    on_delete=models.DO_NOTHING,
-    #    null=True,
-    #    blank=True
-    # )
+    #Quick notes:
+    # - "ScanReportField", instead of ScanReportField,
+    #    because ScanReportField has yet been defined, so you get a crash
+    #    Using the quotes to look up via the name, works just fine
+    # - related_name needed to be set because of
+    #   https://stackoverflow.com/questions/41595364/fields-e304-reverse-accessor-clashes-in-django
+    person_id = models.ForeignKey(
+        "ScanReportField",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name = 'person_id'
+    )
+
+    birth_date = models.ForeignKey(
+        "ScanReportField",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name = 'birth_date'
+    )
+
+    measurement_date = models.ForeignKey(
+        "ScanReportField",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name = 'measurement_date',
+    )
+    condition_date = models.ForeignKey(
+        "ScanReportField",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name = 'condition_date'
+    )
+    observation_date = models.ForeignKey(
+        "ScanReportField",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+        related_name = 'observation_date'
+    )
+
     
     def __str__(self):
         return self.name
