@@ -93,7 +93,7 @@ class Mapping(BaseModel):
         verbose_name_plural = 'Mappings'
 
     def __str__(self):
-        return self.id
+        return f'{self.id}'
 
 
 class ClassificationSystem(BaseModel):
@@ -105,7 +105,7 @@ class ClassificationSystem(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class DataPartner(BaseModel):
@@ -128,7 +128,7 @@ class DataPartner(BaseModel):
         ]
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class OmopTable(BaseModel):
@@ -180,7 +180,7 @@ class DocumentType(BaseModel):
         ]
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class ScanReport(BaseModel):
@@ -231,7 +231,7 @@ class ScanReportTable(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class ScanReportField(BaseModel):
@@ -329,7 +329,7 @@ class ScanReportField(BaseModel):
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name}'
 
 
 class ScanReportAssertion(BaseModel):
@@ -421,7 +421,7 @@ class ScanReportValue(BaseModel):
     )  # TODO rename it to concept_id
 
     def __str__(self):
-        return self.value
+        return f'{self.value}'
 
 
 class Document(BaseModel):
@@ -528,7 +528,7 @@ class DataDictionary(BaseModel):
     )
 
     def __str__(self):
-        return self.id
+        return f'{self.id}'
     
 
 class NLPModel(models.Model):
