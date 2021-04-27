@@ -273,11 +273,9 @@ class ScanReportTable(BaseModel):
         blank=True,
         related_name = 'observation_date'
     )
-
     
     def __str__(self):
         return self.name
-
 
 class ScanReportField(BaseModel):
     """

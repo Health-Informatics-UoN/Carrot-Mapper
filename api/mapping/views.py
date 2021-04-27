@@ -120,7 +120,6 @@ class ScanReportTableUpdateView(UpdateView):
         "condition_date"
     ]
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -136,15 +135,10 @@ class ScanReportTableUpdateView(UpdateView):
 
         return context
     
-
-
-    
     def get_success_url(self):
         return "{}?search={}".format(
             reverse("tables"), self.object.scan_report.id
         )
-
-    
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ModelFormSetView):
@@ -316,11 +310,9 @@ class StructuralMappingTableListView(ModelFormSetView):
         field = lookup[destination_table]
 
         return getattr(source_table,field)
-        
 
     def find_person_id(self, source_table):
         return source_table.person_id
-
 
     def validate_person_ids(self,request,source_tables):
         is_valid = True
@@ -468,7 +460,6 @@ class StructuralMappingTableListView(ModelFormSetView):
                         approved=True,
                     )
                     mapping.save()
-               
                     try:
                         primary_date_source_field = self.find_date_event(destination_table,source_table)
                     except KeyError:
@@ -585,7 +576,6 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         elif return_type == "json":
             outputs = self.get_final_json(outputs)
-
             response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
