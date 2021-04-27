@@ -294,7 +294,7 @@ class ScanReportField(BaseModel):
         max_digits=10,
     )
 
-    ignore_column=models.CharField(
+    flag_column=models.CharField(
         max_length=64,
         blank=True,
         null=True,
