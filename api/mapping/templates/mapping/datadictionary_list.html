@@ -7,9 +7,9 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
-            <li class="breadcrumb-item">{{ scan_report.data_partner }} - {{ scan_report.dataset }}</li>
+            <li class="breadcrumb-item">{{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</li>
 </nav>
-<h2>Data Dictionary for {{ scan_report.data_partner }} - {{ scan_report.dataset }}</h2>
+<h2>Data Dictionary for {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</h2>
 
 {% if object_list %}
 <form id="my_form">
