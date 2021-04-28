@@ -550,7 +550,7 @@ class NLPModel(models.Model):
         return str(self.id)
 
 
-class ScanReportConceptID(BaseModel):
+class ScanReportConcept(BaseModel):
     concept_name = models.CharField(max_length=128)
     concept_id = models.CharField(max_length=16)
     entity = models.CharField(max_length=64)
