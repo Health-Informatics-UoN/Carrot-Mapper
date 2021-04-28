@@ -29,9 +29,11 @@
         {{ form.description }}
     </div>
     <div class="mb-3">
-        {{ form.document_file.errors }}
         <label class="form-label">{{ form.document_file.label}}</label>
         {{ form.document_file }}
+        {%if form.document_file.errors%}
+        <div class="alert alert-danger" role="alert">{{ form.document_file.errors }}</div>
+        {%endif%}
     </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>

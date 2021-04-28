@@ -812,6 +812,16 @@ class DocumentFileFormView(FormView):
     def get_success_url(self, **kwargs):
         self.object = self.kwargs.get("pk")
         return reverse("file-list", kwargs={"pk": self.object})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = Document.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "document": x,
+            }
+        )
+        return context
 
 
 @method_decorator(login_required, name="dispatch")
