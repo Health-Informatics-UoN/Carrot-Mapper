@@ -17,6 +17,7 @@ from .models import (
     DataDictionary,
     StructuralMappingRule,
     NLPModel,
+    ScanReportConcept
 )
 
 
@@ -36,3 +37,4 @@ admin.site.register(Document)
 admin.site.register(DocumentFile)
 admin.site.register(DataDictionary)
 admin.site.register(NLPModel)
+admin.site.register(ScanReportConcept)
