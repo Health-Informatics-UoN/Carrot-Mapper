@@ -11,13 +11,16 @@ from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
                             ScanReport, VOCABULARY_CHOICES)
 from xlsx2csv import Xlsx2csv
 
-class MyModelChoiceField(ModelChoiceField):
+
+class ShowNameChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         if obj.__class__.__name__=='Document':
             return str(obj.data_partner.name)
         return obj.name
+
+
 class ScanReportForm(forms.Form):
-    data_partner = MyModelChoiceField(
+    data_partner = ShowNameChoiceField(
         label="Data Partner",
         queryset=DataPartner.objects.order_by('name'),
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -107,13 +110,13 @@ class PasswordChangeForm(forms.Form):
 
 class DocumentForm(forms.Form):
     
-    data_partner = MyModelChoiceField(
+    data_partner = ShowNameChoiceField(
         label="Data Partner",
         queryset=DataPartner.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
 
-    document_type = MyModelChoiceField(
+    document_type = ShowNameChoiceField(
         label="Type",
         queryset=DocumentType.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
@@ -148,7 +151,7 @@ class DocumentFileForm(forms.Form):
     document_file = forms.FileField(
         label="Document File", widget=forms.FileInput(attrs={"class": "form-control"})
     )
-    document_type = MyModelChoiceField(
+    document_type = ShowNameChoiceField(
         label="Type",
         queryset=DocumentType.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
