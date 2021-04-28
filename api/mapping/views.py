@@ -777,6 +777,16 @@ class DocumentFileListView(ListView):
             qs = qs.filter(document__id=search_term)
 
         return qs
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = Document.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "document": x,
+            }
+        )
+        return context
 
 
 @method_decorator(login_required, name="dispatch")

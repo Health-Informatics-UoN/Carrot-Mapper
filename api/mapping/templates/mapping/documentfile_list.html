@@ -25,7 +25,7 @@
                 <th scope="col">Added on</th>
                 <th scope="col">Status</th>
                 <th scope="col">Edit</th>
-                <th scope="col">Upload</th>
+                
 
                 <th>&nbsp;</th>
             </tr>
@@ -51,9 +51,7 @@
                 <td>
                     <a href="{% url 'status-update' object.id %}">Change Status</a>
                 </td>
-                <td>
-                    <a href="{% url 'file-form' object.document.id%}">Upload New Version</a>
-                </td>
+               
             </tr>
             {% endfor %}
             </tbody>
@@ -61,5 +59,6 @@
     </div>
 </form>
 {% endif %}
+<a href="{% url 'file-form' document.id %}" class="btn btn-primary">Upload New Version</a>
 
 {% endblock %}
