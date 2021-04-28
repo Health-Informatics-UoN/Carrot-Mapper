@@ -797,11 +797,12 @@ class DocumentFileFormView(FormView):
     # success_url=reverse_lazy('document-list')
 
     def form_valid(self, form):
+        document=Document.objects.get(pk=self.kwargs.get("pk"))
         document_file = DocumentFile.objects.create(
             document_file=form.cleaned_data["document_file"],
             size=20,
-            document=form.cleaned_data["document"],
-            # status="Inactive"
+            document=document,
+            
         )
 
         document_file.save()

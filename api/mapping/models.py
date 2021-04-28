@@ -498,8 +498,6 @@ class DocumentFile(BaseModel):
     )
 
     def __str__(self):
-        # TODO @Vas is this needed?
-        self.document_file.name = os.path.basename(self.document_file.name)
         return str(self.id)
 
 

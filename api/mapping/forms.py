@@ -4,7 +4,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.forms.models import ModelChoiceField
+from django.forms.models import ModelChoiceField, ModelForm
 
 from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
                             DocumentFile, DocumentType, FLAG_CHOICES, OmopField, OmopTable,
@@ -13,6 +13,8 @@ from xlsx2csv import Xlsx2csv
 
 class MyModelChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
+        if obj.__class__.__name__=='Document':
+            return str(obj.data_partner.name)
         return obj.name
 class ScanReportForm(forms.Form):
     data_partner = MyModelChoiceField(
@@ -104,6 +106,7 @@ class PasswordChangeForm(forms.Form):
 
 
 class DocumentForm(forms.Form):
+    
     data_partner = MyModelChoiceField(
         label="Data Partner",
         queryset=DataPartner.objects.order_by("name"),
@@ -125,40 +128,54 @@ class DocumentForm(forms.Form):
     )
 
     def clean_document_file(self):
-        data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
-        header = data_dictionary_csv.split(',')
-        column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
+        if str((self.cleaned_data['document_type']).name).lower()=='data dictionary':
+            try:
+                data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
+                header = data_dictionary_csv.split(',')
+                column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
 
-        if set(column_names) == set(header):
-            return self.cleaned_data['document_file']
+                if set(column_names) == set(header):
+                    return self.cleaned_data['document_file']
+                else:
+                    raise (forms.ValidationError("Please check your column names in your data dictionary"))
+            except: 
+                raise (forms.ValidationError("Data Dictionary must be .csv file"))
         else:
-            raise (forms.ValidationError("Please check your column names in your data dictionary"))
+            return self.cleaned_data['document_file']
 
 
 class DocumentFileForm(forms.Form):
     document_file = forms.FileField(
-        label="Document", widget=forms.FileInput(attrs={"class": "form-control"})
+        label="Document File", widget=forms.FileInput(attrs={"class": "form-control"})
     )
-    document = forms.ModelChoiceField(
-        label="Document", queryset=Document.objects.all()
+    document_type = MyModelChoiceField(
+        label="Type",
+        queryset=DocumentType.objects.order_by("name"),
+        widget=forms.Select(attrs={"class": "form-control"}),
     )
     description = forms.CharField(
         label="Document Description",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
 
-    def clean_document_file(self):
+    def clean_document_type(self):
+        print(self.cleaned_data['document_type'].name)
+        if str((self.cleaned_data['document_type']).name).lower()=='data dictionary':
+            try:
+                data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
+                header = data_dictionary_csv.split(',')
+                column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
 
-        data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
-        header = data_dictionary_csv.split(',')
-        column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
-
-        if set(column_names) == set(header):
-            return self.cleaned_data['document_file']
+                if set(column_names) == set(header):
+                    return self.cleaned_data['document_file']
+                else:
+                    raise (forms.ValidationError("Please check your column names in your data dictionary"))
+            except: 
+                raise (forms.ValidationError("Data Dictionary must be .csv file"))
         else:
-            raise (forms.ValidationError("Please check your column names in your data dictionary"))
-
-
+            return self.cleaned_data['document_file']
+      
+        
 class DictionarySelectForm(forms.Form):
     document = forms.ModelChoiceField(label="Data Dictionary Document",
                                       queryset=DocumentFile.objects.filter(status__icontains="LIVE"),
