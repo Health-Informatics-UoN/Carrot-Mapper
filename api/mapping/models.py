@@ -294,12 +294,18 @@ class ScanReportField(BaseModel):
         max_digits=10,
     )
 
-    flag_column=models.CharField(
+    ignore_column=models.CharField(
         max_length=64,
         blank=True,
         null=True,
     )
 
+    flag_column=models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+    )
+    
     is_patient_id = models.BooleanField(
         default=False,
     )
