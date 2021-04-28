@@ -110,6 +110,36 @@ class ScanReportTableListView(ListView):
 
         return context
 
+@method_decorator(login_required, name="dispatch")
+class ScanReportTableUpdateView(UpdateView):
+    model = ScanReportTable
+    fields = [
+        "person_id",
+        "birth_date",
+        "measurement_date",
+        "observation_date",
+        "condition_date"
+    ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        #filter so the objects can only be associated to the current scanreport table
+        scan_report_table = context['scanreporttable']
+        qs = ScanReportField\
+            .objects\
+            .filter(scan_report_table=scan_report_table)\
+            .order_by("name")
+
+        for key in context['form'].fields.keys():
+            context['form'].fields[key].queryset = qs
+
+        return context
+    
+    def get_success_url(self):
+        return "{}?search={}".format(
+            reverse("tables"), self.object.scan_report.id
+        )
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ModelFormSetView):
@@ -270,36 +300,31 @@ class StructuralMappingTableListView(ModelFormSetView):
         StructuralMappingRule.objects.all().delete()
 
     # need a quality check if multiple date events are found in the table
-    def find_date_event(self, source_table):
-        # look for is_date_events in the same table
-        qs = source_table.scanreportfield_set.all().filter(is_date_event=True)
-        # return if found
-        if len(qs) > 0:
-            _source_field = qs[0]
-            return _source_field
+    def find_date_event(self,destination_table,source_table):
+        lookup = {
+            'person':'birth_date',
+            'measurement':'measurement_date',
+            'condition_occurrence':'condition_date',
+            'observation':'observation_date'
+        }
 
-    # need a quality check if multiple date events are found in the table
-    def find_birth_event(self, source_table):
-        # look for is_date_events in the same table
-        qs = source_table.scanreportfield_set.all().filter(is_birth_date=True)
-        # return if found
-        if len(qs) > 0:
-            _source_field = qs[0]
-            return _source_field
+        field = lookup[destination_table]
 
-    # need a quality check for if multiple person ids are found in the table
+        return getattr(source_table,field)
+
     def find_person_id(self, source_table):
-        # look in the current source_table
-        # the source_table is the table associated with
-        # the field that has had a concept id set
-        #
-        # Look for any is_patient_id
-        qs = source_table.scanreportfield_set.all().filter(is_patient_id=True)
-        # if any have been found
-        if len(qs) > 0:
-            _source_field = qs[0]
-            return _source_field
+        return source_table.person_id
 
+    def validate_person_ids(self,request,source_tables):
+        is_valid = True
+        #loop over source_tables looking for person_ids
+        for table in source_tables:
+            if table.person_id == None:
+                messages.error(request,f"Cannot generate rules. Table \"{table}\" is used but you have not set the person_id.")
+                is_valid = False
+                
+        return is_valid
+    
     def generate(self, request):
         pk = self.kwargs.get("pk")
 
@@ -323,6 +348,18 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         # make unique
         fields = fields.distinct()
+
+        #get unique source tables that are used
+        source_tables = []
+        for field in fields:
+            source_table = field.scan_report_table
+            source_tables.append(source_table)
+        source_tables = list(set(source_tables))
+
+        #call a check to firstly validate that person_ids have been set
+        #in all the source tables that we actually use
+        if not self.validate_person_ids(request,source_tables):
+            return 
 
         # loop over found fields
         for field in fields:
@@ -424,12 +461,15 @@ class StructuralMappingTableListView(ModelFormSetView):
                         approved=True,
                     )
                     mapping.save()
-
-                    primary_date_source_field = None
-                    if destination_table == "person":
-                        primary_date_source_field = self.find_birth_event(source_table)
-                    else:
-                        primary_date_source_field = self.find_date_event(source_table)
+                    try:
+                        primary_date_source_field = self.find_date_event(destination_table,source_table)
+                    except KeyError:
+                        messages.error(request,f"No implementation for date-event for {destination_table} yet")
+                        
+                    if primary_date_source_field is None:
+                        messages.error(request,f"Failed to generate rules. You need to set an event date for {destination_table} in table {source_table}.")
+                        self.clean()
+                        return
 
                     # this is just looking up a dictionary in the OmopDetails() class
                     # e.g. { "person":"birth_datetime"... }
@@ -467,7 +507,6 @@ class StructuralMappingTableListView(ModelFormSetView):
         # .order_by('omop_field__table','omop_field__field','source_table__name','source_field__name')
 
         outputs = []
-        # output={ name:None for name in ['rule_id','destination_table','destination_field','source_table','source_field','source_field_indexer','term_mapping','coding_system','operation']}
 
         for rule in rules:
             # if these havent been defined, skip.....
@@ -538,10 +577,8 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         elif return_type == "json":
             outputs = self.get_final_json(outputs)
-            response = HttpResponse(
-                json.dumps(outputs, indent=6), content_type="application/json"
-            )
-            response["Content-Disposition"] = f'attachment; filename="{fname}"'
+            response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
+            response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
         else:
             # implement other return types if needed
