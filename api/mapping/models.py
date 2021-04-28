@@ -39,6 +39,16 @@ VOCABULARY_CHOICES = {
     VOCABULARY_ICD10: "ICD10",
 }
 
+FLAG_PATIENTID='PATIENTID'
+FLAG_DATE='DATE'
+FLAG_IGNORE='IGNORE'
+FLAG_PASS_SOURCE='PASS_SOURCE'
+FLAG_CHOICES = {
+FLAG_PATIENTID:'PatientID',
+FLAG_DATE:'Date',
+FLAG_IGNORE:'Ignore',
+FLAG_PASS_SOURCE:'PassSource'
+}
 
 class BaseModel(models.Model):
     """
@@ -341,6 +351,12 @@ class ScanReportField(BaseModel):
         null=True,
     )
 
+    flag_column=models.CharField(
+        max_length=64,
+        blank=True,
+        null=True,
+    )
+    
     is_patient_id = models.BooleanField(
         default=False,
     )
@@ -522,8 +538,6 @@ class DocumentFile(BaseModel):
     )
 
     def __str__(self):
-        # TODO @Vas is this needed?
-        self.document_file.name = os.path.basename(self.document_file.name)
         return str(self.id)
 
 

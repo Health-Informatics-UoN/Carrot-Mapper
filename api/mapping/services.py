@@ -129,30 +129,30 @@ def process_scan_report(scan_report_id):
                         fraction_empty=row[7],
                         nunique_values=row[8],
                         fraction_unique=row[9],
-                        ignore_column=row[10],
+                        flag_column=row[10],
                         is_patient_id=False,
                         is_date_event=False,
                         is_ignore=False,
                         pass_from_source=False,
                         classification_system=row[11],
                     )
-                    scanreport.ignore_column=scanreport.ignore_column.lower()
-                    if scanreport.ignore_column == "patientid":
+                    scanreport.flag_column=scanreport.flag_column.lower()
+                    if scanreport.flag_column == "patientid":
                         scanreport.is_patient_id = True
                     else:
                         scanreport.is_patient_id = False
 
-                    if scanreport.ignore_column == "date":
+                    if scanreport.flag_column == "date":
                         scanreport.is_date_event = True
                     else:
                         scanreport.is_date_event = False
 
-                    if scanreport.ignore_column == "ignore":
+                    if scanreport.flag_column == "ignore":
                          scanreport.is_ignore = True
                     else:
                          scanreport.is_ignore = False
 
-                    if scanreport.ignore_column == "passsource":
+                    if scanreport.flag_column == "passsource":
                          scanreport.pass_from_source = True
                     else:
                          scanreport.pass_from_source = False

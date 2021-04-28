@@ -11,7 +11,7 @@
     </ol>
 </nav>
 
-<h2>Document File Versions</h2>
+<h2>{{document.document_type.name}} Versions for {{document.data_partner.name}}</h2>
  
 
 {% if object_list %}
@@ -21,13 +21,11 @@
             <thead>
             <tr>
                 <th scope="col">Name</th>
+                <th scope="col">Type</th>
                 <th scope="col">Size</th>
                 <th scope="col">Added on</th>
                 <th scope="col">Status</th>
                 <th scope="col">Edit</th>
-                <th scope="col">Upload</th>
-
-                <th>&nbsp;</th>
             </tr>
             </thead>
             <tbody>
@@ -37,12 +35,14 @@
                     {{object.document_file}}
                 </a>
                 </td>
+                <td>{{document.document_type.name}}</td>
                 <td>
                     {{object.size}}
                 </td>
                 <td>
                     {{object.created_at}}
                 </td>
+                
                 <td>
                     {% if object.status %}
                     <i class="bi bi-check">{{object.status}}</i>
@@ -51,9 +51,7 @@
                 <td>
                     <a href="{% url 'status-update' object.id %}">Change Status</a>
                 </td>
-                <td>
-                    <a href="{% url 'file-form' object.document.id%}">Upload New Version</a>
-                </td>
+               
             </tr>
             {% endfor %}
             </tbody>
@@ -61,5 +59,6 @@
     </div>
 </form>
 {% endif %}
+<a href="{% url 'file-form' document.id %}" class="btn btn-primary">Upload New Version</a>
 
 {% endblock %}
