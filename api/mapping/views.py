@@ -1131,3 +1131,15 @@ class NLPDetailView(DetailView):
             json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
             context = {"user_string": query.user_string, "results": json_response}
             return context
+
+def run_nlp(request):
+
+    # Grab the scan report ID
+    search_term = request.GET.get("search", None)
+    print(search_term)
+    
+    # This function is called from services_nlp.py
+    
+    return render(request, "mapping/home.html")
+
+

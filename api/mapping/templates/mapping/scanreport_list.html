@@ -23,6 +23,7 @@
         <th scope="col">Maps</th>
         <th scope="col">Data Dictionary</th>
         <th scope="col">Assertions</th>
+        <th scope="col">NLP</th>
 
     </tr>
     </thead>
@@ -43,6 +44,8 @@
         <td><a href="{% url 'scan-report-assertion' object.id %}">
             <button type="button" class="btn btn-success">View/Edit Assertions</button></a>
         </td>
+        <td><a href="{% url 'run-nlp' %}?search={{ object.id }}">
+            <button type="button" class="btn btn-warning">Run NLP</button></a></td>
     </tr>
     {% endfor %}
     </tbody>

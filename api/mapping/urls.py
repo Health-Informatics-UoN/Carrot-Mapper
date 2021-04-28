@@ -29,6 +29,7 @@ urlpatterns = [
     path('nlp/', views.NLPListView.as_view(), name='nlp'),
     path('nlp/create/', views.NLPFormView.as_view(), name='nlp-form'),
     path('nlp/<int:pk>/', views.NLPDetailView.as_view(), name='nlp-view-query'),
+    path('nlp/run', views.run_nlp, name='run-nlp'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
