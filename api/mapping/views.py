@@ -808,12 +808,22 @@ class DocumentFileListView(ListView):
     model = DocumentFile
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by("status")
+        qs = super().get_queryset().order_by('-status','-created_at')
         search_term = self.kwargs.get("pk")
         if search_term is not None:
             qs = qs.filter(document__id=search_term)
 
         return qs
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = Document.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "document": x,
+            }
+        )
+        return context
 
 
 @method_decorator(login_required, name="dispatch")
@@ -824,11 +834,12 @@ class DocumentFileFormView(FormView):
     # success_url=reverse_lazy('document-list')
 
     def form_valid(self, form):
+        document=Document.objects.get(pk=self.kwargs.get("pk"))
         document_file = DocumentFile.objects.create(
             document_file=form.cleaned_data["document_file"],
             size=20,
-            document=form.cleaned_data["document"],
-            # status="Inactive"
+            document=document,
+            
         )
 
         document_file.save()
@@ -838,6 +849,16 @@ class DocumentFileFormView(FormView):
     def get_success_url(self, **kwargs):
         self.object = self.kwargs.get("pk")
         return reverse("file-list", kwargs={"pk": self.object})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        x = Document.objects.get(pk=self.kwargs.get("pk"))
+        context.update(
+            {
+                "document": x,
+            }
+        )
+        return context
 
 
 @method_decorator(login_required, name="dispatch")

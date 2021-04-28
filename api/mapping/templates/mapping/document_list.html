@@ -35,7 +35,7 @@
                 <td>{{object.created_at}}</td>
                 <td>{{object.owner}}</td>
                 <td> 
-                    <a href="{% url 'file-list' object.id %}">View {{object.document_type}} versions</a>
+                    <a href="{% url 'file-list' object.id %}">View {{object.document_type.name}} versions</a>
                 </td>
             </tr>
             {% endfor %}
