@@ -1136,9 +1136,9 @@ def run_nlp(request):
 
     # Grab the scan report ID
     search_term = request.GET.get("search", None)
-    print(search_term)
     
     # This function is called from services_nlp.py
+    
     
     return render(request, "mapping/home.html")
 
