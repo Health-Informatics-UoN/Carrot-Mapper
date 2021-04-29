@@ -132,13 +132,11 @@ class ScanReportTableUpdateView(UpdateView):
 
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
-            context['form'].fields[key].to_field_name = 'name'
 
             def label_from_instance(obj):
                 return obj.name
             
             context['form'].fields[key].label_from_instance = label_from_instance
-                        
         return context
     
     def get_success_url(self):
