@@ -38,29 +38,29 @@
 
 	<td>
 	{% if object.person_id %}
-	{{ object.person_id }} 
+	{{ object.person_id.name }} 
 	{% endif %}
 	</td>
 
 	<td>
 	{% if object.birth_date %}
-	{{ object.birth_date }} 
+	{{ object.birth_date.name }} 
 	{% endif %}
 	</td>
 
 	<td>
 	{% if object.measurement_date %}
-	{{ object.measurement_date }} 
+	{{ object.measurement_date.name }} 
 	{% endif %}
 	</td>
 	<td>
 	{% if object.observation_date %}
-	{{ object.observation_date }} 
+	{{ object.observation_date.name }} 
 	{% endif %}
 	</td>
 	<td>
 	{% if object.condition_date %}
-	{{ object.condition_date }} 
+	{{ object.condition_date.name }} 
 	{% endif %}
 	</td>
 
