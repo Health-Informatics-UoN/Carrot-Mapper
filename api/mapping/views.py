@@ -123,7 +123,6 @@ class ScanReportTableUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         #filter so the objects can only be associated to the current scanreport table
         scan_report_table = context['scanreporttable']
         qs = ScanReportField\
@@ -134,6 +133,10 @@ class ScanReportTableUpdateView(UpdateView):
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
 
+            def label_from_instance(obj):
+                return obj.name
+            
+            context['form'].fields[key].label_from_instance = label_from_instance
         return context
     
     def get_success_url(self):
