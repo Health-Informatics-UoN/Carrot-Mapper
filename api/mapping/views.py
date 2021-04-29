@@ -472,28 +472,31 @@ class StructuralMappingTableListView(ModelFormSetView):
                         return
 
                     # this is just looking up a dictionary in the OmopDetails() class
-                    # e.g. { "person":"birth_datetime"... }
+                    # e.g. { "person":["birth_datetime"]... }
                     # this could easily be in MappingPipelines
-                    primary_date_omop_field = omop_lookup.get_primary_date_field(
+                    date_omop_fields = omop_lookup.get_date_fields(
                         omop_field.table.table
                     )
-
-                    # get the actual omop field object
-                    primary_date_omop_field = OmopField.objects.get(
-                        table__table=destination_table, field=primary_date_omop_field
-                    )
-
-                    # make another mapping for this date object
-                    mapping, created = StructuralMappingRule.objects.update_or_create(
-                        scan_report=scan_report,
-                        omop_field=primary_date_omop_field,
-                        source_table=source_table,
-                        source_field=primary_date_source_field,
-                        term_mapping=None,
-                        approved=True,
-                    )
-                    mapping.save()
-
+                    #loop over all returned
+                    #most will return just one
+                    #in the case of condition_occurrence, return start and end
+                    for date_omop_field in date_omop_fields:
+                        # get the actual omop field object
+                        date_omop_field = OmopField.objects.get(
+                            table__table=destination_table, field=date_omop_field
+                        )
+                        
+                        # make another mapping for this date object
+                        mapping, created = StructuralMappingRule.objects.update_or_create(
+                            scan_report=scan_report,
+                            omop_field=date_omop_field,
+                            source_table=source_table,
+                            source_field=primary_date_source_field,
+                            term_mapping=None,
+                            approved=True,
+                        )
+                        mapping.save()
+                    # loop over dates to be added
                 # loop over rules
             # loop over rules set
         # loop over all fields containing a concept id
