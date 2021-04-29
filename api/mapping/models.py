@@ -615,10 +615,11 @@ class ScanReportConcept(BaseModel):
     confidence = models.DecimalField(max_digits=3, decimal_places=2)
     vocabulary = models.CharField(max_length=64)
     vocabulary_code = models.CharField(max_length=64)
+    processed_string = models.CharField(max_length=256, blank=True, null=True)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return f"{self.concept_id, self.object_id}"
+        return f"{self.concept_id, self.object_id, self.concept_name, self.processed_string}"

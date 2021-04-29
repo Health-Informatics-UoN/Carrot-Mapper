@@ -1163,13 +1163,25 @@ class NLPDetailView(DetailView):
 
 def run_nlp(request):
 
-    # Grab the scan report ID
+    # Grab the scan report ID and assertions
     search_term = request.GET.get("search", None)
-
+    assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+    neg_assertions = assertions.values_list("negative_assertion")
+    
     # Get Data Dictionary Entries for the Scan Report
     # This returns a queryset of *all* entries in the dict model
     dict_entries = DataDictionary.objects.filter(
                 source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+            )
+
+    # Create an NLP string field
+    qs = dict_entries.annotate(
+                nlp_string=Concat(
+                    "source_value__value",
+                    V(", "),
+                    "source_value__scan_report_field__name",
+                    output_field=CharField(),
+                )
             )
     
     # Logic here for what concatenated fields to send to NLP
@@ -1180,36 +1192,49 @@ def run_nlp(request):
             #concatenate source field or value with whatever is present from the data dictionary
     # else:
         #concatenate dictionary_field_description and dictionary_value_description
+    
 
-        
-    qs = dict_entries.annotate(
-            nlp_string=Concat(
-                "source_value__value",
-                V(", "),
-                "source_value__scan_report_field__name",
-                output_field=CharField(),
-            )
+    # Grabs ScanReportFields where pass_from_source=True, makes list distinct
+    qs_1 = (
+        qs.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
         )
+        .filter(source_value__scan_report_field__pass_from_source=True)
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value="List truncated...")
+        .distinct("source_value__scan_report_field")
+        .order_by("source_value__scan_report_field")
+    )
     
-    # qs = dict_entries.annotate(
-    #         nlp_string=Concat(
-    #             "dictionary_field_description",
-    #             V(", "),
-    #             "dictionary_value_description",
-    #             output_field=CharField(),
-    #         )
-    #     )
-    
+    # Grabs everything but removes all where pass_from_source=False
+    # Filters out negative assertions and 'List truncated...'
+    qs_2 = (
+        qs.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+        )
+        .filter(source_value__scan_report_field__pass_from_source=False)
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value="List truncated...")
+        .exclude(source_value__value__in=neg_assertions)
+    )
+
+    # Stick qs_1 and qs_2 together
+    qs_total = qs_1.union(qs_2)
+
     # Create object to convert to JSON
     # For now, work only on source fields and values
-    for_json = qs.values_list(
+    for_json = qs_total.values_list(
         "id",
         "source_value__value",
         "source_value__scan_report_field__name",
         "nlp_string",
     )
     
-    # print(for_json)
+    print(for_json)
     
     # Translate queryset into JSON-like dict for NLP
     documents = []
@@ -1287,32 +1312,39 @@ def run_nlp(request):
     # Load in OMOPDetails class from Co-Connect Tools
     omop_lookup = OMOPDetails()
 
-    # This block looks up each concept *code* and returns
-    # OMOP standard conceptID
+    # This block looks up each concept *code* in codes_df 
+    # and returns an OMOP standard conceptID
     results = []
     for index, row in codes_df.iterrows():
         results.append(omop_lookup.lookup_code(row["code"]))
         
-        
+    # Convert results list into a pandas dataframe    
     full_results = pd.concat(results, ignore_index=True)
 
+    # Left join looked up conceptIDs with the return from NLP
     full_results = full_results.merge(
         codes_df, left_on="concept_code", right_on="code"
     )
+    
+    print(full_results)
+        
     full_results = full_results.values.tolist()
 
     for result in full_results:
         
-        mod = ContentType.objects.get_for_model(ScanReportValue)
+        if ScanReportField:
+             mod = ContentType.objects.get_for_model(ScanReportField)
+        else:
+            mod = ContentType.objects.get_for_model(ScanReportValue)
         
         ScanReportConcept.objects.create(
-            concept_id = result[0],
+            concept_id = result[11],
             concept_name = result[1],
             entity = result[14],
             entity_type = result[15],
             confidence = result[16],
-            vocabulary = result[17],
-            vocabulary_code = result[18],
+            vocabulary = result[3],
+            vocabulary_code = result[6],
             
             content_type = mod,
             object_id = result[13],
