@@ -20,6 +20,7 @@
                 <th scope="col">Source Table</th>
                 <th scope="col">Source Field</th>
                 <th scope="col">Source Value</th>
+                <th scope="col">Key</th>
                 <th scope="col">Dictionary Field Description</th>
                 <th scope="col">Dictionary Value</th>
                 <th scope="col">Dictionary Value Description</th>
@@ -34,6 +35,7 @@
             <td></p>{{ object.source_value.scan_report_field.scan_report_table.name|default_if_none:"" }}</td>
             <td>{{ object.source_value.scan_report_field.name|truncatechars:21|default_if_none:"" }}</td>
             <td>{{ object.source_value.value|default_if_none:"" }}</td>
+            <td>{{ object.source_value.id|default_if_none:"" }}</td>
             <td>{{ object.dictionary_field_description|default_if_none:"" }}</td>
             <td>{{ object.dictionary_value|default_if_none:"" }}</td>
             <td>{{ object.dictionary_value_description|default_if_none:"" }}</td>

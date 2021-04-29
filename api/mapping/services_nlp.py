@@ -3,13 +3,13 @@ import pandas as pd
 import requests
 import time
 
-from .models import NLPModel, ScanReportConcept
+from .models import NLPModel, ScanReportConcept, DataDictionary
 from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
-def nlp_request(pk):
+def nlp_request(search_term):
     
-    
+
     
     return True
 

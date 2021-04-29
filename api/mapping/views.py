@@ -4,6 +4,9 @@ import os
 import sys
 from io import BytesIO, StringIO
 
+import requests
+import time
+
 import coconnect
 import pandas as pd
 from coconnect.tools import dag, mapping_pipeline_helpers
@@ -35,6 +38,10 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 from extra_views import ModelFormSetView
 
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
+
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -57,9 +64,10 @@ from .models import (
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule,
+    ScanReportConcept
 )
 from .services import process_scan_report
-from .services_nlp import get_json_from_nlpmodel
+from .services_nlp import get_json_from_nlpmodel, nlp_request
 from .services_datadictionary import merge_external_dictionary
 from .tasks import (
     nlp_single_string_task,
@@ -1157,10 +1165,162 @@ def run_nlp(request):
 
     # Grab the scan report ID
     search_term = request.GET.get("search", None)
+
+    # Get Data Dictionary Entries for the Scan Report
+    # This returns a queryset of *all* entries in the dict model
+    dict_entries = DataDictionary.objects.filter(
+                source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+            )
     
+    # Logic here for what concatenated fields to send to NLP
+    # if dictionary_field_description and dictionary_value_description is Null:
+        #concatenate source_field and source_value
+    # else if:
+        # dictionary_field_description OR dictionary_value_description is Null:
+            #concatenate source field or value with whatever is present from the data dictionary
+    # else:
+        #concatenate dictionary_field_description and dictionary_value_description
+
+        
+    qs = dict_entries.annotate(
+            nlp_string=Concat(
+                "source_value__value",
+                V(", "),
+                "source_value__scan_report_field__name",
+                output_field=CharField(),
+            )
+        )
+    
+    # qs = dict_entries.annotate(
+    #         nlp_string=Concat(
+    #             "dictionary_field_description",
+    #             V(", "),
+    #             "dictionary_value_description",
+    #             output_field=CharField(),
+    #         )
+    #     )
+    
+    # Create object to convert to JSON
+    # For now, work only on source fields and values
+    for_json = qs.values_list(
+        "id",
+        "source_value__value",
+        "source_value__scan_report_field__name",
+        "nlp_string",
+    )
+    
+    # print(for_json)
+    
+    # Translate queryset into JSON-like dict for NLP
+    documents = []
+    for row in for_json:
+        documents.append(
+            {
+                "language": "en", 
+                "id": row[0], 
+                "text": row[3]
+                }
+        )
+
+    # Define NLP URL/headers
+    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+    headers = {
+        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        "Content-Type": "application/json; utf-8",
+    }
+
+    # POST Request(s)
+    # Short wait at end of submission to let the API catch up
+    chunk_size = 10  # Set chunk size (max=10)
+    post_response_url = []
+    for i in range(0, len(documents), chunk_size):
+        chunk = {"documents": documents[i : i + chunk_size]}
+        payload = json.dumps(chunk)
+        response = requests.post(url, headers=headers, data=payload)
+        print(response.status_code, response.reason, response.headers["operation-location"])
+        post_response_url.append(response.headers["operation-location"])
+        
+    # GET the response
+    get_response = []
+    for url in post_response_url:
+        
+        print("PROCESSING JOB >>>", url)
+        req = requests.get(url, headers=headers)
+        job = req.json()
+
+        while job["status"] != "succeeded":
+            req = requests.get(url, headers=headers)
+            job = req.json()
+            print("Waiting...")
+            time.sleep(3)
+        else:
+            get_response.append(job["results"])
+            print("Done!")
+            
+    codes = []
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
+
+    # Mad nested for loops to get at the data in the response
+    for url in get_response:
+        for dict_entry in url["documents"]:
+            for entity in dict_entry["entities"]:
+                if "links" in entity.keys():
+                    for link in entity["links"]:
+                        if link["dataSource"] in keep:
+                            codes.append(
+                                [
+                                    dict_entry["id"],
+                                    entity["text"],
+                                    entity["category"],
+                                    entity["confidenceScore"],
+                                    link["dataSource"],
+                                    link["id"],
+                                ]
+                            )
+
+    codes_df = pd.DataFrame(
+        codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
+    )
+    
+    print("CODES FROM NLP >>>>> \n", codes_df)     
+    
+    # Load in OMOPDetails class from Co-Connect Tools
+    omop_lookup = OMOPDetails()
+
+    # This block looks up each concept *code* and returns
+    # OMOP standard conceptID
+    results = []
+    for index, row in codes_df.iterrows():
+        results.append(omop_lookup.lookup_code(row["code"]))
+        
+        
+    full_results = pd.concat(results, ignore_index=True)
+
+    full_results = full_results.merge(
+        codes_df, left_on="concept_code", right_on="code"
+    )
+    full_results = full_results.values.tolist()
+
+    for result in full_results:
+        
+        mod = ContentType.objects.get_for_model(ScanReportValue)
+        
+        ScanReportConcept.objects.create(
+            concept_id = result[0],
+            concept_name = result[1],
+            entity = result[14],
+            entity_type = result[15],
+            confidence = result[16],
+            vocabulary = result[17],
+            vocabulary_code = result[18],
+            
+            content_type = mod,
+            object_id = result[13],
+            
+        )
+    
+            
     # This function is called from services_nlp.py
-    
+    # nlp_request(search_term=search_term)
     
     return render(request, "mapping/home.html")
-
-

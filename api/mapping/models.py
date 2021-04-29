@@ -621,4 +621,4 @@ class ScanReportConcept(BaseModel):
     content_object = GenericForeignKey()
 
     def __str__(self):
-        return f"{self.concept_id}"
+        return f"{self.concept_id, self.object_id}"
