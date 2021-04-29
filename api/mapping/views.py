@@ -1224,6 +1224,7 @@ def run_nlp(request):
 
     # Stick qs_1 and qs_2 together
     qs_total = qs_1.union(qs_2)
+    print('INPUT DICTIONARY LENGTH >>> ', len(qs_total))
 
     # Create object to convert to JSON
     # For now, work only on source fields and values
@@ -1234,8 +1235,10 @@ def run_nlp(request):
         "nlp_string",
     )
     
-    print(for_json)
-    
+    strings = pd.DataFrame(list(for_json.values('id', 'nlp_string')))
+    strings['id']=strings['id'].astype(str)
+    print(strings)
+        
     # Translate queryset into JSON-like dict for NLP
     documents = []
     for row in for_json:
@@ -1326,16 +1329,17 @@ def run_nlp(request):
         codes_df, left_on="concept_code", right_on="code"
     )
     
-    print(full_results)
-        
+    print(full_results.columns)
+    
+    full_results = full_results.merge(
+        strings, left_on="key", right_on="id"
+    )
+            
     full_results = full_results.values.tolist()
 
     for result in full_results:
         
-        if ScanReportField:
-             mod = ContentType.objects.get_for_model(ScanReportField)
-        else:
-            mod = ContentType.objects.get_for_model(ScanReportValue)
+        mod = ContentType.objects.get_for_model(ScanReportValue)
         
         ScanReportConcept.objects.create(
             concept_id = result[11],
@@ -1345,6 +1349,7 @@ def run_nlp(request):
             confidence = result[16],
             vocabulary = result[3],
             vocabulary_code = result[6],
+            processed_string = result[20],
             
             content_type = mod,
             object_id = result[13],
