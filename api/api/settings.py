@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'extra_views',
     'mapping',
+    'data',
     'rest_framework',
 ]
 
