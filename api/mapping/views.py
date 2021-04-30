@@ -1398,3 +1398,8 @@ def run_nlp(request):
                 source_value__scan_report_field__name=row["Source_Field"],
                 source_value__value=row["Source_Value"],
             )
+
+@method_decorator(login_required, name="dispatch")
+class NLPResultsListView(ListView):
+    model = ScanReportConcept
+    
