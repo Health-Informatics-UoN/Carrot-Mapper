@@ -1345,6 +1345,8 @@ def run_nlp(request):
     full_results = full_results.merge(
         strings, left_on="key", right_on="id"
     )
+    
+    print(full_results)
             
     full_results = full_results.values.tolist()
 
@@ -1352,26 +1354,47 @@ def run_nlp(request):
         
         if result[30] == "value":
             mod = ContentType.objects.get_for_model(ScanReportValue)
-        else:
-            mod = ContentType.objects.get_for_model(ScanReportField)
-        
-        ScanReportConcept.objects.create(
-            concept_id = result[11],
-            concept_name = result[1],
-            entity = result[14],
-            entity_type = result[15],
-            confidence = result[16],
-            vocabulary = result[3],
-            vocabulary_code = result[6],
-            processed_string = result[29],
-            
-            content_type = mod,
-            object_id = result[13],
-            
+            ScanReportConcept.objects.create(
+                concept_id = result[11],
+                concept_name = result[1],
+                entity = result[14],
+                entity_type = result[15],
+                confidence = result[16],
+                vocabulary = result[3],
+                vocabulary_code = result[6],
+                processed_string = result[29],
+                
+                content_type = mod,
+                object_id = result[13],
         )
+            
+        else:
+            obj = ScanReportValue.objects.get(id=result[13])
+            pk = obj.scan_report_field.id
+            mod = ContentType.objects.get_for_model(ScanReportField)
+            
+            ScanReportConcept.objects.create(
+                concept_id = result[11],
+                concept_name = result[1],
+                entity = result[14],
+                entity_type = result[15],
+                confidence = result[16],
+                vocabulary = result[3],
+                vocabulary_code = result[6],
+                processed_string = result[29],
+                
+                content_type = mod,
+                object_id = pk,
+            )
+        
+
     
             
     # This function is called from services_nlp.py
     # nlp_request(search_term=search_term)
     
     return render(request, "mapping/home.html")
+    obj = DataDictionary.objects.get(
+                source_value__scan_report_field__name=row["Source_Field"],
+                source_value__value=row["Source_Value"],
+            )
