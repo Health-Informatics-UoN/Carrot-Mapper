@@ -41,6 +41,7 @@ from extra_views import ModelFormSetView
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
+from django.db.models import F
 
 from .forms import (
     DictionarySelectForm,
@@ -1174,7 +1175,7 @@ def run_nlp(request):
                 source_value__scan_report_field__scan_report_table__scan_report__id=search_term
             )
 
-    # Create an NLP string field
+    # Create an NLP string field from DataDictionary Objects
     qs = dict_entries.annotate(
                 nlp_string=Concat(
                     "source_value__value",
@@ -1206,6 +1207,12 @@ def run_nlp(request):
         .exclude(source_value__value="List truncated...")
         .distinct("source_value__scan_report_field")
         .order_by("source_value__scan_report_field")
+        .annotate(
+                src=Concat(
+                    V("field"),V(""),
+                    output_field=CharField(),
+                )
+            )
     )
     
     # Grabs everything but removes all where pass_from_source=False
@@ -1220,11 +1227,16 @@ def run_nlp(request):
         .filter(source_value__scan_report_field__is_ignore=False)
         .exclude(source_value__value="List truncated...")
         .exclude(source_value__value__in=neg_assertions)
+        .annotate(
+            src=Concat(
+                V("value"),V(""),
+                output_field=CharField(),
+            )
+        )
     )
 
     # Stick qs_1 and qs_2 together
     qs_total = qs_1.union(qs_2)
-    print('INPUT DICTIONARY LENGTH >>> ', len(qs_total))
 
     # Create object to convert to JSON
     # For now, work only on source fields and values
@@ -1233,11 +1245,14 @@ def run_nlp(request):
         "source_value__value",
         "source_value__scan_report_field__name",
         "nlp_string",
+        "src"
     )
     
-    strings = pd.DataFrame(list(for_json.values('id', 'nlp_string')))
+    # Create small df to hold information the strings sent to NLP
+    # Coerce id column from int to str to it can be left joined to
+    # the dataframe returned from the NLP service
+    strings = pd.DataFrame(list(for_json.values()))
     strings['id']=strings['id'].astype(str)
-    print(strings)
         
     # Translate queryset into JSON-like dict for NLP
     documents = []
@@ -1309,9 +1324,7 @@ def run_nlp(request):
     codes_df = pd.DataFrame(
         codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
     )
-    
-    print("CODES FROM NLP >>>>> \n", codes_df)     
-    
+        
     # Load in OMOPDetails class from Co-Connect Tools
     omop_lookup = OMOPDetails()
 
@@ -1328,9 +1341,7 @@ def run_nlp(request):
     full_results = full_results.merge(
         codes_df, left_on="concept_code", right_on="code"
     )
-    
-    print(full_results.columns)
-    
+        
     full_results = full_results.merge(
         strings, left_on="key", right_on="id"
     )
@@ -1339,7 +1350,10 @@ def run_nlp(request):
 
     for result in full_results:
         
-        mod = ContentType.objects.get_for_model(ScanReportValue)
+        if result[30] == "value":
+            mod = ContentType.objects.get_for_model(ScanReportValue)
+        else:
+            mod = ContentType.objects.get_for_model(ScanReportField)
         
         ScanReportConcept.objects.create(
             concept_id = result[11],
@@ -1349,7 +1363,7 @@ def run_nlp(request):
             confidence = result[16],
             vocabulary = result[3],
             vocabulary_code = result[6],
-            processed_string = result[20],
+            processed_string = result[29],
             
             content_type = mod,
             object_id = result[13],
