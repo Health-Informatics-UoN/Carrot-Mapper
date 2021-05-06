@@ -8,7 +8,7 @@
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
         <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
-            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+            {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</a></li>
     </ol>
 </nav>
 
@@ -38,29 +38,29 @@
 
 	<td>
 	{% if object.person_id %}
-	{{ object.person_id }} 
+	{{ object.person_id.name }} 
 	{% endif %}
 	</td>
 
 	<td>
 	{% if object.birth_date %}
-	{{ object.birth_date }} 
+	{{ object.birth_date.name }} 
 	{% endif %}
 	</td>
 
 	<td>
 	{% if object.measurement_date %}
-	{{ object.measurement_date }} 
+	{{ object.measurement_date.name }} 
 	{% endif %}
 	</td>
 	<td>
 	{% if object.observation_date %}
-	{{ object.observation_date }} 
+	{{ object.observation_date.name }} 
 	{% endif %}
 	</td>
 	<td>
 	{% if object.condition_date %}
-	{{ object.condition_date }} 
+	{{ object.condition_date.name }} 
 	{% endif %}
 	</td>
 

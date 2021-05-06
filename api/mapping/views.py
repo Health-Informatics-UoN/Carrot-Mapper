@@ -132,7 +132,6 @@ class ScanReportTableUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
         #filter so the objects can only be associated to the current scanreport table
         scan_report_table = context['scanreporttable']
         qs = ScanReportField\
@@ -143,6 +142,10 @@ class ScanReportTableUpdateView(UpdateView):
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
 
+            def label_from_instance(obj):
+                return obj.name
+            
+            context['form'].fields[key].label_from_instance = label_from_instance
         return context
     
     def get_success_url(self):
@@ -481,28 +484,31 @@ class StructuralMappingTableListView(ModelFormSetView):
                         return
 
                     # this is just looking up a dictionary in the OmopDetails() class
-                    # e.g. { "person":"birth_datetime"... }
+                    # e.g. { "person":["birth_datetime"]... }
                     # this could easily be in MappingPipelines
-                    primary_date_omop_field = omop_lookup.get_primary_date_field(
+                    date_omop_fields = omop_lookup.get_date_fields(
                         omop_field.table.table
                     )
-
-                    # get the actual omop field object
-                    primary_date_omop_field = OmopField.objects.get(
-                        table__table=destination_table, field=primary_date_omop_field
-                    )
-
-                    # make another mapping for this date object
-                    mapping, created = StructuralMappingRule.objects.update_or_create(
-                        scan_report=scan_report,
-                        omop_field=primary_date_omop_field,
-                        source_table=source_table,
-                        source_field=primary_date_source_field,
-                        term_mapping=None,
-                        approved=True,
-                    )
-                    mapping.save()
-
+                    #loop over all returned
+                    #most will return just one
+                    #in the case of condition_occurrence, return start and end
+                    for date_omop_field in date_omop_fields:
+                        # get the actual omop field object
+                        date_omop_field = OmopField.objects.get(
+                            table__table=destination_table, field=date_omop_field
+                        )
+                        
+                        # make another mapping for this date object
+                        mapping, created = StructuralMappingRule.objects.update_or_create(
+                            scan_report=scan_report,
+                            omop_field=date_omop_field,
+                            source_table=source_table,
+                            source_field=primary_date_source_field,
+                            term_mapping=None,
+                            approved=True,
+                        )
+                        mapping.save()
+                    # loop over dates to be added
                 # loop over rules
             # loop over rules set
         # loop over all fields containing a concept id

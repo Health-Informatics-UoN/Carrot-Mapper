@@ -10,7 +10,7 @@
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
         <li class="breadcrumb-item">
-          <a href="{% url 'tables' %}?search={{ scan_report.id }}">   {{ scan_report.data_partner }} - {{ scan_report.dataset }} </a>
+          <a href="{% url 'tables' %}?search={{ scan_report.id }}">   {{ scan_report.data_partner.name }} - {{ scan_report.dataset }} </a>
 	</li>
     </ol>
 </nav>
@@ -75,14 +75,14 @@
     <tbody>
       {% for object in object_list %}
       <tr>
-        <td style="width: 16.6%">{{ object.omop_field.table }}</td>
+        <td style="width: 16.6%">{{ object.omop_field.table.table }}</td>
         <td style="width: 16.6%">{{ object.omop_field.field }}</td>
 	<td style="width: 16.6%">
-	  <a href="{% url 'fields' %}?search={{ object.source_table.id }}"> {{object.source_table}} </a>
+	  <a href="{% url 'fields' %}?search={{ object.source_table.id }}"> {{object.source_table.name}} </a>
 	</td>
 	
         <td style="width: 16.6%">
-	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field}} </a>
+	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field.name}} </a>
 	</td>
 	  
         <td style="width: 16.6%">
