@@ -1,27 +1,21 @@
 import ast
 import json
-import os
-import sys
-from io import BytesIO, StringIO
+from io import StringIO
 
-import coconnect
-import pandas as pd
 from coconnect.tools import dag, mapping_pipeline_helpers
-from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import PasswordChangeDoneView, PasswordChangeView
-from django.core import serializers
-from django.core.mail import BadHeaderError, message, send_mail
+from django.contrib.auth.views import PasswordChangeDoneView
+from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -32,7 +26,7 @@ from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import DetailView, ListView
-from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
+from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
 from .forms import (
@@ -50,7 +44,6 @@ from .models import (
     DocumentFile,
     NLPModel,
     OmopField,
-    OmopTable,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
@@ -58,19 +51,12 @@ from .models import (
     ScanReportValue,
     StructuralMappingRule,
 )
-from .services import process_scan_report
-from .services_nlp import get_json_from_nlpmodel
 from .services_datadictionary import merge_external_dictionary
+from .services_nlp import get_json_from_nlpmodel
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,
 )
-
-# to refresh/resync with loading from the database, switch to:
-# omop_lookup = OMOPDetails(load_from_db=True)
-# this will take longer, but it will recreate the csv dump of all the
-# omop fields
-omop_lookup = OMOPDetails()
 
 
 @login_required
@@ -85,7 +71,7 @@ class ScanReportTableListView(ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
-        if search_term is not None and search_term is not "":
+        if search_term is not None and search_term != "":
             qs = qs.filter(scan_report__id=search_term).order_by("name")
 
         return qs
