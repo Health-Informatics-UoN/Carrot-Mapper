@@ -3,6 +3,7 @@ import json
 from io import StringIO
 
 from coconnect.tools import dag, mapping_pipeline_helpers
+from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
@@ -315,6 +316,8 @@ class StructuralMappingTableListView(ModelFormSetView):
         return is_valid
     
     def generate(self, request):
+        omop_lookup = OMOPDetails()
+
         pk = self.kwargs.get("pk")
 
         # retrieve old ones (dates and person ids)
