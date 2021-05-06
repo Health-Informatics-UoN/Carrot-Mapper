@@ -2,14 +2,11 @@ import ast
 import json
 from io import StringIO
 
-<<<<<<< HEAD
 import requests
 import time
 
 import coconnect
 import pandas as pd
-=======
->>>>>>> f9a205bee4cd385bee1b77ecae7ca8896415f457
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
