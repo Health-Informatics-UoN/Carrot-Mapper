@@ -17,24 +17,11 @@ services:
     ports:
       - "8080:8000"
       - "9999:9999"
-    depends_on:
-      - db
     logging:
       driver: "json-file"
       options:
         max-size: "1M"
         max-file: "10"
-
-  db:
-    image: postgres
-    restart: unless-stopped
-    env_file:
-      - .env
-    volumes:
-      - ./data/pgdata:/var/lib/postgresql/data
-      - ./data:/data
-    ports:
-      - "5433:5432"
 
   redis:
     image: redis
@@ -58,3 +45,4 @@ services:
       options:
         max-size: "1M"
         max-file: "10"
+
