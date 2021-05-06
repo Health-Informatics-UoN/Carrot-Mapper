@@ -1,6 +1,6 @@
 from django.db import models
 
-# Create your models here.
+
 class Concept(models.Model):
     concept_id = models.IntegerField(
         primary_key=True,
@@ -48,4 +48,4 @@ class Concept(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'concept'
+        db_table = 'omop"."concept'
