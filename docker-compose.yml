@@ -23,6 +23,17 @@ services:
         max-size: "1M"
         max-file: "10"
 
+  db:
+    image: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+      - ./data:/data
+    ports:
+      - "5433:5432"
+
   redis:
     image: redis
     restart: unless-stopped
