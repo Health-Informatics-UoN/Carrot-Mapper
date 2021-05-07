@@ -3,11 +3,16 @@ import json
 from io import StringIO
 import os
 
+<<<<<<< HEAD
 import requests
 import time
 
 import coconnect
 import pandas as pd
+=======
+from .services_rules import Concept2OMOP
+
+>>>>>>> master
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
@@ -36,11 +41,15 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
+<<<<<<< HEAD
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db.models import F
 
+=======
+from data.models import Concept
+>>>>>>> master
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -48,7 +57,7 @@ from .forms import (
     NLPForm,
     ScanReportAssertionForm,
     ScanReportForm,
-    UserCreateForm,
+    UserCreateForm, ScanReportValueConceptForm,
 )
 from .models import (
     DataDictionary,
@@ -61,8 +70,12 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
+<<<<<<< HEAD
     StructuralMappingRule,
     ScanReportConcept
+=======
+    StructuralMappingRule, ScanReportConcept,
+>>>>>>> master
 )
 from .services import process_scan_report
 from .services_nlp import get_json_from_nlpmodel, nlp_request
@@ -258,16 +271,21 @@ class ScanReportListView(ListView):
 
 
 @method_decorator(login_required, name="dispatch")
-class ScanReportValueListView(ModelFormSetView):
+class ScanReportValueListView(ListView):
     model = ScanReportValue
+    template_name = "mapping/scanreportvalue_list.html"
     fields = ["conceptID"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
-        qs = super().get_queryset().order_by("id")
         search_term = self.request.GET.get("search", None)
+
         if search_term is not None:
-            qs = qs.filter(scan_report_field=search_term)
+            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
+            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by('value')
+        else:
+            qs = ScanReportValue.objects.all()
+
         return qs
 
     def get_context_data(self, **kwargs):
@@ -1439,3 +1457,46 @@ def run_nlp(request):
 class NLPResultsListView(ListView):
     model = ScanReportConcept
     
+
+def save_scan_report_value_concept(request):
+    if request.method == "POST":
+        form = ScanReportValueConceptForm(request.POST)
+        if form.is_valid():
+
+            scan_report_value = ScanReportValue.objects.get(
+                pk=form.cleaned_data['scan_report_value_id']
+            )
+
+            try:
+                concept = Concept.objects.get(
+                    concept_id=form.cleaned_data['concept_id']
+                )
+            except Concept.DoesNotExist:
+                messages.error(request,
+                                 "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
+                return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
+
+            scan_report_concept = ScanReportConcept.objects.create(
+                concept=concept,
+                content_object=scan_report_value,
+            )
+
+            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+
+            return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
+
+
+def delete_scan_report_value_concept(request):
+    scan_report_field_id = request.GET.get('scan_report_field_id')
+    scan_report_concept_id = request.GET.get('scan_report_concept_id')
+
+    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
+
+    concept_id = scan_report_concept.concept.concept_id
+    concept_name = scan_report_concept.concept.concept_name
+
+    scan_report_concept.delete()
+
+    messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
+
+    return redirect("/values/?search={}".format(scan_report_field_id))

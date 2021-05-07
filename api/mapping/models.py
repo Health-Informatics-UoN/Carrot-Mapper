@@ -11,6 +11,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 
+from data.models import Concept
+
 STATUS_LIVE = "LIVE"
 STATUS_ARCHIVED = "ARCHIVED"
 STATUS_CHOICES = [
@@ -206,6 +208,73 @@ class DocumentType(BaseModel):
                 name="documenttype_name_unique",
             )
         ]
+
+    def __str__(self):
+        return str(self.id)
+
+
+class ScanReportConcept(BaseModel):
+    """
+    This class stores concepts informed by the user or automatic tools (NLP)
+    and users a generic relation to connect it to a ScanReportValue or ScanReportValue
+    """
+    nlp_entity = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_entity_type = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_confidence = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    nlp_vocabulary = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_concept_code = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_processed_string = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+
+    concept = models.ForeignKey(
+        Concept,
+        on_delete=models.DO_NOTHING,
+    )
+
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+
+    object_id = models.PositiveIntegerField(
+
+    )
+
+    content_object = GenericForeignKey(
+
+    )
+
+    class Meta:
+        db_table = "mapping_scanreportconcept"
 
     def __str__(self):
         return str(self.id)
@@ -477,9 +546,17 @@ class ScanReportValue(BaseModel):
         max_length=128,
     )
 
-    frequency = models.IntegerField()
+    frequency = models.IntegerField(
 
-    conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
+    )
+
+    conceptID = models.IntegerField(
+        default=-1,
+    )  # TODO rename it to concept_id
+
+    concepts = GenericRelation(
+        ScanReportConcept,
+    )
 
     def __str__(self):
         return str(self.id)
@@ -611,19 +688,5 @@ class NLPModel(models.Model):
         return str(self.id)
 
 
-class ScanReportConcept(BaseModel):
-    concept_name = models.CharField(max_length=128)
-    concept_id = models.CharField(max_length=16)
-    entity = models.CharField(max_length=64)
-    entity_type = models.CharField(max_length=64)
-    confidence = models.DecimalField(max_digits=3, decimal_places=2)
-    vocabulary = models.CharField(max_length=64)
-    vocabulary_code = models.CharField(max_length=64)
-    processed_string = models.CharField(max_length=256, blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
 
-    def __str__(self):
-        return f"{self.concept_id, self.object_id, self.concept_name, self.processed_string}"
