@@ -66,18 +66,22 @@
         </div>
     </div>
 </nav>
-{% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-danger m-0" role="alert">
-    {{ message }}
-  </div>
-  {% endfor %}
-{% endif %}
-<br>
 
 <main class="container">
-  
-  {% block body %}{% endblock %}
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <div class="alert alert-danger m-0" role="alert">
+            {% endif %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <div class="alert alert-success m-0" role="alert">
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    <br/>
+    {% block body %}{% endblock %}
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
