@@ -10,7 +10,16 @@
     </ol>
 </nav>
 
-<h2>Scan Reports</h2>
+<h2>Scan Reports
+  <a href="{% url 'scan-report-list' %}?filter=archived">
+    <button type="button" class="float-end btn btn-secondary mx-1">Archived Reports</button>
+  </a>
+  <a href="{% url 'scan-report-list' %}">
+    <button type="button" class="float-end btn btn-primary mx-1">Valid Reports</button>
+  </a>
+</h2>
+
+
 
 {% if object_list %}
 <table class="table">
@@ -23,7 +32,7 @@
         <th scope="col">Maps</th>
         <th scope="col">Data Dictionary</th>
         <th scope="col">Assertions</th>
-        <th scope="col">NLP Results</th>
+        <th scope="col">Show/Hide</th>
 
     </tr>
     </thead>
@@ -44,8 +53,22 @@
         <td><a href="{% url 'scan-report-assertion' object.id %}">
             <button type="button" class="btn btn-success">Edit Assertions</button></a>
         </td>
-        <td><a href="{% url 'nlp-view-results' %}?search={{ object.id }}">
-            <button type="button" class="btn btn-success">NLP Results</button></a></td>
+        <td>
+	  {% if  current_user == object.author  %} 
+	  <form name="hide-show-report" method="post" action="{% url 'scan-report-list' %}">
+	    {% csrf_token %}
+	    <input type="hidden" name="scanreport_id" value="{{ object.id }}">
+	    <button type="submit" class="btn btn-link">
+	    {% if object.hidden %}
+	    <i class="fa fa-eye-slash" aria-hidden="true"></i>
+	    {% else %}
+	    <i class="fa fa-eye" aria-hidden="true"></i> 
+            {% endif %}
+	    </input>
+	  </form>
+	  {% endif %}
+	  
+        </td>
     </tr>
     {% endfor %}
     </tbody>
