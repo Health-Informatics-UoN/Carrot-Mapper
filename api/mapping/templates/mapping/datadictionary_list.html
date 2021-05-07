@@ -11,6 +11,9 @@
 </nav>
 <h2>Data Dictionary for {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</h2>
 
+<a href="{% url 'run-nlp' %}?search={{ scan_report }}">
+    <button type="button" class="btn btn-warning">Run NLP</button></a>
+
 {% if object_list %}
 <form id="my_form">
     <div class="form-group">

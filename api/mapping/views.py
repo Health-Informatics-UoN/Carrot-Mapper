@@ -1,6 +1,7 @@
 import ast
 import json
 from io import StringIO
+import os
 
 import requests
 import time
@@ -1386,9 +1387,6 @@ def run_nlp(request):
                 object_id = pk,
             )
         
-
-    
-            
     # This function is called from services_nlp.py
     # nlp_request(search_term=search_term)
     
