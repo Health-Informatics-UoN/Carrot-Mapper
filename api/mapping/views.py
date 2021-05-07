@@ -16,7 +16,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
+from django.http import HttpResponse,  HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -202,6 +202,28 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
+    ordering = ['-created_at']
+
+    #handle post method
+    def post(self, request, *args, **kwargs):
+        _id = request.POST.get("scanreport_id")
+        if _id is not None:
+            report = ScanReport.objects.get(pk=_id)
+            #switch True -> False, or False -> True, if clicked
+            report.hidden = not report.hidden
+            report.save()
+                
+        
+        return redirect(request.META['HTTP_REFERER'])
+    
+    def get_queryset(self):
+        search_term = self.request.GET.get("filter", None)
+        qs = super().get_queryset()
+        if search_term == "archived":
+            qs = qs.filter(hidden=True)
+        else:
+            qs = qs.filter(hidden=False)
+        return qs
 
 
 @method_decorator(login_required, name="dispatch")

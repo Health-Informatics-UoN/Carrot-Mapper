@@ -238,6 +238,11 @@ class ScanReport(BaseModel):
         max_length=128,
     )
 
+    hidden =  models.BooleanField(
+        default=False,
+    )
+
+
     file = models.FileField()
 
     def __str__(self):
