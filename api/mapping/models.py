@@ -242,7 +242,6 @@ class ScanReport(BaseModel):
         default=False,
     )
 
-
     file = models.FileField()
 
     def __str__(self):
