@@ -16,7 +16,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse,  HttpResponseRedirect
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
