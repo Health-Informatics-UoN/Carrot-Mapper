@@ -214,22 +214,64 @@ class DocumentType(BaseModel):
 
 
 class ScanReportConcept(BaseModel):
-    concept_name = models.CharField(max_length=128)
-    concept_id2 = models.CharField(max_length=16)
-    entity = models.CharField(max_length=64)
-    entity_type = models.CharField(max_length=64)
-    confidence = models.DecimalField(max_digits=3, decimal_places=2)
-    vocabulary = models.CharField(max_length=64)
-    vocabulary_code = models.CharField(max_length=64)
+    """
+    This class stores concepts informed by the user or automatic tools (NLP)
+    and users a generic relation to connect it to a ScanReportValue or ScanReportValue
+    """
+    nlp_entity = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_entity_type = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_confidence = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    nlp_vocabulary = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_concept_code = models.CharField(
+        max_length=64,
+        null=True,
+        blank=True,
+    )
+
+    nlp_processed_string = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+    )
 
     concept = models.ForeignKey(
         Concept,
         on_delete=models.DO_NOTHING,
     )
 
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey()
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+    )
+
+    object_id = models.PositiveIntegerField(
+
+    )
+
+    content_object = GenericForeignKey(
+
+    )
 
     class Meta:
         db_table = "mapping_scanreportconcept"

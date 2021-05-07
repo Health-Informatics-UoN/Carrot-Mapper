@@ -1176,14 +1176,7 @@ def save_scan_report_value_concept(request):
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
             scan_report_concept = ScanReportConcept.objects.create(
-                concept_name=concept.concept_name,
-                concept_id=concept.concept_id,
-                entity="empty",
-                entity_type="empty",
-                confidence=1.0,
-                vocabulary="empty",
-                vocabulary_code="empty",
-
+                concept=concept,
                 content_object=scan_report_value,
             )
 
