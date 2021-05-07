@@ -31,9 +31,9 @@
 
             {% for object in object_list %}
             <tr>
-            <td></p>{{ object.source_value.scan_report_field.scan_report_table|default_if_none:"" }}</td>
-            <td>{{ object.source_value.scan_report_field|truncatechars:21|default_if_none:"" }}</td>
-            <td>{{ object.source_value|default_if_none:"" }}</td>
+            <td></p>{{ object.source_value.scan_report_field.scan_report_table.name|default_if_none:"" }}</td>
+            <td>{{ object.source_value.scan_report_field.name|truncatechars:21|default_if_none:"" }}</td>
+            <td>{{ object.source_value.value|default_if_none:"" }}</td>
             <td>{{ object.dictionary_field_description|default_if_none:"" }}</td>
             <td>{{ object.dictionary_value|default_if_none:"" }}</td>
             <td>{{ object.dictionary_value_description|default_if_none:"" }}</td>
