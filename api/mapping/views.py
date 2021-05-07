@@ -202,18 +202,22 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
+    #order the scanreports now so the latest is first in the table
     ordering = ['-created_at']
 
-    #handle post method
+    #handle and post methods
+    #so far just handle a post when a button to click to hide/show a report
     def post(self, request, *args, **kwargs):
+        #obtain the scanreport id from the buttont that is clicked
         _id = request.POST.get("scanreport_id")
         if _id is not None:
+            #obtain the scan report based on this id
             report = ScanReport.objects.get(pk=_id)
-            #switch True -> False, or False -> True, if clicked
+            #switch hidden True -> False, or False -> True, if clicked
             report.hidden = not report.hidden
+            #update the model
             report.save()
-                
-        
+        #return to the same page        
         return redirect(request.META['HTTP_REFERER'])
     
     def get_queryset(self):
