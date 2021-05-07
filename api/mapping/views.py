@@ -219,6 +219,19 @@ class ScanReportListView(ListView):
             report.save()
         #return to the same page        
         return redirect(request.META['HTTP_REFERER'])
+
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        #add the current user to the context
+        #this is needed so the hide/show buttons can be only turned on
+        #by whoever created the report
+        context['current_user'] = self.request.user
+        
+        return context
+        
     
     def get_queryset(self):
         search_term = self.request.GET.get("filter", None)
