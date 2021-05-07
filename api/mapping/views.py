@@ -3,16 +3,13 @@ import json
 from io import StringIO
 import os
 
-<<<<<<< HEAD
 import requests
 import time
 
 import coconnect
 import pandas as pd
-=======
 from .services_rules import Concept2OMOP
 
->>>>>>> master
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
@@ -41,15 +38,12 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
-<<<<<<< HEAD
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db.models import F
 
-=======
 from data.models import Concept
->>>>>>> master
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -70,12 +64,7 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-<<<<<<< HEAD
-    StructuralMappingRule,
-    ScanReportConcept
-=======
     StructuralMappingRule, ScanReportConcept,
->>>>>>> master
 )
 from .services import process_scan_report
 from .services_nlp import get_json_from_nlpmodel, nlp_request
