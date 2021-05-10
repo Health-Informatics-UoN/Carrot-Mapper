@@ -1294,6 +1294,7 @@ def run_nlp(request):
         "src"
     )
     
+    
     # Create small df to hold information the strings sent to NLP
     # Coerce id column from int to str to it can be left joined to
     # the dataframe returned from the NLP service
@@ -1347,7 +1348,7 @@ def run_nlp(request):
             print("Done!")
             
     codes = []
-    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
 
     # Mad nested for loops to get at the data in the response
     for url in get_response:
@@ -1370,15 +1371,30 @@ def run_nlp(request):
     codes_df = pd.DataFrame(
         codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
     )
+    
+    print(codes_df)
         
-    # Load in OMOPDetails class from Co-Connect Tools
-    omop_lookup = OMOPDetails()
-
+    # def get_conceptid_from_conceptcode(concept_code, vocabulary):
+    #     '''
+    #     A small function to return a standard and valid conceptID 
+    #     from given vocabulary and concept_code
+        
+    #     Correct example: get_conceptid_from_conceptcode(concept_code="R51", vocabulary="ICD10")
+    #     Incorrect example (Incorrect vocabulary for concept code): 
+    #         get_conceptid_from_conceptcode(concept_code="263731006", vocabulary="ICD10")
+    #     '''
+    #     try:
+    #         concept_id=Concept.objects.filter(concept_code=concept_code).filter(vocabulary_id=vocabulary)
+    #         return concept_id
+    #     except:
+    #         print("The supplied concept code/vocabulary combination is incorrect. Please double check.") 
+            
     # This block looks up each concept *code* in codes_df 
     # and returns an OMOP standard conceptID
     results = []
     for index, row in codes_df.iterrows():
-        results.append(omop_lookup.lookup_code(row["code"]))
+        # results.append(omop_lookup.lookup_code(row["code"]))
+        results.append(Concept.objects.get(concept_code=row["code"], vocabulary_id__in=keep))
         
     # Convert results list into a pandas dataframe    
     full_results = pd.concat(results, ignore_index=True)
@@ -1399,16 +1415,16 @@ def run_nlp(request):
     for result in full_results:
         
         if result[30] == "value":
+            concept = Concept.objects.get(concept_id=result[11])
             mod = ContentType.objects.get_for_model(ScanReportValue)
             ScanReportConcept.objects.create(
-                concept_id = result[11],
-                concept_name = result[1],
-                entity = result[14],
-                entity_type = result[15],
-                confidence = result[16],
-                vocabulary = result[3],
-                vocabulary_code = result[6],
-                processed_string = result[29],
+                concept_id = concept,
+                nlp_entity = result[14],
+                nlp_entity_type = result[15],
+                nlp_confidence = result[16],
+                nlp_vocabulary = result[3],
+                nlp_concept_code = result[6],
+                nlp_processed_string = result[29],
                 
                 content_type = mod,
                 object_id = result[13],
@@ -1421,13 +1437,12 @@ def run_nlp(request):
             
             ScanReportConcept.objects.create(
                 concept_id = result[11],
-                concept_name = result[1],
-                entity = result[14],
-                entity_type = result[15],
-                confidence = result[16],
-                vocabulary = result[3],
-                vocabulary_code = result[6],
-                processed_string = result[29],
+                nlp_entity = result[14],
+                nlp_entity_type = result[15],
+                nlp_confidence = result[16],
+                nlp_vocabulary = result[3],
+                nlp_concept_code = result[6],
+                nlp_processed_string = result[29],
                 
                 content_type = mod,
                 object_id = pk,

@@ -8,9 +8,6 @@ from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 def nlp_request(search_term):
-    
-
-    
     return True
 
 
