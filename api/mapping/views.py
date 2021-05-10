@@ -357,7 +357,7 @@ class StructuralMappingTableListView(ModelFormSetView):
         #loop over source_tables looking for person_ids
         for table in source_tables:
             if table.person_id == None:
-                messages.error(request,f"Cannot generate rules. Table \"{table}\" is used but you have not set the person_id.")
+                messages.error(request,f"Cannot generate rules. Table \"{table.name}\" is used but you have not set the person_id.")
                 is_valid = False
                 
         return is_valid
@@ -506,7 +506,7 @@ class StructuralMappingTableListView(ModelFormSetView):
                         messages.error(request,f"No implementation for date-event for {destination_table} yet")
                         
                     if primary_date_source_field is None:
-                        messages.error(request,f"Failed to generate rules. You need to set an event date for {destination_table} in table {source_table}.")
+                        messages.error(request,f"Failed to generate rules. You need to set an event date for {destination_table} in table {source_table.name}.")
                         self.clean()
                         return
 
