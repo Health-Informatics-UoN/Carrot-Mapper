@@ -1,4 +1,0 @@
-,concept_id,concept_name,domain_id,vocabulary_id,concept_class_id,standard_concept,concept_code,valid_start_date,valid_end_date,invalid_reason,concept_id_1,concept_id_2,relationship_id
-0,35211388,Headache,Condition,ICD10CM,3-char nonbill code,,R51,2007-01-01,2099-12-31,,35211388,378253,Maps to
-1,45558474,Headache,Condition,ICD10,ICD10 Hierarchy,,R51,1990-05-01,2099-12-31,,45558474,378253,Maps to
-2,378253,Headache,Condition,SNOMED,Clinical Finding,S,25064002,1970-01-01,2099-12-31,,378253,378253,Maps to
