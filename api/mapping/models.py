@@ -504,11 +504,18 @@ class StructuralMappingRule(BaseModel):
 
     omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
 
-    source_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
+    source_field = models.ForeignKey(ScanReportField,
+                                     on_delete=models.CASCADE,
+                                     null=True,
+                                     blank=True)
 
-    term_mapping = models.JSONField(null=True,blank=True)
-    #term_mapping = models.BooleanField(default=False,null=True,blank=True)
+    #term_mapping = models.JSONField(null=True,blank=True)
+    do_term_mapping = models.BooleanField(default=False)
 
+    
+    concepts = models.ManyToManyField(ScanReportConcept)
+
+        
     # operation = models.CharField(
     #     max_length=128,
     #     choices=OPERATION_CHOICES,

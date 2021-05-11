@@ -19,7 +19,6 @@
 <h2>Mapping Rules</h2>
 
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-success" name='generate' >Generate Mapping Rules</button>
   <button type="submit" class="btn btn-info" name='download-sm' >Download Mapping JSON</button>
   <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View Map Diagram</button>
 </form>
@@ -68,7 +67,7 @@
 	<th scope="col">Source Table</th>
 	<th scope="col">Source Field</th>
 	<th scope="col">Term Map</th>
-	<th scope="col">Operation</th>
+	<!---<th scope="col">Operation</th>--->
 	<th scope="col">Approved</th>
     </tr>
     </thead>
@@ -78,7 +77,7 @@
         <td style="width: 16.6%">{{ object.omop_field.table.table }}</td>
         <td style="width: 16.6%">{{ object.omop_field.field }}</td>
 	<td style="width: 16.6%">
-	  <a href="{% url 'fields' %}?search={{ object.source_table.id }}"> {{object.source_table.name}} </a>
+	  <a href="{% url 'fields' %}?search={{ object.source_field.scan_report_table.id }}"> {{object.source_field.scan_report_table.name}} </a>
 	</td>
 	
         <td style="width: 16.6%">
@@ -86,13 +85,23 @@
 	</td>
 	  
         <td style="width: 16.6%">
-	  {% if object.term_mapping %}
-	  {% if object.term_mapping != "null" %}
-	  {{ object.term_mapping }}
-	  {% endif %}
+	  {% if object.do_term_mapping %}
+	  {% for value in object.concepts.get_queryset %}
+	  <span class="text-danger">
+	    "{{ value.content_object.value }}"
+	  </span>
+	  <i class="fas fa-long-arrow-alt-right"></i>
+	  <span class="text-success">
+	    "{{ value.concept_id }}"
+	  </span>
+	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
+	   --->
+	  <br>
+	  {% endfor %}
 	  {% endif %}
 	</td>
-	
+
+<!---
 	<td style="width: 16.6%">
 	  {% if 'date' in object.omop_field.field or 'source_value' in object.omop_field.field %}
           {## set i to be the index of the value we're on ##}
@@ -110,6 +119,7 @@
  	  {% endwith %}
 	  {% endif %}
 	</td> 
+--->
 	<td style="width: 16.6%">
  {## set i to be the index of the value we're on ##}
           {% with i=forloop.counter %}

@@ -143,6 +143,7 @@ class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["is_patient_id", "date_type", "concept_id"]
     fields = ["is_patient_id", "is_birth_date", "is_date_event", "concept_id"]
+    fields = ["concept_id"]
     # exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
 
@@ -1219,17 +1220,40 @@ def save_mapping_rules(request,scan_report_concept):
     omop_field = OmopField.objects\
                           .filter(table__table__in=m_allowed_tables)\
                           .get(field=destination_field)
+
+    #concept_id = concept.concept_id
+    #term_mapping = {scan_report_value.value:concept_id}
     
     # create a new model
     mapping, created = StructuralMappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=omop_field,
-        #source_field=source_field,
-        term_mapping={'this':'is a test'},
+        source_field=source_field,
+        do_term_mapping=True,
         approved=True,
     )
+    mapping.concepts.add(scan_report_concept)
     mapping.save()
-  
+
+
+    destination_field = f"{domain}_source_value"
+    omop_field = OmopField.objects\
+                          .filter(table__table__in=m_allowed_tables)\
+                          .get(field=destination_field)
+
+    # create a new model
+    mapping, created = StructuralMappingRule.objects.update_or_create(
+        scan_report=scan_report,
+        omop_field=omop_field,
+        source_field=source_field,
+        do_term_mapping=False,
+        approved=True,
+    )
+    mapping.concepts.add(scan_report_concept)
+    mapping.save()
+
+
+    
         
 def save_scan_report_value_concept(request):
     if request.method == "POST":
@@ -1270,11 +1294,25 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
+    #get the associated structural mapping rules
+    structural_mapping_rules = scan_report_concept.structuralmappingrule_set.all()
+
+    #loop over the associated structural mapping rules
+    for rule in structural_mapping_rules:
+        print ("working on",rule,rule.concepts.count())
+        #if this rule now has no other associated concepts
+        if rule.concepts.count() < 2:
+            #then delete it!
+            msg = rule.delete()
+            print (msg)
+    
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 
     scan_report_concept.delete()
 
+   
+    
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/values/?search={}".format(scan_report_field_id))
