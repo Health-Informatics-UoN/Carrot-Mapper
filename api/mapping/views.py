@@ -1212,8 +1212,9 @@ class NLPDetailView(DetailView):
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
- 
     start_nlp(search_term=search_term)
+    
+    return True
 
 
 @method_decorator(login_required, name="dispatch")

@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import requests
 import time
+import os
 from django.db.models import Q
 from .models import (
     NLPModel,
@@ -21,15 +22,22 @@ def start_nlp(search_term):
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
 
+    # Define NLP URL/headers
+    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+    headers = {
+        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        "Content-Type": "application/json; utf-8",
+    }
+
     # Checks to see if the field is 'pass_from_source'
-    # If True, we pass field-level data. If False, we pass  all values
+    # If True, we pass field-level data. If False, we pass all values
     # associated with that field
     if field.pass_from_source:
-        print(">>> Working at field level.")
+        print(">>> Working at field level...")
 
     else:
-        
-        print(">>> Working at values level.")
+        print(">>> Working at values level...")
+
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
@@ -40,7 +48,67 @@ def start_nlp(search_term):
         values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
             ~Q(value__in=neg_assertions)
         )
-        print(values.values())
+
+        # Create list of items to be sent to the NLP service
+        documents = []
+        for item in values:
+            documents.append(
+                {"language": "en", "id": item.id, "text": item.value_description}
+            )
+
+        # POST Request(s)
+        chunk_size = 10  # Set chunk size (max=10)
+        post_response_url = []
+        for i in range(0, len(documents), chunk_size):
+            chunk = {"documents": documents[i : i + chunk_size]}
+            payload = json.dumps(chunk)
+            response = requests.post(url, headers=headers, data=payload)
+            print(
+                response.status_code,
+                response.reason,
+                response.headers["operation-location"],
+            )
+            post_response_url.append(response.headers["operation-location"])
+
+        # GET the response
+        get_response = []
+        for url in post_response_url:
+
+            print("PROCESSING JOB >>>", url)
+            req = requests.get(url, headers=headers)
+            job = req.json()
+
+            while job["status"] != "succeeded":
+                req = requests.get(url, headers=headers)
+                job = req.json()
+                print("Waiting...")
+                time.sleep(3)
+            else:
+                get_response.append(job["results"])
+                print("Done!")
+
+        codes = []
+        keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
+
+        # Mad nested for loops to get at the data in the response
+        for url in get_response:
+            for dict_entry in url["documents"]:
+                for entity in dict_entry["entities"]:
+                    if "links" in entity.keys():
+                        for link in entity["links"]:
+                            if link["dataSource"] in keep:
+                                codes.append(
+                                    [
+                                        dict_entry["id"],
+                                        entity["text"],
+                                        entity["category"],
+                                        entity["confidenceScore"],
+                                        link["dataSource"],
+                                        link["id"],
+                                    ]
+                                )
+
+        print(codes)
 
     return True
 
