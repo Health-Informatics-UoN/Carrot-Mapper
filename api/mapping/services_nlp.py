@@ -3,11 +3,36 @@ import pandas as pd
 import requests
 import time
 
-from .models import NLPModel, ScanReportConcept, DataDictionary
+from .models import (
+    NLPModel, 
+    ScanReportField,
+    ScanReportValue,
+    ScanReportConcept, 
+    DataDictionary
+    )
 from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
-def nlp_request(search_term):
+def start_nlp(search_term):
+    
+    print(">>>>> Running NLP in services_nlp.py for", search_term)
+    field = ScanReportField.objects.get(pk=search_term)
+    
+    # Checks to see if the field is 'pass_from_source'
+    # If True, we pass field-level data. If False, we pass all values
+    # associated with that field
+    if field.pass_from_source:
+        print(">>> Working at field level.")
+        
+        
+    else:
+        print(">>> Working at values level.")
+        # Grab assertions for the ScanReport so we can filter out
+        # the values that we don't want to send to NLP
+        assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+        neg_assertions = assertions.values_list("negative_assertion")
+        
+
     return True
 
 

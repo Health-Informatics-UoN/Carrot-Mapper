@@ -66,7 +66,7 @@
                         {% endfor %}
 	        {% endwith %}
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
-                <td><a href="">Run NLP</a></td>
+                <td><a href="{% url 'run-nlp' %}?search={{ object.id }}">RunNLP</a></td>
 
             </tr>
             {% endfor %}
