@@ -48,6 +48,7 @@ from .models import (
     DocumentFile,
     NLPModel,
     OmopField,
+    OmopTable,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
@@ -63,9 +64,12 @@ from .tasks import (
 )
 
 
+m_allowed_tables = ['person','measurement','condition_occurrence','observation']
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
+
 
 
 @method_decorator(login_required, name="dispatch")
@@ -300,7 +304,7 @@ class ScanReportValueListView(ListView):
 @method_decorator(login_required, name="dispatch")
 class StructuralMappingTableListView(ModelFormSetView):
     # fields = ['source_table','source_field','operation','approved']
-    fields = ["operation", "approved"]
+    fields = ["approved"]
     factory_kwargs = {"can_delete": False, "extra": False}
 
     model = StructuralMappingRule
@@ -416,7 +420,10 @@ class StructuralMappingTableListView(ModelFormSetView):
                 values = field.scanreportvalue_set.all().filter(conceptID__gte=0)
 
                 # map the source value to the raw value
-                concepts = {value.value: value.conceptID for value in values}
+                #concepts = {value.value: value.conceptID for value in values}
+                #messages.warning(request, concepts)
+                #print (concepts)
+
 
             # use the OmopDetails class to look up rules for these concepts
             try:
@@ -664,17 +671,16 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        omop_tables = [
-            x.omop_field.table.table
-            for x in StructuralMappingRule.objects.all().filter(scan_report=scan_report)
-        ]
-
-        omop_tables = list(set(omop_tables))
-        omop_tables.sort()
+        #omop_tables = [
+        #    x.omop_field.table.table
+        #    for x in StructuralMappingRule.objects.all().filter(scan_report=scan_report)
+        #]
+        #omop_tables = list(set(omop_tables))
+        #omop_tables.sort()
 
         # check to see if the user has asked to filter on a table
         # e.g. person
-        filtered_omop_table = self.kwargs.get("omop_table")
+        filtered_omop_table = None#self.kwargs.get("omop_table")
 
         source_tables = []
         if filtered_omop_table:
@@ -698,7 +704,7 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         context.update(
             {
-                "omop_tables": omop_tables,
+                #"omop_tables": omop_tables,
                 "scan_report": scan_report,
                 "filtered_omop_table": filtered_omop_table,
                 "source_tables": source_tables,
@@ -708,7 +714,6 @@ class StructuralMappingTableListView(ModelFormSetView):
         return context
 
     def get_queryset(self):
-        scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
@@ -716,12 +721,13 @@ class StructuralMappingTableListView(ModelFormSetView):
         source_table_filter_term = self.kwargs.get("source_table")
 
         if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term).order_by(
-                "omop_field__table",
-                "omop_field__field",
-                "source_table__name",
-                "source_field__name",
-            )
+            qs = qs.filter(scan_report__id=search_term)
+            #.order_by(
+                #"omop_field__table",
+                #"omop_field__field",
+            #    "source_table__name",
+            #    "source_field__name",
+            #)
 
             if destination_table_filter_term is not None:
                 qs = qs.filter(omop_field__table__table=destination_table_filter_term)
@@ -1196,6 +1202,35 @@ class NLPDetailView(DetailView):
             return context
 
 
+def save_mapping_rules(request,scan_report_concept):
+    scan_report_value = scan_report_concept.content_object
+    source_field = scan_report_value.scan_report_field
+    scan_report = source_field.scan_report_table.scan_report
+    concept = scan_report_concept.concept
+    domain = concept.domain_id.lower()
+
+    domain_source_concept_id = f"{domain}_source_concept_id"
+    domain_source_value = f"{domain}_source_value"
+    domain_concept_id = f"{domain}_concept_id"
+
+    
+    destination_field = f"{domain}_source_concept_id"
+    #"value_as_number"
+    omop_field = OmopField.objects\
+                          .filter(table__table__in=m_allowed_tables)\
+                          .get(field=destination_field)
+    
+    # create a new model
+    mapping, created = StructuralMappingRule.objects.update_or_create(
+        scan_report=scan_report,
+        omop_field=omop_field,
+        #source_field=source_field,
+        term_mapping={'this':'is a test'},
+        approved=True,
+    )
+    mapping.save()
+  
+        
 def save_scan_report_value_concept(request):
     if request.method == "POST":
         form = ScanReportValueConceptForm(request.POST)
@@ -1219,8 +1254,13 @@ def save_scan_report_value_concept(request):
                 content_object=scan_report_value,
             )
 
+            
             messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
 
+            save_mapping_rules(request,scan_report_concept)
+            
+
+            
             return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 

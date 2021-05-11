@@ -499,32 +499,23 @@ class StructuralMappingRule(BaseModel):
     """
     To come
     """
-
+    #save the scan_report link to make it easier
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
 
     omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
 
-    source_table = models.ForeignKey(
-        ScanReportTable, on_delete=models.CASCADE, blank=True, null=True
-    )
+    source_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
 
-    source_field = models.ForeignKey(
-        ScanReportField,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-        # limit_choices_to= {'scan_report_table': source_table}
-    )
+    term_mapping = models.JSONField(null=True,blank=True)
+    #term_mapping = models.BooleanField(default=False,null=True,blank=True)
 
-    term_mapping = models.CharField(max_length=10000, blank=True, null=True)
-
-    operation = models.CharField(
-        max_length=128,
-        choices=OPERATION_CHOICES,
-        default=OPERATION_NONE,
-        null=True,
-        blank=True,
-    )
+    # operation = models.CharField(
+    #     max_length=128,
+    #     choices=OPERATION_CHOICES,
+    #     default=OPERATION_NONE,
+    #     null=True,
+    #     blank=True,
+    # )
 
     approved = models.BooleanField(default=False)
 
