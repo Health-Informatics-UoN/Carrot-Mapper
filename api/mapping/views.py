@@ -65,6 +65,21 @@ from .tasks import (
 
 
 m_allowed_tables = ['person','measurement','condition_occurrence','observation']
+def get_omop_field(destination_field,destination_table=None):
+    if destination_table == None:
+        omop_field = OmopField.objects\
+                               .filter(table__table__in=m_allowed_tables)\
+                               .get(field=destination_field)
+    else:
+        omop_field = OmopField.objects\
+                              .filter(table__table=destination_table)\
+                              .get(field=destination_field)
+        
+    
+    
+    return omop_field
+
+
 
 @login_required
 def home(request):
@@ -1210,48 +1225,81 @@ def save_mapping_rules(request,scan_report_concept):
     concept = scan_report_concept.concept
     domain = concept.domain_id.lower()
 
-    domain_source_concept_id = f"{domain}_source_concept_id"
-    domain_source_value = f"{domain}_source_value"
-    domain_concept_id = f"{domain}_concept_id"
-
-    
-    destination_field = f"{domain}_source_concept_id"
-    #"value_as_number"
-    omop_field = OmopField.objects\
-                          .filter(table__table__in=m_allowed_tables)\
-                          .get(field=destination_field)
-
-    #concept_id = concept.concept_id
-    #term_mapping = {scan_report_value.value:concept_id}
-    
-    # create a new model
-    mapping, created = StructuralMappingRule.objects.update_or_create(
+    #!--- need a way to implement pointing at the source_concept_id instead of concept_id
+    # create/update a model for the domain source_concept_id
+    #  - for this destination_field and source_field
+    #  - do_term_mapping is set to true:
+    #    - all term mapping rules associated need to be applied
+    rule_domain_source_concept_id, created = StructuralMappingRule.objects.update_or_create(
         scan_report=scan_report,
-        omop_field=omop_field,
+        omop_field=get_omop_field(f"{domain}_source_concept_id"),
+        source_field=source_field,
+        do_term_mapping=True,
+        use_source_concept_id=True,# need to implement something like this
+        approved=True,
+    )
+    #add this new concept mapping
+    rule_domain_source_concept_id.concepts.add(scan_report_concept)
+    rule_domain_source_concept_id.save()
+
+
+    # create/update a model for the domain concept_id
+    #  - for this destination_field and source_field
+    #  - do_term_mapping is set to true:
+    #    - all term mapping rules associated need to be applied
+    rule_domain_concept_id, created = StructuralMappingRule.objects.update_or_create(
+        scan_report=scan_report,
+        omop_field=get_omop_field(f"{domain}_source_concept_id"),
         source_field=source_field,
         do_term_mapping=True,
         approved=True,
     )
-    mapping.concepts.add(scan_report_concept)
-    mapping.save()
+    #add this new concept mapping
+    rule_domain_concept_id.concepts.add(scan_report_concept)
+    rule_domain_concept_id.save()
 
 
-    destination_field = f"{domain}_source_value"
-    omop_field = OmopField.objects\
-                          .filter(table__table__in=m_allowed_tables)\
-                          .get(field=destination_field)
+    
 
-    # create a new model
-    mapping, created = StructuralMappingRule.objects.update_or_create(
+    # create/update a model for the domain source_value
+    #  - for this destination_field and source_field
+    #  - do_term_mapping is set to false
+    rule_domain_source_value, created = StructuralMappingRule.objects.update_or_create(
         scan_report=scan_report,
-        omop_field=omop_field,
+        omop_field=get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
         do_term_mapping=False,
         approved=True,
     )
-    mapping.concepts.add(scan_report_concept)
-    mapping.save()
+    #add this new concept mapping
+    # - the concept wont be used, because  do_term_mapping=False
+    # - but we need to preserve the link,
+    #   so when all associated concepts are deleted, the rule is deleted
+    rule_domain_source_value.concepts.add(scan_report_concept)
+    rule_domain_source_value.save()
 
+
+    if domain == 'measurement':
+        # create/update a model for the domain value_as_number
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_number, created = StructuralMappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=get_omop_field("value_as_number","measurement"),
+            source_field=source_field,
+            do_term_mapping=False,
+            approved=True,
+        )
+        #add this new concept mapping
+        # - the concept wont be used, because  do_term_mapping=False
+        # - but we need to preserve the link,
+        #   so when all associated concepts are deleted, the rule is deleted
+        rule_domain_value_as_number.concepts.add(scan_report_concept)
+        rule_domain_value_as_number.save()
+        
+    
+
+    
 
     
         

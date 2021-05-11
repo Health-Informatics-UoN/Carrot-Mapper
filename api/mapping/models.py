@@ -514,6 +514,7 @@ class StructuralMappingRule(BaseModel):
 
     
     concepts = models.ManyToManyField(ScanReportConcept)
+    use_source_concept_id = models.BooleanField(default=False)
 
         
     # operation = models.CharField(
