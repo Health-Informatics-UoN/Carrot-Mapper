@@ -470,6 +470,12 @@ class ScanReportField(BaseModel):
         null=True,
         blank=True,
     )
+    
+    field_description = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return str(self.id)
@@ -556,6 +562,12 @@ class ScanReportValue(BaseModel):
 
     concepts = GenericRelation(
         ScanReportConcept,
+    )
+    
+    value_description  = models.CharField(
+        max_length=512,
+        blank=True,
+        null=True
     )
 
     def __str__(self):
