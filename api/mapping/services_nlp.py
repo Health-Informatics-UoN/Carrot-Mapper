@@ -2,7 +2,7 @@ import json
 import pandas as pd
 import requests
 import time
-
+from django.db.models import Q
 from .models import (
     NLPModel,
     ScanReport,
@@ -28,17 +28,19 @@ def start_nlp(search_term):
         print(">>> Working at field level.")
 
     else:
+        
         print(">>> Working at values level.")
-        # Grab assertions for the ScanReport so we can filter out
-        # the values that we don't want to send to NLP
+        # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
         print(neg_assertions)
 
+        # Grab values associated with the ScanReportField
+        # Remove values in the negative assertions list
         values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
-            value__in=neg_assertions
+            ~Q(value__in=neg_assertions)
         )
-        print(values)
+        print(values.values())
 
     return True
 
