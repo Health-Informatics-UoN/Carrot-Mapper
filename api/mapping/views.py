@@ -196,6 +196,7 @@ class ScanReportFieldUpdateView(UpdateView):
         "is_ignore",
         "pass_from_source",
         "classification_system",
+        "field_description"
     ]
 
     def get_success_url(self):
@@ -1211,6 +1212,7 @@ class NLPDetailView(DetailView):
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
+ 
     start_nlp(search_term=search_term)
 
 

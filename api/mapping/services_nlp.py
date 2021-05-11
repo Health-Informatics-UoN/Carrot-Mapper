@@ -4,37 +4,43 @@ import requests
 import time
 
 from .models import (
-    NLPModel, 
+    NLPModel,
+    ScanReport,
     ScanReportField,
     ScanReportValue,
-    ScanReportConcept, 
-    DataDictionary
-    )
+    ScanReportAssertion,
+    ScanReportConcept,
+    DataDictionary,
+)
 from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 def start_nlp(search_term):
-    
+
     print(">>>>> Running NLP in services_nlp.py for", search_term)
     field = ScanReportField.objects.get(pk=search_term)
-    
+    scan_report_id = field.scan_report_table.scan_report.id
+
     # Checks to see if the field is 'pass_from_source'
-    # If True, we pass field-level data. If False, we pass all values
+    # If True, we pass field-level data. If False, we pass  all values
     # associated with that field
     if field.pass_from_source:
         print(">>> Working at field level.")
-        
-        
+
     else:
         print(">>> Working at values level.")
         # Grab assertions for the ScanReport so we can filter out
         # the values that we don't want to send to NLP
-        assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+        assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
-        
+        print(neg_assertions)
+
+        values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
+            value__in=neg_assertions
+        )
+        print(values)
 
     return True
-
 
 
 def nlp_single_string(pk, dict_string):
@@ -92,12 +98,13 @@ def nlp_single_string(pk, dict_string):
 
     return True
 
+
 def get_json_from_nlpmodel(json):
-    
+
     """
     A small function to process the JSON string saved in NLPModel
     """
-    
+
     # Define which codes we want to keep. Add more here as required.
     codes = []
     keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US"]
@@ -138,9 +145,7 @@ def get_json_from_nlpmodel(json):
 
     full_results = pd.concat(results, ignore_index=True)
 
-    full_results = full_results.merge(
-        codes_df, left_on="concept_code", right_on="code"
-    )
+    full_results = full_results.merge(codes_df, left_on="concept_code", right_on="code")
     full_results = full_results.values.tolist()
-            
+
     return full_results
