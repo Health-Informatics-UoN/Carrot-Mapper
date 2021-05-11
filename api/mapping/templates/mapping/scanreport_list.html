@@ -41,7 +41,7 @@
     <tr>
         <td><a href="{% url 'tables' %}?search={{ object.id }}">
             {{ object.data_partner.name }}</a></td>
-        <td>{{ object.dataset }}</td>
+        <td>{{ object.dataset|truncatechars:12 }}</td>
         <td>{{ object.author }}</td>
         <td>{{ object.created_at }}</td>
         <td><a href="{% url 'tables-structural-mapping' object.id %}">
@@ -51,7 +51,7 @@
         <button type="button" class="btn btn-success">View Dictionary</button></a>
         </td>
         <td><a href="{% url 'scan-report-assertion' object.id %}">
-            <button type="button" class="btn btn-success">View/Edit Assertions</button></a>
+            <button type="button" class="btn btn-success">Edit Assertions</button></a>
         </td>
         <td>
 	  {% if  current_user == object.author  %} 
