@@ -32,7 +32,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
-from data.models import Concept
+from data.models import Concept, ConceptRelationship
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -1249,7 +1249,7 @@ def save_mapping_rules(request,scan_report_concept):
     #    - all term mapping rules associated need to be applied
     rule_domain_concept_id, created = StructuralMappingRule.objects.update_or_create(
         scan_report=scan_report,
-        omop_field=get_omop_field(f"{domain}_source_concept_id"),
+        omop_field=get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
         do_term_mapping=True,
         approved=True,
@@ -1258,8 +1258,6 @@ def save_mapping_rules(request,scan_report_concept):
     rule_domain_concept_id.concepts.add(scan_report_concept)
     rule_domain_concept_id.save()
 
-
-    
 
     # create/update a model for the domain source_value
     #  - for this destination_field and source_field
@@ -1311,23 +1309,53 @@ def save_scan_report_value_concept(request):
             scan_report_value = ScanReportValue.objects.get(
                 pk=form.cleaned_data['scan_report_value_id']
             )
-
+            
             try:
-                concept = Concept.objects.get(
+                source_concept = Concept.objects.get(
                     concept_id=form.cleaned_data['concept_id']
                 )
             except Concept.DoesNotExist:
                 messages.error(request,
-                                 "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
+                                 "Source Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
+
+            try:
+                concept_relation = ConceptRelationship.objects.get(
+                    concept_id_1=form.cleaned_data['concept_id'],
+                    relationship_id__contains='Maps to'
+                )
+            except:
+                messages.error(request,
+                               "error obtaining the concept relationship")
+                return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
+
+
+            if concept_relation.concept_id_2 != concept_relation.concept_id_1:
+                concept = Concept.objects.get(
+                    concept_id=concept_relation.concept_id_2
+                )
+
+            else:
+                #perform a switch and set the source_concept to None
+                concept = source_concept
+                source_concept = None
+                
             scan_report_concept = ScanReportConcept.objects.create(
+                source_concept=source_concept,
                 concept=concept,
                 content_object=scan_report_value,
             )
 
-            
-            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            if source_concept is None:
+                messages.success(request, "Source Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            else:
+                messages.warning(request,"Non-Standard Concept ID found")
+                messages.success(request, "Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
+                messages.success(request, "Concept {} - {} will be used as the concept_id".format(concept.concept_id, concept.concept_name))
+                
+                
+
 
             save_mapping_rules(request,scan_report_concept)
             
@@ -1347,19 +1375,17 @@ def delete_scan_report_value_concept(request):
 
     #loop over the associated structural mapping rules
     for rule in structural_mapping_rules:
-        print ("working on",rule,rule.concepts.count())
         #if this rule now has no other associated concepts
         if rule.concepts.count() < 2:
             #then delete it!
             msg = rule.delete()
-            print (msg)
+
     
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 
     scan_report_concept.delete()
 
-   
     
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 

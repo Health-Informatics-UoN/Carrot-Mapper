@@ -92,7 +92,11 @@
 	  </span>
 	  <i class="fas fa-long-arrow-alt-right"></i>
 	  <span class="text-success">
-	    "{{ value.concept_id }}"
+	    {% if object.use_source_concept_id %}
+	    "{{ value.source_concept.concept_id }}"
+	    {% else %}
+	    "{{ value.concept.concept_id }}"
+	    {% endif %}
 	  </span>
 	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
 	   --->

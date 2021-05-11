@@ -25,7 +25,7 @@
             <tr>
                 <th scope="col">Value</th>
                 <th scope="col">Frequency</th>
-                <th scope="col">Concepts</th>
+                <th scope="col">Concepts (<span class="text-success"> Standard </span> / <span class='text-warning'> Non-Standard </span>)</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -41,12 +41,25 @@
                             {{ object.frequency }}
                         </td>
                         <td>
-                            {% for concept in object.concepts.all %}
-                                <span>
-                                    {{ concept.concept.concept_id }} -
-                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
-                                </span> <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}"> <i class="fas fa-trash-alt text-danger"></i> </a><br/>
-                            {% endfor %}
+			  <table class="table table-bordered table-sm">
+		            {% for concept in object.concepts.all %}
+			      <tr><td>
+                            <span class='text-success'>
+                              {{ concept.concept.concept_id }} -
+                              {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+			    </span>
+			      {% if concept.source_concept %} [
+				<span class='text-warning'>
+				  {{ concept.source_concept.concept_id }} -
+				  {{ concept.source_concept.concept_name }} ({{ concept.source_concept.domain_id }})
+				</span>
+				]
+			    {% endif %}
+			      <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}"> <i class="fas fa-trash-alt text-danger"></i> </a><br/>
+			      </td></tr>
+			      
+                             {% endfor %}
+	             	</table>
                         </td>
                         <td>
                             <input type="hidden" name="scan_report_value_id" required id="id_scan_report_value_id" value="{{ object.id }}">

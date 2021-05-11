@@ -76,6 +76,9 @@
             {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
                 <div class="alert alert-success m-0" role="alert">
             {% endif %}
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <div class="alert alert-warning m-0" role="alert">
+            {% endif %}
             {{ message }}
         </div>
         {% endfor %}
