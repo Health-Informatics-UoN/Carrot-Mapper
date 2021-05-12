@@ -48,7 +48,7 @@
                               {{ concept.concept.concept_id }} -
                               {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
 			    </span>
-			      {% if concept.source_concept %} [
+			      {% if concept.source_concept != concept.concept %} [
 				<span class='text-warning'>
 				  {{ concept.source_concept.concept_id }} -
 				  {{ concept.source_concept.concept_name }} ({{ concept.source_concept.domain_id }})
