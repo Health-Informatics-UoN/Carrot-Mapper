@@ -117,7 +117,9 @@ def start_nlp(search_term):
                                         link["id"],
                                     ]
                                 )
-                                    
+                         
+        # Look up standard and valid conceptIDs for concept codes     
+        # Append conceptID to item in list, turn into a dictionary     
         codes_dict = []
         for item in codes:
             x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
@@ -126,16 +128,14 @@ def start_nlp(search_term):
         
         print(codes_dict)
         
-        # for i in values:
-        #     print(i)
-            
-        #     ScanReportConcept.objects.create(
-            
-        #     nlp_entity = ,
-        #     concept=concept,
-        #     content_object=scan_report_value,   
-        #     )
-        
+        # Check each item in values and see whether NLP got a result
+        # If NLP finds something, save the result to ScanReportConcept
+        for i in values:
+            print('VALUE PRIMARY KEY >>>', i.id)
+            # match = next((item for item in codes_dict if item["pk"] == str(i.id)), False)
+            match = list(filter(lambda item: item['pk'] == str(i.id), codes_dict))
+            print(match)
+                
         
  
     return True
