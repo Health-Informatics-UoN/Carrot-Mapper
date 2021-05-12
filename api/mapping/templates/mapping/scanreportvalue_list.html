@@ -8,7 +8,7 @@
             <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
                 reports</a></li>
             <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
-                {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+                {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
                 {{ scan_report_table.name }}</a></li>
             <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
@@ -25,7 +25,11 @@
             <tr>
                 <th scope="col">Value</th>
                 <th scope="col">Frequency</th>
-                <th scope="col">Concepts (<span class="text-success"> Standard </span> / <span class='text-warning'> Non-Standard </span>)</th>
+                <th scope="col">Concepts
+		  <!--- 
+		      (<span class="text-success"> Standard </span> / <span class='text-warning'> Non-Standard </span>)
+		    --->
+		</th>
                 <th scope="col"></th>
             </tr>
             </thead>
@@ -41,9 +45,11 @@
                             {{ object.frequency }}
                         </td>
                         <td>
+			  <!---
 			  <table class="table table-bordered table-sm">
+			    --->
 		            {% for concept in object.concepts.all %}
-			      <tr><td>
+			      <!--- <tr><td> --->
                             <span class='text-success'>
                               {{ concept.concept.concept_id }} -
                               {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
@@ -56,10 +62,13 @@
 				]
 			    {% endif %}
 			      <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}"> <i class="fas fa-trash-alt text-danger"></i> </a><br/>
-			      </td></tr>
+
+			    <!--- </td></tr> --->
 			      
-                             {% endfor %}
-	             	</table>
+                            {% endfor %}
+			    <!----
+	             		</table>
+			  --->
                         </td>
                         <td>
                             <input type="hidden" name="scan_report_value_id" required id="id_scan_report_value_id" value="{{ object.id }}">

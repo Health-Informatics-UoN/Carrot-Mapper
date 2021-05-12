@@ -64,7 +64,9 @@ from .tasks import (
     process_scan_report_task,
 )
 
-
+#force the conceptids to have to be standard on input
+m_force_standard_concept = True
+           
 #allowed tables
 m_allowed_tables = ['person','measurement','condition_occurrence','observation']
 
@@ -1409,13 +1411,32 @@ def save_scan_report_value_concept(request):
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 
-
-            concept = find_standard_concept(source_concept)
-            #messages.error(request,
-            #               "error obtaining the concept relationship")
-            #return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
-
+            if source_concept.standard_concept != 'S':
+                #look up the concept based on the source_concept
+                #this will lookup in concept_relationship
+                #and return a new concept (associated standard concept)
+                concept = find_standard_concept(source_concept)
                 
+                #if we dont allow non-standard concepts
+                if m_force_standard_concept:
+                    #return an error if it's Non-Standard
+                    #dont allowed the ScanReportConcept to be created
+                    messages.error(request,
+                                   "Concept {} ({}) is Non-Standard".format(source_concept.concept_id,
+                                   source_concept.concept_name))
+                    
+                    messages.error(request,
+                                   "You could try {} ({}) ?".format(concept.concept_id,
+                                   concept.concept_name))
+                    
+                    return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
+                
+                   
+            else:
+                #otherwise, if this is a standard concept (source_concept.standard_concept=='S')
+                #we are good and set concept == source_concept
+                concept = source_concept
+            
             scan_report_concept = ScanReportConcept.objects.create(
                 source_concept=source_concept,
                 concept=concept,
@@ -1429,13 +1450,8 @@ def save_scan_report_value_concept(request):
                 messages.success(request, "Source Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
                 messages.success(request, "Concept {} - {} will be used as the concept_id".format(concept.concept_id, concept.concept_name))
                 
-                
-
-
             save_mapping_rules(request,scan_report_concept)
-            
-
-            
+                        
             return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 
