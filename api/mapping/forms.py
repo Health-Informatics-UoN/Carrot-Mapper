@@ -1,4 +1,5 @@
 import csv
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
@@ -37,6 +38,32 @@ class ScanReportForm(forms.Form):
             xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
 
             filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
+            try:
+                print("Azure Blob Storage v" + __version__ + " - Python quickstart sample")
+                container = ContainerClient.from_connection_string(
+                conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+                container_name="photos",
+                )
+                blob = BlobClient.from_connection_string(
+                    conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+                    container_name="photos", blob_name=str(self.cleaned_data['scan_report_file']))
+
+                # with open(filepath, "rb") as data:
+                #     blob.upload_blob(data)
+                with open(filepath, "wb") as my_blob:
+                    blob_data = blob.download_blob()
+                    blob_data.readinto(my_blob)
+                    print(my_blob)
+               
+                blob_list = container.list_blobs()
+                for blob in blob_list:
+                    print(blob.name + '\n')
+                
+              
+            except Exception as ex:
+                print('Exception:')
+                print(ex)
+            
             xlsx.convert(filepath)
 
             with open(filepath, "rt") as f:
