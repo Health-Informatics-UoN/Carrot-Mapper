@@ -35,6 +35,7 @@ def start_nlp(search_term):
     # associated with that field
     if field.pass_from_source:
         print(">>> Working at field level...")
+        field = ScanReportField.objects.filter(id=)
 
     else:
         print(">>> Working at values level...")
@@ -48,13 +49,6 @@ def start_nlp(search_term):
         values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
             ~Q(value__in=neg_assertions)
         )
-        
-        # Create list of ScanReportValue PKs so we can later track
-        # which values couldn't be processed via NLP
-        # (annoyingly, NLP doesn't return anything if there's no match for a string)
-        values_keys = []
-        for item in values:
-            values_keys.append(item.id)
 
         # Create list of items to be sent to the NLP service
         documents = []
