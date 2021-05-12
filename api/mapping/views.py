@@ -594,10 +594,8 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         for rule in rules:
             # if these havent been defined, skip.....
-            if rule.source_table is None:
-                continue
-            if rule.source_field is None:
-                continue
+            #if rule.source_table is None:
+            #    continue
             # skip if the rule hasnt been approved
             if not rule.approved:
                 continue
@@ -607,21 +605,31 @@ class StructuralMappingTableListView(ModelFormSetView):
             output["destination_table"] = rule.omop_field.table.table
             output["destination_field"] = rule.omop_field.field
 
-            output["source_table"] = rule.source_table.name
+            output["source_table"] = rule.source_field.scan_report_table.name
             output["source_field"] = rule.source_field.name
-            output["source_field_indexer"] = rule.source_field.is_patient_id
+            #output["source_field_indexer"] = rule.source_field.is_patient_id
 
             # this needs to be updated if there is a coding system
-            output["coding_system"] = None  # "user defined")
+            #output["coding_system"] = None  # "user defined")
 
             output["term_mapping"] = None
-            if rule.term_mapping:
-                output["term_mapping"] = json.loads(rule.term_mapping)
+            if rule.do_term_mapping:
+                term_mapping = {}
+                for concept in rule.concepts.get_queryset():
+                    key = concept.content_object.value
+                    if rule.use_source_concept_id:
+                        value = concept.source_concept.concept_id
+                    else:
+                        value = concept.concept.concept_id
+                        
+                    term_mapping[key] = value
+                                
+                output["term_mapping"] = term_mapping
 
             # need to implement multiple operations, one day
             operations = None
-            if rule.operation and rule.operation != "NONE":
-                operations = [rule.operation]
+            #if rule.operation and rule.operation != "NONE":
+            #    operations = [rule.operation]
             output["operations"] = operations
             outputs.append(output)
 
@@ -633,11 +641,11 @@ class StructuralMappingTableListView(ModelFormSetView):
             return redirect(request.path)
 
         # define the name of the output file
-        fname = f"{scan_report.data_partner}_{scan_report.dataset}_structural_mapping.{return_type}"
+        fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
 
         if return_type == "svg":
             fname = (
-                f"{scan_report.data_partner}"
+                f"{scan_report.data_partner.name}"
                 f"_{scan_report.dataset}_structural_mapping.json"
             )
 
