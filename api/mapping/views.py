@@ -58,6 +58,7 @@ from .models import (
 )
 from .services_datadictionary import merge_external_dictionary
 from .services_nlp import get_json_from_nlpmodel
+from .services import find_standard_concept
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,
@@ -1298,34 +1299,6 @@ def save_mapping_rules(request,scan_report_concept):
     
 
 
-def find_X(concept_code, vocabulary_id):
-    
-    original_concept_id = Concept.objects.get(
-        concept_code = concept_code,
-        vocabulary_id = vocabulary_id
-    )
-
-    concept_id = find_standard_concept(original_concept_id)
-    
-
-def find_standard_concept(original_concept_id):
-    
-    concept_relation = ConceptRelationship.objects.get(
-        concept_id_1=concept_id,
-        relationship_id__contains='Maps to'
-    )
-    
-    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
-        concept = Concept.objects.get(
-            concept_id=concept_relation.concept_id_2
-        )
-        return concept
-    else:
-        return original_concept
-        
-    
-
-    
         
 def save_scan_report_value_concept(request):
     if request.method == "POST":
@@ -1346,26 +1319,12 @@ def save_scan_report_value_concept(request):
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 
-            try:
-                concept_relation = ConceptRelationship.objects.get(
-                    concept_id_1=form.cleaned_data['concept_id'],
-                    relationship_id__contains='Maps to'
-                )
-            except:
-                messages.error(request,
-                               "error obtaining the concept relationship")
-                return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
+            concept = find_standard_concept(source_concept)
+            #messages.error(request,
+            #               "error obtaining the concept relationship")
+            #return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
-            if concept_relation.concept_id_2 != concept_relation.concept_id_1:
-                concept = Concept.objects.get(
-                    concept_id=concept_relation.concept_id_2
-                )
-
-            else:
-                #perform a switch and set the source_concept to None
-                concept = source_concept
-                source_concept = None
                 
             scan_report_concept = ScanReportConcept.objects.create(
                 source_concept=source_concept,
@@ -1373,11 +1332,11 @@ def save_scan_report_value_concept(request):
                 content_object=scan_report_value,
             )
 
-            if source_concept is None:
-                messages.success(request, "Source Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            if concept == source_concept:
+                messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
             else:
                 messages.warning(request,"Non-Standard Concept ID found")
-                messages.success(request, "Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
+                messages.success(request, "Source Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
                 messages.success(request, "Concept {} - {} will be used as the concept_id".format(concept.concept_id, concept.concept_name))
                 
                 
