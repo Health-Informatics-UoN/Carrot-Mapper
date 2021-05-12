@@ -589,8 +589,11 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         scan_report = ScanReport.objects.get(pk=pk)
 
-        rules = StructuralMappingRule.objects.filter(scan_report=scan_report)
-        # .order_by('omop_field__table','omop_field__field','source_table__name','source_field__name')
+        rules = StructuralMappingRule.objects.filter(scan_report=scan_report)\
+                                             .order_by('omop_field__table',
+                                                       'omop_field__field',
+                                                       'source_field__scan_report_table__name',
+                                                       'source_field__name')
 
         outputs = []
 
@@ -722,12 +725,12 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
-        #omop_tables = [
-        #    x.omop_field.table.table
-        #    for x in StructuralMappingRule.objects.all().filter(scan_report=scan_report)
-        #]
-        #omop_tables = list(set(omop_tables))
-        #omop_tables.sort()
+        omop_tables = [
+            x.omop_field.table.table
+            for x in StructuralMappingRule.objects.all().filter(scan_report=scan_report)
+        ]
+        omop_tables = list(set(omop_tables))
+        omop_tables.sort()
 
         # check to see if the user has asked to filter on a table
         # e.g. person
@@ -755,7 +758,7 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         context.update(
             {
-                #"omop_tables": omop_tables,
+                "omop_tables": omop_tables,
                 "scan_report": scan_report,
                 "filtered_omop_table": filtered_omop_table,
                 "source_tables": source_tables,
@@ -772,14 +775,13 @@ class StructuralMappingTableListView(ModelFormSetView):
         source_table_filter_term = self.kwargs.get("source_table")
 
         if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term)
-            #.order_by(
-                #"omop_field__table",
-                #"omop_field__field",
-            #    "source_table__name",
-            #    "source_field__name",
-            #)
-
+            qs = qs.filter(scan_report__id=search_term)\
+                   .order_by('omop_field__table',
+                             'omop_field__field',
+                             'source_field__scan_report_table__name',
+                             'source_field__name')
+            
+            
             if destination_table_filter_term is not None:
                 qs = qs.filter(omop_field__table__table=destination_table_filter_term)
 
