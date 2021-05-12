@@ -40,12 +40,21 @@ def get_concept_from_concept_code(concept_code,
       OR
       concept(Concept)
     """
+    
+    # NLP returns SNOMED as SNOWMEDCT_US
+    # This sets SNOWMEDCT_US to SNOWMED if this function is
+    # used within services_nlp.py
+    if vocabulary_id == 'SNOMEDCT_US':
+        vocabulary_id="SNOMED"
+    else:
+        vocabulary_id=vocabulary_id
+
     #obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
         concept_code = concept_code,
         vocabulary_id = vocabulary_id
     )
-
+    
     #if the source_concept is standard
     if source_concept.standard_concept == 'S':
         #the concept is the same as the source_concept
