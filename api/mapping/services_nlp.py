@@ -13,7 +13,7 @@ from .models import (
     ScanReportConcept,
     DataDictionary,
 )
-from data.models import ConceptRelationship 
+from data.models import ConceptRelationship, Concept
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from .services import get_concept_from_concept_code, find_standard_concept
 
@@ -120,14 +120,11 @@ def start_nlp(search_term):
                                     
         codes_dict = []
         for item in codes:
-            print(item[5])
-            print(item[4])
             x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
-            print(x[1])
-            item.append('foobar')
+            item.append(x[1].concept_id)
             codes_dict.append(dict(zip(keys, item)))
         
-        # print(codes_dict)
+        print(codes_dict)
         
         # for i in values:
         #     print(i)
