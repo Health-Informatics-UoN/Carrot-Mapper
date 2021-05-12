@@ -621,9 +621,15 @@ class StructuralMappingTableListView(ModelFormSetView):
                         value = concept.source_concept.concept_id
                     else:
                         value = concept.concept.concept_id
+
+                    if key not in term_mapping:
+                        term_mapping[key] = value
+                    elif isinstance(term_mapping[key],list):
+                        term_mapping[key].append(value)
+                    else:
+                        term_mapping[key] = [term_mapping[key]]
+                        term_mapping[key].append(value)
                         
-                    term_mapping[key] = value
-                                
                 output["term_mapping"] = term_mapping
 
             # need to implement multiple operations, one day
