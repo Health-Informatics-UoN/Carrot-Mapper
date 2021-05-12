@@ -41,13 +41,19 @@ def start_nlp(search_term):
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
-        print(neg_assertions)
 
         # Grab values associated with the ScanReportField
         # Remove values in the negative assertions list
         values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
             ~Q(value__in=neg_assertions)
         )
+        
+        # Create list of ScanReportValue PKs so we can later track
+        # which values couldn't be processed via NLP
+        # (annoyingly, NLP doesn't return anything if there's no match for a string)
+        values_keys = []
+        for item in values:
+            values_keys.append(item.id)
 
         # Create list of items to be sent to the NLP service
         documents = []
@@ -55,6 +61,8 @@ def start_nlp(search_term):
             documents.append(
                 {"language": "en", "id": item.id, "text": item.value_description}
             )
+            
+        print(documents)
 
         # POST Request(s)
         chunk_size = 10  # Set chunk size (max=10)
@@ -89,6 +97,7 @@ def start_nlp(search_term):
 
         codes = []
         keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
+        keys = ["pk", "nlp_entity", "nlp_entity_type", "nlp_confidence", "nlp_vocab", "nlp_code", "conceptid"]
 
         # Mad nested for loops to get at the data in the response
         for url in get_response:
@@ -107,9 +116,15 @@ def start_nlp(search_term):
                                         link["id"],
                                     ]
                                 )
-
-        print(codes)
-
+        codes_dict = []
+        for item in codes:
+            # Logic here to convert concept code to conceptID
+            # Append result to the list
+            item.append('valid_standard_conceptid_here')
+            codes_dict.append(dict(zip(keys, item)))
+        
+        print(codes_dict)
+ 
     return True
 
 
