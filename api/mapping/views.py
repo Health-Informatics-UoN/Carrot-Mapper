@@ -1297,6 +1297,32 @@ def save_mapping_rules(request,scan_report_concept):
         
     
 
+
+def find_X(concept_code, vocabulary_id):
+    
+    original_concept_id = Concept.objects.get(
+        concept_code = concept_code,
+        vocabulary_id = vocabulary_id
+    )
+
+    concept_id = find_standard_concept(original_concept_id)
+    
+
+def find_standard_concept(original_concept_id):
+    
+    concept_relation = ConceptRelationship.objects.get(
+        concept_id_1=concept_id,
+        relationship_id__contains='Maps to'
+    )
+    
+    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
+        concept = Concept.objects.get(
+            concept_id=concept_relation.concept_id_2
+        )
+        return concept
+    else:
+        return original_concept
+        
     
 
     
