@@ -36,8 +36,9 @@ class ScanReportForm(forms.Form):
     def clean_scan_report_file(self):
         if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
             xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
-
+            
             filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
+            filepath2 ="../media/{}".format(str(self.cleaned_data['scan_report_file']))
             try:
                 print("Azure Blob Storage v" + __version__ + " - Python quickstart sample")
                 container = ContainerClient.from_connection_string(
@@ -48,11 +49,13 @@ class ScanReportForm(forms.Form):
                     conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
                     container_name="photos", blob_name=str(self.cleaned_data['scan_report_file']))
 
-                # with open(filepath, "rb") as data:
-                #     blob.upload_blob(data)
+                with open(filepath, "rb") as data:
+                    blob.upload_blob(data)
                 with open(filepath, "wb") as my_blob:
-                    blob_data = blob.download_blob()
-                    blob_data.readinto(my_blob)
+                    
+                    my_blob.write(blob.download_blob().readall())
+                    # blob_data = blob.download_blob()
+                    # blob_data.readinto(my_blob)
                     print(my_blob)
                
                 blob_list = container.list_blobs()
