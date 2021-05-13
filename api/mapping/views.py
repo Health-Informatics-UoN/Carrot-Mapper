@@ -58,7 +58,7 @@ from .models import (
 )
 from .services_datadictionary import merge_external_dictionary
 from .services_nlp import get_json_from_nlpmodel
-from .services import find_standard_concept
+from .services_rules import find_standard_concept
 from .tasks import (
     nlp_single_string_task,
     process_scan_report_task,

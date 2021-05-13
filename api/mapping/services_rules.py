@@ -1,7 +1,81 @@
-from data.models import Concept
+from data.models import Concept, ConceptRelationship
 
 from mapping.models import ScanReportConcept
 from mapping.serializers import ConceptSerializer
+
+
+class NonStandardConceptMapsToSelf(Exception):
+    pass
+
+def get_concept_from_concept_code(concept_code,
+                                  vocabulary_id,
+                                  no_source_concept=False):
+    """
+    Given a concept_code and vocabularly id, 
+    return the source_concept and concept objects
+
+    If the concept is a standard concept, 
+    source_concept will be the same object
+
+    Parameters:
+      concept_code (str) : the concept code  
+      vocabulary_id (str) : SNOMED etc.
+      no_source_concept (bool) : only return the concept
+    Returns:
+      tuple( source_concept(Concept), concept(Concept) )
+      OR
+      concept(Concept)
+    """
+    #obtain the source_concept given the code and vocab
+    source_concept = Concept.objects.get(
+        concept_code = concept_code,
+        vocabulary_id = vocabulary_id
+    )
+
+    #if the source_concept is standard
+    if source_concept.standard_concept == 'S':
+        #the concept is the same as the source_concept
+        concept = source_concept
+    else:
+        #otherwise we need to look up 
+        concept = find_standard_concept(source_concept)
+
+    if no_source_concept:
+        #only return the concept
+        return concept
+    else:
+        #return both as a tuple
+        return (source_concept,concept)
+
+
+def find_standard_concept(source_concept):
+    """
+    Parameters:
+      - source_concept(Concept): originally found, potentially non-standard concept
+    Returns:
+      - Concept: either the same object as input (if input is standard), or a newly found 
+    """
+
+    #if is standard, return self
+    if source_concept.standard_concept != 'S':
+        return source_concept
+
+    #find the concept relationship, of what this non-standard concept "Maps to"
+    concept_relation = ConceptRelationship.objects.get(
+        concept_id_1=source_concept.concept_id,
+        relationship_id__contains='Maps to'
+    )
+
+    if concept_relation.concept_id_2 == concept_relation.concept_id_1:
+        raise NonStandardConceptMapsToSelf('For a non-standard concept '
+                                           'the concept_relation is mapping to itself '
+                                           'i.e. it cannot find an associated standard concept')
+
+    #look up the associated standard-concept
+    concept = Concept.objects.get(
+        concept_id=concept_relation.concept_id_2
+    )
+    return concept
 
 
 class Concept2OMOP:
