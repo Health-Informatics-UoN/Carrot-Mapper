@@ -564,10 +564,10 @@ class StructuralMappingTableListView(ModelFormSetView):
         scan_report = ScanReport.objects.get(pk=pk)
 
         rules = StructuralMappingRule.objects.filter(scan_report=scan_report)\
-                                             .order_by('omop_field__table',
-                                                       'omop_field__field',
-                                                       'source_field__scan_report_table__name',
-                                                       'source_field__name')
+        #                                     .order_by('omop_field__table',
+        #                                               'omop_field__field',
+        #                                               'source_field__scan_report_table__name',
+        #                                               'source_field__name')
 
         outputs = []
 
