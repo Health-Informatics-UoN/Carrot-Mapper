@@ -28,28 +28,70 @@ m_date_field_mapper = {
 }
 
 
-def find_date_event(destination_table,source_table):
+def find_date_event(destination_table,
+                    source_table):
+    """
+    convienience function to return the source field of a date event
+    for a destination table from the current source table
+    
+    the field name is looked up in m_date_lookup
+    e.g. 
+       'person':'birth_date'
+    so, the code obtains the ScanReportField for birth_date
+
+    Paramaters:
+      - destination_table (str) : name of the destination table (e.g. 'person')
+      - source_table (ScanReportTable): object for the scan report table
+    
+    Returns:
+      - ScanReportField : the source_field that has been marked as the date event
+    """
     field = m_date_lookup[destination_table]
     return getattr(source_table,field)
 
 def find_person_id(source_table):
+    """
+    convenience function to return the person_id for a source table
+    Parameters:
+      - source_table (ScanReportTable)
+    Returns:
+      - person_id (ScanReportField)
+    """
     return source_table.person_id
 
-def get_omop_field(destination_field,destination_table=None):
+def get_omop_field(destination_field,
+                   destination_table=None):
+    """
+    function to return the destination_field object, given lookup names
+    Parameters:
+      - destination_field (str) : the name of the destination field
+      - [optional] destination_table (str) : the name of destination table, if known
+    Returns:
+      - OmopField : the destination field object
+    """
+    #if we haven't specified the table name
     if destination_table == None:
+        #look up the field from the "allowed_tables"
         omop_field = OmopField.objects\
                                .filter(table__table__in=m_allowed_tables)\
                                .get(field=destination_field)
     else:
+        #otherwise, if we know which table the field is in, use this to find the field
         omop_field = OmopField.objects\
                               .filter(table__table=destination_table)\
                               .get(field=destination_field)
-    
     return omop_field
 
 
 
 def save_mapping_rules(request,scan_report_concept):
+    """
+    function to save the rules
+    Parameters:
+       - request (HttpRequest): django object for the request (get/post)
+       - scan_report_concept (ScanReportConcept) : object containing the Concept and Link to source_value
+    """
+
     scan_report_value = scan_report_concept.content_object
     source_field = scan_report_value.scan_report_field
     scan_report = source_field.scan_report_table.scan_report
@@ -104,9 +146,6 @@ def save_mapping_rules(request,scan_report_concept):
         rule_domain_date_event.concepts.add(scan_report_concept)
         rule_domain_date_event.save()
 
-
-
-    
     # create/update a model for the domain source_concept_id
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
@@ -123,8 +162,6 @@ def save_mapping_rules(request,scan_report_concept):
     rule_domain_source_concept_id.concepts.add(scan_report_concept)
     rule_domain_source_concept_id.save()
 
-    
-
     # create/update a model for the domain concept_id
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
@@ -139,7 +176,6 @@ def save_mapping_rules(request,scan_report_concept):
     #add this new concept mapping
     rule_domain_concept_id.concepts.add(scan_report_concept)
     rule_domain_concept_id.save()
-
 
     # create/update a model for the domain source_value
     #  - for this destination_field and source_field
@@ -158,7 +194,6 @@ def save_mapping_rules(request,scan_report_concept):
     rule_domain_source_value.concepts.add(scan_report_concept)
     rule_domain_source_value.save()
 
-
     if domain == 'measurement':
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
@@ -176,9 +211,6 @@ def save_mapping_rules(request,scan_report_concept):
         #   so when all associated concepts are deleted, the rule is deleted
         rule_domain_value_as_number.concepts.add(scan_report_concept)
         rule_domain_value_as_number.save()
-
-
-
 
 def get_concept_from_concept_code(concept_code,
                                   vocabulary_id,
