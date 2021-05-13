@@ -23,7 +23,7 @@ def get_data_from_nlp(url, headers, post_response_url):
     a list of responses. It includes some wait time in case
     the NLP API is being slow.
     '''
-    
+
     get_response = []
     for url in post_response_url:
 
@@ -44,13 +44,13 @@ def get_data_from_nlp(url, headers, post_response_url):
 def process_nlp_response(get_response):
     '''
     This function takes as input an NLP GET response
-    and returns a list of concept codes
+    and returns a list of concept codes.
     
     Input: get_response - A list of GET responses
     Output: codes - A list of concept Codes
     
     '''
-    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED" "OMIM"]
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
     codes = []
 
     for url in get_response:
@@ -101,8 +101,10 @@ def start_nlp(search_term):
         response = requests.post(url, headers=headers, data=payload)
         post_response_url.append(response.headers["operation-location"])
         
-        get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url)  
+        get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url) 
+        print('GET RESPONSE >>>', get_response)
         codes = process_nlp_response(get_response)
+        print('CODES >>>', codes)
                 
         # Look up standard and valid conceptIDs for concept codes     
         # Append conceptID to item in list, turn into a dictionary     
@@ -113,6 +115,24 @@ def start_nlp(search_term):
             codes_dict.append(dict(zip(keys, item)))
         
         print(codes_dict)
+        
+        match = list(filter(lambda item: item['pk'] == str(field.id), codes_dict))
+        print('MATCH >>>', match)
+        for item in match:
+            
+            scan_report_field = ScanReportField.objects.get(pk=item['pk'])
+            concept = Concept.objects.get(pk=item['conceptid'])
+            
+            ScanReportConcept.objects.create(
+                nlp_entity = item['nlp_entity'],
+                nlp_entity_type = item['nlp_entity_type'],
+                nlp_confidence = item['nlp_confidence'],
+                nlp_vocabulary = item['nlp_vocab'],
+                nlp_concept_code = item['nlp_code'],
+                concept = concept,
+                content_object=scan_report_field, 
+            )
+                
 
 
     else:
@@ -152,40 +172,8 @@ def start_nlp(search_term):
             )
             post_response_url.append(response.headers["operation-location"])
 
-        # GET the response
-        get_response = []
-        for url in post_response_url:
-
-            print("PROCESSING JOB >>>", url)
-            req = requests.get(url, headers=headers)
-            job = req.json()
-
-            while job["status"] != "succeeded":
-                req = requests.get(url, headers=headers)
-                job = req.json()
-                print("Waiting...")
-                time.sleep(3)
-            else:
-                get_response.append(job["results"])
-                print("Done!")
-
-        # Mad nested for loops to get at the data in the response
-        for url in get_response:
-            for dict_entry in url["documents"]:
-                for entity in dict_entry["entities"]:
-                    if "links" in entity.keys():
-                        for link in entity["links"]:
-                            if link["dataSource"] in keep:
-                                codes.append(
-                                    [
-                                        dict_entry["id"],
-                                        entity["text"],
-                                        entity["category"],
-                                        entity["confidenceScore"],
-                                        link["dataSource"],
-                                        link["id"],
-                                    ]
-                                )
+        get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url)  
+        codes = process_nlp_response(get_response)
                          
         # Look up standard and valid conceptIDs for concept codes     
         # Append conceptID to item in list, turn into a dictionary     
