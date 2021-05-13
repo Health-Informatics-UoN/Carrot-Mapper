@@ -1,7 +1,8 @@
 import csv
 import os
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
-from azure.storage.queue import QueueServiceClient
+from django.utils import encoding
+from azure.storage.queue import QueueClient
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
@@ -37,36 +38,48 @@ class ScanReportForm(forms.Form):
     )
     def clean_scan_report_file(self):
         scan_report=self.cleaned_data['scan_report_file']
+        print(scan_report.charset)
         if str(scan_report).endswith('.xlsx'):
+        # Send Messages to queue:
+
+            # queue = QueueClient.from_connection_string(
+            #     conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+            #     queue_name="new-scanreports")
+            # queue.send_message(str(scan_report)+"in queue")
             xlsx = Xlsx2csv(scan_report, outputencoding="utf-8")
             
             filepath2 ="./media/{}".format(str(scan_report))
             try:
                 print("Azure Blob Storage v" + __version__ + " - Python quickstart sample")
+                # Get Container
                 container = ContainerClient.from_connection_string(
                 conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
                 container_name="photos",
                 )
+                # Get Blob
                 blob = BlobClient.from_connection_string(
                     conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
                     container_name="photos", blob_name=str(scan_report))
+                # Upload file to blob
+                with open(scan_report, "rb") as data:
+                # content_bytes = scan_report.encode('utf-8')
+                    # file=scan_report.read()
 
-                # with open(filepath2, "rb") as data:
-                blob.upload_blob(data=scan_report)
+                    blob.upload_blob(data)
                 # download_file_path = os.path.join(filepath2, str.replace(str(self.cleaned_data['scan_report_file']) , 'download.xlsx'))
+                # Download File:
 
                 # with open(filepath2, "wb") as my_blob:
-                    
                 #     my_blob.write(blob.download_blob().readall())
                 #     # blob_data = blob.download_blob()
                 #     # blob_data.readinto(my_blob)
                 #     print(my_blob)
-               
+                #Print a list of files in the container
+
                 # blob_list = container.list_blobs()
                 # for blob in blob_list:
                 #     print(blob.name + '\n')
                 
-              
             except Exception as ex:
                 print('Exception:')
                 print(ex)
