@@ -338,7 +338,7 @@ class StructuralMappingTableListView(ModelFormSetView):
     def json_to_svg(self, data):
         return dag.make_dag(data)
 
-    def get_final_json(self, _mapping_data, tables=None, source_tables=None):
+    def get_final_json(self, _mapping_data, tables=None, source_tables=None, **kwargs):
 
         _id_map = self.get_person_id_mapping()
 
@@ -357,6 +357,7 @@ class StructuralMappingTableListView(ModelFormSetView):
             f_ids,
             filter_destination_tables=tables,
             filter_source_tables=source_tables,
+            **kwargs
         )
 
         return structural_mapping
@@ -673,7 +674,12 @@ class StructuralMappingTableListView(ModelFormSetView):
             return HttpResponse(svg_output, content_type="image/svg+xml")
 
         elif return_type == "json":
-            outputs = self.get_final_json(outputs)
+            outputs = self.get_final_json(
+                outputs,
+                datapartner=scan_report.data_partner.name,
+                dataset=scan_report.dataset,
+                report_name=scan_report.name
+            )
             response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
             return response
