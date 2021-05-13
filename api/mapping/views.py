@@ -32,7 +32,7 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
-from data.models import Concept, ConceptRelationship
+from data.models import Concept
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
