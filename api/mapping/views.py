@@ -1251,16 +1251,14 @@ def save_scan_report_value_concept(request):
                 )
             except Concept.DoesNotExist:
                 messages.error(request,
-                                 "Source Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
+                                 "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
-
-
+            
             if source_concept.standard_concept != 'S':
                 #look up the concept based on the source_concept
                 #this will lookup in concept_relationship
                 #and return a new concept (associated standard concept)
                 concept = find_standard_concept(source_concept)
-                
                 #if we dont allow non-standard concepts
                 if m_force_standard_concept:
                     #return an error if it's Non-Standard
@@ -1268,14 +1266,11 @@ def save_scan_report_value_concept(request):
                     messages.error(request,
                                    "Concept {} ({}) is Non-Standard".format(source_concept.concept_id,
                                    source_concept.concept_name))
-                    
                     messages.error(request,
                                    "You could try {} ({}) ?".format(concept.concept_id,
                                    concept.concept_name))
                     
                     return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
-                
-                   
             else:
                 #otherwise, if this is a standard concept (source_concept.standard_concept=='S')
                 #we are good and set concept == source_concept
