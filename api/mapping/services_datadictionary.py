@@ -7,6 +7,7 @@ from .models import DataDictionary, DocumentFile, ScanReport
 def merge_external_dictionary(request,scan_report_pk):
     
     # Grab the appropriate data dictionary which is built when a scan report is uploaded
+    # Apply some filters to remove the rows we don't need
     dictionary = (
         DataDictionary.objects.filter(
             source_value__scan_report_field__scan_report_table__scan_report__id=scan_report_pk
