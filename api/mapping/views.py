@@ -71,8 +71,6 @@ from .tasks import (
 #force the concept_ids to have to be standard on input
 m_force_standard_concept = True
 
-
-
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
