@@ -179,7 +179,12 @@ class ScanReportFieldListView(ModelFormSetView):
     model = ScanReportField
     fields = ["is_patient_id", "date_type", "concept_id"]
     fields = ["is_patient_id", "is_birth_date", "is_date_event", "concept_id"]
-    fields = ["concept_id"]
+
+    # !! TODO -- we should move to :
+    #fields = ["concept_id"]
+    # Well, actually this needs to be moved to a ListView instead of ModelFormSetView
+    # but the columns for "is_patient_id", "is_birth_date", "is_date_event" are now redundant
+    
     # exclude = []
     factory_kwargs = {"can_delete": False, "extra": False}
 
