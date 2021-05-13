@@ -18,7 +18,7 @@
     </nav>
 
     <h2>Values</h2>
-
+{{scan_report_concept}}
     <div>
         <table class="table" style="float:left;">
             <thead>
@@ -44,10 +44,21 @@
                         </td>
                         <td>
                             {% for concept in object.concepts.all %}
+                                {% if concept.nlp_entity %}
+                                <span style="color:blue">
+                                    {{ concept.concept.concept_id }} -
+                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }}) {{concept.nlp_vocabulary}}
+                                </span> <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                                
+                                {% else %}
+
                                 <span>
                                     {{ concept.concept.concept_id }} -
-                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }}) {{concept.nlp_vocabulary}}
                                 </span> <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                                
+                                {% endif %}
+                                
                             {% endfor %}
                         </td>
                         <td>
