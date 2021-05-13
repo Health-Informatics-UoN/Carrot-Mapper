@@ -17,25 +17,103 @@ from data.models import ConceptRelationship, Concept
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from .services import get_concept_from_concept_code, find_standard_concept
 
+def get_data_from_nlp(url, headers, post_response_url):
+    '''
+    This function takes a list of POST URLs and returns
+    a list of responses. It includes some wait time in case
+    the NLP API is being slow.
+    '''
+    
+    get_response = []
+    for url in post_response_url:
+
+        req = requests.get(url, headers=headers)
+        job = req.json()
+
+        while job["status"] != "succeeded":
+            req = requests.get(url, headers=headers)
+            job = req.json()
+            print("Waiting...")
+            time.sleep(3)
+        else:
+            get_response.append(job["results"])
+            print("Done!")
+    
+    return get_response
+
+def process_nlp_response(get_response):
+    '''
+    This function takes as input an NLP GET response
+    and returns a list of concept codes
+    
+    Input: get_response - A list of GET responses
+    Output: codes - A list of concept Codes
+    
+    '''
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED" "OMIM"]
+    codes = []
+
+    for url in get_response:
+        for dict_entry in url["documents"]:
+            for entity in dict_entry["entities"]:
+                if "links" in entity.keys():
+                    for link in entity["links"]:
+                        if link["dataSource"] in keep:
+                            codes.append(
+                                [
+                                    dict_entry["id"],
+                                    entity["text"],
+                                    entity["category"],
+                                    entity["confidenceScore"],
+                                    link["dataSource"],
+                                    link["id"],
+                                ]
+                            )
+    return codes
+
 def start_nlp(search_term):
 
     print(">>>>> Running NLP in services_nlp.py for", search_term)
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
 
-    # Define NLP URL/headers
+    # Define NLP things
+    keys = ["pk", "nlp_entity", "nlp_entity_type", "nlp_confidence", "nlp_vocab", "nlp_code", "conceptid"]
     url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
     headers = {
         "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
         "Content-Type": "application/json; utf-8",
     }
+    
+    # Define some empty lists to be populated with data from NLP
+    post_response_url = []
 
     # Checks to see if the field is 'pass_from_source'
     # If True, we pass field-level data. If False, we pass all values
     # associated with that field
     if field.pass_from_source:
+        
         print(">>> Working at field level...")
-        field = ScanReportField.objects.filter(id=)
+        document = {"documents": [{"language": "en", "id": field.id, "text": field.field_description}]}
+        print(document)
+        
+        payload = json.dumps(document)
+        response = requests.post(url, headers=headers, data=payload)
+        post_response_url.append(response.headers["operation-location"])
+        
+        get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url)  
+        codes = process_nlp_response(get_response)
+                
+        # Look up standard and valid conceptIDs for concept codes     
+        # Append conceptID to item in list, turn into a dictionary     
+        codes_dict = []
+        for item in codes:
+            x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
+            item.append(x[1].concept_id)
+            codes_dict.append(dict(zip(keys, item)))
+        
+        print(codes_dict)
+
 
     else:
         print(">>> Working at values level...")
@@ -56,14 +134,15 @@ def start_nlp(search_term):
             documents.append(
                 {"language": "en", "id": item.id, "text": item.value_description}
             )
-            
+        
         print(documents)
-
+            
         # POST Request(s)
         chunk_size = 10  # Set chunk size (max=10)
         post_response_url = []
         for i in range(0, len(documents), chunk_size):
             chunk = {"documents": documents[i : i + chunk_size]}
+            print(chunk)
             payload = json.dumps(chunk)
             response = requests.post(url, headers=headers, data=payload)
             print(
@@ -89,10 +168,6 @@ def start_nlp(search_term):
             else:
                 get_response.append(job["results"])
                 print("Done!")
-
-        codes = []
-        keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
-        keys = ["pk", "nlp_entity", "nlp_entity_type", "nlp_confidence", "nlp_vocab", "nlp_code", "conceptid"]
 
         # Mad nested for loops to get at the data in the response
         for url in get_response:
