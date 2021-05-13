@@ -1303,19 +1303,17 @@ def delete_scan_report_value_concept(request):
     #get the associated structural mapping rules
     structural_mapping_rules = scan_report_concept.structuralmappingrule_set.all()
 
-    #loop over the associated structural mapping rules
+    #loop over the associated structural mapping rules to this scan_report_concept
     for rule in structural_mapping_rules:
         #if this rule now has no other associated concepts
         if rule.concepts.count() < 2:
             #then delete it!
-            msg = rule.delete()
-
-    
+            rule.delete()
+            
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 
     scan_report_concept.delete()
-
     
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
