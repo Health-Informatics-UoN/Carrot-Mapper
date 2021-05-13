@@ -19,9 +19,8 @@ from .services import get_concept_from_concept_code, find_standard_concept
 
 def get_data_from_nlp(url, headers, post_response_url):
     '''
-    This function takes a list of POST URLs and returns
-    a list of responses. It includes some wait time in case
-    the NLP API is being slow.
+    This function takes a list of POST'ed URLs and returns
+    a list of responses.
     '''
 
     get_response = []
@@ -40,6 +39,7 @@ def get_data_from_nlp(url, headers, post_response_url):
             print("Done!")
     
     return get_response
+
 
 def process_nlp_response(get_response):
     '''
@@ -71,6 +71,20 @@ def process_nlp_response(get_response):
                             )
     return codes
 
+def concept_code_to_id(codes):
+    '''
+    This functions looks up standard and valid conceptIDs for concept codes
+    Appends conceptID to item in list, returns a dictionary of data
+    '''
+    codes_dict = []
+    keys = ["pk", "nlp_entity", "nlp_entity_type", "nlp_confidence", "nlp_vocab", "nlp_code", "conceptid"]
+    for item in codes:
+        x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
+        item.append(x[1].concept_id)
+        codes_dict.append(dict(zip(keys, item)))
+    
+    return codes_dict
+
 def start_nlp(search_term):
 
     print(">>>>> Running NLP in services_nlp.py for", search_term)
@@ -78,7 +92,6 @@ def start_nlp(search_term):
     scan_report_id = field.scan_report_table.scan_report.id
 
     # Define NLP things
-    keys = ["pk", "nlp_entity", "nlp_entity_type", "nlp_confidence", "nlp_vocab", "nlp_code", "conceptid"]
     url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
     headers = {
         "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
@@ -89,37 +102,32 @@ def start_nlp(search_term):
     post_response_url = []
 
     # Checks to see if the field is 'pass_from_source'
-    # If True, we pass field-level data. If False, we pass all values
-    # associated with that field
+    # If True, we pass field-level data i.e. 1 string (field description) 
+    # If False, we pass all values associated with that field
     if field.pass_from_source:
         
         print(">>> Working at field level...")
-        document = {"documents": [{"language": "en", "id": field.id, "text": field.field_description}]}
-        print(document)
         
+        # Create a single dictionary item for the field description
+        # Convert to JSON for NLP, POST the data to NLP API, save the job URL
+        document = {"documents": [{"language": "en", "id": field.id, "text": field.field_description}]}
         payload = json.dumps(document)
         response = requests.post(url, headers=headers, data=payload)
         post_response_url.append(response.headers["operation-location"])
         
+        # Get the data back from NLP API, convert code to conceptIDs
         get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url) 
-        print('GET RESPONSE >>>', get_response)
         codes = process_nlp_response(get_response)
         print('CODES >>>', codes)
-                
         # Look up standard and valid conceptIDs for concept codes     
         # Append conceptID to item in list, turn into a dictionary     
-        codes_dict = []
-        for item in codes:
-            x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
-            item.append(x[1].concept_id)
-            codes_dict.append(dict(zip(keys, item)))
-        
-        print(codes_dict)
-        
+        codes_dict = concept_code_to_id(codes)
+                
+        # Check each item in values and see whether NLP got a result
+        # If NLP finds something, save the result to ScanReportConcept
         match = list(filter(lambda item: item['pk'] == str(field.id), codes_dict))
-        print('MATCH >>>', match)
+        
         for item in match:
-            
             scan_report_field = ScanReportField.objects.get(pk=item['pk'])
             concept = Concept.objects.get(pk=item['conceptid'])
             
@@ -132,37 +140,32 @@ def start_nlp(search_term):
                 concept = concept,
                 content_object=scan_report_field, 
             )
-                
-
-
+            
     else:
+        
         print(">>> Working at values level...")
-
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
 
         # Grab values associated with the ScanReportField
         # Remove values in the negative assertions list
-        values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
+        scan_report_values = ScanReportValue.objects.filter(scan_report_field=search_term).filter(
             ~Q(value__in=neg_assertions)
         )
 
         # Create list of items to be sent to the NLP service
         documents = []
-        for item in values:
+        for item in scan_report_values:
             documents.append(
                 {"language": "en", "id": item.id, "text": item.value_description}
             )
         
-        print(documents)
-            
         # POST Request(s)
         chunk_size = 10  # Set chunk size (max=10)
         post_response_url = []
         for i in range(0, len(documents), chunk_size):
             chunk = {"documents": documents[i : i + chunk_size]}
-            print(chunk)
             payload = json.dumps(chunk)
             response = requests.post(url, headers=headers, data=payload)
             print(
@@ -174,21 +177,13 @@ def start_nlp(search_term):
 
         get_response = get_data_from_nlp(url=url, headers=headers, post_response_url=post_response_url)  
         codes = process_nlp_response(get_response)
-                         
-        # Look up standard and valid conceptIDs for concept codes     
-        # Append conceptID to item in list, turn into a dictionary     
-        codes_dict = []
-        for item in codes:
-            x = get_concept_from_concept_code(concept_code=str(item[5]), vocabulary_id=str(item[4]))
-            item.append(x[1].concept_id)
-            codes_dict.append(dict(zip(keys, item)))
-        
-        print(codes_dict)
+        codes_dict = concept_code_to_id(codes)
+
         
         # Check each item in values and see whether NLP got a result
         # If NLP finds something, save the result to ScanReportConcept
-        for i in values:
-            match = list(filter(lambda item: item['pk'] == str(i.id), codes_dict))
+        for value in scan_report_values:
+            match = list(filter(lambda item: item['pk'] == str(value.id), codes_dict))
             for item in match:
                 
                 scan_report_value = ScanReportValue.objects.get(pk=item['pk'])
@@ -204,8 +199,6 @@ def start_nlp(search_term):
                     content_object=scan_report_value, 
                 )
                 
-        
- 
     return True
 
 
