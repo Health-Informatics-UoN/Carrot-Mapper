@@ -677,8 +677,7 @@ class StructuralMappingTableListView(ModelFormSetView):
             outputs = self.get_final_json(
                 outputs,
                 datapartner=scan_report.data_partner.name,
-                dataset=scan_report.dataset,
-                report_name=scan_report.name
+                dataset=scan_report.dataset
             )
             response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
             response['Content-Disposition'] = f'attachment; filename="{fname}"'
