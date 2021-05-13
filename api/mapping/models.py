@@ -588,6 +588,7 @@ class StructuralMappingRule(BaseModel):
         blank=True,
     )
 
+    #!! TODO --- STOP USING THIS 
     # Mark the rule to be approved by default
     approved = models.BooleanField(default=False)
 
