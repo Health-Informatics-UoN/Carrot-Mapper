@@ -506,36 +506,89 @@ class ScanReportAssertion(BaseModel):
         return str(self.id)
 
 
+#!! TODO --- Give this model a better name(?)
 class StructuralMappingRule(BaseModel):
     """
     To come
     """
-    #save the scan_report link to make it easier
-    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
+    #save the scan_report link to make it easier when performing lookups on scan_report_id
+    scan_report = models.ForeignKey(
+        ScanReport,
+        on_delete=models.CASCADE
+    )
 
-    omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
+    #connect the rule to a destination_field (and therefore destination_table)
+    #e.g. condition_concept_id
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
 
-    source_field = models.ForeignKey(ScanReportField,
-                                     on_delete=models.CASCADE,
-                                     null=True,
-                                     blank=True)
-
-    #term_mapping = models.JSONField(null=True,blank=True)
-    do_term_mapping = models.BooleanField(default=False)
-
+    #!! TODO --- STOP USING THIS
+    source_table = models.ForeignKey(
+        ScanReportTable,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
     
-    concepts = models.ManyToManyField(ScanReportConcept)
+    #connect the rule with a source_field (and therefore source_table)
+    source_field = models.ForeignKey(
+        ScanReportField,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    #connect up multiple concept value->concept_id mappings with this rule
+    # e.g.
+    #     {'Y':1234,'Yes':4321} are different ScanReportConcepts
+    #     but we can class them together in one rule
+    #     because they are mappings of different values, in the same field
+    #     going to the same destination table
+    # ManyToManyField relationship can be used(?)
+    # - this is because for each rule, there can be multiple ScanReportConcepts
+    #   associated with the mapping of a source field to a destination field
+    # - e.g. 'Y':1234 (ScanReportConcept_0), 'Yes':4321 (ScanReportConcept_1)
+    concepts = models.ManyToManyField(
+        ScanReportConcept
+    )
+
+    # optional bool field to determine if the rule uses:
+    #   - False: ScanReportConcept.concept (Standard)
+    #   - True:  ScanReportConcept.source_concept (could be Non-Standard)
+    # An example of this:
+    #   - Given a concept_id for race, this may be Non-Standard
+    #   - We would also look up the Standard concept-id associated to this
+    #     from the ConditionRelationship table
+    #   - If this was a rule for the source_concept_id, use_source_concept_id=True
+    #   - If this was a rule for the concept_id, use_source_concept_id=False
     use_source_concept_id = models.BooleanField(default=False)
 
-        
-    # operation = models.CharField(
-    #     max_length=128,
-    #     choices=OPERATION_CHOICES,
-    #     default=OPERATION_NONE,
-    #     null=True,
-    #     blank=True,
-    # )
+    # Flag if this is a rule that should be using term_mapping or not
+    # - rules such as source_value should apply no term mapping
+    # - we need a flag as we want to preserve a link to the ScanReportConcept
+    # - this is because, if that is deleted, we want to remove the rule
+    # - however, we dont want to ever apply any of the concept_id term_mappings
+    #   if this was source_value, person_id, birth_date etc. 
+    do_term_mapping = models.BooleanField(default=False)
 
+    #!! TODO --- STOP USING THIS
+    term_mapping = models.CharField(
+        max_length=10000,
+        blank=True,
+        null=True
+    )
+    #!! TODO --- STOP USING THIS 
+    operation = models.CharField(
+        max_length=128,
+        choices=OPERATION_CHOICES,
+        default=OPERATION_NONE,
+        null=True,
+        blank=True,
+    )
+
+    # Mark the rule to be approved by default
     approved = models.BooleanField(default=False)
 
     def __str__(self):
