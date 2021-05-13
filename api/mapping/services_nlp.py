@@ -204,7 +204,10 @@ def start_nlp(search_term):
         # If NLP finds something, save the result to ScanReportConcept
         for value in scan_report_values:
             match = list(filter(lambda item: item["pk"] == str(value.id), codes_dict))
+            
             for item in match:
+                
+                print(item)
 
                 scan_report_value = ScanReportValue.objects.get(pk=item["pk"])
                 concept = Concept.objects.get(pk=item["conceptid"])

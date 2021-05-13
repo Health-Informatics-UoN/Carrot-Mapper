@@ -2,26 +2,26 @@
 
 {% block body %}
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
                 reports</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
                 {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
+        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
                 {{ scan_report_table.name }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
+        <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
                 {{ scan_report_field.name }}</a></li>
 
-        </ol>
-    </nav>
+    </ol>
+</nav>
 
-    <h2>Values</h2>
+<h2>Values</h2>
 {{scan_report_concept}}
-    <div>
-        <table class="table" style="float:left;">
-            <thead>
+<div>
+    <table class="table" style="float:left;">
+        <thead>
             <tr>
                 <th scope="col">Value</th>
                 <th scope="col">Value Description</th>
@@ -29,50 +29,55 @@
                 <th scope="col">Concepts</th>
                 <th scope="col"></th>
             </tr>
-            </thead>
-            <tbody>
+        </thead>
+        <tbody>
             {% for object in object_list %}
-                <tr>
-                    <form class="" method="post" action="{% url 'scan_report_value_concept' %}">
-                        {% csrf_token %}
-                        <td>
-                            {{ object.value }}
-                        </td>
-                        <td>{{object.value_description}}</td>
-                        <td>
-                            {{ object.frequency }}
-                        </td>
-                        <td>
-                            {% for concept in object.concepts.all %}
-                                {% if concept.nlp_entity %}
-                                <span style="color:blue">
-                                    {{ concept.concept.concept_id }} -
-                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }}) {{concept.nlp_vocabulary}}
-                                </span> <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
-                                
-                                {% else %}
+            <tr>
+                <form class="" method="post" action="{% url 'scan_report_value_concept' %}">
+                    {% csrf_token %}
+                    <td>
+                        {{ object.value }}
+                    </td>
+                    <td>{{object.value_description}}</td>
+                    <td>
+                        {{ object.frequency }}
+                    </td>
+                    <td>
+                        {% for concept in object.concepts.all %}
+                        
+                        {% if concept.nlp_entity %}
+                        <span style="color:blue">
+                            {{ concept.concept.concept_id }} -
+                            {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+                            {{concept.nlp_vocabulary}}
+                        </span> <a
+                            href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br />
 
-                                <span>
-                                    {{ concept.concept.concept_id }} -
-                                    {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }}) {{concept.nlp_vocabulary}}
-                                </span> <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
-                                
-                                {% endif %}
-                                
-                            {% endfor %}
-                        </td>
-                        <td>
-                            <input type="hidden" name="scan_report_value_id" required id="id_scan_report_value_id" value="{{ object.id }}">
-                            <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
-                            <button type="submit" class="btn btn-primary">Add</button>
-                        </td>
+                        {% else %}
 
-                    </form>
-                </tr>
+                        <span>
+                            {{ concept.concept.concept_id }} -
+                            {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+                        </span> <a
+                            href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br />
+
+                        {% endif %}
+
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <input type="hidden" name="scan_report_value_id" required id="id_scan_report_value_id"
+                            value="{{ object.id }}">
+                        <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </td>
+
+                </form>
+            </tr>
             {% endfor %}
-            </tbody>
-        </table>
+        </tbody>
+    </table>
 
-    </div>
+</div>
 
 {% endblock %}
