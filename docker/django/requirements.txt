@@ -12,14 +12,8 @@ markdown
 django-filter
 requests
 azure-storage-blob==12.8.1
-# django-storages[azure]
-# azure
-# azure-common==1.1.23
-# azure-core==1.0.0
-# azure-nspkg==3.0.2
-# azure-storage-blob==2.1.0
-# azure-storage-file==2.1.0
-# azure-storage-queue==2.1.0
+azure-storage-queue==12.1.6
+
 
 
 #for coconnect tools, installing here speeds up docker build
