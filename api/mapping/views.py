@@ -775,7 +775,8 @@ class StructuralMappingTableListView(ModelFormSetView):
 
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term)\
-                   .order_by('omop_field__table',
+                   .order_by('concept',
+                             'omop_field__table',
                              'omop_field__field',
                              'source_field__scan_report_table__name',
                              'source_field__name')
@@ -1571,16 +1572,8 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
-    #get the associated structural mapping rules
-    structural_mapping_rules = scan_report_concept.structuralmappingrule_set.all()
-
-    #loop over the associated structural mapping rules to this scan_report_concept
-    for rule in structural_mapping_rules:
-        #if this rule now has no other associated concepts
-        if rule.concepts.count() < 2:
-            #then delete it!
-            rule.delete()
-            
+    #scan_report_concept.structuralmappingrule.delete()
+                
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 

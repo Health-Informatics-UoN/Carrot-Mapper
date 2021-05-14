@@ -85,29 +85,17 @@
 	</td>
 	  
         <td style="width: 16.6%">
-	  {% if object.do_term_mapping %}
-	  {% for value in object.concepts.get_queryset %}
 	  <span class="text-danger">
-	    "{{ value.content_object.value }}"
+	    "{{ object.concept.content_object.value }}"
 	  </span>
 	  <i class="fas fa-long-arrow-alt-right"></i>
 	  <span class="text-success">
-	    {% if object.use_source_concept_id %}
-	    "{{ value.source_concept.concept_id }}"
-	    </span>
-            <br>
-	    ( {{ value.source_concept.concept_name }} )
-	    {% else %}
-	    "{{ value.concept.concept_id }}"
-	  </span>
-	  <br>
-	  ( {{ value.concept.concept_name }} )
-	  {% endif %}
+	    "{{ object.concept.concept_id }}"
+	    </span> <br>
+	  ( {{ object.concept.concept.concept_name }} )
 	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
 	   --->
-	  <br>
-	  {% endfor %}
-	  {% endif %}
+
 	</td>
 
 <!---

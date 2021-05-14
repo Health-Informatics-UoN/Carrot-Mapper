@@ -540,38 +540,10 @@ class StructuralMappingRule(BaseModel):
         blank=True
     )
 
-    #connect up multiple concept value->concept_id mappings with this rule
-    # e.g.
-    #     {'Y':1234,'Yes':4321} are different ScanReportConcepts
-    #     but we can class them together in one rule
-    #     because they are mappings of different values, in the same field
-    #     going to the same destination table
-    # ManyToManyField relationship can be used(?)
-    # - this is because for each rule, there can be multiple ScanReportConcepts
-    #   associated with the mapping of a source field to a destination field
-    # - e.g. 'Y':1234 (ScanReportConcept_0), 'Yes':4321 (ScanReportConcept_1)
-    concepts = models.ManyToManyField(
-        ScanReportConcept
+    concept = models.ForeignKey(
+        ScanReportConcept,
+        on_delete=models.CASCADE
     )
-
-    # optional bool field to determine if the rule uses:
-    #   - False: ScanReportConcept.concept (Standard)
-    #   - True:  ScanReportConcept.source_concept (could be Non-Standard)
-    # An example of this:
-    #   - Given a concept_id for race, this may be Non-Standard
-    #   - We would also look up the Standard concept-id associated to this
-    #     from the ConditionRelationship table
-    #   - If this was a rule for the source_concept_id, use_source_concept_id=True
-    #   - If this was a rule for the concept_id, use_source_concept_id=False
-    use_source_concept_id = models.BooleanField(default=False)
-
-    # Flag if this is a rule that should be using term_mapping or not
-    # - rules such as source_value should apply no term mapping
-    # - we need a flag as we want to preserve a link to the ScanReportConcept
-    # - this is because, if that is deleted, we want to remove the rule
-    # - however, we dont want to ever apply any of the concept_id term_mappings
-    #   if this was source_value, person_id, birth_date etc. 
-    do_term_mapping = models.BooleanField(default=False)
 
     #!! TODO --- STOP USING THIS
     term_mapping = models.CharField(

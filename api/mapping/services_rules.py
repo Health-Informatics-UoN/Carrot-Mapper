@@ -1,3 +1,4 @@
+from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
 from mapping.models import ScanReportConcept, OmopField, Concept, StructuralMappingRule
@@ -83,6 +84,71 @@ def get_omop_field(destination_field,
     return omop_field
 
 
+def save_person_id_rule(request,
+                        scan_report,
+                        scan_report_concept,
+                        source_table,
+                        destination_table):
+    #look up what source_field for this table contains the person id
+    person_id_source_field = find_person_id(source_table)
+
+    #!todo - turn into a func() is stable/valid for mapping
+    #      - this needs to be checked before this step
+    if person_id_source_field == None:
+        messages.error(request,'Failed to add concept because there is no'
+                       f'person_id set for this table {source_table}')
+        return False
+    
+    # get the associated OmopField Object (aka destination_table::person_id)
+    person_id_omop_field = OmopField.objects.get(
+        table=destination_table, field="person_id"
+    )
+
+    #create a new 1-1 rule 
+    rule_domain_person_id, created = StructuralMappingRule.objects.update_or_create(
+        scan_report=scan_report,
+        omop_field=person_id_omop_field,
+        source_field=person_id_source_field,
+        concept = scan_report_concept,
+        approved=True,
+    )
+    #save this new mapping
+    rule_domain_person_id.save()
+    return True
+
+def save_date_rule(request,
+                        scan_report,
+                        scan_report_concept,
+                        source_table,
+                        destination_table):
+
+    #!todo - need some checks for this
+    date_event_source_field  = find_date_event(destination_table.table,source_table)
+    
+    date_omop_fields = m_date_field_mapper[destination_table.table]
+    #loop over all returned
+    #most will return just one date event
+    #in the case of condition_occurrence, it returns start and end
+    for date_omop_field in date_omop_fields:
+
+        # get the actual omop field object
+        date_event_omop_field = OmopField.objects.get(
+            table=destination_table, field=date_omop_field
+        )
+
+        #create a new 1-1 rule 
+        rule_domain_date_event, created = StructuralMappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=date_event_omop_field,
+            source_field=date_event_source_field,
+            concept = scan_report_concept,
+            approved=True,
+        )
+        #save this new mapping
+        rule_domain_date_event.save()
+        
+    return True
+
 
 def save_mapping_rules(request,scan_report_concept):
     """
@@ -97,54 +163,29 @@ def save_mapping_rules(request,scan_report_concept):
     scan_report = source_field.scan_report_table.scan_report
     concept = scan_report_concept.concept
     domain = concept.domain_id.lower()
-
-
+    #get the omop field for the source_concept_id for this domain
     omop_field = get_omop_field(f"{domain}_source_concept_id")
 
-    #!------ start with looking up the person_id ------------
     #start looking up what table we're looking at
     destination_table = omop_field.table
     #obtain the source table
     source_table = source_field.scan_report_table
-    #look up what source_field for this table contains the person id
-    person_id_source_field = find_person_id(source_table)
-    # get the associated OmopField Object (aka destination_table::person_id)
-    person_id_omop_field = OmopField.objects.get(
-        table=destination_table, field="person_id"
-    )
 
-    rule_domain_person_id, created = StructuralMappingRule.objects.update_or_create(
-        scan_report=scan_report,
-        omop_field=person_id_omop_field,
-        source_field=person_id_source_field,
-        do_term_mapping=False,
-        approved=True,
-    )
-    #add this new concept mapping
-    rule_domain_person_id.concepts.add(scan_report_concept)
-    rule_domain_person_id.save()
+    #try and save the person_id
+    if not save_person_id_rule(request,
+                               scan_report,
+                               scan_report_concept,
+                               source_table,
+                               destination_table):
+        return False
 
+    if not save_date_rule(request,
+                          scan_report,
+                          scan_report_concept,
+                          source_table,
+                          destination_table):
+        return False
 
-    date_event_source_field  = find_date_event(destination_table.table,source_table)
-    date_omop_fields = m_date_field_mapper[destination_table.table]
-    #loop over all returned
-    #most will return just one
-    #in the case of condition_occurrence, return start and end
-    for date_omop_field in date_omop_fields:
-        # get the actual omop field object
-        date_event_omop_field = OmopField.objects.get(
-            table=destination_table, field=date_omop_field
-        )
-        rule_domain_date_event, created = StructuralMappingRule.objects.update_or_create(
-            scan_report=scan_report,
-            omop_field=date_event_omop_field,
-            source_field=date_event_source_field,
-            do_term_mapping=False,
-            approved=True,
-        )
-        #add this new concept mapping
-        rule_domain_date_event.concepts.add(scan_report_concept)
-        rule_domain_date_event.save()
 
     # create/update a model for the domain source_concept_id
     #  - for this destination_field and source_field
@@ -154,12 +195,9 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=omop_field,
         source_field=source_field,
-        do_term_mapping=True,
-        use_source_concept_id=True,# need to implement something like this
+        concept = scan_report_concept,
         approved=True,
     )
-    #add this new concept mapping
-    rule_domain_source_concept_id.concepts.add(scan_report_concept)
     rule_domain_source_concept_id.save()
 
     # create/update a model for the domain concept_id
@@ -170,11 +208,9 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
-        do_term_mapping=True,
+        concept	= scan_report_concept,
         approved=True,
     )
-    #add this new concept mapping
-    rule_domain_concept_id.concepts.add(scan_report_concept)
     rule_domain_concept_id.save()
 
     # create/update a model for the domain source_value
@@ -184,14 +220,13 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
-        do_term_mapping=False,
+        concept = scan_report_concept,
         approved=True,
     )
     #add this new concept mapping
     # - the concept wont be used, because  do_term_mapping=False
     # - but we need to preserve the link,
     #   so when all associated concepts are deleted, the rule is deleted
-    rule_domain_source_value.concepts.add(scan_report_concept)
     rule_domain_source_value.save()
 
     if domain == 'measurement':
@@ -202,15 +237,12 @@ def save_mapping_rules(request,scan_report_concept):
             scan_report=scan_report,
             omop_field=get_omop_field("value_as_number","measurement"),
             source_field=source_field,
-            do_term_mapping=False,
+            concept=scan_report_concept,
             approved=True,
         )
-        #add this new concept mapping
-        # - the concept wont be used, because  do_term_mapping=False
-        # - but we need to preserve the link,
-        #   so when all associated concepts are deleted, the rule is deleted
-        rule_domain_value_as_number.concepts.add(scan_report_concept)
         rule_domain_value_as_number.save()
+
+    return True
 
 def get_concept_from_concept_code(concept_code,
                                   vocabulary_id,
@@ -262,7 +294,7 @@ def find_standard_concept(source_concept):
     """
 
     #if is standard, return self
-    if source_concept.standard_concept != 'S':
+    if source_concept.standard_concept == 'S':
         return source_concept
 
     #find the concept relationship, of what this non-standard concept "Maps to"
