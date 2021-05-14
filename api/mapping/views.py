@@ -207,7 +207,6 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 class ScanReportListView(ListView):
     model = ScanReport    
     #order the scanreports now so the latest is first in the table
-    print(os.environ.get("CONN_STRING"))
     ordering = ['-created_at']
 
     #handle and post methods
@@ -750,17 +749,16 @@ class ScanReportFormView(FormView):
         
         scan_report.author = self.request.user
         scan_report.save()
-        azure_dict=(
-        {
+        azure_dict={
             "scan_report_id":scan_report.id,
             "blob_name":str(scan_report.file)
-        })
+        }
         print(azure_dict)
-        print(json.dumps(azure_dict))
+        queue_message=json.dumps(azure_dict)
         queue = QueueClient.from_connection_string(
         conn_str=os.environ.get("CONN_STRING"),
         queue_name="new-scanreports")
-        queue.send_message("Processing Scan Report {}".format(str(scan_report.file)))
+        queue.send_message(queue_message)
         process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
