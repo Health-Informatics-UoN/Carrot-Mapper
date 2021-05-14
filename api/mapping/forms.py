@@ -1,6 +1,6 @@
 import csv
 import os
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient, __version__, BlobBlock
 from django.utils import encoding
 from azure.storage.queue import QueueClient
 from django import forms
@@ -38,14 +38,19 @@ class ScanReportForm(forms.Form):
     )
     def clean_scan_report_file(self):
         scan_report=self.cleaned_data['scan_report_file']
-        print(scan_report.charset)
         if str(scan_report).endswith('.xlsx'):
         # Send Messages to queue:
 
             # queue = QueueClient.from_connection_string(
             #     conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
             #     queue_name="new-scanreports")
-            # queue.send_message(str(scan_report)+"in queue")
+            # # queue.send_message(str(scan_report)+"in queue")
+            # response = queue.receive_messages(messages_per_page=10)
+
+            # for message_batch in response.by_page():
+            #     for message in message_batch:
+            #         print(message.content)
+            #         queue.delete_message(message)
             xlsx = Xlsx2csv(scan_report, outputencoding="utf-8")
             
             filepath2 ="./media/{}".format(str(scan_report))
@@ -61,11 +66,11 @@ class ScanReportForm(forms.Form):
                     conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
                     container_name="photos", blob_name=str(scan_report))
                 # Upload file to blob
-                with open(scan_report, "rb") as data:
+                # with open(scan_report, "rb") as data:
                 # content_bytes = scan_report.encode('utf-8')
                     # file=scan_report.read()
 
-                    blob.upload_blob(data)
+                # blob.upload_blob(scan_report,blob_type="BlockBlob")
                 # download_file_path = os.path.join(filepath2, str.replace(str(self.cleaned_data['scan_report_file']) , 'download.xlsx'))
                 # Download File:
 
