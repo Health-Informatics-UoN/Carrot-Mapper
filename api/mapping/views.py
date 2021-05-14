@@ -218,7 +218,7 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
-    model = ScanReport    
+    model = ScanReport
     #order the scanreports now so the latest is first in the table
     ordering = ['-created_at']
 
@@ -766,11 +766,12 @@ class ScanReportFormView(FormView):
             "scan_report_id":scan_report.id,
             "blob_name":str(scan_report.file)
         }
-        print(azure_dict)
+        
         queue_message=json.dumps(azure_dict)
         queue = QueueClient.from_connection_string(
-        conn_str=os.environ.get("CONN_STRING"),
-        queue_name="new-scanreports")
+            conn_str=os.environ.get("CONN_STRING"),
+            queue_name="new-scanreports"
+        )
         queue.send_message(queue_message)
         process_scan_report_task.delay(scan_report.id)
 

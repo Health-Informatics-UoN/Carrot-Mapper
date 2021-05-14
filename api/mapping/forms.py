@@ -1,7 +1,4 @@
 import csv
-import os
-from django.utils import encoding
-from azure.storage.queue import QueueClient
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
@@ -37,9 +34,7 @@ class ScanReportForm(forms.Form):
     )
     def clean_scan_report_file(self):
         scan_report=self.cleaned_data['scan_report_file']
-       
         if str(scan_report).endswith('.xlsx'):
-        
             xlsx = Xlsx2csv(scan_report, outputencoding="utf-8")
             filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
             xlsx.convert(filepath)
