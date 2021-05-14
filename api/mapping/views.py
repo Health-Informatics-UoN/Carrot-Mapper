@@ -3,7 +3,7 @@ import json
 from io import StringIO
 
 from .services_rules import Concept2OMOP
-
+from azure.storage.queue import QueueClient
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from django.contrib import messages
@@ -205,6 +205,27 @@ class ScanReportStructuralMappingUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
+    queue = QueueClient.from_connection_string(
+        conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+        queue_name="new-scanreports")
+    # queue.send_message("uploading scan report")
+    
+    # response = queue.receive_messages(messages_per_page=10)
+
+    # for message_batch in response.by_page():
+    #     for message in message_batch:
+    #         print(message.content)
+    #         queue.delete_message(message)
+    # container = ContainerClient.from_connection_string(
+        # conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+    #     container_name="photos"
+    #     )
+
+    # blob_list = container.list_blobs()
+    # for blob in blob_list:
+    #     print(blob.name + '\n')
+
+        
     #order the scanreports now so the latest is first in the table
     ordering = ['-created_at']
 
@@ -748,6 +769,10 @@ class ScanReportFormView(FormView):
         
         scan_report.author = self.request.user
         scan_report.save()
+        queue = QueueClient.from_connection_string(
+        conn_str="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net",
+        queue_name="new-scanreports")
+        queue.send_message("Processing Scan Report {}".format(str(scan_report.file)))
         process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
