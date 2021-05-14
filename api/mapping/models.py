@@ -255,17 +255,6 @@ class ScanReportConcept(BaseModel):
         blank=True,
     )
 
-    #allow this to be null
-    #- null means that the source concept is the same as the concept 
-
-    source_concept = models.ForeignKey(
-        Concept,
-        on_delete=models.DO_NOTHING,
-        blank=True,
-        null=True,
-        related_name='SourceConcept',
-    )
-
     concept = models.ForeignKey(
         Concept,
         on_delete=models.DO_NOTHING,

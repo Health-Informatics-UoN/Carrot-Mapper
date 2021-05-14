@@ -607,31 +607,12 @@ class StructuralMappingTableListView(ModelFormSetView):
 
             output["term_mapping"] = None
             #if we are to do term_mapping for this rule
-            if rule.do_term_mapping:
-                term_mapping = {}
-                #loop over the ScanReportConcepts associated with it
-                for concept in rule.concepts.get_queryset():
-                    #the key for the rule is the original source_value
-                    key = concept.content_object.value
-                    #if it's flagged to use the source_concept, use this
-                    if rule.use_source_concept_id:
-                        value = concept.source_concept.concept_id
-                    else: #otherwise use the concept
-                        value = concept.concept.concept_id
-
-                    #if this value has not been mapped, add it to the dict
-                    if key not in term_mapping:
-                        term_mapping[key] = value
-                    #these next elif/else handle if there's already a mapping for this value
-                    #effectively converting into a list from a flat value
-                    elif isinstance(term_mapping[key],list):
-                        term_mapping[key].append(value)
-                    else:
-                        term_mapping[key] = [term_mapping[key]]
-                        term_mapping[key].append(value)
-                        
-                output["term_mapping"] = term_mapping
-
+            
+            key = concept.content_object.value
+            #if it's flagged to use the source_concept, use this
+            value = concept.concept.concept_id
+            term_mapping = {key:value}
+            
             # need to implement multiple operations, one day
             operations = None
             #if rule.operation and rule.operation != "NONE":
