@@ -1,10 +1,14 @@
 from django.test import TestCase
 from .services import (
     process_scan_report_sheet_table,
-    build_usagi_index,
-    run_usagi,
-    nlp_single_string,
 )
+
+from .services_usagi import (
+    build_usagi_index,
+    run_usagi
+)
+from .services_nlp import nlp_single_string
+
 import time, requests, os, json, math
 import pandas as pd
 
@@ -16,6 +20,9 @@ from .models import (
     ScanReportValue,
     DataDictionary,
 )
+
+from data.models import Concept
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -29,6 +36,7 @@ from coconnect.tools.omop_db_inspect import OMOPDetails
 
 
 class ServiceTests(TestCase):
+    
     def test_process_scan_report_sheet_table(self):
 
         # Tell it what file you want to process
