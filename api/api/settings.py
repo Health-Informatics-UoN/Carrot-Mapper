@@ -23,6 +23,20 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+
+
+AZURE_ACCOUNT_NAME="coconnectstoragedev"
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+AZURE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net"
+AZURE_CONTAINER="photos"
+
+
+MEDIA_LOCATION = "http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media"
+MEDIA_ROOT='http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -48,6 +62,7 @@ INSTALLED_APPS = [
     'mapping',
     'data',
     'rest_framework',
+    'storages',
 ]
 
 MIDDLEWARE = [

@@ -11,7 +11,7 @@ djangorestframework
 markdown
 django-filter
 requests
-azure-storage-blob==12.8.1
+django-storages[azure]
 azure-storage-queue==12.1.6
 
 

@@ -42,7 +42,7 @@ urlpatterns = [
     path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
     path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]
-if settings.DEBUG: # new
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG: # new
+    # urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
