@@ -54,13 +54,6 @@
                               {{ concept.concept.concept_id }} -
                               {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
 			    </span>
-			      {% if concept.source_concept != concept.concept %} [
-				<span class='text-warning'>
-				  {{ concept.source_concept.concept_id }} -
-				  {{ concept.source_concept.concept_name }} ({{ concept.source_concept.domain_id }})
-				</span>
-				]
-			    {% endif %}
 			      <a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}"> <i class="fas fa-trash-alt text-danger"></i> </a><br/>
 
 			    <!--- </td></tr> --->
