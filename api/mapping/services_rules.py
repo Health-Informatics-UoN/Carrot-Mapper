@@ -262,7 +262,7 @@ def find_standard_concept(source_concept):
     """
 
     #if is standard, return self
-    if source_concept.standard_concept != 'S':
+    if source_concept.standard_concept == 'S':
         return source_concept
 
     #find the concept relationship, of what this non-standard concept "Maps to"
