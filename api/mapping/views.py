@@ -1530,7 +1530,6 @@ def save_scan_report_value_concept(request):
                 concept = source_concept
             
             scan_report_concept = ScanReportConcept.objects.create(
-                source_concept=source_concept,
                 concept=concept,
                 content_object=scan_report_value,
             )
