@@ -210,25 +210,17 @@ def start_nlp(search_term):
         # If all conceptIDs across vocabs are the same, save only SNOMED
         # Else save each conceptID to ScanReportConcept
         for value in scan_report_values:
-            print('SCAN_REPORT_VALUE >>> ', value)
             match = list(filter(lambda item: item["pk"] == str(value.id), codes_dict))
-            print('MATCH >>> ', match)
             ids = [li['conceptid'] for li in match]
-            print('IDs Type', type(ids))
 
             if len(ids) > 0:
 
-                # If all conceptIDs are the same
+                # If all conceptIDs are the same, grab only the SNOMED entry
                 if all_same(ids):
-
                     # Grab the SNOMED dictionary element
                     same = list(filter(lambda item: item['nlp_vocab'] == 'SNOMEDCT_US', match))
-                    print('same >>> ', same)
-                    print('primary key >>> ', same[0]["pk"])
                     scan_report_value = ScanReportValue.objects.get(pk=same[0]["pk"])
-                    print('scan report value >>> ', scan_report_value)
                     concept = Concept.objects.get(pk=same[0]["conceptid"])
-                    print('concept >>>', concept)
 
                     ScanReportConcept.objects.create(
                         nlp_entity=same[0]["nlp_entity"],
