@@ -200,27 +200,61 @@ def start_nlp(search_term):
         codes = process_nlp_response(get_response)
         codes_dict = concept_code_to_id(codes)
 
+        # Mini function to see if all conceptIDs are the same
+        def all_same(items):
+            return all(x == items[0] for x in items)
+
+
         # Check each item in values and see whether NLP got a result
         # If NLP finds something, save the result to ScanReportConcept
+        # If all conceptIDs across vocabs are the same, save only SNOMED
+        # Else save each conceptID to ScanReportConcept
         for value in scan_report_values:
+            print('SCAN_REPORT_VALUE >>> ', value)
             match = list(filter(lambda item: item["pk"] == str(value.id), codes_dict))
-            
-            for item in match:
-                
-                print(item)
+            print('MATCH >>> ', match)
+            ids = [li['conceptid'] for li in match]
+            print('IDs Type', type(ids))
 
-                scan_report_value = ScanReportValue.objects.get(pk=item["pk"])
-                concept = Concept.objects.get(pk=item["conceptid"])
+            if len(ids) > 0:
 
-                ScanReportConcept.objects.create(
-                    nlp_entity=item["nlp_entity"],
-                    nlp_entity_type=item["nlp_entity_type"],
-                    nlp_confidence=item["nlp_confidence"],
-                    nlp_vocabulary=item["nlp_vocab"],
-                    nlp_concept_code=item["nlp_code"],
-                    concept=concept,
-                    content_object=scan_report_value,
-                )
+                # If all conceptIDs are the same
+                if all_same(ids):
+
+                    # Grab the SNOMED dictionary element
+                    same = list(filter(lambda item: item['nlp_vocab'] == 'SNOMEDCT_US', match))
+                    print('same >>> ', same)
+                    print('primary key >>> ', same[0]["pk"])
+                    scan_report_value = ScanReportValue.objects.get(pk=same[0]["pk"])
+                    print('scan report value >>> ', scan_report_value)
+                    concept = Concept.objects.get(pk=same[0]["conceptid"])
+                    print('concept >>>', concept)
+
+                    ScanReportConcept.objects.create(
+                        nlp_entity=same[0]["nlp_entity"],
+                        nlp_entity_type=same[0]["nlp_entity_type"],
+                        nlp_confidence=same[0]["nlp_confidence"],
+                        nlp_vocabulary=same[0]["nlp_vocab"],
+                        nlp_concept_code=same[0]["nlp_code"],
+                        concept=concept,
+                        content_object=scan_report_value,
+                    )
+
+            else:
+
+                for item in match:
+                    scan_report_value = ScanReportValue.objects.get(pk=item["pk"])
+                    concept = Concept.objects.get(pk=item["conceptid"])
+
+                    ScanReportConcept.objects.create(
+                        nlp_entity=item["nlp_entity"],
+                        nlp_entity_type=item["nlp_entity_type"],
+                        nlp_confidence=item["nlp_confidence"],
+                        nlp_vocabulary=item["nlp_vocab"],
+                        nlp_concept_code=item["nlp_code"],
+                        concept=concept,
+                        content_object=scan_report_value,
+                    )
 
     return True
 
