@@ -50,6 +50,7 @@ from .forms import (
     DocumentForm,
     NLPForm,
     ScanReportAssertionForm,
+    ScanReportFieldConceptForm,
     ScanReportForm,
     UserCreateForm, ScanReportValueConceptForm,
 )
@@ -148,18 +149,25 @@ class ScanReportTableUpdateView(UpdateView):
         )
 
 @method_decorator(login_required, name="dispatch")
-class ScanReportFieldListView(ModelFormSetView):
+class ScanReportFieldListView(ListView):
     model = ScanReportField
-    fields = ["is_patient_id", "date_type", "concept_id"]
-    fields = ["is_patient_id", "is_birth_date", "is_date_event", "concept_id"]
-    # exclude = []
+    # fields = ["is_patient_id", "date_type", "concept_id"]
+    fields = ["concept_id"]
+    # # exclude = []
+    template_name="mapping/scanreportfield_list.html"
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
         qs = super().get_queryset().order_by("id")
         search_term = self.request.GET.get("search", None)
+        # if search_term is not None:
+        #     qs = qs.filter(scan_report_table__id=search_term)
+        
         if search_term is not None:
-            qs = qs.filter(scan_report_table__id=search_term)
+            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
+            qs = ScanReportField.objects.filter(scan_report_table=search_term)
+        else:
+            qs = ScanReportField.objects.all()
         return qs
 
     def get_context_data(self, **kwargs):
@@ -1504,3 +1512,49 @@ def delete_scan_report_value_concept(request):
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/values/?search={}".format(scan_report_field_id))
+
+def save_scan_report_field_concept(request):
+    if request.method == "POST":
+        form = ScanReportFieldConceptForm(request.POST)
+        if form.is_valid():
+            
+            scan_report_field = ScanReportField.objects.get(
+                pk=form.cleaned_data['scan_report_field_id']
+            )
+
+            try:
+                concept = Concept.objects.get(
+                    concept_id=form.cleaned_data['concept_id']
+                )
+            except Concept.DoesNotExist:
+                messages.error(request,
+                                 "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
+                return redirect("/fields/?search={}".format(scan_report_field.id))
+
+            scan_report_concept = ScanReportConcept.objects.create(
+                concept=concept,
+                content_object=scan_report_field,
+            )
+
+            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+
+            return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
+
+
+def delete_scan_report_field_concept(request):
+    
+
+    scan_report_field_id = request.GET.get('scan_report_field_id')
+    scan_report_table_id=request.GET.get('scan_report_table_id')
+    scan_report_concept_id = request.GET.get('scan_report_concept_id')
+
+    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
+
+    concept_id = scan_report_concept.concept.concept_id
+    concept_name = scan_report_concept.concept.concept_name
+
+    scan_report_concept.delete()
+
+    messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
+
+    return redirect("/fields/?search={}".format(scan_report_field_id.scan_report_table.id))

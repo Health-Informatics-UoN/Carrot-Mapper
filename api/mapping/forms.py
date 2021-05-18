@@ -197,6 +197,17 @@ class NLPForm(forms.Form):
         label = ""
     )
 
+
+class ScanReportFieldConceptForm(forms.Form):
+    scan_report_field_id=forms.IntegerField(
+
+    )
+
+    concept_id=forms.IntegerField(
+
+    )
+
+
 class ScanReportValueConceptForm(forms.Form):
     scan_report_value_id=forms.IntegerField(
 

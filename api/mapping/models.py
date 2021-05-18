@@ -460,10 +460,11 @@ class ScanReportField(BaseModel):
 
     concept_id = models.IntegerField(
         default=-1,
-        null=True,
-        blank=True,
     )
 
+    concepts = GenericRelation(
+        ScanReportConcept,
+    )
     def __str__(self):
         return str(self.id)
 
