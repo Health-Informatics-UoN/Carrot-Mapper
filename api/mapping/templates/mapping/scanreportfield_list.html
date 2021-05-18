@@ -38,14 +38,17 @@
                 {% if object.concept_id == -1 %}
                     <td><a href="{% url 'values' %}?search={{ object.id }}">
                         {{ object.name| truncatechars:20 }}</a>
+                        
                     </td>
                 {% else %}
                     <td>
                         {{ object.name| truncatechars:20 }}
+                        
                     </td>
                 {% endif %}
                 <td>
                     {{ object.type_column }}
+                    
                 </td>
                 <td>
                 {{ object.classification_system }}
@@ -55,7 +58,7 @@
                         <span>
                             {{ concept.concept.concept_id }} -
                             {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
-                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
                     {% endfor %}
                 </td>
                 <td>

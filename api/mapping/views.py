@@ -165,7 +165,7 @@ class ScanReportFieldListView(ListView):
         
         if search_term is not None:
             # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportField.objects.filter(scan_report_table=search_term)
+            qs = ScanReportField.objects.filter(scan_report_table_id=search_term)
         else:
             qs = ScanReportField.objects.all()
         return qs
@@ -1557,4 +1557,4 @@ def delete_scan_report_field_concept(request):
 
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
-    return redirect("/fields/?search={}".format(scan_report_field_id.scan_report_table.id))
+    return redirect("/fields/?search={}".format(scan_report_table_id))
