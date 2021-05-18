@@ -464,6 +464,10 @@ class ScanReportField(BaseModel):
         blank=True,
     )
 
+    concepts = GenericRelation(
+        ScanReportConcept,
+    )
+
     def __str__(self):
         return str(self.id)
 
