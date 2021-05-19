@@ -2,23 +2,52 @@
 
 {% block body %}
 
-<h2>Update Field</h2>
-
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
         <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ object.scan_report.id }}">
-            {{ object.scan_report_table.scan_report.data_partner }} - {{ object.scan_report_table.scan_report.dataset }}</a></li>
+            {{ object.scan_report_table.scan_report.data_partner.name }} - {{ object.scan_report_table.scan_report.dataset }}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ object.scan_report_table.id }}">
             {{ object.scan_report_table.name }}</a></li>
         <li class="breadcrumb-item">{{ object.name }}</li>
     </ol>
 </nav>
 
+<h2>Update Field</h2>
+
 <form method="post">{% csrf_token %}
-    {{ form.as_p }}
+    <div class="mb-3">
+        {{ form.is_patient_id.errors }}
+        <label class="form-label">{{ form.is_patient_id.label }}</label>
+        {{ form.is_patient_id }}
+    </div>
+    <div class="mb-3">
+        {{ form.is_date_event.errors }}
+        <label class="form-label">{{ form.is_date_event.label }}</label>
+        {{ form.is_date_event }}
+    </div>
+    <div class="mb-3">
+        {{ form.is_ignore.errors }}
+        <label class="form-label">{{ form.is_ignore.label }}</label>
+        {{ form.is_ignore }}
+    </div>
+    <div class="mb-3">
+        {{ form.pass_from_source.errors }}
+        <label class="form-label">{{ form.pass_from_source.label }}</label>
+        {{ form.pass_from_source }}
+    </div>
+    <div class="mb-3">
+        {{ form.classification_system.errors }}
+        <label class="form-label">{{ form.classification_system.label }}</label>
+        {{ form.classification_system }}
+    </div>
+    <div class="mb-3">
+        {{ form.description_column.errors }}
+        <label class="form-label">{{ form.description_column.label }}</label>
+        {{ form.description_column }}
+    </div>
     <input type="submit"   class="btn btn-success" value="Update '{{object.name}}'">
 </form>
 
