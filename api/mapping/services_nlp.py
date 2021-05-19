@@ -51,7 +51,7 @@ def process_nlp_response(get_response):
     Output: codes - A list of concept Codes
 
     """
-    keep = ["ICD9", "ICD9CM", "ICD10", "ICD10CM", "RXNORM", "SNOMEDCT_US", "SNOMED"]
+    keep = ["ICD9CM", "ICD10CM", "RXNORM", "SNOMEDCT_US", "SNOMED"]
     codes = []
 
     for url in get_response:
@@ -128,7 +128,7 @@ def start_nlp(search_term):
         if field.field_description is None:
             document = {
                 "documents": [
-                    {"language": "en", "id": field.id, "text": field.name}
+                    {"language": "en", "id": field.id.replace("_", " "), "text": field.name.replace("_", " ")}
                 ]
             }
 
@@ -138,7 +138,7 @@ def start_nlp(search_term):
             document = {
                 "documents": [
                     {"language": "en", "id": field.id,
-                        "text": field.field_description}
+                        "text": field.field_description.replace("_", " ")}
                 ]
             }
 
@@ -196,28 +196,28 @@ def start_nlp(search_term):
             if item.scan_report_field.field_description and item.value_description:
                 documents.append(
                     {"language": "en", "id": item.id,
-                        "text": item.scan_report_field.field_description+', '+item.value_description}
+                        "text": item.scan_report_field.field_description.replace("_", " ")+', '+item.value_description.replace("_", " ")}
                 )
             else:
                 # If neither descriptions are available use field and value names
                 if item.scan_report_field.field_description is None and item.value_description is None:
                     documents.append(
                         {"language": "en", "id": item.id,
-                            "text": item.scan_report_field.name+', '+item.value}
+                            "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
                     )
                 else:
                     # Use a combination of field description and value names
                     if item.scan_report_field.field_description and item.value_description is None:
                         documents.append(
                             {"language": "en", "id": item.id,
-                                "text": item.scan_report_field.field_description+', '+item.value}
+                                "text": item.scan_report_field.field_description.replace("_", " ")+', '+item.value.replace("_", " ")}
                         )
                     else:
                         # Use a combination of field name and value description
                         if item.scan_report_field.field_description is None and item.value_description:
                             documents.append(
                                 {"language": "en", "id": item.id,
-                                    "text": item.scan_report_field.name+', '+item.value_description}
+                                    "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
                             )
 
         print('VALUES LIST >>> ', documents)
