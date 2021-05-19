@@ -8,6 +8,7 @@ from django.contrib import messages
 import json
 import requests
 import time
+from data.models import Concept, ConceptRelationship
 from .models import (
     ScanReport,
     ScanReportTable,
@@ -18,6 +19,64 @@ from .models import (
 
 from coconnect.tools.omop_db_inspect import OMOPDetails
 
+
+
+def get_concept_from_concept_code(concept_code,
+                                  vocabulary_id,
+                                  no_source_concept=False):
+    """
+    Given a concept_code and vocabularly id, 
+    return the source_concept and concept objects
+
+    If the concept is a standard concept, 
+    source_concept will be the same object
+
+    Parameters:
+      concept_code (str) : the concept code  
+      vocabulary_id (str) : SNOMED etc.
+      no_source_concept (bool) : only return the concept
+    Returns:
+      tuple( source_concept(Concept), concept(Concept) )
+      OR
+      concept(Concept)
+    """
+    #obtain the source_concept given the code and vocab
+    source_concept = Concept.objects.get(
+        concept_code = concept_code,
+        vocabulary_id = vocabulary_id
+    )
+
+    #if the source_concept is standard
+    if source_concept.standard_concept == 'S':
+        #the concept is the same as the source_concept
+        concept = source_concept
+    else:
+        #otherwise we need to look up 
+        concept = find_standard_concept(source_concept)
+
+    if no_source_concept:
+        #only return the concept
+        return concept
+    else:
+        #return both as a tuple
+        return (source_concept,concept)
+
+
+def find_standard_concept(source_concept):
+
+    concept_relation = ConceptRelationship.objects.get(
+        concept_id_1=source_concept.concept_id,
+        relationship_id__contains='Maps to'
+    )
+
+    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
+        concept = Concept.objects.get(
+            concept_id=concept_relation.concept_id_2
+        )
+        return concept
+    else:
+        #may need some warning if this ever happens?
+        return source_concept
 
 def process_scan_report_sheet_table(filename):
     """
@@ -129,30 +188,30 @@ def process_scan_report(scan_report_id):
                         fraction_empty=row[7],
                         nunique_values=row[8],
                         fraction_unique=row[9],
-                        ignore_column=row[10],
+                        flag_column=row[10],
                         is_patient_id=False,
                         is_date_event=False,
                         is_ignore=False,
                         pass_from_source=False,
                         classification_system=row[11],
                     )
-                    scanreport.ignore_column=scanreport.ignore_column.lower()
-                    if scanreport.ignore_column == "patientid":
+                    scanreport.flag_column=scanreport.flag_column.lower()
+                    if scanreport.flag_column == "patientid":
                         scanreport.is_patient_id = True
                     else:
                         scanreport.is_patient_id = False
 
-                    if scanreport.ignore_column == "date":
+                    if scanreport.flag_column == "date":
                         scanreport.is_date_event = True
                     else:
                         scanreport.is_date_event = False
 
-                    if scanreport.ignore_column == "ignore":
+                    if scanreport.flag_column == "ignore":
                          scanreport.is_ignore = True
                     else:
                          scanreport.is_ignore = False
 
-                    if scanreport.ignore_column == "passsource":
+                    if scanreport.flag_column == "passsource":
                          scanreport.pass_from_source = True
                     else:
                          scanreport.pass_from_source = False

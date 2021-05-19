@@ -58,3 +58,4 @@ services:
       options:
         max-size: "1M"
         max-file: "10"
+

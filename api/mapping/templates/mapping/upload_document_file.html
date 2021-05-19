@@ -2,7 +2,7 @@
 
 {% block body %}
 
-<h2>Upload New Document File</h2>
+<h2>Upload New {{document.document_type.name}} Version</h2>
 
 <form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
  
@@ -10,6 +10,7 @@
         {{ form.document_file.errors }}
         <label class="form-label">{{ form.document_file.label}}</label>
         {{ form.document_file }}
+        
     </div>
     <div class="mb-3">
         {{ form.description.errors }}
@@ -17,10 +18,13 @@
         {{ form.description }}
     </div>
     <div class="mb-3">
-        {{ form.document.errors }}
-        <label class="form-label">{{ form.document.label}}</label>
-        {{ form.document }}
+        <label class="form-label">{{ form.document_type.label}}</label>
+        {{ form.document_type }}
+        {%if form.document_type.errors%}
+        <div class="alert alert-danger" role="alert">{{ form.document_type.errors }}</div>
+        {%endif%}
     </div>
+   
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>

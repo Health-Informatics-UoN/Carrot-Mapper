@@ -8,19 +8,25 @@
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
         <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
-            {{ scan_report.data_partner }} - {{ scan_report.dataset }}</a></li>
+            {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</a></li>
     </ol>
 </nav>
 
 <h2>Tables</h2>
+
 
 {% if object_list %}
 <table class="table">
     <thead>
     <tr>
         <th scope="col">Name</th>
-        <!--<th scope="col">Ignore?</th>
-        <th scope="col">&nbsp;</th>-->
+        <th scope="col">Person ID</th>
+	<th scope="col">Birth Date</th>
+	<th scope="col">Measurement Date</th>
+	<th scope="col">Observation Date</th>
+	<th scope="col">Condition Date</th>
+	<th>Edit</th>
+
     </tr>
     </thead>
     <tbody>
@@ -29,12 +35,50 @@
     <tr>
         <td><a href="{% url 'fields' %}?search={{ object.id }}">
             {{ object.name }}</a></td>
-        <!--<td>False</td>
-        <td><a href="">Edit Table</a></td>-->
+
+	<td>
+	{% if object.person_id %}
+	{{ object.person_id.name }} 
+	{% endif %}
+	</td>
+
+	<td>
+	{% if object.birth_date %}
+	{{ object.birth_date.name }} 
+	{% endif %}
+	</td>
+
+	<td>
+	{% if object.measurement_date %}
+	{{ object.measurement_date.name }} 
+	{% endif %}
+	</td>
+	<td>
+	{% if object.observation_date %}
+	{{ object.observation_date.name }} 
+	{% endif %}
+	</td>
+	<td>
+	{% if object.condition_date %}
+	{{ object.condition_date.name }} 
+	{% endif %}
+	</td>
+
+	
+	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
+	
     </tr>
     {% endfor %}
     </tbody>
 </table>
+
+<a href="{% url 'tables-structural-mapping' scan_report.id %}">
+  <button type="button" class="btn btn-info">Goto Rules</button>
+</a>
+
+
+
+
 {% endif %}
 
 {% endblock %}

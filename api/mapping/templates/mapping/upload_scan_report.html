@@ -22,7 +22,7 @@
         <label class="form-label">{{ form.scan_report_file.label }}</label>
         {{ form.scan_report_file }}
         {%if form.scan_report_file.errors%}
-        <div class="error-message">{{ form.scan_report_file.errors }}</div>
+        <div class="alert alert-danger" role="alert">{{ form.scan_report_file.errors }}</div>
         {%endif%}
 
     </div>
