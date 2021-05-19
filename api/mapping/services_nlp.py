@@ -208,12 +208,14 @@ def start_nlp(search_term):
                             "text": item.scan_report_field.name+', '+item.value}
                     )
                 else:
+                    # Use a combination of field description and value names
                     if item.scan_report_field.field_description and item.value_description is None:
                         documents.append(
                             {"language": "en", "id": item.id,
                                 "text": item.scan_report_field.field_description+', '+item.value}
                         )
                     else:
+                        # Use a combination of field name and value description
                         if item.scan_report_field.field_description is None and item.value_description:
                             documents.append(
                                 {"language": "en", "id": item.id,
