@@ -68,14 +68,8 @@ from .models import (
     StructuralMappingRule, ScanReportConcept,
 )
 from .services import process_scan_report
-from .services_nlp import get_json_from_nlpmodel, start_nlp
+from .services_nlp import start_nlp
 from .services_datadictionary import merge_external_dictionary
-from .services_nlp import get_json_from_nlpmodel
-from .tasks import (
-    nlp_single_string_task,
-    process_scan_report_task,
-)
-
 
 @login_required
 def home(request):
