@@ -10,7 +10,7 @@
     </ol>
 </nav>
 
-<h2>Scan Reports-{{filterset}}
+<h2>Scan Reports {{filterset}}
   <a href="{% url 'scan-report-list' %}?filter=archived">
     <button type="button" class="float-end btn btn-primary mx-1">Archived Reports</button>
   </a>
@@ -29,10 +29,13 @@
         <th scope="col">Dataset</th>
         <th scope="col">Added by</th>
         <th scope="col">Date</th>
-        <th scope="col">Maps</th>
-        <th scope="col">Data Dictionary</th>
-        <th scope="col">Assertions</th>
-        <th scope="col">Show/Hide</th>
+        <th scope="col"></th>
+        
+        {% ifequal filterset "Archived" %}
+        <th scope="col">Set to Active</th>
+        {% else %}
+        <th scope="col">Archive</th>
+        {%endifequal%}
 
     </tr>
     </thead>
@@ -45,14 +48,12 @@
         <td>{{ object.author }}</td>
         <td>{{ object.created_at }}</td>
         <td><a href="{% url 'tables-structural-mapping' object.id %}">
-            <button type="button" class="btn btn-info">View rules</button></a>
+            <button type="button" class="btn btn-info">Rules</button></a>
+
+            <a href="{% url 'scan-report-assertion' object.id %}">
+              <button type="button" class="btn btn-success">Assertions</button></a>
         </td>
-        <td><a href="{% url 'data-dictionary' %}?search={{ object.id }}">
-        <button type="button" class="btn btn-success">View Dictionary</button></a>
-        </td>
-        <td><a href="{% url 'scan-report-assertion' object.id %}">
-            <button type="button" class="btn btn-success">Edit Assertions</button></a>
-        </td>
+       
         <td>
 	  {% if  current_user == object.author  %} 
 	  <form name="hide-show-report" method="post" action="{% url 'scan-report-list' %}">

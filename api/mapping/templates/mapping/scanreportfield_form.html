@@ -15,9 +15,10 @@
     </ol>
 </nav>
 
-<h2>Update Field</h2>
+<h2>Update Field-{{object.name}}</h2>
 
-<form method="post">{% csrf_token %}
+<form method="post" action="#" enctype="multipart/form-data">
+    {% csrf_token %}
     <div class="mb-3">
         {{ form.is_patient_id.errors }}
         <label class="form-label">{{ form.is_patient_id.label }}</label>
@@ -39,16 +40,11 @@
         {{ form.pass_from_source }}
     </div>
     <div class="mb-3">
-        {{ form.classification_system.errors }}
-        <label class="form-label">{{ form.classification_system.label }}</label>
-        {{ form.classification_system }}
-    </div>
-    <div class="mb-3">
         {{ form.description_column.errors }}
         <label class="form-label">{{ form.description_column.label }}</label>
         {{ form.description_column }}
     </div>
-    <input type="submit"   class="btn btn-success" value="Update '{{object.name}}'">
+    <input type="submit"   class="btn btn-success" value="Update">
 </form>
 
 {% endblock %}
