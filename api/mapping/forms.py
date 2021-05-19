@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField, ModelForm
 
-from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
+from mapping.models import (DataPartner, Document,
                             DocumentFile, DocumentType, FLAG_CHOICES, OmopField, OmopTable,
                             ScanReportField, VOCABULARY_CHOICES)
 from xlsx2csv import Xlsx2csv
