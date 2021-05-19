@@ -121,13 +121,27 @@ def start_nlp(search_term):
 
         print(">>> Working at field level...")
 
-        # Create a single dictionary item for the field description
-        # Convert to JSON for NLP, POST the data to NLP API, save the job URL
-        document = {
-            "documents": [
-                {"language": "en", "id": field.id, "text": field.field_description}
-            ]
-        }
+        # We want to use the field description if available
+        # However, we fall back to field name if field_description is None
+        if field.field_description is None:
+            document = {
+                        "documents": [
+                            {"language": "en", "id": field.id, "text": field.name}
+                        ]
+                    }
+            print('Using field_name >>>', document)
+
+        else:
+            # Create a single dictionary item for the field description
+            # Convert to JSON for NLP, POST the data to NLP API, save the job URL
+            document = {
+                "documents": [
+                    {"language": "en", "id": field.id, "text": field.field_description}
+                ]
+            }
+
+            print('Using field_description >>>', document)
+
         payload = json.dumps(document)
         response = requests.post(url, headers=headers, data=payload)
         post_response_url.append(response.headers["operation-location"])
