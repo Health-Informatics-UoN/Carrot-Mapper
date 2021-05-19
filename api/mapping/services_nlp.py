@@ -128,7 +128,8 @@ def start_nlp(search_term):
         if field.field_description is None:
             document = {
                 "documents": [
-                    {"language": "en", "id": field.id.replace("_", " "), "text": field.name.replace("_", " ")}
+                    {"language": "en", "id": field.id,
+                        "text": field.name.replace("_", " ")}
                 ]
             }
 
@@ -299,7 +300,7 @@ def start_nlp(search_term):
                             concept=concept,
                             content_object=scan_report_value,
                         )
-    
+
     return True
 
 
