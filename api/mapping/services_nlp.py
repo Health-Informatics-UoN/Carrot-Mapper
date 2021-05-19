@@ -194,28 +194,28 @@ def start_nlp(search_term):
         for item in scan_report_values:
 
             # If Field and Value Descriptions are both available then use both
-            if item.scan_report_field.field_description and item.value_description:
+            if item.scan_report_field.fdescription_column and item.value_description:
                 documents.append(
                     {"language": "en", "id": item.id,
-                        "text": item.scan_report_field.field_description.replace("_", " ")+', '+item.value_description.replace("_", " ")}
+                        "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
                 )
             else:
                 # If neither descriptions are available use field and value names
-                if item.scan_report_field.field_description is None and item.value_description is None:
+                if item.scan_report_field.description_column is None and item.value_description is None:
                     documents.append(
                         {"language": "en", "id": item.id,
                             "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
                     )
                 else:
                     # Use a combination of field description and value names
-                    if item.scan_report_field.field_description and item.value_description is None:
+                    if item.scan_report_field.description_column and item.value_description is None:
                         documents.append(
                             {"language": "en", "id": item.id,
-                                "text": item.scan_report_field.field_description.replace("_", " ")+', '+item.value.replace("_", " ")}
+                                "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")}
                         )
                     else:
                         # Use a combination of field name and value description
-                        if item.scan_report_field.field_description is None and item.value_description:
+                        if item.scan_report_field.description_column is None and item.value_description:
                             documents.append(
                                 {"language": "en", "id": item.id,
                                     "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
