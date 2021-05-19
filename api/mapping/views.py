@@ -160,20 +160,14 @@ class ScanReportFieldListView(ListView):
     def get_queryset(self):
         qs = super().get_queryset().order_by("id")
         search_term = self.request.GET.get("search", None)
-        # if search_term is not None:
-        #     qs = qs.filter(scan_report_table__id=search_term)
-        
         if search_term is not None:
-            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportField.objects.filter(scan_report_table_id=search_term)
-        else:
-            qs = ScanReportField.objects.all()
+            qs = qs.filter(scan_report_table__id=search_term)
         return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-
+    
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report_table.scan_report
             scan_report_table = self.get_queryset()[0].scan_report_table
@@ -1513,6 +1507,7 @@ def delete_scan_report_value_concept(request):
 
     return redirect("/values/?search={}".format(scan_report_field_id))
 
+
 def save_scan_report_field_concept(request):
     if request.method == "POST":
         form = ScanReportFieldConceptForm(request.POST)
@@ -1543,8 +1538,6 @@ def save_scan_report_field_concept(request):
 
 def delete_scan_report_field_concept(request):
     
-
-    scan_report_field_id = request.GET.get('scan_report_field_id')
     scan_report_table_id=request.GET.get('scan_report_table_id')
     scan_report_concept_id = request.GET.get('scan_report_concept_id')
 
