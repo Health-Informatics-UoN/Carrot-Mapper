@@ -51,7 +51,7 @@ def process_nlp_response(get_response):
     Output: codes - A list of concept Codes
 
     """
-    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
+    keep = ["ICD9", "ICD9CM", "ICD10", "ICD10CM", "RXNORM", "SNOMEDCT_US", "SNOMED"]
     codes = []
 
     for url in get_response:
