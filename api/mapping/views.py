@@ -196,6 +196,7 @@ class ScanReportFieldUpdateView(UpdateView):
         "is_ignore",
         "pass_from_source",
         "classification_system",
+        "description_column",
     ]
 
     def get_success_url(self):
@@ -1522,7 +1523,7 @@ def save_scan_report_field_concept(request):
             except Concept.DoesNotExist:
                 messages.error(request,
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
-                return redirect("/fields/?search={}".format(scan_report_field.id))
+                return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
             scan_report_concept = ScanReportConcept.objects.create(
                 concept=concept,
