@@ -1212,9 +1212,10 @@ class NLPDetailView(DetailView):
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
+    field = ScanReportField.objects.get(pk=search_term)
     start_nlp(search_term=search_term)
     
-    return True
+    return redirect("/values/?search={}".format(field.id))
 
 
 @method_decorator(login_required, name="dispatch")

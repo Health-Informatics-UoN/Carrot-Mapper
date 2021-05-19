@@ -129,7 +129,6 @@ def start_nlp(search_term):
                     {"language": "en", "id": field.id, "text": field.name}
                 ]
             }
-            print('Using field_name >>>', document)
 
         else:
             # Create a single dictionary item for the field description
@@ -141,8 +140,6 @@ def start_nlp(search_term):
                 ]
             }
 
-            print('Using field_description >>>', document)
-
         payload = json.dumps(document)
         response = requests.post(url, headers=headers, data=payload)
         post_response_url.append(response.headers["operation-location"])
@@ -152,7 +149,6 @@ def start_nlp(search_term):
             url=url, headers=headers, post_response_url=post_response_url
         )
         codes = process_nlp_response(get_response)
-        print("CODES >>>", codes)
         # Look up standard and valid conceptIDs for concept codes
         # Append conceptID to item in list, turn into a dictionary
         codes_dict = concept_code_to_id(codes)
@@ -221,7 +217,9 @@ def start_nlp(search_term):
                                 {"language": "en", "id": item.id,
                                     "text": item.scan_report_field.name+', '+item.value_description}
                             )
+
         print('VALUES LIST >>> ', documents)
+
         # POST Request(s)
         chunk_size = 10  # Set chunk size (max=10)
         post_response_url = []
@@ -295,7 +293,7 @@ def start_nlp(search_term):
                         concept=concept,
                         content_object=scan_report_value,
                     )
-
+    
     return True
 
 
