@@ -46,6 +46,10 @@ def get_concept_from_concept_code(concept_code,
     # used within services_nlp.py
     if vocabulary_id == 'SNOMEDCT_US':
         vocabulary_id="SNOMED"
+
+    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert    
+    if vocabulary_id=="RXNORM":
+        vocabulary_id="RxNorm"
     else:
         vocabulary_id=vocabulary_id
 
