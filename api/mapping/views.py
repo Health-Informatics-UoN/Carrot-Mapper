@@ -1,23 +1,21 @@
 import ast
 import json
-from io import StringIO
 import os
-
-import requests
 import time
+from io import StringIO
 
-import coconnect
 import pandas as pd
-from .services_rules import Concept2OMOP
-
+import requests
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
+from data.models import Concept
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.contenttypes.models import ContentType
 from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
@@ -38,12 +36,6 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.fields import GenericRelation
-from django.db.models import F
-
-from data.models import Concept
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -67,8 +59,6 @@ from .models import (
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
 )
-from .services import process_scan_report
-from .services_nlp import get_json_from_nlpmodel, nlp_request
 from .services_datadictionary import merge_external_dictionary
 from .services_nlp import get_json_from_nlpmodel
 from .tasks import (
