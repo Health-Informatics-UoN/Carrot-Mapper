@@ -70,6 +70,8 @@ def process_nlp_response(get_response):
                                     link["id"],
                                 ]
                             )
+
+    print('CODES >>>', codes)
     return codes
 
 
@@ -251,7 +253,10 @@ def start_nlp(search_term):
         for value in scan_report_values:
             match = list(
                 filter(lambda item: item["pk"] == str(value.id), codes_dict))
+            print('MATCH >>> ', match)
             concept_ids = [li['conceptid'] for li in match]
+            print('CONCEPT IDs >>> ', concept_ids)
+            print('ALL SAME >>> ', all_same(concept_ids))
 
             # If there are multiple conceptIDs from the above filter
             if len(concept_ids) > 0:
@@ -276,23 +281,24 @@ def start_nlp(search_term):
                         content_object=scan_report_value,
                     )
 
-            else:
+                else:
 
-                # If the conceptIDs are all different then save each to ScanReportConcept
-                for item in match:
-                    scan_report_value = ScanReportValue.objects.get(
-                        pk=item["pk"])
-                    concept = Concept.objects.get(pk=item["conceptid"])
+                    # If the conceptIDs are all different then save each to ScanReportConcept
+                    for item in match:
+                        print('ITEM >>> ', item)
+                        scan_report_value = ScanReportValue.objects.get(
+                            pk=item["pk"])
+                        concept = Concept.objects.get(pk=item["conceptid"])
 
-                    ScanReportConcept.objects.create(
-                        nlp_entity=item["nlp_entity"],
-                        nlp_entity_type=item["nlp_entity_type"],
-                        nlp_confidence=item["nlp_confidence"],
-                        nlp_vocabulary=item["nlp_vocab"],
-                        nlp_concept_code=item["nlp_code"],
-                        concept=concept,
-                        content_object=scan_report_value,
-                    )
+                        ScanReportConcept.objects.create(
+                            nlp_entity=item["nlp_entity"],
+                            nlp_entity_type=item["nlp_entity_type"],
+                            nlp_confidence=item["nlp_confidence"],
+                            nlp_vocabulary=item["nlp_vocab"],
+                            nlp_concept_code=item["nlp_code"],
+                            concept=concept,
+                            content_object=scan_report_value,
+                        )
     
     return True
 
