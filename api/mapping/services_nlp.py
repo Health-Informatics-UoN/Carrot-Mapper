@@ -1,21 +1,16 @@
 import json
+import os
+import time
+
 import pandas as pd
 import requests
-import time
-import os
-from django.db.models import Q
-from .models import (
-    NLPModel,
-    ScanReport,
-    ScanReportField,
-    ScanReportValue,
-    ScanReportAssertion,
-    ScanReportConcept,
-    DataDictionary,
-)
-from data.models import ConceptRelationship, Concept
 from coconnect.tools.omop_db_inspect import OMOPDetails
-from .services import get_concept_from_concept_code, find_standard_concept
+from data.models import Concept, ConceptRelationship
+from django.db.models import Q
+
+from .models import (DataDictionary, NLPModel, ScanReport, ScanReportAssertion,
+                     ScanReportConcept, ScanReportField, ScanReportValue)
+from .services import find_standard_concept, get_concept_from_concept_code
 
 
 def get_data_from_nlp(url, headers, post_response_url):
