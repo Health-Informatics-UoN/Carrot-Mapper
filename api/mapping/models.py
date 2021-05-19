@@ -453,7 +453,7 @@ class ScanReportField(BaseModel):
     )
 
     pass_from_source = models.BooleanField(
-        default=False,
+        default=True,
         blank=True,
         null=True,
     )
