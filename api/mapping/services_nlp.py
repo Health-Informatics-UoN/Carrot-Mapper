@@ -189,7 +189,7 @@ def start_nlp(search_term):
         for item in scan_report_values:
 
             # If Field and Value Descriptions are both available then use both
-            if item.scan_report_field.fdescription_column and item.value_description:
+            if item.scan_report_field.description_column and item.value_description:
                 documents.append(
                     {"language": "en", "id": item.id,
                         "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
