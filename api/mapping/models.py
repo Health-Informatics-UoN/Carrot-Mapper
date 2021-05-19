@@ -447,13 +447,12 @@ class ScanReportField(BaseModel):
 
     pass_from_source = models.BooleanField(
         default=False,
-        blank=True,
-        null=True,
+    
     )
-
-    # this can be removed
-    # dont want to remove now as will have to mess with migrations
+    
     DATE_TYPE_CHOICES = []  # TODO Remove it or move it to the top of this file
+    
+    # This field is no longer used, and will be removed in the future.
     date_type = models.CharField(
         max_length=128, choices=DATE_TYPE_CHOICES, default="", null=True, blank=True
     )

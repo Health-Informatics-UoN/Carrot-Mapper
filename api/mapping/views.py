@@ -192,7 +192,6 @@ class ScanReportFieldUpdateView(UpdateView):
     fields = [
         "is_patient_id",
         "is_date_event",
-        "date_type",
         "is_ignore",
         "pass_from_source",
         "classification_system",
