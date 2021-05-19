@@ -1,17 +1,19 @@
 import json
+import logging
 import os
 import time
 
-import pandas as pd
 import requests
 from coconnect.tools.omop_db_inspect import OMOPDetails
 from data.models import Concept, ConceptRelationship
 from django.db.models import Q
 
-from .models import (DataDictionary, NLPModel, ScanReport, ScanReportAssertion,
-                     ScanReportConcept, ScanReportField, ScanReportValue)
+from .models import (ScanReport, ScanReportAssertion, ScanReportConcept,
+                     ScanReportField, ScanReportValue)
 from .services import find_standard_concept, get_concept_from_concept_code
 
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 def get_data_from_nlp(url, headers, post_response_url):
     """
@@ -31,7 +33,7 @@ def get_data_from_nlp(url, headers, post_response_url):
             time.sleep(3)
         else:
             get_response.append(job["results"])
-            print("Done!")
+            logger.info("NLP Done!")
 
     return get_response
 
@@ -65,7 +67,6 @@ def process_nlp_response(get_response):
                                 ]
                             )
 
-    print('CODES >>>', codes)
     return codes
 
 
@@ -96,7 +97,7 @@ def concept_code_to_id(codes):
 
 def start_nlp(search_term):
 
-    print(">>>>> Running NLP in services_nlp.py for", search_term)
+    logger.info(">>>>> Running NLP in services_nlp.py for", search_term)
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
 
@@ -114,9 +115,6 @@ def start_nlp(search_term):
     # If True, we pass field-level data i.e. a single string (field description)
     # If False, we pass all values associated with that field
     if field.pass_from_source:
-
-        print(">>> Working at field level...")
-
         # We want to use the field description if available
         # However, we fall back to field name if field_description is None
         if field.field_description is None:
@@ -170,8 +168,6 @@ def start_nlp(search_term):
             )
 
     else:
-
-        print(">>> Working at values level...")
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(
             scan_report__id=scan_report_id)
@@ -248,14 +244,11 @@ def start_nlp(search_term):
         for value in scan_report_values:
             match = list(
                 filter(lambda item: item["pk"] == str(value.id), codes_dict))
-            print('MATCH >>> ', match)
             concept_ids = [li['conceptid'] for li in match]
-            print('CONCEPT IDs >>> ', concept_ids)
-            print('ALL SAME >>> ', all_same(concept_ids))
+
 
             # If there are multiple conceptIDs from the above filter
             if len(concept_ids) > 0:
-
                 # If all conceptIDs are the same, grab only the SNOMED entry
                 # and save this to ScanReportConcept
                 if all_same(concept_ids):
@@ -280,7 +273,6 @@ def start_nlp(search_term):
 
                     # If the conceptIDs are all different then save each to ScanReportConcept
                     for item in match:
-                        print('ITEM >>> ', item)
                         scan_report_value = ScanReportValue.objects.get(
                             pk=item["pk"])
                         concept = Concept.objects.get(pk=item["conceptid"])
