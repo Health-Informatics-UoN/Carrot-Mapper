@@ -432,7 +432,6 @@ class ScanReportField(BaseModel):
 
     pass_from_source = models.BooleanField(
         default=False,
-    
     )
     
     DATE_TYPE_CHOICES = []  # TODO Remove it or move it to the top of this file

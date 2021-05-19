@@ -182,13 +182,6 @@ class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
     form_class=ScanReportFieldForm
     template_name="mapping/scanreportfield_form.html"
-    # fields = [
-    #     "is_patient_id",
-    #     "is_date_event",
-    #     "is_ignore",
-    #     "pass_from_source",
-    #     "description_column",
-    # ]
 
     def get_success_url(self):
         return "{}?search={}".format(
