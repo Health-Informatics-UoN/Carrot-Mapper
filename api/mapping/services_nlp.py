@@ -125,10 +125,10 @@ def start_nlp(search_term):
         # However, we fall back to field name if field_description is None
         if field.field_description is None:
             document = {
-                        "documents": [
-                            {"language": "en", "id": field.id, "text": field.name}
-                        ]
-                    }
+                "documents": [
+                    {"language": "en", "id": field.id, "text": field.name}
+                ]
+            }
             print('Using field_name >>>', document)
 
         else:
@@ -136,7 +136,8 @@ def start_nlp(search_term):
             # Convert to JSON for NLP, POST the data to NLP API, save the job URL
             document = {
                 "documents": [
-                    {"language": "en", "id": field.id, "text": field.field_description}
+                    {"language": "en", "id": field.id,
+                        "text": field.field_description}
                 ]
             }
 
@@ -158,7 +159,8 @@ def start_nlp(search_term):
 
         # Check each item in values and see whether NLP got a result
         # If NLP finds something, save the result to ScanReportConcept
-        match = list(filter(lambda item: item["pk"] == str(field.id), codes_dict))
+        match = list(
+            filter(lambda item: item["pk"] == str(field.id), codes_dict))
 
         for item in match:
             scan_report_field = ScanReportField.objects.get(pk=item["pk"])
@@ -178,7 +180,8 @@ def start_nlp(search_term):
 
         print(">>> Working at values level...")
         # Grab assertions for the ScanReport
-        assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
+        assertions = ScanReportAssertion.objects.filter(
+            scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
 
         # Grab values associated with the ScanReportField
@@ -190,15 +193,38 @@ def start_nlp(search_term):
         # Create list of items to be sent to the NLP service
         documents = []
         for item in scan_report_values:
-            documents.append(
-                {"language": "en", "id": item.id, "text": item.value_description}
-            )
 
+            # If Field and Value Descriptions are both available then use both
+            if item.scan_report_field.field_description and item.value_description:
+                documents.append(
+                    {"language": "en", "id": item.id,
+                        "text": item.scan_report_field.field_description+', '+item.value_description}
+                )
+            else:
+                # If neither descriptions are available use field and value names
+                if item.scan_report_field.field_description is None and item.value_description is None:
+                    documents.append(
+                        {"language": "en", "id": item.id,
+                            "text": item.scan_report_field.name+', '+item.value}
+                    )
+                else:
+                    if item.scan_report_field.field_description and item.value_description is None:
+                        documents.append(
+                            {"language": "en", "id": item.id,
+                                "text": item.scan_report_field.field_description+', '+item.value}
+                        )
+                    else:
+                        if item.scan_report_field.field_description is None and item.value_description:
+                            documents.append(
+                                {"language": "en", "id": item.id,
+                                    "text": item.scan_report_field.name+', '+item.value_description}
+                            )
+        print('VALUES LIST >>> ', documents)
         # POST Request(s)
         chunk_size = 10  # Set chunk size (max=10)
         post_response_url = []
         for i in range(0, len(documents), chunk_size):
-            chunk = {"documents": documents[i : i + chunk_size]}
+            chunk = {"documents": documents[i: i + chunk_size]}
             payload = json.dumps(chunk)
             response = requests.post(url, headers=headers, data=payload)
             print(
@@ -218,13 +244,13 @@ def start_nlp(search_term):
         def all_same(items):
             return all(x == items[0] for x in items)
 
-
         # Check each item in values and see whether NLP got a result
         # If NLP finds something, save the result to ScanReportConcept
         # If all conceptIDs across vocabs are the same, save only SNOMED
         # Else save each conceptID to ScanReportConcept
         for value in scan_report_values:
-            match = list(filter(lambda item: item["pk"] == str(value.id), codes_dict))
+            match = list(
+                filter(lambda item: item["pk"] == str(value.id), codes_dict))
             concept_ids = [li['conceptid'] for li in match]
 
             # If there are multiple conceptIDs from the above filter
@@ -234,8 +260,10 @@ def start_nlp(search_term):
                 # and save this to ScanReportConcept
                 if all_same(concept_ids):
                     # Grab the SNOMED dictionary element
-                    same = list(filter(lambda item: item['nlp_vocab'] == 'SNOMEDCT_US', match))
-                    scan_report_value = ScanReportValue.objects.get(pk=same[0]["pk"])
+                    same = list(
+                        filter(lambda item: item['nlp_vocab'] == 'SNOMEDCT_US', match))
+                    scan_report_value = ScanReportValue.objects.get(
+                        pk=same[0]["pk"])
                     concept = Concept.objects.get(pk=same[0]["conceptid"])
 
                     ScanReportConcept.objects.create(
@@ -249,10 +277,11 @@ def start_nlp(search_term):
                     )
 
             else:
-                
+
                 # If the conceptIDs are all different then save each to ScanReportConcept
                 for item in match:
-                    scan_report_value = ScanReportValue.objects.get(pk=item["pk"])
+                    scan_report_value = ScanReportValue.objects.get(
+                        pk=item["pk"])
                     concept = Concept.objects.get(pk=item["conceptid"])
 
                     ScanReportConcept.objects.create(
@@ -269,7 +298,6 @@ def start_nlp(search_term):
 
 
 def nlp_single_string(pk, dict_string):
-
     """
     This function allows you to pass a single text string to NLP
     and return a list of all valid and standard OMOP codes for the
@@ -325,7 +353,6 @@ def nlp_single_string(pk, dict_string):
 
 
 def get_json_from_nlpmodel(json):
-
     """
     A small function to process the JSON string saved in NLPModel
     """
@@ -370,7 +397,8 @@ def get_json_from_nlpmodel(json):
 
     full_results = pd.concat(results, ignore_index=True)
 
-    full_results = full_results.merge(codes_df, left_on="concept_code", right_on="code")
+    full_results = full_results.merge(
+        codes_df, left_on="concept_code", right_on="code")
     full_results = full_results.values.tolist()
 
     return full_results
