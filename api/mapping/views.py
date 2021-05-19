@@ -53,6 +53,7 @@ from .forms import (
     ScanReportFieldConceptForm,
     ScanReportForm,
     UserCreateForm, ScanReportValueConceptForm,
+    ScanReportFieldForm,
 )
 from .models import (
     DataDictionary,
@@ -189,13 +190,15 @@ class ScanReportFieldListView(ListView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
-    fields = [
-        "is_patient_id",
-        "is_date_event",
-        "is_ignore",
-        "pass_from_source",
-        "description_column",
-    ]
+    form_class=ScanReportFieldForm
+    template_name="mapping/scanreportfield_form.html"
+    # fields = [
+    #     "is_patient_id",
+    #     "is_date_event",
+    #     "is_ignore",
+    #     "pass_from_source",
+    #     "description_column",
+    # ]
 
     def get_success_url(self):
         return "{}?search={}".format(
