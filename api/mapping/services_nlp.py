@@ -131,7 +131,7 @@ def start_nlp(search_term):
             document = {
                 "documents": [
                     {"language": "en", "id": field.id,
-                        "text": field.field_description.replace("_", " ")}
+                        "text": field.description_column.replace("_", " ")}
                 ]
             }
 
