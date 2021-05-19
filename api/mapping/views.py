@@ -1,23 +1,21 @@
 import ast
 import json
-from io import StringIO
 import os
-
-import requests
 import time
+from io import StringIO
 
-import coconnect
 import pandas as pd
-from .services_rules import Concept2OMOP
-
+import requests
 from coconnect.tools import dag, mapping_pipeline_helpers
 from coconnect.tools.omop_db_inspect import OMOPDetails
+from data.models import Concept
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.contenttypes.models import ContentType
 from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
@@ -38,12 +36,6 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.fields import GenericRelation
-from django.db.models import F
-
-from data.models import Concept
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
@@ -53,6 +45,7 @@ from .forms import (
     ScanReportFieldConceptForm,
     ScanReportForm,
     UserCreateForm, ScanReportValueConceptForm,
+    ScanReportFieldForm,
 )
 from .models import (
     DataDictionary,
@@ -183,15 +176,8 @@ class ScanReportFieldListView(ListView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldUpdateView(UpdateView):
     model = ScanReportField
-    fields = [
-        "is_patient_id",
-        "is_date_event",
-        "date_type",
-        "is_ignore",
-        "pass_from_source",
-        "classification_system",
-        "description_column",
-    ]
+    form_class=ScanReportFieldForm
+    template_name="mapping/scanreportfield_form.html"
 
     def get_success_url(self):
         return "{}?search={}".format(
@@ -202,7 +188,7 @@ class ScanReportFieldUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
-    fields = ["mapping"]
+    fields = ["mapping"]\
 
     def get_success_url(self):
         return "{}?search={}".format(
@@ -240,6 +226,7 @@ class ScanReportListView(ListView):
         #this is needed so the hide/show buttons can be only turned on
         #by whoever created the report
         context['current_user'] = self.request.user
+        context['filterset'] = self.filterset
         
         return context
         
@@ -249,8 +236,10 @@ class ScanReportListView(ListView):
         qs = super().get_queryset()
         if search_term == "archived":
             qs = qs.filter(hidden=True)
+            self.filterset="Archived"
         else:
             qs = qs.filter(hidden=False)
+            self.filterset="Active"
         return qs
 
 

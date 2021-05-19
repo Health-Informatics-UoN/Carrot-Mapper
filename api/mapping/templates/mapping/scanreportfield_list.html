@@ -25,7 +25,6 @@
                 <th scope="col">Field</th>
                 <th scope="col">Description</th>
                 <th scope="col">Data Type</th>
-		        <th scope="col">Coding System</th>
                 <th scope="col">Concepts</th>
                 <th></th>
                 <th>Edit</th>
@@ -56,9 +55,6 @@
                 </td> 
 
                 <td>
-                    {{ object.classification_system }}
-                </td>
-                <td>
                     {% for concept in object.concepts.all %}
                         
                         {% if concept.nlp_entity %}
@@ -86,7 +82,6 @@
                 </td>
                 <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
                 <td><a href="{% url 'run-nlp' %}?search={{ object.id }}">RunNLP</a></td>
-
             </form>
             </tr>
             {% endfor %}

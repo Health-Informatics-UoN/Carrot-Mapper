@@ -6,9 +6,9 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField, ModelForm
 
-from mapping.models import (OPERATION_CHOICES, DataPartner, Document,
+from mapping.models import (DataPartner, Document,
                             DocumentFile, DocumentType, FLAG_CHOICES, OmopField, OmopTable,
-                            ScanReport, VOCABULARY_CHOICES)
+                            ScanReportField, VOCABULARY_CHOICES)
 from xlsx2csv import Xlsx2csv
 
 
@@ -64,7 +64,7 @@ class ScanReportForm(forms.Form):
         else:
             raise (forms.ValidationError( "Please upload an Excel file"))
 
-                
+
 class UserCreateForm(UserCreationForm):
     email = forms.EmailField(
         required=True, label="Email", error_messages={"exists": "Oops"}
@@ -216,3 +216,19 @@ class ScanReportValueConceptForm(forms.Form):
     concept_id=forms.IntegerField(
 
     )
+
+
+class ScanReportFieldForm(forms.ModelForm):
+    class Meta:
+        model = ScanReportField
+        fields = (
+            "is_patient_id",
+            "is_date_event",
+            "is_ignore",
+            "pass_from_source",
+            "description_column"
+            )
+        widgets = {
+            'description_column': forms.TextInput(attrs={
+            'class': u'form-control'})
+        }

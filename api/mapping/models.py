@@ -3,7 +3,6 @@ To come
 """
 import os
 
-from coconnect.cdm.operations import OperationTools
 from django.conf import settings
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
@@ -19,20 +18,6 @@ STATUS_CHOICES = [
     (STATUS_LIVE, "Live"),
     (STATUS_ARCHIVED, "Archived"),
 ]
-
-OPERATION_NONE = "NONE"
-OPERATION_EXTRACT_YEAR = "EXTRACT_YEAR"
-
-allowed_operations = [
-    (x, x)
-    for x in dir(OperationTools)
-    if x.startswith("get") and callable(getattr(OperationTools, x))
-]
-
-OPERATION_CHOICES = [
-    (OPERATION_NONE, "No operation"),
-]
-OPERATION_CHOICES.extend(allowed_operations)
 
 VOCABULARY_SNOMED = "SNOMED"
 VOCABULARY_ICD10 = "ICD10"
@@ -446,14 +431,12 @@ class ScanReportField(BaseModel):
     )
 
     pass_from_source = models.BooleanField(
-        default=True,
-        blank=True,
-        null=True,
+        default=False,
     )
-
-    # this can be removed
-    # dont want to remove now as will have to mess with migrations
+    
     DATE_TYPE_CHOICES = []  # TODO Remove it or move it to the top of this file
+    
+    # This field is no longer used, and will be removed in the future.
     date_type = models.CharField(
         max_length=128, choices=DATE_TYPE_CHOICES, default="", null=True, blank=True
     )
@@ -521,14 +504,6 @@ class StructuralMappingRule(BaseModel):
     )
 
     term_mapping = models.CharField(max_length=10000, blank=True, null=True)
-
-    operation = models.CharField(
-        max_length=128,
-        choices=OPERATION_CHOICES,
-        default=OPERATION_NONE,
-        null=True,
-        blank=True,
-    )
 
     approved = models.BooleanField(default=False)
 
@@ -696,7 +671,3 @@ class NLPModel(models.Model):
 
     def __str__(self):
         return str(self.id)
-
-
-
-
