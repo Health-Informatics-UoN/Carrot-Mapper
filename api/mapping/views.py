@@ -151,9 +151,7 @@ class ScanReportTableUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ListView):
     model = ScanReportField
-    # fields = ["is_patient_id", "date_type", "concept_id"]
     fields = ["concept_id"]
-    # # exclude = []
     template_name="mapping/scanreportfield_list.html"
     factory_kwargs = {"can_delete": False, "extra": False}
 

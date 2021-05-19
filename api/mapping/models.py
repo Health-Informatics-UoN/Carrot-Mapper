@@ -460,6 +460,9 @@ class ScanReportField(BaseModel):
 
     concept_id = models.IntegerField(
         default=-1,
+        blank=True,
+        null=True,
+        # This field is not used anymore
     )
 
     concepts = GenericRelation(
