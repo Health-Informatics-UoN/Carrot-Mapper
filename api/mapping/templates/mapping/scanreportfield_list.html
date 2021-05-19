@@ -23,8 +23,9 @@
             <thead>
             <tr>
                 <th scope="col">Field</th>
+                <th scope="col">Description</th>
                 <th scope="col">Data Type</th>
-		        <th scope="col">Classification System</th>
+		        <th scope="col">Coding System</th>
                 <th scope="col">Concepts</th>
                 <th></th>
                 <th>Edit</th>
@@ -46,6 +47,9 @@
                         
                     </td>
                 {% endif %}
+                <td>
+                    {{object.description_column}}
+                </td>
                 <td>
                     {{ object.type_column }}
                 </td> 
