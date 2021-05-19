@@ -1,7 +1,13 @@
 import ast
 import json
 from io import StringIO
+import os
 
+import requests
+import time
+
+import coconnect
+import pandas as pd
 from .services_rules import Concept2OMOP
 
 from coconnect.tools import dag, mapping_pipeline_helpers
@@ -32,6 +38,11 @@ from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
 from extra_views import ModelFormSetView
 
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
+from django.db.models import F
+
 from data.models import Concept
 from .forms import (
     DictionarySelectForm,
@@ -39,6 +50,7 @@ from .forms import (
     DocumentForm,
     NLPForm,
     ScanReportAssertionForm,
+    ScanReportFieldConceptForm,
     ScanReportForm,
     UserCreateForm, ScanReportValueConceptForm,
 )
@@ -55,6 +67,8 @@ from .models import (
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
 )
+from .services import process_scan_report
+from .services_nlp import get_json_from_nlpmodel, nlp_request
 from .services_datadictionary import merge_external_dictionary
 from .services_nlp import get_json_from_nlpmodel
 from .tasks import (
@@ -135,11 +149,10 @@ class ScanReportTableUpdateView(UpdateView):
         )
 
 @method_decorator(login_required, name="dispatch")
-class ScanReportFieldListView(ModelFormSetView):
+class ScanReportFieldListView(ListView):
     model = ScanReportField
-    fields = ["is_patient_id", "date_type", "concept_id"]
-    fields = ["is_patient_id", "is_birth_date", "is_date_event", "concept_id"]
-    # exclude = []
+    fields = ["concept_id"]
+    template_name="mapping/scanreportfield_list.html"
     factory_kwargs = {"can_delete": False, "extra": False}
 
     def get_queryset(self):
@@ -152,7 +165,7 @@ class ScanReportFieldListView(ModelFormSetView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-
+    
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report_table.scan_report
             scan_report_table = self.get_queryset()[0].scan_report_table
@@ -183,6 +196,7 @@ class ScanReportFieldUpdateView(UpdateView):
         "is_ignore",
         "pass_from_source",
         "classification_system",
+        "description_column",
     ]
 
     def get_success_url(self):
@@ -1195,6 +1209,259 @@ class NLPDetailView(DetailView):
             context = {"user_string": query.user_string, "results": json_response}
             return context
 
+def run_nlp(request):
+
+    # Grab the scan report ID and assertions
+    search_term = request.GET.get("search", None)
+    assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
+    neg_assertions = assertions.values_list("negative_assertion")
+    
+    # Get Data Dictionary Entries for the Scan Report
+    # This returns a queryset of *all* entries in the dict model
+    dict_entries = DataDictionary.objects.filter(
+                source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+            )
+
+    # Create an NLP string field from DataDictionary Objects
+    qs = dict_entries.annotate(
+                nlp_string=Concat(
+                    "source_value__value",
+                    V(", "),
+                    "source_value__scan_report_field__name",
+                    output_field=CharField(),
+                )
+            )
+    
+    # Logic here for what concatenated fields to send to NLP
+    # if dictionary_field_description and dictionary_value_description is Null:
+        #concatenate source_field and source_value
+    # else if:
+        # dictionary_field_description OR dictionary_value_description is Null:
+            #concatenate source field or value with whatever is present from the data dictionary
+    # else:
+        #concatenate dictionary_field_description and dictionary_value_description
+    
+
+    # Grabs ScanReportFields where pass_from_source=True, makes list distinct
+    qs_1 = (
+        qs.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+        )
+        .filter(source_value__scan_report_field__pass_from_source=True)
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value="List truncated...")
+        .distinct("source_value__scan_report_field")
+        .order_by("source_value__scan_report_field")
+        .annotate(
+                src=Concat(
+                    V("field"),V(""),
+                    output_field=CharField(),
+                )
+            )
+    )
+    
+    # Grabs everything but removes all where pass_from_source=False
+    # Filters out negative assertions and 'List truncated...'
+    qs_2 = (
+        qs.filter(
+            source_value__scan_report_field__scan_report_table__scan_report__id=search_term
+        )
+        .filter(source_value__scan_report_field__pass_from_source=False)
+        .filter(source_value__scan_report_field__is_patient_id=False)
+        .filter(source_value__scan_report_field__is_date_event=False)
+        .filter(source_value__scan_report_field__is_ignore=False)
+        .exclude(source_value__value="List truncated...")
+        .exclude(source_value__value__in=neg_assertions)
+        .annotate(
+            src=Concat(
+                V("value"),V(""),
+                output_field=CharField(),
+            )
+        )
+    )
+
+    # Stick qs_1 and qs_2 together
+    qs_total = qs_1.union(qs_2)
+
+    # Create object to convert to JSON
+    # For now, work only on source fields and values
+    for_json = qs_total.values_list(
+        "id",
+        "source_value__value",
+        "source_value__scan_report_field__name",
+        "nlp_string",
+        "src"
+    )
+    
+    
+    # Create small df to hold information the strings sent to NLP
+    # Coerce id column from int to str to it can be left joined to
+    # the dataframe returned from the NLP service
+    strings = pd.DataFrame(list(for_json.values()))
+    strings['id']=strings['id'].astype(str)
+        
+    # Translate queryset into JSON-like dict for NLP
+    documents = []
+    for row in for_json:
+        documents.append(
+            {
+                "language": "en", 
+                "id": row[0], 
+                "text": row[3]
+                }
+        )
+
+    # Define NLP URL/headers
+    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
+    headers = {
+        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
+        "Content-Type": "application/json; utf-8",
+    }
+
+    # POST Request(s)
+    # Short wait at end of submission to let the API catch up
+    chunk_size = 10  # Set chunk size (max=10)
+    post_response_url = []
+    for i in range(0, len(documents), chunk_size):
+        chunk = {"documents": documents[i : i + chunk_size]}
+        payload = json.dumps(chunk)
+        response = requests.post(url, headers=headers, data=payload)
+        print(response.status_code, response.reason, response.headers["operation-location"])
+        post_response_url.append(response.headers["operation-location"])
+        
+    # GET the response
+    get_response = []
+    for url in post_response_url:
+        
+        print("PROCESSING JOB >>>", url)
+        req = requests.get(url, headers=headers)
+        job = req.json()
+
+        while job["status"] != "succeeded":
+            req = requests.get(url, headers=headers)
+            job = req.json()
+            print("Waiting...")
+            time.sleep(3)
+        else:
+            get_response.append(job["results"])
+            print("Done!")
+            
+    codes = []
+    keep = ["ICD9", "ICD10", "RXNORM", "SNOMEDCT_US", "SNOMED"]
+
+    # Mad nested for loops to get at the data in the response
+    for url in get_response:
+        for dict_entry in url["documents"]:
+            for entity in dict_entry["entities"]:
+                if "links" in entity.keys():
+                    for link in entity["links"]:
+                        if link["dataSource"] in keep:
+                            codes.append(
+                                [
+                                    dict_entry["id"],
+                                    entity["text"],
+                                    entity["category"],
+                                    entity["confidenceScore"],
+                                    link["dataSource"],
+                                    link["id"],
+                                ]
+                            )
+
+    codes_df = pd.DataFrame(
+        codes, columns=["key", "entity", "category", "confidence", "vocab", "code"]
+    )
+    
+    print(codes_df)
+        
+    # def get_conceptid_from_conceptcode(concept_code, vocabulary):
+    #     '''
+    #     A small function to return a standard and valid conceptID 
+    #     from given vocabulary and concept_code
+        
+    #     Correct example: get_conceptid_from_conceptcode(concept_code="R51", vocabulary="ICD10")
+    #     Incorrect example (Incorrect vocabulary for concept code): 
+    #         get_conceptid_from_conceptcode(concept_code="263731006", vocabulary="ICD10")
+    #     '''
+    #     try:
+    #         concept_id=Concept.objects.filter(concept_code=concept_code).filter(vocabulary_id=vocabulary)
+    #         return concept_id
+    #     except:
+    #         print("The supplied concept code/vocabulary combination is incorrect. Please double check.") 
+            
+    # This block looks up each concept *code* in codes_df 
+    # and returns an OMOP standard conceptID
+    results = []
+    for index, row in codes_df.iterrows():
+        # results.append(omop_lookup.lookup_code(row["code"]))
+        results.append(Concept.objects.get(concept_code=row["code"], vocabulary_id__in=keep))
+        
+    # Convert results list into a pandas dataframe    
+    full_results = pd.concat(results, ignore_index=True)
+
+    # Left join looked up conceptIDs with the return from NLP
+    full_results = full_results.merge(
+        codes_df, left_on="concept_code", right_on="code"
+    )
+        
+    full_results = full_results.merge(
+        strings, left_on="key", right_on="id"
+    )
+    
+    print(full_results)
+            
+    full_results = full_results.values.tolist()
+
+    for result in full_results:
+        
+        if result[30] == "value":
+            concept = Concept.objects.get(concept_id=result[11])
+            mod = ContentType.objects.get_for_model(ScanReportValue)
+            ScanReportConcept.objects.create(
+                concept_id = concept,
+                nlp_entity = result[14],
+                nlp_entity_type = result[15],
+                nlp_confidence = result[16],
+                nlp_vocabulary = result[3],
+                nlp_concept_code = result[6],
+                nlp_processed_string = result[29],
+                
+                content_type = mod,
+                object_id = result[13],
+        )
+            
+        else:
+            obj = ScanReportValue.objects.get(id=result[13])
+            pk = obj.scan_report_field.id
+            mod = ContentType.objects.get_for_model(ScanReportField)
+            
+            ScanReportConcept.objects.create(
+                concept_id = result[11],
+                nlp_entity = result[14],
+                nlp_entity_type = result[15],
+                nlp_confidence = result[16],
+                nlp_vocabulary = result[3],
+                nlp_concept_code = result[6],
+                nlp_processed_string = result[29],
+                
+                content_type = mod,
+                object_id = pk,
+            )
+        
+    # This function is called from services_nlp.py
+    # nlp_request(search_term=search_term)
+    
+    return render(request, "mapping/home.html")
+    obj = DataDictionary.objects.get(
+                source_value__scan_report_field__name=row["Source_Field"],
+                source_value__value=row["Source_Value"],
+            )
+
+@method_decorator(login_required, name="dispatch")
+class NLPResultsListView(ListView):
+    model = ScanReportConcept
+    
 
 def save_scan_report_value_concept(request):
     if request.method == "POST":
@@ -1238,3 +1505,48 @@ def delete_scan_report_value_concept(request):
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/values/?search={}".format(scan_report_field_id))
+
+
+def save_scan_report_field_concept(request):
+    if request.method == "POST":
+        form = ScanReportFieldConceptForm(request.POST)
+        if form.is_valid():
+            
+            scan_report_field = ScanReportField.objects.get(
+                pk=form.cleaned_data['scan_report_field_id']
+            )
+
+            try:
+                concept = Concept.objects.get(
+                    concept_id=form.cleaned_data['concept_id']
+                )
+            except Concept.DoesNotExist:
+                messages.error(request,
+                                 "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
+                return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
+
+            scan_report_concept = ScanReportConcept.objects.create(
+                concept=concept,
+                content_object=scan_report_field,
+            )
+
+            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+
+            return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
+
+
+def delete_scan_report_field_concept(request):
+    
+    scan_report_table_id=request.GET.get('scan_report_table_id')
+    scan_report_concept_id = request.GET.get('scan_report_concept_id')
+
+    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
+
+    concept_id = scan_report_concept.concept.concept_id
+    concept_name = scan_report_concept.concept.concept_name
+
+    scan_report_concept.delete()
+
+    messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
+
+    return redirect("/fields/?search={}".format(scan_report_table_id))

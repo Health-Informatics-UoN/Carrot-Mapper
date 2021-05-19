@@ -91,7 +91,6 @@ class Source(BaseModel):
     )
 
     class Meta:
-        db_table = "source"
         verbose_name = "Source"
         verbose_name_plural = "Sources"
 
@@ -113,7 +112,6 @@ class Mapping(BaseModel):
     )
 
     class Meta:
-        db_table = "mapping"
         verbose_name = "Mapping"
         verbose_name_plural = "Mappings"
 
@@ -144,7 +142,6 @@ class DataPartner(BaseModel):
     )
 
     class Meta:
-        db_table = "datapartner"
         verbose_name = "Data Partner"
         verbose_name_plural = "Data Partners"
         constraints = [
@@ -199,7 +196,6 @@ class DocumentType(BaseModel):
     )
 
     class Meta:
-        db_table = "documenttype"
         verbose_name = "Document Type"
         verbose_name_plural = "Document Types"
         constraints = [
@@ -272,9 +268,6 @@ class ScanReportConcept(BaseModel):
     content_object = GenericForeignKey(
 
     )
-
-    class Meta:
-        db_table = "mapping_scanreportconcept"
 
     def __str__(self):
         return str(self.id)
@@ -467,10 +460,15 @@ class ScanReportField(BaseModel):
 
     concept_id = models.IntegerField(
         default=-1,
-        null=True,
         blank=True,
+        null=True,
+        # This field is not used anymore
     )
 
+    concepts = GenericRelation(
+        ScanReportConcept,
+    )
+    
     def __str__(self):
         return str(self.id)
 

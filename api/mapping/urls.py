@@ -20,6 +20,8 @@ urlpatterns = [
     path('scanreports/<int:pk>/assertions/', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
     path('scanreports/<int:pk>/assertions/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
     path('scanreports/assertions/<int:pk>/update/', views.ScanReportAssertionsUpdateView.as_view(), name='scan-report-assertion-update'),
+    path('scanreports/field-concepts/', views.save_scan_report_field_concept, name="scan_report_field_concept"),
+    path('scanreports/field-concepts/delete/', views.delete_scan_report_field_concept, name="scan_report_field_concept-delete"),
     path('scanreports/value-concepts/', views.save_scan_report_value_concept, name="scan_report_value_concept"),
     path('scanreports/value-concepts/delete/', views.delete_scan_report_value_concept, name="scan_report_value_concept-delete"),
 
@@ -31,6 +33,8 @@ urlpatterns = [
     path('nlp/', views.NLPListView.as_view(), name='nlp'),
     path('nlp/create/', views.NLPFormView.as_view(), name='nlp-form'),
     path('nlp/<int:pk>/', views.NLPDetailView.as_view(), name='nlp-view-query'),
+    path('nlp/run', views.run_nlp, name='run-nlp'),
+    path('nlp/results', views.NLPResultsListView.as_view(), name='nlp-view-results'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),

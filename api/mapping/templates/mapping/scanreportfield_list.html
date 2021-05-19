@@ -17,20 +17,16 @@
 <h2>Fields</h2>
 
 {% if object_list %}
-<form id="my_form" method="post">
-    {% csrf_token %} 
-     {{ formset.management_form }}
-    <div class="form-group">
+
+    <div>
         <table class="table">
             <thead>
             <tr>
                 <th scope="col">Field</th>
+                <th scope="col">Description</th>
                 <th scope="col">Data Type</th>
-		        <th scope="col">Classification System</th>
-                <th scope="col">Is Patient ID</th>
-		<th scope="col">Birth Date</th>
-		<th scope="col">Date Event</th>
-                <th scope="col">Concept ID</th>
+		        <th scope="col">Coding System</th>
+                <th scope="col">Concepts</th>
                 <th></th>
                 <th>Edit</th>
             </tr>
@@ -38,39 +34,49 @@
             <tbody>
             {% for object in object_list %}
             <tr>
+                <form class="" method="post" action="{% url 'scan_report_field_concept' %}">
+                    {% csrf_token %}
                 {% if object.concept_id == -1 %}
                     <td><a href="{% url 'values' %}?search={{ object.id }}">
                         {{ object.name| truncatechars:20 }}</a>
+                        
                     </td>
                 {% else %}
                     <td>
                         {{ object.name| truncatechars:20 }}
+                        
                     </td>
                 {% endif %}
                 <td>
-                    {{ object.type_column }}
+                    {{object.description_column}}
                 </td>
-		<td>
-		  {{ object.classification_system }}
-		</td>
-                {## set i to be the index of the value we're on ##} 
-                    {% with i=forloop.counter %}
-                     {## loop over the formset (editable fields) ##}
-                        {% for form in formset  %}
-                        {% if forloop.counter == i%}
-                            {% for field in form %}
-                                <td> {{field}} </td>
-                            {% endfor %} 
-                        {% endif %}
-                        {% endfor %}
-	        {% endwith %}
-                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
+                <td>
+                    {{ object.type_column }}
+                </td> 
 
+                <td>
+                    {{ object.classification_system }}
+                </td>
+                <td>
+                    {% for concept in object.concepts.all %}
+                        <span>
+                            {{ concept.concept.concept_id }} -
+                            {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                    {% endfor %}
+                </td>
+                <td>
+                    <input type="hidden" name="scan_report_field_id" required id="id_scan_report_field_id" value="{{ object.id }}">
+                    <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </td>
+                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
+            </form>
             </tr>
             {% endfor %}
             </tbody>
         </table>
-        <button type="submit" class="btn btn-primary">Save</button>
+       
         <!--<div class="form-row">
             <input type="submit" class="btn btn-primary" name="update"
                    value="Update">
@@ -80,7 +86,7 @@
                    value="Run Usagi">
         </div>-->
     </div>
-</form>
+
 {% endif %}
 
 <script type="text/javascript">
