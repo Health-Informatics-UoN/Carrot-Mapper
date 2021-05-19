@@ -10,12 +10,12 @@
     </ol>
 </nav>
 
-<h2>Scan Reports
+<h2>Scan Reports-{{filterset}}
   <a href="{% url 'scan-report-list' %}?filter=archived">
-    <button type="button" class="float-end btn btn-secondary mx-1">Archived Reports</button>
+    <button type="button" class="float-end btn btn-primary mx-1">Archived Reports</button>
   </a>
   <a href="{% url 'scan-report-list' %}">
-    <button type="button" class="float-end btn btn-primary mx-1">Valid Reports</button>
+    <button type="button" class="float-end btn btn-primary mx-1">Active Reports</button>
   </a>
 </h2>
 

@@ -194,7 +194,6 @@ class ScanReportFieldUpdateView(UpdateView):
         "is_date_event",
         "is_ignore",
         "pass_from_source",
-        "classification_system",
         "description_column",
     ]
 
@@ -207,7 +206,7 @@ class ScanReportFieldUpdateView(UpdateView):
 @method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
-    fields = ["mapping"]
+    fields = ["mapping"]\
 
     def get_success_url(self):
         return "{}?search={}".format(
@@ -245,6 +244,7 @@ class ScanReportListView(ListView):
         #this is needed so the hide/show buttons can be only turned on
         #by whoever created the report
         context['current_user'] = self.request.user
+        context['filterset'] = self.filterset
         
         return context
         
@@ -254,8 +254,10 @@ class ScanReportListView(ListView):
         qs = super().get_queryset()
         if search_term == "archived":
             qs = qs.filter(hidden=True)
+            self.filterset="Archived"
         else:
             qs = qs.filter(hidden=False)
+            self.filterset="Active"
         return qs
 
 
