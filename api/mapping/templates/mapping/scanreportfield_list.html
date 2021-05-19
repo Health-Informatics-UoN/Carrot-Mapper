@@ -28,6 +28,7 @@
                 <th scope="col">Concepts</th>
                 <th></th>
                 <th>Edit</th>
+                <th>Run NLP</th>
             </tr>
             </thead>
             <tbody>
@@ -55,10 +56,23 @@
 
                 <td>
                     {% for concept in object.concepts.all %}
+                        
+                        {% if concept.nlp_entity %}
+                        <span style="color:blue">
+                            {{ concept.concept.concept_id }} - 
+                            {{ concept.concept.concept_name }}
+                            ({{ concept.concept.domain_id }}) - 
+                            Confidence={{concept.nlp_confidence}} - 
+                            {{concept.nlp_vocabulary}}
+                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                        {% else %}
                         <span>
                             {{ concept.concept.concept_id }} -
                             {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
-                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
+                            <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a>
+                        </span> 
+
+                        {% endif %}
                     {% endfor %}
                 </td>
                 <td>
@@ -66,8 +80,8 @@
                     <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
                     <button type="submit" class="btn btn-primary">Add</button>
                 </td>
-
-                <td><a href="{% url 'scan-report-field-update' object.id %}"><button type="button" class="btn btn-success">Edit Field</button></a></td>
+                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
+                <td><a href="{% url 'run-nlp' %}?search={{ object.id }}">RunNLP</a></td>
             </form>
             </tr>
             {% endfor %}

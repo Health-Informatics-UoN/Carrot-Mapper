@@ -1,9 +1,6 @@
-
 from celery import shared_task
 from .models import ScanReport, NLPModel
 from .services import process_scan_report
-from .services_nlp import nlp_single_string
-
 
 @shared_task
 def add(x, y):
@@ -36,8 +33,5 @@ def rename_scanreport(scanreport_id, name):
 def process_scan_report_task(scan_report_id):
     process_scan_report(scan_report_id)
 
-    
-@shared_task
-def nlp_single_string_task(pk, dict_string):
-    nlp_single_string(pk=pk, dict_string=dict_string)
+
 
