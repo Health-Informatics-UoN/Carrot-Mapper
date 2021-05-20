@@ -86,11 +86,14 @@ def concept_code_to_id(codes):
         "conceptid",
     ]
     for item in codes:
-        x = get_concept_from_concept_code(
-            concept_code=str(item[5]), vocabulary_id=str(item[4])
-        )
-        item.append(x[1].concept_id)
-        codes_dict.append(dict(zip(keys, item)))
+        try:
+            x = get_concept_from_concept_code(
+                concept_code=str(item[5]), vocabulary_id=str(item[4])
+            )
+            item.append(x[1].concept_id)
+            codes_dict.append(dict(zip(keys, item)))
+        except:
+            logger.info("Concept Code", item[5], "not found!")
 
     return codes_dict
 
@@ -117,7 +120,7 @@ def start_nlp(search_term):
     if field.pass_from_source:
         # We want to use the field description if available
         # However, we fall back to field name if field_description is None
-        if field.field_description is None:
+        if field.description_column is None:
             document = {
                 "documents": [
                     {"language": "en", "id": field.id,
