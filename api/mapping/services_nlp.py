@@ -86,11 +86,14 @@ def concept_code_to_id(codes):
         "conceptid",
     ]
     for item in codes:
-        x = get_concept_from_concept_code(
-            concept_code=str(item[5]), vocabulary_id=str(item[4])
-        )
-        item.append(x[1].concept_id)
-        codes_dict.append(dict(zip(keys, item)))
+        try:
+            x = get_concept_from_concept_code(
+                concept_code=str(item[5]), vocabulary_id=str(item[4])
+            )
+            item.append(x[1].concept_id)
+            codes_dict.append(dict(zip(keys, item)))
+        except:
+            logger.info("Concept Code", item[5], "not found!")
 
     return codes_dict
 
