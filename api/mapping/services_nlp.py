@@ -117,7 +117,7 @@ def start_nlp(search_term):
     if field.pass_from_source:
         # We want to use the field description if available
         # However, we fall back to field name if field_description is None
-        if field.field_description is None:
+        if field.description_column is None:
             document = {
                 "documents": [
                     {"language": "en", "id": field.id,
