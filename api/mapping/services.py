@@ -40,12 +40,25 @@ def get_concept_from_concept_code(concept_code,
       OR
       concept(Concept)
     """
+    
+    # NLP returns SNOMED as SNOWMEDCT_US
+    # This sets SNOWMEDCT_US to SNOWMED if this function is
+    # used within services_nlp.py
+    if vocabulary_id == 'SNOMEDCT_US':
+        vocabulary_id="SNOMED"
+
+    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert    
+    if vocabulary_id=="RXNORM":
+        vocabulary_id="RxNorm"
+    else:
+        vocabulary_id=vocabulary_id
+
     #obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
         concept_code = concept_code,
         vocabulary_id = vocabulary_id
     )
-
+    
     #if the source_concept is standard
     if source_concept.standard_concept == 'S':
         #the concept is the same as the source_concept
@@ -192,7 +205,7 @@ def process_scan_report(scan_report_id):
                         is_patient_id=False,
                         is_date_event=False,
                         is_ignore=False,
-                        pass_from_source=False,
+                        pass_from_source=True,
                         classification_system=row[11],
                     )
                     scanreport.flag_column=scanreport.flag_column.lower()
@@ -210,11 +223,7 @@ def process_scan_report(scan_report_id):
                          scanreport.is_ignore = True
                     else:
                          scanreport.is_ignore = False
-
-                    if scanreport.flag_column == "passsource":
-                         scanreport.pass_from_source = True
-                    else:
-                         scanreport.pass_from_source = False
+                         
                     scanreport.save()
 
     # For sheets past the first two in the scan Report

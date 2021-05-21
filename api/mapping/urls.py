@@ -20,6 +20,8 @@ urlpatterns = [
     path('scanreports/<int:pk>/assertions/', views.ScanReportAssertionView.as_view(), name='scan-report-assertion'),
     path('scanreports/<int:pk>/assertions/create/', views.ScanReportAssertionFormView.as_view(), name='scan-report-assertion-form'),
     path('scanreports/assertions/<int:pk>/update/', views.ScanReportAssertionsUpdateView.as_view(), name='scan-report-assertion-update'),
+    path('scanreports/field-concepts/', views.save_scan_report_field_concept, name="scan_report_field_concept"),
+    path('scanreports/field-concepts/delete/', views.delete_scan_report_field_concept, name="scan_report_field_concept-delete"),
     path('scanreports/value-concepts/', views.save_scan_report_value_concept, name="scan_report_value_concept"),
     path('scanreports/value-concepts/delete/', views.delete_scan_report_value_concept, name="scan_report_value_concept-delete"),
 
