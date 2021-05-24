@@ -1,9 +1,29 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
-from django.urls import path
+from django.urls import incldue,path
+from rest_framework import routers
 
 from . import views
+
+routers=routers.DefaultRouter()
+
+
+routers.register(r'omop/concepts', views.ConceptViewSet,basename='concepts')
+routers.register(r'omop/vocabularies', views.VocabularyViewSet,basename='vocabularies')
+routers.register(r'omop/conceptrelationships', views.ConceptRelationshipViewSet,basename='conceptrelationships')
+routers.register(r'omop/conceptancestors', views.ConceptAncestorViewSet, basename='conceptancestors')
+routers.register(r'omop/conceptclasses', views.ConceptClassViewSet,basename='conceptclasses')
+routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='conceptsynonyms')
+routers.register(r'omop/domains', views.DomainViewSet,basename='domains')
+routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drugstrengths')
+
+
+routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
+routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='scanreporttables')
+routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
+routers.register(r'scanreportvalues', views.ScanReportValuesViewSet,basename='scanreportvalues')
+routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 
 urlpatterns = [
     path('', views.home, name='home'),
