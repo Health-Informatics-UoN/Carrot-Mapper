@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
-from django.urls import incldue,path
+from django.urls import include,path
 from rest_framework import routers
 
 from . import views
@@ -26,6 +26,9 @@ routers.register(r'scanreportvalues', views.ScanReportValuesViewSet,basename='sc
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 
 urlpatterns = [
+    path('api/',include(routers.urls)),
+    path('api_auth/',include('rest_framework.urls',namespace='rest_framework')),
+    
     path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('tables/<int:pk>/update/', views.ScanReportTableUpdateView.as_view(), name='scan-report-table-update'),
