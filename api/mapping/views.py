@@ -1,4 +1,5 @@
 import ast
+import base64
 import json
 import os
 from io import StringIO
@@ -768,11 +769,15 @@ class ScanReportFormView(FormView):
         }
         
         queue_message=json.dumps(azure_dict)
+        message_bytes = queue_message.encode('ascii')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_message = base64_bytes.decode('ascii')
+        
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("CONN_STRING"),
             queue_name="new-scanreports"
         )
-        queue.send_message(queue_message)
+        queue.send_message(base64_message)
         process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)

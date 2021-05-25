@@ -144,7 +144,6 @@ class DataPartner(BaseModel):
     )
 
     class Meta:
-        db_table = "datapartner"
         verbose_name = "Data Partner"
         verbose_name_plural = "Data Partners"
         constraints = [
