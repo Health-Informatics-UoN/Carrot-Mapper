@@ -21,11 +21,9 @@
     <tr>
         <th scope="col">Name</th>
         <th scope="col">Person ID</th>
-	<th scope="col">Birth Date</th>
-	<th scope="col">Measurement Date</th>
-	<th scope="col">Observation Date</th>
-	<th scope="col">Condition Date</th>
-	<th>Edit</th>
+		<th scope="col">Birth Date</th>
+		<th scope="col">Event Date</th>
+	
 
     </tr>
     </thead>
@@ -47,33 +45,16 @@
 	{{ object.birth_date.name }} 
 	{% endif %}
 	</td>
-
-	<td>
-	{% if object.measurement_date %}
-	{{ object.measurement_date.name }} 
-	{% endif %}
-	</td>
-	<td>
-	{% if object.observation_date %}
-	{{ object.observation_date.name }} 
-	{% endif %}
-	</td>
-	<td>
-	{% if object.condition_date %}
-	{{ object.condition_date.name }} 
-	{% endif %}
-	</td>
-
 	
-	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
-	
+	<td></td>
+
     </tr>
     {% endfor %}
     </tbody>
 </table>
 
 <a href="{% url 'tables-structural-mapping' scan_report.id %}">
-  <button type="button" class="btn btn-info">Goto Rules</button>
+  <button type="button" class="btn btn-info">Go to Rules</button>
 </a>
 
 

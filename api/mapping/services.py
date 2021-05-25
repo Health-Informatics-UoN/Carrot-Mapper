@@ -17,7 +17,6 @@ from .models import (
 )
 
 
-
 def process_scan_report_sheet_table(filename):
     """
     This function converts a White Rabbit scan report to CSV and extract the
@@ -132,7 +131,7 @@ def process_scan_report(scan_report_id):
                         is_patient_id=False,
                         is_date_event=False,
                         is_ignore=False,
-                        pass_from_source=False,
+                        pass_from_source=True,
                         classification_system=row[11],
                     )
                     scanreport.flag_column=scanreport.flag_column.lower()
@@ -150,11 +149,7 @@ def process_scan_report(scan_report_id):
                          scanreport.is_ignore = True
                     else:
                          scanreport.is_ignore = False
-
-                    if scanreport.flag_column == "passsource":
-                         scanreport.pass_from_source = True
-                    else:
-                         scanreport.pass_from_source = False
+                         
                     scanreport.save()
 
     # For sheets past the first two in the scan Report
