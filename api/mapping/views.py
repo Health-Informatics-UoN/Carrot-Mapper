@@ -4,6 +4,37 @@ import os
 import time
 from io import StringIO
 
+from rest_framework import viewsets
+from .serializers import (
+    ScanReportSerializer,
+    ScanReportTableSerializer,
+    ScanReportFieldSerializer,
+    ScanReportValueSerializer,    
+    ScanReportConceptSerializer,
+)
+from .serializers import (
+    ConceptSerializer,
+    VocabularySerializer,
+    ConceptRelationshipSerializer,
+    ConceptAncestorSerializer,
+    ConceptClassSerializer,
+    ConceptSynonymSerializer,
+    DomainSerializer,
+    DrugStrengthSerializer,
+)
+from django_filters.rest_framework import DjangoFilterBackend
+from data.models import (
+    Concept,
+    Vocabulary,
+    ConceptRelationship,
+    ConceptAncestor,
+    ConceptClass,
+    ConceptSynonym,
+    Domain,
+    DrugStrength,
+)
+
+
 import pandas as pd
 from azure.storage.queue import QueueClient
 from data.models import Concept
@@ -58,13 +89,115 @@ from .models import (
     StructuralMappingRule, ScanReportConcept,
 )
 from .services import process_scan_report
-from .services_nlp import start_nlp, get_json_from_nlpmodel
+from .services_nlp import start_nlp
 from .services_datadictionary import merge_external_dictionary
 
 from .tasks import (
-    nlp_single_string_task,
+    
     process_scan_report_task,
 )
+
+class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Concept.objects.all()
+    serializer_class=ConceptSerializer
+class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Vocabulary.objects.all()
+    serializer_class=VocabularySerializer
+
+class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptRelationship.objects.all()
+    serializer_class=ConceptRelationshipSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']
+
+class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptAncestor.objects.all()
+    serializer_class=ConceptAncestorSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['ancestor_concept_id', 'descendant_concept_id']
+    
+class ConceptClassViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptClass.objects.all()
+    serializer_class=ConceptClassSerializer
+
+class ConceptSynonymViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptSynonym.objects.all()
+    serializer_class=ConceptSynonymSerializer
+
+class DomainViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Domain.objects.all()
+    serializer_class=DomainSerializer
+
+class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=DrugStrength.objects.all()
+    serializer_class=DrugStrengthSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['drug_concept_id', 'ingredient_concept_id']    
+
+class ScanReportViewSet(viewsets.ModelViewSet):
+    queryset=ScanReport.objects.all()
+    serializer_class=ScanReportSerializer
+
+class ScanReportTableViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportTable.objects.all()
+    serializer_class=ScanReportTableSerializer
+
+class ScanReportFieldViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportField.objects.all()
+    serializer_class=ScanReportFieldSerializer
+
+class ScanReportConceptViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportConcept.objects.all()
+    serializer_class=ScanReportConceptSerializer
+
+class ScanReportValuesViewSet(viewsets.ModelViewSet):
+    model = ScanReportValue    
+    serializer_class=ScanReportValueSerializer    
+    fields = ["conceptID"]
+    factory_kwargs = {"can_delete": False, "extra": False}
+
+    def get_queryset(self):
+        search_term = self.request.GET.get("search", None)
+
+        if search_term is not None:
+            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
+            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by('value')
+        else:
+            qs = ScanReportValue.objects.all()
+
+        return qs
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+
+        if len(self.get_queryset()) > 0:
+            # scan_report = self.get_queryset()[0].scan_report_table.scan_report
+            # scan_report_table = self.get_queryset()[0].scan_report_table
+            scan_report = self.get_queryset()[
+                0
+            ].scan_report_field.scan_report_table.scan_report
+            scan_report_table = self.get_queryset()[
+                0
+            ].scan_report_field.scan_report_table
+            scan_report_field = self.get_queryset()[0].scan_report_field
+            scan_report_value = self.get_queryset()[0]
+        else:
+            scan_report = None
+            scan_report_table = None
+            scan_report_field = None
+            scan_report_value = None
+
+        context.update(
+            {
+                "scan_report": scan_report,
+                "scan_report_table": scan_report_table,
+                "scan_report_field": scan_report_field,
+                "scan_report_value": scan_report_value,
+            }
+        )
+
+        return context
 
 @login_required
 def home(request):
