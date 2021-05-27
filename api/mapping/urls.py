@@ -1,11 +1,45 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.decorators import login_required
-from django.urls import path
+from django.urls import include,path
+from rest_framework import routers
 
 from . import views
 
+routers=routers.DefaultRouter()
+
+
+routers.register(r'omop/concepts', views.ConceptViewSet,basename='concepts')
+routers.register(r'omop/vocabularies', views.VocabularyViewSet,basename='vocabularies')
+routers.register(r'omop/conceptrelationships', views.ConceptRelationshipViewSet,basename='conceptrelationships')
+routers.register(r'omop/conceptancestors', views.ConceptAncestorViewSet, basename='conceptancestors')
+routers.register(r'omop/conceptclasses', views.ConceptClassViewSet,basename='conceptclasses')
+routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='conceptsynonyms')
+routers.register(r'omop/domains', views.DomainViewSet,basename='domains')
+routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drugstrengths')
+
+
+routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
+routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='scanreporttables')
+routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
+routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
+routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
+routers.register(r'mappings',views.MappingViewSet,basename='mappings')
+routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
+routers.register(r'datadictionaries',views.DataDictionaryViewSet,basename='DataDictionaries')
+routers.register(r'documents',views.DocumentViewSet,basename='documents')
+routers.register(r'documentfiles',views.DocumentFileViewSet,basename='documentfiles')
+routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners')
+routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
+routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
+routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
+routers.register(r'sources',views.SourceViewSet,basename='sources')
+routers.register(r'documenttypes',views.DocumentTypeViewSet,basename='documenttypes')
+
 urlpatterns = [
+    path('api/',include(routers.urls)),
+    path('api_auth/',include('rest_framework.urls',namespace='rest_framework')),
+    
     path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('tables/<int:pk>/update/', views.ScanReportTableUpdateView.as_view(), name='scan-report-table-update'),
