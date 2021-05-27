@@ -21,6 +21,7 @@ from .serializers import (
     OmopFieldSerializer,
     StructuralMappingRuleSerializer,
     SourceSerializer,
+    DocumentTypeSerializer,    
 )
 from .serializers import (
     ConceptSerializer,
@@ -90,6 +91,7 @@ from .models import (
     DataPartner,
     Document,
     DocumentFile,
+    DocumentType,
     NLPModel,
     OmopTable,
     OmopField,
@@ -202,55 +204,13 @@ class SourceViewSet(viewsets.ModelViewSet):
     queryset=Source.objects.all()
     serializer_class=SourceSerializer
     
+class DocumentTypeViewSet(viewsets.ModelViewSet):
+    queryset=DocumentType.objects.all()
+    serializer_class=DocumentTypeSerializer
     
-class ScanReportValuesViewSet(viewsets.ModelViewSet):
-    model = ScanReportValue    
-    serializer_class=ScanReportValueSerializer    
-    fields = ["conceptID"]
-    factory_kwargs = {"can_delete": False, "extra": False}
-
-    def get_queryset(self):
-        search_term = self.request.GET.get("search", None)
-
-        if search_term is not None:
-            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by('value')
-        else:
-            qs = ScanReportValue.objects.all()
-
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            # scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            # scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table
-            scan_report_field = self.get_queryset()[0].scan_report_field
-            scan_report_value = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-            scan_report_value = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-                "scan_report_value": scan_report_value,
-            }
-        )
-
-        return context
+class ScanReportValueViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportValue.objects.all()
+    serializer_class=ScanReportValueSerializer  
 
 @login_required
 def home(request):
