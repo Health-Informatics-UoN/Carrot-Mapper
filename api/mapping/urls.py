@@ -22,7 +22,7 @@ routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drug
 routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
 routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='scanreporttables')
 routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
-routers.register(r'scanreportvalues', views.ScanReportValuesViewSet,basename='scanreportvalues')
+routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 routers.register(r'mappings',views.MappingViewSet,basename='mappings')
 routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
@@ -34,7 +34,7 @@ routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
 routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
 routers.register(r'sources',views.SourceViewSet,basename='sources')
-
+routers.register(r'documenttypes',views.DocumentTypeViewSet,basename='documenttypes')
 
 urlpatterns = [
     path('api/',include(routers.urls)),
