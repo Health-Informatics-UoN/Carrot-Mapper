@@ -156,6 +156,12 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
 
+class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportTable.objects.all()
+    serializer_class=ScanReportTableSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report', 'name']
+        
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer
@@ -188,6 +194,13 @@ class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer
 
+class DataPartnerFilterViewSet(viewsets.ModelViewSet):
+    queryset=DataPartner.objects.all()
+    serializer_class=DataPartnerSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['name']    
+    
+    
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
