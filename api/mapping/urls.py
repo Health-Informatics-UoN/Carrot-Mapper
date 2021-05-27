@@ -24,6 +24,17 @@ routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='sca
 routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
 routers.register(r'scanreportvalues', views.ScanReportValuesViewSet,basename='scanreportvalues')
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
+routers.register(r'mappings',views.MappingViewSet,basename='mappings')
+routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
+routers.register(r'datadictionarys',views.DataDictionaryViewSet,basename='DataDictionarys')
+routers.register(r'documents',views.DocumentViewSet,basename='documents')
+routers.register(r'documentfiles',views.DocumentFileViewSet,basename='documentfiles')
+routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners')
+routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
+routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
+routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
+routers.register(r'sources',views.SourceViewSet,basename='sources')
+
 
 urlpatterns = [
     path('api/',include(routers.urls)),
