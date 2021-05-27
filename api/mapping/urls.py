@@ -20,7 +20,10 @@ routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drug
 
 
 routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
+
 routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='scanreporttables')
+routers.register(r'scanreporttablesfilter', views.ScanReportTableFilterViewSet,basename='scanreporttablesfilter')
+
 routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
 routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
@@ -29,7 +32,10 @@ routers.register(r'classificationsystems',views.ClassificationSystemViewSet,base
 routers.register(r'datadictionaries',views.DataDictionaryViewSet,basename='DataDictionaries')
 routers.register(r'documents',views.DocumentViewSet,basename='documents')
 routers.register(r'documentfiles',views.DocumentFileViewSet,basename='documentfiles')
+
 routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners')
+routers.register(r'datapartnersfilter',views.DataPartnerFilterViewSet,basename='datapartnersfilter')
+
 routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
 routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
