@@ -1,9 +1,14 @@
+import json
+from datetime import datetime
+
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
+from mapping.models import ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopField, Concept, StructuralMappingRule
 from mapping.serializers import ConceptSerializer
 
+from django.http import HttpResponse
 
 class NonStandardConceptMapsToSelf(Exception):
     pass
@@ -158,8 +163,13 @@ def save_mapping_rules(request,scan_report_concept):
        - scan_report_concept (ScanReportConcept) : object containing the Concept and Link to source_value
     """
 
-    scan_report_value = scan_report_concept.content_object
-    source_field = scan_report_value.scan_report_field
+    content_object = scan_report_concept.content_object
+    if isinstance(content_object,ScanReportValue):
+        scan_report_value = content_object
+        source_field = scan_report_value.scan_report_field
+    else:
+        source_field = content_object
+        
     scan_report = source_field.scan_report_table.scan_report
     concept = scan_report_concept.concept
     domain = concept.domain_id.lower()
@@ -346,3 +356,70 @@ class Concept2OMOP:
             pass
 
         return concept
+
+
+    
+def get_mapping_rules_json(qs):
+
+    first_qs = qs[0]
+    metadata =  {
+        'date_created':datetime.utcnow().isoformat(),
+        'dataset':first_qs.scan_report.dataset
+    }
+    
+    object_map = {}
+    for rule in qs:
+        if rule.concept not in object_map:
+            object_map[rule.concept] = []
+        object_map[rule.concept].append(rule)
+
+    cdm = {}
+    for obj,rules in object_map.items():
+
+        first_rule = rules[0]
+        destination_table = first_rule.omop_field.table.table
+
+        if destination_table not in cdm:
+            cdm[destination_table] = []
+
+        cdm_obj = {}
+            
+        for rule in rules:
+            
+            source_field = rule.source_field.name.replace(u'\ufeff', '')
+            source_table = rule.source_field.scan_report_table.name.replace(u'\ufeff', '')
+                            
+            destination_field = rule.omop_field.field
+            destination_table = rule.omop_field.table.table
+            term_mapping = None
+
+            cdm_obj[destination_field] = {
+                'source_table':source_table,
+                'source_field':source_field,
+            }
+        
+            if 'concept_id' in destination_field:
+                is_scan_report_value = isinstance(rule.concept.content_object,ScanReportValue)
+
+                if is_scan_report_value:
+                    cdm_obj[destination_field]['term_mapping'] = {
+                        rule.concept.content_object.value : rule.concept.concept_id
+                    }
+                else:
+                    cdm_obj[destination_field]['term_mapping'] = rule.concept.concept_id
+                    
+            
+        cdm[destination_table].append(cdm_obj)
+
+    return {'metadata':metadata,'cdm':cdm}
+
+def download_mapping_rules(request,qs):
+    output = get_mapping_rules_json(qs)
+    scan_report = qs[0].scan_report
+    return_type = "json"
+    fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+    
+    response = HttpResponse(json.dumps(output,indent=6),content_type='application/json')
+    response['Content-Disposition'] = f'attachment; filename="{fname}"'
+    return response
+

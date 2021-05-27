@@ -19,22 +19,28 @@
 <h2>Mapping Rules</h2>
 
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-info" name='download-sm' >Download Mapping JSON</button>
+  <button type="submit" class="btn btn-info" name='download-rules' >Download Mapping JSON</button>
   <button type="button" id='view_svg' class="btn btn-warning" name='download-sm' >View Map Diagram</button>
 </form>
 
 
 <hr>
+
 {% if object_list %}
 
 <div class="container-fluid p-2" style='background-color: #3db28c11;'>
   <div class="row">
     <div class="col-sm">
-      <h6>Filter On Destination Table</h6>
-      <a href="{% url 'tables-structural-mapping' pk=scan_report.id %}" class="btn btn-info"> All </a> 
-      {% for omop_table in omop_tables %}
-        <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=omop_table %}" class="btn btn-info"> {{ omop_table }} </a>
-      {% endfor %}
+      <!---
+ <h6>Filter On Destination Table</h6>
+     
+      <a href="url 'tables-structural-mapping' pk=scan_report.id " class="btn btn-info"> All </a>
+
+	  for omop_table in omop_tables
+        <a href="e url 'tables-structural-mapxping-filter-lvl1' pk=scan_report.id omop_table=omop_table " class="btn btn-info">  omop_table </a>
+	endfor
+	--->
+
     </div>
   {% if source_tables %}
     <div class="col-sm">
@@ -54,9 +60,6 @@
   </div>
   <div class="row">
     
-    <form id="my_form" method="post">
-      {% csrf_token %}
-      {{ formset.management_form }}
     <table class="table">
     <thead>
     <tr>
@@ -68,7 +71,7 @@
 	<th scope="col">Source Field</th>
 	<th scope="col">Term Map</th>
 	<!---<th scope="col">Operation</th>--->
-	<th scope="col">Approved</th>
+	<!---<th scope="col">Approved</th>--->
     </tr>
     </thead>
     <tbody>
@@ -97,60 +100,16 @@
 	   --->
 
 	</td>
-
-<!---
-	<td style="width: 16.6%">
-	  {% if 'date' in object.omop_field.field or 'source_value' in object.omop_field.field %}
-          {## set i to be the index of the value we're on ##}
-          {% with i=forloop.counter %}
-          {## loop over the formset (editable fields) ##}
-          {% for form in formset  %}
-            {% if forloop.counter == i%}
-             {% for field in form %}
- 	         {% if field.label == 'Operation' or field.label == 'Id' %}
-                   {{field}}
- 	         {% endif %}
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
- 	  {% endwith %}
-	  {% endif %}
-	</td> 
---->
-	<td style="width: 16.6%">
- {## set i to be the index of the value we're on ##}
-          {% with i=forloop.counter %}
-          {## loop over the formset (editable fields) ##}
-          {% for form in formset  %}
-            {% if forloop.counter == i%}
-             {% for field in form %}
- 	         {% if field.label == 'Approved' or field.label == 'Id' %}
-                   {{field}}
- 	         {% endif %}
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
- 	  {% endwith %}
-	</td> 
       </tr>
       {% endfor %}
     </tbody>
-</table>
+    </table>
   </div>
-</div>
+  </div>
 
-  <button id="table_save_btn" type="submit" class="btn btn-success">Save</button>
-
-
-  <button type="submit" class="btn btn-danger" name='clean' >Delete All</button>
-  
-</form>
-
-{% else %}
-<p>There are currently no rules for this scan report.</p>
 {% endif %}
 
-
+  
   <script>
     $("#view_svg").click(function () {
 

@@ -60,6 +60,7 @@ from .models import (
 )
 from .services import process_scan_report
 from .services_nlp import start_nlp
+from .services_rules import save_mapping_rules, download_mapping_rules
 from .services_datadictionary import merge_external_dictionary
 
 #global flag - decide on what to do with this
@@ -300,13 +301,21 @@ class StructuralMappingTableListView(ListView):
     model = StructuralMappingRule
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("download-rules") is not None:
+            qs = self.get_queryset()
+            return download_mapping_rules(request,qs)
+        else:
+            messages.error(request,"not working right now!")                
+            return redirect(request.path)
+    
     def get_queryset(self):
-
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
                 "omop_field__table",
                 "omop_field__field",
                 "source_table__name",
@@ -892,6 +901,8 @@ def save_scan_report_field_concept(request):
             )
 
             messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+
+            save_mapping_rules(request,scan_report_concept)
 
             return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
