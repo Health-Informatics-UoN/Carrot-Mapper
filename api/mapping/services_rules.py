@@ -391,7 +391,6 @@ def get_mapping_rules_json(qs):
                             
             destination_field = rule.omop_field.field
             destination_table = rule.omop_field.table.table
-            term_mapping = None
 
             cdm_obj[destination_field] = {
                 'source_table':source_table,
