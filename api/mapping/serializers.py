@@ -28,11 +28,6 @@ from mapping.models import (
     DocumentType,
     )
 
-#class ScanReportFieldSerializer(serializers.HyperlinkedModelSerializer):
-#    class Meta:
-#        model = ScanReportField
-
-
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concept
