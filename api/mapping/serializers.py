@@ -25,6 +25,7 @@ from mapping.models import (
     OmopTable,
     StructuralMappingRule,
     Source,
+    DocumentType,
     )
 
 #class ScanReportFieldSerializer(serializers.HyperlinkedModelSerializer):
@@ -146,3 +147,8 @@ class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model=Source
         fields='__all__'         
+        
+class DocumentTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=DocumentType
+        fields='__all__'                 
