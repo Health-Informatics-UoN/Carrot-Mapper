@@ -323,34 +323,12 @@ class ScanReportTable(BaseModel):
         related_name = 'person_id'
     )
 
-    birth_date = models.ForeignKey(
+    date_event = models.ForeignKey(
         "ScanReportField",
         on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
-        related_name = 'birth_date'
-    )
-
-    measurement_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'measurement_date',
-    )
-    condition_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'condition_date'
-    )
-    observation_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'observation_date'
+        related_name = 'date_event'
     )
     
     def __str__(self):
