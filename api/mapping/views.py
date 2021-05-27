@@ -11,6 +11,16 @@ from .serializers import (
     ScanReportFieldSerializer,
     ScanReportValueSerializer,    
     ScanReportConceptSerializer,
+    MappingSerializer,
+    ClassificationSystemSerializer,
+    DataDictionarySerializer,
+    DocumentSerializer,
+    DocumentFileSerializer,
+    DataPartnerSerializer,
+    OmopTableSerializer,
+    OmopFieldSerializer,
+    StructuralMappingRuleSerializer,
+    SourceSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -77,9 +87,11 @@ from .forms import (
 )
 from .models import (
     DataDictionary,
+    DataPartner,
     Document,
     DocumentFile,
     NLPModel,
+    OmopTable,
     OmopField,
     ScanReport,
     ScanReportAssertion,
@@ -87,6 +99,9 @@ from .models import (
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
+    Mapping,
+    ClassificationSystem,
+    Source,
 )
 from .services import process_scan_report
 from .services_nlp import start_nlp
@@ -96,6 +111,7 @@ from .services_datadictionary import merge_external_dictionary
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
+
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
     serializer_class=VocabularySerializer
@@ -145,7 +161,48 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer
+    
+class MappingViewSet(viewsets.ModelViewSet):
+    queryset=Mapping.objects.all()
+    serializer_class=MappingSerializer
 
+class ClassificationSystemViewSet(viewsets.ModelViewSet):
+    queryset=ClassificationSystem.objects.all()
+    serializer_class=ClassificationSystemSerializer
+
+class DataDictionaryViewSet(viewsets.ModelViewSet):
+    queryset=DataDictionary.objects.all()
+    serializer_class=DataDictionarySerializer
+
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset=Document.objects.all()
+    serializer_class=DocumentSerializer
+
+class DocumentFileViewSet(viewsets.ModelViewSet):
+    queryset=DocumentFile.objects.all()
+    serializer_class=DocumentFileSerializer
+
+class DataPartnerViewSet(viewsets.ModelViewSet):
+    queryset=DataPartner.objects.all()
+    serializer_class=DataPartnerSerializer
+
+class OmopTableViewSet(viewsets.ModelViewSet):
+    queryset=OmopTable.objects.all()
+    serializer_class=OmopTableSerializer
+
+class OmopFieldViewSet(viewsets.ModelViewSet):
+    queryset=OmopField.objects.all()
+    serializer_class=OmopFieldSerializer
+
+class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
+    queryset=StructuralMappingRule.objects.all()
+    serializer_class=StructuralMappingRuleSerializer
+
+class SourceViewSet(viewsets.ModelViewSet):
+    queryset=Source.objects.all()
+    serializer_class=SourceSerializer
+    
+    
 class ScanReportValuesViewSet(viewsets.ModelViewSet):
     model = ScanReportValue    
     serializer_class=ScanReportValueSerializer    
