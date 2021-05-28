@@ -17,6 +17,10 @@ from .models import (
     DataDictionary
 )
 
+from coconnect.tools.omop_db_inspect import OMOPDetails
+
+
+
 def get_concept_from_concept_code(concept_code,
                                   vocabulary_id,
                                   no_source_concept=False):
@@ -27,7 +31,7 @@ def get_concept_from_concept_code(concept_code,
     If the concept is a standard concept, 
     source_concept will be the same object
 
-    Args:
+    Parameters:
       concept_code (str) : the concept code  
       vocabulary_id (str) : SNOMED etc.
       no_source_concept (bool) : only return the concept
@@ -36,7 +40,7 @@ def get_concept_from_concept_code(concept_code,
       OR
       concept(Concept)
     """
-
+    
     # NLP returns SNOMED as SNOWMEDCT_US
     # This sets SNOWMEDCT_US to SNOWMED if this function is
     # used within services_nlp.py
@@ -48,13 +52,13 @@ def get_concept_from_concept_code(concept_code,
         vocabulary_id="RxNorm"
     else:
         vocabulary_id=vocabulary_id
-    
+
     #obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
         concept_code = concept_code,
         vocabulary_id = vocabulary_id
     )
-
+    
     #if the source_concept is standard
     if source_concept.standard_concept == 'S':
         #the concept is the same as the source_concept
@@ -72,34 +76,20 @@ def get_concept_from_concept_code(concept_code,
 
 
 def find_standard_concept(source_concept):
-    """
-    Args:
-      - source_concept(Concept): originally found, potentially non-standard concept
-    Returns:
-      - Concept: either the same object as input (if input is standard), or a newly found 
-    """
 
-    #if is standard, return self
-    if source_concept.standard_concept == 'S':
-        return source_concept
-
-    #find the concept relationship, of what this non-standard concept "Maps to"
     concept_relation = ConceptRelationship.objects.get(
         concept_id_1=source_concept.concept_id,
         relationship_id__contains='Maps to'
     )
 
-    if concept_relation.concept_id_2 == concept_relation.concept_id_1:
-        raise NonStandardConceptMapsToSelf('For a non-standard concept '
-                                           'the concept_relation is mapping to itself '
-                                           'i.e. it cannot find an associated standard concept')
-
-    #look up the associated standard-concept
-    concept = Concept.objects.get(
-        concept_id=concept_relation.concept_id_2
-    )
-    return concept
-
+    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
+        concept = Concept.objects.get(
+            concept_id=concept_relation.concept_id_2
+        )
+        return concept
+    else:
+        #may need some warning if this ever happens?
+        return source_concept
 
 def process_scan_report_sheet_table(filename):
     """
@@ -164,8 +154,6 @@ def process_scan_report_sheet_table(filename):
                     )
 
     return result
-
-
 
 
 def process_scan_report(scan_report_id):
