@@ -17,79 +17,7 @@ from .models import (
     DataDictionary
 )
 
-from coconnect.tools.omop_db_inspect import OMOPDetails
 
-
-
-def get_concept_from_concept_code(concept_code,
-                                  vocabulary_id,
-                                  no_source_concept=False):
-    """
-    Given a concept_code and vocabularly id, 
-    return the source_concept and concept objects
-
-    If the concept is a standard concept, 
-    source_concept will be the same object
-
-    Parameters:
-      concept_code (str) : the concept code  
-      vocabulary_id (str) : SNOMED etc.
-      no_source_concept (bool) : only return the concept
-    Returns:
-      tuple( source_concept(Concept), concept(Concept) )
-      OR
-      concept(Concept)
-    """
-    
-    # NLP returns SNOMED as SNOWMEDCT_US
-    # This sets SNOWMEDCT_US to SNOWMED if this function is
-    # used within services_nlp.py
-    if vocabulary_id == 'SNOMEDCT_US':
-        vocabulary_id="SNOMED"
-
-    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert    
-    if vocabulary_id=="RXNORM":
-        vocabulary_id="RxNorm"
-    else:
-        vocabulary_id=vocabulary_id
-
-    #obtain the source_concept given the code and vocab
-    source_concept = Concept.objects.get(
-        concept_code = concept_code,
-        vocabulary_id = vocabulary_id
-    )
-    
-    #if the source_concept is standard
-    if source_concept.standard_concept == 'S':
-        #the concept is the same as the source_concept
-        concept = source_concept
-    else:
-        #otherwise we need to look up 
-        concept = find_standard_concept(source_concept)
-
-    if no_source_concept:
-        #only return the concept
-        return concept
-    else:
-        #return both as a tuple
-        return (source_concept,concept)
-
-
-def find_standard_concept(source_concept):
-
-    concept_relation = ConceptRelationship.objects.get(
-        concept_id_1=source_concept.concept_id,
-        relationship_id__contains='Maps to'
-    )
-
-    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
-        concept = Concept.objects.get(
-            concept_id=concept_relation.concept_id_2
-        )
-        return concept
-    else:
-        #may need some warning if this ever happens?
-        return source_concept
 
 def process_scan_report_sheet_table(filename):
     """
