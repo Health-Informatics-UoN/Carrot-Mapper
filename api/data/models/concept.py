@@ -49,4 +49,3 @@ class Concept(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."concept'
-        #db_table = 'concept'
