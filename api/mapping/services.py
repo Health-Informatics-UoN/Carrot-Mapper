@@ -8,6 +8,7 @@ from django.contrib import messages
 import json
 import requests
 import time
+from data.models import Concept, ConceptRelationship
 from .models import (
     ScanReport,
     ScanReportTable,
