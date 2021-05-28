@@ -114,6 +114,12 @@ class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
 
+class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Concept.objects.all()
+    serializer_class=ConceptSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_code', 'vocabulary_id']  
+
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
     serializer_class=VocabularySerializer

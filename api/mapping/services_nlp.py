@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+from azure.storage.queue import QueueClient
 
 import requests
 from coconnect.tools.omop_db_inspect import OMOPDetails
@@ -139,6 +140,15 @@ def start_nlp(search_term):
             }
 
         payload = json.dumps(document)
+
+        # Send JSON payload to nlp-processing-queue in Azure
+        queue = QueueClient.from_connection_string(
+            conn_str=os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
+            queue_name="nlp-processing-queue"
+        )
+        queue.send_message(payload)
+        print(queue)
+
         response = requests.post(url, headers=headers, data=payload)
         post_response_url.append(response.headers["operation-location"])
 
