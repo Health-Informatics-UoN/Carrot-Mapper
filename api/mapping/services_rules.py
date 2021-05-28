@@ -406,3 +406,12 @@ def download_mapping_rules(request,qs):
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
 
+#this is here as we should move it out of coconnect.tools
+import coconnect.tools as cctools
+def view_mapping_rules(request,qs):
+    output = get_mapping_rules_json(qs)
+
+    svg = cctools.make_dag(output['cdm'])
+    response = HttpResponse(svg, content_type="image/svg+xml")
+    return response
+

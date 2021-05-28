@@ -60,7 +60,11 @@ from .models import (
 )
 from .services import process_scan_report
 from .services_nlp import start_nlp
-from .services_rules import save_mapping_rules, download_mapping_rules
+from .services_rules import (
+    save_mapping_rules,
+    download_mapping_rules,
+    view_mapping_rules
+)
 from .services_datadictionary import merge_external_dictionary
 
 #global flag - decide on what to do with this
@@ -302,6 +306,9 @@ class StructuralMappingTableListView(ListView):
         if request.POST.get("download-rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
+        elif request.POST.get("get-svg") is not None:
+            qs = self.get_queryset()
+            return view_mapping_rules(request,qs)
         else:
             messages.error(request,"not working right now!")                
             return redirect(request.path)
