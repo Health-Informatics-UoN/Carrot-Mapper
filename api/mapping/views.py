@@ -841,8 +841,8 @@ def validate_standard_concept(request,source_concept):
     #if it's a standarc concept -- pass
     if source_concept.standard_concept == 'S':
         messages.success(request, "Concept {} - {} added successfully.".format(
-            concept.concept_id,
-            concept.concept_name)
+            source_concept.concept_id,
+            source_concept.concept_name)
         )
         return True
 
