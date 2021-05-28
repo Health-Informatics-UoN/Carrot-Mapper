@@ -61,6 +61,11 @@ from .services import process_scan_report
 from .services_nlp import start_nlp
 from .services_datadictionary import merge_external_dictionary
 
+#global flag - decide on what to do with this
+#force the concept_ids to have to be standard on input
+m_force_standard_concept = True
+
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
