@@ -30,6 +30,6 @@ class ConceptRelationship(models.Model):
     
     class Meta:
         managed = False
-        #db_table = 'omop"."concept_relationship'
-        db_table = 'concept_relationship'
+        db_table = 'omop"."concept_relationship'
+        #db_table = 'concept_relationship'
         unique_together = (('concept_id_1', 'concept_id_2', 'relationship_id'),)
