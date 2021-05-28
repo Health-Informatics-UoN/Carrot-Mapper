@@ -61,10 +61,6 @@ from .services import process_scan_report
 from .services_nlp import start_nlp
 from .services_datadictionary import merge_external_dictionary
 
-#global flag - decide on what to do with this
-#force the concept_ids to have to be standard on input
-m_force_standard_concept = True
-
 
 @login_required
 def home(request):
@@ -813,12 +809,13 @@ def save_scan_report_value_concept(request):
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
-            scan_report_concept = ScanReportConcept.objects.create(
-                concept=concept,
-                content_object=scan_report_value,
-            )
-
-            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            #perform a standard check on the concept 
+            pass_standard_concept_check = validate_standard_concept(concept)
+            if pass_standard_concept_check:
+                scan_report_concept = ScanReportConcept.objects.create(
+                    concept=concept,
+                    content_object=scan_report_value,
+                )
 
             return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
@@ -839,6 +836,36 @@ def delete_scan_report_value_concept(request):
     return redirect("/values/?search={}".format(scan_report_field_id))
 
 
+def validate_standard_concept(request,source_concept):
+
+    #if it's a standarc concept -- pass
+    if source_concept.standard_concept == 'S':
+        messages.success(request, "Concept {} - {} added successfully.".format(
+            concept.concept_id,
+            concept.concept_name)
+        )
+        return True
+
+    else:
+        #otherwse
+        #return an error if it's Non-Standard
+        #dont allowed the ScanReportConcept to be created
+        messages.error(request,
+                       "Concept {} ({}) is Non-Standard".format(
+                           source_concept.concept_id,
+                           source_concept.concept_name)
+        )
+        
+        concept = find_standard_concept(source_concept)
+        messages.error(request,
+                       "You could try {} ({}) ?".format(
+                           concept.concept_id,
+                           concept.concept_name)
+        )
+        
+        return False
+    
+    
 def save_scan_report_field_concept(request):
     if request.method == "POST":
         form = ScanReportFieldConceptForm(request.POST)
@@ -849,7 +876,7 @@ def save_scan_report_field_concept(request):
             )
 
             try:
-                source_concept = Concept.objects.get(
+                concept = Concept.objects.get(
                     concept_id=form.cleaned_data['concept_id']
                 )
             except Concept.DoesNotExist:
@@ -857,41 +884,14 @@ def save_scan_report_field_concept(request):
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
-
-            if source_concept.standard_concept != 'S':
-                #look up the concept based on the source_concept
-                #this will lookup in concept_relationship
-                #and return a new concept (associated standard concept)
-                concept = find_standard_concept(source_concept)
-                #if we dont allow non-standard concepts
-                if m_force_standard_concept:
-                    #return an error if it's Non-Standard
-                    #dont allowed the ScanReportConcept to be created
-                    messages.error(request,
-                                   "Concept {} ({}) is Non-Standard".format(source_concept.concept_id,
-                                   source_concept.concept_name))
-                    messages.error(request,
-                                   "You could try {} ({}) ?".format(concept.concept_id,
-                                   concept.concept_name))
-
-                    return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
-            else:
-                #otherwise, if this is a standard concept (source_concept.standard_concept=='S')
-                #we are good and set concept == source_concept
-                concept = source_concept
-            
-            scan_report_concept = ScanReportConcept.objects.create(
-                concept=concept,
-                content_object=scan_report_field,
-            )
-
-            if concept == source_concept:
-                messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
-            else:
-                messages.warning(request,"Non-Standard Concept ID found")
-                messages.success(request, "Source Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
-                messages.success(request, "Concept {} - {} will be used as the concept_id".format(concept.concept_id, concept.concept_name))
-
+            #perform a standard check on the concept 
+            pass_standard_concept_check = validate_standard_concept(concept)
+            if pass_standard_concept_check:
+                scan_report_concept = ScanReportConcept.objects.create(
+                    concept=concept,
+                    content_object=scan_report_field,
+                )
+                
             return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
 
