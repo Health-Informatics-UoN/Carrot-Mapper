@@ -108,10 +108,7 @@ class ScanReportTableUpdateView(UpdateView):
     model = ScanReportTable
     fields = [
         "person_id",
-        "birth_date",
-        "measurement_date",
-        "observation_date",
-        "condition_date"
+        "date_event"
     ]
 
     def get_context_data(self, **kwargs):

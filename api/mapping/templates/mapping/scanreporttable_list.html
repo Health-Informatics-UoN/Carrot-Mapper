@@ -22,7 +22,7 @@
         <th scope="col">Name</th>
         <th scope="col">Person ID</th>
 	<th scope="col">Event Date</th>
-	
+	<th>Edit</th>	
     </tr>
     </thead>
     <tbody>
@@ -43,6 +43,8 @@
 	{{ object.date_event.name }} 
 	{% endif %}
 	</td>
+
+	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
 	
     </tr>
     {% endfor %}
