@@ -990,12 +990,13 @@ def save_scan_report_value_concept(request):
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
             
-            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
             
             scan_report_concept = ScanReportConcept.objects.create(
                 concept=concept,
                 content_object=scan_report_value,
             )
+
+            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
 
             save_mapping_rules(request,scan_report_concept)
                         
