@@ -59,20 +59,33 @@ def get_concept_from_concept_code(concept_code,
 
 
 def find_standard_concept(source_concept):
+    """
+    Args:
+      - source_concept(Concept): originally found, potentially non-standard concept
+    Returns:
+      - Concept: either the same object as input (if input is standard), or a newly found 
+    """
 
+    #if is standard, return self
+    if source_concept.standard_concept == 'S':
+        return source_concept
+
+    #find the concept relationship, of what this non-standard concept "Maps to"
     concept_relation = ConceptRelationship.objects.get(
         concept_id_1=source_concept.concept_id,
         relationship_id__contains='Maps to'
     )
+    
+    if concept_relation.concept_id_2 == concept_relation.concept_id_1:
+        raise NonStandardConceptMapsToSelf('For a non-standard concept '
+                                           'the concept_relation is mapping to itself '
+                                           'i.e. it cannot find an associated standard concept')
 
-    if concept_relation.concept_id_2 != concept_relation.concept_id_1:
-        concept = Concept.objects.get(
-            concept_id=concept_relation.concept_id_2
-        )
-        return concept
-    else:
-        #may need some warning if this ever happens?
-        return source_concept
+    #look up the associated standard-concept
+    concept = Concept.objects.get(
+        concept_id=concept_relation.concept_id_2
+    )
+    return concept
 
 
 
