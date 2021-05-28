@@ -35,6 +35,19 @@ def get_concept_from_concept_code(concept_code,
       OR
       concept(Concept)
     """
+
+    # NLP returns SNOMED as SNOWMEDCT_US
+    # This sets SNOWMEDCT_US to SNOWMED if this function is
+    # used within services_nlp.py
+    if vocabulary_id == 'SNOMEDCT_US':
+        vocabulary_id="SNOMED"
+
+    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert    
+    if vocabulary_id=="RXNORM":
+        vocabulary_id="RxNorm"
+    else:
+        vocabulary_id=vocabulary_id
+    
     #obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
         concept_code = concept_code,
