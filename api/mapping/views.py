@@ -118,7 +118,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer    
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['concept_code', 'vocabulary_id']  
+    filterset_fields=['concept_id', 'concept_code', 'vocabulary_id']  
 
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
@@ -129,6 +129,12 @@ class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class=ConceptRelationshipSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']
+
+class ConceptRelationshipFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptRelationship.objects.all()
+    serializer_class=ConceptRelationshipSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']  
 
 class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptAncestor.objects.all()

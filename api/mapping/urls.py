@@ -13,6 +13,8 @@ routers.register(r'omop/concepts', views.ConceptViewSet,basename='concepts')
 routers.register(r'omop/conceptsfilter', views.ConceptFilterViewSet,basename='conceptsfilter')
 routers.register(r'omop/vocabularies', views.VocabularyViewSet,basename='vocabularies')
 routers.register(r'omop/conceptrelationships', views.ConceptRelationshipViewSet,basename='conceptrelationships')
+routers.register(r'omop/conceptrelationshipfilter', views.ConceptRelationshipFilterViewSet,basename='conceptrelationshipfilter')
+
 routers.register(r'omop/conceptancestors', views.ConceptAncestorViewSet, basename='conceptancestors')
 routers.register(r'omop/conceptclasses', views.ConceptClassViewSet,basename='conceptclasses')
 routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='conceptsynonyms')
