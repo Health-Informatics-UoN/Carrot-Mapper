@@ -27,7 +27,11 @@ routers.register(r'scanreporttables', views.ScanReportTableViewSet,basename='sca
 routers.register(r'scanreporttablesfilter', views.ScanReportTableFilterViewSet,basename='scanreporttablesfilter')
 
 routers.register(r'scanreportfields', views.ScanReportFieldViewSet,basename='scanreportfields')
+routers.register(r'scanreportfieldsfilter', views.ScanReportFieldFilterViewSet,basename='scanreportfieldsfilter')
+
 routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
+routers.register(r'scanreportvaluesfilter', views.ScanReportValueFilterViewSet,basename='scanreportvaluesfilter')
+
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 routers.register(r'mappings',views.MappingViewSet,basename='mappings')
 routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
