@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'mapping',
     'data',
     'rest_framework',
+    'django_filters',
+    
 ]
 
 MIDDLEWARE = [

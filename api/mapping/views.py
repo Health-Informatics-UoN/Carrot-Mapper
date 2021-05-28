@@ -4,6 +4,48 @@ import os
 import time
 from io import StringIO
 
+from rest_framework import viewsets
+from .serializers import (
+    ScanReportSerializer,
+    ScanReportTableSerializer,
+    ScanReportFieldSerializer,
+    ScanReportValueSerializer,    
+    ScanReportConceptSerializer,
+    MappingSerializer,
+    ClassificationSystemSerializer,
+    DataDictionarySerializer,
+    DocumentSerializer,
+    DocumentFileSerializer,
+    DataPartnerSerializer,
+    OmopTableSerializer,
+    OmopFieldSerializer,
+    StructuralMappingRuleSerializer,
+    SourceSerializer,
+    DocumentTypeSerializer,    
+)
+from .serializers import (
+    ConceptSerializer,
+    VocabularySerializer,
+    ConceptRelationshipSerializer,
+    ConceptAncestorSerializer,
+    ConceptClassSerializer,
+    ConceptSynonymSerializer,
+    DomainSerializer,
+    DrugStrengthSerializer,
+)
+from django_filters.rest_framework import DjangoFilterBackend
+from data.models import (
+    Concept,
+    Vocabulary,
+    ConceptRelationship,
+    ConceptAncestor,
+    ConceptClass,
+    ConceptSynonym,
+    Domain,
+    DrugStrength,
+)
+
+
 import pandas as pd
 import requests
 from data.models import Concept
@@ -46,9 +88,12 @@ from .forms import (
 )
 from .models import (
     DataDictionary,
+    DataPartner,
     Document,
     DocumentFile,
+    DocumentType,
     NLPModel,
+    OmopTable,
     OmopField,
     OmopTable,
     ScanReport,
@@ -57,6 +102,9 @@ from .models import (
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
+    Mapping,
+    ClassificationSystem,
+    Source,
 )
 from .services import process_scan_report
 from .services_nlp import start_nlp
@@ -67,9 +115,114 @@ from .services_rules import (
 )
 from .services_datadictionary import merge_external_dictionary
 
+
 #global flag - decide on what to do with this
 #force the concept_ids to have to be standard on input
 m_force_standard_concept = True
+
+
+class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Concept.objects.all()
+    serializer_class=ConceptSerializer
+
+class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Vocabulary.objects.all()
+    serializer_class=VocabularySerializer
+
+class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptRelationship.objects.all()
+    serializer_class=ConceptRelationshipSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']
+
+class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptAncestor.objects.all()
+    serializer_class=ConceptAncestorSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['ancestor_concept_id', 'descendant_concept_id']
+    
+class ConceptClassViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptClass.objects.all()
+    serializer_class=ConceptClassSerializer
+
+class ConceptSynonymViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptSynonym.objects.all()
+    serializer_class=ConceptSynonymSerializer
+
+class DomainViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Domain.objects.all()
+    serializer_class=DomainSerializer
+
+class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=DrugStrength.objects.all()
+    serializer_class=DrugStrengthSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['drug_concept_id', 'ingredient_concept_id']    
+
+class ScanReportViewSet(viewsets.ModelViewSet):
+    queryset=ScanReport.objects.all()
+    serializer_class=ScanReportSerializer
+
+class ScanReportTableViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportTable.objects.all()
+    serializer_class=ScanReportTableSerializer
+
+class ScanReportFieldViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportField.objects.all()
+    serializer_class=ScanReportFieldSerializer
+
+class ScanReportConceptViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportConcept.objects.all()
+    serializer_class=ScanReportConceptSerializer
+    
+class MappingViewSet(viewsets.ModelViewSet):
+    queryset=Mapping.objects.all()
+    serializer_class=MappingSerializer
+
+class ClassificationSystemViewSet(viewsets.ModelViewSet):
+    queryset=ClassificationSystem.objects.all()
+    serializer_class=ClassificationSystemSerializer
+
+class DataDictionaryViewSet(viewsets.ModelViewSet):
+    queryset=DataDictionary.objects.all()
+    serializer_class=DataDictionarySerializer
+
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset=Document.objects.all()
+    serializer_class=DocumentSerializer
+
+class DocumentFileViewSet(viewsets.ModelViewSet):
+    queryset=DocumentFile.objects.all()
+    serializer_class=DocumentFileSerializer
+
+class DataPartnerViewSet(viewsets.ModelViewSet):
+    queryset=DataPartner.objects.all()
+    serializer_class=DataPartnerSerializer
+
+class OmopTableViewSet(viewsets.ModelViewSet):
+    queryset=OmopTable.objects.all()
+    serializer_class=OmopTableSerializer
+
+class OmopFieldViewSet(viewsets.ModelViewSet):
+    queryset=OmopField.objects.all()
+    serializer_class=OmopFieldSerializer
+
+class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
+    queryset=StructuralMappingRule.objects.all()
+    serializer_class=StructuralMappingRuleSerializer
+
+class SourceViewSet(viewsets.ModelViewSet):
+    queryset=Source.objects.all()
+    serializer_class=SourceSerializer
+    
+class DocumentTypeViewSet(viewsets.ModelViewSet):
+    queryset=DocumentType.objects.all()
+    serializer_class=DocumentTypeSerializer
+    
+class ScanReportValueViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportValue.objects.all()
+    serializer_class=ScanReportValueSerializer  
+
 
 @login_required
 def home(request):
