@@ -17,14 +17,6 @@ class NonStandardConceptMapsToSelf(Exception):
 #allowed tables
 m_allowed_tables = ['person','measurement','condition_occurrence','observation']
 
-#names of date objects in ScanReportTable
-m_date_lookup = {
-    'person':'birth_date',
-    'measurement':'measurement_date',
-    'condition_occurrence':'condition_date',
-    'observation':'observation_date'
-}
-
 #look up of date-events in all the allowed (destination) tables
 m_date_field_mapper = {
     'person': ['birth_datetime'],
@@ -34,26 +26,18 @@ m_date_field_mapper = {
 }
 
 
-def find_date_event(destination_table,
-                    source_table):
+def find_date_event(source_table):
     """
     convienience function to return the source field of a date event
     for a destination table from the current source table
     
-    the field name is looked up in m_date_lookup
-    e.g. 
-       'person':'birth_date'
-    so, the code obtains the ScanReportField for birth_date
-
     Paramaters:
-      - destination_table (str) : name of the destination table (e.g. 'person')
       - source_table (ScanReportTable): object for the scan report table
     
     Returns:
       - ScanReportField : the source_field that has been marked as the date event
     """
-    field = m_date_lookup[destination_table]
-    return getattr(source_table,field)
+    return source_table.date_event
 
 def find_person_id(source_table):
     """
@@ -128,7 +112,7 @@ def save_date_rule(request,
                         destination_table):
 
     #!todo - need some checks for this
-    date_event_source_field  = find_date_event(destination_table.table,source_table)
+    date_event_source_field  = find_date_event(source_table)
     
     date_omop_fields = m_date_field_mapper[destination_table.table]
     #loop over all returned
