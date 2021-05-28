@@ -16,6 +16,47 @@ from .models import (
     DataDictionary
 )
 
+def get_concept_from_concept_code(concept_code,
+                                  vocabulary_id,
+                                  no_source_concept=False):
+    """
+    Given a concept_code and vocabularly id, 
+    return the source_concept and concept objects
+
+    If the concept is a standard concept, 
+    source_concept will be the same object
+
+    Args:
+      concept_code (str) : the concept code  
+      vocabulary_id (str) : SNOMED etc.
+      no_source_concept (bool) : only return the concept
+    Returns:
+      tuple( source_concept(Concept), concept(Concept) )
+      OR
+      concept(Concept)
+    """
+    #obtain the source_concept given the code and vocab
+    source_concept = Concept.objects.get(
+        concept_code = concept_code,
+        vocabulary_id = vocabulary_id
+    )
+
+    #if the source_concept is standard
+    if source_concept.standard_concept == 'S':
+        #the concept is the same as the source_concept
+        concept = source_concept
+    else:
+        #otherwise we need to look up 
+        concept = find_standard_concept(source_concept)
+
+    if no_source_concept:
+        #only return the concept
+        return concept
+    else:
+        #return both as a tuple
+        return (source_concept,concept)
+
+
 def find_standard_concept(source_concept):
     """
     Args:
@@ -111,45 +152,6 @@ def process_scan_report_sheet_table(filename):
     return result
 
 
-def get_concept_from_concept_code(concept_code,
-                                  vocabulary_id,
-                                  no_source_concept=False):
-    """
-    Given a concept_code and vocabularly id, 
-    return the source_concept and concept objects
-
-    If the concept is a standard concept, 
-    source_concept will be the same object
-
-    Args:
-      concept_code (str) : the concept code  
-      vocabulary_id (str) : SNOMED etc.
-      no_source_concept (bool) : only return the concept
-    Returns:
-      tuple( source_concept(Concept), concept(Concept) )
-      OR
-      concept(Concept)
-    """
-    #obtain the source_concept given the code and vocab
-    source_concept = Concept.objects.get(
-        concept_code = concept_code,
-        vocabulary_id = vocabulary_id
-    )
-
-    #if the source_concept is standard
-    if source_concept.standard_concept == 'S':
-        #the concept is the same as the source_concept
-        concept = source_concept
-    else:
-        #otherwise we need to look up 
-        concept = find_standard_concept(source_concept)
-
-    if no_source_concept:
-        #only return the concept
-        return concept
-    else:
-        #return both as a tuple
-        return (source_concept,concept)
 
 
 def process_scan_report(scan_report_id):
