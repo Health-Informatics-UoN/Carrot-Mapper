@@ -892,8 +892,6 @@ def save_scan_report_field_concept(request):
                 messages.success(request, "Source Concept {} - {} will be used as source_concept_id.".format(source_concept.concept_id, source_concept.concept_name))
                 messages.success(request, "Concept {} - {} will be used as the concept_id".format(concept.concept_id, concept.concept_name))
 
-
-            
             return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
 
