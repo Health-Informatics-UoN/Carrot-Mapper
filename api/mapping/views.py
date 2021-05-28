@@ -321,6 +321,24 @@ class StructuralMappingTableListView(ListView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        
+        if len(self.get_queryset()) > 0:
+            scan_report = self.get_queryset()[0].scan_report
+        else:
+            scan_report = None
+
+        context.update(
+            {
+                "scan_report": scan_report,
+            }
+        )
+
+        return context
+
+    
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFormView(FormView):

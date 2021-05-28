@@ -89,8 +89,11 @@
 	  
         <td style="width: 16.6%">
 	  <span class="text-danger">
+	    {% if object.concept.content_object.value %}
 	    "{{ object.concept.content_object.value }}"
+	    {% endif %}
 	  </span>
+
 	  <i class="fas fa-long-arrow-alt-right"></i>
 	  <span class="text-success">
 	    "{{ object.concept.concept_id }}"
