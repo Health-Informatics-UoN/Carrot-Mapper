@@ -106,7 +106,7 @@ from .models import (
     Source,
 )
 from .services import process_scan_report
-from .services_nlp import start_nlp
+from .services_nlp import start_nlp_field_level
 from .services_datadictionary import merge_external_dictionary
 
 
@@ -943,7 +943,7 @@ def run_nlp(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
-    start_nlp(search_term=search_term)
+    start_nlp_field_level(search_term=search_term)
     
     return redirect("/values/?search={}".format(field.id))
 
