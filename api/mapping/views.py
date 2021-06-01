@@ -868,16 +868,6 @@ def load_omop_fields(request):
         {"omop_fields": omop_fields},
     )
 
-
-def testusagi(request, scan_report_id):
-
-    results = run_usagi(scan_report_id)
-    print(results)
-    context = {}
-
-    return render(request, "mapping/index.html", context)
-
-
 def merge_dictionary(request):
 
     # Grab the scan report ID
@@ -889,56 +879,6 @@ def merge_dictionary(request):
     return render(request, "mapping/mergedictionary.html")
 
 
-@method_decorator(login_required, name="dispatch")
-class NLPListView(ListView):
-    model = NLPModel
-
-
-@method_decorator(login_required, name="dispatch")
-class NLPFormView(FormView):
-    form_class = NLPForm
-    template_name = "mapping/nlpmodel_form.html"
-    success_url = reverse_lazy("nlp")
-
-    def form_valid(self, form):
-
-        # Create NLP model object on form submission
-        # Very simple, just saves the user's string and a 
-        # raw str() of the JSON returned from the NLP service
-        NLPModel.objects.create(
-            user_string=form.cleaned_data["user_string"],
-            json_response="holding",
-        )
-
-        # Grab the newly-created model object to get the PK
-        # Pass PK to Celery task which handles running the NLP code
-        pk = NLPModel.objects.latest("id")
-        nlp_single_string_task.delay(
-            pk=pk.id, dict_string=form.cleaned_data["user_string"]
-        )
-
-        return super().form_valid(form)
-
-
-@method_decorator(login_required, name="dispatch")
-class NLPDetailView(DetailView):
-    model = NLPModel
-    template_name = "mapping/nlpmodel_detail.html"
-
-    def get_context_data(self, **kwargs):
-        query = NLPModel.objects.get(pk=self.kwargs.get("pk"))
-
-        # Small check to return something sensible if NLP hasn't finished running
-        if query.json_response == "holding":
-            context = {"user_string": query.user_string, "results": "Waiting"}
-            return context
-        
-        else:
-            # Run method from services_nlp.py
-            json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
-            context = {"user_string": query.user_string, "results": json_response}
-            return context
-
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
@@ -947,11 +887,6 @@ def run_nlp(request):
     
     return redirect("/values/?search={}".format(field.id))
 
-
-@method_decorator(login_required, name="dispatch")
-class NLPResultsListView(ListView):
-    model = ScanReportConcept
-    
 
 def save_scan_report_value_concept(request):
     if request.method == "POST":
