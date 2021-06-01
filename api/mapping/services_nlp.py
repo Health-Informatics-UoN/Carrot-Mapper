@@ -161,6 +161,8 @@ def start_nlp_field_level(search_term):
         # Send data to Azure Storage Queue
         for item in scan_report_values:
 
+            print(item)
+
             # If Field and Value Descriptions are both available then use both
             if item.scan_report_field.description_column and item.value_description:
                 document = {
@@ -196,19 +198,19 @@ def start_nlp_field_level(search_term):
                                      "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
                                 ]
                             }
+ 
+            payload = json.dumps(document)
 
-        payload = json.dumps(document)
+            message_bytes = payload.encode('ascii')
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode('ascii')
 
-        message_bytes = payload.encode('ascii')
-        base64_bytes = base64.b64encode(message_bytes)
-        base64_message = base64_bytes.decode('ascii')
-
-        # Send JSON payload to nlp-processing-queue in Azure
-        queue = QueueClient.from_connection_string(
-            conn_str=os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
-            queue_name="nlp-processing-queue"
-        )
-        queue.send_message(base64_message)
-        print(queue)
+            # Send JSON payload to nlp-processing-queue in Azure
+            queue = QueueClient.from_connection_string(
+                conn_str=os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
+                queue_name="nlp-processing-queue"
+            )
+            queue.send_message(base64_message)
+            print(queue)
 
     return True

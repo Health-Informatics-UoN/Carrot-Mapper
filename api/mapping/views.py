@@ -879,7 +879,8 @@ def merge_dictionary(request):
     return render(request, "mapping/mergedictionary.html")
 
 
-def run_nlp(request):
+# Run NLP at the field level
+def run_nlp_field_level(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
@@ -887,6 +888,20 @@ def run_nlp(request):
     
     return redirect("/values/?search={}".format(field.id))
 
+
+# Run NLP for all fields/values within a table
+def run_nlp_table_level(request):
+
+    search_term = request.GET.get("search", None)
+    table = ScanReportTable.objects.get(pk=search_term)
+    fields = ScanReportField.objects.filter(scan_report_table=search_term)
+    
+    for item in fields:
+        start_nlp_field_level(search_term=item.id)
+
+    
+    return redirect("/tables/?search={}".format(table.id))
+    
 
 def save_scan_report_value_concept(request):
     if request.method == "POST":

@@ -65,13 +65,9 @@ urlpatterns = [
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
     path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
-    path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
-    
-    path('nlp/', views.NLPListView.as_view(), name='nlp'),
-    path('nlp/create/', views.NLPFormView.as_view(), name='nlp-form'),
-    path('nlp/<int:pk>/', views.NLPDetailView.as_view(), name='nlp-view-query'),
-    path('nlp/run', views.run_nlp, name='run-nlp'),
-    path('nlp/results', views.NLPResultsListView.as_view(), name='nlp-view-results'),
+ 
+    path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
+    path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),

@@ -23,6 +23,7 @@
         <th scope="col">Person ID</th>
 		<th scope="col">Birth Date</th>
 		<th scope="col">Event Date</th>
+        <th scope="col">Run NLP on Table</th>
 	
 
     </tr>
@@ -47,6 +48,8 @@
 	</td>
 	
 	<td></td>
+
+    <td><a href="{% url 'run-nlp-table' %}?search={{ object.id }}">Run NLP on Table</a></td>
 
     </tr>
     {% endfor %}
