@@ -78,26 +78,36 @@ def main(msg: func.QueueMessage):
                     }
                 # This posts to api just fine,
                     # Turn off for testing so I don't post more than one entries
-                response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
+                # response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
                 
-                response=json.loads(response.content.decode("utf-8"))
-                table_id=response['id']
-                print("Table IDS before for loop",table_id)
+                # response=json.loads(response.content.decode("utf-8"))
+                # table_id=response['id']
+                scan_report_table_query={
+                        "name":table_names[table],
+                        "scan_report":str(body['scan_report_id'])
+                    }
+                response = requests.get("{}scanreporttablesfilter".format(api_url), params=scan_report_table_query)
+                response=json.loads(response.content)
+                # table_id=response['id']
+                for item in response:
+                    table_id=item['id']
+                    name=item['name']
+                
+                # print(response.content)
                 for row in reader:
-                    
+                
                     if row and row[0] != "":
                     # This links ScanReportTable to ScanReport
                     # [:31] is because excel is a pile of s***
                     # - sheet names are truncated to 31 characters
                         name = row[0][:31]
+                        
                         # Add each field in Field Overview to the model ScanReportField
-                        print(row[1])
-                        print("Table IDS in for loop: ",table_id)
                         scanreportfield_entry = {
-                            "scan_report_table":table_id,
+                            "scan_report_table":item['id'],
                             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                            "name":str(row[1]),
+                            "name":{item['name'] for item in response},
                             "description_column":str(row[2]),
                             "type_column":str(row[3]),
                             "max_length":row[4],
@@ -118,10 +128,11 @@ def main(msg: func.QueueMessage):
                             "concept_id": "-1",
                             "field_description": None,
                         }
-                        response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
-                        print(response.status_code)
-                        print(response.reason)
-                    
+                        print(scanreportfield_entry)
+                    # response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
+                    # print(response.status_code)
+                    # print(response.reason)
+                
             #     print([cell.value for cell in cells])
             
     
