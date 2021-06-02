@@ -526,7 +526,8 @@ class ScanReportFormView(FormView):
             queue_name="new-scanreports"
         )
         queue.send_message(queue_message)
-        process_scan_report_task.delay(scan_report.id)
+        
+        # process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
 
