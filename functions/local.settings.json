@@ -1,8 +1,0 @@
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "<conn_string>",
-    "FUNCTIONS_WORKER_RUNTIME": "python",
-    "coconnectstoragedev_STORAGE": "<conn_string>"
-  }
-}

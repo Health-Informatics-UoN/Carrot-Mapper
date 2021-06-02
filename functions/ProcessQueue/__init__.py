@@ -6,6 +6,7 @@ from azure.storage.blob import BlockBlobService
 from io import BytesIO
 import requests
 import openpyxl
+import rows
 from datetime import datetime
 import os
 
@@ -30,8 +31,7 @@ def main(msg: func.QueueMessage):
     # Write File saved in Blob storage to BytesIO stream
     with BytesIO() as input_blob:
         with BytesIO() as output_blob:
-            blob = BlockBlobService(
-                    connection_string="<connection_string>")           
+            blob = BlockBlobService(connection_string=os.environ.get('coconnectstoragedev_STORAGE'))
             # Download as a stream
             blob.get_blob_to_stream(container_name='photos', blob_name=filename,stream=input_blob)
     
@@ -46,6 +46,9 @@ def main(msg: func.QueueMessage):
             # Get the first sheet 'Field Overview',
             # for populating ScanReportTable & ScanReportField models
             ws=wb.worksheets[0]
+            reader = rows.import_from_xlsx(input_blob)
+            rows.export_to_csv(reader, open("my_file.csv", "wb"))
+            
             table_names=[]
             # Skip header with min_row=2
             for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
@@ -58,45 +61,67 @@ def main(msg: func.QueueMessage):
                         if name not in table_names:
                             table_names.append(name)
             #Truncate table name: [:31] because excel sheet names are truncated to 31 characters
-            for table in range(len(table_names)): table_names[table]=table_names[table][:31]
-            # Get request from ScanReportTable using scan report id & name
             for table in range(len(table_names)):
-            
+                table_names[table]=table_names[table][:31]
+            # Get request from ScanReportTable using scan report id & name
+
                 scan_report_table_entry={
-                    "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    "name": table_names[0],
-                    "scan_report":str(body['scan_report_id']),
-                    "person_id": None,
-                    "birth_date": None,
-                    "measurement_date": None,
-                    "condition_date": None,
-                    "observation_date": None
-                }
-                # This posts to api just fine,
-                # Turn off for testing so I don't post more than one entries
-                # response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
-            for i,col_cell in enumerate(ws.iter_cols(min_row=2),start = 2):
-                for cell in col_cell:
-                    scan_report_field_entry={
-                        "scan_report_table":"",#get id from get request above
-                        "name": ws.cell(row=i,column=2).value,
-                        "description_column":ws.cell(row=i,column=3).value,
-                        "type_column":ws.cell(row=i,column=4).value,
-                        "max_length":ws.cell(row=i,column=5).value,
-                        "nrows":ws.cell(row=i,column=6).value,
-                        "nrows_checked":ws.cell(row=i,column=7).value,
-                        "fraction_empty":ws.cell(row=i,column=8).value,
-                        "nunique_values":ws.cell(row=i,column=9).value,
-                        "fraction_unique":ws.cell(row=i,column=10).value,
-                        "flag_column":ws.cell(row=i,column=11).value,
-                        "is_patient_id":False,
-                        "is_date_event":False,
-                        "is_ignore":False,
-                        "pass_from_source":True,
-                        "classification_system":ws.cell(row=i,column=12).value,
+                        "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        "name": table_names[table],
+                        "scan_report":str(body['scan_report_id']),
+                        "person_id": None,
+                        "birth_date": None,
+                        "measurement_date": None,
+                        "condition_date": None,
+                        "observation_date": None
                     }
-                # for cells in ws.iter_rows():
+                # This posts to api just fine,
+                    # Turn off for testing so I don't post more than one entries
+                response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
+                
+                response=json.loads(response.content.decode("utf-8"))
+                table_id=response['id']
+                print("Table IDS before for loop",table_id)
+                for row in reader:
+                    
+                    if row and row[0] != "":
+                    # This links ScanReportTable to ScanReport
+                    # [:31] is because excel is a pile of s***
+                    # - sheet names are truncated to 31 characters
+                        name = row[0][:31]
+                        # Add each field in Field Overview to the model ScanReportField
+                        print(row[1])
+                        print("Table IDS in for loop: ",table_id)
+                        scanreportfield_entry = {
+                            "scan_report_table":table_id,
+                            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                            "name":str(row[1]),
+                            "description_column":str(row[2]),
+                            "type_column":str(row[3]),
+                            "max_length":row[4],
+                            "nrows":row[5],
+                            "nrows_checked":row[6],
+                            "fraction_empty":row[7],
+                            "nunique_values":row[8],
+                            "fraction_unique":row[9],
+                            "flag_column":str(row[10]),
+                            "ignore_column":None,
+                            "is_patient_id":False,
+                            "is_date_event":False,
+                            "is_birth_date":False,
+                            "is_ignore":False,
+                            "pass_from_source":True,
+                            "classification_system":str(row[11]),
+                            "date_type": "",
+                            "concept_id": "-1",
+                            "field_description": None,
+                        }
+                        response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
+                        print(response.status_code)
+                        print(response.reason)
+                    
             #     print([cell.value for cell in cells])
             
     
@@ -147,7 +172,6 @@ def main(msg: func.QueueMessage):
             # response = requests.post(api_url, data = data_partner_entry)
             # response = requests.get(api_url)
             # print(response)
-
     logging.info(body['blob_name'])
     
 
