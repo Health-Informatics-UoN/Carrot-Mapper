@@ -25,7 +25,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AZURE_ACCOUNT_NAME="coconnectstoragedev"
 AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
-AZURE_CONNECTION_STRING="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net"
+AZURE_CONNECTION_STRING=os.environ.get("CONN_STRING")
 AZURE_CONTAINER="photos"
 
 MEDIA_LOCATION = "http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media"
