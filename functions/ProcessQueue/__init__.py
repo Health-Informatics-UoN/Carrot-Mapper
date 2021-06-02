@@ -62,9 +62,11 @@ def main(msg: func.QueueMessage):
                             table_names.append(name)
             #Truncate table name: [:31] because excel sheet names are truncated to 31 characters
             for table in range(len(table_names)):
-                table_names[table]=table_names[table][:31]
-            # Get request from ScanReportTable using scan report id & name
 
+                print('WORKING ON TABLE >>> ', table)
+                table_names[table]=table_names[table][:31]
+            
+                # Get request from ScanReportTable using scan report id & name
                 scan_report_table_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -76,27 +78,21 @@ def main(msg: func.QueueMessage):
                         "condition_date": None,
                         "observation_date": None
                     }
-                # This posts to api just fine,
-                    # Turn off for testing so I don't post more than one entries
-                # response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
+
+                # Turn off for testing so I don't post more than one entries
+                response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
+                print('TABLE SAVE STATUS >>>', response.status_code)
                 
-                # response=json.loads(response.content.decode("utf-8"))
-                # table_id=response['id']
-                scan_report_table_query={
-                        "name":table_names[table],
-                        "scan_report":str(body['scan_report_id'])
-                    }
-                response = requests.get("{}scanreporttablesfilter".format(api_url), params=scan_report_table_query)
-                response=json.loads(response.content)
-                # table_id=response['id']
-                for item in response:
-                    table_id=item['id']
-                    name=item['name']
-                
-                # print(response.content)
+                response=json.loads(response.content.decode("utf-8"))
+                table_id=response['id']
+                print('LAST TABLE SAVED >>> ', table, table_id)
+
                 for row in reader:
                 
                     if row and row[0] != "":
+
+                        
+
                     # This links ScanReportTable to ScanReport
                     # [:31] is because excel is a pile of s***
                     # - sheet names are truncated to 31 characters
@@ -104,7 +100,7 @@ def main(msg: func.QueueMessage):
                         
                         # Add each field in Field Overview to the model ScanReportField
                         scanreportfield_entry = {
-                            "scan_report_table":item['id'],
+                            "scan_report_table": item['id'],
                             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                             "name":{item['name'] for item in response},
