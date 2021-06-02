@@ -8,7 +8,7 @@ services:
       context: ./
     command: sh /entrypoint.sh
     env_file:
-      - .env_online
+      - .env
     restart: unless-stopped
     volumes:
       - ./api:/api
@@ -29,7 +29,7 @@ services:
     image: postgres:13.1
     restart: unless-stopped
     env_file:
-      - .env_online
+      - .env
     volumes:
       - ./data/pgdata:/var/lib/postgresql/data
       - ./data:/data
@@ -47,7 +47,7 @@ services:
     restart: unless-stopped
     command: celery -A api worker -l info
     env_file:
-      - .env_online
+      - .env
     volumes:
       - ./api:/api
     depends_on:
