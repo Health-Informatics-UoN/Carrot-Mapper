@@ -83,7 +83,7 @@ def save_person_id_rule(request,
 
     #!todo - turn into a func() is stable/valid for mapping
     #      - this needs to be checked before this step
-    if person_id_source_field == None:
+    if person_id_source_field == None and request:
         messages.error(request,'Failed to add concept because there is no'
                        f'person_id set for this table {source_table}')
         return False
