@@ -124,6 +124,12 @@ class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
 
+class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=Concept.objects.all()
+    serializer_class=ConceptSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_code', 'vocabulary_id']        
+    
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
     serializer_class=VocabularySerializer
@@ -166,10 +172,22 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
 
+class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportTable.objects.all()
+    serializer_class=ScanReportTableSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report', 'name']
+        
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer
 
+class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportField.objects.all()
+    serializer_class=ScanReportFieldSerializer  
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_table', 'name']
+    
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer
@@ -198,6 +216,13 @@ class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer
 
+class DataPartnerFilterViewSet(viewsets.ModelViewSet):
+    queryset=DataPartner.objects.all()
+    serializer_class=DataPartnerSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['name']    
+    
+    
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
@@ -222,7 +247,12 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer  
 
-
+class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportValue.objects.all()
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field', 'value']    
+    
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
