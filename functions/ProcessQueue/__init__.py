@@ -60,7 +60,8 @@ def main(msg: func.QueueMessage):
                         name=ws.cell(row=i,column=1).value
                         if name not in table_names:
                             table_names.append(name)
-            #Truncate table name: [:31] because excel sheet names are truncated to 31 characters
+
+            table_ids = []
             for table in range(len(table_names)):
 
                 print('WORKING ON TABLE >>> ', table)
@@ -84,102 +85,99 @@ def main(msg: func.QueueMessage):
                 print('TABLE SAVE STATUS >>>', response.status_code)
                 
                 response=json.loads(response.content.decode("utf-8"))
-                table_id=response['id']
-                print('LAST TABLE SAVED >>> ', table, table_id)
+                table_ids.append(response['id'])
+            
+            print('TABLE IDs', table_ids)
 
-                for row in reader:
-                
-                    if row and row[0] != "":
+            idx=0
+            for row in reader:
+            
+                if row and row[0] == "":
+                    
+                    name = row[0][:31]
+                    
+                    # Add each field in Field Overview to the model ScanReportField
+                    scanreportfield_entry = {
+                        "scan_report_table": table_ids,
+                        "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                        "name":{item['name'] for item in response},
+                        "description_column":str(row[2]),
+                        "type_column":str(row[3]),
+                        "max_length":row[4],
+                        "nrows":row[5],
+                        "nrows_checked":row[6],
+                        "fraction_empty":row[7],
+                        "nunique_values":row[8],
+                        "fraction_unique":row[9],
+                        "flag_column":str(row[10]),
+                        "ignore_column":None,
+                        "is_patient_id":False,
+                        "is_date_event":False,
+                        "is_birth_date":False,
+                        "is_ignore":False,
+                        "pass_from_source":True,
+                        "classification_system":str(row[11]),
+                        "date_type": "",
+                        "concept_id": "-1",
+                        "field_description": None,
+                    }
+                    print(scanreportfield_entry)
+                # response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
+                # print(response.status_code)
+                # print(response.reason)
+            
+        #     print([cell.value for cell in cells])
+        
 
+        
+        #             if len(row) >= 11:
                         
+        #             # Add each field in Field Overview to the model ScanReportField
+        #             # Replace this with a post Request to ScanReportField
+        #             scanreport={
+        #                 "scan_report_table":scan_report_table_query,#get id from get request above
+        #                 "name": row[1],
+        #                 "description_column":row[2],
+        #                 "type_column":row[3],
+        #                 "max_length":row[4],
+        #                 "nrows":row[5],
+        #                 "nrows_checked":row[6],
+        #                 "fraction_empty":row[7],
+        #                 "nunique_values":row[8],
+        #                 "fraction_unique":row[9],
+        #                 "flag_column":row[10],
+        #                 "is_patient_id":False,
+        #                 "is_date_event":False,
+        #                 "is_ignore":False,
+        #                 "pass_from_source":True,
+        #                 "classification_system":row[11],
+        #             }
+        
+        #             scanreport["flag_column"]=scanreport["flag_column"].lower()
+        #             if scanreport["flag_column"] == "patientid":
+        #                 scanreport["is_patient_id"] = True
+        #             else:
+        #                 scanreport["is_patient_id"] = False
 
-                    # This links ScanReportTable to ScanReport
-                    # [:31] is because excel is a pile of s***
-                    # - sheet names are truncated to 31 characters
-                        name = row[0][:31]
-                        
-                        # Add each field in Field Overview to the model ScanReportField
-                        scanreportfield_entry = {
-                            "scan_report_table": item['id'],
-                            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                            "name":{item['name'] for item in response},
-                            "description_column":str(row[2]),
-                            "type_column":str(row[3]),
-                            "max_length":row[4],
-                            "nrows":row[5],
-                            "nrows_checked":row[6],
-                            "fraction_empty":row[7],
-                            "nunique_values":row[8],
-                            "fraction_unique":row[9],
-                            "flag_column":str(row[10]),
-                            "ignore_column":None,
-                            "is_patient_id":False,
-                            "is_date_event":False,
-                            "is_birth_date":False,
-                            "is_ignore":False,
-                            "pass_from_source":True,
-                            "classification_system":str(row[11]),
-                            "date_type": "",
-                            "concept_id": "-1",
-                            "field_description": None,
-                        }
-                        print(scanreportfield_entry)
-                    # response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
-                    # print(response.status_code)
-                    # print(response.reason)
-                
-            #     print([cell.value for cell in cells])
-            
-    
-            
-            #             if len(row) >= 11:
-                           
-            #             # Add each field in Field Overview to the model ScanReportField
-            #             # Replace this with a post Request to ScanReportField
-            #             scanreport={
-            #                 "scan_report_table":scan_report_table_query,#get id from get request above
-            #                 "name": row[1],
-            #                 "description_column":row[2],
-            #                 "type_column":row[3],
-            #                 "max_length":row[4],
-            #                 "nrows":row[5],
-            #                 "nrows_checked":row[6],
-            #                 "fraction_empty":row[7],
-            #                 "nunique_values":row[8],
-            #                 "fraction_unique":row[9],
-            #                 "flag_column":row[10],
-            #                 "is_patient_id":False,
-            #                 "is_date_event":False,
-            #                 "is_ignore":False,
-            #                 "pass_from_source":True,
-            #                 "classification_system":row[11],
-            #             }
-            
-            #             scanreport["flag_column"]=scanreport["flag_column"].lower()
-            #             if scanreport["flag_column"] == "patientid":
-            #                 scanreport["is_patient_id"] = True
-            #             else:
-            #                 scanreport["is_patient_id"] = False
+        #             if scanreport["flag_column"] == "date":
+        #                 scanreport["is_date_event"] = True
+        #             else:
+        #                 scanreport["is_date_event"] = False
 
-            #             if scanreport["flag_column"] == "date":
-            #                 scanreport["is_date_event"] = True
-            #             else:
-            #                 scanreport["is_date_event"] = False
+        #             if scanreport["flag_column"] == "ignore":
+        #                     scanreport["is_ignore"] = True
+        #             else:
+        #                     scanreport["is_ignore"] = False
+        #             # Replace model save with PUT request to ScanReport model
+        #             scanreport.save()
 
-            #             if scanreport["flag_column"] == "ignore":
-            #                     scanreport["is_ignore"] = True
-            #             else:
-            #                     scanreport["is_ignore"] = False
-            #             # Replace model save with PUT request to ScanReport model
-            #             scanreport.save()
+        # response = requests.get(api_url, params=query)
+        # print(response.json())
+        # response = requests.post(api_url, data = data_partner_entry)
+        # response = requests.get(api_url)
+        # print(response)
+logging.info(body['blob_name'])
 
-            # response = requests.get(api_url, params=query)
-            # print(response.json())
-            # response = requests.post(api_url, data = data_partner_entry)
-            # response = requests.get(api_url)
-            # print(response)
-    logging.info(body['blob_name'])
-    
 
 
