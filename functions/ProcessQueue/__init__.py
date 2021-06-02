@@ -31,7 +31,7 @@ def main(msg: func.QueueMessage):
     with BytesIO() as input_blob:
         with BytesIO() as output_blob:
             blob = BlockBlobService(
-                    connection_string="DefaultEndpointsProtocol=https;AccountName=coconnectstoragedev;AccountKey=Xpsm2FYrH4umCmYNjvEaHlOW/p2NUhwEXmdFt6zrve8LVylkbPts3eEU5+tzC8U8W52yba8ysowVf13PnbUHJA==;EndpointSuffix=core.windows.net")           
+                    connection_string="<connection_string>")           
             # Download as a stream
             blob.get_blob_to_stream(container_name='photos', blob_name=filename,stream=input_blob)
     
