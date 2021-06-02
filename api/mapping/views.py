@@ -11,6 +11,17 @@ from .serializers import (
     ScanReportFieldSerializer,
     ScanReportValueSerializer,    
     ScanReportConceptSerializer,
+    MappingSerializer,
+    ClassificationSystemSerializer,
+    DataDictionarySerializer,
+    DocumentSerializer,
+    DocumentFileSerializer,
+    DataPartnerSerializer,
+    OmopTableSerializer,
+    OmopFieldSerializer,
+    StructuralMappingRuleSerializer,
+    SourceSerializer,
+    DocumentTypeSerializer,    
 )
 from .serializers import (
     ConceptSerializer,
@@ -77,19 +88,31 @@ from .forms import (
 )
 from .models import (
     DataDictionary,
+    DataPartner,
     Document,
     DocumentFile,
+    DocumentType,
     NLPModel,
+    OmopTable,
     OmopField,
+    OmopTable,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
+    Mapping,
+    ClassificationSystem,
+    Source,
 )
 from .services import process_scan_report
 from .services_nlp import start_nlp
+from .services_rules import (
+    save_mapping_rules,
+    download_mapping_rules,
+    view_mapping_rules
+)
 from .services_datadictionary import merge_external_dictionary
 
 from .tasks import (
@@ -100,6 +123,7 @@ from .tasks import (
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
+
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
     serializer_class=VocabularySerializer
@@ -149,60 +173,59 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer
+    
+class MappingViewSet(viewsets.ModelViewSet):
+    queryset=Mapping.objects.all()
+    serializer_class=MappingSerializer
 
-class ScanReportValuesViewSet(viewsets.ModelViewSet):
-    model = ScanReportValue    
-    serializer_class=ScanReportValueSerializer    
-    fields = ["conceptID"]
-    factory_kwargs = {"can_delete": False, "extra": False}
+class ClassificationSystemViewSet(viewsets.ModelViewSet):
+    queryset=ClassificationSystem.objects.all()
+    serializer_class=ClassificationSystemSerializer
 
-    def get_queryset(self):
-        search_term = self.request.GET.get("search", None)
+class DataDictionaryViewSet(viewsets.ModelViewSet):
+    queryset=DataDictionary.objects.all()
+    serializer_class=DataDictionarySerializer
 
-        if search_term is not None:
-            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by('value')
-        else:
-            qs = ScanReportValue.objects.all()
+class DocumentViewSet(viewsets.ModelViewSet):
+    queryset=Document.objects.all()
+    serializer_class=DocumentSerializer
 
-        return qs
+class DocumentFileViewSet(viewsets.ModelViewSet):
+    queryset=DocumentFile.objects.all()
+    serializer_class=DocumentFileSerializer
 
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
+class DataPartnerViewSet(viewsets.ModelViewSet):
+    queryset=DataPartner.objects.all()
+    serializer_class=DataPartnerSerializer
 
-        if len(self.get_queryset()) > 0:
-            # scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            # scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table
-            scan_report_field = self.get_queryset()[0].scan_report_field
-            scan_report_value = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-            scan_report_value = None
+class OmopTableViewSet(viewsets.ModelViewSet):
+    queryset=OmopTable.objects.all()
+    serializer_class=OmopTableSerializer
 
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-                "scan_report_value": scan_report_value,
-            }
-        )
+class OmopFieldViewSet(viewsets.ModelViewSet):
+    queryset=OmopField.objects.all()
+    serializer_class=OmopFieldSerializer
 
-        return context
+class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
+    queryset=StructuralMappingRule.objects.all()
+    serializer_class=StructuralMappingRuleSerializer
+
+class SourceViewSet(viewsets.ModelViewSet):
+    queryset=Source.objects.all()
+    serializer_class=SourceSerializer
+    
+class DocumentTypeViewSet(viewsets.ModelViewSet):
+    queryset=DocumentType.objects.all()
+    serializer_class=DocumentTypeSerializer
+    
+class ScanReportValueViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportValue.objects.all()
+    serializer_class=ScanReportValueSerializer  
+
 
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
-
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportTableListView(ListView):
@@ -241,10 +264,7 @@ class ScanReportTableUpdateView(UpdateView):
     model = ScanReportTable
     fields = [
         "person_id",
-        "birth_date",
-        "measurement_date",
-        "observation_date",
-        "condition_date"
+        "date_event"
     ]
 
     def get_context_data(self, **kwargs):
@@ -434,14 +454,24 @@ class StructuralMappingTableListView(ListView):
     model = StructuralMappingRule
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("download-rules") is not None:
+            qs = self.get_queryset()
+            return download_mapping_rules(request,qs)
+        elif request.POST.get("get-svg") is not None:
+            qs = self.get_queryset()
+            return view_mapping_rules(request,qs)
+        else:
+            messages.error(request,"not working right now!")                
+            return redirect(request.path)
+    
     def get_queryset(self):
-        scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
-
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
                 "omop_field__table",
                 "omop_field__field",
                 "source_table__name",
@@ -450,6 +480,24 @@ class StructuralMappingTableListView(ListView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        
+        if len(self.get_queryset()) > 0:
+            scan_report = self.get_queryset()[0].scan_report
+        else:
+            scan_report = None
+
+        context.update(
+            {
+                "scan_report": scan_report,
+            }
+        )
+
+        return context
+
+    
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFormView(FormView):
@@ -925,6 +973,7 @@ class NLPDetailView(DetailView):
             context = {"user_string": query.user_string, "results": json_response}
             return context
 
+
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
@@ -937,7 +986,6 @@ def run_nlp(request):
 @method_decorator(login_required, name="dispatch")
 class NLPResultsListView(ListView):
     model = ScanReportConcept
-    
 
 def save_scan_report_value_concept(request):
     if request.method == "POST":
@@ -947,7 +995,7 @@ def save_scan_report_value_concept(request):
             scan_report_value = ScanReportValue.objects.get(
                 pk=form.cleaned_data['scan_report_value_id']
             )
-
+            
             try:
                 concept = Concept.objects.get(
                     concept_id=form.cleaned_data['concept_id']
@@ -956,7 +1004,8 @@ def save_scan_report_value_concept(request):
                 messages.error(request,
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
-
+            
+            
             scan_report_concept = ScanReportConcept.objects.create(
                 concept=concept,
                 content_object=scan_report_value,
@@ -964,6 +1013,8 @@ def save_scan_report_value_concept(request):
 
             messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
 
+            save_mapping_rules(request,scan_report_concept)
+                        
             return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 
@@ -973,11 +1024,13 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
+    #scan_report_concept.structuralmappingrule.delete()
+                
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 
     scan_report_concept.delete()
-
+    
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/values/?search={}".format(scan_report_field_id))
@@ -1007,6 +1060,8 @@ def save_scan_report_field_concept(request):
             )
 
             messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+
+            save_mapping_rules(request,scan_report_concept)
 
             return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
