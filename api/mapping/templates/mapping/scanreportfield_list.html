@@ -35,8 +35,8 @@
             {% for object in object_list %}
             <tr>
                 <form class="" method="post" action="{% url 'scan_report_field_concept' %}">
-                    {% csrf_token %}
-                {% if object.concept_id == -1 %}
+                  {% csrf_token %}
+                {% if object.concepts.all|length == 0 %}
                     <td><a href="{% url 'values' %}?search={{ object.id }}">
                         {{ object.name| truncatechars:20 }}</a>
                         
