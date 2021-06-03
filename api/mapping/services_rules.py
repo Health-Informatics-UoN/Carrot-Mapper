@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 
+from django.contrib.admin.options import get_content_type_for_model
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
@@ -407,3 +408,51 @@ def view_mapping_rules(request,qs):
     response = HttpResponse(svg, content_type="image/svg+xml")
     return response
 
+
+def find_existing_scan_report_concepts(request,table_id):
+
+    #find ScanReportValue associated to this table_id
+    #that have at least one concept added to them
+    values = ScanReportValue\
+        .objects\
+        .all()\
+        .filter(scan_report_field__scan_report_table__scan_report=table_id)\
+        .filter(concepts__isnull=False)
+
+    #find ScanReportField associated to this table_id
+    #that have at least one concept added to them
+    fields = ScanReportField\
+        .objects\
+        .all()\
+        .filter(scan_report_table__scan_report=table_id)\
+        .filter(concepts__isnull=False)
+
+    #retrieve all value concepts
+    all_concepts  = [
+        concept
+        for obj in values
+        for concept in obj.concepts.all()
+    ]
+    #retrieve all field concepts
+    all_concepts  += [
+        concept
+        for obj in fields
+        for concept in obj.concepts.all()
+    ]
+    return all_concepts
+
+def save_multiple_mapping_rules(request,all_concepts):    
+    #now loop over all concepts and save new rules
+    for concept in all_concepts:
+        save_mapping_rules(request,concept)
+
+
+def remove_mapping_rules(request,scan_report_id):
+    """
+    """
+    rules = StructuralMappingRule.objects.all()\
+        .filter(scan_report__id=scan_report_id)
+
+    print (len(rules))
+    rules.delete()
+    print (len(rules))
