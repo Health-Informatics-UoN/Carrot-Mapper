@@ -9,6 +9,35 @@ import openpyxl
 import rows
 from datetime import datetime
 import os
+import pandas as pd
+
+def process_scan_report_sheet_table(sheet):
+    results = []
+    max_column=sheet.max_column
+    col_idx=1
+
+    for row_idx,row_cell in enumerate(sheet.iter_rows(min_row=1,max_col=max_column),start = 1):
+    # Get Column Names
+        if (col_idx<=max_column):
+            name = sheet.cell(row=1,column=col_idx).value
+
+    # Works through pairs of value/frequency columns
+        for column_idx,cell in enumerate(row_cell):
+          if cell.value:
+            
+            if (column_idx) % 2 == 0:
+              
+            # As we move down rows, checks that there's data there
+            # This is required b/c value/frequency col pairs differ
+            # in the number of rows
+              if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
+                continue
+              
+              results.append(
+                  (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
+              )
+    col_idx=col_idx+1
+    return results
 
 def main(msg: func.QueueMessage):
     logging.info('Python queue trigger function processed a queue item.')
@@ -46,9 +75,7 @@ def main(msg: func.QueueMessage):
             # Get the first sheet 'Field Overview',
             # for populating ScanReportTable & ScanReportField models
             ws=wb.worksheets[0]
-            reader = rows.import_from_xlsx(input_blob)
-            rows.export_to_csv(reader, open("my_file.csv", "wb"))
-            
+           
             table_names=[]
             # Skip header with min_row=2
             for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
@@ -62,6 +89,8 @@ def main(msg: func.QueueMessage):
                             table_names.append(name)
 
             table_ids = []
+            field_ids=[]
+            field_names=[]
             for table in range(len(table_names)):
 
                 print('WORKING ON TABLE >>> ', table)
@@ -90,94 +119,88 @@ def main(msg: func.QueueMessage):
             print('TABLE IDs', table_ids)
 
             idx=0
-            for row in reader:
-            
-                if row and row[0] == "":
+            for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
+                
+                # Add each field in Field Overview to the model ScanReportField
+                scan_report_field_entry={
+                    "scan_report_table":table_ids[idx],
+                    "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "name": ws.cell(row=i,column=2).value,
+                    "description_column":str("empty"),
+                    "type_column":str(ws.cell(row=i,column=4).value),
+                    "max_length":ws.cell(row=i,column=5).value,
+                    "nrows":ws.cell(row=i,column=6).value,
+                    "nrows_checked":ws.cell(row=i,column=7).value,
+                    "fraction_empty":0,
+                    "nunique_values":ws.cell(row=i,column=9).value,
+                    "fraction_unique":0,
+                    "flag_column":str(ws.cell(row=i,column=11).value),
+                    "ignore_column":None,
+                    "is_birth_date":False,
+                    "is_patient_id":False,
+                    "is_date_event":False,
+                    "is_ignore":False,
+                    "pass_from_source":True,
+                    "classification_system":str(ws.cell(row=i,column=12).value),
+                    "date_type": "",
+                    "concept_id": -1,
+                    "field_description": None,
+                }
+                
+                
+                response = requests.post("{}scanreportfields/".format(api_url), data=scan_report_field_entry)
+                print('FIELD SAVE STATUS >>>', response.status_code)
+                
+                response=json.loads(response.content.decode("utf-8"))
+                id=response.get('id', None)
+                name=response.get('name',None)
+                field_names.append(str(name))
+                field_ids.append(str(id))
+                
+
+                if not any(cell.value for cell in row_cell):
+                    idx=idx+1
+                    print("If row is empty then next IDis :",table_ids[idx])
+        
+    # For sheets past the first two in the scan Report
+    # i.e. all 'data' sheets that are not Field Overview and Table Overview
+        namexids=dict(zip(field_names,field_ids))
+        for name in field_names:
+            if name.startswith("[") or None:
+              field_names.remove(name)
+        for id in field_ids:
+            if id=="None": field_ids.remove(id)
+        
+        namexids=dict(zip(field_names,field_ids))
+        print(namexids)
+        for idxsheet, sheet in enumerate(wb.worksheets):
+            if idxsheet<2:
+                continue
+        
+            # skip these sheets at the end of the scan report
+            if sheet.title=="_":
+                continue
+            print(sheet.title)
+            results=process_scan_report_sheet_table(sheet)
+            for result in range(len(results)):
+                
+                name=str(results[result][0])
+                value=str(results[result][1])
+                frequency=results[result][2]      
                     
-                    name = row[0][:31]
-                    
-                    # Add each field in Field Overview to the model ScanReportField
-                    scanreportfield_entry = {
-                        "scan_report_table": table_ids,
+                print("results field:",name,value)
+                print(namexids[name])
+                if name!=value:
+                    scan_report_value_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                         "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                        "name":{item['name'] for item in response},
-                        "description_column":str(row[2]),
-                        "type_column":str(row[3]),
-                        "max_length":row[4],
-                        "nrows":row[5],
-                        "nrows_checked":row[6],
-                        "fraction_empty":row[7],
-                        "nunique_values":row[8],
-                        "fraction_unique":row[9],
-                        "flag_column":str(row[10]),
-                        "ignore_column":None,
-                        "is_patient_id":False,
-                        "is_date_event":False,
-                        "is_birth_date":False,
-                        "is_ignore":False,
-                        "pass_from_source":True,
-                        "classification_system":str(row[11]),
-                        "date_type": "",
-                        "concept_id": "-1",
-                        "field_description": None,
+                        "value": value,
+                        "frequency": int(frequency),
+                        "conceptID": -1,
+                        "value_description": None,
+                        "scan_report_field":namexids[name]
                     }
-                    print(scanreportfield_entry)
-                # response = requests.post("{}scanreportfields/".format(api_url), data=scanreportfield_entry)
-                # print(response.status_code)
-                # print(response.reason)
-            
-        #     print([cell.value for cell in cells])
-        
-
-        
-        #             if len(row) >= 11:
-                        
-        #             # Add each field in Field Overview to the model ScanReportField
-        #             # Replace this with a post Request to ScanReportField
-        #             scanreport={
-        #                 "scan_report_table":scan_report_table_query,#get id from get request above
-        #                 "name": row[1],
-        #                 "description_column":row[2],
-        #                 "type_column":row[3],
-        #                 "max_length":row[4],
-        #                 "nrows":row[5],
-        #                 "nrows_checked":row[6],
-        #                 "fraction_empty":row[7],
-        #                 "nunique_values":row[8],
-        #                 "fraction_unique":row[9],
-        #                 "flag_column":row[10],
-        #                 "is_patient_id":False,
-        #                 "is_date_event":False,
-        #                 "is_ignore":False,
-        #                 "pass_from_source":True,
-        #                 "classification_system":row[11],
-        #             }
-        
-        #             scanreport["flag_column"]=scanreport["flag_column"].lower()
-        #             if scanreport["flag_column"] == "patientid":
-        #                 scanreport["is_patient_id"] = True
-        #             else:
-        #                 scanreport["is_patient_id"] = False
-
-        #             if scanreport["flag_column"] == "date":
-        #                 scanreport["is_date_event"] = True
-        #             else:
-        #                 scanreport["is_date_event"] = False
-
-        #             if scanreport["flag_column"] == "ignore":
-        #                     scanreport["is_ignore"] = True
-        #             else:
-        #                     scanreport["is_ignore"] = False
-        #             # Replace model save with PUT request to ScanReport model
-        #             scanreport.save()
-
-        # response = requests.get(api_url, params=query)
-        # print(response.json())
-        # response = requests.post(api_url, data = data_partner_entry)
-        # response = requests.get(api_url)
-        # print(response)
-logging.info(body['blob_name'])
-
-
-
+                    response = requests.post("{}scanreportvalues/".format(api_url), data=scan_report_value_entry)
+                    print('VALUE SAVE STATUS >>>', response.status_code)
+    logging.info(body['blob_name'])
