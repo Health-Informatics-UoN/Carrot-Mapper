@@ -113,6 +113,7 @@ from .services_rules import (
     download_mapping_rules,
     view_mapping_rules
 )
+from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary
 
 
