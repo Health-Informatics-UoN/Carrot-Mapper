@@ -12,7 +12,33 @@ import os
 import pandas as pd
 
 def process_scan_report_sheet_table(sheet):
+    """
+    This function converts a White Rabbit scan report to CSV and extract the
+    data into the format below.
+
+    -- Example Table Sheet CSV --
+    column a,frequency,column c,frequency
+    apple,20,orange,5
+    banana,3,plantain,50
+    ,,pinable,6
+    --
+
+    -- output --
+    column a, apple, 20
+    column c, orange, 5
+    column a, banana, 3
+    column c, plantain, 50
+    --
+
+    :param filename:
+    :return:
+    """
+
     results = []
+
+    
+
+    column_names = []
     max_column=sheet.max_column
     col_idx=1
 
@@ -24,12 +50,15 @@ def process_scan_report_sheet_table(sheet):
     # Works through pairs of value/frequency columns
         for column_idx,cell in enumerate(row_cell):
           if cell.value:
-            
+            # name = sheet.cell(row=1,column=col_idx).value
+            # column_names.append(name)
+            # print(cell.value,column_idx)
             if (column_idx) % 2 == 0:
-              
-            # As we move down rows, checks that there's data there
-            # This is required b/c value/frequency col pairs differ
-            # in the number of rows
+              # print(cell.value,sheet.cell(row_idx,col_idx).value)
+              # print(column_names[col_idx-2])
+          # As we move down rows, checks that there's data there
+          # This is required b/c value/frequency col pairs differ
+          # in the number of rows
               if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
                 continue
               
@@ -37,6 +66,7 @@ def process_scan_report_sheet_table(sheet):
                   (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
               )
     col_idx=col_idx+1
+
     return results
 
 def main(msg: func.QueueMessage):
@@ -69,6 +99,7 @@ def main(msg: func.QueueMessage):
             # Create blob from processed file(not needed/testing)
             # blob.create_blob_from_stream('photos',"Changed-{}".format(filename), input_blob)
             api_url="http://localhost:8080/api/"
+            headers={"Content-type": "application/json", "charset":"utf-8"}
   
             # Load ByteIO() file in a openpyxl workbook
             wb = openpyxl.load_workbook(input_blob,data_only=True)
@@ -77,6 +108,7 @@ def main(msg: func.QueueMessage):
             ws=wb.worksheets[0]
            
             table_names=[]
+            
             # Skip header with min_row=2
             for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
                 # If the value in the first column (i.e. the Table Col) is not blank;
@@ -91,6 +123,7 @@ def main(msg: func.QueueMessage):
             table_ids = []
             field_ids=[]
             field_names=[]
+            data=[]
             for table in range(len(table_names)):
 
                 print('WORKING ON TABLE >>> ', table)
@@ -107,21 +140,23 @@ def main(msg: func.QueueMessage):
                         "measurement_date": None,
                         "condition_date": None,
                         "observation_date": None
-                    }
-
+                }
+                data.append(scan_report_table_entry)
                 # Turn off for testing so I don't post more than one entries
-                response = requests.post("{}scanreporttables/".format(api_url), data=scan_report_table_entry)
-                print('TABLE SAVE STATUS >>>', response.status_code)
+            json_data=json.dumps(data)
+            response = requests.post("{}scanreporttables/".format(api_url), data=json_data,headers=headers)
+            print('TABLE SAVE STATUS >>>', response.status_code)
                 
-                response=json.loads(response.content.decode("utf-8"))
-                table_ids.append(response['id'])
-            
+            response=json.loads(response.content.decode("utf-8"))
+            for element in range(len(response)):
+                table_ids.append(response[element]['id'])
             print('TABLE IDs', table_ids)
-
             idx=0
+            data=[]
             for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
                 
                 # Add each field in Field Overview to the model ScanReportField
+            
                 scan_report_field_entry={
                     "scan_report_table":table_ids[idx],
                     "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -148,38 +183,37 @@ def main(msg: func.QueueMessage):
                     "field_description": None,
                 }
                 
-                
-                response = requests.post("{}scanreportfields/".format(api_url), data=scan_report_field_entry)
-                print('FIELD SAVE STATUS >>>', response.status_code)
-                
-                response=json.loads(response.content.decode("utf-8"))
-                id=response.get('id', None)
-                name=response.get('name',None)
-                field_names.append(str(name))
-                field_ids.append(str(id))
-                
+                data.append(scan_report_field_entry)
 
                 if not any(cell.value for cell in row_cell):
                     idx=idx+1
-                    print("If row is empty then next IDis :",table_ids[idx])
-        
+                    data.pop()
+            
+            json_data=json.dumps(data)
+            
+            response = requests.post("{}scanreportfields/".format(api_url), data=json_data,headers=headers)
+            print('FIELD SAVE STATUS >>>', response.status_code)
+            response=json.loads(response.content.decode("utf-8"))
+            
+            for element in range(len(response)):
+                field_ids.append(str(response[element].get('id',None)))
+                field_names.append(str(response[element].get('name',None)))
+          
     # For sheets past the first two in the scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
-        namexids=dict(zip(field_names,field_ids))
+        data=[]
         for name in field_names:
             if name.startswith("[") or None:
               field_names.remove(name)
         for id in field_ids:
             if id=="None": field_ids.remove(id)
-        
         namexids=dict(zip(field_names,field_ids))
-        print(namexids)
         for idxsheet, sheet in enumerate(wb.worksheets):
             if idxsheet<2:
                 continue
         
             # skip these sheets at the end of the scan report
-            if sheet.title=="_":
+            if sheet.title=="_" or (sheet.title.startswith("HTA")):
                 continue
             print(sheet.title)
             results=process_scan_report_sheet_table(sheet)
@@ -189,8 +223,8 @@ def main(msg: func.QueueMessage):
                 value=str(results[result][1])
                 frequency=results[result][2]      
                     
-                print("results field:",name,value)
-                print(namexids[name])
+                # print("results field:",name,value)
+                # print(namexids[name])
                 if name!=value:
                     scan_report_value_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -201,6 +235,9 @@ def main(msg: func.QueueMessage):
                         "value_description": None,
                         "scan_report_field":namexids[name]
                     }
-                    response = requests.post("{}scanreportvalues/".format(api_url), data=scan_report_value_entry)
-                    print('VALUE SAVE STATUS >>>', response.status_code)
+                    data.append(scan_report_value_entry)
+    json_data=json.dumps(data)
+    response = requests.post("{}scanreportvalues/".format(api_url), data=json_data,headers=headers)
+    print('VALUE SAVE STATUS >>>', response.status_code)
+
     logging.info(body['blob_name'])
