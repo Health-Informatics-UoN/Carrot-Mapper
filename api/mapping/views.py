@@ -113,6 +113,9 @@ from .services import (
 from .services_nlp import start_nlp
 from .services_rules import (
     save_mapping_rules,
+    save_multiple_mapping_rules,
+    remove_mapping_rules,
+    find_existing_scan_report_concepts,
     download_mapping_rules,
     view_mapping_rules,
     find_date_event,
@@ -460,6 +463,21 @@ class StructuralMappingTableListView(ListView):
         if request.POST.get("download-rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
+        elif request.POST.get("refresh-rules") is not None:
+            ## this method is taking too long to execute
+            ## needs to be moved to serverless
+            all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
+            print ('found concepts')
+            save_multiple_mapping_rules(request,all_associated_concepts)
+            print ('saved screenshots')
+            messages.success(request,
+                             f'Found and added rules for {len(all_associated_concepts)} existing concepts')
+            return redirect(request.path)
+        elif request.POST.get("delete-rules") is not None:
+            remove_mapping_rules(request,self.kwargs.get("pk"))
+            messages.success(request,
+                             f'Deleted all rules for Table #{self.kwargs.get("pk")}')
+            return redirect(request.path)
         elif request.POST.get("get-svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
@@ -468,35 +486,37 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
     
     def get_queryset(self):
-        qs = super().get_queryset()
+        #qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
-
-        if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term).order_by(
-                "concept",
-                "omop_field__table",
-                "omop_field__field",
-                "source_table__name",
-                "source_field__name",
-            )
-
+        print ("get qs")
+        qs = self.model.objects\
+                       #.select_related('scan_report')\
+                       .all()\
+                       .filter(scan_report__id=search_term).order_by(
+                           "concept",
+                           "omop_field__table",
+                           "omop_field__field",
+                           "source_table__name",
+                           "source_field__name",
+                       )
+        print (f"got qs of length {qs.count()}")
         return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
+        print ('get context')
         context = super().get_context_data(**kwargs)
         
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report
-        else:
-            scan_report = None
+        scan_report = None
+        if context['object_list'].count() > 0:
+            scan_report = context['object_list'][0].scan_report
 
         context.update(
             {
                 "scan_report": scan_report,
             }
         )
-
+        print ('got context')
         return context
 
     
