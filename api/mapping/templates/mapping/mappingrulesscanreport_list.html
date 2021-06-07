@@ -81,9 +81,7 @@
     <tbody>
       {% for object in object_list.iterator %}
       <tr>
-	<!---
         <td style="width: 16.6%">{{ object.omop_field.table.table }}</td>
-	<!---
         <td style="width: 16.6%">{{ object.omop_field.field }}</td>
 	<td style="width: 16.6%">
 	  <a href="{% url 'fields' %}?search={{ object.source_field.scan_report_table.id }}"> {{object.source_field.scan_report_table.name}} </a>
@@ -93,7 +91,6 @@
 	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field.name}} </a>
 	</td>
 
-	<!---
         <td style="width: 16.6%">
 	  <span class="text-danger">
 	    {% if object.concept.content_object.value %}

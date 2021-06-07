@@ -488,9 +488,9 @@ class StructuralMappingTableListView(ListView):
     def get_queryset(self):
         #qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
-        print ("get qs")
+
+        #.select_related('scan_report')\
         qs = self.model.objects\
-                       #.select_related('scan_report')\
                        .all()\
                        .filter(scan_report__id=search_term).order_by(
                            "concept",
@@ -499,12 +499,10 @@ class StructuralMappingTableListView(ListView):
                            "source_table__name",
                            "source_field__name",
                        )
-        print (f"got qs of length {qs.count()}")
         return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
-        print ('get context')
         context = super().get_context_data(**kwargs)
         
         scan_report = None
@@ -516,7 +514,6 @@ class StructuralMappingTableListView(ListView):
                 "scan_report": scan_report,
             }
         )
-        print ('got context')
         return context
 
     
