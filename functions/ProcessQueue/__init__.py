@@ -241,7 +241,10 @@ def main(msg: func.QueueMessage):
                 
                 name=str(results[result][0])
                 value=str(results[result][1])
-                frequency=results[result][2]      
+                frequency=results[result][2]
+                # Set frequency to 0 when empty since the model expects an int
+                if (frequency is None) or (frequency==""):
+                    frequency=0    
                 # If we are not on the first row:
                 if name!=value:
                     # Create a ScanReportValue entry
