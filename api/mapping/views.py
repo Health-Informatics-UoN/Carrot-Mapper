@@ -5,7 +5,7 @@ import time
 from io import StringIO
 import base64
 
-from rest_framework import viewsets
+from rest_framework import viewsets,status
 from .serializers import (
     ScanReportSerializer,
     ScanReportTableSerializer,
@@ -75,6 +75,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import FormView, UpdateView
+from rest_framework.response import Response
 
 from .forms import (
     DictionarySelectForm,
@@ -172,6 +173,12 @@ class ScanReportViewSet(viewsets.ModelViewSet):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
@@ -182,6 +189,12 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
@@ -216,6 +229,12 @@ class DocumentFileViewSet(viewsets.ModelViewSet):
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class DataPartnerFilterViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
@@ -247,12 +266,23 @@ class DocumentTypeViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer  
+    def create(self, request, *args, **kwargs):
+        print(time.perf_counter(),"IN def Create")
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        print(time.perf_counter(),"Get Serializer")
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        print(time.perf_counter(),"After Create")
+        headers = self.get_success_headers(serializer.data)
+        print(time.perf_counter(),"After headers")
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report_field', 'value']    
+    filterset_fields=['scan_report_field', 'value']
+   
     
 @login_required
 def home(request):
