@@ -6,10 +6,8 @@ from azure.storage.blob import BlockBlobService
 from io import BytesIO
 import requests
 import openpyxl
-import rows
 from datetime import datetime
 import os
-import pandas as pd
 
 def process_scan_report_sheet_table(sheet):
     """
@@ -54,6 +52,7 @@ def process_scan_report_sheet_table(sheet):
     col_idx=col_idx+1
 
     return results
+
 
 def main(msg: func.QueueMessage):
     logging.info('Python queue trigger function processed a queue item.')
