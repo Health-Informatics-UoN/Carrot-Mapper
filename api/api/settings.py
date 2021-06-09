@@ -98,15 +98,14 @@ DATABASES = {
         'PASSWORD': os.getenv('COCONNECT_DB_PASSWORD'),
     },
     'omop': {
-        'ENGINE': os.getenv('OMOP_POSTGRES_ENGINE'),
-        'HOST': os.getenv('OMOP_POSTGRES_HOST'),
-        'USER': os.getenv('OMOP_POSTGRES_USER'),
-        'PASSWORD': os.getenv('OMOP_POSTGRES_PASSWORD'),
-        'PORT': os.getenv('OMOP_POSTGRES_PORT'),
-        'NAME':  os.getenv('OMOP_POSTGRES_DB')
+        'ENGINE': os.getenv('OMOP_DB_ENGINE'),
+        'HOST': os.getenv('OMOP_DB_HOST'),
+        'PORT': os.getenv('OMOP_DB_PORT'),
+        'NAME':  os.getenv('OMOP_DB_NAME'),
+        'USER': os.getenv('OMOP_DB_USER'),
+        'PASSWORD': os.getenv('OMOP_DB_PASSWORD'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -125,6 +124,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+DATABASE_ROUTERS = ['api.routers.OmopRouter']
 
 
 # Internationalization
