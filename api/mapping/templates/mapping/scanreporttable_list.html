@@ -21,10 +21,8 @@
     <tr>
         <th scope="col">Name</th>
         <th scope="col">Person ID</th>
-		<th scope="col">Birth Date</th>
-		<th scope="col">Event Date</th>
-	
-
+	<th scope="col">Event Date</th>
+	<th>Edit</th>	
     </tr>
     </thead>
     <tbody>
@@ -41,13 +39,13 @@
 	</td>
 
 	<td>
-	{% if object.birth_date %}
-	{{ object.birth_date.name }} 
+	{% if object.date_event %}
+	{{ object.date_event.name }} 
 	{% endif %}
 	</td>
-	
-	<td></td>
 
+	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
+	
     </tr>
     {% endfor %}
     </tbody>

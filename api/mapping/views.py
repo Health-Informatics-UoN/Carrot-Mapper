@@ -95,6 +95,7 @@ from .models import (
     NLPModel,
     OmopTable,
     OmopField,
+    OmopTable,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
@@ -105,8 +106,22 @@ from .models import (
     ClassificationSystem,
     Source,
 )
-from .services import process_scan_report
+from .services import (
+    process_scan_report,
+    find_standard_concept
+)
 from .services_nlp import start_nlp
+from .services_rules import (
+    save_mapping_rules,
+    save_multiple_mapping_rules,
+    remove_mapping_rules,
+    find_existing_scan_report_concepts,
+    download_mapping_rules,
+    view_mapping_rules,
+    find_date_event,
+    find_person_id
+)
+from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary
 
 
@@ -247,7 +262,6 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
 def home(request):
     return render(request, "mapping/home.html", {})
 
-
 @method_decorator(login_required, name="dispatch")
 class ScanReportTableListView(ListView):
     model = ScanReportTable
@@ -285,10 +299,7 @@ class ScanReportTableUpdateView(UpdateView):
     model = ScanReportTable
     fields = [
         "person_id",
-        "birth_date",
-        "measurement_date",
-        "observation_date",
-        "condition_date"
+        "date_event"
     ]
 
     def get_context_data(self, **kwargs):
@@ -478,14 +489,38 @@ class StructuralMappingTableListView(ListView):
     model = StructuralMappingRule
     template_name = "mapping/mappingrulesscanreport_list.html"
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("download-rules") is not None:
+            qs = self.get_queryset()
+            return download_mapping_rules(request,qs)
+        elif request.POST.get("refresh-rules") is not None:
+            #remove all existing rules first
+            remove_mapping_rules(request,self.kwargs.get("pk"))
+            # get all associated ScanReportConcepts for this given ScanReport
+            ## this method could be taking too long to execute
+            all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
+            #save all of them
+            save_multiple_mapping_rules(request,all_associated_concepts)
+            nconcepts = len(all_associated_concepts)
+            messages.success(request,
+                             f'Found and added rules for {nconcepts} existing concepts')
+            return redirect(request.path)
+
+        elif request.POST.get("get-svg") is not None:
+            qs = self.get_queryset()
+            return view_mapping_rules(request,qs)
+        else:
+            messages.error(request,"not working right now!")                
+            return redirect(request.path)
+    
     def get_queryset(self):
-        scan_report = ScanReport.objects.get(pk=self.kwargs.get("pk"))
 
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
         if search_term is not None:
             qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
                 "omop_field__table",
                 "omop_field__field",
                 "source_table__name",
@@ -494,6 +529,21 @@ class StructuralMappingTableListView(ListView):
 
         return qs
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        
+        pk = self.kwargs.get("pk")
+        scan_report = ScanReport.objects.get(pk=pk)
+        
+        context.update(
+            {
+                "scan_report": scan_report,
+            }
+        )
+        return context
+
+    
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFormView(FormView):
@@ -958,6 +1008,7 @@ class NLPDetailView(DetailView):
             context = {"user_string": query.user_string, "results": json_response}
             return context
 
+
 def run_nlp(request):
 
     search_term = request.GET.get("search", None)
@@ -970,8 +1021,51 @@ def run_nlp(request):
 @method_decorator(login_required, name="dispatch")
 class NLPResultsListView(ListView):
     model = ScanReportConcept
-    
 
+
+
+def validate_standard_concept(request,source_concept):
+
+    #if it's a standard concept -- pass
+    if source_concept.standard_concept == 'S':
+        messages.success(request, "Concept {} - {} added successfully.".format(
+            source_concept.concept_id,
+            source_concept.concept_name)
+        )
+        return True
+    else:
+        #otherwse
+        #return an error if it's Non-Standard
+        #dont allow the ScanReportConcept to be created
+        messages.error(request,
+                       "Concept {} ({}) is Non-Standard".format(
+                           source_concept.concept_id,
+                           source_concept.concept_name)
+        )
+        
+        concept = find_standard_concept(source_concept)
+        messages.error(request,
+                       "You could try {} ({}) ?".format(
+                           concept.concept_id,
+                           concept.concept_name)
+        )
+        
+        return False
+    
+def pass_content_object_validation(request,scan_report_table):
+    if find_person_id(scan_report_table) == None:
+        messages.error(request,
+                       f"you have not set a person_id on this table {scan_report_table.name}."
+                       "Please go set this at the table level before trying to add a concept")
+        return False
+    if find_date_event(scan_report_table) == None:
+        messages.error(request,
+                       f"you have not set a date_event on this table {scan_report_table.name}."
+                       "Please go set this at the table level before trying to add a concept")
+        return False
+
+    return True
+    
 def save_scan_report_value_concept(request):
     if request.method == "POST":
         form = ScanReportValueConceptForm(request.POST)
@@ -981,6 +1075,9 @@ def save_scan_report_value_concept(request):
                 pk=form.cleaned_data['scan_report_value_id']
             )
 
+            if not pass_content_object_validation(request,scan_report_value.scan_report_field.scan_report_table):
+                return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
+            
             try:
                 concept = Concept.objects.get(
                     concept_id=form.cleaned_data['concept_id']
@@ -990,13 +1087,18 @@ def save_scan_report_value_concept(request):
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
-            scan_report_concept = ScanReportConcept.objects.create(
-                concept=concept,
-                content_object=scan_report_value,
-            )
 
-            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            #perform a standard check on the concept 
+            pass_standard_concept_check = validate_standard_concept(request,concept)
+            if pass_standard_concept_check:
+                scan_report_concept = ScanReportConcept.objects.create(
+                    concept=concept,
+                    content_object=scan_report_value,
+                )
 
+                save_mapping_rules(request,scan_report_concept)
+
+                
             return redirect("/values/?search={}".format(scan_report_value.scan_report_field.id))
 
 
@@ -1006,11 +1108,13 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
+    #scan_report_concept.structuralmappingrule.delete()
+                
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
 
     scan_report_concept.delete()
-
+    
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/values/?search={}".format(scan_report_field_id))
@@ -1025,6 +1129,10 @@ def save_scan_report_field_concept(request):
                 pk=form.cleaned_data['scan_report_field_id']
             )
 
+            if not pass_content_object_validation(request,scan_report_field.scan_report_table):
+                return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
+
+            
             try:
                 concept = Concept.objects.get(
                     concept_id=form.cleaned_data['concept_id']
@@ -1034,12 +1142,15 @@ def save_scan_report_field_concept(request):
                                  "Concept id {} does not exist in our database.".format(form.cleaned_data['concept_id']))
                 return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
-            scan_report_concept = ScanReportConcept.objects.create(
-                concept=concept,
-                content_object=scan_report_field,
-            )
-
-            messages.success(request, "Concept {} - {} added successfully.".format(concept.concept_id, concept.concept_name))
+            #perform a standard check on the concept 
+            pass_standard_concept_check = validate_standard_concept(request,concept)
+            if pass_standard_concept_check:
+                scan_report_concept = ScanReportConcept.objects.create(
+                    concept=concept,
+                    content_object=scan_report_field,
+                )
+                
+                save_mapping_rules(request,scan_report_concept)
 
             return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 

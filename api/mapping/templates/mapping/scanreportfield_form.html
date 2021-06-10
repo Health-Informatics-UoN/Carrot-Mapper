@@ -19,7 +19,7 @@
 
 <form method="post" action="#" enctype="multipart/form-data">
     {% csrf_token %}
-    <div class="mb-3">
+   <!--- <div class="mb-3">
         {{ form.is_patient_id.errors }}
         <label class="form-label">{{ form.is_patient_id.label }}</label>
         {{ form.is_patient_id }}
@@ -29,6 +29,7 @@
         <label class="form-label">{{ form.is_date_event.label }}</label>
         {{ form.is_date_event }}
     </div>
+    --->
     <div class="mb-3">
         {{ form.is_ignore.errors }}
         <label class="form-label">{{ form.is_ignore.label }}</label>
