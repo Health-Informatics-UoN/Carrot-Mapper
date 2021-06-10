@@ -96,14 +96,6 @@ DATABASES = {
         'NAME':  os.getenv('COCONNECT_DB_NAME'),
         'USER': os.getenv('COCONNECT_DB_USER'),
         'PASSWORD': os.getenv('COCONNECT_DB_PASSWORD'),
-    },
-    'omop': {
-        'ENGINE': os.getenv('OMOP_POSTGRES_ENGINE'),
-        'HOST': os.getenv('OMOP_POSTGRES_HOST'),
-        'USER': os.getenv('OMOP_POSTGRES_USER'),
-        'PASSWORD': os.getenv('OMOP_POSTGRES_PASSWORD'),
-        'PORT': os.getenv('OMOP_POSTGRES_PORT'),
-        'NAME':  os.getenv('OMOP_POSTGRES_DB')
     }
 }
 
