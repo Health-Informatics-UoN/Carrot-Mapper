@@ -122,12 +122,12 @@
 	  var button_text = $(this).text();
 	  // if the buttons says View and has been clicked
 	  // then change it to a hide button
-	  if (button_text.includes('View')){
-		button_text = button_text.replace("View","Hide");
+	  if (button_text == 'View Map Diagram' ){
+		button_text = 'Hide Map Diagram';
 	  }
 	  //vice versa
-	  else{
-		button_text = button_text.replace("Hide","View");
+	  else if (button_text == 'Hide Map Diagram'){
+		button_text = 'View Map Diagram';
 	  }
 	  //set the next button text depending on click action
 	  $(this).text(button_text);
