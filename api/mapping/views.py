@@ -113,6 +113,9 @@ from .services import (
 from .services_nlp import start_nlp
 from .services_rules import (
     save_mapping_rules,
+    save_multiple_mapping_rules,
+    remove_mapping_rules,
+    find_existing_scan_report_concepts,
     download_mapping_rules,
     view_mapping_rules,
     find_date_event,
@@ -459,6 +462,19 @@ class StructuralMappingTableListView(ListView):
         if request.POST.get("download-rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
+        elif request.POST.get("refresh-rules") is not None:
+            #remove all existing rules first
+            remove_mapping_rules(request,self.kwargs.get("pk"))
+            # get all associated ScanReportConcepts for this given ScanReport
+            ## this method could be taking too long to execute
+            all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
+            #save all of them
+            save_multiple_mapping_rules(request,all_associated_concepts)
+            nconcepts = len(all_associated_concepts)
+            messages.success(request,
+                             f'Found and added rules for {nconcepts} existing concepts')
+            return redirect(request.path)
+
         elif request.POST.get("get-svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
@@ -467,6 +483,7 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
     
     def get_queryset(self):
+
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
@@ -485,17 +502,14 @@ class StructuralMappingTableListView(ListView):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report
-        else:
-            scan_report = None
-
+        pk = self.kwargs.get("pk")
+        scan_report = ScanReport.objects.get(pk=pk)
+        
         context.update(
             {
                 "scan_report": scan_report,
             }
         )
-
         return context
 
     

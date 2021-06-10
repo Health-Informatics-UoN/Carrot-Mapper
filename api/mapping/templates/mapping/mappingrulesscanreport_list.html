@@ -19,6 +19,7 @@
 <h2>Mapping Rules</h2>
 
 <form method="post">{% csrf_token %}
+  <button type="submit" class="btn btn-success" name='refresh-rules' >Refresh Rules</button>
   <button type="submit" class="btn btn-info" name='download-rules' >Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
 
@@ -88,7 +89,7 @@
         <td style="width: 16.6%">
 	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field.name}} </a>
 	</td>
-	  
+
         <td style="width: 16.6%">
 	  <span class="text-danger">
 	    {% if object.concept.content_object.value %}
@@ -100,10 +101,10 @@
 	  <span class="text-success">
 	    "{{ object.concept.concept_id }}"
 	    </span> <br>
-	  ( {{ object.concept.concept.concept_name }} )
+	  ( {{ object.concept.concept.concept_name }}, {{ object.concept.concept.domain_id }} )
 	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
 	   --->
-
+	  
 	</td>
       </tr>
       {% endfor %}
