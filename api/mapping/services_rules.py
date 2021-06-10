@@ -1,7 +1,6 @@
 import json
 from datetime import datetime
 
-from django.contrib.admin.options import get_content_type_for_model
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
@@ -449,10 +448,10 @@ def save_multiple_mapping_rules(request,all_concepts):
 
 def remove_mapping_rules(request,scan_report_id):
     """
+    Function given a scan_report_id that will find all
+    associated mappings and delete them
     """
     rules = StructuralMappingRule.objects.all()\
         .filter(scan_report__id=scan_report_id)
 
-    print (len(rules))
     rules.delete()
-    print (len(rules))
