@@ -463,14 +463,12 @@ class StructuralMappingTableListView(ListView):
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
         elif request.POST.get("refresh-rules") is not None:
-            ## this method is taking too long to execute
-            ## needs to be moved to serverless
+            ## this method could be taking too long to execute
             all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
-            print ('found concepts')
             save_multiple_mapping_rules(request,all_associated_concepts)
-            print ('saved screenshots')
+            nconcepts = len(all_associated_concepts)
             messages.success(request,
-                             f'Found and added rules for {len(all_associated_concepts)} existing concepts')
+                             f'Found and added rules for {nconcepts} existing concepts')
             return redirect(request.path)
         elif request.POST.get("delete-rules") is not None:
             remove_mapping_rules(request,self.kwargs.get("pk"))
@@ -485,13 +483,20 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
     
     def get_queryset(self):
-        #qs = super().get_queryset()
-        search_term = self.kwargs.get("pk")
+        pk = self.kwargs.get("pk")
 
-        #.select_related('scan_report')\
+        #!note
+        # suggested speed up, by using..
+        # .select_related('scan_report')\
+        # instead of .all()
+
+        #!note
+        # use self.model, which is just StructuralMappingRule
+        # this is faster than calling super().get_queryset()
+        # in this instance (if we use select_related)
         qs = self.model.objects\
                        .all()\
-                       .filter(scan_report__id=search_term).order_by(
+                       .filter(scan_report__id=pk).order_by(
                            "concept",
                            "omop_field__table",
                            "omop_field__field",
@@ -505,6 +510,7 @@ class StructuralMappingTableListView(ListView):
         context = super().get_context_data(**kwargs)
         
         scan_report = None
+        #use this rather than trying to call get_queryset which is slow!
         if context['object_list'].count() > 0:
             scan_report = context['object_list'][0].scan_report
 
