@@ -4,7 +4,8 @@ import os
 import time
 from io import StringIO
 
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.response import Response
 from .serializers import (
     ScanReportSerializer,
     ScanReportTableSerializer,
@@ -172,10 +173,24 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=ScanReportSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
@@ -186,6 +201,13 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
@@ -196,6 +218,19 @@ class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
+    queryset=ScanReportConcept.objects.all()
+    serializer_class=ScanReportConceptSerializer  
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept__concept_id','object_id']
     
 class MappingViewSet(viewsets.ModelViewSet):
     queryset=Mapping.objects.all()
@@ -220,14 +255,20 @@ class DocumentFileViewSet(viewsets.ModelViewSet):
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class DataPartnerFilterViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer    
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['name']    
-    
-    
+        
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
@@ -251,6 +292,13 @@ class DocumentTypeViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer  
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=isinstance(request.data,list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
