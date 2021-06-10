@@ -119,7 +119,6 @@ from .services_rules import (
     find_person_id
 )
 from .tasks import process_scan_report_task
-
 from .services_datadictionary import merge_external_dictionary
 
 
