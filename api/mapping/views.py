@@ -981,7 +981,7 @@ class NLPResultsListView(ListView):
 
 def validate_standard_concept(request,source_concept):
 
-    #if it's a standarc concept -- pass
+    #if it's a standard concept -- pass
     if source_concept.standard_concept == 'S':
         messages.success(request, "Concept {} - {} added successfully.".format(
             source_concept.concept_id,
@@ -991,7 +991,7 @@ def validate_standard_concept(request,source_concept):
     else:
         #otherwse
         #return an error if it's Non-Standard
-        #dont allowed the ScanReportConcept to be created
+        #dont allow the ScanReportConcept to be created
         messages.error(request,
                        "Concept {} ({}) is Non-Standard".format(
                            source_concept.concept_id,
