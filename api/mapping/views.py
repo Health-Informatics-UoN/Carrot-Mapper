@@ -465,8 +465,6 @@ class StructuralMappingTableListView(ListView):
         elif request.POST.get("refresh-rules") is not None:
             #remove all existing rules first
             remove_mapping_rules(request,self.kwargs.get("pk"))
-            messages.success(request,
-                             f'Deleted all rules for Table #{self.kwargs.get("pk")}')
             # get all associated ScanReportConcepts for this given ScanReport
             ## this method could be taking too long to execute
             all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
