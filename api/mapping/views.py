@@ -485,37 +485,28 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
     
     def get_queryset(self):
-        pk = self.kwargs.get("pk")
 
-        #!note
-        # suggested speed up, by using..
-        # .select_related('scan_report')\
-        # instead of .all()
+        qs = super().get_queryset()
+        search_term = self.kwargs.get("pk")
 
-        #!note
-        # use self.model, which is just StructuralMappingRule
-        # this is faster than calling super().get_queryset()
-        # in this instance (if we use select_related)
-        qs = self.model.objects\
-                       .all()\
-                       .filter(scan_report__id=pk).order_by(
-                           "concept",
-                           "omop_field__table",
-                           "omop_field__field",
-                           "source_table__name",
-                           "source_field__name",
-                       )
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
         return qs
 
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         
-        scan_report = None
-        #use this rather than trying to call get_queryset which is slow!
-        if context['object_list'].count() > 0:
-            scan_report = context['object_list'][0].scan_report
-
+        pk = self.kwargs.get("pk")
+        scan_report = ScanReport.objects.get(pk=pk)
+        
         context.update(
             {
                 "scan_report": scan_report,
