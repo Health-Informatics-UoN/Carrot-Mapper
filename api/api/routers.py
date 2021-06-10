@@ -2,6 +2,9 @@ class OmopRouter:
     """
     A router to control all database operations on models in the
     Omop database
+
+    https://docs.djangoproject.com/en/3.2/topics/db/multi-db/
+
     """
     #we have two seperate database objects, which we can separate:
     # - api/mapping
