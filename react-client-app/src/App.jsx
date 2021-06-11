@@ -6,7 +6,7 @@ const App = () => {
     return (
         <ChakraProvider theme={styles}>
 
-      </ChakraProvider>
+        </ChakraProvider>
    )
 }
 
