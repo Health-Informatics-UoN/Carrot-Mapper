@@ -62,7 +62,6 @@ from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
 from django.db.models import Value as V
-from django.db.models import DoesNotExist 
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
 from django.http import HttpResponse
@@ -1066,17 +1065,17 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_id,
                            source_concept.concept_name)
         )
-        try:
-            concept = find_standard_concept(source_concept)
+        concept = find_standard_concept(source_concept)
+        if concept == None:
+            messages.error(request,
+                           "No associated Standard Concept could be found for this!")
+        else:
             messages.error(request,
                            "You could try {} ({}) ?".format(
                                concept.concept_id,
                                concept.concept_name)
             )
-        except DoesNotExist:
-            messages.error(request,
-                           "No associated Standard Concept could be found for this!"
-            )
+            
         return False
     
 def pass_content_object_validation(request,scan_report_table):
