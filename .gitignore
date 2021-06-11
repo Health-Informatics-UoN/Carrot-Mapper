@@ -8,3 +8,5 @@
 **/migrations
 */__pycache__/*
 **/pgdata/**
+
+node_modules/
