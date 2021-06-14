@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@chakra-ui/react": "./@chakra-ui/react.js",
+    "axios": "./axios.js",
+    "prop-types": "./prop-types.js",
+    "react": "./react.js",
+    "react-dom": "./react-dom.js",
+    "swr": "./swr.js"
+  }
+}
