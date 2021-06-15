@@ -57,14 +57,6 @@ const DataTbl = () => {
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const {isOpen, onOpen, onClose} = useDisclosure()
 
-    // Called if Alert state changes
-    useEffect(() => {
-            setTimeout(() => {
-                onClose()
-            }, 5000)
-        
-    }, [alert])
-
     const handleChange = (id, value) => {
         const found = conceptId.some(f => f.id === id);
 
@@ -184,7 +176,7 @@ const DataTbl = () => {
         return (
             <div>
                 <ScaleFade initialScale={0.9} in={isOpen}>
-                    <ToastAlert hidden={alert.hidden} title={alert.title} status={alert.status} description={alert.description} />
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
                 </ScaleFade>
 
                 <Table variant="striped" colorScheme="greyBasic">
