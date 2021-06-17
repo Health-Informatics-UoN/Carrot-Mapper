@@ -82,8 +82,8 @@ def main(msg: func.QueueMessage):
 
         # Set up API parameters:
         api_url="http://localhost:8080/api/"
-        headers={"Content-type": "application/json", "charset":"utf-8"}
-
+        headers={"Content-type": "application/json", "charset":"utf-8","Authorization": "Token {}".format(os.environ.get('AZ_FUNCTION_KEY'))}
+        
         # Load ByteIO() file in a openpyxl workbook
         wb = openpyxl.load_workbook(input_blob,data_only=True)
         # Get the first sheet 'Field Overview',
@@ -169,9 +169,9 @@ def main(msg: func.QueueMessage):
                 "max_length":ws.cell(row=i,column=5).value,
                 "nrows":ws.cell(row=i,column=6).value,
                 "nrows_checked":ws.cell(row=i,column=7).value,
-                "fraction_empty":round(ws.cell(row=i,column=8).value,2),
+                "fraction_empty":0,
                 "nunique_values":ws.cell(row=i,column=9).value,
-                "fraction_unique":round(ws.cell(row=i,column=10).value,2),
+                "fraction_unique":0,
                 "flag_column":str(ws.cell(row=i,column=11).value),
                 "ignore_column":None,
                 "is_birth_date":False,
