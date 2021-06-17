@@ -125,60 +125,50 @@ from .services_rules import (
 from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary
 
-@method_decorator(login_required, name="dispatch")
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer    
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['concept_code', 'vocabulary_id']        
 
-@method_decorator(login_required, name="dispatch")    
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
     serializer_class=VocabularySerializer
 
-@method_decorator(login_required, name="dispatch")    
 class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptRelationship.objects.all()
     serializer_class=ConceptRelationshipSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']
 
-@method_decorator(login_required, name="dispatch")    
 class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptAncestor.objects.all()
     serializer_class=ConceptAncestorSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['ancestor_concept_id', 'descendant_concept_id']
 
-@method_decorator(login_required, name="dispatch")    
 class ConceptClassViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptClass.objects.all()
     serializer_class=ConceptClassSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class ConceptSynonymViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptSynonym.objects.all()
     serializer_class=ConceptSynonymSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DomainViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Domain.objects.all()
     serializer_class=DomainSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=DrugStrength.objects.all()
     serializer_class=DrugStrengthSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['drug_concept_id', 'ingredient_concept_id']    
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=ScanReportSerializer
@@ -190,7 +180,6 @@ class ScanReportViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
@@ -202,14 +191,12 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['scan_report', 'name']
         
-@method_decorator(login_required, name="dispatch")
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer
@@ -221,14 +208,12 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")
 class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer  
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['scan_report_table', 'name']
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer
@@ -240,39 +225,32 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['concept__concept_id','object_id']
     
-@method_decorator(login_required, name="dispatch")
 class MappingViewSet(viewsets.ModelViewSet):
     queryset=Mapping.objects.all()
     serializer_class=MappingSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset=ClassificationSystem.objects.all()
     serializer_class=ClassificationSystemSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DataDictionaryViewSet(viewsets.ModelViewSet):
     queryset=DataDictionary.objects.all()
     serializer_class=DataDictionarySerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset=Document.objects.all()
     serializer_class=DocumentSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DocumentFileViewSet(viewsets.ModelViewSet):
     queryset=DocumentFile.objects.all()
     serializer_class=DocumentFileSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer
@@ -284,39 +262,32 @@ class DataPartnerViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")    
 class DataPartnerFilterViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
     serializer_class=DataPartnerSerializer    
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['name']    
         
-@method_decorator(login_required, name="dispatch")        
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class OmopFieldViewSet(viewsets.ModelViewSet):
     queryset=OmopField.objects.all()
     serializer_class=OmopFieldSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class SourceViewSet(viewsets.ModelViewSet):
     queryset=Source.objects.all()
     serializer_class=SourceSerializer
     
-@method_decorator(login_required, name="dispatch")    
 class DocumentTypeViewSet(viewsets.ModelViewSet):
     queryset=DocumentType.objects.all()
     serializer_class=DocumentTypeSerializer
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer  
@@ -328,7 +299,6 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-@method_decorator(login_required, name="dispatch")    
 class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer
