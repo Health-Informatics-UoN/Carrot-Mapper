@@ -40,6 +40,7 @@ import {
 
   } from "@chakra-ui/react"
 
+import { Formik, Field, Form, ErrorMessage, FieldArray, FormikHelpers as FormikActions } from 'formik'
 import {useValue} from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
@@ -75,15 +76,8 @@ const DataTbl = () => {
     
     }
 
-    const handleSubmit = (id, event) => {
-        event.preventDefault();
-        //Empty array
-        //event.target.reset();
-        const found = conceptId.some(f => f.id === id);
-        const obj = conceptId.find(f => f.id === id);
-        
-        // If input field is empty
-        if (!found || obj.value === ''){
+    const handleSubmit = (id, concept) => {
+        if (concept === ''){
             setAlert({
                 hidden: false,
                 status: 'error',
@@ -92,11 +86,9 @@ const DataTbl = () => {
             })
             onOpen()
         }
-        else {
-            const obj = conceptId.find(f => f.id === id);
-            const value = res.data.find(f => f.id === id);
-
-            const newArr = value.conceptIds.concat(obj.value)
+        else{
+            const value = res.data.find(f => f.id === id)
+            const newArr = value.conceptIds.concat(concept)
             //PUT Request to API
             api.put(`/values/${id}`, { 
                 id: {id},
@@ -128,10 +120,7 @@ const DataTbl = () => {
                    
                 }
             })  
-
         }
-        setConceptId([])
-        
     }
 
     const handleDelete = (id, conceptId) => {
@@ -208,18 +197,27 @@ const DataTbl = () => {
                         </Td>
                         <Td>
                         {/* method=post */}
-                        <form onSubmit={(e) => handleSubmit(item.id, e)}>
-                            <FormControl>
-                            <HStack>
-                            <NumberInput min={-1}>
-                                <NumberInputField  onChange={({ target }) => handleChange(item.id, target.value)} placeholder={'New Concept ID'}/>
-                            </NumberInput>
-                                <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
-                            </HStack>
-							
-                            </FormControl>   
-
-                        </form>   
+                        <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
+                            handleSubmit(item.id, data.concept)
+                            actions.resetForm();
+                        }}>
+                        { ( { values, handleChange, handleBlur, handleSubmit }) => (
+                            <Form onSubmit={handleSubmit}>
+                                <Input
+                                name='concept'
+                                value={values.concept}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                />
+                                <div>
+                                    <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
+                                </div>
+                                <pre>
+                                    {JSON.stringify(values, null, 2)}
+                                </pre>
+                            </Form>
+                        )}  
+                        </Formik>  
                         </Td>
                         </Tr>
                         
