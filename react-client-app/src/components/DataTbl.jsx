@@ -209,15 +209,16 @@ const DataTbl = () => {
                         <Td>
                         {/* method=post */}
                         <form onSubmit={(e) => handleSubmit(item.id, e)}>
-                        <FormControl>
+                            <FormControl>
                             <HStack>
                             <NumberInput min={-1}>
-                                <NumberInputField value={getValue(item.id)} onChange={({ target }) => handleChange(item.id, target.value)} placeholder={'New Concept ID'}/>
+                                <NumberInputField  onChange={({ target }) => handleChange(item.id, target.value)} placeholder={'New Concept ID'}/>
                             </NumberInput>
                                 <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
                             </HStack>
 							
                             </FormControl>   
+
                         </form>   
                         </Td>
                         </Tr>
