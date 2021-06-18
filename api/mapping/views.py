@@ -3,7 +3,8 @@ import json
 import os
 import time
 from io import StringIO
-
+import base64
+from azure.storage.queue import QueueClient
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from .serializers import (
@@ -608,7 +609,24 @@ class ScanReportFormView(FormView):
         
         scan_report.author = self.request.user
         scan_report.save()
-        process_scan_report_task.delay(scan_report.id)
+        
+        azure_dict={
+            "scan_report_id":scan_report.id,
+            "blob_name":str(scan_report.file)
+        }
+        
+        queue_message=json.dumps(azure_dict)
+        message_bytes = queue_message.encode('ascii')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_message = base64_bytes.decode('ascii')
+        
+        queue = QueueClient.from_connection_string(
+            conn_str=os.environ.get("CONN_STRING"),
+            queue_name="new-scanreports"
+        )
+        queue.send_message(base64_message)
+        
+        # process_scan_report_task.delay(scan_report.id)
 
         return super().form_valid(form)
 
