@@ -32,7 +32,7 @@ SECRET_KEY = 'ix*bl@#=h+*o(^c7zv@jlale3zr&k=7aqdd@*%&yn1cf*hx_sw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ccom-dev.azurewebsites.net']
 
 
 # Application definition
