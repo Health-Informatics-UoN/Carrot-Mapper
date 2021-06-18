@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'data',
     'rest_framework',
     'django_filters',
+    'rest_framework.authtoken',
     
 ]
 
@@ -132,7 +133,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
