@@ -1,4 +1,7 @@
 on: [push]
+  pull_request:
+    branches:
+      - devel
 
 name: Linux_Container_Python_Workflow
 
