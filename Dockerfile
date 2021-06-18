@@ -18,8 +18,6 @@ RUN apt-get update && \
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
 
-COPY ./requirements.txt /requirements.txt
-
 COPY ./entrypoint.sh /entrypoint.sh
 
 RUN chmod u+x /entrypoint.sh
@@ -34,7 +32,7 @@ USER django
 
 ENV PATH=/home/django/.local/bin:$PATH
 
-RUN pip install -r /requirements.txt --no-cache-dir
+RUN pip install -r ./api/requirements.txt --no-cache-dir
 
 USER root
 RUN apt-get install graphviz -y
