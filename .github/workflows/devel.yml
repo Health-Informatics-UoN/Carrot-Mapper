@@ -11,8 +11,9 @@ jobs:
     steps:
     # checkout the repo
     - name: 'Checkout Github Action'
-      uses: actions/checkout@devel
+      uses: actions/checkout@v2
       with:
+        ref: devel
         submodules: recursive
 
     - uses: azure/docker-login@v1
