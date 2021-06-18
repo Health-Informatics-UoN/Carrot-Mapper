@@ -86,6 +86,7 @@ def main(msg: func.QueueMessage):
         
         # Load ByteIO() file in a openpyxl workbook
         wb = openpyxl.load_workbook(input_blob,data_only=True)
+
         # Get the first sheet 'Field Overview',
         # to populate ScanReportTable & ScanReportField models
         ws=wb.worksheets[0]
@@ -157,7 +158,7 @@ def main(msg: func.QueueMessage):
         idx=0
         data=[]
         for i,row_cell in enumerate(ws.iter_rows(min_row=2),start = 2):
-            
+           
             # Create ScanReportField entry
             scan_report_field_entry={
                 "scan_report_table":table_ids[idx],
@@ -242,11 +243,12 @@ def main(msg: func.QueueMessage):
                 name=str(results[result][0])
                 value=str(results[result][1])
                 frequency=results[result][2]
-                # Set frequency to 0 when empty since the model expects an int
                 if (frequency is None) or (frequency==""):
-                    frequency=0    
+                    frequency=0
                 # If we are not on the first row:
                 if name!=value:
+                    print(result)
+                    print("Frequency",frequency)
                     # Create a ScanReportValue entry
                     scan_report_value_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
