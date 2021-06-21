@@ -245,8 +245,7 @@ def main(msg: func.QueueMessage):
                 frequency=results[result][2]
                 if (frequency is None) or (frequency==""):
                     frequency=0
-                if (value is None):
-                    value=""
+                
                 # If we are not on the first row:
                 if name!=value:
                     print(result)
