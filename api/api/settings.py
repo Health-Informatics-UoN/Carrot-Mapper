@@ -32,7 +32,7 @@ SECRET_KEY = 'ix*bl@#=h+*o(^c7zv@jlale3zr&k=7aqdd@*%&yn1cf*hx_sw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ccom-dev.azurewebsites.net']
 
 
 # Application definition
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'data',
     'rest_framework',
     'django_filters',
+    'rest_framework.authtoken',
     
 ]
 
@@ -132,7 +133,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 

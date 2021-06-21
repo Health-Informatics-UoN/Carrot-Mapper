@@ -27,7 +27,7 @@ To run the mapping pipeline Django MVP:
 5.  Make migrations to load demo data into your local SQLite db
 6.  Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
 
-## Docker
+## Docker - TODO: fix
 
 Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
 
