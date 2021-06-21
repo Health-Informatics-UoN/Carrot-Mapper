@@ -32,7 +32,7 @@ USER django
 
 ENV PATH=/home/django/.local/bin:$PATH
 
-RUN pip install -r ./api/requirements.txt --no-cache-dir
+RUN pip install -r /api/requirements.txt --no-cache-dir
 
 USER root
 RUN apt-get install graphviz -y
