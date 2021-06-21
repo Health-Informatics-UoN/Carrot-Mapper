@@ -38,7 +38,7 @@ def process_scan_report_sheet_table(sheet):
   
     # Works through pairs of value/frequency columns
         for column_idx,cell in enumerate(row_cell):
-          if cell.value:
+          
             if (column_idx) % 2 == 0:
             # As we move down rows, checks that there's data there
             # This is required b/c value/frequency col pairs differ
@@ -81,7 +81,7 @@ def main(msg: func.QueueMessage):
         input_blob.seek(0)
 
         # Set up API parameters:
-        api_url="http://localhost:8080/api/"
+        api_url=os.environ.get('APP_URL')+":8080/api/"
         headers={"Content-type": "application/json", "charset":"utf-8","Authorization": "Token {}".format(os.environ.get('AZ_FUNCTION_KEY'))}
         
         # Load ByteIO() file in a openpyxl workbook
