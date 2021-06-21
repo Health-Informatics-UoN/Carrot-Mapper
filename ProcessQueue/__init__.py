@@ -81,7 +81,7 @@ def main(msg: func.QueueMessage):
         input_blob.seek(0)
 
         # Set up API parameters:
-        api_url=os.environ.get('APP_URL')+":8080/api/"
+        api_url=os.environ.get('APP_URL')+"api/"
         headers={"Content-type": "application/json", "charset":"utf-8","Authorization": "Token {}".format(os.environ.get('AZ_FUNCTION_KEY'))}
         
         # Load ByteIO() file in a openpyxl workbook
