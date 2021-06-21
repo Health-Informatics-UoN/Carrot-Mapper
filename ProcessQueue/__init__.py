@@ -75,9 +75,9 @@ def main(msg: func.QueueMessage):
     # Write File saved in Blob storage to BytesIO stream
     with BytesIO() as input_blob:
         # Connect to Blob Service
-        blob = BlockBlobService(connection_string=os.environ.get('coconnectstoragedev_STORAGE'))
+        blob = BlockBlobService(connection_string=os.environ.get('STORAGE_CONN_STRING'))
         # Download Scan Report .xlsx file as a ByteIO() stream
-        blob.get_blob_to_stream(container_name='photos', blob_name=filename,stream=input_blob)
+        blob.get_blob_to_stream(container_name='raw-reports', blob_name=filename,stream=input_blob)
         input_blob.seek(0)
 
         # Set up API parameters:
@@ -245,6 +245,8 @@ def main(msg: func.QueueMessage):
                 frequency=results[result][2]
                 if (frequency is None) or (frequency==""):
                     frequency=0
+                if (value is None):
+                    value=""
                 # If we are not on the first row:
                 if name!=value:
                     print(result)

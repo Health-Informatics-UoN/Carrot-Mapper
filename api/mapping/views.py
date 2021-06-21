@@ -621,8 +621,8 @@ class ScanReportFormView(FormView):
         base64_message = base64_bytes.decode('ascii')
         
         queue = QueueClient.from_connection_string(
-            conn_str=os.environ.get("CONN_STRING"),
-            queue_name="new-scanreports"
+            conn_str=os.environ.get("STORAGE_CONN_STRING"),
+            queue_name="scanreports"
         )
         queue.send_message(base64_message)
         

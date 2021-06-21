@@ -24,10 +24,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Set up settings for saving to Azure Blob Storage
-AZURE_ACCOUNT_NAME="coconnectstoragedev"
+AZURE_ACCOUNT_NAME="ccomstoragedev"
 AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
-AZURE_CONNECTION_STRING=os.environ.get("CONN_STRING")
-AZURE_CONTAINER="photos"
+AZURE_CONNECTION_STRING=os.environ.get("STORAGE_CONN_STRING")
+AZURE_CONTAINER="raw-reports"
 
 MEDIA_LOCATION = "http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media"
 MEDIA_ROOT='http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
@@ -43,7 +43,7 @@ SECRET_KEY = 'ix*bl@#=h+*o(^c7zv@jlale3zr&k=7aqdd@*%&yn1cf*hx_sw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ccom-dev.azurewebsites.net']
+ALLOWED_HOSTS = ['ccom-dev.azurewebsites.net','localhost']
 
 
 # Application definition
