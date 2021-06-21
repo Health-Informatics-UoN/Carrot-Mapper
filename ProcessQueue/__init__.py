@@ -38,17 +38,17 @@ def process_scan_report_sheet_table(sheet):
   
     # Works through pairs of value/frequency columns
         for column_idx,cell in enumerate(row_cell):
-          
-            if (column_idx) % 2 == 0:
-            # As we move down rows, checks that there's data there
-            # This is required b/c value/frequency col pairs differ
-            # in the number of rows
-              if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
-                continue
-            # Append to Results as (Field Name,Value,Frequency)
-              results.append(
-                  (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
-              )
+            if cell.value:
+                if (column_idx) % 2 == 0:
+                # As we move down rows, checks that there's data there
+                # This is required b/c value/frequency col pairs differ
+                # in the number of rows
+                  if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
+                    continue
+                # Append to Results as (Field Name,Value,Frequency)
+                  results.append(
+                      (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
+                  )
     col_idx=col_idx+1
 
     return results
