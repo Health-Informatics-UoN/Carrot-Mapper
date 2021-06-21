@@ -12,10 +12,5 @@ markdown
 django-filter
 requests
 
-#for coconnect tools, installing here speeds up docker build
-numpy
-coloredlogs
-Jinja2
-graphviz
-click
-sqlalchemy
+co-connect-tools==0.2.5
+
