@@ -4,6 +4,11 @@ import azure.functions as func
 import os
 import time
 
+api_url = os.environ.get('APP_URL')+"api/"
+api_header = {"Authorization": "Token {}".format(
+    os.environ.get('AZ_FUNCTION_KEY'))}
+
+
 def get_data_from_nlp(url, headers, post_response_url):
 
     for url in post_response_url:
@@ -55,7 +60,8 @@ def process_nlp_response(get_response):
 
 def find_standard_concept(source_concept):
 
-    concept_relation = requests.get(url='http://localhost:8080/api/omop/conceptrelationshipfilter',
+    concept_relation = requests.get(url=api_url+'omop/conceptrelationshipfilter',
+                                    headers=api_header,
                                     params={'concept_id_1': source_concept['concept_id'],
                                             'relationship_id': 'Maps to'})
 
@@ -63,7 +69,8 @@ def find_standard_concept(source_concept):
     concept_relation = concept_relation[0]
 
     if concept_relation['concept_id_2'] != concept_relation['concept_id_1']:
-        concept = requests.get(url='http://localhost:8080/api/omop/conceptsfilter',
+        concept = requests.get(url=api_url+'omop/conceptsfilter',
+                               headers=api_header,
                                params={'concept_id': concept_relation['concept_id_2']})
         concept = json.loads(concept.content.decode("utf-8"))
         concept = concept[0]
@@ -90,7 +97,8 @@ def get_concept_from_concept_code(concept_code,
         vocabulary_id = vocabulary_id
 
     # obtain the source_concept given the code and vocab
-    source_concept = requests.get(url='http://localhost:8080/api/omop/conceptsfilter',
+    source_concept = requests.get(url=api_url+'omop/conceptsfilter',
+                                  headers=api_header,
                                   params={'concept_code': concept_code,
                                           'vocabulary_id': vocabulary_id})
 
@@ -190,15 +198,17 @@ def main(msg: func.QueueMessage):
 
             print('SAVING TO VALUE LEVEL...')
             payload = {'nlp_entity': item["nlp_entity"],
-                        'nlp_entity_type': item["nlp_entity_type"],
-                        'nlp_confidence': item["nlp_confidence"],
-                        'nlp_vocabulary': item["nlp_vocab"],
-                        'nlp_concept_code': item["nlp_code"],
-                        'concept': item['conceptid'],
-                        'object_id': item['pk'].split('_')[0],
-                        'content_type': 17}
+                       'nlp_entity_type': item["nlp_entity_type"],
+                       'nlp_confidence': item["nlp_confidence"],
+                       'nlp_vocabulary': item["nlp_vocab"],
+                       'nlp_concept_code': item["nlp_code"],
+                       'concept': item['conceptid'],
+                       'object_id': item['pk'].split('_')[0],
+                       'content_type': 17}
 
         print('PAYLOAD >>>', payload)
 
         response = requests.post(
-            url='http://localhost:8080/api/scanreportconcepts/', data=payload)
+            url=api_url+'scanreportconcepts/', 
+            headers=api_header,
+            data=payload)
