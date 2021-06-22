@@ -49,7 +49,7 @@ jobs:
      - name: Run the docker image
        run: |
          #startup the stack
-         docker run --env-file .env -p 8080:8000 ccom-build:latest
+         docker run --env-file .env -p 8080:8000 ccom-build:latest -d
          #give it a minute to start properly
          sleep 1m
          #get container ID
