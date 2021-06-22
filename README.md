@@ -22,10 +22,10 @@ To run the mapping pipeline Django MVP:
 
 1.	Clone this repository
 2.	Create a Python virtual environment and install Django
-3.	Create a new superuser for testing (python manage.py createsuperuser)
+3.	Create a new superuser for testing
 4. Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
 
-## Docker - TODO: fix
+## Docker
 
 Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
 
