@@ -14,6 +14,8 @@ routers.register(r'omop/conceptsfilter', views.ConceptFilterViewSet,basename='co
 
 routers.register(r'omop/vocabularies', views.VocabularyViewSet,basename='vocabularies')
 routers.register(r'omop/conceptrelationships', views.ConceptRelationshipViewSet,basename='conceptrelationships')
+routers.register(r'omop/conceptrelationshipfilter', views.ConceptRelationshipFilterViewSet,basename='conceptrelationshipfilter')
+
 routers.register(r'omop/conceptancestors', views.ConceptAncestorViewSet, basename='conceptancestors')
 routers.register(r'omop/conceptclasses', views.ConceptClassViewSet,basename='conceptclasses')
 routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='conceptsynonyms')
@@ -76,13 +78,9 @@ urlpatterns = [
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
     path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
-    path('testusagi/<int:scan_report_id>/', views.testusagi, name='testusagi'),
-    
-    path('nlp/', views.NLPListView.as_view(), name='nlp'),
-    path('nlp/create/', views.NLPFormView.as_view(), name='nlp-form'),
-    path('nlp/<int:pk>/', views.NLPDetailView.as_view(), name='nlp-view-query'),
-    path('nlp/run', views.run_nlp, name='run-nlp'),
-    path('nlp/results', views.NLPResultsListView.as_view(), name='nlp-view-results'),
+ 
+    path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
+    path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
@@ -94,7 +92,7 @@ urlpatterns = [
     path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
     path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),
 ]
-if settings.DEBUG: # new
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# if settings.DEBUG: # new
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
