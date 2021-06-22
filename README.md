@@ -23,38 +23,22 @@ To run the mapping pipeline Django MVP:
 1.	Clone this repository
 2.	Create a Python virtual environment and install Django
 3.	Create a new superuser for testing (python manage.py createsuperuser)
-4.	Initialise the demo data (python manage.py loaddata initial_data/tables_app_data.json)
-5.  Make migrations to load demo data into your local SQLite db
-6.  Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
+4. Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
 
 ## Docker - TODO: fix
 
 Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
 
 ```bash
-#build the docker images, and start running (as daemon, remove `-d` for without) 
-docker-compose up -d --build
-# refresh migrations
-docker-compose exec api python manage.py makemigrations
-docker-compose exec api python manage.py migrate
-# make superuser
-docker-compose exec api python manage.py createsuperuser
+#build the docker image, and tag it
+#make sure you include . at the end of the command
+docker build -t <docker_image> .
+docker build --tag <docker_image>:<tag> .
+
+# run the app
+docker run --env-file .env -p 8080:8000 <docker_image>
+
 ```
-
-To stop, without removing all the containers use `stop`:
-```bash
-docker-compose stop
-```
-You can alternatively use `down` to remove everything (changes made within the containers).
-
-## Refreshing
-
-A couple of tips for refreshing/cache clearing if you have picked up large changes..
-* Remove `api/db.sqlite3`
-* Remove migration files e.g. `0001_initial.py` from `api/mapping/migrations/`
-  * :warning: keep `__init__.py`
-  * :bulb: `ls api/mapping/migrations/ | grep -v __init__.py | xargs rm` 
-
 
 # Pages
 
