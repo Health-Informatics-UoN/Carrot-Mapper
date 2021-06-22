@@ -35,7 +35,7 @@
                 <form class="" method="post" action="{% url 'scan_report_value_concept' %}">
                     {% csrf_token %}
                     <td>
-                        {{ object.value }}
+                      {{ object.value }}
                     </td>
                     <td>{{object.value_description}}</td>
                     <td>

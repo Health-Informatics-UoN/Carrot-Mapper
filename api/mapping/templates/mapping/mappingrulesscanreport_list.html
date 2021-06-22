@@ -19,6 +19,7 @@
 <h2>Mapping Rules</h2>
 
 <form method="post">{% csrf_token %}
+  <button type="submit" class="btn btn-success" name='refresh-rules' >Refresh Rules</button>
   <button type="submit" class="btn btn-info" name='download-rules' >Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
 
@@ -88,7 +89,7 @@
         <td style="width: 16.6%">
 	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field.name}} </a>
 	</td>
-	  
+
         <td style="width: 16.6%">
 	  <span class="text-danger">
 	    {% if object.concept.content_object.value %}
@@ -100,10 +101,10 @@
 	  <span class="text-success">
 	    "{{ object.concept.concept_id }}"
 	    </span> <br>
-	  ( {{ object.concept.concept.concept_name }} )
+	  ( {{ object.concept.concept.concept_name }}, {{ object.concept.concept.domain_id }} )
 	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
 	   --->
-
+	  
 	</td>
       </tr>
       {% endfor %}
@@ -118,25 +119,54 @@
   <script>
     $("#view_svg").click(function () {
 
-	  $.ajax({
-		type: "POST",
-		url: window.location,
-		data: {
-		      'get-svg': true,
-		      'csrfmiddlewaretoken': '{{ csrf_token }}',
-		},
-		success: function (data) {
-		      var data = $("svg", data);
-		      $('#placeholder-svg').empty();
-		      $('#placeholder-svg').append(data);
+	  //retrieve the div text
+	  var button_text = $(this).text();
+	  // if the buttons says View and has been clicked
+	  // then change it to a hide button
+	  if (button_text == 'View Map Diagram' ){
+		button_text = 'Hide Map Diagram';
+	  }
+	  //vice versa
+	  else if (button_text == 'Hide Map Diagram'){
+		button_text = 'View Map Diagram';
+	  }
+	  //set the next button text depending on click action
+	  $(this).text(button_text);
 
-		},
-		error: function(XMLHttpRequest, textStatus, errorThrown){
-		      $('#placeholder-svg').html(errorThrown);
-		}
-	  });
+	  //if we dont have an svg image 
+	  if ($('#placeholder-svg').find("svg").length == 0) {
 
-    
+		var spinner = `
+                      <div class="spinner-border mx-auto" role="status">
+		      <span class="sr-only">Loading...</span>
+		      </div>`;
+		$('#placeholder-svg').append(spinner);
+		
+		//use ajax to post a request to retrieve one
+	  	$.ajax({
+		      type: "POST",
+		      url: window.location,
+		      data: {
+			    'get-svg': true,
+			    'csrfmiddlewaretoken': '{{ csrf_token }}',
+		      },
+		      success: function (data) {
+			    var data = $("svg", data);
+			    $('#placeholder-svg').empty();
+			    $('#placeholder-svg').append(data);
+			    
+		      },
+		      error: function(XMLHttpRequest, textStatus, errorThrown){
+			    $('#placeholder-svg').html(errorThrown);
+		      }
+		});
+	  }
+	  else{
+		//otherwise if we already have the image cached
+		//toggle the display
+		$("#placeholder-svg").toggleClass('d-none');
+	  }
+	  
     });
 
 

@@ -83,7 +83,7 @@ def save_person_id_rule(request,
 
     #!todo - turn into a func() is stable/valid for mapping
     #      - this needs to be checked before this step
-    if person_id_source_field == None:
+    if person_id_source_field == None and request:
         messages.error(request,'Failed to add concept because there is no'
                        f'person_id set for this table {source_table}')
         return False
@@ -407,3 +407,54 @@ def view_mapping_rules(request,qs):
     response = HttpResponse(svg, content_type="image/svg+xml")
     return response
 
+
+def find_existing_scan_report_concepts(request,table_id):
+
+    #find ScanReportValue associated to this table_id
+    #that have at least one concept added to them
+    values = ScanReportValue\
+        .objects\
+        .all()\
+        .filter(scan_report_field__scan_report_table__scan_report=table_id)\
+        .filter(concepts__isnull=False)
+
+    #find ScanReportField associated to this table_id
+    #that have at least one concept added to them
+    fields = ScanReportField\
+        .objects\
+        .all()\
+        .filter(scan_report_table__scan_report=table_id)\
+        .filter(concepts__isnull=False)
+
+    #retrieve all value concepts
+    all_concepts  = [
+        concept
+        for obj in values
+        for concept in obj.concepts.all()
+    ]
+    #retrieve all field concepts
+    all_concepts  += [
+        concept
+        for obj in fields
+        for concept in obj.concepts.all()
+    ]
+    return all_concepts
+
+#! NOTE
+# this function is not run in celery
+# this could be slow if there are 100s of concepts to be added
+def save_multiple_mapping_rules(request,all_concepts):    
+    #now loop over all concepts and save new rules
+    for concept in all_concepts:
+        save_mapping_rules(request,concept)
+
+
+def remove_mapping_rules(request,scan_report_id):
+    """
+    Function given a scan_report_id that will find all
+    associated mappings and delete them
+    """
+    rules = StructuralMappingRule.objects.all()\
+        .filter(scan_report__id=scan_report_id)
+
+    rules.delete()

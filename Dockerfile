@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.8-slim
 LABEL authors="Roberto Santos"
 
 ENV PYTHONUNBUFFERED 1
@@ -12,31 +12,35 @@ RUN apt-get update && \
         wait-for-it \
         binutils \
         gettext \
-        default-jre
+        libpq-dev \
+        gcc
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
 
-RUN mkdir /api
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod u+x /entrypoint.sh
+
+RUN chown -R django:django /entrypoint.sh
+
+COPY ./api /api
 
 WORKDIR /api
-
-COPY ./docker/django/requirements.txt /requirements.txt
 
 USER django
 
 ENV PATH=/home/django/.local/bin:$PATH
 
-RUN pip install -r /requirements.txt
+RUN pip install -r /api/requirements.txt --no-cache-dir
 
 USER root
 RUN apt-get install graphviz -y
 
 COPY --chown=django:django co-connect-tools/ /coconnect/
+
 USER django
 
 RUN pip install -e /coconnect/
-COPY ./docker/django/entrypoint.sh /entrypoint.sh
 
-RUN echo "hiya"
-
+ENTRYPOINT ["/entrypoint.sh"]
