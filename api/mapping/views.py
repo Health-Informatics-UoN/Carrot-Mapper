@@ -108,16 +108,14 @@ from .models import (
     ClassificationSystem,
     Source,
 )
-<<<<<<< HEAD
+
 from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
-=======
 from .services import (
     process_scan_report,
     find_standard_concept
 )
 from .services_nlp import start_nlp
->>>>>>> devel
 from .services_rules import (
     save_mapping_rules,
     save_multiple_mapping_rules,
@@ -139,11 +137,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer    
     filter_backends=[DjangoFilterBackend]
-<<<<<<< HEAD
-    filterset_fields=['concept_id', 'concept_code', 'vocabulary_id']  
-=======
     filterset_fields=['concept_code', 'vocabulary_id']        
->>>>>>> devel
 
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
