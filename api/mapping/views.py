@@ -108,11 +108,13 @@ from .models import (
     ClassificationSystem,
     Source,
 )
+
+from .services import process_scan_report
+from .services_nlp import start_nlp_field_level
 from .services import (
     process_scan_report,
     find_standard_concept
 )
-from .services_nlp import start_nlp
 from .services_rules import (
     save_mapping_rules,
     save_multiple_mapping_rules,
@@ -145,6 +147,12 @@ class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class=ConceptRelationshipSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']
+
+class ConceptRelationshipFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=ConceptRelationship.objects.all()
+    serializer_class=ConceptRelationshipSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['concept_id_1', 'concept_id_2', 'relationship_id']  
 
 class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=ConceptAncestor.objects.all()
@@ -1002,16 +1010,6 @@ def load_omop_fields(request):
         {"omop_fields": omop_fields},
     )
 
-
-def testusagi(request, scan_report_id):
-
-    results = run_usagi(scan_report_id)
-    print(results)
-    context = {}
-
-    return render(request, "mapping/index.html", context)
-
-
 def merge_dictionary(request):
 
     # Grab the scan report ID
@@ -1023,69 +1021,29 @@ def merge_dictionary(request):
     return render(request, "mapping/mergedictionary.html")
 
 
-@method_decorator(login_required, name="dispatch")
-class NLPListView(ListView):
-    model = NLPModel
-
-
-@method_decorator(login_required, name="dispatch")
-class NLPFormView(FormView):
-    form_class = NLPForm
-    template_name = "mapping/nlpmodel_form.html"
-    success_url = reverse_lazy("nlp")
-
-    def form_valid(self, form):
-
-        # Create NLP model object on form submission
-        # Very simple, just saves the user's string and a 
-        # raw str() of the JSON returned from the NLP service
-        NLPModel.objects.create(
-            user_string=form.cleaned_data["user_string"],
-            json_response="holding",
-        )
-
-        # Grab the newly-created model object to get the PK
-        # Pass PK to Celery task which handles running the NLP code
-        pk = NLPModel.objects.latest("id")
-        nlp_single_string_task.delay(
-            pk=pk.id, dict_string=form.cleaned_data["user_string"]
-        )
-
-        return super().form_valid(form)
-
-
-@method_decorator(login_required, name="dispatch")
-class NLPDetailView(DetailView):
-    model = NLPModel
-    template_name = "mapping/nlpmodel_detail.html"
-
-    def get_context_data(self, **kwargs):
-        query = NLPModel.objects.get(pk=self.kwargs.get("pk"))
-
-        # Small check to return something sensible if NLP hasn't finished running
-        if query.json_response == "holding":
-            context = {"user_string": query.user_string, "results": "Waiting"}
-            return context
-        
-        else:
-            # Run method from services_nlp.py
-            json_response = get_json_from_nlpmodel(json=ast.literal_eval(query.json_response))
-            context = {"user_string": query.user_string, "results": json_response}
-            return context
-
-
-def run_nlp(request):
+# Run NLP at the field level
+def run_nlp_field_level(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
-    start_nlp(search_term=search_term)
+    start_nlp_field_level(search_term=search_term)
     
     return redirect("/values/?search={}".format(field.id))
 
 
-@method_decorator(login_required, name="dispatch")
-class NLPResultsListView(ListView):
-    model = ScanReportConcept
+# Run NLP for all fields/values within a table
+def run_nlp_table_level(request):
+
+    search_term = request.GET.get("search", None)
+    table = ScanReportTable.objects.get(pk=search_term)
+    fields = ScanReportField.objects.filter(scan_report_table=search_term)
+    
+    for item in fields:
+        start_nlp_field_level(search_term=item.id)
+
+    
+    return redirect("/tables/?search={}".format(table.id))
+    
 
 
 
