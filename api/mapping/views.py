@@ -115,7 +115,6 @@ from .services import (
     process_scan_report,
     find_standard_concept
 )
-from .services_nlp import start_nlp
 from .services_rules import (
     save_mapping_rules,
     save_multiple_mapping_rules,

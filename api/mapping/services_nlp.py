@@ -139,8 +139,8 @@ def start_nlp_field_level(search_term):
 
         # Send JSON payload to nlp-processing-queue in Azure
         queue = QueueClient.from_connection_string(
-            conn_str=os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
-            queue_name="nlp-processing-queue",
+            conn_str=os.environ.get("STORAGE_CONN_STRING"),
+            queue_name="nlpqueue",
         )
         queue.send_message(base64_message)
         print(queue)
@@ -207,8 +207,8 @@ def start_nlp_field_level(search_term):
 
             # Send JSON payload to nlp-processing-queue in Azure
             queue = QueueClient.from_connection_string(
-                conn_str=os.environ.get("AZURE_STORAGE_CONNECTION_STRING"),
-                queue_name="nlp-processing-queue"
+                conn_str=os.environ.get("STORAGE_CONN_STRING"),
+                queue_name="nlpqueue"
             )
             queue.send_message(base64_message)
             print(queue)
