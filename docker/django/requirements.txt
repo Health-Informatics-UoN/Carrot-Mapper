@@ -11,6 +11,7 @@ djangorestframework
 markdown
 django-filter
 requests
+django-cors-headers
 
 #for coconnect tools, installing here speeds up docker build
 numpy
