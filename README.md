@@ -32,7 +32,6 @@ Copy .env file from Teams Software Team -> files -> .env to the root of project.
 ```bash
 #build the docker image, and tag it
 #make sure you include . at the end of the command
-docker build -t <docker_image> .
 docker build --tag <docker_image>:<tag> .
 
 # run the app
