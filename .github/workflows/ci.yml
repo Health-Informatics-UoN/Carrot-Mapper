@@ -49,9 +49,9 @@ jobs:
      - name: Run the docker image
        run: |
          #startup the stack
-         docker run --env-file .env -p 8080:8000 ccom-build:latest -d
-         #give it a minute to start properly
-         sleep 1m
+         docker run -it --env-file .env -p 8080:8000 -d ccom-build:latest
+         #give it 30s to start properly
+         sleep 30s
          #get container ID
          containerid=$(docker ps | awk 'NR==2' | awk '{print $1;}')
          echo $containerid
@@ -64,6 +64,7 @@ jobs:
          else
             echo "No errors found!"
          fi
+         echo "ended if"
          #put the logs into a file
          docker logs >> logs.out
          #shutdown the container
