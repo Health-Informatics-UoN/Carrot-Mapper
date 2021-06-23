@@ -114,12 +114,13 @@ def main(msg: func.QueueMessage):
         field_ids=[]
         field_names=[]
         data=[]
+        print("Working on Scan Report >>>",body['scan_report_id'])
         for table in range(len(table_names)):
 
             print('WORKING ON TABLE >>> ', table)
             # Truncate table names because sheet names are truncated to 31 characters in Excel
             table_names[table]=table_names[table][:31]
-        
+
             # Create ScanReportTable entry
             # Link to scan report using ID from the queue message
             scan_report_table_entry={
@@ -221,6 +222,7 @@ def main(msg: func.QueueMessage):
         # i.e. all 'data' sheets that are not Field Overview and Table Overview
         data=[]
         for idxsheet, sheet in enumerate(wb.worksheets):
+            data=[]
             if idxsheet<2:
                 continue
         
@@ -248,8 +250,8 @@ def main(msg: func.QueueMessage):
                 
                 # If we are not on the first row:
                 if name!=value:
-                    print(result)
-                    print("Frequency",frequency)
+                    # print(result)
+                    # print("Frequency",frequency)
                     # Create a ScanReportValue entry
                     scan_report_value_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -262,10 +264,10 @@ def main(msg: func.QueueMessage):
                     }
                     # Append to list
                     data.append(scan_report_value_entry)
-    # Create JSON array
-    json_data=json.dumps(data)
-    # POST request
-    response = requests.post("{}scanreportvalues/".format(api_url), data=json_data,headers=headers)
-    print('VALUE SAVE STATUS >>>', response.status_code)
+            # Create JSON array
+            json_data=json.dumps(data)
+            # POST request
+            response = requests.post("{}scanreportvalues/".format(api_url), data=json_data,headers=headers)
+            print('VALUE SAVE STATUS >>>', response.status_code)
 
     logging.info(body['blob_name'])
