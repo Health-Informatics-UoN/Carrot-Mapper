@@ -129,9 +129,6 @@ const DataTbl = () => {
         }) 
     }
 
-
-
-
     if (res.isLoading){
         //Render Loading State
         return (
@@ -166,14 +163,17 @@ const DataTbl = () => {
                         <Td>{item.value}</Td>
                         <Td>{item.frequency}</Td>
                         <Td>
-                            <VStack >
+        
+                                <VStack alignItems='flex-start' >
                                     {item.conceptIds.map((conceptIds) => (
                                             <ConceptTag conceptId={conceptIds} itemId={item.id} handleDelete={handleDelete} />
                                         ))}                             
-                            </VStack>
+                                </VStack>
+                            
+
                         </Td>
                         <Td>
-                        {/* method=post */}
+
                         <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
                             handleSubmit(item.id, data.concept)
                             actions.resetForm();
@@ -188,15 +188,10 @@ const DataTbl = () => {
                                         value={values.concept}
                                         onChange={handleChange}
                                         onBlur={handleBlur} />
-     
-                                   
-                               
-                                <div>
-                                    <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
-                                </div>
+                                    <div>
+                                        <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
+                                    </div>
                                 </HStack>
-    
-
                             </Form>
                         )}  
                         </Formik>  
