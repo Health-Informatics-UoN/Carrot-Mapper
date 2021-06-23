@@ -241,7 +241,7 @@ def main(msg: func.QueueMessage):
             for result in range(len(results)):
                 
                 name=str(results[result][0])
-                value=str(results[result][1])
+                value=str(results[result][1][0:127])
                 frequency=results[result][2]
                 if (frequency is None) or (frequency==""):
                     frequency=0
