@@ -68,7 +68,7 @@ jobs:
          fi
          echo "ended if"
          #put the logs into a file
-         docker logs >> logs.out
+         docker logs $containerid >> logs.out
          #shutdown the container
          docker stop $containerid
      #save the logs so they can be further checked 
