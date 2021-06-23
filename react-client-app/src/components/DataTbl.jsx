@@ -54,27 +54,10 @@ const api = axios.create({
 const DataTbl = () => {
 
     const res = useValue()
-    const [conceptId, setConceptId] = useState([]); //Holds input fields cocnept values onChange
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const {isOpen, onOpen, onClose} = useDisclosure()
 
-    const handleChange = (id, value) => {
-        const found = conceptId.some(f => f.id === id);
 
-        // If obj is not present for that value - create obj
-        if (!found) {
-            setConceptId(conceptId => [...conceptId, {
-            id: id,
-            value: value
-        }])
-        }
-        // If obj is present for that value - update obj
-        else if (found){
-            const obj = conceptId.find(f => f.id === id);
-            obj.value = value
-        }
-    
-    }
 
     const handleSubmit = (id, concept) => {
         if (concept === ''){
@@ -86,7 +69,7 @@ const DataTbl = () => {
             })
             onOpen()
         }
-        else{
+        else {
             const value = res.data.find(f => f.id === id)
             const newArr = value.conceptIds.concat(concept)
             //PUT Request to API
@@ -146,9 +129,6 @@ const DataTbl = () => {
         }) 
     }
 
-    const getValue = (id) => {
-        return (conceptId.some(f => f.id === id) ? conceptId.find(f => f.id == id).value : '')
-    }
 
 
 
@@ -189,11 +169,8 @@ const DataTbl = () => {
                             <VStack >
                                     {item.conceptIds.map((conceptIds) => (
                                             <ConceptTag conceptId={conceptIds} itemId={item.id} handleDelete={handleDelete} />
-                                        ))}
-
-                                
+                                        ))}                             
                             </VStack>
-
                         </Td>
                         <Td>
                         {/* method=post */}
@@ -203,18 +180,23 @@ const DataTbl = () => {
                         }}>
                         { ( { values, handleChange, handleBlur, handleSubmit }) => (
                             <Form onSubmit={handleSubmit}>
-                                <Input
-                                name='concept'
-                                value={values.concept}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                />
+                                <HStack>
+                                    <Input  
+                                        width='30%'
+                                        type='number'                                    
+                                        name='concept'
+                                        value={values.concept}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur} />
+     
+                                   
+                               
                                 <div>
                                     <Button type='submit' backgroundColor='#3C579E' color='white'>Add</Button>
                                 </div>
-                                <pre>
-                                    {JSON.stringify(values, null, 2)}
-                                </pre>
+                                </HStack>
+    
+
                             </Form>
                         )}  
                         </Formik>  

@@ -6,9 +6,9 @@ const ConceptTag = ({conceptId, itemId, handleDelete, backgroundColor}) => {
 
     const tagColour = (id) => {
         switch(id) {
-            case '999':
+            case 999:
                 return '#ff0000'
-            case '111':
+            case 111:
                 return '#33cc33'
             default: 
                 return backgroundColor      
