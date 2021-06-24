@@ -1065,8 +1065,8 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_id,
                            source_concept.concept_name)
         )
-        concept = find_standard_concept(source_concept)
 
+        concept = find_standard_concept(source_concept)
         messages.error(request,
                        "You could try {} ({}) ?".format(
                            concept.concept_id,
