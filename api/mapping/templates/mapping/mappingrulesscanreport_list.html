@@ -28,35 +28,39 @@
 
 <hr>
 
-{% if object_list %}
-
 <div class="container-fluid p-2" style='background-color: #3db28c11;'>
 
   <div class="row">
     <div class="col-sm">
-      <!---
- <h6>Filter On Destination Table</h6>
-     
-      <a href="url 'tables-structural-mapping' pk=scan_report.id " class="btn btn-info"> All </a>
-
-	  for omop_table in omop_tables
-        <a href="e url 'tables-structural-mapxping-filter-lvl1' pk=scan_report.id omop_table=omop_table " class="btn btn-info">  omop_table </a>
-	endfor
-	--->
-
+      
+      <h6>Filter On Destination Table</h6>
+      
+      <a href="{% url 'tables-structural-mapping' pk=scan_report.id %}" class="btn btn-info"> All </a>
+      
+      {% if omop_tables %}
+      {% for omop_table in omop_tables %}
+      <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=omop_table %} " class="btn btn-info">  {{ omop_table }} </a>
+      {% endfor %}
+      {% endif %}
+      
     </div>
-  {% if source_tables %}
+    {% if source_tables and filtered_omop_table %}
     <div class="col-sm">
       <h6>Filter On Source Table</h6>
+      {% if current_source_table %}
+      <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=filtered_omop_table %} " class="btn btn-dark">  Show All </a>
+      {% else %}
       {% for source_table in source_tables %}
-       <a href="{% url 'tables-structural-mapping-filter-lvl2' pk=scan_report.id omop_table=filtered_omop_table source_table=source_table %}" class="btn btn-dark"> {{ source_table }} </a>
-       {% endfor %}
+      <a href="{% url 'tables-structural-mapping-filter-lvl2' pk=scan_report.id omop_table=filtered_omop_table source_table=source_table %}" class="btn btn-dark"> {{ source_table }} </a>
+      {% endfor %}
+      {% endif %}
     </div>
-       {% endif %}
+    {% endif %}
   </div>
 </div>
-       
 
+
+{% if object_list %}
  
   <div class="container">
   <div class="row mx-auto" id='placeholder-svg'>
