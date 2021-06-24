@@ -51,11 +51,10 @@ jobs:
      - name: Run the docker image
        run: |
          #startup the stack
-         docker run -it --env-file .env -p 8080:8000 -d ccom-build:latest
+         docker run -it --env-file .env -p 8080:8000 ccom-build:latest
          #give it 30s to start properly
          sleep 30s
          docker ps
-         docker ps | awk 'NR==2'
          #get container ID
          containerid=$(docker ps | awk 'NR==2' | awk '{print $1;}')
          echo $containerid
