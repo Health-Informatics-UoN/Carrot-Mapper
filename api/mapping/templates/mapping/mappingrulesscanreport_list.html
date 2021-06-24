@@ -19,8 +19,8 @@
 <h2>Mapping Rules</h2>
 
 <form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-success" name='refresh-rules' >Refresh Rules</button>
-  <button type="submit" class="btn btn-info" name='download-rules' >Download Mapping JSON</button>
+  <button type="submit" class="btn btn-success" name='refresh_rules' >Refresh Rules</button>
+  <button type="submit" class="btn btn-info" name='download_rules' >Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
 
 </form>
@@ -58,7 +58,13 @@
        
 
  
-  <div class="container">
+<div class="container">
+  <div class="row mx-auto">
+  <div class="spinner-border mx-auto d-none" id='spinner' role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+  </div>
+
   <div class="row mx-auto" id='placeholder-svg'>
   </div>
   <div class="row">
@@ -116,7 +122,34 @@
 {% endif %}
 
   
-  <script>
+<script>
+
+  $("#download_rules").click(function(){
+	$('#spinner').removeClass('d-none');
+	
+	$.ajax({
+	      type: "POST",
+	      url: window.location,
+	      data: {
+		    'download_rukles': true,
+		    'csrfmiddlewaretoken': '{{ csrf_token }}',
+	      },
+	      success: function (data) {
+		    alert(data);
+		    $('#spinner').addClass('d-none')
+		    
+	      },
+	      error: function(XMLHttpRequest, textStatus, errorThrown){
+		    $('#spinner').html(errorThrown);
+	      }
+	});
+	
+  }
+  $("#refresh_rules").click(function(){
+	
+  }
+
+  
     $("#view_svg").click(function () {
 
 	  //retrieve the div text
@@ -136,11 +169,7 @@
 	  //if we dont have an svg image 
 	  if ($('#placeholder-svg').find("svg").length == 0) {
 
-		var spinner = `
-                      <div class="spinner-border mx-auto" role="status">
-		      <span class="sr-only">Loading...</span>
-		      </div>`;
-		$('#placeholder-svg').append(spinner);
+		$('#spinner').removeClass('d-none');
 		
 		//use ajax to post a request to retrieve one
 	  	$.ajax({
@@ -152,6 +181,7 @@
 		      },
 		      success: function (data) {
 			    var data = $("svg", data);
+			    $('#spinner').addClass('d-none')
 			    $('#placeholder-svg').empty();
 			    $('#placeholder-svg').append(data);
 			    
