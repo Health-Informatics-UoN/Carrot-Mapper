@@ -25,7 +25,6 @@
 <table class="table">
     <thead>
     <tr>
-        <th scope="col">ID</th>
         <th scope="col">Data Partner</th>
         <th scope="col">Dataset</th>
         <th scope="col">Added by</th>
@@ -43,8 +42,6 @@
     <tbody>
     {% for object in object_list %}
     <tr>
-      <td><a href="{% url 'tables' %}?search={{ object.id }}">{{ object.id }}</a></td>
-      
         <td><a href="{% url 'tables' %}?search={{ object.id }}">
             {{ object.data_partner.name }}</a></td>
         <td>{{ object.dataset|truncatechars:12 }}</td>
