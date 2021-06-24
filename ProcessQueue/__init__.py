@@ -141,9 +141,12 @@ def main(msg: func.QueueMessage):
         # POST request to scanreporttables
         response = requests.post("{}scanreporttables/".format(api_url), data=json_data,headers=headers)
         print('TABLE SAVE STATUS >>>', response.status_code)
+        print("RESPONSE",response)
         # Load the result of the post request,
         # Save the table ids that were generated from the POST method
         response=json.loads(response.content.decode("utf-8"))
+        print("CONTENT:",response)
+        
         for element in range(len(response)):
             table_ids.append(response[element]['id'])
         print('TABLE IDs', table_ids)
@@ -198,10 +201,11 @@ def main(msg: func.QueueMessage):
         # POST request
         response = requests.post("{}scanreportfields/".format(api_url), data=json_data,headers=headers)
         print('FIELD SAVE STATUS >>>', response.status_code)
+        print("FIELD RESPONSE",response.content)
         # Load result from the response,
         # Save generated field ids, and the corresponding name
         response=json.loads(response.content.decode("utf-8"))
-        
+        print("JSON LOADS RESPONSE:",response)
         for element in range(len(response)):
             field_ids.append(str(response[element].get('id',None)))
             field_names.append(str(response[element].get('name',None)))
@@ -265,9 +269,11 @@ def main(msg: func.QueueMessage):
                     # Append to list
                     data.append(scan_report_value_entry)
             # Create JSON array
+            print("Before json dump:",sheet.title)
             json_data=json.dumps(data)
             # POST request
-            response = requests.post("{}scanreportvalues/".format(api_url), data=json_data,headers=headers)
+            print("after JSON dump:",sheet.title)
+            response = requests.post(url=api_url+"scanreportvalues/", data=json_data,headers=headers)
             print('VALUE SAVE STATUS >>>', response.status_code)
 
     logging.info(body['blob_name'])
