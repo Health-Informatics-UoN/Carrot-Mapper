@@ -17,9 +17,6 @@ from .models import (
     DataDictionary
 )
 
-from coconnect.tools.omop_db_inspect import OMOPDetails
-
-
 
 def get_concept_from_concept_code(concept_code,
                                   vocabulary_id,
