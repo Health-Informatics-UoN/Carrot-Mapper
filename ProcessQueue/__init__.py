@@ -53,6 +53,14 @@ def process_scan_report_sheet_table(sheet):
 
     return results
 
+def get_field_id(dict, field):
+    """
+    Input: dictionary with field_id:field_value pairs
+    Input: field name
+    Returns:
+    Given the name of a field returns the corresponding id/ids
+    """
+    return [id for id,name in dict.items() if name == field]
 
 def main(msg: func.QueueMessage):
     logging.info('Python queue trigger function processed a queue item.')
@@ -141,11 +149,9 @@ def main(msg: func.QueueMessage):
         # POST request to scanreporttables
         response = requests.post("{}scanreporttables/".format(api_url), data=json_data,headers=headers)
         print('TABLE SAVE STATUS >>>', response.status_code)
-        print("RESPONSE",response)
         # Load the result of the post request,
         # Save the table ids that were generated from the POST method
         response=json.loads(response.content.decode("utf-8"))
-        print("CONTENT:",response)
         
         for element in range(len(response)):
             table_ids.append(response[element]['id'])
@@ -201,11 +207,11 @@ def main(msg: func.QueueMessage):
         # POST request
         response = requests.post("{}scanreportfields/".format(api_url), data=json_data,headers=headers)
         print('FIELD SAVE STATUS >>>', response.status_code)
-        print("FIELD RESPONSE",response.content)
+        
         # Load result from the response,
         # Save generated field ids, and the corresponding name
         response=json.loads(response.content.decode("utf-8"))
-        print("JSON LOADS RESPONSE:",response)
+        
         for element in range(len(response)):
             field_ids.append(str(response[element].get('id',None)))
             field_names.append(str(response[element].get('name',None)))
@@ -220,8 +226,8 @@ def main(msg: func.QueueMessage):
         # Create a dictionary with field names and field ids 
         # as key value pairs
         # e.g ("Field Name":<Field ID>)
-        namexids=dict(zip(field_names,field_ids))
-
+        namexids=dict(zip(field_ids,field_names))
+        
         # For sheets past the first two in the Scan Report
         # i.e. all 'data' sheets that are not Field Overview and Table Overview
         data=[]
@@ -233,7 +239,7 @@ def main(msg: func.QueueMessage):
             # skip these sheets at the end of the scan report
             if sheet.title=="_" or (sheet.title.startswith("HTA")):
                 continue
-            print("WORKING ON SHEET>>>",sheet.title)
+            print("WORKING ON SHEET>>>",idxsheet,sheet.title)
             # Get value,frequency for each field
             results=process_scan_report_sheet_table(sheet)
             """
@@ -254,8 +260,14 @@ def main(msg: func.QueueMessage):
                 
                 # If we are not on the first row:
                 if name!=value:
-                    # print(result)
-                    # print("Frequency",frequency)
+                    #Get the field_id
+                    #If more than one field with the same name, pick the one in the current sheet
+                    field_id=get_field_id(namexids,field=name)
+                    if len(field_id)>1:
+                        field_id=field_id[idxsheet-2]
+                    else:
+                        field_id=field_id[0]
+            
                     # Create a ScanReportValue entry
                     scan_report_value_entry={
                         "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -264,15 +276,14 @@ def main(msg: func.QueueMessage):
                         "frequency": int(frequency),
                         "conceptID": -1,
                         "value_description": None,
-                        "scan_report_field":namexids[name]
+                        "scan_report_field":field_id
                     }
                     # Append to list
                     data.append(scan_report_value_entry)
             # Create JSON array
-            print("Before json dump:",sheet.title)
             json_data=json.dumps(data)
             # POST request
-            print("after JSON dump:",sheet.title)
+            # print("after JSON dump:",sheet.title)
             response = requests.post(url=api_url+"scanreportvalues/", data=json_data,headers=headers)
             print('VALUE SAVE STATUS >>>', response.status_code)
 
