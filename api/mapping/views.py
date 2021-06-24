@@ -1067,16 +1067,11 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_name)
         )
         concept = find_standard_concept(source_concept)
-        if concept == None:
-            messages.error(request,
-                           "No associated Standard Concept could be found for this!")
-        else:
-            messages.error(request,
-                           "You could try {} ({}) ?".format(
-                               concept.concept_id,
-                               concept.concept_name)
-            )
-            
+        messages.error(request,
+                       "You could try {} ({}) ?".format(
+                           concept.concept_id,
+                           concept.concept_name)
+        )
         return False
     
 def pass_content_object_validation(request,scan_report_table):

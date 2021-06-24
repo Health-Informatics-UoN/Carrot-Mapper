@@ -6,6 +6,7 @@ import time
 from azure.storage.queue import QueueClient
 
 import requests
+from coconnect.tools.omop_db_inspect import OMOPDetails
 from data.models import Concept, ConceptRelationship
 from django.db.models import Q
 
