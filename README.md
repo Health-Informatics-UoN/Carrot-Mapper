@@ -23,7 +23,7 @@ To run the mapping pipeline Django MVP:
 1.	Clone this repository
 2.	Create a Python virtual environment and install Django
 3.	Create a new superuser for testing
-4. Log into the admin area at http://127.0.0.1:8000/admin/ to view the data
+4. Log into the admin area at localhost:8080/admin/ to view the data
 
 ## Docker
 
