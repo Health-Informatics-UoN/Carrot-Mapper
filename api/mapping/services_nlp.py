@@ -160,44 +160,47 @@ def start_nlp_field_level(search_term):
 
         # Send data to Azure Storage Queue
         for item in scan_report_values:
-
-            print(item)
-
+            
             # If Field and Value Descriptions are both available then use both
-            if item.scan_report_field.description_column and item.value_description:
+            if item.scan_report_field.description_column is not None and item.value_description is not None:
                 document = {
-                    "documents": [
-                        {"language": "en", "id": str(item.id)+'_value',
-                         "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
+                    "documents":[
+                        {
+                            "language": "en", "id": str(item.id)+'_value',
+                            "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")
+                        }
                     ]
                 }
-            else:
-                # If neither descriptions are available use field and value names
-                if item.scan_report_field.description_column is None and item.value_description is None:
-                    document = {
-                        "documents": [
-                            {"language": "en", "id": str(item.id)+'_value',
-                             "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
-                        ]
-                    }
-                else:
-                    # Use a combination of field description and value names
-                    if item.scan_report_field.description_column and item.value_description is None:
-                        document = {
-                            "documents": [
-                                {"language": "en", "id": str(item.id)+'_value',
-                                 "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")}
-                            ]
+            # If neither descriptions are available use field and value names
+            elif item.scan_report_field.description_column is None and item.value_description is None:
+                document = {
+                    "documents": [
+                        {
+                            "language": "en", "id": str(item.id)+'_value',
+                            "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")
                         }
-                    else:
-                        # Use a combination of field name and value description
-                        if item.scan_report_field.description_column is None and item.value_description:
-                            document = {
-                                "documents": [
-                                    {"language": "en", "id": str(item.id)+'_value',
-                                     "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
-                                ]
-                            }
+                    ]
+                }
+            #if the value_description is None (the field description must be not None)
+            elif item.value_description is None:
+                document = {
+                    "documents": [
+                        {
+                            "language": "en", "id": str(item.id)+'_value',
+                            "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")
+                        }
+                    ]
+                }
+            #last case is that the value_description is not None (& field description is None)
+            else:
+                document = {
+                    "documents": [
+                        {
+                            "language": "en", "id": str(item.id)+'_value',
+                            "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")
+                        }
+                    ]
+                }
  
             payload = json.dumps(document)
 
