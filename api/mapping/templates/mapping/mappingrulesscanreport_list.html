@@ -18,12 +18,11 @@
 
 <h2>Mapping Rules</h2>
 
-<form method="post">{% csrf_token %}
-  <button type="submit" class="btn btn-success" name='refresh_rules' >Refresh Rules</button>
-  <button type="submit" class="btn btn-info" name='download_rules' >Download Mapping JSON</button>
+
+  <button type="submit" class="btn btn-success" name='refresh_rules' id='refresh'>Refresh Rules</button>
+  <button type="submit" class="btn btn-info" name='download_rules' id='get_rules'>Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
 
-</form>
 
 
 <hr>
@@ -124,19 +123,61 @@
   
 <script>
 
-  $("#download_rules").click(function(){
+  $("#get_rules").click(function(){
 	$('#spinner').removeClass('d-none');
 	
 	$.ajax({
 	      type: "POST",
 	      url: window.location,
 	      data: {
-		    'download_rukles': true,
+		    'download_rules': true,
 		    'csrfmiddlewaretoken': '{{ csrf_token }}',
 	      },
-	      success: function (data) {
-		    alert(data);
-		    $('#spinner').addClass('d-none')
+	      success: function (response,status,xhr) {
+		    $('#spinner').addClass('d-none');
+
+
+		    //https://stackoverflow.com/questions/16086162/handle-file-download-from-ajax-post
+		    var type = xhr.getResponseHeader('Content-Type');
+		    var blob = new Blob([response], { type: type });
+
+		    // check for a filename
+		    var filename = "";
+		    var disposition = xhr.getResponseHeader('Content-Disposition');
+		    if (disposition && disposition.indexOf('attachment') !== -1) {
+			  var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+			  var matches = filenameRegex.exec(disposition);
+			  if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+		    }
+		    
+		    if (typeof window.navigator.msSaveBlob !== 'undefined') {
+			  // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+			  window.navigator.msSaveBlob(blob,filename);
+		    }
+		    else {
+			  var URL = window.URL || window.webkitURL;
+			  var downloadUrl = URL.createObjectURL(blob);
+			  if (filename) {
+				// use HTML5 a[download] attribute to specify filename
+				var a = document.createElement("a");
+				// safari doesn't support this yet
+				if (typeof a.download === 'undefined') {
+				      window.location.href = downloadUrl;
+				}
+				else {
+				      a.href = downloadUrl;
+				      a.download = filename;
+				      document.body.appendChild(a);
+				      a.click();
+				}
+			  }
+			  else{
+				window.location = downloadUrl;
+			  }
+			  setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+
+		    }
+		    
 		    
 	      },
 	      error: function(XMLHttpRequest, textStatus, errorThrown){
@@ -144,13 +185,33 @@
 	      }
 	});
 	
-  }
-  $("#refresh_rules").click(function(){
+  });
+  
+  $("#refresh").click(function(){
+	$('#spinner').removeClass('d-none');
+	$('.table').addClass('d-none');
 	
-  }
+	//use ajax to post a request to retrieve one
+	$.ajax({
+	      type: "POST",
+	      url: window.location,
+	      data: {
+		    'refresh_rules': true,
+		    'csrfmiddlewaretoken': '{{ csrf_token }}',
+	      },
+	      success: function (data) {
+		    setTimeout(function(){// wait for 1 secs
+			  location.reload(); // then reload the page.
+		    }, 1000); 
+	      },
+	      error: function(XMLHttpRequest, textStatus, errorThrown){
+		    $('#spinner').html(errorThrown);
+	      }
+	});
+  });
 
   
-    $("#view_svg").click(function () {
+  $("#view_svg").click(function () {
 
 	  //retrieve the div text
 	  var button_text = $(this).text();
@@ -176,17 +237,18 @@
 		      type: "POST",
 		      url: window.location,
 		      data: {
-			    'get-svg': true,
+			    'get_svg': true,
 			    'csrfmiddlewaretoken': '{{ csrf_token }}',
 		      },
 		      success: function (data) {
 			    var data = $("svg", data);
-			    $('#spinner').addClass('d-none')
+			    $('#spinner').addClass('d-none');
 			    $('#placeholder-svg').empty();
 			    $('#placeholder-svg').append(data);
 			    
 		      },
 		      error: function(XMLHttpRequest, textStatus, errorThrown){
+			    $('#spinner').addClass('d-none');
 			    $('#placeholder-svg').html(errorThrown);
 		      }
 		});

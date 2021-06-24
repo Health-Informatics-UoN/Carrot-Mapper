@@ -546,10 +546,10 @@ class StructuralMappingTableListView(ListView):
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download_rules") is True:
+        if request.POST.get("download_rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
-        elif request.POST.get("refresh_rules") is True:
+        elif request.POST.get("refresh_rules") is not None:
             #remove all existing rules first
             remove_mapping_rules(request,self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
@@ -562,10 +562,11 @@ class StructuralMappingTableListView(ListView):
                              f'Found and added rules for {nconcepts} existing concepts')
             return redirect(request.path)
 
-        elif request.POST.get("get_svg") is True:
+        elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
         else:
+            print (request.POST)
             messages.error(request,"not working right now!")                
             return redirect(request.path)
     
