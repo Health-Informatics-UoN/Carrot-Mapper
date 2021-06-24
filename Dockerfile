@@ -37,10 +37,6 @@ RUN pip install -r /api/requirements.txt --no-cache-dir
 USER root
 RUN apt-get install graphviz -y
 
-COPY --chown=django:django co-connect-tools/ /coconnect/
-
 USER django
-
-RUN pip install -e /coconnect/
 
 ENTRYPOINT ["/entrypoint.sh"]
