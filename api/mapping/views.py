@@ -566,7 +566,6 @@ class StructuralMappingTableListView(ListView):
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
         else:
-            print (request.POST)
             messages.error(request,"not working right now!")                
             return redirect(request.path)
     
@@ -1067,11 +1066,13 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_name)
         )
         concept = find_standard_concept(source_concept)
+
         messages.error(request,
                        "You could try {} ({}) ?".format(
                            concept.concept_id,
                            concept.concept_name)
         )
+        
         return False
     
 def pass_content_object_validation(request,scan_report_table):
