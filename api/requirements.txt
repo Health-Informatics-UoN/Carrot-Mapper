@@ -13,4 +13,11 @@ django-filter
 requests
 django-storages[azure]
 azure-storage-queue==12.1.6
-co-connect-tools==0.2.5
+
+#for coconnect tools, installing here speeds up docker build
+numpy
+coloredlogs
+Jinja2
+graphviz
+click
+sqlalchemy
