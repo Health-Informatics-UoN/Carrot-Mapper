@@ -3,3 +3,4 @@ azure-storage-blob==2.1.0
 requests
 openpyxl
 datetime
+co-connect-tools==0.2.5
