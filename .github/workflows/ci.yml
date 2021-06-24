@@ -45,7 +45,7 @@ jobs:
          echo COCONNECT_DB_PORT=${{ secrets.COCONNECT_DB_PORT }} >> .env
          echo COCONNECT_DB_PASSWORD=${{ secrets.COCONNECT_DB_PASSWORD }} >> .env
          echo COCONNECT_DB_USER=${{ secrets.COCONNECT_DB_USER }} >> .env
-         echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
 
      - name: Build the docker image
        run: docker build -t ccom-build:latest .
