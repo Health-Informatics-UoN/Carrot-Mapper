@@ -12,8 +12,8 @@ RUN apt-get update && \
         wait-for-it \
         binutils \
         gettext \
-        libpq-dev \
-        gcc \
+	libpq-dev \
+	gcc \
 	graphviz
 
 RUN addgroup -q django && \
