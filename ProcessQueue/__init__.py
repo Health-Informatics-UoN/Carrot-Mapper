@@ -31,8 +31,7 @@ def process_scan_report_sheet_table(sheet):
     results = []
     # Get max number of columns in the sheet
     max_column=sheet.max_column
-    # Set a column index (openpyxl index at 1 instead of 0)
-    col_idx=1
+    
     
     for row_idx,row_cell in enumerate(sheet.iter_rows(min_row=1,max_col=max_column),start = 1):
   
@@ -49,7 +48,6 @@ def process_scan_report_sheet_table(sheet):
                   results.append(
                       (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
                   )
-    col_idx=col_idx+1
 
     return results
 
