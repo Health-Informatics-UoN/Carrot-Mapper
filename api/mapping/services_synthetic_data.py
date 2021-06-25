@@ -6,6 +6,7 @@ from mapping.models import (
 )
 import json
 import pandas as pd
+import os
 
 def generate_synthetic_data_table(scan_report_table_id: int, number_of_events: int) -> pd.DataFrame:
 
@@ -30,12 +31,19 @@ def generate_synthetic_data_table(scan_report_table_id: int, number_of_events: i
             {field.name:obj.value,'frequency':obj.frequency}
             for obj in objects
         ]
+        
         #build a temporary dataframe from this
         df = pd.DataFrame.from_records(data)
+
         #get all the frequencies
         frequency = df['frequency']
         #normalise the frequency by total recorded
-        norm_frequency = frequency / frequency.sum()
+        total = frequency.sum()
+        if total > 0 :
+            norm_frequency = frequency / frequency.sum()
+        else:
+            norm_frequency = frequency * 0 
+            
         #for each value work out how many times the value must be repeated
         #in order to generate the number_of_events requested
         n_generate = number_of_events*norm_frequency
@@ -64,11 +72,11 @@ def generate_synthetic_data_table(scan_report_table_id: int, number_of_events: i
         
     
     #return this synthetic data table
-    return df_synthetic
+    return df_synthetic.set_index(df_synthetic.columns[0])
 
     
 
-def generate_synthetic_data_report(scan_report_id,number_of_events):
+def generate_synthetic_data_report(scan_report_id,number_of_events,output_folder):
     scan_report = ScanReport.objects.get(pk=scan_report_id)
     #get all tables for the given dataset (via scanreport id)
     tables = ScanReportTable.objects.filter(scan_report=scan_report)
@@ -76,6 +84,9 @@ def generate_synthetic_data_report(scan_report_id,number_of_events):
     for table in tables:
         #generate synthetic data in the form of a dataframe for them
         df = generate_synthetic_data_table(table.id,number_of_events)
-        #print (scan_report.data_partner.name,scan_report.dataset,table.name)
+
+        if not os.path.isdir(output_folder):
+            os.makedirs(output_folder)
+        
         print (df)
-        df.to_csv(f"{table.name}",index=False)
+        df.to_csv(f"{output_folder}{table.name}")
