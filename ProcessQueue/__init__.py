@@ -31,22 +31,31 @@ def process_scan_report_sheet_table(sheet):
     results = []
     # Get max number of columns in the sheet
     max_column=sheet.max_column
-    
+    # Set a column index (openpyxl index at 1 instead of 0)
     
     for row_idx,row_cell in enumerate(sheet.iter_rows(min_row=1,max_col=max_column),start = 1):
   
     # Works through pairs of value/frequency columns
         for column_idx,cell in enumerate(row_cell):
+            freq=sheet.cell(row=row_idx,column=column_idx+2).value
             if cell.value:
+              if (column_idx) % 2 == 0:
+              # As we move down rows, checks that there's data there
+              # This is required b/c value/frequency col pairs differ
+              # in the number of rows
+                if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
+                  continue
+
+              # Append to Results as (Field Name,Value,Frequency)
+                results.append(
+                    (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
+                )
+            else:
+            #If only frequency is present add to results
+              if freq:
                 if (column_idx) % 2 == 0:
-                # As we move down rows, checks that there's data there
-                # This is required b/c value/frequency col pairs differ
-                # in the number of rows
-                  if sheet.cell(row=row_idx,column=column_idx+1).value == "" and sheet.cell(row=row_idx,column=column_idx+2).value == "":
-                    continue
-                # Append to Results as (Field Name,Value,Frequency)
                   results.append(
-                      (sheet.cell(row=1,column=column_idx+1).value,sheet.cell(row=row_idx,column=column_idx+1).value, sheet.cell(row=row_idx,column=column_idx+2).value)
+                      (sheet.cell(row=1,column=column_idx+1).value,cell.value, sheet.cell(row=row_idx,column=column_idx+2).value)
                   )
 
     return results
@@ -173,7 +182,7 @@ def main(msg: func.QueueMessage):
                 "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 "name": ws.cell(row=i,column=2).value,
-                "description_column":str("empty"),
+                "description_column":str(ws.cell(row=i,column=3).value),
                 "type_column":str(ws.cell(row=i,column=4).value),
                 "max_length":ws.cell(row=i,column=5).value,
                 "nrows":ws.cell(row=i,column=6).value,
