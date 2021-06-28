@@ -79,11 +79,15 @@ class ScanReportTableSerializer(serializers.ModelSerializer):
         fields='__all__'        
 
 class ScanReportFieldSerializer(serializers.ModelSerializer):
+    name=serializers.CharField(max_length=64, allow_blank=True)
+    description_column=serializers.CharField(max_length=256, allow_blank=True)
     class Meta:
         model=ScanReportField
-        fields='__all__'        
+        fields='__all__' 
+
 
 class ScanReportValueSerializer(serializers.ModelSerializer):
+    value=serializers.CharField(max_length=128,allow_blank=True)
     class Meta:
         model=ScanReportValue
         fields='__all__'        
