@@ -11,8 +11,9 @@ import os
 def generate_synthetic_data_table(scan_report_table_id: int, number_of_events: int) -> pd.DataFrame:
 
     table = ScanReportTable.objects.get(pk=scan_report_table_id)
-
-    field_person_id = ScanReportField.objects.get(pk=table.person_id.id).name
+    field_person_id = None
+    if table.person_id is not None:
+        field_person_id = ScanReportField.objects.get(pk=table.person_id.id).name
     
     #get all columns (fields) for a given table 
     fields = ScanReportField.objects\
