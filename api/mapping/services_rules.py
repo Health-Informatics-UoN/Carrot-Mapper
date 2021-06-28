@@ -59,12 +59,18 @@ def get_omop_field(destination_field,
     Returns:
       - OmopField : the destination field object
     """
+
     #if we haven't specified the table name
     if destination_table == None:
         #look up the field from the "allowed_tables"
         omop_field = OmopField.objects\
-                               .filter(table__table__in=m_allowed_tables)\
-                               .get(field=destination_field)
+                              .filter(field=destination_field)
+
+        if len(omop_field)>1:
+            return omop_field.filter(table__table__in=m_allowed_tables)[0]
+        else:
+            return omop_field[0]
+        
     else:
         #otherwise, if we know which table the field is in, use this to find the field
         omop_field = OmopField.objects\
@@ -139,6 +145,19 @@ def save_date_rule(request,
     return True
 
 
+def find_destination_table(request,concept):
+    domain = concept.domain_id.lower()
+    #get the omop field for the source_concept_id for this domain
+    omop_field = get_omop_field(f"{domain}_source_concept_id")
+    #start looking up what table we're looking at
+    destination_table = omop_field.table
+
+    if destination_table.table not in m_allowed_tables:
+        messages.error(request,f"Concept {concept.concept_id} ({concept.concept_name}) is from table '{destination_table.table}' which is not implemented yet.")
+        return None
+    return destination_table
+
+
 def save_mapping_rules(request,scan_report_concept):
     """
     function to save the rules
@@ -155,13 +174,19 @@ def save_mapping_rules(request,scan_report_concept):
         source_field = content_object
         
     scan_report = source_field.scan_report_table.scan_report
+
     concept = scan_report_concept.concept
-    domain = concept.domain_id.lower()
-    #get the omop field for the source_concept_id for this domain
-    omop_field = get_omop_field(f"{domain}_source_concept_id")
 
     #start looking up what table we're looking at
-    destination_table = omop_field.table
+    destination_table = find_destination_table(request,concept)
+    if destination_table == None:
+        messages.warning(request,f"Failed to make rules for {concept.concept_id} ({concept.concept_name})")
+        return False
+
+    #get the omop field for the source_concept_id for this domain
+    domain = concept.domain_id.lower()
+    omop_field = get_omop_field(f"{domain}_source_concept_id")
+
     #obtain the source table
     source_table = source_field.scan_report_table
 
