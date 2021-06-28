@@ -630,7 +630,8 @@ class ScanReportFormView(FormView):
         
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name="scanreports"#change to scanreports for deployment
+            queue_name="scanreports"
+            #change to scanreports-local for local development
            
         )
         queue.send_message(base64_message)
