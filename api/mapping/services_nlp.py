@@ -159,8 +159,6 @@ def start_nlp_field_level(search_term):
             field_text = item.scan_report_field.description_column if item.scan_report_field.description_column is not None else item.scan_report_field.name
             value_text = item.value_description if item.value_description is not None else item.value
 
-            print('field text >>> ', field_text)
-            print('value_text >>> ', value_text)
 
             document = {
             "documents": [
@@ -170,8 +168,6 @@ def start_nlp_field_level(search_term):
                 }
             ]
             }
-
-            print("DOCUMENT \n", document)
 
             payload = json.dumps(document)
 
@@ -185,6 +181,5 @@ def start_nlp_field_level(search_term):
                 queue_name="nlpqueue"
             )
             queue.send_message(base64_message)
-            print(queue)
 
     return True
