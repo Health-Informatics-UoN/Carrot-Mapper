@@ -10,7 +10,7 @@ from coconnect.tools.omop_db_inspect import OMOPDetails
 from data.models import Concept, ConceptRelationship
 from django.db.models import Q
 
-from .models import (ScanReport, ScanReportAssertion, ScanReportConcept,
+from .models import (Document, ScanReport, ScanReportAssertion, ScanReportConcept,
                      ScanReportField, ScanReportValue)
 from .services import find_standard_concept, get_concept_from_concept_code
 
@@ -111,28 +111,23 @@ def start_nlp_field_level(search_term):
     # If True, we pass field-level data i.e. a single string (field description)
     # If False, we pass all values associated with that field
     if field.pass_from_source:
-        # We want to use the field description if available
-        # However, we fall back to field name if field_description is None
-        if field.description_column is None:
-            document = {
-                "documents": [
-                    {"language": "en", "id": str(field.id)+'_field',
-                        "text": field.name.replace("_", " ")}
-                ]
-            }
 
-        else:
-            # Create a single dictionary item for the field description
-            # Convert to JSON for NLP, POST the data to NLP API, save the job URL
-            document = {
-                "documents": [
-                    {"language": "en", "id": str(field.id)+'_field',
-                        "text": field.description_column.replace("_", " ")}
-                ]
+        # We want to use the field description if available
+        # However, we fall back to field name if field_description is "" (blank)
+        field_text = field.description_column if field.description_column is not "" else field.name
+
+        document = {
+        "documents": [
+            {
+            "language": "en", 
+            "id": str(field.id)+'_field',
+            "text": field_text.replace("_", " ")
             }
+        ]
+        }
 
         payload = json.dumps(document)
- 
+
         message_bytes = payload.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
@@ -161,44 +156,19 @@ def start_nlp_field_level(search_term):
         # Send data to Azure Storage Queue
         for item in scan_report_values:
 
-            print(item)
+            field_text = item.scan_report_field.description_column if item.scan_report_field.description_column is not None else item.scan_report_field.name
+            value_text = item.value_description if item.value_description is not None else item.value
 
-            # If Field and Value Descriptions are both available then use both
-            if item.scan_report_field.description_column and item.value_description:
-                document = {
-                    "documents": [
-                        {"language": "en", "id": str(item.id)+'_value',
-                         "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
-                    ]
+
+            document = {
+            "documents": [
+                {
+                "language": "en", "id": str(item.id)+'_value',
+                "text": field_text.replace("_", " ")+', '+value_text.replace("_", " ")
                 }
-            else:
-                # If neither descriptions are available use field and value names
-                if item.scan_report_field.description_column is None and item.value_description is None:
-                    document = {
-                        "documents": [
-                            {"language": "en", "id": str(item.id)+'_value',
-                             "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
-                        ]
-                    }
-                else:
-                    # Use a combination of field description and value names
-                    if item.scan_report_field.description_column and item.value_description is None:
-                        document = {
-                            "documents": [
-                                {"language": "en", "id": str(item.id)+'_value',
-                                 "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")}
-                            ]
-                        }
-                    else:
-                        # Use a combination of field name and value description
-                        if item.scan_report_field.description_column is None and item.value_description:
-                            document = {
-                                "documents": [
-                                    {"language": "en", "id": str(item.id)+'_value',
-                                     "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
-                                ]
-                            }
- 
+            ]
+            }
+
             payload = json.dumps(document)
 
             message_bytes = payload.encode('ascii')
@@ -211,6 +181,5 @@ def start_nlp_field_level(search_term):
                 queue_name="nlpqueue"
             )
             queue.send_message(base64_message)
-            print(queue)
 
     return True
