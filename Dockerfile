@@ -12,9 +12,9 @@ RUN apt-get update && \
         wait-for-it \
         binutils \
         gettext \
-	libpq-dev \
-	gcc \
-	graphviz
+        libpq-dev \
+        gcc \
+        graphviz
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
