@@ -546,10 +546,10 @@ class StructuralMappingTableListView(ListView):
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download-rules") is not None:
+        if request.POST.get("download_rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
-        elif request.POST.get("refresh-rules") is not None:
+        elif request.POST.get("refresh_rules") is not None:
             #remove all existing rules first
             remove_mapping_rules(request,self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
@@ -562,7 +562,7 @@ class StructuralMappingTableListView(ListView):
                              f'Found and added rules for {nconcepts} existing concepts')
             return redirect(request.path)
 
-        elif request.POST.get("get-svg") is not None:
+        elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
         else:
@@ -1065,14 +1065,17 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_id,
                            source_concept.concept_name)
         )
-        
         concept = find_standard_concept(source_concept)
-        messages.error(request,
-                       "You could try {} ({}) ?".format(
-                           concept.concept_id,
-                           concept.concept_name)
-        )
-        
+        if concept == None:
+            messages.error(request,
+                           "No associated Standard Concept could be found for this!")
+        else:
+            messages.error(request,
+                           "You could try {} ({}) ?".format(
+                               concept.concept_id,
+                               concept.concept_name)
+            )
+            
         return False
     
 def pass_content_object_validation(request,scan_report_table):

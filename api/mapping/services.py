@@ -77,10 +77,14 @@ def get_concept_from_concept_code(concept_code,
 
 def find_standard_concept(source_concept):
 
-    concept_relation = ConceptRelationship.objects.get(
-        concept_id_1=source_concept.concept_id,
-        relationship_id__contains='Maps to'
-    )
+    try:
+        concept_relation = ConceptRelationship.objects.get(
+            concept_id_1=source_concept.concept_id,
+            relationship_id__contains='Maps to'
+        )
+    except ConceptRelationship.DoesNotExist:
+        return None
+        
 
     if concept_relation.concept_id_2 != concept_relation.concept_id_1:
         concept = Concept.objects.get(
