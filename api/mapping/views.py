@@ -112,8 +112,7 @@ from .models import (
 from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
 from .services import (
-    process_scan_report,
-    find_standard_concept
+    process_scan_report
 )
 from .services_rules import (
     save_mapping_rules,
@@ -124,7 +123,8 @@ from .services_rules import (
     view_mapping_rules,
     find_date_event,
     find_person_id,
-    find_destination_table
+    find_destination_table,
+    find_standard_concept
 )
 from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary

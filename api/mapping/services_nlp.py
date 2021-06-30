@@ -12,7 +12,7 @@ from django.contrib import messages
 
 from .models import (Document, ScanReport, ScanReportAssertion, ScanReportConcept,
                      ScanReportField, ScanReportValue)
-from .services import find_standard_concept, get_concept_from_concept_code
+from .services_rules import find_standard_concept, get_concept_from_concept_code
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
