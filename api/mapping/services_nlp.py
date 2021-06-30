@@ -8,10 +8,11 @@ from azure.storage.queue import QueueClient
 import requests
 from data.models import Concept, ConceptRelationship
 from django.db.models import Q
+from django.contrib import messages
 
 from .models import (Document, ScanReport, ScanReportAssertion, ScanReportConcept,
                      ScanReportField, ScanReportValue)
-from .services import find_standard_concept, get_concept_from_concept_code
+from .services_rules import find_standard_concept, get_concept_from_concept_code
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -100,9 +101,8 @@ def concept_code_to_id(codes):
     return codes_dict
 
 
-def start_nlp_field_level(search_term):
+def start_nlp_field_level(request, search_term):
 
-    logger.info(">>>>> Running NLP in services_nlp.py for", search_term)
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
 
@@ -116,13 +116,13 @@ def start_nlp_field_level(search_term):
         field_text = field.description_column if field.description_column is not "" else field.name
 
         document = {
-        "documents": [
-            {
-            "language": "en", 
-            "id": str(field.id)+'_field',
-            "text": field_text.replace("_", " ")
-            }
-        ]
+            "documents": [
+                {
+                    "language": "en",
+                    "id": str(field.id)+'_field',
+                    "text": field_text.replace("_", " ")
+                }
+            ]
         }
 
         payload = json.dumps(document)
@@ -134,10 +134,16 @@ def start_nlp_field_level(search_term):
         # Send JSON payload to nlp-processing-queue in Azure
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name="nlpqueue",
+            queue_name=os.environ.get("NLP_QUEUE_NAME"),
         )
+
         queue.send_message(base64_message)
-        print(queue)
+
+        messages.success(request, "Running NLP at the field level for {}. Check back soon for results from the NLP API.".format(
+            field.name)
+        )
+
+        return True
 
     else:
 
@@ -152,20 +158,24 @@ def start_nlp_field_level(search_term):
             scan_report_field=search_term
         ).filter(~Q(value__in=neg_assertions))
 
+        messages.success(request, "Running NLP at the value level for {}. Check back soon for results from the NLP API.".format(
+            field.name)
+        )
+
         # Send data to Azure Storage Queue
         for item in scan_report_values:
 
             field_text = item.scan_report_field.description_column if item.scan_report_field.description_column is not None else item.scan_report_field.name
             value_text = item.value_description if item.value_description is not None else item.value
 
-
             document = {
-            "documents": [
-                {
-                "language": "en", "id": str(item.id)+'_value',
-                "text": field_text.replace("_", " ")+', '+value_text.replace("_", " ")
-                }
-            ]
+                "documents": [
+                    {
+                        "language": "en",
+                        "id": str(item.id)+'_value',
+                        "text": field_text.replace("_", " ")+', '+value_text.replace("_", " ")
+                    }
+                ]
             }
 
             payload = json.dumps(document)
@@ -177,7 +187,7 @@ def start_nlp_field_level(search_term):
             # Send JSON payload to nlp-processing-queue in Azure
             queue = QueueClient.from_connection_string(
                 conn_str=os.environ.get("STORAGE_CONN_STRING"),
-                queue_name="nlpqueue"
+                queue_name=os.environ.get("NLP_QUEUE_NAME"),
             )
             queue.send_message(base64_message)
 

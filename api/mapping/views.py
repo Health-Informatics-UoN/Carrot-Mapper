@@ -112,8 +112,7 @@ from .models import (
 from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
 from .services import (
-    process_scan_report,
-    find_standard_concept
+    process_scan_report
 )
 from .services_rules import (
     save_mapping_rules,
@@ -123,7 +122,9 @@ from .services_rules import (
     download_mapping_rules,
     view_mapping_rules,
     find_date_event,
-    find_person_id
+    find_person_id,
+    find_destination_table,
+    find_standard_concept
 )
 from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary
@@ -556,10 +557,22 @@ class StructuralMappingTableListView(ListView):
             ## this method could be taking too long to execute
             all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
             #save all of them
-            save_multiple_mapping_rules(request,all_associated_concepts)
-            nconcepts = len(all_associated_concepts)
-            messages.success(request,
-                             f'Found and added rules for {nconcepts} existing concepts')
+            nconcepts=0
+            nbadconcepts=0
+            for concept in all_associated_concepts:
+                if save_mapping_rules(request,concept):
+                    nconcepts+=1
+                else:
+                    nbadconcepts+=1
+                
+
+            if nbadconcepts == 0:
+                messages.success(request,
+                                 f'Found and added rules for {nconcepts} existing concepts')
+            else:
+                messages.success(request,
+                                 f'Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.')
+                
             return redirect(request.path)
 
         elif request.POST.get("get_svg") is not None:
@@ -1028,9 +1041,9 @@ def run_nlp_field_level(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
-    start_nlp_field_level(search_term=search_term)
+    start_nlp_field_level(request, search_term=search_term)
     
-    return redirect("/values/?search={}".format(field.id))
+    return redirect("/fields/?search={}".format(field.scan_report_table.id))
 
 
 # Run NLP for all fields/values within a table
@@ -1045,9 +1058,16 @@ def run_nlp_table_level(request):
 
     
     return redirect("/tables/?search={}".format(table.id))
-    
 
 
+def validate_concept(request,source_concept):
+    if find_destination_table(request,source_concept) == None:
+        return False
+
+    if not validate_standard_concept(request,source_concept):
+        return False
+
+    return True
 
 def validate_standard_concept(request,source_concept):
 
@@ -1117,8 +1137,8 @@ def save_scan_report_value_concept(request):
 
 
             #perform a standard check on the concept 
-            pass_standard_concept_check = validate_standard_concept(request,concept)
-            if pass_standard_concept_check:
+            pass_concept_check = validate_concept(request,concept)
+            if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
                     concept=concept,
                     content_object=scan_report_value,
@@ -1171,8 +1191,8 @@ def save_scan_report_field_concept(request):
                 return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
             #perform a standard check on the concept 
-            pass_standard_concept_check = validate_standard_concept(request,concept)
-            if pass_standard_concept_check:
+            pass_concept_check = validate_concept(request,concept)
+            if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
                     concept=concept,
                     content_object=scan_report_field,
