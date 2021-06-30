@@ -1026,9 +1026,9 @@ def run_nlp_field_level(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
-    start_nlp_field_level(search_term=search_term)
+    start_nlp_field_level(request, search_term=search_term)
     
-    return redirect("/values/?search={}".format(field.id))
+    return redirect("/fields/?search={}".format(field.scan_report_table.id))
 
 
 # Run NLP for all fields/values within a table
