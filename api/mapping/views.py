@@ -112,8 +112,7 @@ from .models import (
 from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
 from .services import (
-    process_scan_report,
-    find_standard_concept
+    process_scan_report
 )
 from .services_rules import (
     save_mapping_rules,
@@ -124,6 +123,8 @@ from .services_rules import (
     view_mapping_rules,
     find_date_event,
     find_person_id,
+    find_destination_table,
+    find_standard_concept,
     m_allowed_tables
 )
 from .tasks import process_scan_report_task
@@ -547,23 +548,35 @@ class StructuralMappingTableListView(ListView):
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download-rules") is not None:
+        if request.POST.get("download_rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
-        elif request.POST.get("refresh-rules") is not None:
+        elif request.POST.get("refresh_rules") is not None:
             #remove all existing rules first
             remove_mapping_rules(request,self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
             ## this method could be taking too long to execute
             all_associated_concepts = find_existing_scan_report_concepts(request,self.kwargs.get("pk"))
             #save all of them
-            save_multiple_mapping_rules(request,all_associated_concepts)
-            nconcepts = len(all_associated_concepts)
-            messages.success(request,
-                             f'Found and added rules for {nconcepts} existing concepts')
+            nconcepts=0
+            nbadconcepts=0
+            for concept in all_associated_concepts:
+                if save_mapping_rules(request,concept):
+                    nconcepts+=1
+                else:
+                    nbadconcepts+=1
+                
+
+            if nbadconcepts == 0:
+                messages.success(request,
+                                 f'Found and added rules for {nconcepts} existing concepts')
+            else:
+                messages.success(request,
+                                 f'Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.')
+                
             return redirect(request.path)
 
-        elif request.POST.get("get-svg") is not None:
+        elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
         else:
@@ -653,7 +666,7 @@ class ScanReportFormView(FormView):
         
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name="scanreports"
+            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")
         )
         queue.send_message(base64_message)
         
@@ -1049,9 +1062,9 @@ def run_nlp_field_level(request):
 
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
-    start_nlp_field_level(search_term=search_term)
+    start_nlp_field_level(request, search_term=search_term)
     
-    return redirect("/values/?search={}".format(field.id))
+    return redirect("/fields/?search={}".format(field.scan_report_table.id))
 
 
 # Run NLP for all fields/values within a table
@@ -1066,9 +1079,16 @@ def run_nlp_table_level(request):
 
     
     return redirect("/tables/?search={}".format(table.id))
-    
 
 
+def validate_concept(request,source_concept):
+    if find_destination_table(request,source_concept) == None:
+        return False
+
+    if not validate_standard_concept(request,source_concept):
+        return False
+
+    return True
 
 def validate_standard_concept(request,source_concept):
 
@@ -1088,14 +1108,17 @@ def validate_standard_concept(request,source_concept):
                            source_concept.concept_id,
                            source_concept.concept_name)
         )
-        
         concept = find_standard_concept(source_concept)
-        messages.error(request,
-                       "You could try {} ({}) ?".format(
-                           concept.concept_id,
-                           concept.concept_name)
-        )
-        
+        if concept == None:
+            messages.error(request,
+                           "No associated Standard Concept could be found for this!")
+        else:
+            messages.error(request,
+                           "You could try {} ({}) ?".format(
+                               concept.concept_id,
+                               concept.concept_name)
+            )
+            
         return False
     
 def pass_content_object_validation(request,scan_report_table):
@@ -1135,8 +1158,8 @@ def save_scan_report_value_concept(request):
 
 
             #perform a standard check on the concept 
-            pass_standard_concept_check = validate_standard_concept(request,concept)
-            if pass_standard_concept_check:
+            pass_concept_check = validate_concept(request,concept)
+            if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
                     concept=concept,
                     content_object=scan_report_value,
@@ -1189,8 +1212,8 @@ def save_scan_report_field_concept(request):
                 return redirect("/fields/?search={}".format(scan_report_field.scan_report_table.id))
 
             #perform a standard check on the concept 
-            pass_standard_concept_check = validate_standard_concept(request,concept)
-            if pass_standard_concept_check:
+            pass_concept_check = validate_concept(request,concept)
+            if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
                     concept=concept,
                     content_object=scan_report_field,

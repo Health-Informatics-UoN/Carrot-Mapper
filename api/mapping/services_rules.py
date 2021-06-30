@@ -59,12 +59,18 @@ def get_omop_field(destination_field,
     Returns:
       - OmopField : the destination field object
     """
+
     #if we haven't specified the table name
     if destination_table == None:
         #look up the field from the "allowed_tables"
         omop_field = OmopField.objects\
-                               .filter(table__table__in=m_allowed_tables)\
-                               .get(field=destination_field)
+                              .filter(field=destination_field)
+
+        if len(omop_field)>1:
+            return omop_field.filter(table__table__in=m_allowed_tables)[0]
+        else:
+            return omop_field[0]
+        
     else:
         #otherwise, if we know which table the field is in, use this to find the field
         omop_field = OmopField.objects\
@@ -139,6 +145,19 @@ def save_date_rule(request,
     return True
 
 
+def find_destination_table(request,concept):
+    domain = concept.domain_id.lower()
+    #get the omop field for the source_concept_id for this domain
+    omop_field = get_omop_field(f"{domain}_source_concept_id")
+    #start looking up what table we're looking at
+    destination_table = omop_field.table
+
+    if destination_table.table not in m_allowed_tables:
+        messages.error(request,f"Concept {concept.concept_id} ({concept.concept_name}) is from table '{destination_table.table}' which is not implemented yet.")
+        return None
+    return destination_table
+
+
 def save_mapping_rules(request,scan_report_concept):
     """
     function to save the rules
@@ -155,13 +174,19 @@ def save_mapping_rules(request,scan_report_concept):
         source_field = content_object
         
     scan_report = source_field.scan_report_table.scan_report
+
     concept = scan_report_concept.concept
-    domain = concept.domain_id.lower()
-    #get the omop field for the source_concept_id for this domain
-    omop_field = get_omop_field(f"{domain}_source_concept_id")
 
     #start looking up what table we're looking at
-    destination_table = omop_field.table
+    destination_table = find_destination_table(request,concept)
+    if destination_table == None:
+        messages.warning(request,f"Failed to make rules for {concept.concept_id} ({concept.concept_name})")
+        return False
+
+    #get the omop field for the source_concept_id for this domain
+    domain = concept.domain_id.lower()
+    omop_field = get_omop_field(f"{domain}_source_concept_id")
+
     #obtain the source table
     source_table = source_field.scan_report_table
 
@@ -237,6 +262,91 @@ def save_mapping_rules(request,scan_report_concept):
         rule_domain_value_as_number.save()
 
     return True
+
+
+
+def get_concept_from_concept_code(concept_code,
+                                  vocabulary_id,
+                                  no_source_concept=False):
+    """
+    Given a concept_code and vocabularly id, 
+    return the source_concept and concept objects
+
+    If the concept is a standard concept, 
+    source_concept will be the same object
+
+    Parameters:
+      concept_code (str) : the concept code  
+      vocabulary_id (str) : SNOMED etc.
+      no_source_concept (bool) : only return the concept
+    Returns:
+      tuple( source_concept(Concept), concept(Concept) )
+      OR
+      concept(Concept)
+    """
+    
+    # NLP returns SNOMED as SNOWMEDCT_US
+    # This sets SNOWMEDCT_US to SNOWMED if this function is
+    # used within services_nlp.py
+    if vocabulary_id == 'SNOMEDCT_US':
+        vocabulary_id="SNOMED"
+
+    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert    
+    if vocabulary_id=="RXNORM":
+        vocabulary_id="RxNorm"
+    else:
+        vocabulary_id=vocabulary_id
+
+    #obtain the source_concept given the code and vocab
+    source_concept = Concept.objects.get(
+        concept_code = concept_code,
+        vocabulary_id = vocabulary_id
+    )
+    
+    #if the source_concept is standard
+    if source_concept.standard_concept == 'S':
+        #the concept is the same as the source_concept
+        concept = source_concept
+    else:
+        #otherwise we need to look up 
+        concept = find_standard_concept(source_concept)
+
+    if no_source_concept:
+        #only return the concept
+        return concept
+    else:
+        #return both as a tuple
+        return (source_concept,concept)
+
+
+def find_standard_concept(source_concept):
+    """
+    Args:
+      - source_concept(Concept): originally found, potentially non-standard concept
+    Returns:
+      - Concept: either the same object as input (if input is standard), or a newly found 
+    """
+
+    #if is standard, return self
+    if source_concept.standard_concept == 'S':
+        return source_concept
+
+    #find the concept relationship, of what this non-standard concept "Maps to"
+    concept_relation = ConceptRelationship.objects.get(
+        concept_id_1=source_concept.concept_id,
+        relationship_id__contains='Maps to'
+    )
+    
+    if concept_relation.concept_id_2 == concept_relation.concept_id_1:
+        raise NonStandardConceptMapsToSelf('For a non-standard concept '
+                                           'the concept_relation is mapping to itself '
+                                           'i.e. it cannot find an associated standard concept')
+
+    #look up the associated standard-concept
+    concept = Concept.objects.get(
+        concept_id=concept_relation.concept_id_2
+    )
+    return concept
 
 
 
