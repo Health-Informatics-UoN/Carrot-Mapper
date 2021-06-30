@@ -23,16 +23,27 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Set up settings for saving to Azure Blob Storage
+AZURE_ACCOUNT_NAME="ccomstoragedev"
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+AZURE_CONNECTION_STRING=os.environ.get("STORAGE_CONN_STRING")
+AZURE_CONTAINER="raw-reports"
+
+MEDIA_LOCATION = "http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media"
+MEDIA_ROOT='http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ix*bl@#=h+*o(^c7zv@jlale3zr&k=7aqdd@*%&yn1cf*hx_sw'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['ccom-dev.azurewebsites.net','localhost']
 
 
 # Application definition
@@ -48,6 +59,10 @@ INSTALLED_APPS = [
     'mapping',
     'data',
     'rest_framework',
+    'django_filters',
+    'rest_framework.authtoken',
+    'storages',
+    
 ]
 
 MIDDLEWARE = [
@@ -130,7 +145,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 

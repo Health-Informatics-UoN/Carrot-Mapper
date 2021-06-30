@@ -1,7 +1,9 @@
+import base64
 import json
 import logging
 import os
 import time
+from azure.storage.queue import QueueClient
 
 import requests
 from coconnect.tools.omop_db_inspect import OMOPDetails
@@ -14,6 +16,7 @@ from .services_rules import find_standard_concept, get_concept_from_concept_code
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
+
 
 def get_data_from_nlp(url, headers, post_response_url):
     """
@@ -98,21 +101,11 @@ def concept_code_to_id(codes):
     return codes_dict
 
 
-def start_nlp(search_term):
+def start_nlp_field_level(search_term):
 
     logger.info(">>>>> Running NLP in services_nlp.py for", search_term)
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
-
-    # Define NLP things
-    url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.3/entities/health/jobs?stringIndexType=TextElements_v8"
-    headers = {
-        "Ocp-Apim-Subscription-Key": os.environ.get("NLP_API_KEY"),
-        "Content-Type": "application/json; utf-8",
-    }
-
-    # Create empty list to later hold job URLs
-    post_response_url = []
 
     # Checks to see if the field is 'pass_from_source'
     # If True, we pass field-level data i.e. a single string (field description)
@@ -123,7 +116,7 @@ def start_nlp(search_term):
         if field.description_column is None:
             document = {
                 "documents": [
-                    {"language": "en", "id": field.id,
+                    {"language": "en", "id": str(field.id)+'_field',
                         "text": field.name.replace("_", " ")}
                 ]
             }
@@ -133,44 +126,27 @@ def start_nlp(search_term):
             # Convert to JSON for NLP, POST the data to NLP API, save the job URL
             document = {
                 "documents": [
-                    {"language": "en", "id": field.id,
+                    {"language": "en", "id": str(field.id)+'_field',
                         "text": field.description_column.replace("_", " ")}
                 ]
             }
 
         payload = json.dumps(document)
-        response = requests.post(url, headers=headers, data=payload)
-        post_response_url.append(response.headers["operation-location"])
+ 
+        message_bytes = payload.encode('ascii')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_message = base64_bytes.decode('ascii')
 
-        # Get the data back from NLP API, convert code to conceptIDs
-        get_response = get_data_from_nlp(
-            url=url, headers=headers, post_response_url=post_response_url
+        # Send JSON payload to nlp-processing-queue in Azure
+        queue = QueueClient.from_connection_string(
+            conn_str=os.environ.get("STORAGE_CONN_STRING"),
+            queue_name="nlpqueue",
         )
-        codes = process_nlp_response(get_response)
-        # Look up standard and valid conceptIDs for concept codes
-        # Append conceptID to item in list, turn into a dictionary
-        codes_dict = concept_code_to_id(codes)
-
-        # Check each item in values and see whether NLP got a result
-        # If NLP finds something, save the result to ScanReportConcept
-        match = list(
-            filter(lambda item: item["pk"] == str(field.id), codes_dict))
-
-        for item in match:
-            scan_report_field = ScanReportField.objects.get(pk=item["pk"])
-            concept = Concept.objects.get(pk=item["conceptid"])
-
-            ScanReportConcept.objects.create(
-                nlp_entity=item["nlp_entity"],
-                nlp_entity_type=item["nlp_entity_type"],
-                nlp_confidence=item["nlp_confidence"],
-                nlp_vocabulary=item["nlp_vocab"],
-                nlp_concept_code=item["nlp_code"],
-                concept=concept,
-                content_object=scan_report_field,
-            )
+        queue.send_message(base64_message)
+        print(queue)
 
     else:
+
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(
             scan_report__id=scan_report_id)
@@ -182,112 +158,59 @@ def start_nlp(search_term):
             scan_report_field=search_term
         ).filter(~Q(value__in=neg_assertions))
 
-        # Create list of items to be sent to the NLP service
-        documents = []
+        # Send data to Azure Storage Queue
         for item in scan_report_values:
+
+            print(item)
 
             # If Field and Value Descriptions are both available then use both
             if item.scan_report_field.description_column and item.value_description:
-                documents.append(
-                    {"language": "en", "id": item.id,
-                        "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
-                )
+                document = {
+                    "documents": [
+                        {"language": "en", "id": str(item.id)+'_value',
+                         "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value_description.replace("_", " ")}
+                    ]
+                }
             else:
                 # If neither descriptions are available use field and value names
                 if item.scan_report_field.description_column is None and item.value_description is None:
-                    documents.append(
-                        {"language": "en", "id": item.id,
-                            "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
-                    )
+                    document = {
+                        "documents": [
+                            {"language": "en", "id": str(item.id)+'_value',
+                             "text": item.scan_report_field.name.replace("_", " ")+', '+item.value.replace("_", " ")}
+                        ]
+                    }
                 else:
                     # Use a combination of field description and value names
                     if item.scan_report_field.description_column and item.value_description is None:
-                        documents.append(
-                            {"language": "en", "id": item.id,
-                                "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")}
-                        )
+                        document = {
+                            "documents": [
+                                {"language": "en", "id": str(item.id)+'_value',
+                                 "text": item.scan_report_field.description_column.replace("_", " ")+', '+item.value.replace("_", " ")}
+                            ]
+                        }
                     else:
                         # Use a combination of field name and value description
                         if item.scan_report_field.description_column is None and item.value_description:
-                            documents.append(
-                                {"language": "en", "id": item.id,
-                                    "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
-                            )
+                            document = {
+                                "documents": [
+                                    {"language": "en", "id": str(item.id)+'_value',
+                                     "text": item.scan_report_field.name.replace("_", " ")+', '+item.value_description.replace("_", " ")}
+                                ]
+                            }
+ 
+            payload = json.dumps(document)
 
-        print('VALUES LIST >>> ', documents)
+            message_bytes = payload.encode('ascii')
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode('ascii')
 
-        # POST Request(s)
-        chunk_size = 10  # Set chunk size (max=10)
-        post_response_url = []
-        for i in range(0, len(documents), chunk_size):
-            chunk = {"documents": documents[i: i + chunk_size]}
-            payload = json.dumps(chunk)
-            response = requests.post(url, headers=headers, data=payload)
-            print(
-                response.status_code,
-                response.reason,
-                response.headers["operation-location"],
+            # Send JSON payload to nlp-processing-queue in Azure
+            queue = QueueClient.from_connection_string(
+                conn_str=os.environ.get("STORAGE_CONN_STRING"),
+                queue_name="nlpqueue"
             )
-            post_response_url.append(response.headers["operation-location"])
-
-        get_response = get_data_from_nlp(
-            url=url, headers=headers, post_response_url=post_response_url
-        )
-        codes = process_nlp_response(get_response)
-        codes_dict = concept_code_to_id(codes)
-
-        # Mini function to see if all conceptIDs are the same
-        def all_same(items):
-            return all(x == items[0] for x in items)
-
-        # Check each item in values and see whether NLP got a result
-        # If NLP finds something, save the result to ScanReportConcept
-        # If all conceptIDs across vocabs are the same, save only SNOMED
-        # Else save each conceptID to ScanReportConcept
-        for value in scan_report_values:
-            match = list(
-                filter(lambda item: item["pk"] == str(value.id), codes_dict))
-            concept_ids = [li['conceptid'] for li in match]
-
-
-            # If there are multiple conceptIDs from the above filter
-            if len(concept_ids) > 0:
-                # If all conceptIDs are the same, grab only the SNOMED entry
-                # and save this to ScanReportConcept
-                if all_same(concept_ids):
-                    # Grab the SNOMED dictionary element
-                    same = list(
-                        filter(lambda item: item['nlp_vocab'] == 'SNOMEDCT_US', match))
-                    scan_report_value = ScanReportValue.objects.get(
-                        pk=same[0]["pk"])
-                    concept = Concept.objects.get(pk=same[0]["conceptid"])
-
-                    ScanReportConcept.objects.create(
-                        nlp_entity=same[0]["nlp_entity"],
-                        nlp_entity_type=same[0]["nlp_entity_type"],
-                        nlp_confidence=same[0]["nlp_confidence"],
-                        nlp_vocabulary=same[0]["nlp_vocab"],
-                        nlp_concept_code=same[0]["nlp_code"],
-                        concept=concept,
-                        content_object=scan_report_value,
-                    )
-
-                else:
-
-                    # If the conceptIDs are all different then save each to ScanReportConcept
-                    for item in match:
-                        scan_report_value = ScanReportValue.objects.get(
-                            pk=item["pk"])
-                        concept = Concept.objects.get(pk=item["conceptid"])
-
-                        ScanReportConcept.objects.create(
-                            nlp_entity=item["nlp_entity"],
-                            nlp_entity_type=item["nlp_entity_type"],
-                            nlp_confidence=item["nlp_confidence"],
-                            nlp_vocabulary=item["nlp_vocab"],
-                            nlp_concept_code=item["nlp_code"],
-                            concept=concept,
-                            content_object=scan_report_value,
-                        )
+            queue.send_message(base64_message)
+            print(queue)
 
     return True

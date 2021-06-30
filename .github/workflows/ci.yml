@@ -29,6 +29,8 @@ jobs:
    if: "!contains(github.event.head_commit.message, '[ci skip]')"
    env:
      RUNNER_ALLOW_RUNASROOT: true
+     COCONNECT_DB_HOST: ${{ secrets.COCONNECT_DB_HOST }}
+     COCONNECT_DB_PORT: ${{ secrets.COCONNECT_DB_PORT }}
    steps:
      - uses: actions/checkout@v2
        with:
@@ -36,50 +38,40 @@ jobs:
      - name: Make envfile
        run: |
          touch .env
-         echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env 
-         echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-         echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env 
-         echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env 
-         echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env 
-         
-         echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
-         echo COCONNECT_DB_HOST=\${POSTGRES_HOST} >> .env  
-         echo COCONNECT_DB_PORT=\${POSTGRES_PORT} >> .env  
-         echo COCONNECT_DB_NAME=\${POSTGRES_DB} >> .env  
-         echo COCONNECT_DB_USER=\${POSTGRES_USER} >> .env  
-         echo COCONNECT_DB_PASSWORD=\${POSTGRES_PASSWORD} >> .env
 
-         echo OMOP_POSTGRES_HOST=${{ secrets.OMOP_POSTGRES_HOST }} >> .env 
-         echo OMOP_POSTGRES_USER=${{ secrets.OMOP_POSTGRES_USER }} >> .env  
-         echo OMOP_POSTGRES_PASSWORD=${{ secrets.OMOP_POSTGRES_PASSWORD }} >> .env  
-         echo OMOP_POSTGRES_PORT=${{ secrets.OMOP_POSTGRES_PORT }} >> .env  
-         echo OMOP_POSTGRES_DB=${{ secrets.OMOP_POSTGRES_DB }} >> .env  
-         
-         echo PROJECT_NAME=api >> .env 
-         cat .env
-     - name: Build the docker-compose stack
-       run: docker-compose build 
-     - name: Run set up the db separately
-       run: docker-compose -f docker-compose.db.yml up --build -d
-     - name: Run the docker-compose stack
+         echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
+         echo COCONNECT_DB_HOST=${{ secrets.COCONNECT_DB_HOST }} >> .env
+         echo COCONNECT_DB_NAME=${{ secrets.COCONNECT_DB_DB }} >> .env
+         echo COCONNECT_DB_PORT=${{ secrets.COCONNECT_DB_PORT }} >> .env
+         echo COCONNECT_DB_PASSWORD=${{ secrets.COCONNECT_DB_PASSWORD }} >> .env
+         echo COCONNECT_DB_USER=${{ secrets.COCONNECT_DB_USER }} >> .env
+         echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+
+     - name: Build the docker image
+       run: docker build -t ccom-build:latest .
+     - name: Run the docker image
        run: |
          #startup the stack
-         docker-compose up -d
-         #give it a minute to start properly
-         sleep 1m
+         docker run -it --env-file .env -p 8080:8000 -d ccom-build:latest
+         #give it 30s to start properly
+         sleep 30s
+         #get container ID
+         containerid=$(docker ps | awk 'NR==2' | awk '{print $1;}')
+         echo $containerid
          #check the logs for errors
-         if docker-compose logs | grep -i -q ERROR  ; then
+         if docker logs $containerid | grep -i -q ERROR  ; then
              #print the errors before causing a fail
-             docker-compose logs | grep -i ERROR
+             docker logs $containerid | grep -i ERROR
              echo "Errors found"
              exit 1
          else
             echo "No errors found!"
          fi
+         echo "ended if"
          #put the logs into a file
-         docker-compose logs >> logs.out
-         #shutdown the stack
-         docker-compose down
+         docker logs $containerid >> logs.out
+         #shutdown the container
+         docker stop $containerid
      #save the logs so they can be further checked 
      - uses: actions/upload-artifact@v2
        with:

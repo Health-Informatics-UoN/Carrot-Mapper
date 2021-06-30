@@ -323,34 +323,12 @@ class ScanReportTable(BaseModel):
         related_name = 'person_id'
     )
 
-    birth_date = models.ForeignKey(
+    date_event = models.ForeignKey(
         "ScanReportField",
         on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
-        related_name = 'birth_date'
-    )
-
-    measurement_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'measurement_date',
-    )
-    condition_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'condition_date'
-    )
-    observation_date = models.ForeignKey(
-        "ScanReportField",
-        on_delete=models.DO_NOTHING,
-        null=True,
-        blank=True,
-        related_name = 'observation_date'
+        related_name = 'date_event'
     )
     
     def __str__(self):
@@ -482,28 +460,44 @@ class ScanReportAssertion(BaseModel):
         return str(self.id)
 
 
+#!! TODO --- Give this model a better name(?)
 class StructuralMappingRule(BaseModel):
     """
     To come
     """
-
-    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
-
-    omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
-
-    source_table = models.ForeignKey(
-        ScanReportTable, on_delete=models.CASCADE, blank=True, null=True
+    #save the scan_report link to make it easier when performing lookups on scan_report_id
+    scan_report = models.ForeignKey(
+        ScanReport,
+        on_delete=models.CASCADE
     )
 
-    source_field = models.ForeignKey(
-        ScanReportField,
+    #connect the rule to a destination_field (and therefore destination_table)
+    #e.g. condition_concept_id
+    omop_field = models.ForeignKey(
+        OmopField,
+        on_delete=models.CASCADE
+    )
+
+    #!! TODO --- STOP USING THIS
+    source_table = models.ForeignKey(
+        ScanReportTable,
         on_delete=models.CASCADE,
         blank=True,
         null=True
-        # limit_choices_to= {'scan_report_table': source_table}
+    )
+    
+    #connect the rule with a source_field (and therefore source_table)
+    source_field = models.ForeignKey(
+        ScanReportField,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
     )
 
-    term_mapping = models.CharField(max_length=10000, blank=True, null=True)
+    concept = models.ForeignKey(
+        ScanReportConcept,
+        on_delete=models.CASCADE
+    )
 
     approved = models.BooleanField(default=False)
 
