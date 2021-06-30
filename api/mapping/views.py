@@ -124,7 +124,8 @@ from .services_rules import (
     find_date_event,
     find_person_id,
     find_destination_table,
-    find_standard_concept
+    find_standard_concept,
+    m_allowed_tables
 )
 from .tasks import process_scan_report_task
 from .services_datadictionary import merge_external_dictionary
@@ -596,6 +597,14 @@ class StructuralMappingTableListView(ListView):
                 "source_field__name",
             )
 
+            filter_term = self.kwargs.get("omop_table")
+            if filter_term is not None:
+                qs = qs.filter(omop_field__table__table=filter_term)
+
+                filter_term = self.kwargs.get("source_table")
+                if filter_term is not None:
+                    qs = qs.filter(source_field__scan_report_table__name=filter_term)
+                
         return qs
 
     def get_context_data(self, **kwargs):
@@ -604,10 +613,24 @@ class StructuralMappingTableListView(ListView):
         
         pk = self.kwargs.get("pk")
         scan_report = ScanReport.objects.get(pk=pk)
-        
+
+        filtered_omop_table = self.kwargs.get("omop_table")
+        source_tables = list(set(
+            [
+                x.source_field.scan_report_table.name
+                for x in context['object_list']
+            ]
+        ))
+
+        current_source_table = self.kwargs.get("source_table")
+                
         context.update(
             {
                 "scan_report": scan_report,
+                "omop_tables": m_allowed_tables,
+                "source_tables":source_tables,
+                "filtered_omop_table":filtered_omop_table,
+                "current_source_table":current_source_table
             }
         )
         return context
