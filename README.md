@@ -35,7 +35,7 @@ Copy .env file from Teams Software Team -> files -> .env to the root of project.
 docker build --tag <docker_image>:<tag> .
 
 # run the app
-docker run -it --env-file .env -p 8080:8000 <docker_image>
+docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 <docker_image>
 
 ```
 

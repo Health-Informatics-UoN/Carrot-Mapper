@@ -23,7 +23,7 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD_DEV }}
 
     - run: |
-        docker build . -t ccomreg.azurecr.io/dev:${{ github.sha }}
+        docker build -f Dockerfile.deploy . -t ccomreg.azurecr.io/dev:${{ github.sha }}
         docker push ccomreg.azurecr.io/dev:${{ github.sha }}
 
     - uses: azure/webapps-deploy@v2
