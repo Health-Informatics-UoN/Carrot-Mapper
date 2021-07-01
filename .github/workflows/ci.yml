@@ -48,7 +48,7 @@ jobs:
          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
 
      - name: Build the docker image
-       run: docker build -t ccom-build:latest .
+       run: docker build -f Dockerfile.deploy -t ccom-build:latest .
      - name: Run the docker image
        run: |
          #startup the stack
