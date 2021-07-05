@@ -46,6 +46,9 @@ jobs:
          echo COCONNECT_DB_PASSWORD=${{ secrets.COCONNECT_DB_PASSWORD }} >> .env
          echo COCONNECT_DB_USER=${{ secrets.COCONNECT_DB_USER }} >> .env
          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+         echo DEBUG=True >> .env
+         echo ALLOWED_HOSTS=['localhost'] >> .env
+
 
      - name: Build the docker image
        run: docker build -f Dockerfile.deploy -t ccom-build:latest .
