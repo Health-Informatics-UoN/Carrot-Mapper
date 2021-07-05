@@ -43,7 +43,9 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS")
+# Here we need to manipulate a string containing a Python list into a list of strings
+ALLOWED_HOSTS = [x.strip()[1:-1] for x in os.environ.get("ALLOWED_HOSTS")[1:-1].split(
+    ',')]
 
 
 # Application definition
