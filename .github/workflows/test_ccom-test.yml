@@ -23,21 +23,21 @@ jobs:
       uses: docker/login-action@v1
       with:
         registry: https://ccomregtest.azurecr.io/
-        username: ${{ secrets.AzureAppService_ContainerUsername_d2650d7034ce4e5ebe839db46bd0b993 }}
-        password: ${{ secrets.AzureAppService_ContainerPassword_3449b9f5d1f14d85a999721ba81a43b5 }}
+        username: ${{ secrets.REGISTRY_USERNAME_TEST }}
+        password: ${{ secrets.REGISTRY_PASSWORD_TEST }}
 
     - name: Build and push container image to registry
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: ccomregtest.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_d2650d7034ce4e5ebe839db46bd0b993 }}/test:${{ github.sha }}
-        file: ./Dockerfile
+        tags: ccomregtest.azurecr.io/${{ secrets.REGISTRY_USERNAME_TEST }}/test:${{ github.sha }}
+        file: ./Dockerfile.deploy
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'production'
+      name: 'test'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -46,6 +46,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'ccom-test'
-        slot-name: 'production'
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_0003ed4315bf42148e74e9746aca1447 }}
-        images: 'ccomregtest.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_d2650d7034ce4e5ebe839db46bd0b993 }}/test:${{ github.sha }}'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TEST }}
+        images: 'ccomregtest.azurecr.io/${{ secrets.REGISTRY_USERNAME_TEST }}/test:${{ github.sha }}'
