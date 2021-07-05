@@ -8,7 +8,6 @@ django-select2
 django-extra-views
 psycopg2
 djangorestframework
-markdown
 django-filter
 requests
 django-storages[azure]
