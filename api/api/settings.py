@@ -41,7 +41,8 @@ DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG")
+# DEBUG will only evaluate to True if 'True' or 1 is supplied
+DEBUG = (os.getenv('DEBUG', 'False') in ['True', 1])
 
 # Here we need to manipulate a string containing a Python list into a list of strings
 ALLOWED_HOSTS = [x.strip()[1:-1] for x in os.environ.get("ALLOWED_HOSTS")[1:-1].split(
