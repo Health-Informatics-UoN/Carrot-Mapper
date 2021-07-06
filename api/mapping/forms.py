@@ -9,7 +9,6 @@ from django.forms.models import ModelChoiceField, ModelForm
 from mapping.models import (DataPartner, Document,
                             DocumentFile, DocumentType, OmopField, OmopTable,
                             ScanReportField)
-from xlsx2csv import Xlsx2csv
 import openpyxl
 from io import BytesIO
 
