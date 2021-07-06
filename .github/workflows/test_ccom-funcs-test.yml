@@ -40,4 +40,4 @@ jobs:
         app-name: 'ccom-funcs-test'
         slot-name: 'production'
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.AzureAppService_PublishProfile_36cbabf885ca4c308fb71a1cae5fccf5 }}
+        publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE_TEST }}
