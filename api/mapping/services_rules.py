@@ -552,7 +552,6 @@ def find_existing_scan_report_concepts(request,table_id):
     return all_concepts
 
 #! NOTE
-# this function is not run in celery
 # this could be slow if there are 100s of concepts to be added
 def save_multiple_mapping_rules(request,all_concepts):    
     #now loop over all concepts and save new rules
