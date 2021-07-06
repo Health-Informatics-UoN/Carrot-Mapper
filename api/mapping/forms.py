@@ -37,17 +37,22 @@ class ScanReportForm(forms.Form):
     def clean_scan_report_file(self):
         if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
 
+            # Load in the Excel sheet, grab the first workbook
             file_in_memory = self.cleaned_data['scan_report_file'].read()
             wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only = True)
             ws=wb.worksheets[0]
 
+            # Grab the scan report columns from the first worksheet
+            # Define what the column headings should be
             source_headers = []
-            for values in ws[1]: 
-                source_headers.append(values.value)
-
-            target_headers=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
-            if set(source_headers) == set(target_headers):
+            for values in ws[1]: source_headers.append(values.value)
+            expected_headers=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
+            
+            # Check if source headers match the expected headers
+            if set(source_headers) == set(expected_headers):
                 
+                # Grab the data from the 'Flag' column
+                # Set to upper if the call value != None to catch any formatting errors
                 flag_column_data = []
                 for cell in ws['K']: 
                     if cell.value is None:
@@ -55,9 +60,11 @@ class ScanReportForm(forms.Form):
                     else:
                         flag_column_data.append(cell.value.upper())
                 
+                # Removes the column name (here, 'Flag') from the list of Flag values
                 flag_column_data.pop(0)
-                print(flag_column_data)
                 
+                # Grab the data from the 'Classification' column
+                # Set to upper if the call value != None to catch any formatting errors
                 classification_column_data = []
                 for cell in ws['L']: 
                     if cell.value is None:
@@ -65,20 +72,25 @@ class ScanReportForm(forms.Form):
                     else:
                         classification_column_data.append(cell.value.upper())
 
+                # Removes the column name (here, 'Classification') from the list of Flag values
                 classification_column_data.pop(0)
 
+                # Define what flags and classifications we allow in respective columns
                 allowed_flags = ['PATIENTID', 'DATE', 'IGNORE', 'PASS_SOURCE']
                 allowed_classifications = ['SNOMED', 'RXNORM', 'ICD9', 'ICD10']
 
+                # Test whether the values in the flag column are in our list of allowed flags
                 if all(x in allowed_flags for x in list(filter(None, flag_column_data))):
                     pass
                 else:
                     raise (forms.ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags)))
 
+                # Test whether the values in the classificcation column are in our list of allowed classifications
                 if all(x in allowed_classifications for x in list(filter(None, classification_column_data))):
                     pass
                 else:
                     raise (forms.ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications)))
+
             else:
                 raise (forms.ValidationError( "Please check the following columns exist in the Scan Report (Field Overview sheet): Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
         else:
