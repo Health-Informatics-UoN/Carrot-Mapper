@@ -7,8 +7,8 @@ from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField, ModelForm
 
 from mapping.models import (DataPartner, Document,
-                            DocumentFile, DocumentType, FLAG_CHOICES, OmopField, OmopTable,
-                            ScanReportField, VOCABULARY_CHOICES)
+                            DocumentFile, DocumentType, OmopField, OmopTable,
+                            ScanReportField)
 from xlsx2csv import Xlsx2csv
 import openpyxl
 from io import BytesIO
