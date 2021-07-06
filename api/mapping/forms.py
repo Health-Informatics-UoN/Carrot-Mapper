@@ -38,46 +38,49 @@ class ScanReportForm(forms.Form):
         if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
 
             file_in_memory = self.cleaned_data['scan_report_file'].read()
-            wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory))
+            wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only = True)
             ws=wb.worksheets[0]
 
             source_headers = []
-            for values in ws[1]: source_headers.append(values.value)
+            for values in ws[1]: 
+                source_headers.append(values.value)
 
             target_headers=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
             if set(source_headers) == set(target_headers):
                 
-                flag_column = []
-                for cell in ws['K']:
-                    flag_column.append(cell.value)
-                flag_column.pop(0).upper()
-                print(type(FLAG_CHOICES))
-                if (flag_column in FLAG_CHOICES) or (flag_column==''):
-                    print('Flag column is fine.')
+                flag_column_data = []
+                for cell in ws['K']: 
+                    if cell.value is None:
+                        flag_column_data.append(cell.value)
+                    else:
+                        flag_column_data.append(cell.value.upper())
+                
+                flag_column_data.pop(0)
+                print(flag_column_data)
+                
+                classification_column_data = []
+                for cell in ws['L']: 
+                    if cell.value is None:
+                        classification_column_data.append(cell.value)
+                    else:
+                        classification_column_data.append(cell.value.upper())
+
+                classification_column_data.pop(0)
+
+                allowed_flags = ['PATIENTID', 'DATE', 'IGNORE', 'PASS_SOURCE']
+                allowed_classifications = ['SNOMED', 'RXNORM', 'ICD9', 'ICD10']
+
+                if all(x in allowed_flags for x in list(filter(None, flag_column_data))):
                     pass
                 else:
-                    raise (forms.ValidationError( "Check Flag column values. Valid options are: {} or blank".format(list(FLAG_CHOICES.values()))))
-                exit(0)
+                    raise (forms.ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags)))
 
-
-
-                for row in reader:
-                    flag_column=row[10]
-                    flag_column=flag_column.upper()
-                    classification_column=row[11]
-                    print(flag_column)
-                    if (flag_column in FLAG_CHOICES) or (flag_column==''):
-                        pass
-                    else:
-                        raise (forms.ValidationError( "Check Flag column values. Valid options are: {} or blank".format(list(FLAG_CHOICES.values()))))
-                    
-                    if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
-                        pass
-                    else:
-                        raise (forms.ValidationError( "Check Classification column values. Valid options are:{} or blank".format(list(VOCABULARY_CHOICES.values()))))
-                return self.cleaned_data['scan_report_file']
+                if all(x in allowed_classifications for x in list(filter(None, classification_column_data))):
+                    pass
+                else:
+                    raise (forms.ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications)))
             else:
-                raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
+                raise (forms.ValidationError( "Please check the following columns exist in the Scan Report (Field Overview sheet): Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
         else:
             raise (forms.ValidationError( "The file you attempted to upload has an unsupported file extension. Please upload an Excel (.xlsx) file."))
 
