@@ -3,7 +3,6 @@ from xlsx2csv import Xlsx2csv
 import subprocess
 import sys
 import os
-import pandas as pd
 from django.contrib import messages
 import json
 import requests
