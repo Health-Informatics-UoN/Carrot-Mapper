@@ -109,11 +109,8 @@ from .models import (
     Source,
 )
 
-from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
-from .services import (
-    process_scan_report
-)
+
 from .services_rules import (
     save_mapping_rules,
     save_multiple_mapping_rules,
