@@ -311,8 +311,7 @@ def main(msg: func.QueueMessage):
 
                 # Create JSON array
                 json_data = json.dumps(data)
-                with open('values.json', 'w') as f:
-                    json.dump(data, f)
+            
                 # POST values in table
                 response = requests.post(
                     url=api_url + "scanreportvalues/", data=json_data, headers=headers
