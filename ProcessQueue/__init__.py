@@ -213,10 +213,14 @@ def main(msg: func.QueueMessage):
         # For sheets past the first two in the Scan Report
         # i.e. all 'data' sheets that are not Field Overview and Table Overview
         worksheet_idx = 2
+        max_row=ws.max_row
+        if len(table_ids)==1:
+            max_row=ws.max_row+1
         for i, row_cell in enumerate(
-            ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
+            ws.iter_rows(min_row=2, max_row=max_row), start=2
         ):
-
+            print("Table index at",idx)
+            print("Worksheet index at",worksheet_idx)
             # Create ScanReportField entry
             scan_report_field_entry = {
                 "scan_report_table": table_ids[idx],
@@ -245,7 +249,7 @@ def main(msg: func.QueueMessage):
             }
             # Append each entry to a list
             data.append(scan_report_field_entry)
-            # If there is an empty row(end of a table) POST fields in this table
+            # # If there is an empty row(end of a table) POST fields in this table
             if not any(cell.value for cell in row_cell):
                 # .pop() empty row from list,
                 data.pop()
@@ -284,7 +288,7 @@ def main(msg: func.QueueMessage):
                 print("WORKING ON", sheet.title)
 
                 # Skip these sheets at the end of the scan report
-                if sheet.title == "_":
+                if sheet.title == "_" or (sheet.title.startswith("HTA")):
                     continue
                 # Get value,frequency for each field in the table
                 results = process_scan_report_sheet_table(sheet)
