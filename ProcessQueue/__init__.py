@@ -75,18 +75,6 @@ def process_scan_report_sheet_table(sheet):
     return results
 
 
-def get_field_id(dict, field):
-    """
-    Input: dictionary with field_id:field_value pairs
-    Input: field name
-    Returns: field id
-    """
-    for id, name in dict.items():
-        if name == field:
-            return id
-    # return [id for id,name in dict.items() if name == field]
-
-
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     # Get message from queue
@@ -213,15 +201,13 @@ def main(msg: func.QueueMessage):
         # For sheets past the first two in the Scan Report
         # i.e. all 'data' sheets that are not Field Overview and Table Overview
         worksheet_idx = 2
-        # Set max row
-        max_row=ws.max_row
-        # If only one table check for empty row to post fields/values
-        if len(table_ids)==1:
-            max_row=ws.max_row+1
-        for i, row_cell in enumerate(
-            ws.iter_rows(min_row=2, max_row=max_row), start=2
-        ):
 
+        for i, row_cell in enumerate(
+            ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
+        ):
+            print("idx", idx)
+            if idx >= len(table_ids):
+                continue
             # Create ScanReportField entry
             scan_report_field_entry = {
                 "scan_report_table": table_ids[idx],
@@ -250,6 +236,7 @@ def main(msg: func.QueueMessage):
             }
             # Append each entry to a list
             data.append(scan_report_field_entry)
+
             # # If there is an empty row(end of a table) POST fields in this table
             if not any(cell.value for cell in row_cell):
                 # .pop() empty row from list,
@@ -280,7 +267,7 @@ def main(msg: func.QueueMessage):
                 # Create a dictionary with field names and field ids
                 # as key value pairs
                 # e.g ("Field ID":<Field Name>)
-                id_x_names = dict(zip(field_ids, field_names))
+                names_x_ids = dict(zip(field_names, field_ids))
                 # print("Dictionary id:name", id_x_names)
                 # Reset list for values
                 data = []
@@ -312,8 +299,7 @@ def main(msg: func.QueueMessage):
 
                     # If we are not on the first row:
                     if name != value:
-                        # Get the field id
-                        field_id = get_field_id(id_x_names, field=name)
+
                         # Create value entries
                         scan_report_value_entry = {
                             "created_at": datetime.utcnow().strftime(
@@ -326,7 +312,7 @@ def main(msg: func.QueueMessage):
                             "frequency": int(frequency),
                             "conceptID": -1,
                             "value_description": None,
-                            "scan_report_field": int(field_id),
+                            "scan_report_field": names_x_ids[name],
                         }
                         # Append to list
                         data.append(scan_report_value_entry)
