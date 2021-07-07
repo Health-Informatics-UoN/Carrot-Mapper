@@ -21,8 +21,9 @@
     <tr>
         <th scope="col">Name</th>
         <th scope="col">Person ID</th>
-	<th scope="col">Event Date</th>
-	<th>Edit</th>	
+		<th scope="col">Event Date</th>
+        <th scope="col">Run NLP on Table</th>
+	    <th scope="col">Edit</th>	
     </tr>
     </thead>
     <tbody>
@@ -43,6 +44,8 @@
 	{{ object.date_event.name }} 
 	{% endif %}
 	</td>
+
+    <td><a href="{% url 'run-nlp-table' %}?search={{ object.id }}">Run NLP on Table</a></td>
 
 	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
 	

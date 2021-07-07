@@ -16,6 +16,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR,"templates")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_DIR = os.path.join(BASE_DIR,"static")
 STATICFILES_DIRS = [
     STATIC_DIR,
@@ -23,16 +24,30 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Set up settings for saving to Azure Blob Storage
+AZURE_ACCOUNT_NAME=os.environ.get("AZURE_ACCOUNT_NAME")
+AZURE_CUSTOM_DOMAIN = f'{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+AZURE_CONNECTION_STRING=os.environ.get("STORAGE_CONN_STRING")
+AZURE_CONTAINER="raw-reports"
+
+MEDIA_LOCATION = "http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/media"
+MEDIA_ROOT='http://{AZURE_ACCOUNT_NAME}.blob.core.windows.net'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ix*bl@#=h+*o(^c7zv@jlale3zr&k=7aqdd@*%&yn1cf*hx_sw'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG will only evaluate to True if 'True' or 1 is supplied
+DEBUG = (os.getenv('DEBUG', 'False') in ['True', 1])
 
-ALLOWED_HOSTS = []
+# Here we need to manipulate a string containing a Python list into a list of strings
+ALLOWED_HOSTS = [x.strip()[1:-1] for x in os.environ.get("ALLOWED_HOSTS")[1:-1].split(
+    ',')]
 
 
 # Application definition
@@ -43,12 +58,15 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'extra_views',
     'mapping',
     'data',
     'rest_framework',
     'django_filters',
+    'rest_framework.authtoken',
+    'storages',
     
 ]
 
@@ -60,7 +78,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'api.urls'
 
@@ -132,7 +153,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
@@ -140,9 +168,6 @@ STATIC_URL = '/static/'
 
 LOGIN_REDIRECT_URL = '/'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-CELERY_TIMEZONE = 'UTC'
-CELERY_BROKER_URL = 'redis://redis'
 
 # NLP API KEY
 NLP_API_KEY=os.getenv('NLP_API_KEY')
