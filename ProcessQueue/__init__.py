@@ -55,8 +55,8 @@ def process_scan_report_sheet_table(sheet):
                     # Append to Results as (Field Name,Value,Frequency)
                     results.append(
                         (
-                            sheet.cell(row=1, column=column_idx + 1).value,
-                            sheet.cell(row=row_idx, column=column_idx + 1).value,
+                            str(sheet.cell(row=1, column=column_idx + 1).value),
+                            str(sheet.cell(row=row_idx, column=column_idx + 1).value),
                             sheet.cell(row=row_idx, column=column_idx + 2).value,
                         )
                     )
@@ -66,8 +66,8 @@ def process_scan_report_sheet_table(sheet):
                     if (column_idx) % 2 == 0:
                         results.append(
                             (
-                                sheet.cell(row=1, column=column_idx + 1).value,
-                                cell.value,
+                                str(sheet.cell(row=1, column=column_idx + 1).value),
+                                str(cell.value),
                                 sheet.cell(row=row_idx, column=column_idx + 2).value,
                             )
                         )
@@ -256,14 +256,6 @@ def main(msg: func.QueueMessage):
                 for element in range(len(response)):
                     field_ids.append(str(response[element].get("id", None)))
                     field_names.append(str(response[element].get("name", None)))
-                # Fix for empty row (empty row was being returned as [] element)
-                # Need to remove for dict(zip()) to work
-                for name in field_names:
-                    if name.startswith("[") or None:
-                        field_names.remove(name)
-                for id in field_ids:
-                    if id == "None":
-                        field_ids.remove(id)
                 # Create a dictionary with field names and field ids
                 # as key value pairs
                 # e.g ("Field ID":<Field Name>)
@@ -290,8 +282,8 @@ def main(msg: func.QueueMessage):
                 """
                 for result in range(len(results)):
 
-                    name = str(results[result][0])
-                    value = str(results[result][1][0:127])
+                    name = results[result][0]
+                    value = results[result][1][0:127]
                     frequency = results[result][2]
 
                     if not frequency:
@@ -319,6 +311,7 @@ def main(msg: func.QueueMessage):
 
                 # Create JSON array
                 json_data = json.dumps(data)
+            
                 # POST values in table
                 response = requests.post(
                     url=api_url + "scanreportvalues/", data=json_data, headers=headers
