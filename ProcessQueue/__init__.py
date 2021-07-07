@@ -213,14 +213,15 @@ def main(msg: func.QueueMessage):
         # For sheets past the first two in the Scan Report
         # i.e. all 'data' sheets that are not Field Overview and Table Overview
         worksheet_idx = 2
+        # Set max row
         max_row=ws.max_row
+        # If only one table check for empty row to post fields/values
         if len(table_ids)==1:
             max_row=ws.max_row+1
         for i, row_cell in enumerate(
             ws.iter_rows(min_row=2, max_row=max_row), start=2
         ):
-            print("Table index at",idx)
-            print("Worksheet index at",worksheet_idx)
+
             # Create ScanReportField entry
             scan_report_field_entry = {
                 "scan_report_table": table_ids[idx],
@@ -280,7 +281,7 @@ def main(msg: func.QueueMessage):
                 # as key value pairs
                 # e.g ("Field ID":<Field Name>)
                 id_x_names = dict(zip(field_ids, field_names))
-                print("Dictionary id:name", id_x_names)
+                # print("Dictionary id:name", id_x_names)
                 # Reset list for values
                 data = []
                 # Go to Table sheet
