@@ -205,7 +205,7 @@ def main(msg: func.QueueMessage):
         for i, row_cell in enumerate(
             ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
         ):
-            print("idx", idx)
+
             if idx >= len(table_ids):
                 continue
             # Create ScanReportField entry
