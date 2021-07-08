@@ -62,6 +62,7 @@ jobs:
          containerid=$(docker ps | awk 'NR==2' | awk '{print $1;}')
          echo $containerid
          #check the logs for errors
+         docker logs $containerid
          if docker logs $containerid | grep -i -q ERROR  ; then
              #print the errors before causing a fail
              docker logs $containerid | grep -i ERROR
