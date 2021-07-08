@@ -208,6 +208,10 @@ def main(msg: func.QueueMessage):
 
             if idx >= len(table_ids):
                 continue
+            # If fraction empty or fraction unique is empty set to 0(decimal)
+            if not (ws.cell(row=i,column=8).value) or not (ws.cell(row=i,column=10).value):
+                ws.cell(row=i,column=8).value=0.0
+                ws.cell(row=i,column=10).value=0.0
             # Create ScanReportField entry
             scan_report_field_entry = {
                 "scan_report_table": table_ids[idx],
@@ -219,9 +223,9 @@ def main(msg: func.QueueMessage):
                 "max_length": ws.cell(row=i, column=5).value,
                 "nrows": ws.cell(row=i, column=6).value,
                 "nrows_checked": ws.cell(row=i, column=7).value,
-                "fraction_empty": 0,
+                "fraction_empty": round(ws.cell(row=i,column=8).value,2),
                 "nunique_values": ws.cell(row=i, column=9).value,
-                "fraction_unique": 0,
+                "fraction_unique": round(ws.cell(row=i,column=10).value,2),
                 "flag_column": str(ws.cell(row=i, column=11).value),
                 "ignore_column": None,
                 "is_birth_date": False,
