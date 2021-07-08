@@ -8,6 +8,7 @@ import requests
 import openpyxl
 from datetime import datetime
 import os
+import csv
 
 
 def process_scan_report_sheet_table(sheet):
@@ -77,6 +78,9 @@ def process_scan_report_sheet_table(sheet):
 
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
+
+    print("WITHIN AZURE FUNC  MESSAGE >>> ", msg)
+
     # Get message from queue
     message = json.dumps(
         {
@@ -95,9 +99,28 @@ def main(msg: func.QueueMessage):
             "dequeue_count": msg.dequeue_count,
         }
     )
+
+    print(message)
+
     message = json.loads(message)
     body = ast.literal_eval(message["body"])
     filename = body["blob_name"]
+    dict_blob = body["data_dictionary_blob"]
+
+    # Get data dictionary from blob storage
+    with BytesIO as data_dictionary:
+        blob = BlockBlobService(connection_string=os.environ.get("STORAGE_CONN_STRING"))
+        blob.get_blob_to_stream(
+            container_name="data-dictionaries", blob_name=dict_blob, stream=data_dictionary
+        )
+        data_dictionary.seek(0)
+    
+    with open('dictionary.csv', newline='') as csvfile:
+        data_dictionary = csv.reader(csvfile)
+    
+    print(type(data_dictionary))
+    print(data_dictionary)
+
     # Write File saved in Blob storage to BytesIO stream
     with BytesIO() as input_blob:
         # Connect to Blob Service

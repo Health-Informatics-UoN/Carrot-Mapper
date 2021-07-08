@@ -47,6 +47,8 @@ from data.models import (
     DrugStrength,
 )
 
+from azure.storage.blob import BlobServiceClient, BlobClient
+
 
 import pandas as pd
 import requests
@@ -656,24 +658,38 @@ class ScanReportFormView(FormView):
         
         azure_dict={
             "scan_report_id":scan_report.id,
-            "blob_name":str(scan_report.file)
+            "blob_name":str(scan_report.file),
+            "data_dictionary_blob":str(form.cleaned_data.get('data_dictionary_file')),
         }
+
+        # Create the BlobServiceClient object which will be used to create a container client
+        blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
+
+        # Create a blob client using the local file name as the name for the blob
+        blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=form.cleaned_data.get('data_dictionary_file'))
+
+        print("\nUploading to Azure Storage as blob:\n\t" + form.cleaned_data.get('data_dictionary_file'))
+
+        # Upload the created file
+        with open(form.cleaned_data.get('data_dictionary_file'), "rb") as data:
+            blob_client.upload_blob(data)
+
         
         queue_message=json.dumps(azure_dict)
         message_bytes = queue_message.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
-        
+
+        print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
+
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
             queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")
-            #change to scanreports-local for local development
            
         )
+        print(queue)
         queue.send_message(base64_message)
         
-        # process_scan_report_task.delay(scan_report.id)
-
         return super().form_valid(form)
 
 

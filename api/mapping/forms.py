@@ -32,6 +32,15 @@ class ScanReportForm(forms.Form):
         label="WhiteRabbit ScanReport",
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
+
+    data_dictionary_file = forms.FileField(
+        label="Data Dictionary",
+        widget=forms.FileInput(attrs={"class": "form-control"}),
+    )
+
+    def check_data_dictionary(self):
+        pass
+
     def clean_scan_report_file(self):
         if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
             xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
