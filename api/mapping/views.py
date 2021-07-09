@@ -47,8 +47,6 @@ from data.models import (
     DrugStrength,
 )
 
-
-import pandas as pd
 import requests
 from data.models import Concept
 from django.contrib import messages
