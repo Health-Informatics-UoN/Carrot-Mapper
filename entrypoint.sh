@@ -4,6 +4,8 @@ wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready
 
 cd /api
 
-python /api/manage.py runserver 0.0.0.0:8000
+rm -rf staticfiles/{*,.*}
 
-#while :; do echo 'Hit CTRL+C'; sleep 1; done
+python /api/manage.py collectstatic
+
+python /api/manage.py runserver 0.0.0.0:8000
