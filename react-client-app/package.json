@@ -19,6 +19,8 @@
     "@storybook/addon-links": "^6.2.9",
     "@storybook/react": "^6.2.9",
     "babel-loader": "^8.2.2",
+    "eslint": "^7.29.0",
+    "eslint-plugin-react": "^7.24.0",
     "snowpack": "^3.5.7"
   },
   "dependencies": {
