@@ -33,6 +33,17 @@ class ScanReportForm(forms.Form):
         label="WhiteRabbit ScanReport",
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
+
+    data_dictionary_file = forms.FileField(
+        label="Data Dictionary",
+        widget=forms.FileInput(attrs={"class": "form-control"}),
+    )
+
+    def clean_data_dictionary_file(self):
+
+        if not str(self.cleaned_data['data_dictionary_file']).endswith('.csv'):
+            raise (forms.ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file."))
+
     def clean_scan_report_file(self):
 
         if not str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
