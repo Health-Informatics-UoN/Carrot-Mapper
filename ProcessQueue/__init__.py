@@ -117,12 +117,15 @@ def main(msg: func.QueueMessage):
     data_dictionary_blob = body["data_dictionary_blob"]
 
     # Grab data dictionary data from blob
-    # Aceess data as StorageStreamerDownloader class
+    # Access data as StorageStreamerDownloader class
     # Decode and split the stream using csv.reader()
     container_client = blob_service_client.get_container_client("data-dictionaries")
     blob_client = container_client.get_blob_client(data_dictionary_blob)
     streamdownloader = blob_client.download_blob()
-    data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines()) 
+    data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines())
+
+    for row in data_dictionary:
+        print(", ".join(row))
 
     # Grab scan report data from blob
     container_client = blob_service_client.get_container_client("scan-reports")
