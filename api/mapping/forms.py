@@ -41,37 +41,37 @@ class ScanReportForm(forms.Form):
     def check_data_dictionary(self):
         pass
 
-    def clean_scan_report_file(self):
-        if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
-            xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
+    # def clean_scan_report_file(self):
+    #     if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
+    #         xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
 
-            filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
-            xlsx.convert(filepath)
+    #         filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
+    #         xlsx.convert(filepath)
 
-            with open(filepath, "rt") as f:
-                reader = csv.reader(f)
-                csv_header=next(reader)  # Get header row
-                set_header=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
-                if set(set_header)==set(csv_header):
-                    for row in reader:
-                        flag_column=row[10]
-                        flag_column=flag_column.upper()
-                        classification_column=row[11]
-                        print(flag_column)
-                        if (flag_column in FLAG_CHOICES) or (flag_column==''):
-                            pass
-                        else:
-                            raise (forms.ValidationError( "Check Flag column values. Valid options are: {} or blank".format(list(FLAG_CHOICES.values()))))
+    #         with open(filepath, "rt") as f:
+    #             reader = csv.reader(f)
+    #             csv_header=next(reader)  # Get header row
+    #             set_header=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
+    #             if set(set_header)==set(csv_header):
+    #                 for row in reader:
+    #                     flag_column=row[10]
+    #                     flag_column=flag_column.upper()
+    #                     classification_column=row[11]
+    #                     print(flag_column)
+    #                     if (flag_column in FLAG_CHOICES) or (flag_column==''):
+    #                         pass
+    #                     else:
+    #                         raise (forms.ValidationError( "Check Flag column values. Valid options are: {} or blank".format(list(FLAG_CHOICES.values()))))
                         
-                        if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
-                            pass
-                        else:
-                            raise (forms.ValidationError( "Check Classification column values. Valid options are:{} or blank".format(list(VOCABULARY_CHOICES.values()))))
-                    return self.cleaned_data['scan_report_file']
-                else:
-                    raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
-        else:
-            raise (forms.ValidationError( "Please upload an Excel file"))
+    #                     if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
+    #                         pass
+    #                     else:
+    #                         raise (forms.ValidationError( "Check Classification column values. Valid options are:{} or blank".format(list(VOCABULARY_CHOICES.values()))))
+    #                 return self.cleaned_data['scan_report_file']
+    #             else:
+    #                 raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
+    #     else:
+    #         raise (forms.ValidationError( "Please upload an Excel file"))
 
 
 class UserCreateForm(UserCreationForm):

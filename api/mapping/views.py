@@ -2,9 +2,12 @@ import ast
 import json
 import os
 import time
-from io import StringIO
+import io
 import base64
+
 from azure.storage.queue import QueueClient
+from azure.storage.blob import ContainerClient, BlobServiceClient, ContentSettings
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from .serializers import (
@@ -46,9 +49,6 @@ from data.models import (
     Domain,
     DrugStrength,
 )
-
-from azure.storage.blob import BlobServiceClient, BlobClient
-
 
 import pandas as pd
 import requests
@@ -649,8 +649,7 @@ class ScanReportFormView(FormView):
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data["data_partner"],
-            dataset=form.cleaned_data["dataset"],
-            file=form.cleaned_data["scan_report_file"],
+            dataset=form.cleaned_data["dataset"]
         )
         
         scan_report.author = self.request.user
@@ -658,23 +657,18 @@ class ScanReportFormView(FormView):
         
         azure_dict={
             "scan_report_id":scan_report.id,
-            "blob_name":str(scan_report.file),
+            "scan_report_blob":str(form.cleaned_data.get('scan_report_file')),
             "data_dictionary_blob":str(form.cleaned_data.get('data_dictionary_file')),
         }
-
-        # Create the BlobServiceClient object which will be used to create a container client
+    
+        # Instantiate a BlobServiceClient using a connection string, Instantiate a ContainerClient, Upload Data
         blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
+        blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=self.request.FILES['scan_report_file'])
+        blob_client.upload_blob(self.request.FILES['scan_report_file'])
 
-        # Create a blob client using the local file name as the name for the blob
         blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=form.cleaned_data.get('data_dictionary_file'))
+        blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file'))
 
-        print("\nUploading to Azure Storage as blob:\n\t" + form.cleaned_data.get('data_dictionary_file'))
-
-        # Upload the created file
-        with open(form.cleaned_data.get('data_dictionary_file'), "rb") as data:
-            blob_client.upload_blob(data)
-
-        
         queue_message=json.dumps(azure_dict)
         message_bytes = queue_message.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
@@ -684,8 +678,7 @@ class ScanReportFormView(FormView):
 
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")
-           
+            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")  
         )
         print(queue)
         queue.send_message(base64_message)

@@ -2,7 +2,7 @@ import logging
 import json
 import ast
 import azure.functions as func
-from azure.storage.blob import BlockBlobService
+from azure.storage.blob import BlobServiceClient
 from io import BytesIO
 import requests
 import openpyxl
@@ -79,7 +79,16 @@ def process_scan_report_sheet_table(sheet):
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
 
-    print("WITHIN AZURE FUNC  MESSAGE >>> ", msg)
+    # Set up ccom API parameters:
+    api_url = os.environ.get("APP_URL") + "api/"
+    headers = {
+        "Content-type": "application/json",
+        "charset": "utf-8",
+        "Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY")),
+    }
+
+    # Set Storage Account connection string
+    blob_service_client = BlobServiceClient.from_connection_string(os.environ.get("STORAGE_CONN_STRING"))
 
     # Get message from queue
     message = json.dumps(
@@ -100,251 +109,229 @@ def main(msg: func.QueueMessage):
         }
     )
 
-    print(message)
-
+    # Grab message body from storage queues, 
+    # extract filenames for scan reports and dictionaries
     message = json.loads(message)
     body = ast.literal_eval(message["body"])
-    filename = body["blob_name"]
-    dict_blob = body["data_dictionary_blob"]
+    scan_report_blob = body["scan_report_blob"]
+    data_dictionary_blob = body["data_dictionary_blob"]
 
-    # Get data dictionary from blob storage
-    with BytesIO as data_dictionary:
-        blob = BlockBlobService(connection_string=os.environ.get("STORAGE_CONN_STRING"))
-        blob.get_blob_to_stream(
-            container_name="data-dictionaries", blob_name=dict_blob, stream=data_dictionary
-        )
-        data_dictionary.seek(0)
-    
-    with open('dictionary.csv', newline='') as csvfile:
-        data_dictionary = csv.reader(csvfile)
-    
-    print(type(data_dictionary))
-    print(data_dictionary)
+    # Grab data dictionary data from blob
+    # Aceess data as StorageStreamerDownloader class
+    # Decode and split the stream using csv.reader()
+    container_client = blob_service_client.get_container_client("data-dictionaries")
+    blob_client = container_client.get_blob_client(data_dictionary_blob)
+    streamdownloader = blob_client.download_blob()
+    data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines()) 
 
-    # Write File saved in Blob storage to BytesIO stream
-    with BytesIO() as input_blob:
-        # Connect to Blob Service
-        blob = BlockBlobService(connection_string=os.environ.get("STORAGE_CONN_STRING"))
-        # Download Scan Report .xlsx file as a ByteIO() stream
-        blob.get_blob_to_stream(
-            container_name="raw-reports", blob_name=filename, stream=input_blob
-        )
-        input_blob.seek(0)
+    # Grab scan report data from blob
+    container_client = blob_service_client.get_container_client("scan-reports")
+    blob_client = container_client.get_blob_client(scan_report_blob)
+    streamdownloader = blob_client.download_blob()
 
-        # Set up API parameters:
-        api_url = os.environ.get("APP_URL") + "api/"
-        headers = {
-            "Content-type": "application/json",
-            "charset": "utf-8",
-            "Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY")),
+    wb = openpyxl.load_workbook(BytesIO(streamdownloader.readall()), data_only=True)
+
+    # Get the first sheet 'Field Overview',
+    # to populate ScanReportTable & ScanReportField models
+    ws = wb.worksheets[0]
+
+    table_names = []
+    # Skip header with min_row=2
+    for i, row_cell in enumerate(ws.iter_rows(min_row=2), start=2):
+        # If the value in the first column (i.e. the Table Col) is not blank;
+        # Save the table name as a new entry in the model ScanReportTable
+        # Checks for blank b/c White Rabbit seperates tables with blank row
+        for cell in row_cell:
+            if cell.value:
+                name = ws.cell(row=i, column=1).value
+                if name not in table_names:
+                    table_names.append(name)
+
+    """
+    For each table create a scan_report_table entry,
+    Append entry to data[] list,
+    Create JSON array with all the entries, 
+    Send POST request to API with JSON as input,
+    Save the response data(table IDs)
+    """
+    table_ids = []
+    field_ids = []
+    field_names = []
+    data = []
+    print("Working on Scan Report >>>", body["scan_report_id"])
+    for table in range(len(table_names)):
+
+        print("WORKING ON TABLE >>> ", table)
+        # Truncate table names because sheet names are truncated to 31 characters in Excel
+        table_names[table] = table_names[table][:31]
+
+        # Create ScanReportTable entry
+        # Link to scan report using ID from the queue message
+        scan_report_table_entry = {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "name": table_names[table],
+            "scan_report": str(body["scan_report_id"]),
+            "person_id": None,
+            "birth_date": None,
+            "measurement_date": None,
+            "condition_date": None,
+            "observation_date": None,
         }
+        # Append to list
+        data.append(scan_report_table_entry)
+    # Create JSON array
+    json_data = json.dumps(data)
+    # POST request to scanreporttables
+    response = requests.post(
+        "{}scanreporttables/".format(api_url), data=json_data, headers=headers
+    )
+    print("TABLE SAVE STATUS >>>", response.status_code)
 
-        # Load ByteIO() file in a openpyxl workbook
-        wb = openpyxl.load_workbook(input_blob, data_only=True)
+    # Load the result of the post request,
+    response = json.loads(response.content.decode("utf-8"))
 
-        # Get the first sheet 'Field Overview',
-        # to populate ScanReportTable & ScanReportField models
-        ws = wb.worksheets[0]
+    # Save the table ids that were generated from the POST method
+    for element in range(len(response)):
+        table_ids.append(response[element]["id"])
+    print("TABLE IDs", table_ids)
 
-        table_names = []
-        # Skip header with min_row=2
-        for i, row_cell in enumerate(ws.iter_rows(min_row=2), start=2):
-            # If the value in the first column (i.e. the Table Col) is not blank;
-            # Save the table name as a new entry in the model ScanReportTable
-            # Checks for blank b/c White Rabbit seperates tables with blank row
-            for cell in row_cell:
-                if cell.value:
-                    name = ws.cell(row=i, column=1).value
-                    if name not in table_names:
-                        table_names.append(name)
+    """
+    POST fields per table:
+    For each row in Field Overview create an entry for scan_report_field,
+    Empty row signifies end of fields in a table
+    Append field entry to data[] list,
+    Create JSON array with all the field entries, 
+    Send POST request to API with JSON as input,
+    Save the response data(field ids,field names) in a dictionary
+    Set the current working sheet to be the same as the current table
+    Post the values for that table
+    """
+    idx = 0
+    data = []
+    id_x_names = {}
+    # For sheets past the first two in the Scan Report
+    # i.e. all 'data' sheets that are not Field Overview and Table Overview
+    worksheet_idx = 2
 
-        """
-        For each table create a scan_report_table entry,
-        Append entry to data[] list,
-        Create JSON array with all the entries, 
-        Send POST request to API with JSON as input,
-        Save the response data(table IDs)
-        """
-        table_ids = []
-        field_ids = []
-        field_names = []
-        data = []
-        print("Working on Scan Report >>>", body["scan_report_id"])
-        for table in range(len(table_names)):
+    for i, row_cell in enumerate(
+        ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
+    ):
 
-            print("WORKING ON TABLE >>> ", table)
-            # Truncate table names because sheet names are truncated to 31 characters in Excel
-            table_names[table] = table_names[table][:31]
+        if idx >= len(table_ids):
+            continue
+        # Create ScanReportField entry
+        scan_report_field_entry = {
+            "scan_report_table": table_ids[idx],
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "name": ws.cell(row=i, column=2).value,
+            "description_column": str(ws.cell(row=i, column=3).value),
+            "type_column": str(ws.cell(row=i, column=4).value),
+            "max_length": ws.cell(row=i, column=5).value,
+            "nrows": ws.cell(row=i, column=6).value,
+            "nrows_checked": ws.cell(row=i, column=7).value,
+            "fraction_empty": 0,
+            "nunique_values": ws.cell(row=i, column=9).value,
+            "fraction_unique": 0,
+            "flag_column": str(ws.cell(row=i, column=11).value),
+            "ignore_column": None,
+            "is_birth_date": False,
+            "is_patient_id": False,
+            "is_date_event": False,
+            "is_ignore": False,
+            "pass_from_source": True,
+            "classification_system": str(ws.cell(row=i, column=12).value),
+            "date_type": "",
+            "concept_id": -1,
+            "field_description": None,
+        }
+        # Append each entry to a list
+        data.append(scan_report_field_entry)
 
-            # Create ScanReportTable entry
-            # Link to scan report using ID from the queue message
-            scan_report_table_entry = {
-                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "name": table_names[table],
-                "scan_report": str(body["scan_report_id"]),
-                "person_id": None,
-                "birth_date": None,
-                "measurement_date": None,
-                "condition_date": None,
-                "observation_date": None,
-            }
-            # Append to list
-            data.append(scan_report_table_entry)
-        # Create JSON array
-        json_data = json.dumps(data)
-        # POST request to scanreporttables
-        response = requests.post(
-            "{}scanreporttables/".format(api_url), data=json_data, headers=headers
-        )
-        print("TABLE SAVE STATUS >>>", response.status_code)
+        # # If there is an empty row(end of a table) POST fields in this table
+        if not any(cell.value for cell in row_cell):
+            # .pop() empty row from list,
+            data.pop()
+            # JSON Array for fields in current table
+            json_data = json.dumps(data)
+            # POST Fields
+            response = requests.post(
+                "{}scanreportfields/".format(api_url),
+                data=json_data,
+                headers=headers,
+            )
+            print("FIELD SAVE STATUS >>>", response.status_code)
+            # Load result from the response,
+            # Save generated field ids, and the corresponding name
+            response = json.loads(response.content.decode("utf-8"))
+            for element in range(len(response)):
+                field_ids.append(str(response[element].get("id", None)))
+                field_names.append(str(response[element].get("name", None)))
+            # Create a dictionary with field names and field ids
+            # as key value pairs
+            # e.g ("Field ID":<Field Name>)
+            names_x_ids = dict(zip(field_names, field_ids))
+            # print("Dictionary id:name", id_x_names)
+            # Reset list for values
+            data = []
+            # Go to Table sheet
+            sheet = wb.worksheets[worksheet_idx]
+            print("WORKING ON", sheet.title)
 
-        # Load the result of the post request,
-        response = json.loads(response.content.decode("utf-8"))
-
-        # Save the table ids that were generated from the POST method
-        for element in range(len(response)):
-            table_ids.append(response[element]["id"])
-        print("TABLE IDs", table_ids)
-
-        """
-        POST fields per table:
-        For each row in Field Overview create an entry for scan_report_field,
-        Empty row signifies end of fields in a table
-        Append field entry to data[] list,
-        Create JSON array with all the field entries, 
-        Send POST request to API with JSON as input,
-        Save the response data(field ids,field names) in a dictionary
-        Set the current working sheet to be the same as the current table
-        Post the values for that table
-        """
-        idx = 0
-        data = []
-        id_x_names = {}
-        # For sheets past the first two in the Scan Report
-        # i.e. all 'data' sheets that are not Field Overview and Table Overview
-        worksheet_idx = 2
-
-        for i, row_cell in enumerate(
-            ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
-        ):
-
-            if idx >= len(table_ids):
+            # Skip these sheets at the end of the scan report
+            if sheet.title == "_" or (sheet.title.startswith("HTA")):
                 continue
-            # Create ScanReportField entry
-            scan_report_field_entry = {
-                "scan_report_table": table_ids[idx],
-                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "name": ws.cell(row=i, column=2).value,
-                "description_column": str(ws.cell(row=i, column=3).value),
-                "type_column": str(ws.cell(row=i, column=4).value),
-                "max_length": ws.cell(row=i, column=5).value,
-                "nrows": ws.cell(row=i, column=6).value,
-                "nrows_checked": ws.cell(row=i, column=7).value,
-                "fraction_empty": 0,
-                "nunique_values": ws.cell(row=i, column=9).value,
-                "fraction_unique": 0,
-                "flag_column": str(ws.cell(row=i, column=11).value),
-                "ignore_column": None,
-                "is_birth_date": False,
-                "is_patient_id": False,
-                "is_date_event": False,
-                "is_ignore": False,
-                "pass_from_source": True,
-                "classification_system": str(ws.cell(row=i, column=12).value),
-                "date_type": "",
-                "concept_id": -1,
-                "field_description": None,
-            }
-            # Append each entry to a list
-            data.append(scan_report_field_entry)
+            # Get value,frequency for each field in the table
+            results = process_scan_report_sheet_table(sheet)
+            """
+            For every result of process_scan_report_sheet_table,
+            Save the current name,value,frequency
+            Create ScanReportValue entry,
+            Append to data[] list,
+            Create JSON array with all the value entries, 
+            Send POST request to API with JSON as input
+            """
+            for result in range(len(results)):
 
-            # # If there is an empty row(end of a table) POST fields in this table
-            if not any(cell.value for cell in row_cell):
-                # .pop() empty row from list,
-                data.pop()
-                # JSON Array for fields in current table
-                json_data = json.dumps(data)
-                # POST Fields
-                response = requests.post(
-                    "{}scanreportfields/".format(api_url),
-                    data=json_data,
-                    headers=headers,
-                )
-                print("FIELD SAVE STATUS >>>", response.status_code)
-                # Load result from the response,
-                # Save generated field ids, and the corresponding name
-                response = json.loads(response.content.decode("utf-8"))
-                for element in range(len(response)):
-                    field_ids.append(str(response[element].get("id", None)))
-                    field_names.append(str(response[element].get("name", None)))
-                # Create a dictionary with field names and field ids
-                # as key value pairs
-                # e.g ("Field ID":<Field Name>)
-                names_x_ids = dict(zip(field_names, field_ids))
-                # print("Dictionary id:name", id_x_names)
-                # Reset list for values
-                data = []
-                # Go to Table sheet
-                sheet = wb.worksheets[worksheet_idx]
-                print("WORKING ON", sheet.title)
+                name = results[result][0]
+                value = results[result][1][0:127]
+                frequency = results[result][2]
 
-                # Skip these sheets at the end of the scan report
-                if sheet.title == "_" or (sheet.title.startswith("HTA")):
-                    continue
-                # Get value,frequency for each field in the table
-                results = process_scan_report_sheet_table(sheet)
-                """
-                For every result of process_scan_report_sheet_table,
-                Save the current name,value,frequency
-                Create ScanReportValue entry,
-                Append to data[] list,
-                Create JSON array with all the value entries, 
-                Send POST request to API with JSON as input
-                """
-                for result in range(len(results)):
+                if not frequency:
+                    frequency = 0
 
-                    name = results[result][0]
-                    value = results[result][1][0:127]
-                    frequency = results[result][2]
+                # If we are not on the first row:
+                if name != value:
 
-                    if not frequency:
-                        frequency = 0
+                    # Create value entries
+                    scan_report_value_entry = {
+                        "created_at": datetime.utcnow().strftime(
+                            "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ),
+                        "updated_at": datetime.utcnow().strftime(
+                            "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ),
+                        "value": value,
+                        "frequency": int(frequency),
+                        "conceptID": -1,
+                        "value_description": None,
+                        "scan_report_field": names_x_ids[name],
+                    }
+                    # Append to list
+                    data.append(scan_report_value_entry)
 
-                    # If we are not on the first row:
-                    if name != value:
+            # Create JSON array
+            json_data = json.dumps(data)
 
-                        # Create value entries
-                        scan_report_value_entry = {
-                            "created_at": datetime.utcnow().strftime(
-                                "%Y-%m-%dT%H:%M:%S.%fZ"
-                            ),
-                            "updated_at": datetime.utcnow().strftime(
-                                "%Y-%m-%dT%H:%M:%S.%fZ"
-                            ),
-                            "value": value,
-                            "frequency": int(frequency),
-                            "conceptID": -1,
-                            "value_description": None,
-                            "scan_report_field": names_x_ids[name],
-                        }
-                        # Append to list
-                        data.append(scan_report_value_entry)
-
-                # Create JSON array
-                json_data = json.dumps(data)
-            
-                # POST values in table
-                response = requests.post(
-                    url=api_url + "scanreportvalues/", data=json_data, headers=headers
-                )
-                print("VALUE SAVE STATUS >>>", response.status_code)
-                # Move to next table, initialise empty arrays for next table
-                idx = idx + 1
-                worksheet_idx = worksheet_idx + 1
-                field_ids = []
-                field_names = []
-                data = []
-
-    logging.info(body["blob_name"])
+            # POST values in table
+            response = requests.post(
+                url=api_url + "scanreportvalues/", data=json_data, headers=headers
+            )
+            print("VALUE SAVE STATUS >>>", response.status_code)
+            # Move to next table, initialise empty arrays for next table
+            idx = idx + 1
+            worksheet_idx = worksheet_idx + 1
+            field_ids = []
+            field_names = []
+            data = []
