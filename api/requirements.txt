@@ -1,7 +1,5 @@
 django==3.1.12
-pandas
 openpyxl
-xlsx2csv
 django-select2
 django-extra-views
 psycopg2
@@ -10,10 +8,10 @@ django-filter
 requests
 co-connect-tools==0.2.5
 whitenoise
-
 azure-common
 django-storages[azure]
 azure-storage-queue==12.1.6
 azure-storage-blob==12.8.1
-
-xlrd
+co-connect-tools==0.2.5
+whitenoise
+gunicorn
