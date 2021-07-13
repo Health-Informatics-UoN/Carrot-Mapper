@@ -8,6 +8,8 @@ from mapping.models import ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopField, Concept, StructuralMappingRule
 from mapping.serializers import ConceptSerializer
 
+from graphviz import Digraph
+
 from django.http import HttpResponse
 
 class NonStandardConceptMapsToSelf(Exception):
@@ -507,13 +509,54 @@ def download_mapping_rules(request,qs):
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
 
+
+def make_dag(data):
+    dot = Digraph(strict=True,format='svg')
+    dot.attr(rankdir='RL', size='8,5')
+    
+    for destination_table_name,destination_tables in data.items():
+        dot.node(destination_table_name,shape='box')
+
+        for destination_table in destination_tables:
+            for destination_field,source in destination_table.items():
+                source_field = source['source_field']
+                source_table = source['source_table']
+
+                table_name = f"{destination_table_name}_{destination_field}"
+                
+                dot.node(table_name,
+                         label=destination_field,style='filled', fillcolor='yellow',shape='box')
+
+                dot.edge(destination_table_name,table_name,dir='back')
+
+                source_field_name =  f"{source_table}_{source_field}"
+                
+                dot.node(source_field_name,source_field)
+
+                #if 'operations' in source:
+                #    operations = source['operations']
+
+                if 'term_mapping' in source and source['term_mapping'] is not None:
+                    term_mapping = source['term_mapping']
+                    dot.edge(table_name,source_field_name,dir='back',color='red')
+                        
+                else:                                                    
+                    dot.edge(table_name,source_field_name,dir='back')
+
+                
+                dot.node(source_table,shape='box')
+                dot.edge(source_field_name,source_table,dir='back')
+
+    return dot.pipe().decode('utf-8')
+
+
+
 #this is here as we should move it out of coconnect.tools
-import coconnect.tools as cctools
 def view_mapping_rules(request,qs):
     #get the rules
     output = get_mapping_rules_json(qs)
-    #use coconnect tools to make a dag svg image
-    svg = cctools.make_dag(output['cdm'])
+    #use make dag svg image
+    svg = make_dag(output['cdm'])
     #return a svg response
     response = HttpResponse(svg, content_type="image/svg+xml")
     return response

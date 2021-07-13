@@ -8,6 +8,6 @@ django-filter
 requests
 django-storages[azure]
 azure-storage-queue==12.1.6
-co-connect-tools==0.2.5
 whitenoise
 gunicorn
+graphviz
