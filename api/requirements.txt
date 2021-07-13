@@ -1,7 +1,5 @@
 django==3.1.12
-pandas
 openpyxl
-xlsx2csv
 django-select2
 django-extra-views
 psycopg2
@@ -12,3 +10,4 @@ django-storages[azure]
 azure-storage-queue==12.1.6
 co-connect-tools==0.2.5
 whitenoise
+gunicorn
