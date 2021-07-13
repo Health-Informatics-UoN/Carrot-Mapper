@@ -116,28 +116,40 @@ def main(msg: func.QueueMessage):
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
 
-    # Grab data dictionary data from blob
-    # Access data as StorageStreamerDownloader class
-    # Decode and split the stream using csv.reader()
-    container_client = blob_service_client.get_container_client("data-dictionaries")
-    blob_client = container_client.get_blob_client(data_dictionary_blob)
-    streamdownloader = blob_client.download_blob()
-    data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines())
+    # If dictionary is present, download dictionary and scan report
+    if data_dictionary_blob != "None":
+       
+        # Access data as StorageStreamerDownloader class
+        # Decode and split the stream using csv.reader()
+        container_client = blob_service_client.get_container_client("data-dictionaries")
+        blob_client = container_client.get_blob_client(data_dictionary_blob)
+        streamdownloader = blob_client.download_blob()
+        data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines())
 
-    for row in data_dictionary:
-        print(", ".join(row))
+        # Grab scan report data from blob
+        container_client = blob_service_client.get_container_client("scan-reports")
+        blob_client = container_client.get_blob_client(scan_report_blob)
+        streamdownloader = blob_client.download_blob()
+        scanreport = BytesIO(streamdownloader.readall())
 
-    # Grab scan report data from blob
-    container_client = blob_service_client.get_container_client("scan-reports")
-    blob_client = container_client.get_blob_client(scan_report_blob)
-    streamdownloader = blob_client.download_blob()
+        print("Downloaded data dictionary and scan report!")
+    
+    
+    else:
 
-    wb = openpyxl.load_workbook(BytesIO(streamdownloader.readall()), data_only=True)
+        # Else download only the scan report
+        container_client = blob_service_client.get_container_client("scan-reports")
+        blob_client = container_client.get_blob_client(scan_report_blob)
+        streamdownloader = blob_client.download_blob()
+        scanreport = BytesIO(streamdownloader.readall())
+        print("Downloaded scan report only!")
+
+    wb = openpyxl.load_workbook(scanreport, data_only=True)
 
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     ws = wb.worksheets[0]
-
+    
     table_names = []
     # Skip header with min_row=2
     for i, row_cell in enumerate(ws.iter_rows(min_row=2), start=2):
