@@ -8,7 +8,7 @@ from django.forms.models import ModelChoiceField, ModelForm
 
 from mapping.models import (DataPartner, Document,
                             DocumentFile, DocumentType, OmopField, OmopTable,
-                            ScanReportField)
+                            ScanReportField, ScanReport)
 import openpyxl
 from io import BytesIO
 
@@ -37,12 +37,21 @@ class ScanReportForm(forms.Form):
     data_dictionary_file = forms.FileField(
         label="Data Dictionary",
         widget=forms.FileInput(attrs={"class": "form-control"}),
+        required=False
     )
+
+    class Meta:
+        model = ScanReport
+        fields = ('data_partner', 'dataset' , 'scan_report_file')
 
  
     def clean_data_dictionary_file(self):
 
         data_dictionary = self.cleaned_data.get("data_dictionary_file")
+        print(data_dictionary)
+
+        if data_dictionary is None:
+            return data_dictionary
 
         if not str(data_dictionary).endswith('.csv'):
             raise ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file.")
@@ -110,6 +119,7 @@ class ScanReportForm(forms.Form):
             raise ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications))
 
         return scan_report
+
 
 
 

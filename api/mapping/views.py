@@ -668,13 +668,20 @@ class ScanReportFormView(FormView):
         rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
         dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
 
-        # Instantiate a BlobServiceClient using a connection string, Instantiate a ContainerClient, Upload Data
+        # Grab Azure storage credentials
         blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
-        blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
-        blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
 
-        blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv")
-        blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
+        # If there's no data dictionary supplied, only upload the scan report
+        if form.cleaned_data.get('data_dictionary_file') is None:
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
+        
+        # Else upload the scan report and the data dictionary
+        else:
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
+            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv")
+            blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
 
         queue_message=json.dumps(azure_dict)
         message_bytes = queue_message.encode('ascii')
