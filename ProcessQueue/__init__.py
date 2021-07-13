@@ -118,38 +118,32 @@ def main(msg: func.QueueMessage):
 
     # If dictionary is present, download dictionary and scan report
     if data_dictionary_blob != "None":
-       
         # Access data as StorageStreamerDownloader class
         # Decode and split the stream using csv.reader()
         container_client = blob_service_client.get_container_client("data-dictionaries")
         blob_client = container_client.get_blob_client(data_dictionary_blob)
         streamdownloader = blob_client.download_blob()
-        data_dictionary = csv.reader(streamdownloader.readall().decode('utf-8').splitlines())
+        data_dictionary = csv.DictReader(streamdownloader.readall().decode('utf-8').splitlines())
 
         # Grab scan report data from blob
         container_client = blob_service_client.get_container_client("scan-reports")
         blob_client = container_client.get_blob_client(scan_report_blob)
         streamdownloader = blob_client.download_blob()
         scanreport = BytesIO(streamdownloader.readall())
-
-        print("Downloaded data dictionary and scan report!")
-    
     
     else:
-
         # Else download only the scan report
         container_client = blob_service_client.get_container_client("scan-reports")
         blob_client = container_client.get_blob_client(scan_report_blob)
         streamdownloader = blob_client.download_blob()
         scanreport = BytesIO(streamdownloader.readall())
-        print("Downloaded scan report only!")
 
     wb = openpyxl.load_workbook(scanreport, data_only=True)
 
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     ws = wb.worksheets[0]
-    
+
     table_names = []
     # Skip header with min_row=2
     for i, row_cell in enumerate(ws.iter_rows(min_row=2), start=2):
@@ -173,10 +167,10 @@ def main(msg: func.QueueMessage):
     field_ids = []
     field_names = []
     data = []
-    print("Working on Scan Report >>>", body["scan_report_id"])
+    # print("Working on Scan Report >>>", body["scan_report_id"])
     for table in range(len(table_names)):
 
-        print("WORKING ON TABLE >>> ", table)
+        # print("WORKING ON TABLE >>> ", table)
         # Truncate table names because sheet names are truncated to 31 characters in Excel
         table_names[table] = table_names[table][:31]
 
@@ -201,7 +195,7 @@ def main(msg: func.QueueMessage):
     response = requests.post(
         "{}scanreporttables/".format(api_url), data=json_data, headers=headers
     )
-    print("TABLE SAVE STATUS >>>", response.status_code)
+    # print("TABLE SAVE STATUS >>>", response.status_code)
 
     # Load the result of the post request,
     response = json.loads(response.content.decode("utf-8"))
@@ -209,7 +203,7 @@ def main(msg: func.QueueMessage):
     # Save the table ids that were generated from the POST method
     for element in range(len(response)):
         table_ids.append(response[element]["id"])
-    print("TABLE IDs", table_ids)
+    # print("TABLE IDs", table_ids)
 
     """
     POST fields per table:
@@ -276,7 +270,7 @@ def main(msg: func.QueueMessage):
                 data=json_data,
                 headers=headers,
             )
-            print("FIELD SAVE STATUS >>>", response.status_code)
+            # print("FIELD SAVE STATUS >>>", response.status_code)
             # Load result from the response,
             # Save generated field ids, and the corresponding name
             response = json.loads(response.content.decode("utf-8"))
@@ -287,18 +281,20 @@ def main(msg: func.QueueMessage):
             # as key value pairs
             # e.g ("Field ID":<Field Name>)
             names_x_ids = dict(zip(field_names, field_ids))
+
             # print("Dictionary id:name", id_x_names)
             # Reset list for values
             data = []
             # Go to Table sheet
             sheet = wb.worksheets[worksheet_idx]
-            print("WORKING ON", sheet.title)
+            # print("WORKING ON", sheet.title)
 
             # Skip these sheets at the end of the scan report
             if sheet.title == "_" or (sheet.title.startswith("HTA")):
                 continue
             # Get value,frequency for each field in the table
             results = process_scan_report_sheet_table(sheet)
+
             """
             For every result of process_scan_report_sheet_table,
             Save the current name,value,frequency
@@ -311,6 +307,7 @@ def main(msg: func.QueueMessage):
 
                 name = results[result][0]
                 value = results[result][1][0:127]
+                val_desc = None
                 frequency = results[result][2]
 
                 if not frequency:
@@ -318,6 +315,16 @@ def main(msg: func.QueueMessage):
 
                 # If we are not on the first row:
                 if name != value:
+                    
+                    print("Name >>> ", name)
+                    print("Value >>> ", value)
+
+                    if data_dictionary:
+                        for i in data_dictionary:
+                            if name == i['field_name'] and value == i['code']:
+                                val_desc = i['value_description']
+
+                    print(val_desc)
 
                     # Create value entries
                     scan_report_value_entry = {
@@ -330,7 +337,7 @@ def main(msg: func.QueueMessage):
                         "value": value,
                         "frequency": int(frequency),
                         "conceptID": -1,
-                        "value_description": None,
+                        "value_description": val_desc,
                         "scan_report_field": names_x_ids[name],
                     }
                     # Append to list
@@ -338,7 +345,7 @@ def main(msg: func.QueueMessage):
 
             # Create JSON array
             json_data = json.dumps(data)
-
+        
             # POST values in table
             response = requests.post(
                 url=api_url + "scanreportvalues/", data=json_data, headers=headers
