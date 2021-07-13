@@ -4,6 +4,9 @@ import os
 import time
 import io
 import base64
+import random
+import string
+import datetime
 
 from azure.storage.queue import QueueClient
 from azure.storage.blob import ContainerClient, BlobServiceClient, ContentSettings
@@ -642,6 +645,7 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_valid(self, form):
+
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data["data_partner"],
@@ -656,14 +660,21 @@ class ScanReportFormView(FormView):
             "scan_report_blob":str(form.cleaned_data.get('scan_report_file')),
             "data_dictionary_blob":str(form.cleaned_data.get('data_dictionary_file')),
         }
-    
+
+        print('Azure Dictionary >>> ', azure_dict)
+
+        # Create random alphanumeric to link scan report to data dictionary
+        # Create datetime stamp for scan report and data dictionary upload time
+        rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
+
         # Instantiate a BlobServiceClient using a connection string, Instantiate a ContainerClient, Upload Data
         blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
-        blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=self.request.FILES['scan_report_file'])
-        blob_client.upload_blob(self.request.FILES['scan_report_file'])
+        blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
+        blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
 
-        blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=form.cleaned_data.get('data_dictionary_file'))
-        blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file'))
+        blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv")
+        blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
 
         queue_message=json.dumps(azure_dict)
         message_bytes = queue_message.encode('ascii')
