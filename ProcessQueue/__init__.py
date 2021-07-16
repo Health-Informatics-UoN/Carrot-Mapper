@@ -284,6 +284,7 @@ def main(msg: func.QueueMessage):
                         frequency = 0
 
                     # If we are not on the first row:
+                    #This check is not needed now, can be removed
                     if name != value:
 
                         # Create value entries
