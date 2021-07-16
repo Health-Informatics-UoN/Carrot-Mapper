@@ -33,45 +33,33 @@ def process_scan_report_sheet_table(sheet):
     # Get max number of columns in the sheet
     max_column = sheet.max_column
     # Skip headers, set min_row & row_idx=2
-
     for row_idx, row_cell in enumerate(
         sheet.iter_rows(min_row=2, max_col=max_column), start=2
     ):
 
         # Works through pairs of value/frequency columns
         for column_idx, cell in enumerate(row_cell):
-            freq = sheet.cell(row=row_idx, column=column_idx + 2).value
-            if cell.value:
-                if (column_idx) % 2 == 0:
-                    # As we move down rows, checks that there's data there
-                    # This is required b/c value/frequency col pairs differ
-                    # in the number of rows
-                    if (
-                        sheet.cell(row=row_idx, column=column_idx + 1).value == ""
-                        and sheet.cell(row=row_idx, column=column_idx + 2).value == ""
-                    ):
-                        continue
+            if (column_idx) % 2 == 0:
 
-                    # Append to Results as (Field Name,Value,Frequency)
-                    results.append(
-                        (
-                            str(sheet.cell(row=1, column=column_idx + 1).value),
-                            str(sheet.cell(row=row_idx, column=column_idx + 1).value),
-                            sheet.cell(row=row_idx, column=column_idx + 2).value,
-                        )
+                column_name = sheet.cell(row=1, column=column_idx + 1).value
+                value = sheet.cell(row=row_idx, column=column_idx + 1).value
+                frequency = sheet.cell(row=row_idx, column=column_idx + 2).value
+                # As we move down rows, checks that there's data there
+                # This is required b/c value/frequency col pairs differ
+                # in the number of rows
+                if (value == "" or value is None) and (
+                    frequency == "" or frequency is None
+                ):
+                    continue
+
+                # Append to Results as (Field Name,Value,Frequency)
+                results.append(
+                    (
+                        str(column_name),
+                        str(value),
+                        frequency,
                     )
-            else:
-                # If only frequency is present add to results
-                if freq:
-                    if (column_idx) % 2 == 0:
-                        results.append(
-                            (
-                                str(sheet.cell(row=1, column=column_idx + 1).value),
-                                str(cell.value),
-                                sheet.cell(row=row_idx, column=column_idx + 2).value,
-                            )
-                        )
-
+                )
     return results
 
 
@@ -209,9 +197,11 @@ def main(msg: func.QueueMessage):
             if idx >= len(table_ids):
                 continue
             # If fraction empty or fraction unique is empty set to 0(decimal)
-            if not (ws.cell(row=i,column=8).value) or not (ws.cell(row=i,column=10).value):
-                ws.cell(row=i,column=8).value=0.0
-                ws.cell(row=i,column=10).value=0.0
+            if not (ws.cell(row=i, column=8).value) or not (
+                ws.cell(row=i, column=10).value
+            ):
+                ws.cell(row=i, column=8).value = 0.0
+                ws.cell(row=i, column=10).value = 0.0
             # Create ScanReportField entry
             scan_report_field_entry = {
                 "scan_report_table": table_ids[idx],
@@ -223,9 +213,9 @@ def main(msg: func.QueueMessage):
                 "max_length": ws.cell(row=i, column=5).value,
                 "nrows": ws.cell(row=i, column=6).value,
                 "nrows_checked": ws.cell(row=i, column=7).value,
-                "fraction_empty": round(ws.cell(row=i,column=8).value,2),
+                "fraction_empty": round(ws.cell(row=i, column=8).value, 2),
                 "nunique_values": ws.cell(row=i, column=9).value,
-                "fraction_unique": round(ws.cell(row=i,column=10).value,2),
+                "fraction_unique": round(ws.cell(row=i, column=10).value, 2),
                 "flag_column": str(ws.cell(row=i, column=11).value),
                 "ignore_column": None,
                 "is_birth_date": False,
@@ -315,7 +305,7 @@ def main(msg: func.QueueMessage):
 
                 # Create JSON array
                 json_data = json.dumps(data)
-            
+
                 # POST values in table
                 response = requests.post(
                     url=api_url + "scanreportvalues/", data=json_data, headers=headers
