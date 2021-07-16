@@ -32,10 +32,10 @@ def process_scan_report_sheet_table(sheet):
     results = []
     # Get max number of columns in the sheet
     max_column = sheet.max_column
-    # Set a column index (openpyxl index at 1 instead of 0)
+    # Skip headers, set min_row & row_idx=2
 
     for row_idx, row_cell in enumerate(
-        sheet.iter_rows(min_row=1, max_col=max_column), start=1
+        sheet.iter_rows(min_row=2, max_col=max_column), start=2
     ):
 
         # Works through pairs of value/frequency columns
