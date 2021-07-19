@@ -1,15 +1,12 @@
-import ast
 import json
 import os
-import time
-import io
 import base64
 import random
 import string
 import datetime
 
 from azure.storage.queue import QueueClient
-from azure.storage.blob import ContainerClient, BlobServiceClient, ContentSettings
+from azure.storage.blob import BlobServiceClient
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
@@ -663,29 +660,32 @@ class ScanReportFormView(FormView):
         rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
         dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
 
+        print("FILE >>> ", str(form.cleaned_data.get('scan_report_file')))
+        print("STRING TEST >>>> ", os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
+
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
         if form.cleaned_data.get('data_dictionary_file') is None:
             azure_dict={
                 "scan_report_id":scan_report.id,
-                "scan_report_blob":str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx",
+                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
                 "data_dictionary_blob":"None",
             }
 
-            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
             blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
         
         # Else upload the scan report and the data dictionary
         else:
             azure_dict={
                 "scan_report_id":scan_report.id,
-                "scan_report_blob":str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx",
-                "data_dictionary_blob":str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv",
+                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
+                "data_dictionary_blob":os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv",
             }
 
-            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx")
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
             blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
-            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv")
+            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv")
             blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
     
         print('Azure Dictionary >>> ', azure_dict)

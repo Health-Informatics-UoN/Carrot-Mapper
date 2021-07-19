@@ -118,27 +118,22 @@ def main(msg: func.QueueMessage):
 
     print('MESSAGE BODY >>>', body)
 
-    # If dictionary is present, download dictionary and scan report
+    # Grab scan report data from blob
+    container_client = blob_service_client.get_container_client("scan-reports")
+    blob_scanreport_client = container_client.get_blob_client(scan_report_blob)
+    streamdownloader = blob_scanreport_client.download_blob()
+    scanreport = BytesIO(streamdownloader.readall())
+
+    # If dictionary is present, also download dictionary
     if data_dictionary_blob != "None":
         # Access data as StorageStreamerDownloader class
         # Decode and split the stream using csv.reader()
         container_client = blob_service_client.get_container_client("data-dictionaries")
-        blob_client = container_client.get_blob_client(data_dictionary_blob)
-        streamdownloader = blob_client.download_blob()
+        blob_dict_client = container_client.get_blob_client(data_dictionary_blob)
+        streamdownloader = blob_dict_client.download_blob()
         data_dictionary = list(csv.DictReader(streamdownloader.readall().decode('utf-8').splitlines()))
-
-        # Grab scan report data from blob
-        container_client = blob_service_client.get_container_client("scan-reports")
-        blob_client = container_client.get_blob_client(scan_report_blob)
-        streamdownloader = blob_client.download_blob()
-        scanreport = BytesIO(streamdownloader.readall())
     
     else:
-        # Else download only the scan report
-        container_client = blob_service_client.get_container_client("scan-reports")
-        blob_client = container_client.get_blob_client(scan_report_blob)
-        streamdownloader = blob_client.download_blob()
-        scanreport = BytesIO(streamdownloader.readall())
         data_dictionary = None
 
     wb = openpyxl.load_workbook(scanreport, data_only=True)
@@ -146,7 +141,6 @@ def main(msg: func.QueueMessage):
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     ws = wb.worksheets[0]
-    print(ws)
 
     table_names = []
     # Skip header with min_row=2
@@ -328,6 +322,7 @@ def main(msg: func.QueueMessage):
 
                 print("NAME >>> ", name)
                 print("VALUE >>> ", value)
+                print("Value Type >>> ", type(value))
                 print("VALUE DESCRIPTION >>> ", val_desc)
 
                 # Create value entries
