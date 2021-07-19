@@ -8,7 +8,7 @@ from django.forms.models import ModelChoiceField, ModelForm
 
 from mapping.models import (DataPartner, Document,
                             DocumentFile, DocumentType, OmopField, OmopTable,
-                            ScanReportField)
+                            ScanReportField, ScanReport)
 import openpyxl
 from io import BytesIO
 
@@ -33,13 +33,40 @@ class ScanReportForm(forms.Form):
         label="WhiteRabbit ScanReport",
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
+
+    data_dictionary_file = forms.FileField(
+        label="Data Dictionary",
+        widget=forms.FileInput(attrs={"class": "form-control"}),
+        required=False
+    )
+
+    class Meta:
+        model = ScanReport
+        fields = ('data_partner', 'dataset' , 'scan_report_file')
+
+ 
+    def clean_data_dictionary_file(self):
+
+        data_dictionary = self.cleaned_data.get("data_dictionary_file")
+        print(data_dictionary)
+
+        if data_dictionary is None:
+            return data_dictionary
+
+        if not str(data_dictionary).endswith('.csv'):
+            raise ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file.")
+        
+        return data_dictionary
+
     def clean_scan_report_file(self):
 
-        if not str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
-            raise (forms.ValidationError( "The file you attempted to upload has an unsupported file extension. Please upload an Excel (.xlsx) file."))
+        scan_report = self.cleaned_data.get("scan_report_file")
+
+        if not str(scan_report).endswith('.xlsx'):
+            raise ValidationError("You have attempted to upload a scan report which is not in XLSX format. Please upload a .xlsx file.")
 
         # Load in the Excel sheet, grab the first workbook
-        file_in_memory = self.cleaned_data['scan_report_file'].read()
+        file_in_memory = scan_report.read()
         wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only = True)
         ws=wb.worksheets[0]
 
@@ -53,7 +80,7 @@ class ScanReportForm(forms.Form):
         
         # Check if source headers match the expected headers
         if not source_headers == expected_headers:
-            raise (forms.ValidationError( "Please check the following columns exist in the Scan Report (Field Overview sheet) in this order: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
+            raise ValidationError("Please check the following columns exist in the Scan Report (Field Overview sheet) in this order: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification.")
 
         # Grab the data from the 'Flag' column
         # Set to upper if the call value != None to catch any formatting errors
@@ -85,11 +112,14 @@ class ScanReportForm(forms.Form):
 
         # Test whether the values in the flag column are in our list of allowed flags
         if not all(flag in allowed_flags for flag in list(filter(None, flag_column_data))):
-            raise (forms.ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags)))
+            raise ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags))
 
         # Test whether the values in the classificcation column are in our list of allowed classifications
         if not all(classification in allowed_classifications for classification in list(filter(None, classification_column_data))):
-            raise (forms.ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications)))
+            raise ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications))
+
+        return scan_report
+
 
 
 
