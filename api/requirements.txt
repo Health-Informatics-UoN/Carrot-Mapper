@@ -11,3 +11,4 @@ azure-storage-queue==12.1.6
 whitenoise
 gunicorn
 graphviz
+drf-dynamic-fields
