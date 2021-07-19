@@ -14,4 +14,3 @@ azure-storage-blob==12.8.1
 co-connect-tools==0.2.5
 whitenoise
 gunicorn
-django-storages
