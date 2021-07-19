@@ -36,7 +36,7 @@ def process_scan_report_sheet_table(sheet):
     # Set a column index (openpyxl index at 1 instead of 0)
 
     for row_idx, row_cell in enumerate(
-        sheet.iter_rows(min_row=1, max_col=max_column), start=1
+        sheet.iter_rows(min_row=2, max_col=max_column), start=2
     ):
 
         # Works through pairs of value/frequency columns
@@ -116,6 +116,8 @@ def main(msg: func.QueueMessage):
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
 
+    print('MESSAGE BODY >>> ', body)
+
     # If dictionary is present, download dictionary and scan report
     if data_dictionary_blob != "None":
         # Access data as StorageStreamerDownloader class
@@ -123,7 +125,7 @@ def main(msg: func.QueueMessage):
         container_client = blob_service_client.get_container_client("data-dictionaries")
         blob_client = container_client.get_blob_client(data_dictionary_blob)
         streamdownloader = blob_client.download_blob()
-        data_dictionary = csv.DictReader(streamdownloader.readall().decode('utf-8').splitlines())
+        data_dictionary = list(csv.DictReader(streamdownloader.readall().decode('utf-8').splitlines()))
 
         # Grab scan report data from blob
         container_client = blob_service_client.get_container_client("scan-reports")
@@ -143,6 +145,7 @@ def main(msg: func.QueueMessage):
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     ws = wb.worksheets[0]
+    print(ws)
 
     table_names = []
     # Skip header with min_row=2
@@ -170,7 +173,8 @@ def main(msg: func.QueueMessage):
     # print("Working on Scan Report >>>", body["scan_report_id"])
     for table in range(len(table_names)):
 
-        # print("WORKING ON TABLE >>> ", table)
+        print("WORKING ON TABLE >>> ", table)
+
         # Truncate table names because sheet names are truncated to 31 characters in Excel
         table_names[table] = table_names[table][:31]
 
@@ -187,15 +191,18 @@ def main(msg: func.QueueMessage):
             "condition_date": None,
             "observation_date": None,
         }
+        print('SCAN REPORT TABLE ENTRY', scan_report_table_entry)
+        
         # Append to list
         data.append(scan_report_table_entry)
+
     # Create JSON array
     json_data = json.dumps(data)
     # POST request to scanreporttables
     response = requests.post(
         "{}scanreporttables/".format(api_url), data=json_data, headers=headers
     )
-    # print("TABLE SAVE STATUS >>>", response.status_code)
+    print("TABLE SAVE STATUS >>>", response.status_code)
 
     # Load the result of the post request,
     response = json.loads(response.content.decode("utf-8"))
@@ -258,7 +265,7 @@ def main(msg: func.QueueMessage):
         # Append each entry to a list
         data.append(scan_report_field_entry)
 
-        # # If there is an empty row(end of a table) POST fields in this table
+        # If there is an empty row (end of a table) POST fields in this table
         if not any(cell.value for cell in row_cell):
             # .pop() empty row from list,
             data.pop()
@@ -313,35 +320,30 @@ def main(msg: func.QueueMessage):
                 if not frequency:
                     frequency = 0
 
-                # If we are not on the first row:
-                if name != value:
-                    
-                    print("Name >>> ", name)
-                    print("Value >>> ", value)
+                if data_dictionary:
+                    for i in data_dictionary:
+                        if str(name) == str(i['field_name']) and str(value) == str(i['code']):
+                            val_desc = i['value_description']
+                        else:
+                            continue
 
-                    if data_dictionary:
-                        for i in data_dictionary:
-                            if name == i['field_name'] and value == i['code']:
-                                val_desc = i['value_description']
 
-                    print(val_desc)
-
-                    # Create value entries
-                    scan_report_value_entry = {
-                        "created_at": datetime.utcnow().strftime(
-                            "%Y-%m-%dT%H:%M:%S.%fZ"
-                        ),
-                        "updated_at": datetime.utcnow().strftime(
-                            "%Y-%m-%dT%H:%M:%S.%fZ"
-                        ),
-                        "value": value,
-                        "frequency": int(frequency),
-                        "conceptID": -1,
-                        "value_description": val_desc,
-                        "scan_report_field": names_x_ids[name],
-                    }
-                    # Append to list
-                    data.append(scan_report_value_entry)
+                # Create value entries
+                scan_report_value_entry = {
+                    "created_at": datetime.utcnow().strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
+                    ),
+                    "updated_at": datetime.utcnow().strftime(
+                        "%Y-%m-%dT%H:%M:%S.%fZ"
+                    ),
+                    "value": value,
+                    "frequency": int(frequency),
+                    "conceptID": -1,
+                    "value_description": val_desc,
+                    "scan_report_field": names_x_ids[name],
+                }
+                # Append to list
+                data.append(scan_report_value_entry)
 
             # Create JSON array
             json_data = json.dumps(data)
@@ -350,7 +352,7 @@ def main(msg: func.QueueMessage):
             response = requests.post(
                 url=api_url + "scanreportvalues/", data=json_data, headers=headers
             )
-            print("VALUE SAVE STATUS >>>", response.status_code)
+            # print("VALUE SAVE STATUS >>>", response.status_code)
             # Move to next table, initialise empty arrays for next table
             idx = idx + 1
             worksheet_idx = worksheet_idx + 1

@@ -647,13 +647,13 @@ class ScanReportFormView(FormView):
     def form_valid(self, form):
 
         # Create an entry in ScanReport for the uploaded Scan Report
-        # scan_report = ScanReport.objects.create(
-        #     data_partner=form.cleaned_data["data_partner"],
-        #     dataset=form.cleaned_data["dataset"]
-        # )
+        scan_report = ScanReport.objects.create(
+            data_partner=form.cleaned_data["data_partner"],
+            dataset=form.cleaned_data["dataset"]
+        )
         
-        # scan_report.author = self.request.user
-        # scan_report.save()
+        scan_report.author = self.request.user
+        scan_report.save()
 
         # Grab Azure storage credentials
         blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
@@ -667,7 +667,7 @@ class ScanReportFormView(FormView):
         # Set data_dictionary_blob in Azure message to None
         if form.cleaned_data.get('data_dictionary_file') is None:
             azure_dict={
-                "scan_report_id":1,
+                "scan_report_id":scan_report.id,
                 "scan_report_blob":str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx",
                 "data_dictionary_blob":"None",
             }
@@ -678,7 +678,7 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             azure_dict={
-                "scan_report_id":1,
+                "scan_report_id":scan_report.id,
                 "scan_report_blob":str(form.cleaned_data.get('scan_report_file'))[:-5]+"_"+dt+rand+".xlsx",
                 "data_dictionary_blob":str(form.cleaned_data.get('data_dictionary_file'))[:-4]+"_"+dt+rand+".csv",
             }
