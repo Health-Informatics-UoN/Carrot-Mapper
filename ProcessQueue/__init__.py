@@ -285,24 +285,24 @@ def main(msg: func.QueueMessage):
 
                     # If we are not on the first row:
                     #This check is not needed now, can be removed
-                    if name != value:
+                    
 
-                        # Create value entries
-                        scan_report_value_entry = {
-                            "created_at": datetime.utcnow().strftime(
-                                "%Y-%m-%dT%H:%M:%S.%fZ"
-                            ),
-                            "updated_at": datetime.utcnow().strftime(
-                                "%Y-%m-%dT%H:%M:%S.%fZ"
-                            ),
-                            "value": value,
-                            "frequency": int(frequency),
-                            "conceptID": -1,
-                            "value_description": None,
-                            "scan_report_field": names_x_ids[name],
-                        }
-                        # Append to list
-                        data.append(scan_report_value_entry)
+                    # Create value entries
+                    scan_report_value_entry = {
+                        "created_at": datetime.utcnow().strftime(
+                            "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ),
+                        "updated_at": datetime.utcnow().strftime(
+                            "%Y-%m-%dT%H:%M:%S.%fZ"
+                        ),
+                        "value": value,
+                        "frequency": int(frequency),
+                        "conceptID": -1,
+                        "value_description": None,
+                        "scan_report_field": names_x_ids[name],
+                    }
+                    # Append to list
+                    data.append(scan_report_value_entry)
 
                 # Create JSON array
                 json_data = json.dumps(data)
