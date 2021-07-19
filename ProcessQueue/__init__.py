@@ -116,7 +116,7 @@ def main(msg: func.QueueMessage):
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
 
-    print('MESSAGE BODY >>> ', body)
+    print('MESSAGE BODY >>>', body)
 
     # If dictionary is present, download dictionary and scan report
     if data_dictionary_blob != "None":
@@ -139,6 +139,7 @@ def main(msg: func.QueueMessage):
         blob_client = container_client.get_blob_client(scan_report_blob)
         streamdownloader = blob_client.download_blob()
         scanreport = BytesIO(streamdownloader.readall())
+        data_dictionary = None
 
     wb = openpyxl.load_workbook(scanreport, data_only=True)
 
@@ -314,19 +315,20 @@ def main(msg: func.QueueMessage):
 
                 name = results[result][0]
                 value = results[result][1][0:127]
-                val_desc = None
                 frequency = results[result][2]
 
                 if not frequency:
                     frequency = 0
+                    
+                if data_dictionary is not None:
+                    val_desc = next((row['value_description'] for row in data_dictionary if str(row['field_name']) == str(name) and str(row['code']) == str(value)), None)
 
-                if data_dictionary:
-                    for i in data_dictionary:
-                        if str(name) == str(i['field_name']) and str(value) == str(i['code']):
-                            val_desc = i['value_description']
-                        else:
-                            continue
+                else:
+                    val_desc = None
 
+                print("NAME >>> ", name)
+                print("VALUE >>> ", value)
+                print("VALUE DESCRIPTION >>> ", val_desc)
 
                 # Create value entries
                 scan_report_value_entry = {
