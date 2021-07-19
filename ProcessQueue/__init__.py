@@ -319,12 +319,7 @@ def main(msg: func.QueueMessage):
 
                 else:
                     val_desc = None
-
-                print("NAME >>> ", name)
-                print("VALUE >>> ", value)
-                print("Value Type >>> ", type(value))
-                print("VALUE DESCRIPTION >>> ", val_desc)
-
+                    
                 # Create value entries
                 scan_report_value_entry = {
                     "created_at": datetime.utcnow().strftime(
