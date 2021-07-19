@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_dynamic_fields import DynamicFieldsMixin
 from data.models import (
     Concept,
     Vocabulary,
@@ -85,8 +86,7 @@ class ScanReportFieldSerializer(serializers.ModelSerializer):
         model=ScanReportField
         fields='__all__' 
 
-
-class ScanReportValueSerializer(serializers.ModelSerializer):
+class ScanReportValueSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     value=serializers.CharField(max_length=128,allow_blank=True)
     class Meta:
         model=ScanReportValue
