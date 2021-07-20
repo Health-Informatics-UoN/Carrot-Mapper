@@ -4,7 +4,8 @@ wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready
 
 cd /api
 
-rm -rf staticfiles/{*,.*}
+rm -rf staticfiles/
+mkdir staticfiles
 
 python /api/manage.py collectstatic
 
