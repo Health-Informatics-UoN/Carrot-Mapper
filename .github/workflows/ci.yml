@@ -55,6 +55,9 @@ jobs:
      - name: Run the docker image
        run: |
          #startup the stack
+         ls api
+         mkdir api/staticfiles
+         ls api
          docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 -d ccom-build:latest
          #give it 30s to start properly
          sleep 30s
