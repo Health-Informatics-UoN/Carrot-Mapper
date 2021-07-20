@@ -71,6 +71,8 @@ def get_omop_field(destination_field,
 
         if len(omop_field)>1:
             return omop_field.filter(table__table__in=m_allowed_tables)[0]
+        elif len(omop_field) == 0:
+            return None
         else:
             return omop_field[0]
         
@@ -152,6 +154,10 @@ def find_destination_table(request,concept):
     domain = concept.domain_id.lower()
     #get the omop field for the source_concept_id for this domain
     omop_field = get_omop_field(f"{domain}_source_concept_id")
+    if omop_field == None:
+        if request != None:
+            messages.error(request,f"Something up with this concept, '{domain}_source_concept_id' does not exist, or is from a table that is not allowed.")
+        return None
     #start looking up what table we're looking at
     destination_table = omop_field.table
 
@@ -183,7 +189,8 @@ def save_mapping_rules(request,scan_report_concept):
     #start looking up what table we're looking at
     destination_table = find_destination_table(request,concept)
     if destination_table == None:
-        messages.warning(request,f"Failed to make rules for {concept.concept_id} ({concept.concept_name})")
+        if request != None:
+            messages.warning(request,f"Failed to make rules for {concept.concept_id} ({concept.concept_name})")
         return False
 
     #get the omop field for the source_concept_id for this domain
