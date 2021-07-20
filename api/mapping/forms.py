@@ -1,13 +1,12 @@
-import csv
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.forms.models import ModelChoiceField, ModelForm
+from django.forms.models import ModelChoiceField
 
-from mapping.models import (DataPartner, Document,
-                            DocumentFile, DocumentType, OmopField, OmopTable,
+from mapping.models import (DataPartner,
+                            DocumentFile, DocumentType,
                             ScanReportField, ScanReport)
 import openpyxl
 from io import BytesIO
