@@ -55,10 +55,6 @@ jobs:
      - name: Run the docker image
        run: |
          #startup the stack
-         ls api
-         mkdir api/staticfiles
-         ls -al api
-         ls -al api/staticfiles
          docker run -it --env-file .env -p 8080:8000 -d ccom-build:latest
          #give it 30s to start properly
          sleep 30s
@@ -68,7 +64,7 @@ jobs:
          #check the logs for errors
          if docker logs $containerid | grep -i -q ERROR  ; then
              #print the errors before causing a fail
-             docker logs $containerid #| grep -i ERROR
+             docker logs $containerid | grep -i ERROR
              echo "Errors found"
              exit 1
          else
