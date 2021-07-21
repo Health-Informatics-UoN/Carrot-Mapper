@@ -57,7 +57,8 @@ jobs:
          #startup the stack
          ls api
          mkdir api/staticfiles
-         ls api
+         ls -al api
+         ls -al api/staticfiles
          docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 -d ccom-build:latest
          #give it 30s to start properly
          sleep 30s
