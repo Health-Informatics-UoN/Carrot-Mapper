@@ -10,9 +10,9 @@ from data.models import Concept, ConceptRelationship
 from django.db.models import Q
 from django.contrib import messages
 
-from .models import (Document, ScanReport, ScanReportAssertion, ScanReportConcept,
+from .models import (ScanReportAssertion,
                      ScanReportField, ScanReportValue)
-from .services_rules import find_standard_concept, get_concept_from_concept_code
+from .services_rules import get_concept_from_concept_code
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

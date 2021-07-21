@@ -50,7 +50,6 @@ from data.models import (
     DrugStrength,
 )
 
-import requests
 from data.models import Concept
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -58,7 +57,6 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
-from django.contrib.contenttypes.models import ContentType
 from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
@@ -75,14 +73,13 @@ from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import DetailView, ListView
+from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
     DocumentForm,
-    NLPForm,
     ScanReportAssertionForm,
     ScanReportFieldConceptForm,
     ScanReportForm,
@@ -95,7 +92,6 @@ from .models import (
     Document,
     DocumentFile,
     DocumentType,
-    NLPModel,
     OmopTable,
     OmopField,
     OmopTable,
@@ -114,7 +110,6 @@ from .services_nlp import start_nlp_field_level
 
 from .services_rules import (
     save_mapping_rules,
-    save_multiple_mapping_rules,
     remove_mapping_rules,
     find_existing_scan_report_concepts,
     download_mapping_rules,
