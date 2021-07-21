@@ -68,7 +68,7 @@ jobs:
          #check the logs for errors
          if docker logs $containerid | grep -i -q ERROR  ; then
              #print the errors before causing a fail
-             docker logs $containerid | grep -i ERROR
+             docker logs $containerid #| grep -i ERROR
              echo "Errors found"
              exit 1
          else
