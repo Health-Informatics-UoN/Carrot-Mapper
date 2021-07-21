@@ -1,6 +1,5 @@
 
 import os
-import pandas as pd
 from django.contrib import messages
 from .models import DataDictionary, DocumentFile, ScanReport
 

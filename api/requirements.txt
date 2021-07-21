@@ -6,9 +6,10 @@ psycopg2
 djangorestframework
 django-filter
 requests
-django-storages[azure]
+azure-common
 azure-storage-queue==12.1.6
-co-connect-tools==0.2.5
+azure-storage-blob==12.8.1
 whitenoise
 gunicorn
+graphviz
 drf-dynamic-fields

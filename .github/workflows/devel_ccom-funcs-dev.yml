@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Python project to Azure Function App - ccom-func-dev
+name: Build and deploy Python project to Azure Function App - ccom-funcs-dev
 
 on:
   push:
