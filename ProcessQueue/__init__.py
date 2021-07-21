@@ -220,10 +220,9 @@ def main(msg: func.QueueMessage):
         if idx >= len(table_ids):
             continue
         # If fraction empty or fraction unique is empty set to 0(decimal)
-        if not (ws.cell(row=i, column=8).value) or not (
-            ws.cell(row=i, column=10).value
-        ):
+        if not (ws.cell(row=i, column=8).value):
             ws.cell(row=i, column=8).value = 0.0
+        if not (ws.cell(row=i, column=10).value):
             ws.cell(row=i, column=10).value = 0.0
         # Create ScanReportField entry
         scan_report_field_entry = {
