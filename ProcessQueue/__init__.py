@@ -39,12 +39,12 @@ def process_scan_report_sheet_table(sheet):
     ):
 
         # Works through pairs of value/frequency columns
-        for column_idx, cell in enumerate(row_cell):
-            if (column_idx) % 2 == 0:
+        for column_idx, cell in enumerate(row_cell, start=1):
+            if (column_idx) % 2 == 1:
 
-                column_name = sheet.cell(row=1, column=column_idx + 1).value
-                value = sheet.cell(row=row_idx, column=column_idx + 1).value
-                frequency = sheet.cell(row=row_idx, column=column_idx + 2).value
+                column_name = sheet.cell(row=1, column=column_idx).value
+                value = sheet.cell(row=row_idx, column=column_idx).value
+                frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
                 # As we move down rows, checks that there's data there
                 # This is required b/c value/frequency col pairs differ
                 # in the number of rows
