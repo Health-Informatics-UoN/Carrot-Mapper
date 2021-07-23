@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from mapping.models import OmopTable, OmopField 
 from coconnect.tools.omop_db_inspect import OMOPDetails
 

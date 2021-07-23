@@ -1,15 +1,15 @@
-import csv
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.forms.models import ModelChoiceField, ModelForm
+from django.forms.models import ModelChoiceField
 
-from mapping.models import (DataPartner, Document,
-                            DocumentFile, DocumentType, FLAG_CHOICES, OmopField, OmopTable,
-                            ScanReportField, VOCABULARY_CHOICES)
-from xlsx2csv import Xlsx2csv
+from mapping.models import (DataPartner,
+                            DocumentFile, DocumentType,
+                            ScanReportField, ScanReport)
+import openpyxl
+from io import BytesIO
 
 
 class ShowNameChoiceField(ModelChoiceField):
@@ -32,37 +32,94 @@ class ScanReportForm(forms.Form):
         label="WhiteRabbit ScanReport",
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
+
+    data_dictionary_file = forms.FileField(
+        label="Data Dictionary",
+        widget=forms.FileInput(attrs={"class": "form-control"}),
+        required=False
+    )
+
+    class Meta:
+        model = ScanReport
+        fields = ('data_partner', 'dataset' , 'scan_report_file')
+
+ 
+    def clean_data_dictionary_file(self):
+
+        data_dictionary = self.cleaned_data.get("data_dictionary_file")
+        print(data_dictionary)
+
+        if data_dictionary is None:
+            return data_dictionary
+
+        if not str(data_dictionary).endswith('.csv'):
+            raise ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file.")
+        
+        return data_dictionary
+
     def clean_scan_report_file(self):
-        if str(self.cleaned_data['scan_report_file']).endswith('.xlsx'):
-            xlsx = Xlsx2csv(self.cleaned_data['scan_report_file'], outputencoding="utf-8")
 
-            filepath = "/tmp/{}.csv".format(xlsx.workbook.sheets[0]["name"])
-            xlsx.convert(filepath)
+        scan_report = self.cleaned_data.get("scan_report_file")
 
-            with open(filepath, "rt") as f:
-                reader = csv.reader(f)
-                csv_header=next(reader)  # Get header row
-                set_header=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
-                if set(set_header)==set(csv_header):
-                    for row in reader:
-                        flag_column=row[10]
-                        flag_column=flag_column.upper()
-                        classification_column=row[11]
-                        print(flag_column)
-                        if (flag_column in FLAG_CHOICES) or (flag_column==''):
-                            pass
-                        else:
-                            raise (forms.ValidationError( "Check Flag column values. Valid options are: {} or blank".format(list(FLAG_CHOICES.values()))))
-                        
-                        if (classification_column in VOCABULARY_CHOICES.values()) or (classification_column==''):
-                            pass
-                        else:
-                            raise (forms.ValidationError( "Check Classification column values. Valid options are:{} or blank".format(list(VOCABULARY_CHOICES.values()))))
-                    return self.cleaned_data['scan_report_file']
-                else:
-                    raise (forms.ValidationError( "Please check the following columns exist in the Scan Report: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification."))
-        else:
-            raise (forms.ValidationError( "Please upload an Excel file"))
+        if not str(scan_report).endswith('.xlsx'):
+            raise ValidationError("You have attempted to upload a scan report which is not in XLSX format. Please upload a .xlsx file.")
+
+        # Load in the Excel sheet, grab the first workbook
+        file_in_memory = scan_report.read()
+        wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only = True)
+        ws=wb.worksheets[0]
+
+        # Grab the scan report columns from the first worksheet
+        # Define what the column headings should be
+        source_headers = []
+        for values in ws[1]: 
+            source_headers.append(values.value)
+
+        expected_headers=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
+        
+        # Check if source headers match the expected headers
+        if not source_headers == expected_headers:
+            raise ValidationError("Please check the following columns exist in the Scan Report (Field Overview sheet) in this order: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification.")
+
+        # Grab the data from the 'Flag' column
+        # Set to upper if the call value != None to catch any formatting errors
+        flag_column_data = []
+        for cell in ws['K']: 
+            if cell.value is None:
+                flag_column_data.append(cell.value)
+            else:
+                flag_column_data.append(cell.value.upper())
+        
+        # Removes the column name (here, 'Flag') from the list of Flag values
+        flag_column_data.pop(0)
+        
+        # Grab the data from the 'Classification' column
+        # Set to upper if the call value != None to catch any formatting errors
+        classification_column_data = []
+        for cell in ws['L']: 
+            if cell.value is None:
+                classification_column_data.append(cell.value)
+            else:
+                classification_column_data.append(cell.value.upper())
+
+        # Removes the column name (here, 'Classification') from the list of Flag values
+        classification_column_data.pop(0)
+
+        # Define what flags and classifications we allow in respective columns
+        allowed_flags = ['PATIENTID', 'DATE', 'IGNORE', 'PASS_SOURCE']
+        allowed_classifications = ['SNOMED', 'RXNORM', 'ICD9', 'ICD10']
+
+        # Test whether the values in the flag column are in our list of allowed flags
+        if not all(flag in allowed_flags for flag in list(filter(None, flag_column_data))):
+            raise ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags))
+
+        # Test whether the values in the classificcation column are in our list of allowed classifications
+        if not all(classification in allowed_classifications for classification in list(filter(None, classification_column_data))):
+            raise ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications))
+
+        return scan_report
+
+
 
 
 class UserCreateForm(UserCreationForm):
