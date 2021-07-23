@@ -1,7 +1,6 @@
 """
 To come
 """
-import os
 
 from django.conf import settings
 from django.db import models
@@ -18,24 +17,6 @@ STATUS_CHOICES = [
     (STATUS_LIVE, "Live"),
     (STATUS_ARCHIVED, "Archived"),
 ]
-
-VOCABULARY_SNOMED = "SNOMED"
-VOCABULARY_ICD10 = "ICD10"
-VOCABULARY_CHOICES = {
-    VOCABULARY_SNOMED: "SNOMED",
-    VOCABULARY_ICD10: "ICD10",
-}
-
-FLAG_PATIENTID='PATIENTID'
-FLAG_DATE='DATE'
-FLAG_IGNORE='IGNORE'
-FLAG_PASS_SOURCE='PASS_SOURCE'
-FLAG_CHOICES = {
-FLAG_PATIENTID:'PatientID',
-FLAG_DATE:'Date',
-FLAG_IGNORE:'Ignore',
-FLAG_PASS_SOURCE:'PassSource'
-}
 
 class BaseModel(models.Model):
     """

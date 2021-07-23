@@ -1,10 +1,13 @@
-import ast
 import json
 import os
-import time
-from io import StringIO
 import base64
+import random
+import string
+import datetime
+
 from azure.storage.queue import QueueClient
+from azure.storage.blob import BlobServiceClient
+
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from .serializers import (
@@ -47,9 +50,6 @@ from data.models import (
     DrugStrength,
 )
 
-
-import pandas as pd
-import requests
 from data.models import Concept
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -57,7 +57,6 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
-from django.contrib.contenttypes.models import ContentType
 from django.core.mail import BadHeaderError, send_mail
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import CharField
@@ -74,14 +73,13 @@ from django.utils.http import urlsafe_base64_encode
 from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-from django.views.generic import DetailView, ListView
+from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 
 from .forms import (
     DictionarySelectForm,
     DocumentFileForm,
     DocumentForm,
-    NLPForm,
     ScanReportAssertionForm,
     ScanReportFieldConceptForm,
     ScanReportForm,
@@ -94,7 +92,6 @@ from .models import (
     Document,
     DocumentFile,
     DocumentType,
-    NLPModel,
     OmopTable,
     OmopField,
     OmopTable,
@@ -109,14 +106,10 @@ from .models import (
     Source,
 )
 
-from .services import process_scan_report
 from .services_nlp import start_nlp_field_level
-from .services import (
-    process_scan_report
-)
+
 from .services_rules import (
     save_mapping_rules,
-    save_multiple_mapping_rules,
     remove_mapping_rules,
     find_existing_scan_report_concepts,
     download_mapping_rules,
@@ -644,36 +637,67 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_valid(self, form):
+
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data["data_partner"],
-            dataset=form.cleaned_data["dataset"],
-            file=form.cleaned_data["scan_report_file"],
+            dataset=form.cleaned_data["dataset"]
         )
         
         scan_report.author = self.request.user
         scan_report.save()
+
+        # Grab Azure storage credentials
+        blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
+
+        # Create random alphanumeric to link scan report to data dictionary
+        # Create datetime stamp for scan report and data dictionary upload time
+        rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
+
+        print("FILE >>> ", str(form.cleaned_data.get('scan_report_file')))
+        print("STRING TEST >>>> ", os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
+
+        # If there's no data dictionary supplied, only upload the scan report
+        # Set data_dictionary_blob in Azure message to None
+        if form.cleaned_data.get('data_dictionary_file') is None:
+            azure_dict={
+                "scan_report_id":scan_report.id,
+                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
+                "data_dictionary_blob":"None",
+            }
+
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
         
-        azure_dict={
-            "scan_report_id":scan_report.id,
-            "blob_name":str(scan_report.file)
-        }
-        
+        # Else upload the scan report and the data dictionary
+        else:
+            azure_dict={
+                "scan_report_id":scan_report.id,
+                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
+                "data_dictionary_blob":os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv",
+            }
+
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
+            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv")
+            blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
+    
+        print('Azure Dictionary >>> ', azure_dict)
+
         queue_message=json.dumps(azure_dict)
         message_bytes = queue_message.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
-        
+
+        print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
+
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")
-            #change to scanreports-local for local development
-           
+            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME")  
         )
         queue.send_message(base64_message)
         
-        # process_scan_report_task.delay(scan_report.id)
-
         return super().form_valid(form)
 
 

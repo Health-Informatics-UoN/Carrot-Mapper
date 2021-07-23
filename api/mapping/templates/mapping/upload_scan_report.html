@@ -33,6 +33,16 @@
 
     </div>
 
+    <div class="mb-3">
+
+        <label class="form-label">{{ form.data_dictionary_file.label }}</label>
+        {{ form.data_dictionary_file }}
+        {%if form.data_dictionary_file.errors%}
+        <div class="alert alert-danger" role="alert">{{ form.data_dictionary_file.errors }}</div>
+        {%endif%}
+
+    </div>
+
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 {% endblock %}
