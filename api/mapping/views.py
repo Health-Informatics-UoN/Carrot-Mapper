@@ -623,19 +623,27 @@ class StructuralMappingTableListView(ListView):
         current_source_table = self.kwargs.get("source_table")
 
         new_list = []
+        #loop over the object list
         for obj in context['object_list']:
-            dest_table = obj.omop_field.table
-            dest_field = table.field
+            #obtain information we need for the rendering of the page
+            dest_field = obj.omop_field
+            dest_table = dest_field.table
 
             source_field = obj.source_field
             source_table = source_field.scan_report_table
 
+            # Obtain the concept/content_object once here
+            #  so we're not querying it multiple times within the django template
+            #  if we are wanting to use the same object multiple times
+            # Template documentation https://docs.djangoproject.com/en/3.2/topics/templates/
+            #  recommends to do this in the python backend
             concept = obj.concept
             content_object = concept.content_object
             value = content_object.value
-            
-            new_obj = {}
-            {
+
+            #create a new object for the object_list, only the data we need
+            #therefore the template rendering doesnt need to do any DB querying 
+            new_obj = {
                 'dest_table_name':dest_table.table,
                 'dest_field_name':dest_field.field,
                 'source_table_id': source_table.id,
@@ -650,7 +658,7 @@ class StructuralMappingTableListView(ListView):
             new_list.append(new_obj)
         
         context['object_list'] = new_list
-        
+
         context.update(
             {
                 "scan_report": scan_report,
