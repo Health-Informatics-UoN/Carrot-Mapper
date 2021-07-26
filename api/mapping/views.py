@@ -621,7 +621,36 @@ class StructuralMappingTableListView(ListView):
         ))
 
         current_source_table = self.kwargs.get("source_table")
-                
+
+        new_list = []
+        for obj in context['object_list']:
+            dest_table = obj.omop_field.table
+            dest_field = table.field
+
+            source_field = obj.source_field
+            source_table = source_field.scan_report_table
+
+            concept = obj.concept
+            content_object = concept.content_object
+            value = content_object.value
+            
+            new_obj = {}
+            {
+                'dest_table_name':dest_table.table,
+                'dest_field_name':dest_field.field,
+                'source_table_id': source_table.id,
+                'source_table_name': source_table.name,
+                'source_field_id':source_field.id,
+                'source_field_name':source_field.name,
+                'concept_id':concept.concept.concept_id,
+                'domain_id':concept.concept.domain_id,
+                'concept_name':concept.concept.concept_name,
+                'value':value,
+            }
+            new_list.append(new_obj)
+        
+        context['object_list'] = new_list
+        
         context.update(
             {
                 "scan_report": scan_report,
