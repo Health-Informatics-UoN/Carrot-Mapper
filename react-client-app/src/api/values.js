@@ -55,6 +55,9 @@ function useConcepts(id) {
     }
 }
 
+
+
+
 const getScanReportValues = async (id) => {
     const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`);
     const data =  await response.json();
@@ -69,19 +72,23 @@ const getConcepts = async (id) => {
     return await response.json();
 }
 
-// This works - not using conf
-function testing(id) {
-    getScanReportValues(8378).then(values => {
+
+
+async function getConceptLoop(valueId) {
+    const output = []
+    
+    await getScanReportValues(valueId).then(values => {
         values.map((value) => {
             getScanReportConcepts(value.id).then(concepts => {
                 concepts.map((concept) => {
                     getConcepts(concept.concept).then(con => {
-                        console.log(con)
+                        output.push(con)
                     })
                 })
             })
         })
     })
+    return output
 }
 
 /* 
@@ -91,4 +98,4 @@ function testing(id) {
     Once complete again update state
 (3) */
 
-export { useValue, useScanReportValues, useScanReportConcepts, useConcepts, getScanReportValues, getScanReportConcepts, getConcepts }
+export { useValue, useScanReportValues, useScanReportConcepts, useConcepts, getScanReportValues, getScanReportConcepts, getConcepts, getConceptLoop }

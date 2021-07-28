@@ -40,7 +40,7 @@ import {
 
   } from "@chakra-ui/react"
 
-import { Formik, Field, Form, ErrorMessage, FieldArray, FormikHelpers as FormikActions } from 'formik'
+import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
 import {useValue} from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
@@ -108,14 +108,14 @@ const DataTbl = () => {
 
     const handleDelete = (id, conceptId) => {
         const value = res.data.find(f => f.id === id);
-        const test = value.conceptIds.filter(item => item !== conceptId)
+        const concept = value.conceptIds.filter(item => item !== conceptId)
 
         //PUT Request to API
         api.put(`/values/${id}`, { 
             id: {id},
             value: value.value,
             frequency: value.frequency,
-            conceptIds: test
+            conceptIds: concept
         })
         .then(function(response) {
             //Re-fetch API data

@@ -40,8 +40,8 @@ import {
 
   } from "@chakra-ui/react"
 
-import { Formik, Field, Form, ErrorMessage, FieldArray, FormikHelpers as FormikActions } from 'formik'
-import { useValue, useScanReportConcepts }  from '../api/values'
+import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
+import { useValue, useScanReportConcepts, useScanReportValues, useConcepts, getScanReportValues, getScanReportConcepts, getConcepts, getConceptLoop }  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -52,12 +52,15 @@ const api = axios.create({
 
 //{values}
 const Test = () => {
-
     const res = useValue()
-    const res2 = useScanReportConcepts()
+    const res1 = useScanReportValues(8381)
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const {isOpen, onOpen, onClose} = useDisclosure()
 
+    const concepts = getConceptLoop(8381)
+
+
+    /*
     const handleSubmit = (id, concept) => {
         if (concept === ''){
             setAlert({
@@ -105,15 +108,16 @@ const Test = () => {
         }
     }
 
+
     const handleDelete = (id, conceptId) => {
         const value = res.data.find(f => f.id === id);
-        const test = value.conceptIds.filter(item => item !== conceptId)
+        const concept = value.conceptIds.filter(item => item !== conceptId)
         //PUT Request to API
         api.put(`/values/${id}`, { 
             id: {id},
             value: value.value,
             frequency: value.frequency,
-            conceptIds: test
+            conceptIds: concept
         })
         .then(function(response) {
             //Re-fetch API data
@@ -125,9 +129,10 @@ const Test = () => {
             })
             onOpen()
         }) 
-    }
+    } */
 
-    if (res.isLoading){
+
+    if (res1.isLoading || res1.isError){
         //Render Loading State
         return (
             <Flex padding="30px">
@@ -156,25 +161,18 @@ const Test = () => {
                 <Tbody>
                     {
                         // Create new row for every value object
-                        res.data.map((item) =>
+                        res1.data.map((item) =>
                         <Tr key={item.id}>
                         <Td>{item.value}</Td>
                         <Td>{item.frequency}</Td>
                         <Td>
-        
-                                <VStack alignItems='flex-start' >
-                                    {item.conceptIds.map((conceptIds) => (
-                                            <ConceptTag conceptId={conceptIds} itemId={item.id} handleDelete={handleDelete} />
-                                        ))}                             
-                                </VStack>
                             
-
                         </Td>
                         <Td>
 
                         <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
                             handleSubmit(item.id, data.concept)
-                            console.log(res2)
+          
                             actions.resetForm();
     
                         }}>
