@@ -1,3 +1,4 @@
+# from api.mapping.services_rules import get_concept_from_concept_code
 import logging
 import json
 import ast
@@ -8,8 +9,9 @@ import requests
 import openpyxl
 from datetime import datetime
 import os
-import csv
+import csv 
 
+from shared_code import omop_helpers
 
 def process_scan_report_sheet_table(sheet):
     """
@@ -74,6 +76,10 @@ def main(msg: func.QueueMessage):
         "charset": "utf-8",
         "Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY")),
     }
+
+    x = omop_helpers.get_concept_from_concept_code(concept_code=139490008, vocabulary_id="SNOMED")
+    print("CONCEPT CODE >>> ", x)
+
 
     # Set Storage Account connection string
     blob_service_client = BlobServiceClient.from_connection_string(os.environ.get("STORAGE_CONN_STRING"))
