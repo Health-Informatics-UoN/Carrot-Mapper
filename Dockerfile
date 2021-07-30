@@ -29,6 +29,8 @@ RUN mkdir /api
 
 WORKDIR /api
 
+RUN chown -R django:django /api
+
 USER django
 
 ENV PATH=/home/django/.local/bin:$PATH
