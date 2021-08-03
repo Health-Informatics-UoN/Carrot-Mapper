@@ -27,7 +27,8 @@ To run the mapping pipeline Django MVP:
 
 ## Docker
 
-Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
+Copy `Teams Software Team -> files -> env files -> env` to the root of project and rename it to `.env`. Ensure that it 
+contains all the variables from `sample-env.txt` from the repository. Then run the commands below.
 
 ```bash
 #build the docker image, and tag it

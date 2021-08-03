@@ -9,3 +9,9 @@ For a `QueueTrigger` to work, you provide a path which dictates where the queue 
 ## Learn more
 
 <TODO> Documentation
+
+
+## Note to developers
+To run this function locally, copy `local.settings.json` file from
+`Teams Software Team -> files -> env files -> local.settings.json` to the root of project. Ensure that it contains 
+all the variables from `sample-local.settings.json` from the repository.
