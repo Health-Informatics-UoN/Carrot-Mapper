@@ -1,0 +1,13 @@
+{
+    "IsEncrypted":false,
+    "Values": {
+        "AzureWebJobsStorage":"",
+        "FUNCTIONS_WORKER_RUNTIME":"python",
+        "STORAGE_CONN_STRING":"",
+        "NLP_API_KEY":"",
+        "APP_URL":"http://localhost:8080/",
+        "AZ_FUNCTION_KEY":"",
+        "SCAN_REPORT_QUEUE_NAME":"scanreports-local",
+        "NLP_QUEUE_NAME":"nlpqueue-local"
+    }
+}
