@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react'
 import {
     Button,
@@ -41,7 +42,7 @@ import {
   } from "@chakra-ui/react"
 
 import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
-import { useValue, useScanReportConcepts, useScanReportValues, useConcepts, getScanReportValues, getScanReportConcepts, getConcepts, getConceptLoop }  from '../api/values'
+import { useValue,  useScanReportValues, getConceptLoop }  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -53,12 +54,54 @@ const api = axios.create({
 //{values}
 const Test = () => {
     const res = useValue()
-    const res1 = useScanReportValues(8381)
+    const value = 8381
+    const res1 = useScanReportValues(value)
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const {isOpen, onOpen, onClose} = useDisclosure()
+    const [concepts, setConcepts] = useState([]);
+    
+    useEffect(() => {
+        getConceptLoop(value)
+        .then(result=>{
+                // results are a list of promises
+                // each promise either returns undefined or an array of promises (getting concepts)
+                // each of these promises returns an object (the concept)
+                
+                const updatedConceptsState = []   
+                for(let i = 0; i < result.length; i++) {
+                    updatedConceptsState.push([]);
+                }
+                result.map((a,index) =>{    
+                    if(a){
+                        a.then(b=>{
+                            if(b){
+                                b.map(c=>{
+                                    c.then(d=>{
+                                        updatedConceptsState[index].push(d)
+                                        setConcepts(updatedConceptsState)                    
+                                    })
+                                })
+                            }
+                            else if(index==result.length-1){
+                                setConcepts(updatedConceptsState)  
+                            }
+                        })
+                    }
+                    else {
+                        setConcepts(updatedConceptsState)  
+                    }
+                    
+                })
+                    
+                     
+        })
+      },[]);
+    
 
-    const concepts = getConceptLoop(8381)
-
+    
+   
+    
+    
 
     /*
     const handleSubmit = (id, concept) => {
@@ -132,7 +175,7 @@ const Test = () => {
     } */
 
 
-    if (res1.isLoading || res1.isError){
+    if (res1.isLoading || res1.isError || concepts.length<1){
         //Render Loading State
         return (
             <Flex padding="30px">
@@ -161,12 +204,18 @@ const Test = () => {
                 <Tbody>
                     {
                         // Create new row for every value object
-                        res1.data.map((item) =>
+                        res1.data.map((item,index) =>
                         <Tr key={item.id}>
                         <Td>{item.value}</Td>
                         <Td>{item.frequency}</Td>
                         <Td>
-                            
+                            {concepts[index].length>0&&
+                                <VStack alignItems='flex-start' >
+                                    {concepts[index].map((concept) => (
+                                            <ConceptTag key={concept.concept_id} conceptName={concept.concept_name} conceptId={concept.concept_id.toString()} itemId={concept.concept_id} /* handleDelete={handleDelete} */ />
+                                        ))}                             
+                                </VStack>
+                            }
                         </Td>
                         <Td>
 
@@ -209,3 +258,4 @@ const Test = () => {
 
 
 export default Test
+
