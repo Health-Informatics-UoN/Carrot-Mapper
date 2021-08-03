@@ -2,7 +2,7 @@ import {Tag,TagLabel, TagCloseButton, Wrap} from '@chakra-ui/react';
 import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 
-const ConceptTag = ({conceptId, itemId, handleDelete, backgroundColor}) => {
+const ConceptTag = ({conceptId,conceptName, itemId, handleDelete, backgroundColor}) => {
 
     const tagColour = (id) => {
         switch(id) {
@@ -24,6 +24,7 @@ const ConceptTag = ({conceptId, itemId, handleDelete, backgroundColor}) => {
             backgroundColor={tagColour(conceptId)}
             >
             <TagLabel padding='5px'>{conceptId}</TagLabel>
+            <TagLabel padding='5px'>{conceptName}</TagLabel>
             <Wrap direction='right'>
             <TagCloseButton onClick={() => {handleDelete(itemId, conceptId)}} />
             </Wrap>

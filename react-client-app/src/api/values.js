@@ -1,8 +1,10 @@
 import useSWR from "swr"
+import axios from 'axios'
 
 //const mockApi = "https://my.api.mockaroo.com"
 
 const mockApi = "https://609e52b633eed8001795841d.mockapi.io/"
+const authToken = "get an auth token"
 /* Fetch all values from the API using SWR */
 function useValue() {
     //const { data, error } = useSWR(`${mockApi}/values_co_connect.json?key=b65ef470`);
@@ -19,14 +21,15 @@ function useValue() {
 
 const api = 'http://127.0.0.1:8080/api'
 
-const fetcher = async (...args) =>{
-    const response = await fetch(...args);
-    return await response.json();
+const fetcher = async (url,token) =>{
+    const response = await  axios
+    .get(url, { headers: { Authorization: "Token " + token } });
+    return await response.data;
 }
 
 /* Fetches all scan report values for a specific scan report field id */
 function useScanReportValues(id) {
-    const { data, error } = useSWR(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`, fetcher)
+    const { data, error } = useSWR([`${api}/scanreportvaluesfilter/?scan_report_field=${id}`,authToken  ], fetcher)
     return {
         data: data,
         isLoading: !error && !data,
@@ -36,7 +39,7 @@ function useScanReportValues(id) {
 
 /* Fetches all scan concepts for a specific scan report value id */
 function useScanReportConcepts(id) {
-    const { data, error } = useSWR(`${api}/scanreportconceptsfilter/?object_id=${id}`, fetcher)
+    const { data, error } = useSWR([`${api}/scanreportconceptsfilter/?object_id=${id}`, authToken ], fetcher)
     return {
         data: data,
         isLoading: !error && !data,
@@ -47,7 +50,7 @@ function useScanReportConcepts(id) {
 
 /* Fetches concept object for specific concept id */
 function useConcepts(id) {
-    const { data, error } = useSWR(`${api}/omop/concepts/${id}`, fetcher)
+    const { data, error } = useSWR([`${api}/omop/concepts/${id}`, authToken], fetcher)
     return {
         data: data,
         isLoading: !error && !data,
@@ -59,36 +62,59 @@ function useConcepts(id) {
 
 
 const getScanReportValues = async (id) => {
-    const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`);
-    const data =  await response.json();
+    const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`,
+    {
+        method: "GET",
+        headers: {Authorization: "Token "+authToken},    
+    }
+    );
+    const data = response.json();
     return data;
 }
 const getScanReportConcepts = async (id) => {
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id=${id}`);
-    return await response.json();
+    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id=${id}`,
+    {
+        method: "GET",
+        headers: {Authorization: "Token "+authToken},    
+    });
+    return response.json();
 }
 const getConcepts = async (id) => {
-    const response = await fetch(`${api}/omop/concepts/${id}`);
-    return await response.json();
+    const response = await fetch(`${api}/omop/concepts/${id}`,
+    {
+        method: "GET",
+        headers: {Authorization: "Token "+authToken},    
+    });
+    return response.json();
 }
 
 
-
-async function getConceptLoop(valueId) {
-    const output = []
+const getConceptLoop = async (valueId) =>{
     
-    await getScanReportValues(valueId).then(values => {
-        values.map((value) => {
-            getScanReportConcepts(value.id).then(concepts => {
-                concepts.map((concept) => {
-                    getConcepts(concept.concept).then(con => {
-                        output.push(con)
-                    })
+    const response = await getScanReportValues(valueId).then((values) => {
+        
+        if(values.length>0){
+            return values.map(async (value) => {
+                return await getScanReportConcepts(value.id).then(concepts => {
+                    if(concepts.length>0){           
+                        return concepts.map(async (concept) => {
+                            return await getConcepts(concept.concept).then(con => { 
+                                return con  
+                            })
+                        })
+                    }
                 })
             })
-        })
+        } 
+        else{
+            return [undefined]
+        }  
+        
     })
-    return output
+    
+    
+    return response
+    
 }
 
 /* 
