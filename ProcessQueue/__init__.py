@@ -1,4 +1,3 @@
-# from api.mapping.services_rules import get_concept_from_concept_code
 import logging
 import json
 import ast
