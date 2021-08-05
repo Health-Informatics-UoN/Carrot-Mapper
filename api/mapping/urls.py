@@ -30,6 +30,8 @@ routers.register(r'scanreportfieldsfilter', views.ScanReportFieldFilterViewSet,b
 
 routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
 routers.register(r'scanreportvaluesfilter', views.ScanReportValueFilterViewSet,basename='scanreportvaluesfilter')
+routers.register(r'scanreportvaluesfilterscanreport', views.ScanReportValuesFilterViewSetScanReport,basename='scanreportvaluesfilterscanreport')
+routers.register(r'scanreportvaluesfilterscanreporttable', views.ScanReportValuesFilterViewSetScanReportTable,basename='scanreportvaluesfilterscanreporttable')
 
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 routers.register(r'scanreportconceptsfilter', views.ScanReportConceptFilterViewSet,basename='scanreportconceptsfilter')
