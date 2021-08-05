@@ -309,6 +309,24 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['scan_report_field', 'value']    
     
+class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field__scan_report_table__scan_report']
+    def get_queryset(self):
+        qs = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=
+        self.request.GET['scan_report'])
+        return qs
+
+class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field__scan_report_table']
+    def get_queryset(self):
+        qs = ScanReportValue.objects.filter(scan_report_field__scan_report_table=
+        self.request.GET['scan_report_table'])
+        return qs    
+    
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
