@@ -307,7 +307,6 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer
     filter_backends=[DjangoFilterBackend]
-
     filterset_fields=['scan_report_field', 'value']    
     
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
