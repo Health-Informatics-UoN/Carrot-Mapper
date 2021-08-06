@@ -87,7 +87,7 @@ class ScanReportFieldSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__' 
 
 class ScanReportValueSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    value=serializers.CharField(max_length=128,allow_blank=True)
+    value=serializers.CharField(max_length=128, allow_blank=True)
     class Meta:
         model=ScanReportValue
         fields='__all__'        
