@@ -86,7 +86,7 @@ urlpatterns = [
     path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
     path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 
-    path('signup/', views.SignUpView.as_view(), name='signup'),
+    # path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
     path('documents/', views.DocumentListView.as_view(), name='document-list'),
     path('documents/<int:pk>/files/', views.DocumentFileListView.as_view(), name='file-list'),
