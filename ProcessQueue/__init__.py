@@ -463,12 +463,15 @@ def main(msg: func.QueueMessage):
             put_update = {"conceptID": -1}
             put_update_json = json.dumps(put_update)
 
+            print(data)
+
             for concept in data:
                 response = requests.patch(
                     url=api_url + "scanreportvalues/" + str(concept["id"]) + "/",
                     headers=headers,
                     data=put_update_json,
                 )
+                print(response.status_code)
 
             # Move to next table, initialise empty arrays for next table
             idx = idx + 1
