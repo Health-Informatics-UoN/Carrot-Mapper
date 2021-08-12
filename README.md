@@ -6,7 +6,6 @@
    1. [Refreshing](#refreshing) 
 1. [Pages](#pages)
    1. [Admin](#admin)
-   1. [Signup](#signup)
    1. [ScanReports](#scanreports)
 1. [Custom Styling](#custom-styling)
    1. [CSS](#css)
