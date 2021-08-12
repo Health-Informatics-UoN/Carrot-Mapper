@@ -1023,12 +1023,6 @@ class DocumentFileStatusUpdateView(UpdateView):
         return reverse("file-list", kwargs={"pk": self.object.document_id})
 
 
-class SignUpView(generic.CreateView):
-    form_class = UserCreateForm
-    success_url = reverse_lazy("login")
-    template_name = "registration/signup.html"
-
-
 @method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm

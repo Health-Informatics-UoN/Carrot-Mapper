@@ -47,9 +47,6 @@ docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 <docker_image
 ## Admin 
 Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
 
-## Signup
-Sign up an account so that you're able to login
-[http://127.0.0.1:8080/signup/](http://127.0.0.1:8080/signup/)
 
 ## ScanReports
 To access the scanreports route, go to:
