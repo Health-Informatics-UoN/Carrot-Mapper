@@ -108,10 +108,10 @@ const getScanReportsWaitToLoad = (valueId,setScanReports,scanReportsRef,setLoadi
                         })
                         Promise.all(promises).then((values) => {
                             loaded++
-                            setLoadingMessage(loaded+"/"+(scanReportsRef.current.length-1)+" loaded")
+                            setLoadingMessage(loaded+"/"+(scanReportsRef.current.length)+" loaded")
                             scanReportsRef.current[index].conceptsLoaded = true
                             scanReportsRef.current[index].concepts = [...values]
-                            if(loaded >= scanReportsRef.current.length-1){
+                            if(loaded >= scanReportsRef.current.length){
                                 setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport))
                             }
                             
@@ -119,11 +119,11 @@ const getScanReportsWaitToLoad = (valueId,setScanReports,scanReportsRef,setLoadi
                     }
                     else{
                         loaded++
-                        console.log(loaded+"/"+(scanReportsRef.current.length-1) +" loaded")
-                        setLoadingMessage(loaded+"/"+(scanReportsRef.current.length-1) +" loaded")
+                        //console.log(loaded+"/"+(scanReportsRef.current.length-1) +" loaded")
+                        setLoadingMessage(loaded+"/"+(scanReportsRef.current.length) +" loaded")
                         scanReportsRef.current[index].conceptsLoaded = true
                         
-                        if(loaded >= scanReportsRef.current.length-1){
+                        if(loaded >= scanReportsRef.current.length){
                             setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,conceptsLoaded:true}:scanReport))  
                         }
                             
