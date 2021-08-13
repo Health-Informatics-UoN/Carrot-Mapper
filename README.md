@@ -32,14 +32,10 @@ To run the mapping pipeline Django MVP:
 #Before running docker commands, navigate to react-client-app and install the dependencies 
 npm install
 
-```
-
-# Updating main app
-```bash
-#Once you have made any changes to the react app, build the app to update it on the main web app
+#build the react app in the main web app
 npm run build
-
 ```
+
 # Running the react app independently
 ```bash
 #To run the react app
