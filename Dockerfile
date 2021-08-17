@@ -39,4 +39,12 @@ COPY ./api/requirements.txt /api/requirements.txt
 
 RUN pip install -r /api/requirements.txt --no-cache-dir
 
+RUN cd react-client-app
+
+RUN npm install
+
+RUN npm run build
+
+RUN cd ..
+
 ENTRYPOINT ["/entrypoint.sh"]
