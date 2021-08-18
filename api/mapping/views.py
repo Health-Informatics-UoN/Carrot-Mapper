@@ -309,6 +309,40 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['scan_report_field', 'value']    
     
+class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field__scan_report_table__scan_report']
+    def get_queryset(self):
+        qs = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=
+        self.request.GET['scan_report'])
+        return qs
+
+class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field__scan_report_table']
+    def get_queryset(self):
+        qs = ScanReportValue.objects.filter(scan_report_field__scan_report_table=
+        self.request.GET['scan_report_table'])
+        return qs    
+    
+
+# This custom ModelViewSet returns all ScanReportValues for a given ScanReport
+# It also removes all conceptIDs which == -1, leaving only those SRVs with a
+# concept_id which has been looked up with omop_helpers
+class ScanReportValuePKViewSet(viewsets.ModelViewSet):
+    serializer_class=ScanReportValueSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report_field__scan_report_table__scan_report']
+
+    def get_queryset(self):
+        qs = ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=
+        self.request.GET['scan_report']).exclude(conceptID=-1)
+        return qs
+
+
+
 @login_required
 def home(request):
     return render(request, "mapping/home.html", {})
@@ -987,12 +1021,6 @@ class DocumentFileStatusUpdateView(UpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse("file-list", kwargs={"pk": self.object.document_id})
-
-
-class SignUpView(generic.CreateView):
-    form_class = UserCreateForm
-    success_url = reverse_lazy("login")
-    template_name = "registration/signup.html"
 
 
 @method_decorator(login_required, name="dispatch")

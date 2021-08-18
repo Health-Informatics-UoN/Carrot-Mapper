@@ -6,7 +6,6 @@
    1. [Refreshing](#refreshing) 
 1. [Pages](#pages)
    1. [Admin](#admin)
-   1. [Signup](#signup)
    1. [ScanReports](#scanreports)
 1. [Custom Styling](#custom-styling)
    1. [CSS](#css)
@@ -27,7 +26,8 @@ To run the mapping pipeline Django MVP:
 
 ## Docker
 
-Copy .env file from Teams Software Team -> files -> .env to the root of project. Then run the commands below.
+Copy `Teams Software Team -> files -> env files -> env` to the root of project and rename it to `.env`. Ensure that it 
+contains all the variables from `sample-env.txt` from the repository. Then run the commands below.
 
 ```bash
 #build the docker image, and tag it
@@ -46,9 +46,6 @@ docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 <docker_image
 ## Admin 
 Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
 
-## Signup
-Sign up an account so that you're able to login
-[http://127.0.0.1:8080/signup/](http://127.0.0.1:8080/signup/)
 
 ## ScanReports
 To access the scanreports route, go to:

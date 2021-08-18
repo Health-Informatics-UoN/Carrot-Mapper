@@ -31,6 +31,13 @@ routers.register(r'scanreportfieldsfilter', views.ScanReportFieldFilterViewSet,b
 routers.register(r'scanreportvalues', views.ScanReportValueViewSet,basename='scanreportvalues')
 routers.register(r'scanreportvaluesfilter', views.ScanReportValueFilterViewSet,basename='scanreportvaluesfilter')
 
+routers.register(r'scanreportvaluesfilterscanreport', views.ScanReportValuesFilterViewSetScanReport,basename='scanreportvaluesfilterscanreport')
+routers.register(r'scanreportvaluesfilterscanreporttable', views.ScanReportValuesFilterViewSetScanReportTable,basename='scanreportvaluesfilterscanreporttable')
+
+routers.register(r'scanreportvaluepks',views.ScanReportValuePKViewSet,basename='scanreportvaluepks')
+
+
+
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 routers.register(r'scanreportconceptsfilter', views.ScanReportConceptFilterViewSet,basename='scanreportconceptsfilter')
 
@@ -79,7 +86,6 @@ urlpatterns = [
     path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
     path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 
-    path('signup/', views.SignUpView.as_view(), name='signup'),
     path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
     path('documents/', views.DocumentListView.as_view(), name='document-list'),
     path('documents/<int:pk>/files/', views.DocumentFileListView.as_view(), name='file-list'),
