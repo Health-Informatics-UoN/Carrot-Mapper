@@ -1,8 +1,6 @@
 
 const authToken = window.a
-
-const delay = ms => new Promise(res => setTimeout(res, ms));
-const api = 'http://127.0.0.1:8080/api'
+const api = window.u+'api'
 
 // get scan report for specific id
 const getScanReportValues = async (id) => {
