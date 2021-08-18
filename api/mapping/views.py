@@ -564,7 +564,7 @@ class ScanReportValueListView(ListView):
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
                 "scan_report_value": scan_report_value,
-                "a": auth
+                "a": auth,
                 "u":url
             }
         )
