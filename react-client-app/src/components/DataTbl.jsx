@@ -41,7 +41,7 @@ import {
 
 import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
 import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,
-    getScanReportsInOrder,getScanReportsWaitToLoad}  from '../api/values'
+    getScanReportsWaitToLoad}  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -50,15 +50,19 @@ import axios from 'axios'
 
 
 const DataTbl = () => {  
-    const value =window.location.search? parseInt(new URLSearchParams(window.location.search).get("search")):8381//21187
+    const value =parseInt(new URLSearchParams(window.location.search).get("search")) 
+    //6284
+    //21187
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const {isOpen, onOpen, onClose} = useDisclosure()
     const [scanReports, setScanReports] = useState([]);
+    const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const scanReportsRef = useRef([]);
     
     useEffect(() => {
-        getScanReports(value,setScanReports,scanReportsRef,setLoadingMessage)  
+        getScanReports(value,setScanReports,scanReportsRef,setLoadingMessage,setError)  
+        //getScanReportsWaitToLoad(value,setScanReports,scanReportsRef,setLoadingMessage,setError)
       },[]);
     
     const handleSubmit = (id, concept) => {
@@ -74,7 +78,7 @@ const DataTbl = () => {
         else {
             const value = scanReports.find(f => f.id === id)
             const newArr = value.concepts.concat(concept)
-            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsLoaded:false}:scanReport)
+            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:1}:scanReport)
             setScanReports(scanReportsRef.current)         
             //PUT Request to API
             const data = 
@@ -96,7 +100,7 @@ const DataTbl = () => {
                             promises.push(getConcept(concept.concept,concept.id))
                         })
                         Promise.all(promises).then((values) => {
-                            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport)
+                            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsToLoad:0}:scanReport)
                             setScanReports(scanReportsRef.current)    
                             setAlert({
                                 hidden: false,
@@ -109,7 +113,7 @@ const DataTbl = () => {
                     }
                     else{
                         //   
-                        scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsLoaded:true}:scanReport)
+                        scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsToLoad:0}:scanReport)
                         setScanReports(scanReportsRef.current) 
                         setAlert({
                             hidden: false,
@@ -123,7 +127,7 @@ const DataTbl = () => {
                 })    
             })
             .catch(function(error){
-                scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsLoaded:true}:scanReport)
+                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:0}:scanReport)
                 setScanReports(scanReportsRef.current) 
                 
                 if (typeof(error) !== 'undefined' && error.response != null)
@@ -142,7 +146,7 @@ const DataTbl = () => {
 
 
     const handleDelete = (id, conceptId) => {
-        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsLoaded:false}:scanReport)
+        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:1}:scanReport)
         setScanReports(scanReportsRef.current)
         //PUT Request to API
         axios.delete(`${api}/scanreportconcepts/${conceptId}`, { 
@@ -158,7 +162,7 @@ const DataTbl = () => {
                         promises.push(getConcept(concept.concept,concept.id))
                     })
                     Promise.all(promises).then((values) => {
-                        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport)
+                        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsToLoad:0}:scanReport)
                         setScanReports(scanReportsRef.current)
                         setAlert({
                             status: 'success',
@@ -170,7 +174,7 @@ const DataTbl = () => {
                 }
                 else{
                     //    
-                    scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsLoaded:true}:scanReport)
+                    scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsToLoad:0}:scanReport)
                     setScanReports(scanReportsRef.current)
                     setAlert({
                         status: 'success',
@@ -183,7 +187,7 @@ const DataTbl = () => {
             })
         }) 
         .catch(function(error){
-            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsLoaded:true}:scanReport)
+            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:0}:scanReport)
             setScanReports(scanReportsRef.current) 
             if (typeof(error) !== 'undefined' && error.response != null)
             {
@@ -199,6 +203,14 @@ const DataTbl = () => {
         }) 
     } 
 
+    if (error){
+        //Render Loading State
+        return (
+            <Flex padding="30px"> 
+                <Flex marginLeft="10px">An Error has occured while fetching values</Flex>
+            </Flex>
+        )
+    }
 
     if (scanReports.length<1){
         //Render Loading State
@@ -246,7 +258,7 @@ const DataTbl = () => {
                         <Td>{item.frequency}</Td>
                         
                         <Td>
-                            {item.conceptsLoaded?
+                            {item.conceptsToLoad == 0?
                                 item.concepts.length>0&&
                                     <VStack alignItems='flex-start' >
                                         {item.concepts.map((concept) => (
@@ -254,19 +266,21 @@ const DataTbl = () => {
                                             ))}                             
                                     </VStack>
                                 :
-                                <Flex >
-                                    <Spinner />
-                                    <Flex marginLeft="10px">Loading Concepts</Flex>
-                                </Flex>
+                                item.conceptsToLoad > 0?
+                                    <Flex >
+                                        <Spinner />
+                                        <Flex marginLeft="10px">Loading Concepts</Flex>
+                                    </Flex>
+                                    :
+                                    <Text>Failed to load concepts</Text>
+
                             }
                         </Td>
                         <Td>
 
                         <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
                             handleSubmit(item.id, data.concept)
-          
                             actions.resetForm();
-    
                         }}>
                         { ( { values, handleChange, handleBlur, handleSubmit }) => (
                             <Form onSubmit={handleSubmit}>
@@ -279,7 +293,7 @@ const DataTbl = () => {
                                         onChange={handleChange}
                                         onBlur={handleBlur} />
                                     <div>
-                                        <Button type='submit' disabled={!item.conceptsLoaded} backgroundColor='#3C579E' color='white'>Add</Button>
+                                        <Button type='submit' disabled={!item.conceptsToLoad==0} backgroundColor='#3C579E' color='white'>Add</Button>
                                     </div>
                                 </HStack>
                             </Form>
@@ -301,3 +315,4 @@ const DataTbl = () => {
 
 
 export default DataTbl
+

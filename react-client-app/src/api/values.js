@@ -41,129 +41,82 @@ const getConcept = async (id,identifier) => {
 }
 
 // get all concepts for specific scan report before returning
-const getAllconcepts = async (id,index,setScanReports,newArr) => {
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id=${id}`,
+const getAllconcepts = async (ids) => {   
+    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id__in=${ids}`,
     {
         method: "GET",
         headers: {Authorization: "Token "+authToken},    
         importance: "low" 
     });
-    const conceptList = await response.json()    
-    if(conceptList.length>0){
-        const promises=[]
-        conceptList.forEach((concept,index) => {                
-                promises.push(getConcept(concept.concept,concept.id))  
-        })
-        Promise.all(promises).then((values) => {
-            newArr[index].conceptsLoaded = true
-            newArr[index].concepts = [...values]
-            setScanReports(newArr.map((scanReport,i)=>i==index?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport))
-        });
-    }
-    else{
-        newArr[index].conceptsLoaded = true
-        setScanReports(newArr.map((scanReport,i)=>i==index?{...scanReport,conceptsLoaded:true}:scanReport))      
-    }
+    const concepts = await response.json()
+    console.log(concepts)
+    return concepts;
 }
 
-
-
-const getScanReportsInOrder = async (valueId,setScanReports,scanReportsRef) =>{
-    getScanReportValues(valueId).then((values) => {
-        if(values.length>0){     
-            const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
-            async function getConceptsInOrder (arr) {   
-                scanReportsRef.current = arr.map(scanReport => ({...scanReport, concepts: [],conceptsLoaded:false}))
-                setScanReports(scanReportsRef.current) 
-                let index=0      
-                for (const value of arr) {
-                  await getAllconcepts(value.id,index,setScanReports,scanReportsRef.current)  
-                  index++
-                }
-              }
-            getConceptsInOrder(newArr)     
-        } 
-        else{
-            return [undefined]
-        }  
-        
-    }) 
-}
-
-const getScanReportsWaitToLoad = (valueId,setScanReports,scanReportsRef,setLoadingMessage) =>{  
-    getScanReportValues(valueId).then((values) => {
-        if(values.length>0){
-            let loaded = 0
-            const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
-            scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts: [],conceptsLoaded:false}))
-            //setScanReports(scanReportsRef.current)
-            scanReportsRef.current.map(async (value,index) => {                           
-                await getScanReportConcepts(value.id).then(concepts => {  
-                    if(concepts.length>0){              
-                        const promises=[]      
-                        concepts.map(async (concept) => {       
-                            promises.push(getConcept(concept.concept,concept.id))  
-                        })
-                        Promise.all(promises).then((values) => {
-                            loaded++
-                            setLoadingMessage(loaded+"/"+(scanReportsRef.current.length)+" loaded")
-                            scanReportsRef.current[index].conceptsLoaded = true
-                            scanReportsRef.current[index].concepts = [...values]
-                            if(loaded >= scanReportsRef.current.length){
-                                setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport))
-                            }
-                            
-                          });
-                    }
-                    else{
-                        loaded++
-                        //console.log(loaded+"/"+(scanReportsRef.current.length-1) +" loaded")
-                        setLoadingMessage(loaded+"/"+(scanReportsRef.current.length) +" loaded")
-                        scanReportsRef.current[index].conceptsLoaded = true
-                        
-                        if(loaded >= scanReportsRef.current.length){
-                            setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,conceptsLoaded:true}:scanReport))  
-                        }
-                            
-                    }
-                    
-                })
-            })
-        } 
-        else{
-            // this is what returns if there are no scan reports
-            scanReportsRef.current = [undefined]
-            setScanReports([undefined])
-        }  
-        
-    })
-}
-
-const getScanReports = (valueId,setScanReports,scanReportsRef) =>{  
-    getScanReportValues(valueId).then((values) => {
+const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMessage,setError) =>{
+    getScanReportValues(valueId)
+    .then((values) => {
+        if (!Array.isArray(values)){
+            setError(true)
+            return
+        }
         if(values.length>0){
             const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
-            scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts: [],conceptsLoaded:false}))
+            scanReportsRef.current = newArr.map(scanReport => scanReport.conceptID==-1?
+                {...scanReport, concepts:[],conceptsToLoad:0}:{...scanReport, concepts:[],conceptsToLoad:1})
             setScanReports(scanReportsRef.current)
-            scanReportsRef.current.map((value,index) => {                           
-                getScanReportConcepts(value.id).then(concepts => {
-                    if(concepts.length>0){              
-                        const promises=[]      
-                        concepts.map(async (concept) => {       
-                            promises.push(getConcept(concept.concept,concept.id))  
-                        })
-                        Promise.all(promises).then((values) => {
-                            scanReportsRef.current[index].conceptsLoaded = true
-                            scanReportsRef.current[index].concepts = [...values]
-                            setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,concepts:[...values],conceptsLoaded:true}:scanReport))
-                          });
+            const idsToGet = []
+            scanReportsRef.current.map(async (value,index) => {                           
+                if(value.conceptID!=-1){
+                    idsToGet.push(value.id)
+                }
+            })
+            if(idsToGet.length == 0){
+                return
+            }
+            getAllconcepts(idsToGet.join()).then(concepts =>{
+                const conceptsToget = {}
+                const valuesToFill = {}
+                concepts.map(concept=> {    
+                    if(conceptsToget[concept.concept]){
+                        conceptsToget[concept.concept].push({object_id:concept.object_id,identifier:concept.id})
                     }
                     else{
-                        scanReportsRef.current[index].conceptsLoaded = true
-                        setScanReports(scanReportsRef.current.map((scanReport,i)=>i==index?{...scanReport,conceptsLoaded:true}:scanReport))      
+                        conceptsToget[concept.concept] = [{object_id:concept.object_id,identifier:concept.id}] 
                     }
-                    
+        
+                    if(valuesToFill[concept.object_id]){
+                        valuesToFill[concept.object_id].push(concept.concept)
+                    }
+                    else{
+                        valuesToFill[concept.object_id] = [concept.concept] 
+                    }
                 })
+
+                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>valuesToFill[scanReport.id]?
+                                        {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : scanReport)
+                                        
+                for (const [key, valuesToMap] of Object.entries(conceptsToget)) {
+                    getConcept(key).then(concept=>{    
+                        valuesToMap.map(value =>{  
+                            const tempConcept = concept
+                            tempConcept.id = value.identifier
+                            tempConcept.object_id = value.object_id
+                               
+                            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==tempConcept.object_id?{...scanReport,concepts:[...scanReport.concepts,tempConcept],
+                                conceptsToLoad:scanReport.conceptsToLoad-1}:scanReport)
+                        })
+                        setScanReports(scanReportsRef.current)
+                    })
+                }
+
+            })
+            .catch(error =>{
+                // set all concepts to error state
+                scanReportsRef.current = scanReportsRef.current.map(scanReport => scanReport.conceptID==-1?
+                    scanReport:{...scanReport,conceptsToLoad:-1})
+                    setScanReports(scanReportsRef.current)
+                
             })
         } 
         else{
@@ -173,32 +126,100 @@ const getScanReports = (valueId,setScanReports,scanReportsRef) =>{
         }  
         
     })
+    .catch(error =>{
+        setError(true)
+    })
 }
 
-const getConceptLoop = async (valueId) =>{ 
-    const response = await getScanReportValues(valueId).then((values) => {
-        if(values.length>0){
-            return values.map(async (value) => {
-                return await getScanReportConcepts(value.id).then(concepts => {
-                    if(concepts.length>0){           
-                        return concepts.map(async (concept) => {
-                            return await getConcepts(concept.concept).then(con => { 
-                                return con  
+
+const getScanReportsWaitToLoad = (valueId,setScanReports,scanReportsRef,setLoadingMessage,setError) =>{  
+    getScanReportValues(valueId)
+    .then((values) => {
+        if (!Array.isArray(values)){
+            setError(true)
+            return
+        }
+        if(values.length>0){  
+            const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
+            scanReportsRef.current = newArr.map(scanReport => scanReport.conceptID==-1?{...scanReport, concepts:[],conceptsToLoad:0}:{...scanReport, concepts:[],conceptsToLoad:1})
+            const idsToGet = []
+            scanReportsRef.current.map(async (value,index) => {                           
+                if(value.conceptID!=-1){
+                    idsToGet.push(value.id)
+                }
+            })
+            if(idsToGet.length>0){
+                getAllconcepts(idsToGet.join()).then(concepts =>{
+                    if(concepts.length == 0){
+                        setScanReports(scanReportsRef.current)
+                        return
+                    }
+                    const conceptsToget = {}
+                    const valuesToFill = {}
+                    concepts.map(concept=> {
+                        
+                        if(conceptsToget[concept.concept]){
+                            conceptsToget[concept.concept].push({object_id:concept.object_id,identifier:concept.id})
+                        }
+                        else{
+                            conceptsToget[concept.concept] = [{object_id:concept.object_id,identifier:concept.id}] 
+                        }
+            
+                        if(valuesToFill[concept.object_id]){
+                            valuesToFill[concept.object_id].push(concept.concept)
+                        }
+                        else{
+                            valuesToFill[concept.object_id] = [concept.concept] 
+                        }
+                    })
+
+                    scanReportsRef.current = scanReportsRef.current.map((scanReport)=>valuesToFill[scanReport.id]?
+                                            {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : scanReport)
+                    let thingsToLoad =  Object.keys(conceptsToget).length
+
+                    for (const [key, valuesToMap] of Object.entries(conceptsToget)) {
+                        getConcept(key).then(concept=>{    
+                            thingsToLoad--
+                            setLoadingMessage(thingsToLoad+" concepts to load")
+                            valuesToMap.map(value =>{  
+                                const tempConcept = concept
+                                tempConcept.id = value.identifier
+                                tempConcept.object_id = value.object_id    
+                                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==tempConcept.object_id?{...scanReport,concepts:[...scanReport.concepts,tempConcept],
+                                    conceptsToLoad:scanReport.conceptsToLoad-1}:scanReport)
                             })
+                            if(thingsToLoad==0){
+                                setScanReports(scanReportsRef.current)
+                            }
                         })
                     }
+
                 })
-            })
+                .catch(error =>{
+                    // set all concepts to error state
+                    scanReportsRef.current = scanReportsRef.current.map(scanReport => scanReport.conceptID==-1?
+                        scanReport:{...scanReport,conceptsToLoad:-1})
+                        setScanReports(scanReportsRef.current)
+                    
+                })
+            }
+            else{
+                setScanReports(scanReportsRef.current)
+            }
         } 
         else{
-            return [undefined]
+            // this is what returns if there are no scan reports
+            scanReportsRef.current = [undefined]
+            setScanReports([undefined])
         }  
         
     })
-    return response
+    .catch(error =>{
+        setError(true)
+    })
 }
 
 
-export { getScanReportValues,getConceptLoop, getScanReportsWaitToLoad,
+export { getScanReportValues, getScanReportsWaitToLoad,
      getScanReportConcepts, getConcept,getScanReports,authToken,api,
-    getScanReportsInOrder }
+     }
