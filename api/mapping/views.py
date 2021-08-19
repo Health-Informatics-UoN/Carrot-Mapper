@@ -233,7 +233,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['concept__concept_id','object_id']
+    filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact']}
     
 class MappingViewSet(viewsets.ModelViewSet):
     queryset=Mapping.objects.all()
