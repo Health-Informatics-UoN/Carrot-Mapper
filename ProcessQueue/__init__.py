@@ -389,6 +389,7 @@ def main(msg: func.QueueMessage):
 
                 else:
                     val_desc = None
+                    concept_id = -1
 
                 # Create ScanReportValue entry
                 # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
