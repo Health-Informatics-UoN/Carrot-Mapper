@@ -14,7 +14,9 @@ RUN apt-get update && \
         gettext \
         libpq-dev \
         gcc \
-        graphviz
+        graphviz \
+        nodejs \
+        npm 
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
@@ -37,14 +39,22 @@ ENV PATH=/home/django/.local/bin:$PATH
 
 COPY ./api/requirements.txt /api/requirements.txt
 
-RUN pip install -r /api/requirements.txt --no-cache-dir
+#RUN pip install -r /api/requirements.txt --no-cache-dir
 
-RUN cd react-client-app
+USER root
+
+WORKDIR /react-client-app
+
+COPY ./react-client-app /react-client-app
+
+#COPY ./react-client-app/package.json /react-client-app/package.json
+
+#COPY ./react-client-app/package-lock.json /react-client-app/package-lock.json
+
+#COPY ./react-client-app/snowpack.config.js /react-client-app/snowpack.config.js
+
+#COPY ./react-client-app/.storybook /react-client-app/.storybook
 
 RUN npm install
-
-RUN npm run build
-
-RUN cd ..
 
 ENTRYPOINT ["/entrypoint.sh"]
