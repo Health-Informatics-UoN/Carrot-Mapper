@@ -283,6 +283,12 @@ class OmopFieldViewSet(viewsets.ModelViewSet):
 class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer
+    
+class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
+    queryset=StructuralMappingRule.objects.all()
+    serializer_class=StructuralMappingRuleSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['scan_report']    
 
 class SourceViewSet(viewsets.ModelViewSet):
     queryset=Source.objects.all()
