@@ -640,15 +640,16 @@ class StructuralMappingTableListView(ListView):
         context = super().get_context_data(**kwargs)
         
         pk = self.kwargs.get("pk")
+        
         scan_report = ScanReport.objects.get(pk=pk)
 
         object_list = get_mapping_rules_list(self.get_queryset())        
-        filtered_omop_table = self.kwargs.get("omop_table")
         source_tables =  list(set([
             x['source_table'].name
             for x in object_list
         ]))
-        
+
+        filtered_omop_table = self.kwargs.get("omop_table")
         current_source_table = self.kwargs.get("source_table")
                 
         context.update(
