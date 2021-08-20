@@ -422,25 +422,25 @@ def get_mapping_rules_list(structural_mapping_rules):
     destination_fields = { obj.id:obj for obj in list(OmopField.objects.filter(pk__in=destination_fields))}
 
     destination_tables = [obj.table_id for obj in destination_fields.values()]
-    destination_tables = {obj.id:obj.table for obj in list(OmopTable.objects.filter(pk__in=destination_tables))}
+    destination_tables = {obj.id:obj for obj in list(OmopTable.objects.filter(pk__in=destination_tables))}
     
     source_fields = [ obj.source_field_id for obj in structural_mapping_rules]
     source_fields = { obj.id:obj for obj in list(ScanReportField.objects.filter(pk__in=source_fields))}
 
     source_tables = [obj.scan_report_table_id for obj in source_fields.values()]
-    source_tables = {obj.id:obj.name for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))}
+    source_tables = {obj.id:obj for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))}
     
     rules = []
     for rule in structural_mapping_rules:
 
         destination_field = destination_fields[rule.omop_field_id]
         destination_table = destination_tables[destination_field.table_id]
-        destination_field = destination_field.field
+        #destination_field = destination_field.field
 
 
         source_field = source_fields[rule.source_field_id]
         source_table = source_tables[source_field.scan_report_table_id]
-        source_field = source_field.name
+        #source_field = source_field.name
         
         scan_report_concept_id = rule.concept_id
         scan_report_concept = scan_report_concepts[rule.concept_id]
