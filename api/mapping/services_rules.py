@@ -4,8 +4,8 @@ from datetime import datetime
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
-from mapping.models import ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopField, Concept, StructuralMappingRule
+from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
+from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, StructuralMappingRule
 from mapping.serializers import ConceptSerializer
 
 from graphviz import Digraph
@@ -393,7 +393,97 @@ class Concept2OMOP:
         return concept
 
 
+
+def get_mapping_rules_list(structural_mapping_rules):
+    """
+    Args:
+        qs : queryset of all mapping rules
+    Returns:
+        dict : formatted json that can be eaten by the TL-Tool
+    """
+
+    # Queryset -> list, makes the calls to the db to get the rules 
+    structural_mapping_rules = list(structural_mapping_rules)
     
+    #get all scan_report_concepts that are used
+    #get the ids first so we can make a batch call
+    scan_report_concepts = list(set([ obj.concept_id for obj in structural_mapping_rules]))
+    #make a batch call
+    scan_report_concepts = { x.id: x for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))}
+    
+    scan_report_values = [
+        obj.object_id
+        for obj in scan_report_concepts.values()
+        if obj.content_type.model_class() is ScanReportValue
+    ]
+    scan_report_values = { obj.id:obj.value for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values)) }
+
+    destination_fields = [ obj.omop_field_id for obj in structural_mapping_rules]
+    destination_fields = { obj.id:obj for obj in list(OmopField.objects.filter(pk__in=destination_fields))}
+
+    destination_tables = [obj.table_id for obj in destination_fields.values()]
+    destination_tables = {obj.id:obj.table for obj in list(OmopTable.objects.filter(pk__in=destination_tables))}
+    
+    source_fields = [ obj.source_field_id for obj in structural_mapping_rules]
+    source_fields = { obj.id:obj for obj in list(ScanReportField.objects.filter(pk__in=source_fields))}
+
+    source_tables = [obj.scan_report_table_id for obj in source_fields.values()]
+    source_tables = {obj.id:obj.name for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))}
+    
+    rules = []
+    for rule in structural_mapping_rules:
+
+        destination_field = destination_fields[rule.omop_field_id]
+        destination_table = destination_tables[destination_field.table_id]
+        destination_field = destination_field.field
+
+
+        source_field = source_fields[rule.source_field_id]
+        source_table = source_tables[source_field.scan_report_table_id]
+        source_field = source_field.name
+        
+        scan_report_concept_id = rule.concept_id
+        scan_report_concept = scan_report_concepts[rule.concept_id]
+        concept_id = scan_report_concept.concept_id
+        if scan_report_concept.content_type.model_class() is ScanReportValue:
+            term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
+        else:
+            term_mapping = concept_id
+            
+        rules.append(
+            {
+                'destination_table':destination_table,
+                'destination_field':destination_field,
+                'source_table':source_table,
+                'source_field':source_field,
+                'term_mapping':term_mapping
+            })
+            
+    return rules
+
+def get_mapping_rules_json_batch(structural_mapping_rules):
+    """
+    Args:
+        qs : queryset of all mapping rules
+    Returns:
+        dict : formatted json that can be eaten by the TL-Tool
+    """
+
+    #use the first_qs to get the scan_report dataset name
+    #all qs items will be from the same scan_report
+    first_rule = structural_mapping_rules[0]
+
+    #build some metadata
+    metadata =  {
+        'date_created':datetime.utcnow().isoformat(),
+        'dataset':first_rule.scan_report.dataset
+    }
+
+    all_rules = get_mapping_rules_list(structural_mapping_rules)
+    
+    return all_rules
+
+
 def get_mapping_rules_json(qs):
     """
     Args:
@@ -505,7 +595,7 @@ def get_mapping_rules_json(qs):
 
 def download_mapping_rules(request,qs):
     #get the mapping rules
-    output = get_mapping_rules_json(qs)
+    output = get_mapping_rules_json_batch(qs)
     #used the first qs item to get the scan_report name the qs is associated with
     scan_report = qs[0].scan_report
     #make a file name
