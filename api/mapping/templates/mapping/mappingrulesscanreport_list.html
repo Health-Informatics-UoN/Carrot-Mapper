@@ -75,7 +75,8 @@
     <thead>
     <tr>
         <!--<th scope="col">Data Partner</th>
-        <th scope="col">Dataset</th>-->
+            <th scope="col">Dataset</th>-->
+	    <th scope="col">Rule ID</th>
         <th scope="col">Destination Table</th>
         <th scope="col">Destination Field</th>
 	<th scope="col">Source Table</th>
@@ -88,6 +89,7 @@
     <tbody>
       {% for object in object_list %}
       <tr>
+	<td style="width: 10%">{{ object.rule_id }}</td>
         <td style="width: 16.6%">{{ object.destination_table.table }}</td>
         <td style="width: 16.6%">{{ object.destination_field.field }}</td>
 	<td style="width: 16.6%">
@@ -99,7 +101,9 @@
 	</td>
 
         <td style="width: 16.6%">
-	  {{ object.term_mapping }} 
+	  {% if object.term_mapping %}
+	  {{ object.term_mapping }}
+	  {% endif %}
 	</td>
 	
       </tr>

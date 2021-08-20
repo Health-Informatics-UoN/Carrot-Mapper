@@ -445,14 +445,18 @@ def get_mapping_rules_list(structural_mapping_rules):
         scan_report_concept_id = rule.concept_id
         scan_report_concept = scan_report_concepts[rule.concept_id]
         concept_id = scan_report_concept.concept_id
-        if scan_report_concept.content_type.model_class() is ScanReportValue:
-            term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
-        else:
-            term_mapping = concept_id
+
+        term_mapping = None
+        
+        if 'concept_id' in destination_field.field:
+            if scan_report_concept.content_type.model_class() is ScanReportValue:
+                term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
+            else:
+                term_mapping = concept_id
             
         rules.append(
             {
-                'scan_report_concept_id':scan_report_concept_id,
+                'rule_id':scan_report_concept_id,
                 'destination_table':destination_table,
                 'destination_field':destination_field,
                 'source_table':source_table,
@@ -484,27 +488,29 @@ def get_mapping_rules_json_batch(structural_mapping_rules):
 
     cdm = {}
     for rule in all_rules:
-
         table_name = rule['destination_table'].table
 
         if table_name not in cdm:
             cdm[table_name] = {}
 
-        _id = rule['scan_report_concept_id']
+        _id = rule['rule_id']
 
         if _id not in cdm[table_name]:
             cdm[table_name][_id] = {}
 
-        cdm[table_name][_id][rule['destination_field'].field] = {
+        destination_field = rule['destination_field'].field
+        
+        cdm[table_name][_id][destination_field] = {
             'source_table':rule['source_table'].name,
             'source_field':rule['source_field'].name,
-            'term_mapping':rule['term_mapping']
         }
+        if rule['term_mapping']:
+            cdm[table_name][_id][destination_field]['term_mapping'] = rule['term_mapping']
 
     for table_name in cdm:
         cdm[table_name] = list(cdm[table_name].values())
     
-    return cdm
+    return {'metadata':metadata,'cdm':cdm}
 
 
 def get_mapping_rules_json(qs):
