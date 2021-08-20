@@ -2,7 +2,6 @@
 1. [Introduction](#introduction)
 1. [Getting Started](#getting-started)
    1. [Manually](#manually)
-   1. [React](#react)
    1. [Docker](#docker)
    1. [Refreshing](#refreshing) 
 1. [Pages](#pages)
@@ -25,24 +24,6 @@ To run the mapping pipeline Django MVP:
 2.	Create a Python virtual environment and install Django
 3.	Create a new superuser for testing
 4. Log into the admin area at localhost:8080/admin/ to view the data
-
-## React
-# Getting Started
-```bash
-#Before running docker commands, navigate to react-client-app and install the dependencies 
-npm install
-
-#build the react app in the main web app
-npm run build
-```
-
-# Running the react app independently
-```bash
-#To run the react app
-npm start
-#To run storybook
-npm run storybook
-```
 
 ## Docker
 
