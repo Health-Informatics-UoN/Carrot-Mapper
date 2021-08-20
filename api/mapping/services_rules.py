@@ -452,6 +452,7 @@ def get_mapping_rules_list(structural_mapping_rules):
             
         rules.append(
             {
+                'scan_report_concept_id':scan_report_concept_id,
                 'destination_table':destination_table,
                 'destination_field':destination_field,
                 'source_table':source_table,
@@ -480,8 +481,30 @@ def get_mapping_rules_json_batch(structural_mapping_rules):
     }
 
     all_rules = get_mapping_rules_list(structural_mapping_rules)
+
+    cdm = {}
+    for rule in all_rules:
+
+        table_name = rule['destination_table'].table
+
+        if table_name not in cdm:
+            cdm[table_name] = {}
+
+        _id = rule['scan_report_concept_id']
+
+        if _id not in cdm[table_name]:
+            cdm[table_name][_id] = {}
+
+        cdm[table_name][_id][rule['destination_field'].field] = {
+            'source_table':rule['source_table'].name,
+            'source_field':rule['source_field'].name,
+            'term_mapping':rule['term_mapping']
+        }
+
+    for table_name in cdm:
+        cdm[table_name] = list(cdm[table_name].values())
     
-    return all_rules
+    return cdm
 
 
 def get_mapping_rules_json(qs):
@@ -525,7 +548,7 @@ def get_mapping_rules_json(qs):
     cdm = {}
     
     #loop over all unique concepts
-    #rules will contain 5 rules:
+    #rules will contain 5 rules: 
     # - person_id, date_event, concept, source_concept, source_value
     for rules in object_map.values():
 
