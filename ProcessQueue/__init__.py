@@ -155,6 +155,7 @@ def main(msg: func.QueueMessage):
         data_dictionary = list(
             csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
         )
+        print('data_dictionary', data_dictionary)
 
     else:
         data_dictionary = None
@@ -347,7 +348,7 @@ def main(msg: func.QueueMessage):
                     frequency = 0
 
                 if data_dictionary is not None:
-
+                    print("data_dictionary", data_dictionary)
                     # Look up value description
                     val_desc = next(
                         (
