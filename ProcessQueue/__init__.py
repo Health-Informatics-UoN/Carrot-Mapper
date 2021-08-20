@@ -155,7 +155,6 @@ def main(msg: func.QueueMessage):
         data_dictionary = list(
             csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
         )
-        print('data_dictionary', data_dictionary)
 
     else:
         data_dictionary = None
@@ -348,11 +347,10 @@ def main(msg: func.QueueMessage):
                     frequency = 0
 
                 if data_dictionary is not None:
-                    print("data_dictionary", data_dictionary)
                     # Look up value description
                     val_desc = next(
                         (
-                            row["value_description"]
+                            row["value"]
                             for row in data_dictionary
                             if str(row["field_name"]) == str(name)
                             and str(row["code"]) == str(value)
