@@ -407,47 +407,83 @@ def get_mapping_rules_list(structural_mapping_rules):
     
     #get all scan_report_concepts that are used
     #get the ids first so we can make a batch call
-    scan_report_concepts = list(set([ obj.concept_id for obj in structural_mapping_rules]))
-    #make a batch call
-    scan_report_concepts = { x.id: x for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))}
-    
+    scan_report_concepts = list(set(
+        [
+            obj.concept_id
+            for obj in structural_mapping_rules
+        ]
+    ))
+    #make the batch call
+    scan_report_concepts = {
+        x.id:x
+        for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))
+    }
+
+    #get all the ids for all ScanReportValues that are used (have been mapped with a concept)
     scan_report_values = [
         obj.object_id
         for obj in scan_report_concepts.values()
         if obj.content_type.model_class() is ScanReportValue
     ]
-    scan_report_values = { obj.id:obj.value for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values)) }
+    #make a batch call to the ORM again..
+    scan_report_values = {
+        obj.id:obj.value
+        for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values))
+    }
 
-    destination_fields = [ obj.omop_field_id for obj in structural_mapping_rules]
-    destination_fields = { obj.id:obj for obj in list(OmopField.objects.filter(pk__in=destination_fields))}
+    #get all destination field ids
+    destination_fields = [
+        obj.omop_field_id
+        for obj in structural_mapping_rules
+    ]
+    #batch call
+    destination_fields = {
+        obj.id:obj
+        for obj in list(OmopField.objects.filter(pk__in=destination_fields))
+    }
 
-    destination_tables = [obj.table_id for obj in destination_fields.values()]
-    destination_tables = {obj.id:obj for obj in list(OmopTable.objects.filter(pk__in=destination_tables))}
-    
-    source_fields = [ obj.source_field_id for obj in structural_mapping_rules]
-    source_fields = { obj.id:obj for obj in list(ScanReportField.objects.filter(pk__in=source_fields))}
+    #again with destination table
+    destination_tables = [
+        obj.table_id for obj in destination_fields.values()
+    ]
+    destination_tables = {
+        obj.id:obj for obj in list(OmopTable.objects.filter(pk__in=destination_tables))
+    }
 
-    source_tables = [obj.scan_report_table_id for obj in source_fields.values()]
-    source_tables = {obj.id:obj for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))}
-    
+    #and sources....
+    source_fields = [
+        obj.source_field_id for obj in structural_mapping_rules
+    ]
+    source_fields = {
+        obj.id:obj for obj in list(ScanReportField.objects.filter(pk__in=source_fields))
+    }
+    source_tables = [
+        obj.scan_report_table_id for obj in source_fields.values()
+    ]
+    source_tables = {
+        obj.id:obj for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))
+    }
+
+    #now looop over the rules to actually create the list version of the rules
     rules = []
     for rule in structural_mapping_rules:
 
+        #get the fields/tables from the loop up lists
+        #the speed up comes from here as we dont need to keep hitting the DB to get this data
+        #we've already cached it in these dictionaries by making a batch call
         destination_field = destination_fields[rule.omop_field_id]
         destination_table = destination_tables[destination_field.table_id]
-        #destination_field = destination_field.field
-
 
         source_field = source_fields[rule.source_field_id]
         source_table = source_tables[source_field.scan_report_table_id]
-        #source_field = source_field.name
-        
+
+        #get the concepts again
         scan_report_concept_id = rule.concept_id
         scan_report_concept = scan_report_concepts[rule.concept_id]
         concept_id = scan_report_concept.concept_id
 
+        #work out if we need term_mapping or not
         term_mapping = None
-        
         if 'concept_id' in destination_field.field:
             if scan_report_concept.content_type.model_class() is ScanReportValue:
                 term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
