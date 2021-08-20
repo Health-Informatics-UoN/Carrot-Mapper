@@ -545,7 +545,8 @@ class ScanReportValueListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-
+        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
+        url = os.environ.get("CCOM_APP_URL")
         if len(self.get_queryset()) > 0:
             # scan_report = self.get_queryset()[0].scan_report_table.scan_report
             # scan_report_table = self.get_queryset()[0].scan_report_table
@@ -569,6 +570,8 @@ class ScanReportValueListView(ListView):
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
                 "scan_report_value": scan_report_value,
+                "a": auth,
+                "u":url
             }
         )
 

@@ -14,7 +14,9 @@ RUN apt-get update && \
         gettext \
         libpq-dev \
         gcc \
-        graphviz
+        graphviz \
+        nodejs \
+        npm 
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
@@ -38,5 +40,15 @@ ENV PATH=/home/django/.local/bin:$PATH
 COPY ./api/requirements.txt /api/requirements.txt
 
 RUN pip install -r /api/requirements.txt --no-cache-dir
+
+WORKDIR /react-client-app
+
+COPY ./react-client-app /react-client-app
+
+USER root
+
+RUN npm install
+
+USER django
 
 ENTRYPOINT ["/entrypoint.sh"]
