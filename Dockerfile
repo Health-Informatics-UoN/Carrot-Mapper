@@ -43,7 +43,7 @@ RUN pip install -r /api/requirements.txt --no-cache-dir
 
 WORKDIR /react-client-app
 
-COPY ./react-client-app/package.json ./react-client-app/package-lock.json /react-client-app/
+COPY ./react-client-app /react-client-app
 
 USER root
 
