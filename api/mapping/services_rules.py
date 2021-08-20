@@ -734,7 +734,7 @@ def make_dag(data):
 #this is here as we should move it out of coconnect.tools
 def view_mapping_rules(request,qs):
     #get the rules
-    output = get_mapping_rules_json(qs)
+    output = get_mapping_rules_json_batch(qs)
     #use make dag svg image
     svg = make_dag(output['cdm'])
     #return a svg response
