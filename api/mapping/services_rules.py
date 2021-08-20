@@ -484,32 +484,50 @@ def get_mapping_rules_json_batch(structural_mapping_rules):
         'dataset':first_rule.scan_report.dataset
     }
 
+    #get the list of rules
+    #this is the same list/function that is used
+    #!NOTE: we could cache this to speed things up, as the page load will call this once already
     all_rules = get_mapping_rules_list(structural_mapping_rules)
 
     cdm = {}
+    #loop over the list of rules
     for rule in all_rules:
+        #get the rule id
+        #i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
+        _id = rule['rule_id']
+
+        #get the table name
         table_name = rule['destination_table'].table
 
+        #make a new object if we havent come across this cdm table yet
         if table_name not in cdm:
             cdm[table_name] = {}
 
-        _id = rule['rule_id']
-
+        #reminder, json for ETL needs to be structured like:
+        # { 'cdm': {'person': [person_0, person_1], 'condition_occurence:[c1,c2,c3...] }
+        #if the sub-object (e.g. <person_0>) has not been made, create a new nested document
         if _id not in cdm[table_name]:
             cdm[table_name][_id] = {}
-
+            
+        # make a new mapping spec for the destination table
         destination_field = rule['destination_field'].field
-        
         cdm[table_name][_id][destination_field] = {
             'source_table':rule['source_table'].name,
             'source_field':rule['source_field'].name,
         }
-        if rule['term_mapping']:
+        #include term_mapping if it's needed
+        #will appear for destinations with _concept_id,
+        #either as a dict (value map) or as a str/int (field map)
+        if rule['term_mapping'] is not None:
             cdm[table_name][_id][destination_field]['term_mapping'] = rule['term_mapping']
 
+    #little trickery to get the json in the right format
+    #the current structure is  { 'cdm': {'person': {'id_0':dict,'id_1':dict...}}}
+    #needs to be :  { 'cdm': {'person': [dict, dict...]}}
     for table_name in cdm:
         cdm[table_name] = list(cdm[table_name].values())
-    
+
+    #add the metadata and cdm object together
     return {'metadata':metadata,'cdm':cdm}
 
 
