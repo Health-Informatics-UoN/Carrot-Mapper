@@ -54,95 +54,109 @@ const getAllconcepts = async (ids) => {
 }
 
 const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMessage,setError) =>{
+    // get all the values in the table
     getScanReportValues(valueId)
-    .then((values) => {
-        if (!Array.isArray(values)){
-            setError(true)
-            return
-        }
-        if(values.length>0){
-            const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
-            scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts:[],conceptsToLoad:1}))
-            setScanReports(scanReportsRef.current)
-            // chunking ids to smaller lists of ids if needed
-            const idsToGet = [[]]
-            let maxChars = 2000
-            let currentChars = 80
-            scanReportsRef.current.map(async (value,index) => {
-                    const digits = value.id.toString().length
-                    if(currentChars+digits> maxChars-20){
-                        currentChars = 80+digits
-                        idsToGet.push([])
-                        idsToGet[idsToGet.length-1].push(value.id)
-                    } 
-                    else{
-                        currentChars = currentChars+digits
-                        idsToGet[idsToGet.length-1].push(value.id)
-                    }                              
-                    
-            })
-            //
-            const promises = []
-            for(let i=0;i<idsToGet.length;i++){
-                promises.push(getAllconcepts(idsToGet[i].join()))
+        .then((values) => {
+            // Once the api has returned, check if an error was returned or not
+            if (!Array.isArray(values)){
+                setError(true)
+                return
             }
-            Promise.all(promises).then((values) => {
-                let concepts = [].concat.apply([], values)
-                const conceptsToget = {}
-                const valuesToFill = {}
-                concepts.map(concept=> {    
-                    if(conceptsToget[concept.concept]){
-                        conceptsToget[concept.concept].push({object_id:concept.object_id,identifier:concept.id})
-                    }
-                    else{
-                        conceptsToget[concept.concept] = [{object_id:concept.object_id,identifier:concept.id}] 
-                    }
-        
-                    if(valuesToFill[concept.object_id]){
-                        valuesToFill[concept.object_id].push(concept.concept)
-                    }
-                    else{
-                        valuesToFill[concept.object_id] = [concept.concept] 
-                    }
-                })
-
-                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>valuesToFill[scanReport.id]?
-                                        {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : {...scanReport,conceptsToLoad:0})
-                if(concepts.length==0){
-                    setScanReports(scanReportsRef.current)
-                }
-                for (const [key, valuesToMap] of Object.entries(conceptsToget)) {
-                    getConcept(key).then(concept=>{    
-                        valuesToMap.map(value =>{  
-                            const tempConcept = concept
-                            tempConcept.id = value.identifier
-                            tempConcept.object_id = value.object_id
-                               
-                            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==tempConcept.object_id?{...scanReport,concepts:[...scanReport.concepts,tempConcept],
-                                conceptsToLoad:scanReport.conceptsToLoad-1}:scanReport)
-                        })
-                        setScanReports(scanReportsRef.current)
-                    })
-                }
-                
-              })
-              .catch(error =>{
-                // set all concepts to error state
-                scanReportsRef.current = scanReportsRef.current.map(scanReport =>({...scanReport,conceptsToLoad:-1}))
+            // If there are values in the table, check for concepts, otherwise, return no values
+            if(values.length>0){
+                // set all values to indicate that it is loading concepts
+                const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
+                scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts:[],conceptsToLoad:1}))
                 setScanReports(scanReportsRef.current)
-                
-            })
-        } 
-        else{
-            // this is what returns if there are no scan reports
-            scanReportsRef.current = [undefined]
-            setScanReports([undefined])
-        }  
-        
-    })
-    .catch(error =>{
-        setError(true)
-    })
+                // Create list of sublists of value ids to pass to the endpoint so that api requests don't exceed character limits
+                // could just be 1 sublist if the list is short enough
+                const idsToGet = [[]]
+                let maxChars = 2000
+                let currentChars = 80
+                scanReportsRef.current.map(async (value,index) => {
+                        const digits = value.id.toString().length
+                        if(currentChars+digits> maxChars-20){
+                            currentChars = 80+digits
+                            idsToGet.push([])
+                            idsToGet[idsToGet.length-1].push(value.id)
+                        } 
+                        else{
+                            currentChars = currentChars+digits
+                            idsToGet[idsToGet.length-1].push(value.id)
+                        }                              
+                        
+                })
+                //
+                const promises = []
+                // send API request for every sublist
+                for(let i=0;i<idsToGet.length;i++){
+                    promises.push(getAllconcepts(idsToGet[i].join()))
+                }
+                //Do once all api requests from the sublists have returned
+                Promise.all(promises).then((values) => {
+                    // create an array of all the results from the sublists api requests
+                    let concepts = [].concat.apply([], values)
+                    // create a list of concepts to get and a list of values that contain concepts
+                    const conceptsToget = {}
+                    const valuesToFill = {}
+                    concepts.map(concept=> {    
+                        if(conceptsToget[concept.concept]){
+                            conceptsToget[concept.concept].push({object_id:concept.object_id,identifier:concept.id})
+                        }
+                        else{
+                            conceptsToget[concept.concept] = [{object_id:concept.object_id,identifier:concept.id}] 
+                        }
+            
+                        if(valuesToFill[concept.object_id]){
+                            valuesToFill[concept.object_id].push(concept.concept)
+                        }
+                        else{
+                            valuesToFill[concept.object_id] = [concept.concept] 
+                        }
+                    })
+                    // Set all values that have no concepts to loaded state
+                    scanReportsRef.current = scanReportsRef.current.map((scanReport)=>valuesToFill[scanReport.id]?
+                                            {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : {...scanReport,conceptsToLoad:0})
+                    if(concepts.length==0){
+                        setScanReports(scanReportsRef.current)
+                    }
+
+                    // for every unique concept, do api request to get the concept information and set
+                    // that concept object to every value that it is assigned to 
+                    for (const [key, valuesToMap] of Object.entries(conceptsToget)) {
+                        getConcept(key).then(concept=>{    
+                            valuesToMap.map(value =>{  
+                                const tempConcept = concept
+                                tempConcept.id = value.identifier
+                                tempConcept.object_id = value.object_id
+                                
+                                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==tempConcept.object_id?{...scanReport,concepts:[...scanReport.concepts,tempConcept],
+                                    conceptsToLoad:scanReport.conceptsToLoad-1}:scanReport)
+                            })
+                            setScanReports(scanReportsRef.current)
+                        })
+                    }
+                    
+                })
+                .catch(error =>{
+                    // if an error is returned from the sublists api calls
+                    // set all concepts to error state
+                    scanReportsRef.current = scanReportsRef.current.map(scanReport =>({...scanReport,conceptsToLoad:-1}))
+                    setScanReports(scanReportsRef.current)
+                    
+                })
+            } 
+            else{
+                // return if there are no scan reports
+                scanReportsRef.current = [undefined]
+                setScanReports([undefined])
+            }  
+            
+        })
+        .catch(error =>{
+            // if an error is returned from api call to get table values, set page state to error
+            setError(true)
+        })
 }
 
 
