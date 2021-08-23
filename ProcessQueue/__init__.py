@@ -149,7 +149,6 @@ def main(msg: func.QueueMessage):
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
     parent_sr_id=body['parent_SR_id']
-    print(parent_sr_id)
 
     print("MESSAGE BODY >>>", body)
 
@@ -540,3 +539,33 @@ def main(msg: func.QueueMessage):
         # Move to next table, initialise empty arrays for next table
         table_idx = table_idx + 1
         worksheet_idx = worksheet_idx + 1
+
+    if parent_sr_id is not "None":
+        # Grab Parent Scan Report
+        parent_scan_report = requests.get(
+                    url=api_url
+                    + "scanreporttablesfilter/?scan_report="
+                    + str(parent_sr_id),
+                    headers=headers,
+                )
+        parent_tables=[]
+        child_tables=[]
+        child_scan_report=requests.get(
+                    url=api_url
+                    + "scanreporttablesfilter/?scan_report="
+                    + str(scan_report_id),
+                    headers=headers,
+                )
+        
+        response_parent = json.loads(parent_scan_report.content.decode("utf-8"))
+        response_child=json.loads(child_scan_report.content.decode("utf-8"))
+
+        print("PARENT SCAN REPORT TABLES:",response_parent)
+        print("CHILD SCAN REPORT TABLES",response_child)
+        for element in range(len(response_parent)):
+            parent_tables.append(response_parent[element]["name"])
+            
+        print(parent_tables)
+
+        
+
