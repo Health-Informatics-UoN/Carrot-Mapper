@@ -16,6 +16,8 @@ class ShowNameChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
         if obj.__class__.__name__=='Document':
             return str(obj.data_partner.name)
+        if obj.__class__.__name__=='ScanReport':
+            return str(obj.id)+" "+str(obj.dataset)
         return obj.name
 
 

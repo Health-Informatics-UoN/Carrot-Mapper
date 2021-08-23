@@ -148,6 +148,8 @@ def main(msg: func.QueueMessage):
     # print("body 2:", type(body), body)
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
+    parent_sr_id=body['parent_SR_id']
+    print(parent_sr_id)
 
     print("MESSAGE BODY >>>", body)
 
