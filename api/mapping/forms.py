@@ -33,6 +33,13 @@ class ScanReportForm(forms.Form):
         widget=forms.FileInput(attrs={"class": "form-control"}),
     )
 
+    parent_scan_report_file = ShowNameChoiceField(
+    label="WhiteRabbit ScanReport Parent",
+    queryset=ScanReport.objects.order_by("id"),
+    widget=forms.Select(attrs={"class": "form-control"}),
+    required=False
+    )
+
     data_dictionary_file = forms.FileField(
         label="Data Dictionary",
         widget=forms.FileInput(attrs={"class": "form-control"}),
@@ -43,7 +50,13 @@ class ScanReportForm(forms.Form):
         model = ScanReport
         fields = ('data_partner', 'dataset' , 'scan_report_file')
 
- 
+    def clean_parent_scan_report_file(self):
+        parent_scan_report=self.cleaned_data.get("parent_scan_report_file")
+        print(parent_scan_report.id)
+        if parent_scan_report is None:
+            return parent_scan_report
+        return parent_scan_report.id
+        
     def clean_data_dictionary_file(self):
 
         data_dictionary = self.cleaned_data.get("data_dictionary_file")

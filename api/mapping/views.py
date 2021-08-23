@@ -739,7 +739,12 @@ class ScanReportFormView(FormView):
             blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
             blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv")
             blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
-    
+        
+        if form.cleaned_data.get('parent_scan_report_file'):
+            azure_dict['parent_SR_id'] = form.cleaned_data.get('parent_scan_report_file')
+        else: 
+            azure_dict['parent_SR_id'] = "None"
+            
         print('Azure Dictionary >>> ', azure_dict)
 
         queue_message=json.dumps(azure_dict)

@@ -35,6 +35,16 @@
 
     <div class="mb-3">
 
+        <label class="form-label">{{ form.parent_scan_report_file.label }}</label>
+        {{ form.parent_scan_report_file }}
+        {%if form.parent_scan_report_file.errors%}
+        <div class="alert alert-danger" role="alert">{{ form.parent_scan_report_file.errors }}</div>
+        {%endif%}
+
+    </div>
+
+    <div class="mb-3">
+
         <label class="form-label">{{ form.data_dictionary_file.label }}</label>
         {{ form.data_dictionary_file }}
         {%if form.data_dictionary_file.errors%}
