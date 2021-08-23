@@ -62,19 +62,32 @@ const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMe
         }
         if(values.length>0){
             const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
-            scanReportsRef.current = newArr.map(scanReport => scanReport.conceptID==-1?
-                {...scanReport, concepts:[],conceptsToLoad:0}:{...scanReport, concepts:[],conceptsToLoad:1})
+            scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts:[],conceptsToLoad:1}))
             setScanReports(scanReportsRef.current)
-            const idsToGet = []
-            scanReportsRef.current.map(async (value,index) => {                           
-                if(value.conceptID!=-1){
-                    idsToGet.push(value.id)
-                }
+            // chunking ids to smaller lists of ids if needed
+            const idsToGet = [[]]
+            let maxChars = 2000
+            let currentChars = 80
+            scanReportsRef.current.map(async (value,index) => {
+                    const digits = value.id.toString().length
+                    if(currentChars+digits> maxChars-20){
+                        currentChars = 80+digits
+                        idsToGet.push([])
+                        idsToGet[idsToGet.length-1].push(value.id)
+                    } 
+                    else{
+                        currentChars = currentChars+digits
+                        idsToGet[idsToGet.length-1].push(value.id)
+                    }                              
+                    
             })
-            if(idsToGet.length == 0){
-                return
+            //
+            const promises = []
+            for(let i=0;i<idsToGet.length;i++){
+                promises.push(getAllconcepts(idsToGet[i].join()))
             }
-            getAllconcepts(idsToGet.join()).then(concepts =>{
+            Promise.all(promises).then((values) => {
+                let concepts = [].concat.apply([], values)
                 const conceptsToget = {}
                 const valuesToFill = {}
                 concepts.map(concept=> {    
@@ -94,8 +107,10 @@ const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMe
                 })
 
                 scanReportsRef.current = scanReportsRef.current.map((scanReport)=>valuesToFill[scanReport.id]?
-                                        {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : scanReport)
-                                        
+                                        {...scanReport,conceptsToLoad:valuesToFill[scanReport.id].length} : {...scanReport,conceptsToLoad:0})
+                if(concepts.length==0){
+                    setScanReports(scanReportsRef.current)
+                }
                 for (const [key, valuesToMap] of Object.entries(conceptsToget)) {
                     getConcept(key).then(concept=>{    
                         valuesToMap.map(value =>{  
@@ -109,13 +124,12 @@ const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMe
                         setScanReports(scanReportsRef.current)
                     })
                 }
-
-            })
-            .catch(error =>{
+                
+              })
+              .catch(error =>{
                 // set all concepts to error state
-                scanReportsRef.current = scanReportsRef.current.map(scanReport => scanReport.conceptID==-1?
-                    scanReport:{...scanReport,conceptsToLoad:-1})
-                    setScanReports(scanReportsRef.current)
+                scanReportsRef.current = scanReportsRef.current.map(scanReport =>({...scanReport,conceptsToLoad:-1}))
+                setScanReports(scanReportsRef.current)
                 
             })
         } 
