@@ -9,6 +9,7 @@ import openpyxl
 from datetime import datetime
 import os
 import csv
+# from jsondiff import diff
 
 from requests.models import HTTPError
 
@@ -548,8 +549,10 @@ def main(msg: func.QueueMessage):
                     + str(parent_sr_id),
                     headers=headers,
                 )
+        parent_table_ids=[]
         parent_tables=[]
         child_tables=[]
+        
         child_scan_report=requests.get(
                     url=api_url
                     + "scanreporttablesfilter/?scan_report="
@@ -562,10 +565,47 @@ def main(msg: func.QueueMessage):
 
         print("PARENT SCAN REPORT TABLES:",response_parent)
         print("CHILD SCAN REPORT TABLES",response_child)
+
+        # Find differences between JSON?
+        # difference=diff(response_parent, response_child)
+        # print("JSON DIFF",difference)
+
+        # Find differences of two lists?
         for element in range(len(response_parent)):
             parent_tables.append(response_parent[element]["name"])
-            
-        print(parent_tables)
+            parent_table_ids.append(response_parent[element]["id"])
+        for element in range(len(response_child)):
+            child_tables.append(response_child[element]["name"])
+        # Check if tables are the same
+        if parent_tables==child_tables:
+        
+            print("Parent=Child")
+            # check if fields are the same
+            for id in range(len(table_ids)):
+                parent_fields=requests.get(
+                        url=api_url
+                        + "scanreportfieldsfilter/scan_report_table="
+                        + str(parent_table_ids[id]),
+                        headers=headers,
+                    )
+                print(parent_table_ids[id])
+
+                response_parent = json.loads(parent_fields.content.decode("utf-8"))
+
+                child_fields=requests.get(
+                        url=api_url
+                        + "scanreportfieldsfilter/scan_report_table="
+                        + str(table_ids[id]),
+                        headers=headers,
+                    )
+                response_child=json.loads(child_fields.content.decode("utf-8"))
+                print(table_ids[id])
+                # detail not found?
+                print("PARENT SCAN REPORT FIELDS:",response_parent)
+                print("CHILD SCAN REPORT FIELDS",response_child)
+        else:
+            difference=list(set(parent_tables) ^ set(child_tables))
+            print("LIST DIFF",list(difference))
 
         
 
