@@ -62,11 +62,13 @@ const DataTbl = () => {
     const scanReportTable = useRef([]);
     
     useEffect(() => {
+        // get and store scan report table object to use to check person_id and date_event
         getScanReportField(value).then(data=>{
             getScanReportTable(data.scan_report_table).then(table=>{
                 scanReportTable.current = table
             })
         })
+        // get scan report values
         getScanReports(value,setScanReports,scanReportsRef,setLoadingMessage,setError)  
         
       },[]);
@@ -83,14 +85,15 @@ const DataTbl = () => {
             onOpen()
         }
         else if(!table.person_id || !table.date_event ){
+            // set the error message depending on which value is missing
             let message;
-            if(!table.person_id && !table.date_event){message = 'You need to add a person_id and a date_event to '}
-            else if(!table.person_id){message = 'You need to add a person_id to '}
-            else{message = 'You need to add a date_event to '}
+            if(!table.person_id && !table.date_event){message = 'Please set the person_id and a date_event to '}
+            else if(!table.person_id){message = 'Please set the person_id to '}
+            else{message = 'Please set the date_event to '}
             setAlert({
                 hidden: false,
                 status: 'error',
-                title: message+table.name+' to add a concept',
+                title: message+table.name+' before you add a concept.',
                 description: 'Unsuccessful'
             })
             onOpen()
