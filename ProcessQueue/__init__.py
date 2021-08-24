@@ -584,7 +584,7 @@ def main(msg: func.QueueMessage):
             for id in range(len(table_ids)):
                 parent_fields=requests.get(
                         url=api_url
-                        + "scanreportfieldsfilter/scan_report_table="
+                        + "scanreportfieldsfilter/?scan_report_table="
                         + str(parent_table_ids[id]),
                         headers=headers,
                     )
@@ -594,7 +594,7 @@ def main(msg: func.QueueMessage):
 
                 child_fields=requests.get(
                         url=api_url
-                        + "scanreportfieldsfilter/scan_report_table="
+                        + "scanreportfieldsfilter/?scan_report_table="
                         + str(table_ids[id]),
                         headers=headers,
                     )
