@@ -41,7 +41,7 @@ import {
 
 import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
 import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,
-    getScanReportsWaitToLoad}  from '../api/values'
+    getScanReportField,getScanReportTable,}  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -59,18 +59,38 @@ const DataTbl = () => {
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const scanReportsRef = useRef([]);
+    const scanReportTable = useRef([]);
     
     useEffect(() => {
+        getScanReportField(value).then(data=>{
+            getScanReportTable(data.scan_report_table).then(table=>{
+                scanReportTable.current = table
+            })
+        })
         getScanReports(value,setScanReports,scanReportsRef,setLoadingMessage,setError)  
-        //getScanReportsWaitToLoad(value,setScanReports,scanReportsRef,setLoadingMessage,setError)
+        
       },[]);
     
     const handleSubmit = (id, concept) => {
+        const table = scanReportTable.current
         if (concept === ''){
             setAlert({
                 hidden: false,
                 status: 'error',
                 title: 'Input field must not be empty',
+                description: 'Unsuccessful'
+            })
+            onOpen()
+        }
+        else if(!table.person_id || !table.date_event ){
+            let message;
+            if(!table.person_id && !table.date_event){message = 'You need to add a person_id and a date_event to '}
+            else if(!table.person_id){message = 'You need to add a person_id to '}
+            else{message = 'You need to add a date_event to '}
+            setAlert({
+                hidden: false,
+                status: 'error',
+                title: message+table.name+' to add a concept',
                 description: 'Unsuccessful'
             })
             onOpen()

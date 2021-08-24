@@ -2,6 +2,24 @@
 const authToken = window.a
 const api = window.u+'api'
 
+const useGet = async (url) =>{
+    const response = await fetch(url,
+    {
+        method: "GET",
+        headers: {Authorization: "Token "+authToken},    
+    }
+    );
+    const data = await response.json();
+    return data;
+}
+const getScanReportField = async (id)=>{
+    const field = await useGet(`${api}/scanreportfields/${id}`)
+    return field
+}
+const getScanReportTable = async (id)=>{
+    const table = await useGet(`${api}/scanreporttables/${id}`)
+    return table
+}
 // get scan report for specific id
 const getScanReportValues = async (id) => {
     const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`,
@@ -249,5 +267,6 @@ const getScanReportsWaitToLoad = (valueId,setScanReports,scanReportsRef,setLoadi
 
 
 export { getScanReportValues, getScanReportsWaitToLoad,
+    getScanReportField,getScanReportTable,
      getScanReportConcepts, getConcept,getScanReports,authToken,api,
      }
