@@ -10,6 +10,36 @@ from datetime import datetime
 import os
 import csv
 
+from shared_code import omop_helpers
+
+# Agreed vocabs that are accepted for lookup/conversion
+# The Data Team decide what vocabs are accepted.
+# Add more as necessary by appending the list
+vocabs = [
+    "ABMS",
+    "ATC",
+    "HCPCS",
+    "HES Specialty",
+    "ICD10",
+    "ICD10CM",
+    "ICD10PCS",
+    "ICD9CM",
+    "ICD9Proc",
+    "LOINC",
+    "NDC",
+    "NUCC",
+    "OMOP Extension",
+    "OSM",
+    "PHDSC",
+    "Read",
+    "RxNorm",
+    "RxNorm Extension",
+    "SNOMED",
+    "SPL",
+    "UCUM",
+    "UK Biobank",
+]
+
 
 def process_scan_report_sheet_table(sheet):
     """
@@ -45,6 +75,7 @@ def process_scan_report_sheet_table(sheet):
                 column_name = sheet.cell(row=1, column=column_idx).value
                 value = sheet.cell(row=row_idx, column=column_idx).value
                 frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
+
                 # As we move down rows, checks that there's data there
                 # This is required b/c value/frequency col pairs differ
                 # in the number of rows
@@ -76,7 +107,9 @@ def main(msg: func.QueueMessage):
     }
 
     # Set Storage Account connection string
-    blob_service_client = BlobServiceClient.from_connection_string(os.environ.get("STORAGE_CONN_STRING"))
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
 
     # Get message from queue
     message = json.dumps(
@@ -97,14 +130,14 @@ def main(msg: func.QueueMessage):
         }
     )
 
-    # Grab message body from storage queues, 
+    # Grab message body from storage queues,
     # extract filenames for scan reports and dictionaries
     message = json.loads(message)
     body = ast.literal_eval(message["body"])
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
 
-    print('MESSAGE BODY >>>', body)
+    print("MESSAGE BODY >>>", body)
 
     # Grab scan report data from blob
     container_client = blob_service_client.get_container_client("scan-reports")
@@ -119,8 +152,10 @@ def main(msg: func.QueueMessage):
         container_client = blob_service_client.get_container_client("data-dictionaries")
         blob_dict_client = container_client.get_blob_client(data_dictionary_blob)
         streamdownloader = blob_dict_client.download_blob()
-        data_dictionary = list(csv.DictReader(streamdownloader.readall().decode('utf-8').splitlines()))
-    
+        data_dictionary = list(
+            csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
+        )
+
     else:
         data_dictionary = None
 
@@ -154,6 +189,9 @@ def main(msg: func.QueueMessage):
     field_names = []
     data = []
     # print("Working on Scan Report >>>", body["scan_report_id"])
+
+    print("TABLES NAMES >>> ", table_names)
+
     for table in range(len(table_names)):
 
         print("WORKING ON TABLE >>> ", table)
@@ -174,8 +212,8 @@ def main(msg: func.QueueMessage):
             "condition_date": None,
             "observation_date": None,
         }
-        print('SCAN REPORT TABLE ENTRY', scan_report_table_entry)
-        
+        print("SCAN REPORT TABLE ENTRY", scan_report_table_entry)
+
         # Append to list
         data.append(scan_report_table_entry)
 
@@ -224,6 +262,7 @@ def main(msg: func.QueueMessage):
             ws.cell(row=i, column=8).value = 0.0
         if not (ws.cell(row=i, column=10).value):
             ws.cell(row=i, column=10).value = 0.0
+
         # Create ScanReportField entry
         scan_report_field_entry = {
             "scan_report_table": table_ids[idx],
@@ -237,7 +276,7 @@ def main(msg: func.QueueMessage):
             "nrows_checked": ws.cell(row=i, column=7).value,
             "fraction_empty": round(ws.cell(row=i, column=8).value, 2),
             "nunique_values": ws.cell(row=i, column=9).value,
-            "fraction_unique":round(ws.cell(row=i, column=10).value, 2),
+            "fraction_unique": round(ws.cell(row=i, column=10).value, 2),
             "flag_column": str(ws.cell(row=i, column=11).value),
             "ignore_column": None,
             "is_birth_date": False,
@@ -306,38 +345,131 @@ def main(msg: func.QueueMessage):
 
                 if not frequency:
                     frequency = 0
-                    
+
                 if data_dictionary is not None:
-                    val_desc = next((row['value_description'] for row in data_dictionary if str(row['field_name']) == str(name) and str(row['code']) == str(value)), None)
+                    # Look up value description
+                    val_desc = next(
+                        (
+                            row["value"]
+                            for row in data_dictionary
+                            if str(row["field_name"]) == str(name)
+                            and str(row["code"]) == str(value)
+                        ),
+                        None,
+                    )
+
+                    # Grab data from the 'code' column in the data dictionary
+                    # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
+                    # or it could contain one of our pre-defined vocab names
+                    # e.g. SNOMED, RxNorm, ICD9 etc.
+                    code = next(
+                        (
+                            row["code"]
+                            for row in data_dictionary
+                            if str(row["field_name"]) == str(name)
+                        ),
+                        None,
+                    )
+
+                    # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
+                    # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
+                    if code in vocabs:
+                        try:
+                            concept_id = omop_helpers.get_concept_from_concept_code(
+                                concept_code=value,
+                                vocabulary_id=code,
+                                no_source_concept=True,
+                            )
+                            concept_id = concept_id["concept_id"]
+                        except:
+                            concept_id = -1
+                    else:
+                        concept_id = -1
 
                 else:
                     val_desc = None
-                    
-                # Create value entries
+                    concept_id = -1
+
+                # Create ScanReportValue entry
+                # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
+                # to save any looked up conceptIDs in the previous block of code.
+                # The conceptID will be cleared later
                 scan_report_value_entry = {
-                    "created_at": datetime.utcnow().strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
-                    "updated_at": datetime.utcnow().strftime(
-                        "%Y-%m-%dT%H:%M:%S.%fZ"
-                    ),
+                    "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                    "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                     "value": value,
                     "frequency": int(frequency),
-                    "conceptID": -1,
+                    "conceptID": concept_id,
                     "value_description": val_desc,
                     "scan_report_field": names_x_ids[name],
                 }
+
                 # Append to list
                 data.append(scan_report_value_entry)
 
-            # Create JSON array
+            # Create JSON array for POSTing
             json_data = json.dumps(data)
-        
-            # POST values in table
+
+            # POST data to ScanReportValues model
             response = requests.post(
                 url=api_url + "scanreportvalues/", data=json_data, headers=headers
             )
-            # print("VALUE SAVE STATUS >>>", response.status_code)
+
+            # Process conceptIDs in ScanReportValues
+            # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
+            new_data = requests.get(
+                url=api_url
+                + "scanreportvaluepks/?scan_report="
+                + str(body["scan_report_id"]),
+                headers=headers,
+            )
+
+            data = json.loads(new_data.content.decode("utf-8"))
+
+            # Create a list for a bulk data upload to the ScanReportConcept model
+            concept_id_data = []
+            for concept in data:
+
+                entry = {
+                    "nlp_entity": None,
+                    "nlp_entity_type": None,
+                    "nlp_confidence": None,
+                    "nlp_vocabulary": None,
+                    "nlp_processed_string": None,
+                    "concept": concept["conceptID"],
+                    "object_id": concept["id"],
+                    "content_type": 17,
+                }
+
+                concept_id_data.append(entry)
+
+            concept_id_data_json = json.dumps(concept_id_data)
+
+            # POST the ScanReportConcept data to the model
+            response = requests.post(
+                url=api_url + "scanreportconcepts/",
+                headers=headers,
+                data=concept_id_data_json,
+            )
+
+            print("STATUS >>> ", response.status_code)
+
+            # Update ScanReportValue to remove any data added to the conceptID field
+            # conceptID field only used temporarily to hold the converted concept code -> conceptID
+            # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
+            # need for the concept ID to also be saved to ScanReportValue::conceptID
+
+            # Reset conceptID to -1 (default)
+            put_update = {"conceptID": -1}
+            put_update_json = json.dumps(put_update)
+
+            for concept in data:
+                response = requests.patch(
+                    url=api_url + "scanreportvalues/" + str(concept["id"]) + "/",
+                    headers=headers,
+                    data=put_update_json,
+                )
+
             # Move to next table, initialise empty arrays for next table
             idx = idx + 1
             worksheet_idx = worksheet_idx + 1
