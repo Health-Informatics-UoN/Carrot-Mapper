@@ -70,7 +70,6 @@ const getAllconcepts = async (ids) => {
         importance: "low" 
     });
     const concepts = await response.json()
-    console.log(concepts)
     return concepts;
 }
 
