@@ -581,7 +581,10 @@ def main(msg: func.QueueMessage):
         
             print("Parent=Child")
             # check if fields are the same
+            p_fields=[]
+            c_fields=[]
             for id in range(len(table_ids)):
+                # Get the field names(and ids?) of the parent SR
                 parent_fields=requests.get(
                         url=api_url
                         + "scanreportfieldsfilter/?scan_report_table="
@@ -591,7 +594,9 @@ def main(msg: func.QueueMessage):
                 print(parent_table_ids[id])
 
                 response_parent = json.loads(parent_fields.content.decode("utf-8"))
-
+                for element in range(len(response_parent)):
+                    p_fields.append(response_parent[element]["name"])
+                # Get the field names(and ids?) of the child SR
                 child_fields=requests.get(
                         url=api_url
                         + "scanreportfieldsfilter/?scan_report_table="
@@ -599,11 +604,13 @@ def main(msg: func.QueueMessage):
                         headers=headers,
                     )
                 response_child=json.loads(child_fields.content.decode("utf-8"))
+                for element in range(len(response_child)):
+                    c_fields.append(response_child[element]["name"])
                 print(table_ids[id])
-                # detail not found?
-                print("PARENT SCAN REPORT FIELDS:",response_parent)
-                print("CHILD SCAN REPORT FIELDS",response_child)
+            print("Parent SR fields",p_fields)
+            print("Child SR fields",c_fields)
         else:
+            # return a list of the difference between the two SRs
             difference=list(set(parent_tables) ^ set(child_tables))
             print("LIST DIFF",list(difference))
 
