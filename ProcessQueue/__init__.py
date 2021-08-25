@@ -139,6 +139,8 @@ def main(msg: func.QueueMessage):
 
     print("MESSAGE BODY >>>", body)
 
+    # If the message has been dequeued for a second time, then the upload has failed.
+    # Patch the name of the dataset to make it clear tht it has failed, and then stop.
     print("dequeue_count", msg.dequeue_count)
     if msg.dequeue_count > 1:
         scan_report_fetched_data = requests.get(
