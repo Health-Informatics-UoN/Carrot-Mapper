@@ -262,7 +262,7 @@ def main(msg: func.QueueMessage):
     Set the current working sheet to be the same as the current table
     Post the values for that table
     """
-    idx = 0
+    table_idx = 0
     data = []
     names_x_ids = {}
     # For sheets past the first two in the Scan Report
@@ -273,7 +273,7 @@ def main(msg: func.QueueMessage):
         ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
     ):
 
-        if idx >= len(table_ids):
+        if table_idx >= len(table_ids):
             continue
         # If fraction empty or fraction unique is empty set to 0(decimal)
         if not (ws.cell(row=i, column=8).value):
@@ -283,7 +283,7 @@ def main(msg: func.QueueMessage):
 
         # Create ScanReportField entry
         scan_report_field_entry = {
-            "scan_report_table": table_ids[idx],
+            "scan_report_table": table_ids[table_idx],
             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "name": ws.cell(row=i, column=2).value,
@@ -489,7 +489,7 @@ def main(msg: func.QueueMessage):
                 )
 
             # Move to next table, initialise empty arrays for next table
-            idx = idx + 1
+            table_idx = table_idx + 1
             worksheet_idx = worksheet_idx + 1
             field_ids = []
             field_names = []
