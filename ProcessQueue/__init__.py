@@ -142,7 +142,7 @@ def main(msg: func.QueueMessage):
     # If the message has been dequeued for a second time, then the upload has failed.
     # Patch the name of the dataset to make it clear tht it has failed, and then stop.
     print("dequeue_count", msg.dequeue_count)
-    if msg.dequeue_count > 1:
+    if msg.dequeue_count == 2:
         scan_report_fetched_data = requests.get(
             url=f"{api_url}scanreports/{body['scan_report_id']}/",
             headers=headers,
@@ -157,6 +157,7 @@ def main(msg: func.QueueMessage):
             data=json_data, 
             headers=headers
         )
+    if msg.dequeue_count > 1:
         raise Exception('dequeue_count > 1')
 
     # Grab scan report data from blob
