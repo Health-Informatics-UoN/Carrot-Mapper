@@ -139,6 +139,24 @@ def main(msg: func.QueueMessage):
 
     print("MESSAGE BODY >>>", body)
 
+    print("dequeue_count", msg.dequeue_count)
+    if msg.dequeue_count > 1:
+        scan_report_fetched_data = requests.get(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            headers=headers,
+        )
+
+        scan_report_fetched_data = json.loads(scan_report_fetched_data.content.decode("utf-8"))
+
+        json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}"})
+
+        response = requests.patch(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            data=json_data, 
+            headers=headers
+        )
+        raise Exception('dequeue_count > 1')
+
     # Grab scan report data from blob
     container_client = blob_service_client.get_container_client("scan-reports")
     blob_scanreport_client = container_client.get_blob_client(scan_report_blob)
