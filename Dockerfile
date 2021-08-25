@@ -14,9 +14,11 @@ RUN apt-get update && \
         gettext \
         libpq-dev \
         gcc \
-        graphviz \
-        nodejs \
-        npm 
+        graphviz
+#         nodejs \
+#         npm
+
+RUN curl -y --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
@@ -39,6 +41,7 @@ ENV PATH=/home/django/.local/bin:$PATH
 
 COPY ./api/requirements.txt /api/requirements.txt
 
+RUN pip install --upgrade pip
 RUN pip install -r /api/requirements.txt --no-cache-dir
 
 WORKDIR /react-client-app
@@ -47,7 +50,10 @@ COPY ./react-client-app /react-client-app
 
 USER root
 
-RUN npm install
+#Install nvm
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+ENV NVM_DIR "/root/.nvm"
+RUN [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && nvm install 7 && nvm install-latest-npm && npm install
 
 USER django
 
