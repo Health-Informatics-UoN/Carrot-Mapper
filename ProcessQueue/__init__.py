@@ -55,39 +55,46 @@ def process_scan_report_sheet_table(sheet):
 
     -- output --
     column a, apple, 20
-    column c, orange, 5
     column a, banana, 3
+    column c, orange, 5
     column c, plantain, 50
     --
     """
     results = []
-    # Get max number of columns in the sheet
-    max_column = sheet.max_column
+
     # Skip headers, set min_row & row_idx=2
-    for row_idx, row_cell in enumerate(
-        sheet.iter_rows(min_row=2, max_col=max_column), start=2
+    for column_idx, col in enumerate(
+        sheet.iter_cols(min_col=1,
+                        max_col=sheet.max_column,
+                        min_row=1,
+                        max_row=sheet.max_row),
+        start=1
     ):
+        if column_idx % 2 == 0:
+            continue
 
-        # Works through pairs of value/frequency columns
-        for column_idx, cell in enumerate(row_cell, start=1):
-            if (column_idx) % 2 == 1:
+        column_header = col[0].value
 
-                column_name = sheet.cell(row=1, column=column_idx).value
-                value = sheet.cell(row=row_idx, column=column_idx).value
+        # Works through pairs of value/frequency columns. Skip the frequency columns,
+        # and reference them from their value column.
+        for row_idx, cell in enumerate(col[1:], start=2):
+            if column_idx % 2 == 1:
+
+                value = cell.value
                 frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
 
-                # As we move down rows, checks that there's data there
+                # As we move down rows, check that there's data there.
                 # This is required b/c value/frequency col pairs differ
-                # in the number of rows
+                # in the number of rows. Break if we hit a fully empty row
                 if (value == "" or value is None) and (
                     frequency == "" or frequency is None
                 ):
-                    continue
+                    break
 
                 # Append to Results as (Field Name,Value,Frequency)
                 results.append(
                     (
-                        str(column_name),
+                        str(column_header),
                         str(value),
                         frequency,
                     )
