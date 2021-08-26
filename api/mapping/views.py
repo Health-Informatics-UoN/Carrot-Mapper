@@ -113,6 +113,7 @@ from .services_rules import (
     remove_mapping_rules,
     find_existing_scan_report_concepts,
     download_mapping_rules,
+    get_mapping_rules_list,
     view_mapping_rules,
     find_date_event,
     find_person_id,
@@ -648,20 +649,21 @@ class StructuralMappingTableListView(ListView):
         context = super().get_context_data(**kwargs)
         
         pk = self.kwargs.get("pk")
+        
         scan_report = ScanReport.objects.get(pk=pk)
 
-        filtered_omop_table = self.kwargs.get("omop_table")
-        source_tables = list(set(
-            [
-                x.source_field.scan_report_table.name
-                for x in context['object_list']
-            ]
-        ))
+        object_list = get_mapping_rules_list(self.get_queryset())        
+        source_tables =  list(set([
+            x['source_table'].name
+            for x in object_list
+        ]))
 
+        filtered_omop_table = self.kwargs.get("omop_table")
         current_source_table = self.kwargs.get("source_table")
                 
         context.update(
             {
+                "object_list":object_list,
                 "scan_report": scan_report,
                 "omop_tables": m_allowed_tables,
                 "source_tables":source_tables,

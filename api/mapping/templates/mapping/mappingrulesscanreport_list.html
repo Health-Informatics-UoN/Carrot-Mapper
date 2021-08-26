@@ -75,7 +75,8 @@
     <thead>
     <tr>
         <!--<th scope="col">Data Partner</th>
-        <th scope="col">Dataset</th>-->
+            <th scope="col">Dataset</th>-->
+	    <th scope="col">Rule ID</th>
         <th scope="col">Destination Table</th>
         <th scope="col">Destination Field</th>
 	<th scope="col">Source Table</th>
@@ -88,10 +89,11 @@
     <tbody>
       {% for object in object_list %}
       <tr>
-        <td style="width: 16.6%">{{ object.omop_field.table.table }}</td>
-        <td style="width: 16.6%">{{ object.omop_field.field }}</td>
+	<td style="width: 10%">{{ object.rule_id }}</td>
+        <td style="width: 16.6%">{{ object.destination_table.table }}</td>
+        <td style="width: 16.6%">{{ object.destination_field.field }}</td>
 	<td style="width: 16.6%">
-	  <a href="{% url 'fields' %}?search={{ object.source_field.scan_report_table.id }}"> {{object.source_field.scan_report_table.name}} </a>
+	  <a href="{% url 'fields' %}?search={{ object.source_table.id }}"> {{object.source_table.name}} </a>
 	</td>
 	
         <td style="width: 16.6%">
@@ -99,21 +101,11 @@
 	</td>
 
         <td style="width: 16.6%">
-	  <span class="text-danger">
-	    {% if object.concept.content_object.value %}
-	    "{{ object.concept.content_object.value }}"
-	    {% endif %}
-	  </span>
-
-	  <i class="fas fa-long-arrow-alt-right"></i>
-	  <span class="text-success">
-	    "{{ object.concept.concept_id }}"
-	    </span> <br>
-	  ( {{ object.concept.concept.concept_name }}, {{ object.concept.concept.domain_id }} )
-	  <!---<a href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ value.content_object.scan_report_field.id }}&scan_report_concept_id={{ value.concept_id }}">(delete)</a>
-	   --->
-	  
+	  {% if object.term_mapping %}
+	  {{ object.term_mapping }}
+	  {% endif %}
 	</td>
+	
       </tr>
       {% endfor %}
     </tbody>
