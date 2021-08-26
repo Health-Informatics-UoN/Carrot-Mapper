@@ -87,9 +87,9 @@ const DataTbl = () => {
         else if(!table.person_id || !table.date_event ){
             // set the error message depending on which value is missing
             let message;
-            if(!table.person_id && !table.date_event){message = 'Please set the person_id and a date_event to '}
-            else if(!table.person_id){message = 'Please set the person_id to '}
-            else{message = 'Please set the date_event to '}
+            if(!table.person_id && !table.date_event){message = 'Please set the person_id and date_event for '}
+            else if(!table.person_id){message = 'Please set the person_id for '}
+            else{message = 'Please set the date_event for '}
             setAlert({
                 hidden: false,
                 status: 'error',
