@@ -355,7 +355,7 @@ def main(msg: func.QueueMessage):
         # Load result from the response,
         # Save generated field ids, and the corresponding name
         fields_content = json.loads(fields_response.content.decode("utf-8"))
-        print("FIELDS CONTENT:", fields_content)
+        # print("FIELDS CONTENT:", fields_content)
         
         # Create a dictionary with field names and field ids
         # as key value pairs
