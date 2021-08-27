@@ -134,6 +134,7 @@ const DataTbl = () => {
 
                             const scan_report_concept = concepts.filter(con => con.concept == concept)[0] 
                             scan_report_concept.concept = values.filter(con => con.concept_id == concept)[0] 
+                            // function to save mapping rules runs after concept is saved
                             saveMappingRules(scan_report_concept,scanReportValue,table)
                             .then(values=>{
                                 setAlert({

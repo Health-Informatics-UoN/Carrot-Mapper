@@ -13,6 +13,7 @@ const useGet = async (url) =>{
     const data = await response.json();
     return data;
 }
+// function for post requests to api with authorization token
 const usePost = async (url,data) =>{
     const response = await fetch(url,
     {
@@ -192,6 +193,7 @@ const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMe
         })
 }
 
+// function to save mapping rules copying python implementation
 const saveMappingRules = async (scan_report_concept,scan_report_value,table) => {
     const domain = scan_report_concept.concept.domain_id.toLowerCase()
     const fields = await useGet(`${api}/omopfields/`)
@@ -204,17 +206,20 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime']
         }
     const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
-    
+    // if a destination field can't be found for concept domain, return error
     if(destination_field == undefined){
         throw 'Could not find a destination field for this concept'
     }
+    // create a list to populate with requests for each structural mapping rule to be created
     const promises = []
+    // data object to be passed to post request to create mapping rule
     const data = 
     {
         scan_report:table.scan_report,
         concept: scan_report_concept.id, 
         approved:true,
     }
+    // create mapping rule for the following
     //person_id
     data.omop_field = fields.filter(field=> field.field == "person_id" && field.table==destination_field.table)[0].id
     data.source_field = table.person_id
@@ -248,24 +253,31 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         data.omop_field = tempOmopField.id
         data.source_field = scan_report_value.scan_report_field
         promises.push(usePost(`${api}/structuralmappingrules/`,data))
-        }  
+    }  
+    // when all requests have finished, return
         const values = await Promise.all(promises)
         return values
 }
+//function to map concept domain to an omop field
 const mapConceptToOmopField = () =>{
+    // cached values
     let omopTables = null
     const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
+    // mapping function which is returned by this function
     return async (fields,domain,table) =>{
+        //if omop table is not specified
         if(!table){
+            // get omop fields that match specified domain
             const mappedFields = fields.filter(field=> field.field == domain)
             if(mappedFields.length<2){
                 return mappedFields[0]
             }
-            // if there are more than 1
+            // if there are more than 1 fields that match the domain
             // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
             if(!omopTables){
                 omopTables = await useGet(`${api}/omoptables/`)
             } 
+            // find correct field to return
             let mappedTables = mappedFields.map(field=> (
                 {
                 table:omopTables.find(t=>t.id == field.table),
@@ -277,7 +289,7 @@ const mapConceptToOmopField = () =>{
         if(!omopTables){
             omopTables = await useGet(`${api}/omoptables/`)
         } 
-        // find omop tables where table == table
+        // find omop field with specified table and domain
         let mappedTable = omopTables.find(t=>t.table == table)
         const mappedField = fields.find(f=> f.table == mappedTable.id && f.field==domain)
         return mappedField
