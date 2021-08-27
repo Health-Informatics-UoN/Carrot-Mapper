@@ -41,7 +41,7 @@ import {
 
 import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
 import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,
-    getScanReportField,getScanReportTable,}  from '../api/values'
+    getScanReportField,getScanReportTable,saveMappingRules}  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -99,8 +99,7 @@ const DataTbl = () => {
             onOpen()
         }
         else {
-            const value = scanReports.find(f => f.id === id)
-            const newArr = value.concepts.concat(concept)
+            const scanReportValue = scanReports.find(f => f.id === id)
             scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:1}:scanReport)
             setScanReports(scanReportsRef.current)         
             //PUT Request to API
@@ -132,16 +131,37 @@ const DataTbl = () => {
                                 description: 'Response: ' + response.status + ' ' + response.statusText
                             })
                             onOpen()
+
+                            const scan_report_concept = concepts.filter(con => con.concept == concept)[0] 
+                            scan_report_concept.concept = values.filter(con => con.concept_id == concept)[0] 
+                            saveMappingRules(scan_report_concept,scanReportValue,table)
+                            .then(values=>{
+                                setAlert({
+                                    hidden: false,
+                                    status: 'success',
+                                    title: 'Success',
+                                    description: 'Mapping Rules created'
+                                })
+                                onOpen()
+                            })
+                            .catch(err=>{
+                                setAlert({
+                                    hidden: false,
+                                    status: 'error',
+                                    title: 'Could not create mapping rules',
+                                    description: err
+                                })
+                                onOpen()
+                            })
                           });
                     }
-                    else{
-                        //   
+                    else{ 
                         scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsToLoad:0}:scanReport)
                         setScanReports(scanReportsRef.current) 
                         setAlert({
                             hidden: false,
-                            status: 'success',
-                            title: 'ConceptId linked to the value',
+                            status: 'error',
+                            title: 'Cannot find concepts for this value',
                             description: 'Response: ' + response.status + ' ' + response.statusText
                         })
                         onOpen()
