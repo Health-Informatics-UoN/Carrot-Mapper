@@ -23,12 +23,6 @@ RUN curl -y --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
 
-COPY ./entrypoint.sh /entrypoint.sh
-
-RUN chmod u+x /entrypoint.sh
-
-RUN chown -R django:django /entrypoint.sh
-
 RUN mkdir /api
 
 WORKDIR /api
@@ -48,12 +42,20 @@ WORKDIR /react-client-app
 
 COPY ./react-client-app /react-client-app
 
+#Install nvm
+USER django
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+ENV NVM_DIR "/home/django/.nvm"
+RUN [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && nvm install 12.18.3 && npm install
+
 USER root
 
-#Install nvm
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-ENV NVM_DIR "/root/.nvm"
-RUN [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && nvm install 7 && nvm install-latest-npm && npm install
+COPY ./entrypoint.sh /entrypoint.sh
+
+RUN chmod u+x /entrypoint.sh
+
+RUN chown -R django:django /entrypoint.sh
 
 USER django
 
