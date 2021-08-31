@@ -36,10 +36,11 @@ RUN pip install --upgrade pip
 RUN pip install -r /api/requirements.txt --no-cache-dir
 
 # Copy react-client-app directory
+USER django
 WORKDIR /react-client-app
 COPY ./react-client-app /react-client-app
 
-#Install nvm as django user
+# Install nvm as django user
 USER django
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 ENV NVM_DIR "/home/django/.nvm"
