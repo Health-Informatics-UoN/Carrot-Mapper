@@ -40,10 +40,12 @@ USER django
 WORKDIR /react-client-app
 COPY ./react-client-app /react-client-app
 
+USER root
+RUN chown -R django:django /react-client-app
+
 #Install nvm as django user
 USER django
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-WORKDIR /home/django
 ENV NVM_DIR "/home/django/.nvm"
 RUN [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && nvm install 12.18.3 && npm install
 
