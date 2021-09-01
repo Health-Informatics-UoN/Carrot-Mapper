@@ -301,7 +301,7 @@ def main(msg: func.QueueMessage):
             "scan_report_table": table_ids[table_idx],
             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "name": str(fo_ws.cell(row=i, column=2).value)[:63],
+            "name": str(fo_ws.cell(row=i, column=2).value),
             "description_column": str(fo_ws.cell(row=i, column=3).value),
             "type_column": str(fo_ws.cell(row=i, column=4).value),
             "max_length": fo_ws.cell(row=i, column=5).value,
