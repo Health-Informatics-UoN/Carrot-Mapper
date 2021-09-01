@@ -253,7 +253,7 @@ def main(msg: func.QueueMessage):
     print("TABLE SAVE STATUS >>>", tables_response.status_code)
     # Error on failure
     if tables_response.status_code != 201:
-        raise HTTPError('Error in table save: ' + str(tables_response.status_code))
+        raise HTTPError(' '.join(['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
 
     # Load the result of the post request,
     tables_content = json.loads(tables_response.content.decode("utf-8"))
@@ -350,7 +350,7 @@ def main(msg: func.QueueMessage):
         print("FIELDS SAVE STATUS >>>", fields_response.status_code, fields_response.reason)
 
         if fields_response.status_code != 201:
-            raise HTTPError('Error in fields save: ' + str(fields_response.status_code))
+            raise HTTPError(' '.join(['Error in fields save:', str(fields_response.status_code), str(json.dumps(field_entries_to_post))]))
 
         # Load result from the response,
         # Save generated field ids, and the corresponding name
@@ -462,7 +462,8 @@ def main(msg: func.QueueMessage):
             headers=headers
         )
         if values_response.status_code != 201:
-            raise HTTPError('Error in values save: ' + str(values_response.status_code))
+            raise HTTPError(' '.join(['Error in values save:', str(values_response.status_code), str(json.dumps(value_entries_to_post))]))
+
         print("POST values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
         # Process conceptIDs in ScanReportValues
@@ -503,7 +504,7 @@ def main(msg: func.QueueMessage):
 
         print("STATUS >>> ", concept_response.status_code)
         if concept_response.status_code != 201:
-            raise HTTPError('Error in concept save: ' + str(concept_response.status_code))
+            raise HTTPError(' '.join(['Error in concept save:', str(concept_response.status_code), str(json.dumps(concept_id_data))]))
 
         # Update ScanReportValue to remove any data added to the conceptID field
         # conceptID field only used temporarily to hold the converted concept code -> conceptID
@@ -523,7 +524,7 @@ def main(msg: func.QueueMessage):
             )
             print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             if value_response.status_code != 200:
-                raise HTTPError('Error in value save: ' + str(value_response.status_code))
+                raise HTTPError(' '.join(['Error in value save:', str(value_response.status_code), str(put_update_json)]))
 
         print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
         # Move to next table, initialise empty arrays for next table
