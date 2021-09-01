@@ -104,6 +104,14 @@ def process_scan_report_sheet_table(sheet):
     return results
 
 
+def default_zero(input):
+    """
+    Helper function that returns the input, replacing anything Falsey 
+    (such as Nones or empty strings) with 0.0.
+    """
+    return round(input if input else 0.0, 2)
+
+
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -290,11 +298,6 @@ def main(msg: func.QueueMessage):
 
         if table_idx >= len(table_ids):
             continue
-        # If fraction empty or fraction unique is empty set to 0(decimal)
-        if not (fo_ws.cell(row=i, column=8).value):
-            fo_ws.cell(row=i, column=8).value = 0.0
-        if not (fo_ws.cell(row=i, column=10).value):
-            fo_ws.cell(row=i, column=10).value = 0.0
 
         # Create ScanReportField entry
         field_entry = {
@@ -307,9 +310,9 @@ def main(msg: func.QueueMessage):
             "max_length": fo_ws.cell(row=i, column=5).value,
             "nrows": fo_ws.cell(row=i, column=6).value,
             "nrows_checked": fo_ws.cell(row=i, column=7).value,
-            "fraction_empty": round(fo_ws.cell(row=i, column=8).value, 2),
+            "fraction_empty": round(default_zero(fo_ws.cell(row=i, column=8).value, 2),
             "nunique_values": fo_ws.cell(row=i, column=9).value,
-            "fraction_unique": round(fo_ws.cell(row=i, column=10).value, 2),
+            "fraction_unique": round(default_zero(fo_ws.cell(row=i, column=10).value, 2),
             # "flag_column": str(fo_ws.cell(row=i, column=11).value),
             "ignore_column": None,
             "is_birth_date": False,
