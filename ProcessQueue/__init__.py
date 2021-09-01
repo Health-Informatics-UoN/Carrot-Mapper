@@ -489,6 +489,9 @@ def main(msg: func.QueueMessage):
                 "nlp_processed_string": None,
                 "concept": concept["conceptID"],
                 "object_id": concept["id"],
+                # TODO: we should query this value from the API 
+                # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                # but that's not available from an Azure Function.
                 "content_type": 17,
             } for concept in ids_of_posted_values]
         
