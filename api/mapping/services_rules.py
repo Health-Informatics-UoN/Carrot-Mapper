@@ -410,7 +410,7 @@ def get_mapping_rules_list(structural_mapping_rules):
     #get the ids first so we can make a batch call
     scan_report_concepts = list(set(
         [
-            obj.concept_id
+            obj.scan_report_concept_id
             for obj in structural_mapping_rules
         ]
     ))
@@ -479,8 +479,8 @@ def get_mapping_rules_list(structural_mapping_rules):
         source_table = source_tables[source_field.scan_report_table_id]
 
         #get the concepts again
-        scan_report_concept_id = rule.concept_id
-        scan_report_concept = scan_report_concepts[rule.concept_id]
+        scan_report_concept_id = rule.scan_report_concept_id
+        scan_report_concept = scan_report_concepts[rule.scan_report_concept_id]
         concept_id = scan_report_concept.concept_id
 
         #work out if we need term_mapping or not
