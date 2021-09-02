@@ -571,48 +571,51 @@ def main(msg: func.QueueMessage):
         # print("JSON DIFF",difference)
 
         # Find differences of two lists?
-        for element in range(len(response_parent)):
-            parent_tables.append(response_parent[element]["name"])
-            parent_table_ids.append(response_parent[element]["id"])
-        for element in range(len(response_child)):
-            child_tables.append(response_child[element]["name"])
+        for element in response_parent:
+            parent_tables.append(element["name"])
+            parent_table_ids.append(element["id"])
+        for element in response_child:
+            child_tables.append(element["name"])
         # Check if tables are the same
-        if parent_tables==child_tables:
-        
-            print("Parent=Child")
+        intersection=list(set(parent_tables).intersection(set(child_tables)))
+        p_fields=[]
+        c_fields=[]
+        for table in range(len(intersection)):
+            print("Intersection:", intersection[table])
             # check if fields are the same
-            p_fields=[]
-            c_fields=[]
-            for id in range(len(table_ids)):
+            # table_ids.sort()
+            # parent_table_ids.sort()
                 # Get the field names(and ids?) of the parent SR
-                parent_fields=requests.get(
-                        url=api_url
-                        + "scanreportfieldsfilter/?scan_report_table="
-                        + str(parent_table_ids[id]),
-                        headers=headers,
-                    )
-                print(parent_table_ids[id])
+            parent_fields=requests.get(
+                    url=api_url
+                    + "scanreportfieldsfilter/?scan_report_table="
+                    + str(parent_table_ids[table]),
+                    headers=headers,
+                )
+            print(parent_table_ids[table])
 
-                response_parent = json.loads(parent_fields.content.decode("utf-8"))
-                for element in range(len(response_parent)):
-                    p_fields.append(response_parent[element]["name"])
-                # Get the field names(and ids?) of the child SR
-                child_fields=requests.get(
-                        url=api_url
-                        + "scanreportfieldsfilter/?scan_report_table="
-                        + str(table_ids[id]),
-                        headers=headers,
-                    )
-                response_child=json.loads(child_fields.content.decode("utf-8"))
-                for element in range(len(response_child)):
-                    c_fields.append(response_child[element]["name"])
-                print(table_ids[id])
-            print("Parent SR fields",p_fields)
-            print("Child SR fields",c_fields)
-        else:
-            # return a list of the difference between the two SRs
-            difference=list(set(parent_tables) ^ set(child_tables))
-            print("LIST DIFF",list(difference))
+            response_parent = json.loads(parent_fields.content.decode("utf-8"))
+            
+            for element in response_parent:
+                p_fields.append(element["name"])
+            print("parent fields",p_fields)
+            # Get the field names(and ids?) of the child SR
+            child_fields=requests.get(
+                    url=api_url
+                    + "scanreportfieldsfilter/?scan_report_table="
+                    + str(table_ids[table]),
+                    headers=headers,
+                )
+            response_child=json.loads(child_fields.content.decode("utf-8"))
+            
+            for element in response_child:
+                c_fields.append(element["name"])
+            print("child",c_fields)    
+            print(table_ids[table])
+
+        print("Parent SR fields",p_fields)
+        print("Child SR fields",c_fields)
+    
 
         
 
