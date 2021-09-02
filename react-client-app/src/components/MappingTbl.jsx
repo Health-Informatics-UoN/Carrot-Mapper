@@ -130,7 +130,7 @@ const MappingTbl = () => {
             }
       };
     const setInitialData = () =>{
-        getMappingRules2(scan_report_id,allData,switchFilter).then(res=>{
+        getMappingRules(scan_report_id,allData,switchFilter).then(res=>{
             scanReport.current =res
             let filter = window.location.href.split("mapping_rules/") 
             if(filter.length !== 1 && filter[1] != "" ){
