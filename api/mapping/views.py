@@ -624,10 +624,14 @@ class StructuralMappingTableListView(ListView):
                                  f'Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.')
                 
             return redirect(request.path)
-
         elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
+        elif request.POST.get("svg_to_png") is not None:
+            svg_str = request.POST.get("svg_to_png")
+            print (svg_str)
+            test = HttpResponse("hi")
+            return test
         else:
             messages.error(request,"not working right now!")                
             return redirect(request.path)

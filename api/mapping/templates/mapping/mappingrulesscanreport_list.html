@@ -22,6 +22,7 @@
   <button type="submit" class="btn btn-success" name='refresh_rules' id='refresh'>Refresh Rules</button>
   <button type="submit" class="btn btn-info" name='download_rules' id='get_rules'>Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
+  <button type="button" class="btn btn-danger d-none" id='download_svg' >Download Map Diagram</button>
 
 
 <hr>
@@ -205,6 +206,31 @@
 	});
   });
 
+  $("#download_svg").click(function () {
+	var svg = $('#placeholder-svg').html();
+	$.ajax({
+	      type: "POST",
+	      url: window.location,
+	      data: {
+		    'svg_to_png': svg,
+		    'csrfmiddlewaretoken': '{{ csrf_token }}',
+	      },
+	      success: function (data) {
+		    alert(data);
+		    //var blob = new Blob([data], {type:'image/png'});
+		    //var element = document.createElement("a");
+		    //element.download = "diagram.png";
+		    //element.href = window.URL.createObjectURL(blob);
+		    //element.click();
+		    //element.remove();
+		    
+	      },
+	      error: function(XMLHttpRequest, textStatus, errorThrown){
+		    alert(errorThrown);
+	      }
+	});
+		
+  });
   
   $("#view_svg").click(function () {
 
@@ -236,14 +262,17 @@
 			    'csrfmiddlewaretoken': '{{ csrf_token }}',
 		      },
 		      success: function (data) {
-			    var data = $("svg", data);
+			    var svg = d3.select("#placeholder-svg").html(data).select("svg")
+				  .call(d3.zoom().on("zoom",function(){
+					svg.attr("transform",d3.event.transform)
+				  }));
 			    $('#spinner').addClass('d-none');
-			    $('#placeholder-svg').empty();
-			    $('#placeholder-svg').append(data);
-			    
+			    $("#download_svg").toggleClass('d-none');
+
 		      },
 		      error: function(XMLHttpRequest, textStatus, errorThrown){
 			    $('#spinner').addClass('d-none');
+			    $("#download_svg").toggleClass('d-none');
 			    $('#placeholder-svg').html(errorThrown);
 		      }
 		});
@@ -252,6 +281,7 @@
 		//otherwise if we already have the image cached
 		//toggle the display
 		$("#placeholder-svg").toggleClass('d-none');
+		$("#download_svg").toggleClass('d-none');
 	  }
 	  
     });

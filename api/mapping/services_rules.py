@@ -583,9 +583,9 @@ def download_mapping_rules(request,qs):
     return response
 
 
-def make_dag(data):
-    dot = Digraph(strict=True,format='svg')
-    dot.attr(rankdir='RL', size='8,5')
+def make_dag(data,format='svg'):
+    dot = Digraph(strict=True,format=format)
+    dot.attr(rankdir='RL')
     
     for destination_table_name,destination_tables in data.items():
         dot.node(destination_table_name,shape='box')
@@ -620,18 +620,29 @@ def make_dag(data):
                 dot.node(source_table,shape='box')
                 dot.edge(source_field_name,source_table,dir='back')
 
-    return dot.pipe().decode('utf-8')
-
+    if format == 'svg':
+        xml_str = dot.pipe().decode('utf-8')
+        return xml_str
+    else:
+        img_str = dot.pipe()
+        return img_str
 
 
 #this is here as we should move it out of coconnect.tools
-def view_mapping_rules(request,qs):
+def view_mapping_rules(request,qs,format='svg'):
     #get the rules
     output = get_mapping_rules_json(qs)
     #use make dag svg image
-    svg = make_dag(output['cdm'])
-    #return a svg response
-    response = HttpResponse(svg, content_type="image/svg+xml")
+    image = make_dag(output['cdm'],format=format)
+    
+    #return a response
+    content_type="text/plain"
+    if format == 'png':
+        #from PIL import Image
+        #img = Image.open(image)
+        #print (img)
+        content_type="image/png"
+    response = HttpResponse(image, content_type=content_type)#"image/svg+xml")
     return response
 
 
