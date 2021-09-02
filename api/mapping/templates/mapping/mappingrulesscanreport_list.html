@@ -22,7 +22,7 @@
   <button type="submit" class="btn btn-success" name='refresh_rules' id='refresh'>Refresh Rules</button>
   <button type="submit" class="btn btn-info" name='download_rules' id='get_rules'>Download Mapping JSON</button>
   <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
-
+  <button type="button" class="btn btn-danger d-none" id='download_svg' >Download Map Diagram</button>
 
 <hr>
 
@@ -205,6 +205,15 @@
 	});
   });
 
+  $("#download_svg").click(function () {
+	var data = $('#placeholder-svg').html();
+	var blob = new Blob([data]);
+	var element = document.createElement("a");
+	element.download = "diagram.svg";
+	element.href = window.URL.createObjectURL(blob);
+	element.click();
+	element.remove();
+  });
   
   $("#view_svg").click(function () {
 
@@ -240,6 +249,7 @@
 			    $('#spinner').addClass('d-none');
 			    $('#placeholder-svg').empty();
 			    $('#placeholder-svg').append(data);
+			    $("#download_svg").toggleClass('d-none');
 			    
 		      },
 		      error: function(XMLHttpRequest, textStatus, errorThrown){
@@ -252,6 +262,7 @@
 		//otherwise if we already have the image cached
 		//toggle the display
 		$("#placeholder-svg").toggleClass('d-none');
+		$("#download_svg").toggleClass('d-none');
 	  }
 	  
     });
