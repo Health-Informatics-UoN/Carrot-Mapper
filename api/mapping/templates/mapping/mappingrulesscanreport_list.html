@@ -15,286 +15,51 @@
     </ol>
 </nav>
 
+<div class="container" id="output">
+	<div id='root'></div>
+    <script type="text/javascript" >
+        var csrfmiddlewaretoken = "{{csrf_token}}"
+		var s = document.createElement("script");
+        s.type = "module";
+		s.innerHTML = null;
+		if(window.location.href.split("mapping_rules/")[1].split("/").length>1){
+            s.src = "../../../../static/javascript/react/src/mappingRules.js";
+		}
+		else{
+            s.src = "../../../static/javascript/react/src/mappingRules.js";
+		}
+		document.getElementsByTagName('head')[0].appendChild(s)
 
-<h2>Mapping Rules</h2>
 
+		var refreshRules = async function(){
+			//use ajax to post a request to retrieve one
+			console.log("it called")
+			const res = await $.ajax({
+					type: "POST",
+					url: window.location,
+					data: {
+					'refresh_rules': true,
+					'csrfmiddlewaretoken': '{{ csrf_token }}',
+					}
+			});
+			return res;
+		}
 
-  <button type="submit" class="btn btn-success" name='refresh_rules' id='refresh'>Refresh Rules</button>
-  <button type="submit" class="btn btn-info" name='download_rules' id='get_rules'>Download Mapping JSON</button>
-  <button type="button" class="btn btn-warning" name='view-rules' id='view_svg' >View Map Diagram</button>
-
-
-<hr>
-
-<div class="container-fluid p-2" style='background-color: #3db28c11;'>
-
-  <div class="row">
-    <div class="col-sm">
-      
-      <h6>Filter On Destination Table</h6>
-      
-      <a href="{% url 'tables-structural-mapping' pk=scan_report.id %}" class="btn btn-info"> All </a>
-      
-      {% if omop_tables %}
-      {% for omop_table in omop_tables %}
-      <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=omop_table %} " class="btn btn-info">  {{ omop_table }} </a>
-      {% endfor %}
-      {% endif %}
-      
-    </div>
-    {% if source_tables and filtered_omop_table %}
-    <div class="col-sm">
-      <h6>Filter On Source Table</h6>
-      {% if current_source_table %}
-      <a href="{% url 'tables-structural-mapping-filter-lvl1' pk=scan_report.id omop_table=filtered_omop_table %} " class="btn btn-dark">  Show All </a>
-      {% else %}
-      {% for source_table in source_tables %}
-      <a href="{% url 'tables-structural-mapping-filter-lvl2' pk=scan_report.id omop_table=filtered_omop_table source_table=source_table %}" class="btn btn-dark"> {{ source_table }} </a>
-      {% endfor %}
-      {% endif %}
-    </div>
-    {% endif %}
-  </div>
+		var getSVG = async function () {
+			const response = await $.ajax({
+				type: "POST",
+				url: window.location,
+				data: {
+					'get_svg': true,
+					'csrfmiddlewaretoken': '{{ csrf_token }}',
+				}
+			});
+			return response
+  		}
+    </script>
 </div>
 
 
-{% if object_list %}
- 
-<div class="container">
-  <div class="row mx-auto">
-  <div class="spinner-border mx-auto d-none" id='spinner' role="status">
-    <span class="sr-only">Loading...</span>
-  </div>
-  </div>
-
-  <div class="row mx-auto" id='placeholder-svg'>
-  </div>
-  <div class="row">
-    
-    <table class="table">
-    <thead>
-    <tr>
-        <!--<th scope="col">Data Partner</th>
-            <th scope="col">Dataset</th>-->
-	    <th scope="col">Rule ID</th>
-        <th scope="col">Destination Table</th>
-        <th scope="col">Destination Field</th>
-	<th scope="col">Source Table</th>
-	<th scope="col">Source Field</th>
-	<th scope="col">Term Map</th>
-	<!---<th scope="col">Operation</th>--->
-	<!---<th scope="col">Approved</th>--->
-    </tr>
-    </thead>
-    <tbody>
-      {% for object in object_list %}
-      <tr>
-	<td style="width: 10%">{{ object.rule_id }}</td>
-        <td style="width: 16.6%">{{ object.destination_table.table }}</td>
-        <td style="width: 16.6%">{{ object.destination_field.field }}</td>
-	<td style="width: 16.6%">
-	  <a href="{% url 'fields' %}?search={{ object.source_table.id }}"> {{object.source_table.name}} </a>
-	</td>
-	
-        <td style="width: 16.6%">
-	  <a href="{% url 'values' %}?search={{ object.source_field.id }}"> {{object.source_field.name}} </a>
-	</td>
-
-        <td style="width: 16.6%">
-	  {% if object.term_mapping %}
-	  {{ object.term_mapping }}
-	  {% endif %}
-	</td>
-	
-      </tr>
-      {% endfor %}
-    </tbody>
-    </table>
-  </div>
-  </div>
-
-{% endif %}
-
-  
-<script>
-
-  $("#get_rules").click(function(){
-	$('#spinner').removeClass('d-none');
-	
-	$.ajax({
-	      type: "POST",
-	      url: window.location,
-	      data: {
-		    'download_rules': true,
-		    'csrfmiddlewaretoken': '{{ csrf_token }}',
-	      },
-	      success: function (response,status,xhr) {
-		    $('#spinner').addClass('d-none');
-			    
-		    //https://stackoverflow.com/questions/16086162/handle-file-download-from-ajax-post
-		    var type = xhr.getResponseHeader('Content-Type');
-		    var blob = new Blob([JSON.stringify(response,null,6)], { type: type });
-
-		    // check for a filename
-		    var filename = "";
-		    var disposition = xhr.getResponseHeader('Content-Disposition');
-		    if (disposition && disposition.indexOf('attachment') !== -1) {
-			  var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-			  var matches = filenameRegex.exec(disposition);
-			  if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-		    }
-
-		    
-		    if (typeof window.navigator.msSaveBlob !== 'undefined') {
-			  // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
-			  window.navigator.msSaveBlob(blob,filename);
-		    }
-		    else {
-			  var URL = window.URL || window.webkitURL;
-			  var downloadUrl = URL.createObjectURL(blob);
-			  if (filename) {
-				// use HTML5 a[download] attribute to specify filename
-				var a = document.createElement("a");
-				// safari doesn't support this yet
-				if (typeof a.download === 'undefined') {
-				      window.location.href = downloadUrl;
-				}
-				else {
-				      a.href = downloadUrl;
-				      a.download = filename;
-				      document.body.appendChild(a);
-				      a.click();
-				}
-			  }
-			  else{
-				window.location = downloadUrl;
-			  }
-			  setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
-
-		    }
-		    
-		    
-	      },
-	      error: function(XMLHttpRequest, textStatus, errorThrown){
-		    $('#spinner').html(errorThrown);
-	      }
-	});
-	
-  });
-  
-  $("#refresh").click(function(){
-	$('#spinner').removeClass('d-none');
-	$('.table').addClass('d-none');
-	
-	//use ajax to post a request to retrieve one
-	$.ajax({
-	      type: "POST",
-	      url: window.location,
-	      data: {
-		    'refresh_rules': true,
-		    'csrfmiddlewaretoken': '{{ csrf_token }}',
-	      },
-	      success: function (data) {
-		    setTimeout(function(){// wait for 1 secs
-			  location.reload(); // then reload the page.
-		    }, 1000); 
-	      },
-	      error: function(XMLHttpRequest, textStatus, errorThrown){
-		    $('#spinner').html(errorThrown);
-	      }
-	});
-  });
-
-  
-  $("#view_svg").click(function () {
-
-	  //retrieve the div text
-	  var button_text = $(this).text();
-	  // if the buttons says View and has been clicked
-	  // then change it to a hide button
-	  if (button_text == 'View Map Diagram' ){
-		button_text = 'Hide Map Diagram';
-	  }
-	  //vice versa
-	  else if (button_text == 'Hide Map Diagram'){
-		button_text = 'View Map Diagram';
-	  }
-	  //set the next button text depending on click action
-	  $(this).text(button_text);
-
-	  //if we dont have an svg image 
-	  if ($('#placeholder-svg').find("svg").length == 0) {
-
-		$('#spinner').removeClass('d-none');
-		
-		//use ajax to post a request to retrieve one
-	  	$.ajax({
-		      type: "POST",
-		      url: window.location,
-		      data: {
-			    'get_svg': true,
-			    'csrfmiddlewaretoken': '{{ csrf_token }}',
-		      },
-		      success: function (data) {
-			    var data = $("svg", data);
-			    $('#spinner').addClass('d-none');
-			    $('#placeholder-svg').empty();
-			    $('#placeholder-svg').append(data);
-			    
-		      },
-		      error: function(XMLHttpRequest, textStatus, errorThrown){
-			    $('#spinner').addClass('d-none');
-			    $('#placeholder-svg').html(errorThrown);
-		      }
-		});
-	  }
-	  else{
-		//otherwise if we already have the image cached
-		//toggle the display
-		$("#placeholder-svg").toggleClass('d-none');
-	  }
-	  
-    });
-
-
-    // $("select[name*='source_table']").each(function(i, obj) {
-    // 	  //$("select[name*='source_']").each(function(i, obj) {
-    // 	  var options = $(this).find("option");
-	  
-    // 	  options.detach().sort(function(a,b) {
-    // 		var at = $(a).text().toLowerCase();
-    // 		var bt = $(b).text().toLowerCase();         
-    // 		return (at > bt)?1:((at < bt)?-1:0);  
-    // 	  });
-    // 	  options.appendTo(obj); 
-    // });
-
-    //force people to save the table after changing select box
-    //important for source_table, need to refresh changes for source_field
-    //e.g. if source_table changed to gender, need to update source_field values
-    $("select[name*='source_table']").change(function(){
-	  $("#table_save_btn").click();
-    });
-    
-    
-    $("#id_omop_table").change(function () {
-	  var url = $("#mappingRuleForm").attr("data-omop-fields-url");  
-	  var omop_table_id = $(this).val();  
-	  
-	  $.ajax({
-		url: url,                
-		data: {
-		      'omop_table': omop_table_id 
-		},
-		success: function (data) {   
-		      $("#id_omop_field").html(data);  
-		}
-	  });
-	  
-    });
-
-    
-  </script>
 
 
 {% endblock %}
