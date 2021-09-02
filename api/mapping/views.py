@@ -132,7 +132,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer    
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['concept_id', 'concept_code', 'vocabulary_id']        
+    filterset_fields={'concept_id':['in', 'exact'],'concept_code': ['in', 'exact'],'vocabulary_id': ['in', 'exact']}
 
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
@@ -200,7 +200,7 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report', 'name']
+    filterset_fields={'scan_report':['in', 'exact'],'name': ['in', 'exact'],'id': ['in', 'exact']}
         
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
@@ -217,7 +217,7 @@ class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer  
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report_table', 'name']
+    filterset_fields={'scan_report_table':['in', 'exact'],'name': ['in', 'exact'],'id': ['in', 'exact']}
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
@@ -234,7 +234,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact']}
+    filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact'],'id': ['in', 'exact']}
     
 class MappingViewSet(viewsets.ModelViewSet):
     queryset=Mapping.objects.all()
@@ -277,10 +277,22 @@ class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
 
+class OmopTableFilterViewSet(viewsets.ModelViewSet):
+    queryset=OmopTable.objects.all()
+    serializer_class=OmopTableSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields={'id': ['in', 'exact']}    
+
 class OmopFieldViewSet(viewsets.ModelViewSet):
     queryset=OmopField.objects.all()
     serializer_class=OmopFieldSerializer
 
+class OmopFieldFilterViewSet(viewsets.ModelViewSet):
+    queryset=OmopField.objects.all()
+    serializer_class=OmopFieldSerializer
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields={'id': ['in', 'exact']}    
+    
 class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer
@@ -314,7 +326,7 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report_field', 'value']    
+    filterset_fields={'scan_report_field':['in', 'exact'],'value': ['in', 'exact'],'id': ['in', 'exact']}
     
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class=ScanReportValueSerializer
