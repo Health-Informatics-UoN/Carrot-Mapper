@@ -51,7 +51,9 @@ routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners
 routers.register(r'datapartnersfilter',views.DataPartnerFilterViewSet,basename='datapartnersfilter')
 
 routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
+routers.register(r'omoptablesfilter',views.OmopTableFilterViewSet,basename='omoptablesfilter')
 routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
+routers.register(r'omopfieldsfilter',views.OmopFieldFilterViewSet,basename='omopfieldsfilter')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
 routers.register(r'structuralmappingrulesfilter',views.StructuralMappingRuleFilterViewSet,basename='structuralmappingrulefilter')
 
