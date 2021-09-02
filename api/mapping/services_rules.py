@@ -585,8 +585,8 @@ def download_mapping_rules(request,qs):
 
 def make_dag(data):
     dot = Digraph(strict=True,format='svg')
-    dot.attr(rankdir='RL', size='8,5')
-    
+    dot.attr(rankdir='RL')
+
     for destination_table_name,destination_tables in data.items():
         dot.node(destination_table_name,shape='box')
 
