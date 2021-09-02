@@ -296,6 +296,26 @@ const mapConceptToOmopField = () =>{
     }
 }
 
+const chunkIds = (list) => {
+    const chunkedList = [[]]
+    
+        let maxChars = 2000
+        let currentChars = 80
+        list.map(async (value,index) => {
+                const digits = value.toString().length
+                if(currentChars+digits> maxChars-20){
+                    currentChars = 80+digits
+                    chunkedList.push([])
+                    chunkedList[chunkedList.length-1].push(value)
+                } 
+                else{
+                    currentChars = currentChars+digits
+                    chunkedList[chunkedList.length-1].push(value)
+                }                                 
+        })
+    return chunkedList
+}
+
 const getMappingRules = async (id,tableData,switchFilter) => { 
     let mappingRules = await useGet(`${api}/structuralmappingrulesfilter/?scan_report=${id}`)
     const sourceFields = {}

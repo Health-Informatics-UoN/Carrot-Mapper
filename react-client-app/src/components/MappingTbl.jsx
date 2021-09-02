@@ -103,7 +103,6 @@ const MappingTbl = () => {
                 console.log(diagram)
                 console.log(diagram.getElementsByTagName("svg")[0])
                 setMapDiagram(mapDiagram=>({...mapDiagram,image:diagram.getElementsByTagName("svg")[0]}))
-                svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
             })
             
         }
