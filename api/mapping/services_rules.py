@@ -109,7 +109,7 @@ def save_person_id_rule(request,
         scan_report=scan_report,
         omop_field=person_id_omop_field,
         source_field=person_id_source_field,
-        concept = scan_report_concept,
+        scan_report_concept = scan_report_concept,
         approved=True,
     )
     #save this new mapping
@@ -141,7 +141,7 @@ def save_date_rule(request,
             scan_report=scan_report,
             omop_field=date_event_omop_field,
             source_field=date_event_source_field,
-            concept = scan_report_concept,
+            scan_report_concept = scan_report_concept,
             approved=True,
         )
         #save this new mapping
@@ -224,7 +224,7 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=omop_field,
         source_field=source_field,
-        concept = scan_report_concept,
+        scan_report_concept = scan_report_concept,
         approved=True,
     )
     rule_domain_source_concept_id.save()
@@ -237,7 +237,7 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
-        concept	= scan_report_concept,
+        scan_report_concept	= scan_report_concept,
         approved=True,
     )
     rule_domain_concept_id.save()
@@ -249,7 +249,7 @@ def save_mapping_rules(request,scan_report_concept):
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
-        concept = scan_report_concept,
+        scan_report_concept = scan_report_concept,
         approved=True,
     )
     #add this new concept mapping
@@ -266,7 +266,7 @@ def save_mapping_rules(request,scan_report_concept):
             scan_report=scan_report,
             omop_field=get_omop_field("value_as_number","measurement"),
             source_field=source_field,
-            concept=scan_report_concept,
+            scan_report_concept=scan_report_concept,
             approved=True,
         )
         rule_domain_value_as_number.save()

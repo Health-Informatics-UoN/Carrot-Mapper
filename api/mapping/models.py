@@ -475,7 +475,7 @@ class StructuralMappingRule(BaseModel):
         blank=True
     )
 
-    concept = models.ForeignKey(
+    scan_report_concept = models.ForeignKey(
         ScanReportConcept,
         on_delete=models.CASCADE
     )
