@@ -10,6 +10,8 @@ from datetime import datetime
 import os
 import csv
 
+from requests.models import HTTPError
+
 from shared_code import omop_helpers
 
 # Agreed vocabs that are accepted for lookup/conversion
@@ -55,39 +57,46 @@ def process_scan_report_sheet_table(sheet):
 
     -- output --
     column a, apple, 20
-    column c, orange, 5
     column a, banana, 3
+    column c, orange, 5
     column c, plantain, 50
     --
     """
     results = []
-    # Get max number of columns in the sheet
-    max_column = sheet.max_column
+
     # Skip headers, set min_row & row_idx=2
-    for row_idx, row_cell in enumerate(
-        sheet.iter_rows(min_row=2, max_col=max_column), start=2
+    for column_idx, col in enumerate(
+        sheet.iter_cols(min_col=1,
+                        max_col=sheet.max_column,
+                        min_row=1,
+                        max_row=sheet.max_row),
+        start=1
     ):
+        if column_idx % 2 == 0:
+            continue
 
-        # Works through pairs of value/frequency columns
-        for column_idx, cell in enumerate(row_cell, start=1):
-            if (column_idx) % 2 == 1:
+        column_header = col[0].value
 
-                column_name = sheet.cell(row=1, column=column_idx).value
-                value = sheet.cell(row=row_idx, column=column_idx).value
+        # Works through pairs of value/frequency columns. Skip the frequency columns,
+        # and reference them from their value column.
+        for row_idx, cell in enumerate(col[1:], start=2):
+            if column_idx % 2 == 1:
+
+                value = cell.value
                 frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
 
-                # As we move down rows, checks that there's data there
+                # As we move down rows, check that there's data there.
                 # This is required b/c value/frequency col pairs differ
-                # in the number of rows
+                # in the number of rows. Break if we hit a fully empty row
                 if (value == "" or value is None) and (
                     frequency == "" or frequency is None
                 ):
-                    continue
+                    break
 
                 # Append to Results as (Field Name,Value,Frequency)
                 results.append(
                     (
-                        str(column_name),
+                        str(column_header),
                         str(value),
                         frequency,
                     )
@@ -95,9 +104,17 @@ def process_scan_report_sheet_table(sheet):
     return results
 
 
+def default_zero(input):
+    """
+    Helper function that returns the input, replacing anything Falsey 
+    (such as Nones or empty strings) with 0.0.
+    """
+    return round(input if input else 0.0, 2)
+
+
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
-
+    print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # Set up ccom API parameters:
     api_url = os.environ.get("APP_URL") + "api/"
     headers = {
@@ -106,14 +123,8 @@ def main(msg: func.QueueMessage):
         "Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY")),
     }
 
-    # Set Storage Account connection string
-    blob_service_client = BlobServiceClient.from_connection_string(
-        os.environ.get("STORAGE_CONN_STRING")
-    )
-
     # Get message from queue
-    message = json.dumps(
-        {
+    message = {
             "id": msg.id,
             "body": msg.get_body().decode("utf-8"),
             "expiration_time": (
@@ -128,22 +139,50 @@ def main(msg: func.QueueMessage):
             "pop_receipt": msg.pop_receipt,
             "dequeue_count": msg.dequeue_count,
         }
-    )
-
+    
+    print("message:", type(message), message)
     # Grab message body from storage queues,
     # extract filenames for scan reports and dictionaries
-    message = json.loads(message)
-    body = ast.literal_eval(message["body"])
+    # print("body 1:", type(message["body"]), message["body"])
+    body = json.loads(message["body"])
+    # print("body 2:", type(body), body)
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
 
     print("MESSAGE BODY >>>", body)
 
+    # If the message has been dequeued for a second time, then the upload has failed.
+    # Patch the name of the dataset to make it clear that it has failed, and then stop.
+    print("dequeue_count", msg.dequeue_count)
+    if msg.dequeue_count == 2:
+        scan_report_fetched_data = requests.get(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            headers=headers,
+        )
+
+        scan_report_fetched_data = json.loads(scan_report_fetched_data.content.decode("utf-8"))
+
+        json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}"})
+
+        dequeue_response = requests.patch(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            data=json_data, 
+            headers=headers
+        )
+    if msg.dequeue_count > 1:
+        raise Exception('dequeue_count > 1')
+
+    # Otherwise, this must be the first time we've seen this message. Proceed.
+    print("Get blobs", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    # Set Storage Account connection string
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
+
     # Grab scan report data from blob
-    container_client = blob_service_client.get_container_client("scan-reports")
-    blob_scanreport_client = container_client.get_blob_client(scan_report_blob)
-    streamdownloader = blob_scanreport_client.download_blob()
-    scanreport = BytesIO(streamdownloader.readall())
+    streamdownloader = blob_service_client.get_container_client("scan-reports").\
+        get_blob_client(scan_report_blob).download_blob()
+    scanreport_bytes = BytesIO(streamdownloader.readall())
 
     # If dictionary is present, also download dictionary
     if data_dictionary_blob != "None":
@@ -159,52 +198,45 @@ def main(msg: func.QueueMessage):
     else:
         data_dictionary = None
 
-    wb = openpyxl.load_workbook(scanreport, data_only=True)
+    wb = openpyxl.load_workbook(scanreport_bytes, data_only=True, keep_links=False)
 
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
-    ws = wb.worksheets[0]
+    fo_ws = wb.worksheets[0]
 
+    # Get all the table names in the order they appear in the Field Overview page
     table_names = []
-    # Skip header with min_row=2
-    for i, row_cell in enumerate(ws.iter_rows(min_row=2), start=2):
-        # If the value in the first column (i.e. the Table Col) is not blank;
-        # Save the table name as a new entry in the model ScanReportTable
-        # Checks for blank b/c White Rabbit seperates tables with blank row
-        for cell in row_cell:
-            if cell.value:
-                name = ws.cell(row=i, column=1).value
-                if name not in table_names:
-                    table_names.append(name)
+    # Skip header row
+    for cell in fo_ws['A'][1:]:
+        # Check value is both non-empty and not seen before
+        if cell.value and cell.value not in table_names:
+            table_names.append(cell.value)
 
     """
     For each table create a scan_report_table entry,
-    Append entry to data[] list,
-    Create JSON array with all the entries, 
+    Append entry to table_entries_to_post[] list,
+    Create JSON array with all the entries,
     Send POST request to API with JSON as input,
     Save the response data(table IDs)
     """
-    table_ids = []
-    field_ids = []
-    field_names = []
-    data = []
+    table_entries_to_post = []
     # print("Working on Scan Report >>>", body["scan_report_id"])
 
     print("TABLES NAMES >>> ", table_names)
 
-    for table in range(len(table_names)):
+    for table_name in table_names:
 
-        print("WORKING ON TABLE >>> ", table)
+        print("WORKING ON TABLE >>> ", table_name)
 
         # Truncate table names because sheet names are truncated to 31 characters in Excel
-        table_names[table] = table_names[table][:31]
+        short_table_name = table_name[:31]
 
         # Create ScanReportTable entry
         # Link to scan report using ID from the queue message
-        scan_report_table_entry = {
+        table_entry = {
             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "name": table_names[table],
+            "name": short_table_name,
             "scan_report": str(body["scan_report_id"]),
             "person_id": None,
             "birth_date": None,
@@ -212,267 +244,295 @@ def main(msg: func.QueueMessage):
             "condition_date": None,
             "observation_date": None,
         }
-        print("SCAN REPORT TABLE ENTRY", scan_report_table_entry)
+        print("SCAN REPORT TABLE ENTRY", table_entry)
 
         # Append to list
-        data.append(scan_report_table_entry)
+        table_entries_to_post.append(table_entry)
 
-    # Create JSON array
-    json_data = json.dumps(data)
+    print("POST tables", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # POST request to scanreporttables
-    response = requests.post(
-        "{}scanreporttables/".format(api_url), data=json_data, headers=headers
+    tables_response = requests.post(
+        "{}scanreporttables/".format(api_url), 
+        data=json.dumps(table_entries_to_post), 
+        headers=headers
     )
-    print("TABLE SAVE STATUS >>>", response.status_code)
+    print("POST tables finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+    print("TABLE SAVE STATUS >>>", tables_response.status_code)
+    # Error on failure
+    if tables_response.status_code != 201:
+        raise HTTPError(' '.join(['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
 
     # Load the result of the post request,
-    response = json.loads(response.content.decode("utf-8"))
+    tables_content = json.loads(tables_response.content.decode("utf-8"))
 
     # Save the table ids that were generated from the POST method
-    for element in range(len(response)):
-        table_ids.append(response[element]["id"])
-    # print("TABLE IDs", table_ids)
+    table_ids = [element["id"] for element in tables_content]
+
+    print("TABLE IDs", table_ids)
 
     """
     POST fields per table:
     For each row in Field Overview create an entry for scan_report_field,
     Empty row signifies end of fields in a table
-    Append field entry to data[] list,
+    Append field entry to field_entries_to_post[] list,
     Create JSON array with all the field entries, 
     Send POST request to API with JSON as input,
     Save the response data(field ids,field names) in a dictionary
     Set the current working sheet to be the same as the current table
     Post the values for that table
     """
-    idx = 0
-    data = []
+    table_idx = 0
+    field_entries_to_post = []
     names_x_ids = {}
+
+    # Loop over all rows in Field Overview sheet.
     # For sheets past the first two in the Scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     worksheet_idx = 2
+    print("Start fields loop", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
     for i, row_cell in enumerate(
-        ws.iter_rows(min_row=2, max_row=ws.max_row + 1), start=2
+        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row + 1), start=2
     ):
 
-        if idx >= len(table_ids):
+        if table_idx >= len(table_ids):
             continue
-        # If fraction empty or fraction unique is empty set to 0(decimal)
-        if not (ws.cell(row=i, column=8).value):
-            ws.cell(row=i, column=8).value = 0.0
-        if not (ws.cell(row=i, column=10).value):
-            ws.cell(row=i, column=10).value = 0.0
 
         # Create ScanReportField entry
-        scan_report_field_entry = {
-            "scan_report_table": table_ids[idx],
+        field_entry = {
+            "scan_report_table": table_ids[table_idx],
             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "name": ws.cell(row=i, column=2).value,
-            "description_column": str(ws.cell(row=i, column=3).value),
-            "type_column": str(ws.cell(row=i, column=4).value),
-            "max_length": ws.cell(row=i, column=5).value,
-            "nrows": ws.cell(row=i, column=6).value,
-            "nrows_checked": ws.cell(row=i, column=7).value,
-            "fraction_empty": round(ws.cell(row=i, column=8).value, 2),
-            "nunique_values": ws.cell(row=i, column=9).value,
-            "fraction_unique": round(ws.cell(row=i, column=10).value, 2),
-            "flag_column": str(ws.cell(row=i, column=11).value),
+            "name": str(fo_ws.cell(row=i, column=2).value),
+            "description_column": str(fo_ws.cell(row=i, column=3).value),
+            "type_column": str(fo_ws.cell(row=i, column=4).value),
+            "max_length": fo_ws.cell(row=i, column=5).value,
+            "nrows": fo_ws.cell(row=i, column=6).value,
+            "nrows_checked": fo_ws.cell(row=i, column=7).value,
+            "fraction_empty": round(default_zero(fo_ws.cell(row=i, column=8).value, 2),
+            "nunique_values": fo_ws.cell(row=i, column=9).value,
+            "fraction_unique": round(default_zero(fo_ws.cell(row=i, column=10).value, 2),
+            # "flag_column": str(fo_ws.cell(row=i, column=11).value),
             "ignore_column": None,
             "is_birth_date": False,
             "is_patient_id": False,
             "is_date_event": False,
             "is_ignore": False,
             "pass_from_source": True,
-            "classification_system": str(ws.cell(row=i, column=12).value),
+            # "classification_system": str(fo_ws.cell(row=i, column=12).value),
             "date_type": "",
             "concept_id": -1,
             "field_description": None,
         }
         # Append each entry to a list
-        data.append(scan_report_field_entry)
+        field_entries_to_post.append(field_entry)
 
-        # If there is an empty row (end of a table) POST fields in this table
-        if not any(cell.value for cell in row_cell):
-            # .pop() empty row from list,
-            data.pop()
-            # JSON Array for fields in current table
-            json_data = json.dumps(data)
-            # POST Fields
-            response = requests.post(
-                "{}scanreportfields/".format(api_url),
-                data=json_data,
-                headers=headers,
-            )
-            # print("FIELD SAVE STATUS >>>", response.status_code)
-            # Load result from the response,
-            # Save generated field ids, and the corresponding name
-            response = json.loads(response.content.decode("utf-8"))
-            for element in range(len(response)):
-                field_ids.append(str(response[element].get("id", None)))
-                field_names.append(str(response[element].get("name", None)))
-            # Create a dictionary with field names and field ids
-            # as key value pairs
-            # e.g ("Field ID":<Field Name>)
-            names_x_ids = dict(zip(field_names, field_ids))
+        # print("scan_report_field_entries >>>", field_entries_to_post)
 
-            # print("Dictionary id:name", id_x_names)
-            # Reset list for values
-            data = []
-            # Go to Table sheet
-            sheet = wb.worksheets[worksheet_idx]
-            # print("WORKING ON", sheet.title)
+        # If this is a non-empty row (end of a table), continue to the next row. 
+        if any(cell.value for cell in row_cell):
+            continue
 
-            # Skip these sheets at the end of the scan report
-            if sheet.title == "_" or (sheet.title.startswith("HTA")):
-                continue
-            # Get value,frequency for each field in the table
-            results = process_scan_report_sheet_table(sheet)
+        # Otherwise, .pop() the empty row from the list, and proceed to POST 
+        # fields in this table
+        field_entries_to_post.pop()
+        # print("FIELDS TO SAVE:", field_entries_to_post)
 
-            """
-            For every result of process_scan_report_sheet_table,
-            Save the current name,value,frequency
-            Create ScanReportValue entry,
-            Append to data[] list,
-            Create JSON array with all the value entries, 
-            Send POST request to API with JSON as input
-            """
-            for result in range(len(results)):
+        print("POST fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
-                name = results[result][0]
-                value = results[result][1][0:127]
-                frequency = results[result][2]
+        # POST Fields
+        fields_response = requests.post(
+            "{}scanreportfields/".format(api_url),
+            data=json.dumps(field_entries_to_post),
+            headers=headers,
+        )
+        print("POST fields finished", datetime.utcnow().strftime("%H:%M:%S.%fZ")) # Can be 90s locally
+        # Reset field_entries_to_post for reuse on next row
+        field_entries_to_post = []
+        print("FIELDS SAVE STATUS >>>", fields_response.status_code, fields_response.reason)
 
-                if not frequency:
-                    frequency = 0
+        if fields_response.status_code != 201:
+            raise HTTPError(' '.join(['Error in fields save:', str(fields_response.status_code), str(json.dumps(field_entries_to_post))]))
 
-                if data_dictionary is not None:
-                    # Look up value description
-                    val_desc = next(
-                        (
-                            row["value"]
-                            for row in data_dictionary
-                            if str(row["field_name"]) == str(name)
-                            and str(row["code"]) == str(value)
-                        ),
-                        None,
-                    )
+        # Load result from the response,
+        # Save generated field ids, and the corresponding name
+        fields_content = json.loads(fields_response.content.decode("utf-8"))
+        # print("FIELDS CONTENT:", fields_content)
+        
+        # Create a dictionary with field names and field ids
+        # as key value pairs
+        # e.g ("Field ID":<Field Name>)
+        names_to_ids_dict = {str(element.get("name", None)): str(element.get("id", None)) for element in fields_content}
 
-                    # Grab data from the 'code' column in the data dictionary
-                    # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-                    # or it could contain one of our pre-defined vocab names
-                    # e.g. SNOMED, RxNorm, ICD9 etc.
-                    code = next(
-                        (
-                            row["code"]
-                            for row in data_dictionary
-                            if str(row["field_name"]) == str(name)
-                        ),
-                        None,
-                    )
+        # print("Dictionary id:name", names_to_ids_dict)
+        # Reset list for values
+        value_entries_to_post = []
+        # Go to Table sheet
+        sheet = wb.worksheets[worksheet_idx]
+        # print("WORKING ON", sheet.title)
 
-                    # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
-                    # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
-                    if code in vocabs:
-                        try:
-                            concept_id = omop_helpers.get_concept_from_concept_code(
-                                concept_code=value,
-                                vocabulary_id=code,
-                                no_source_concept=True,
-                            )
-                            concept_id = concept_id["concept_id"]
-                        except:
-                            concept_id = -1
-                    else:
-                        concept_id = -1
+        # Skip these sheets at the end of the scan report
+        if sheet.title == "_" or (sheet.title.startswith("HTA")):
+            continue
 
-                else:
-                    val_desc = None
-                    concept_id = -1
+        # Get (col_name, value, frequency) for each field in the table
+        fieldname_value_freq_tuples = process_scan_report_sheet_table(sheet)
 
-                # Create ScanReportValue entry
-                # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-                # to save any looked up conceptIDs in the previous block of code.
-                # The conceptID will be cleared later
-                scan_report_value_entry = {
-                    "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                    "value": value,
-                    "frequency": int(frequency),
-                    "conceptID": concept_id,
-                    "value_description": val_desc,
-                    "scan_report_field": names_x_ids[name],
-                }
+        """
+        For every result of process_scan_report_sheet_table,
+        Save the current name,value,frequency
+        Create ScanReportValue entry,
+        Append to value_entries_to_post[] list,
+        Create JSON array with all the value entries, 
+        Send POST request to API with JSON as input
+        """
+        for fieldname_value_freq in fieldname_value_freq_tuples:
 
-                # Append to list
-                data.append(scan_report_value_entry)
+            name = fieldname_value_freq[0]
+            value = fieldname_value_freq[1][0:127]
+            frequency = fieldname_value_freq[2]
 
-            # Create JSON array for POSTing
-            json_data = json.dumps(data)
+            if not frequency:
+                frequency = 0
 
-            # POST data to ScanReportValues model
-            response = requests.post(
-                url=api_url + "scanreportvalues/", data=json_data, headers=headers
-            )
-
-            # Process conceptIDs in ScanReportValues
-            # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
-            new_data = requests.get(
-                url=api_url
-                + "scanreportvaluepks/?scan_report="
-                + str(body["scan_report_id"]),
-                headers=headers,
-            )
-
-            data = json.loads(new_data.content.decode("utf-8"))
-
-            # Create a list for a bulk data upload to the ScanReportConcept model
-            concept_id_data = []
-            for concept in data:
-
-                entry = {
-                    "nlp_entity": None,
-                    "nlp_entity_type": None,
-                    "nlp_confidence": None,
-                    "nlp_vocabulary": None,
-                    "nlp_processed_string": None,
-                    "concept": concept["conceptID"],
-                    "object_id": concept["id"],
-                    "content_type": 17,
-                }
-
-                concept_id_data.append(entry)
-
-            concept_id_data_json = json.dumps(concept_id_data)
-
-            # POST the ScanReportConcept data to the model
-            response = requests.post(
-                url=api_url + "scanreportconcepts/",
-                headers=headers,
-                data=concept_id_data_json,
-            )
-
-            print("STATUS >>> ", response.status_code)
-
-            # Update ScanReportValue to remove any data added to the conceptID field
-            # conceptID field only used temporarily to hold the converted concept code -> conceptID
-            # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
-            # need for the concept ID to also be saved to ScanReportValue::conceptID
-
-            # Reset conceptID to -1 (default)
-            put_update = {"conceptID": -1}
-            put_update_json = json.dumps(put_update)
-
-            for concept in data:
-                response = requests.patch(
-                    url=api_url + "scanreportvalues/" + str(concept["id"]) + "/",
-                    headers=headers,
-                    data=put_update_json,
+            if data_dictionary is not None:
+                # Look up value description
+                val_desc = next(
+                    (
+                        row["value"]
+                        for row in data_dictionary
+                        if str(row["field_name"]) == str(name)
+                        and str(row["code"]) == str(value)
+                    ),
+                    None,
                 )
 
-            # Move to next table, initialise empty arrays for next table
-            idx = idx + 1
-            worksheet_idx = worksheet_idx + 1
-            field_ids = []
-            field_names = []
-            data = []
+                # Grab data from the 'code' column in the data dictionary
+                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
+                # or it could contain one of our pre-defined vocab names
+                # e.g. SNOMED, RxNorm, ICD9 etc.
+                code = next(
+                    (
+                        row["code"]
+                        for row in data_dictionary
+                        if str(row["field_name"]) == str(name)
+                    ),
+                    None,
+                )
+
+                # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
+                # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
+                if code in vocabs:
+                    try:
+                        concept_id = omop_helpers.get_concept_from_concept_code(
+                            concept_code=value,
+                            vocabulary_id=code,
+                            no_source_concept=True,
+                        )
+                        concept_id = concept_id["concept_id"]
+                    except:
+                        concept_id = -1
+                else:
+                    concept_id = -1
+
+            else:
+                val_desc = None
+                concept_id = -1
+
+            # Create ScanReportValue entry
+            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
+            # to save any looked up conceptIDs in the previous block of code.
+            # The conceptID will be cleared later
+            scan_report_value_entry = {
+                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "value": value,
+                "frequency": int(frequency),
+                "conceptID": concept_id,
+                "value_description": val_desc,
+                "scan_report_field": names_to_ids_dict[name],
+            }
+
+            # Append to list
+            value_entries_to_post.append(scan_report_value_entry)
+
+        print("POST values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        # POST value_entries_to_post to ScanReportValues model
+        values_response = requests.post(
+            url=api_url + "scanreportvalues/", 
+            data=json.dumps(value_entries_to_post), 
+            headers=headers
+        )
+        if values_response.status_code != 201:
+            raise HTTPError(' '.join(['Error in values save:', str(values_response.status_code), str(json.dumps(value_entries_to_post))]))
+
+        print("POST values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+        # Process conceptIDs in ScanReportValues
+        # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
+        print("GET posted values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        get_ids_of_posted_values = requests.get(
+            url=api_url
+            + "scanreportvaluepks/?scan_report="
+            + str(body["scan_report_id"]),
+            headers=headers,
+        )
+        print("GET posted values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+        ids_of_posted_values = json.loads(get_ids_of_posted_values.content.decode("utf-8"))
+
+        # Create a list for a bulk data upload to the ScanReportConcept model
+
+        concept_id_data = [{
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept["conceptID"],
+                "object_id": concept["id"],
+                # TODO: we should query this value from the API 
+                # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                # but that's not available from an Azure Function.
+                "content_type": 17,
+            } for concept in ids_of_posted_values]
+        
+        print("POST concepts", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+        # POST the ScanReportConcept data to the model
+        concept_response = requests.post(
+            url=api_url + "scanreportconcepts/",
+            headers=headers,
+            data=json.dumps(concept_id_data),
+        )
+        print("POST concepts finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+        print("STATUS >>> ", concept_response.status_code)
+        if concept_response.status_code != 201:
+            raise HTTPError(' '.join(['Error in concept save:', str(concept_response.status_code), str(json.dumps(concept_id_data))]))
+
+        # Update ScanReportValue to remove any data added to the conceptID field
+        # conceptID field only used temporarily to hold the converted concept code -> conceptID
+        # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
+        # need for the concept ID to also be saved to ScanReportValue::conceptID
+
+        # Reset conceptID to -1 (default)
+        put_update_json = json.dumps({"conceptID": -1})
+        
+        print("PATCH values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        for concept in ids_of_posted_values:
+            print("PATCH value", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            value_response = requests.patch(
+                url=api_url + "scanreportvalues/" + str(concept["id"]) + "/",
+                headers=headers,
+                data=put_update_json,
+            )
+            print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            if value_response.status_code != 200:
+                raise HTTPError(' '.join(['Error in value save:', str(value_response.status_code), str(put_update_json)]))
+
+        print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        # Move to next table, initialise empty arrays for next table
+        table_idx = table_idx + 1
+        worksheet_idx = worksheet_idx + 1
