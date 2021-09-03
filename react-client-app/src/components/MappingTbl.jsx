@@ -100,8 +100,6 @@ const MappingTbl = () => {
     useEffect(() => {
         if(!mapDiagram.image){
             window.getSVG().then(diagram=>{
-                console.log(diagram)
-                console.log(diagram.getElementsByTagName("svg")[0])
                 setMapDiagram(mapDiagram=>({...mapDiagram,image:diagram.getElementsByTagName("svg")[0]}))
             })
             
@@ -306,7 +304,6 @@ const MappingTbl = () => {
                 mapDiagram.image?
                     <div>
                         <svg dangerouslySetInnerHTML={{__html: mapDiagram.image.innerHTML}} />
-                        <img src ={mapDiagram.image}/>  
                     </div>
                     :
                     <Flex padding="30px">
@@ -321,7 +318,6 @@ const MappingTbl = () => {
                 mapDiagram.image?
                     <div>
                         <svg dangerouslySetInnerHTML={{__html: mapDiagram.image.innerHTML}} />
-                        <img src ={mapDiagram.image}/>
                     </div>
                     :
                     <Flex padding="30px">
@@ -359,7 +355,6 @@ const MappingTbl = () => {
                                 {item.scanreport&&
                                 <VStack>
                                 <div><span style={{color:"#dd5064",}}>"{item.scanreport.value}"</span><ArrowForwardIcon/><span style={{color:"#1d8459",}}>{item.scanreportconcept.concept.concept_id}</span></div>
-                                {/* <div >( {item.scanreportconcept.concept.concept_name},{item.scanreportconcept.concept.domain_id} )</div> */}
                                 </VStack>
                                 }
                             </Td>
