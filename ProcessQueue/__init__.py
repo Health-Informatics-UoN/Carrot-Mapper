@@ -244,6 +244,7 @@ def main(msg: func.QueueMessage):
             "condition_date": None,
             "observation_date": None,
         }
+
         print("SCAN REPORT TABLE ENTRY", table_entry)
 
         # Append to list
@@ -256,6 +257,7 @@ def main(msg: func.QueueMessage):
         data=json.dumps(table_entries_to_post), 
         headers=headers
     )
+
     print("POST tables finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
     print("TABLE SAVE STATUS >>>", tables_response.status_code)
@@ -310,9 +312,9 @@ def main(msg: func.QueueMessage):
             "max_length": fo_ws.cell(row=i, column=5).value,
             "nrows": fo_ws.cell(row=i, column=6).value,
             "nrows_checked": fo_ws.cell(row=i, column=7).value,
-            "fraction_empty": round(default_zero(fo_ws.cell(row=i, column=8).value, 2),
+            "fraction_empty": round(default_zero(fo_ws.cell(row=i, column=8).value), 2),
             "nunique_values": fo_ws.cell(row=i, column=9).value,
-            "fraction_unique": round(default_zero(fo_ws.cell(row=i, column=10).value, 2),
+            "fraction_unique": round(default_zero(fo_ws.cell(row=i, column=10).value), 2),
             # "flag_column": str(fo_ws.cell(row=i, column=11).value),
             "ignore_column": None,
             "is_birth_date": False,
