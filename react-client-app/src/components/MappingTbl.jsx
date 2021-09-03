@@ -353,8 +353,8 @@ const MappingTbl = () => {
                             <Td>{item.concept} </Td>
                             <Td>{item.omop_field.table.table} </Td>
                             <Td>{item.omop_field.field}</Td>
-                            <Td><Link style={{color:"#0000FF",}} href={window.u+"/fields/?search="+item.source_field.scan_report_table.id}>{item.source_field?item.source_field.scan_report_table.name:null}</Link></Td>
-                            <Td><Link style={{color:"#0000FF",}} href={window.u+"/values/?search="+item.source_field.id}>{item.source_field?item.source_field.name:null}</Link></Td>
+                            <Td><Link style={{color:"#0000FF",}} href={window.u+"fields/?search="+item.source_field.scan_report_table.id}>{item.source_field?item.source_field.scan_report_table.name:null}</Link></Td>
+                            <Td><Link style={{color:"#0000FF",}} href={window.u+"values/?search="+item.source_field.id}>{item.source_field?item.source_field.name:null}</Link></Td>
                             <Td>
                                 {item.scanreport&&
                                 <VStack>
