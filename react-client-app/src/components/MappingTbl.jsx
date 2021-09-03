@@ -321,10 +321,18 @@ const MappingTbl = () => {
                 {mapDiagram.showing&&
                 <>
                     <div style={{marginTop:'10px',marginBottom:'10px'}} ref={svg}/>
-                    {mapDiagram.image==null&&
+                    {values.length>0?
+                    <>
+                        {mapDiagram.image==null&&
+                            <Flex padding="30px">
+                                <Spinner />
+                                <Flex marginLeft="10px">Loading Map Diagram</Flex>
+                            </Flex>
+                        }
+                    </>
+                    :
                     <Flex padding="30px">
-                    <Spinner />
-                    <Flex marginLeft="10px">Loading Map Diagram</Flex>
+                        <Flex marginLeft="10px">No Diagram to load</Flex>
                     </Flex>
                     }
                 </>
