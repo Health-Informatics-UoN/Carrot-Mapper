@@ -30,7 +30,7 @@ const MappingTbl = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
-    const [mapDiagram, setMapDiagram] = useState({showing:false,image:""});
+    const [mapDiagram, setMapDiagram] = useState({showing:false,image:null});
     const allData = useRef([]);
     const scanReport = useRef(null);
     const popping = useRef(false);
@@ -47,6 +47,9 @@ const MappingTbl = () => {
                                 ]
     
                                 const svg = useRef(null);
+
+
+
 
     useEffect(() => {
         setInitialData()
@@ -94,6 +97,11 @@ const MappingTbl = () => {
             }
             setValues(filteredData)
         }
+        if(svg.current){
+            if (svg.current.hasChildNodes()) {
+                svg.current.removeChild(mapDiagram.image)
+            }
+        }
         setMapDiagram(mapDiagram=>({...mapDiagram,image:null}))
     },[secondaryFilter]);
 
@@ -101,9 +109,17 @@ const MappingTbl = () => {
         if(!mapDiagram.image){
             window.getSVG().then(diagram=>{
                 setMapDiagram(mapDiagram=>({...mapDiagram,image:diagram.getElementsByTagName("svg")[0]}))
+                if(svg.current){
+                    svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
+                } 
             })
-            
         }
+        else{
+            if(svg.current){
+                svg.current.appendChild(mapDiagram.image)
+            } 
+        }
+        
     },[mapDiagram]);
     
 
@@ -237,13 +253,18 @@ const MappingTbl = () => {
         }  
         if(secondaryFilter=="All"){
         setValues(filteredData)
+        if(svg.current){
+            if (svg.current.hasChildNodes()) {
+                svg.current.removeChild(mapDiagram.image)
+            }
+        }
+        
         setMapDiagram(mapDiagram=>({...mapDiagram,image:null}))
         }
         else{
         popping.current = true
         setSecondaryFilter("All")
         }
-        console.log("Im being called from"+ caller)
         setLoading(false)
         setLoadingMessage("") 
     }
@@ -287,46 +308,28 @@ const MappingTbl = () => {
                         })}
                     </SimpleGrid>
                 </VStack>
-                
-                <div ref={svg}/>
-                {secondaryFilters.length>0?
-                <>
-                <VStack w='full'>
-                    <Text fontWeight="bold">Filter on source table</Text>
-                    <SimpleGrid minChildWidth="170px" spacing="10px" w='full'>
-                        {secondaryFilters.map(filter=>{
-                            return <FilterTag key={filter} tagName={filter} handleClick={setSecondaryFilter} selected={filter==secondaryFilter} popping={popping}/>
-                        })}
-                    </SimpleGrid>
-                </VStack>
-                
-                {mapDiagram.showing?
-                mapDiagram.image?
-                    <div>
-                        <svg dangerouslySetInnerHTML={{__html: mapDiagram.image.innerHTML}} />
-                    </div>
-                    :
-                    <Flex padding="30px">
-                        <Spinner />
-                        <Flex marginLeft="10px">Loading Diagram</Flex>
-                    </Flex>
-                :
-                null}
-                </>
-                :
-                selectedFilter=="All" && mapDiagram.showing?
-                mapDiagram.image?
-                    <div>
-                        <svg dangerouslySetInnerHTML={{__html: mapDiagram.image.innerHTML}} />
-                    </div>
-                    :
-                    <Flex padding="30px">
-                        <Spinner />
-                        <Flex marginLeft="10px">Loading Diagram</Flex>
-                    </Flex>
-                :
-                null
+                {secondaryFilters.length>0&&
+                    <VStack w='full'>
+                        <Text fontWeight="bold">Filter on source table</Text>
+                        <SimpleGrid minChildWidth="170px" spacing="10px" w='full'>
+                            {secondaryFilters.map(filter=>{
+                                return <FilterTag key={filter} tagName={filter} handleClick={setSecondaryFilter} selected={filter==secondaryFilter} popping={popping}/>
+                            })}
+                        </SimpleGrid>
+                    </VStack>
                 }
+                {mapDiagram.showing&&
+                <>
+                    <div style={{marginTop:'10px',marginBottom:'10px'}} ref={svg}/>
+                    {mapDiagram.image==null&&
+                    <Flex padding="30px">
+                    <Spinner />
+                    <Flex marginLeft="10px">Loading Map Diagram</Flex>
+                    </Flex>
+                    }
+                </>
+                }
+                
             </div>
             
                 <Table variant="striped" colorScheme="greyBasic">
