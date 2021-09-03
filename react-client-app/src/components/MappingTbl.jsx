@@ -195,7 +195,7 @@ const MappingTbl = () => {
                     source_table:object.source_field.scan_report_table.name,
                     source_field:object.source_field.name,
                 }
-                if(object.scanreport.value){
+                if(object.omop_field.field.includes("_concept_id")){
                     idLists[id][field].term_mapping = {}
                     idLists[id][field].term_mapping[object.scanreport.value] = object.scanreportconcept.concept.concept_id
                 }
@@ -352,10 +352,16 @@ const MappingTbl = () => {
                             <Td><Link style={{color:"#0000FF",}} href={window.u+"fields/?search="+item.source_field.scan_report_table.id}>{item.source_field?item.source_field.scan_report_table.name:null}</Link></Td>
                             <Td><Link style={{color:"#0000FF",}} href={window.u+"values/?search="+item.source_field.id}>{item.source_field?item.source_field.name:null}</Link></Td>
                             <Td>
-                                {item.scanreport&&
-                                <VStack>
-                                <div><span style={{color:"#dd5064",}}>"{item.scanreport.value}"</span><ArrowForwardIcon/><span style={{color:"#1d8459",}}>{item.scanreportconcept.concept.concept_id}</span></div>
-                                </VStack>
+                                {item.omop_field.field.includes("_concept_id")?
+                                    <>
+                                        {item.scanreport&&
+                                            <VStack>
+                                                <div><span style={{color:"#dd5064",}}>"{item.scanreport.value}"</span><ArrowForwardIcon/><span style={{color:"#1d8459",}}>{item.scanreportconcept.concept.concept_id}</span></div>
+                                            </VStack>
+                                        }
+                                    </>
+                                    :
+                                    null
                                 }
                             </Td>
                         </Tr>
