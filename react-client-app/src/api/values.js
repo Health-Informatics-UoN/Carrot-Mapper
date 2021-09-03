@@ -318,6 +318,7 @@ const chunkIds = (list) => {
 
 const getMappingRules = async (id,tableData,switchFilter) => { 
     let mappingRules = await useGet(`${api}/structuralmappingrulesfilter/?scan_report=${id}`)
+    mappingRules = mappingRules.sort((a,b) => (a.concept > b.concept) ? 1 : ((b.concept > a.concept) ? -1 :0))
     const sourceFields = {}
     const omopFields = {}
     const scanReportConcepts = {}
