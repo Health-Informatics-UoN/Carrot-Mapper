@@ -26,7 +26,7 @@ FilterTag.propTypes = {
     tagName: PropTypes.string.isRequired,
 };
 
-// Defaults to dark blue
+
 FilterTag.defaultProps = {
     tagName: "All"
   };

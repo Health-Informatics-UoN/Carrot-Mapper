@@ -296,6 +296,7 @@ const mapConceptToOmopField = () =>{
     }
 }
 
+// function to turn list of ids into a set of sublists of id's who's total length does not exceed a limit
 const chunkIds = (list) => {
     const chunkedList = [[]]
     
@@ -317,8 +318,10 @@ const chunkIds = (list) => {
 }
 
 const getMappingRules = async (id,tableData,switchFilter) => { 
+    // get and sort all mapping rules for a particular scan report
     let mappingRules = await useGet(`${api}/structuralmappingrulesfilter/?scan_report=${id}`)
     mappingRules = mappingRules.sort((a,b) => (a.concept > b.concept) ? 1 : ((b.concept > a.concept) ? -1 :0))
+    // get all unique source fields, omop fields, and scan report concepts that need to be queried
     const sourceFields = {}
     const omopFields = {}
     const scanReportConcepts = {}
@@ -351,6 +354,7 @@ const getMappingRules = async (id,tableData,switchFilter) => {
             
         }
     })
+    // make batch queries for omop fields, scan report concepts, and scan report fields
     const omopFieldKeys = chunkIds(Object.keys(omopFields))
     const omopFieldPromises = [] 
     for(let i=0;i<omopFieldKeys.length;i++){
@@ -367,8 +371,7 @@ const getMappingRules = async (id,tableData,switchFilter) => {
     for(let i=0;i<scanReportFieldKeys.length;i++){
         scanReportFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${scanReportFieldKeys[i].join()}`))
     }
-    const initialPromises = await Promise.all([Promise.all(omopFieldPromises),Promise.all(scanReportConcepPromises),Promise.all(scanReportFieldPromises)])
-    
+    const initialPromises = await Promise.all([Promise.all(omopFieldPromises),Promise.all(scanReportConcepPromises),Promise.all(scanReportFieldPromises)]) 
     const omopFieldsLibrary = [].concat.apply([], initialPromises[0])
     const scanReportConceptsLibrary = [].concat.apply([], initialPromises[1])
     const scanReportFieldLibrary = [].concat.apply([], initialPromises[2])
@@ -383,6 +386,7 @@ const getMappingRules = async (id,tableData,switchFilter) => {
         mappingRules = mappingRules.map(rule=>rule.source_field==element.id?{...rule,source_field:element}:rule)
     })
 
+    // get all unique omop tables, scan report values, scan report tables, and omop concept ids to be queried
     const omopTablesObject = {}
     const scanReportValuesObject = {}
     const scanReportTablesObject = {}
@@ -432,6 +436,7 @@ const getMappingRules = async (id,tableData,switchFilter) => {
     const scanReportTableKeys = chunkIds(Object.keys(scanReportTablesObject))
     const omopConceptKeys = chunkIds(Object.keys(omopConceptsObject))
     
+    // batch query unique ids for these tables
     const omopTablePromises = [] 
     const scanReportValuePromises = [] 
     const scanReportTablePromises = []
@@ -474,8 +479,7 @@ const getMappingRules = async (id,tableData,switchFilter) => {
     for(let i=0;i<scanReportConceptsLibrary.length;i++){
         const element = scanReportValueLibrary.find(val=> val.id==scanReportConceptsLibrary[i].object_id)
         if(element != undefined){
-            element.scan_report_concept = scanReportConceptsLibrary[i]
-            
+            element.scan_report_concept = scanReportConceptsLibrary[i]      
             mappingRules = mappingRules.map(rule=>rule.concept==element.scan_report_concept.id?{...rule,scanreport:element}:rule)
         }
         

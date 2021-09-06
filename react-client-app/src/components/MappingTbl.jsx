@@ -34,54 +34,68 @@ const MappingTbl = () => {
     const allData = useRef([]);
     const scanReport = useRef(null);
     const popping = useRef(false);
+    const svg = useRef(null);
     const [selectedFilter, setFilter] = useState("All");
     const [secondaryFilter, setSecondaryFilter] = useState("All");
     const [secondaryFilters, setSecondaryFilters] = useState([]);
     const destinationFilters =  [   
-                                    {name:"All",map_diagram:[]},
-                                    {name:"person",map_diagram:[]},
-                                    {name:"measurement",map_diagram:[]},
-                                    {name:"condition_occurrence",map_diagram:[]},
-                                    {name:"observation",map_diagram:[]},
-                                    {name:"drug_exposure",map_diagram:[]}
+                                    {name:"All"},
+                                    {name:"person"},
+                                    {name:"measurement"},
+                                    {name:"condition_occurrence"},
+                                    {name:"observation"},
+                                    {name:"drug_exposure"}
                                 ]
     
-                                const svg = useRef(null);
+                                
 
 
 
 
     useEffect(() => {
+        // on initial load of the page, call setInitialData()
         setInitialData()
         },[]);
 
-    // none of the pushStates should run when it is from window.pop
+    
     useEffect(() => {
+        // run when the selected filter is changed
         if(loading==false){
         setLoading(true)
+        // get the current page url
         const url = window.location.href
+        // only change the url if the back button is not being pressed
         if(selectedFilter=="All"){
             if(popping.current == false){
+            // change url 
             window.history.pushState({}, '', url.split("mapping_rules/")[0]+"mapping_rules/")
             }
         }  
         else{
             if(popping.current == false){
+            // change url 
             window.history.pushState({}, '', url.split("mapping_rules/")[0]+"mapping_rules/"+selectedFilter)
             }
         }
+        // function to change filter data being displayed according to which filter is set
         switchFilter(1)
         }
         
     },[selectedFilter]);
 
     useEffect(() => {
+        // run when secondary filter is changed
+
+        // get url of current page
         const url = window.location.href
         if(selectedFilter=="All"){
+            // if primary filter is "All" then show all data
             setValues(allData.current)
         }
         else{
+            // filter data by primary filter
             let filteredData = allData.current.filter(value => value.omop_field.table.table == selectedFilter)
+            // filter data by secondary filter and change the url if needed 
             if(secondaryFilter!="All"){
                 filteredData = filteredData.filter(value=> value.source_field.scan_report_table.name == secondaryFilter) 
                 if(popping.current == false){
@@ -97,6 +111,7 @@ const MappingTbl = () => {
             }
             setValues(filteredData)
         }
+        // remove the current mapping diagram and get a new one
         if(svg.current){
             if (svg.current.hasChildNodes()) {
                 svg.current.removeChild(mapDiagram.image)
@@ -106,16 +121,30 @@ const MappingTbl = () => {
     },[secondaryFilter]);
 
     useEffect(() => {
+        // run when map diagram state has changed
         if(!mapDiagram.image){
+            // if no map diagram is loaded, request to get a new one
             window.getSVG().then(diagram=>{
                 setMapDiagram(mapDiagram=>({...mapDiagram,image:diagram.getElementsByTagName("svg")[0]}))
                 if(svg.current){
+                    if (svg.current.hasChildNodes()) {
+                        // remove all othwe diagrams if they exist
+                        while (svg.current.firstChild) {
+                            svg.current.removeChild(svg.current.lastChild);
+                        }
+                    }
                     svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
                 } 
             })
         }
         else{
             if(svg.current){
+                if (svg.current.hasChildNodes()) {
+                    // remove all othwe diagrams if they exist
+                    while (svg.current.firstChild) {
+                        svg.current.removeChild(svg.current.lastChild);
+                    }
+                }
                 svg.current.appendChild(mapDiagram.image)
             } 
         }
@@ -124,14 +153,15 @@ const MappingTbl = () => {
     
 
     window.onpopstate = function(event) {
+        // run when the back button is pressed to change variable states accordingly
         popping.current = true
         let filter = window.location.href.split("mapping_rules/") 
             if(filter.length !== 1 && filter[1] != "" ){
-                // only gets done if first filter is on
+                // set primary filter if there is one in the url
                 filter = filter[1].split("/")
                 setFilter(filter[0])
                 if(filter[1]){
-                    // only gets done if 2nd filter is on
+                    // set secondary filter if there is one in the url
                     setSecondaryFilter(filter[1])
                 }
                 else{
@@ -143,21 +173,23 @@ const MappingTbl = () => {
             }
       };
     const setInitialData = () =>{
+        // get all mapping rules for the page unfiltered
         getMappingRules(scan_report_id,allData,switchFilter).then(res=>{
             scanReport.current =res
+            // apply filters if any are set in the url
             let filter = window.location.href.split("mapping_rules/") 
             if(filter.length !== 1 && filter[1] != "" ){
-                // only gets done if first filter is on
+                // set primary filter if there is one in the url
                 filter = filter[1].split("/")
                 setFilter(filter[0])
                 if(filter[1]){
-                    // only gets done if 2nd filter is on
+                    // set secondary filter if there is one in the url
                     setSecondaryFilter(filter[1])
                 }
             }
         })
     }
-
+    // call refresh rules function from django then get new data
     const refreshRules=()=>{   
         setLoading(true)   
         setLoadingMessage("Refreshing rules") 
@@ -180,6 +212,7 @@ const MappingTbl = () => {
         jsonRules.metadata = {date_created:new Date().toISOString(),dataset:scanReport.current.dataset}
         
         jsonRules.cdm = {}
+        // filter data that will be downlowded based on current filters set
         let data = allData.current 
         if(selectedFilter=="All"){
             data =  allData.current 
@@ -190,7 +223,7 @@ const MappingTbl = () => {
         if(secondaryFilter!="All"){
             data = data.filter(value=> value.source_field.scan_report_table.name == secondaryFilter) 
         }
-        // filter the data first then use that
+        // create the json object from data to be downloaded
         data.map(object=>{
             const o = object.omop_field.table.table
             if(!jsonRules.cdm[o]){
@@ -216,11 +249,11 @@ const MappingTbl = () => {
                     idLists[id][field].term_mapping[object.scanreport.value] = object.scanreportconcept.concept.concept_id
                 }
             })
-            
             for (const [k, ob] of Object.entries(idLists)) {
                 jsonRules.cdm[key].push(ob)
             }
         }
+            // create file to be downloaded and download it
             const result = JSON.stringify(jsonRules,null,4)
             const fileName = scanReport.current.data_partner.name+"_"+scanReport.current.dataset+"_structural_mapping";
             const blob =  new Blob([result],{type:'application/json'}); 
@@ -233,6 +266,7 @@ const MappingTbl = () => {
             document.body.removeChild(link);
     }
 
+    // change the data that is being displayed according to the currently set primary filter
     const switchFilter = (caller)=>{
         let filteredData
         if(selectedFilter=="All"){
