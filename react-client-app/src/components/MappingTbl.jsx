@@ -391,12 +391,12 @@ const MappingTbl = () => {
                         // Create new row for every value object
                         values.map((item, index) =>
                             <Tr key={index}>
-                                <Td>{item.concept} </Td>
-                                <Td>{item.omop_field.table.table} </Td>
-                                <Td>{item.omop_field.field}</Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_field.scan_report_table.id}>{item.source_field ? item.source_field.scan_report_table.name : null}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field ? item.source_field.name : null}</Link></Td>
-                                <Td>
+                                <Td maxW={[50, 100, 200]} >{item.concept} </Td>
+                                <Td maxW={[50, 100, 200]} >{item.omop_field.table.table} </Td>
+                                <Td maxW={[50, 100, 200]} >{item.omop_field.field}</Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_field.scan_report_table.id}>{item.source_field ? item.source_field.scan_report_table.name : null}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field ? item.source_field.name : null}</Link></Td>
+                                <Td maxW={[50, 100, 200]} >
                                     {item.omop_field.field.includes("_concept_id") ?
                                         <>
                                             {item.scanreport &&
