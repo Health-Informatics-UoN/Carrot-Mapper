@@ -33,16 +33,16 @@
 		document.getElementsByTagName('head')[0].appendChild(s)
 
 
-		var refreshRules = async function(){
+		var refreshRules = async function () {
 			//use ajax to post a request to retrieve one
 			console.log("it called")
 			const res = await $.ajax({
-					type: "POST",
-					url: window.location,
-					data: {
+				type: "POST",
+				url: window.location,
+				data: {
 					'refresh_rules': true,
 					'csrfmiddlewaretoken': '{{ csrf_token }}',
-					}
+				}
 			});
 			return res;
 		}
@@ -57,7 +57,7 @@
 				}
 			});
 			return response
-  		}
+		}
     </script>
 </div>
 
