@@ -14,91 +14,16 @@
     </ol>
 </nav>
 
-<h2>Fields</h2>
-
-{% if object_list %}
-
-    <div>
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">Field</th>
-                <th scope="col">Description</th>
-                <th scope="col">Data Type</th>
-                <th scope="col">Concepts</th>
-                <th></th>
-                <th>Edit</th>
-                <th>Run NLP</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for object in object_list %}
-            <tr>
-                <form class="" method="post" action="{% url 'scan_report_field_concept' %}">
-                  {% csrf_token %}
-                {% if object.concepts.all|length == 0 %}
-                    <td><a href="{% url 'values' %}?search={{ object.id }}">
-                        {{ object.name| truncatechars:20 }}</a>
-                        
-                    </td>
-                {% else %}
-                    <td>
-                        {{ object.name| truncatechars:20 }}
-                        
-                    </td>
-                {% endif %}
-                <td>
-                    {{object.description_column}}
-                </td>
-                <td>
-                    {{ object.type_column }}
-                </td> 
-
-                <td>
-                    {% for concept in object.concepts.all %}
-                        
-                        {% if concept.nlp_entity %}
-                        <span style="color:blue">
-                            {{ concept.concept.concept_id }} - 
-                            {{ concept.concept.concept_name }}
-                            ({{ concept.concept.domain_id }}) - 
-                            Confidence={{concept.nlp_confidence}} - 
-                            {{concept.nlp_vocabulary}}
-                        </span> <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br/>
-                        {% else %}
-                        <span>
-                            {{ concept.concept.concept_id }} -
-                            {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
-                            <a href="{% url 'scan_report_field_concept-delete' %}?scan_report_table_id={{object.scan_report_table.id}}&scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a>
-                        </span> 
-
-                        {% endif %}
-                    {% endfor %}
-                </td>
-                <td>
-                    <input type="hidden" name="scan_report_field_id" required id="id_scan_report_field_id" value="{{ object.id }}">
-                    <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
-                    <button type="submit" class="btn btn-primary">Add</button>
-                </td>
-                <td><a href="{% url 'scan-report-field-update' object.id %}">Edit Field</a></td>
-                <td><a href="{% url 'run-nlp' %}?search={{ object.id }}">RunNLP</a></td>
-            </form>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-       
-        <!--<div class="form-row">
-            <input type="submit" class="btn btn-primary" name="update"
-                   value="Update">
-            <input type="submit" class="btn btn-secondary" name="run_nlp"
-                   value="Run NLP">
-            <input type="submit" class="btn btn-secondary" name="run_usagi"
-                   value="Run Usagi">
-        </div>-->
-    </div>
-
-{% endif %}
+<div>
+    <!-- Loads in React Components from index.js -->
+    <div id='root'></div>
+    <script type="text/javascript" >
+        var a = "{{a}}"
+        var u = "{{u}}"
+    </script>
+    <script type="module" src="../../../static/javascript/react/src/fieldsTable.js"></script>
+    
+</div>
 
 <script type="text/javascript">
     $("#test").click(function () {

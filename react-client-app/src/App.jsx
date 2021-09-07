@@ -4,15 +4,18 @@ import styles from './styles'
 import DataTbl from './components/DataTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
+import FieldsTbl from './components/FieldsTbl';
 
-const App = ({page}) => {
-    const getPage = () =>{
-        switch (page){
+const App = ({ page }) => {
+    const getPage = () => {
+        switch (page) {
             case "Values":
                 return <DataTbl />
             case "Mapping Rules":
-                return <MappingTbl/>
-            default: 
+                return <MappingTbl />
+            case "Fields":
+                return <FieldsTbl />
+            default:
                 return <DataTbl />
         }
     }
@@ -21,7 +24,7 @@ const App = ({page}) => {
             <PageHeading text={page} />
             {getPage()}
         </ChakraProvider>
-   )
+    )
 }
 
 export default App;
