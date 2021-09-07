@@ -659,7 +659,8 @@ class StructuralMappingTableListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        
+        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
+        url = os.environ.get("CCOM_APP_URL")
         pk = self.kwargs.get("pk")
         
         scan_report = ScanReport.objects.get(pk=pk)
@@ -680,7 +681,9 @@ class StructuralMappingTableListView(ListView):
                 "omop_tables": m_allowed_tables,
                 "source_tables":source_tables,
                 "filtered_omop_table":filtered_omop_table,
-                "current_source_table":current_source_table
+                "current_source_table":current_source_table,
+                "a": auth,
+                "u":url
             }
         )
         return context
