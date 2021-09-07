@@ -327,7 +327,7 @@ const FieldsTbl = () => {
                             // Create new row for every value object
                             values.map((item, index) =>
                                 <Tr key={item.id}>
-                                    <Td><Link style={{ color: "#0000FF", }} href={api + "/values/?search=" + item.id}>{item.name}</Link></Td>
+                                    <Td><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.id}>{item.name}</Link></Td>
                                     <Td>{item.description_column}</Td>
                                     <Td>{item.type_column}</Td>
 
@@ -373,7 +373,7 @@ const FieldsTbl = () => {
                                             )}
                                         </Formik>
                                     </Td>
-                                    <Td><Link style={{ color: "#0000FF", }} href={api + "/fields/?search="}>Edit Field</Link></Td>
+                                    <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/"+item.id+"/update/"}>Edit Field</Link></Td>
                                     <Td onClick={() => { runNLP(item.id) }}><Link style={{ color: "#0000FF", }}>Run NLP</Link></Td>
                                 </Tr>
                             )
