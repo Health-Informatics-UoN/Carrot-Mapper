@@ -328,7 +328,7 @@ const FieldsTbl = () => {
                             values.map((item, index) =>
                                 <Tr key={item.id}>
                                     <Td><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.id}>{item.name}</Link></Td>
-                                    <Td>{item.description_column}</Td>
+                                    <Td maxW="500px">{item.description_column}</Td>
                                     <Td>{item.type_column}</Td>
 
                                     <Td>
