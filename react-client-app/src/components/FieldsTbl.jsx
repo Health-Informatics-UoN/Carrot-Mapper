@@ -51,13 +51,6 @@ const FieldsTbl = () => {
         })
     }, []);
 
-    const runNLP = (id) => {
-        console.log(id)
-        // Checks to see if the field is 'pass_from_source'
-        // If True, we pass field-level data i.e. a single string (field description)
-        // If False, we pass all values associated with that field
-    }
-
     const handleSubmit = (id, concept) => {
         const table = scanReportTable.current
         if (concept === '') {
@@ -374,7 +367,7 @@ const FieldsTbl = () => {
                                         </Formik>
                                     </Td>
                                     <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/"+item.id+"/update/"}>Edit Field</Link></Td>
-                                    <Td onClick={() => { runNLP(item.id) }}><Link style={{ color: "#0000FF", }}>Run NLP</Link></Td>
+                                    <Td><Link href={"/nlp/run?search="+item.id}  style={{ color: "#0000FF", }}>Run NLP</Link></Td>
                                 </Tr>
                             )
                         }
