@@ -299,196 +299,236 @@ const mapConceptToOmopField = () =>{
 // function to turn list of ids into a set of sublists of id's who's total length does not exceed a limit
 const chunkIds = (list) => {
     const chunkedList = [[]]
-    
-        let maxChars = 2000
-        let currentChars = 80
-        list.map(async (value,index) => {
-                const digits = value.toString().length
-                if(currentChars+digits> maxChars-20){
-                    currentChars = 80+digits
-                    chunkedList.push([])
-                    chunkedList[chunkedList.length-1].push(value)
-                } 
-                else{
-                    currentChars = currentChars+digits
-                    chunkedList[chunkedList.length-1].push(value)
-                }                                 
-        })
+
+    let maxChars = 2000
+    let currentChars = 80
+    list.map(async (value, index) => {
+        const digits = value.toString().length
+        if (currentChars + digits > maxChars - 20) {
+            currentChars = 80 + digits
+            chunkedList.push([])
+            chunkedList[chunkedList.length - 1].push(value)
+        }
+        else {
+            currentChars = currentChars + digits
+            chunkedList[chunkedList.length - 1].push(value)
+        }
+    })
+    if(chunkedList[0].length == 0){
+        return []
+    }
     return chunkedList
 }
 
-const getMappingRules = async (id,tableData,switchFilter) => { 
+const getMappingRules = async (id, tableData, switchFilter) => {
     // get and sort all mapping rules for a particular scan report
     let mappingRules = await useGet(`${api}/structuralmappingrulesfilter/?scan_report=${id}`)
-    mappingRules = mappingRules.sort((a,b) => (a.concept > b.concept) ? 1 : ((b.concept > a.concept) ? -1 :0))
+    const scanReport = await useGet(`${api}/scanreports/${id}`)
+    const datapartner = await useGet(`${api}/datapartners/${scanReport.data_partner}`)
+    scanReport.data_partner = datapartner
+    if(mappingRules.length==0){
+        tableData.current = mappingRules
+        switchFilter(3)
+        return scanReport
+    }
+    mappingRules = mappingRules.sort((a, b) => (a.concept > b.concept) ? 1 : ((b.concept > a.concept) ? -1 : 0))
     // get all unique source fields, omop fields, and scan report concepts that need to be queried
     const sourceFields = {}
     const omopFields = {}
     const scanReportConcepts = {}
-    mappingRules.map(value=>{
-        if(value.source_field){
-            if(sourceFields[value.source_field]){
+    mappingRules.map(value => {
+        if (value.source_field) {
+            if (sourceFields[value.source_field]) {
                 sourceFields[value.source_field].push(value.id)
             }
-            else{
-                sourceFields[value.source_field] = [value.id] 
+            else {
+                sourceFields[value.source_field] = [value.id]
             }
         }
 
-        if(value.omop_field){
-            if(omopFields[value.omop_field]){
+        if (value.omop_field) {
+            if (omopFields[value.omop_field]) {
                 omopFields[value.omop_field].push(value.id)
             }
-            else{
-                omopFields[value.omop_field] = [value.id] 
+            else {
+                omopFields[value.omop_field] = [value.id]
             }
         }
 
-        if(value.concept){
-            if(scanReportConcepts[value.concept]){
+        if (value.concept) {
+            if (scanReportConcepts[value.concept]) {
                 scanReportConcepts[value.concept].push(value.id)
             }
-            else{
-                scanReportConcepts[value.concept] = [value.id] 
+            else {
+                scanReportConcepts[value.concept] = [value.id]
             }
-            
+
         }
     })
     // make batch queries for omop fields, scan report concepts, and scan report fields
     const omopFieldKeys = chunkIds(Object.keys(omopFields))
-    const omopFieldPromises = [] 
-    for(let i=0;i<omopFieldKeys.length;i++){
+    const omopFieldPromises = []
+    for (let i = 0; i < omopFieldKeys.length; i++) {
         omopFieldPromises.push(useGet(`${api}/omopfieldsfilter/?id__in=${omopFieldKeys[i].join()}`))
     }
     const scanReportConceptKeys = chunkIds(Object.keys(scanReportConcepts))
-    const scanReportConcepPromises = [] 
-    for(let i=0;i<scanReportConceptKeys.length;i++){
-        scanReportConcepPromises.push(useGet(`${api}/scanreportconceptsfilter/?id__in=${scanReportConceptKeys[i].join()}`))
+    const scanReportConceptPromises = []
+    for (let i = 0; i < scanReportConceptKeys.length; i++) {
+        scanReportConceptPromises.push(useGet(`${api}/scanreportconceptsfilter/?id__in=${scanReportConceptKeys[i].join()}`))
     }
 
-    const scanReportFieldKeys = chunkIds(Object.keys(sourceFields))
-    const scanReportFieldPromises = [] 
-    for(let i=0;i<scanReportFieldKeys.length;i++){
-        scanReportFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${scanReportFieldKeys[i].join()}`))
+    const sourceFieldKeys = chunkIds(Object.keys(sourceFields))
+    const sourceFieldPromises = []
+    for (let i = 0; i < sourceFieldKeys.length; i++) {
+        sourceFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${sourceFieldKeys[i].join()}`))
     }
-    const initialPromises = await Promise.all([Promise.all(omopFieldPromises),Promise.all(scanReportConcepPromises),Promise.all(scanReportFieldPromises)]) 
+    const initialPromises = await Promise.all([Promise.all(omopFieldPromises), Promise.all(scanReportConceptPromises), Promise.all(sourceFieldPromises)])
     const omopFieldsLibrary = [].concat.apply([], initialPromises[0])
     const scanReportConceptsLibrary = [].concat.apply([], initialPromises[1])
-    const scanReportFieldLibrary = [].concat.apply([], initialPromises[2])
-    
+    const sourceFieldLibrary = [].concat.apply([], initialPromises[2])
+
     omopFieldsLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>rule.omop_field==element.id?{...rule,omop_field:element}:rule)
+        mappingRules = mappingRules.map(rule => rule.omop_field == element.id ? { ...rule, omop_field: element } : rule)
     })
     scanReportConceptsLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>rule.concept==element.id?{...rule,scanreportconcept:element}:rule)
+        mappingRules = mappingRules.map(rule => rule.concept == element.id ? { ...rule, scanreportconcept: element } : rule)
     })
-    scanReportFieldLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>rule.source_field==element.id?{...rule,source_field:element}:rule)
+    sourceFieldLibrary.forEach(element => {
+        mappingRules = mappingRules.map(rule => rule.source_field == element.id ? { ...rule, source_field: element } : rule)
     })
 
     // get all unique omop tables, scan report values, scan report tables, and omop concept ids to be queried
     const omopTablesObject = {}
     const scanReportValuesObject = {}
+    const scanReportFieldsObject = {}
     const scanReportTablesObject = {}
     const omopConceptsObject = {}
 
-    
-        scanReportConceptsLibrary.map(value=>{
-            if(value.object_id){
-                if(scanReportValuesObject[value.object_id]){
+
+    scanReportConceptsLibrary.map(value => {
+        if (value.content_type == 17) {
+            if (value.object_id) {
+                if (scanReportValuesObject[value.object_id]) {
                     scanReportValuesObject[value.object_id].push(value.id)
                 }
-                else{
-                    scanReportValuesObject[value.object_id] = [value.id] 
+                else {
+                    scanReportValuesObject[value.object_id] = [value.id]
                 }
             }
-            if(value.concept){
-                if(omopConceptsObject[value.concept]){
-                    omopConceptsObject[value.concept].push(value.id)
+        }
+        else {
+            if (value.object_id) {
+                if (scanReportFieldsObject[value.object_id]) {
+                    scanReportFieldsObject[value.object_id].push(value.id)
                 }
-                else{
-                    omopConceptsObject[value.concept] = [value.id] 
-                }
-            }
-        })
-        scanReportFieldLibrary.map(value=>{
-            if(value.scan_report_table){
-                if(scanReportTablesObject[value.scan_report_table]){
-                    scanReportTablesObject[value.scan_report_table].push(value.id)
-                }
-                else{
-                    scanReportTablesObject[value.scan_report_table] = [value.id] 
+                else {
+                    scanReportFieldsObject[value.object_id] = [value.id]
                 }
             }
-        })
-        omopFieldsLibrary.map(value=>{
-            if(value.table){
-                if(omopTablesObject[value.table]){
-                    omopTablesObject[value.table].push(value.id)
-                }
-                else{
-                    omopTablesObject[value.table] = [value.id] 
-                }
+        }
+
+        if (value.concept) {
+            if (omopConceptsObject[value.concept]) {
+                omopConceptsObject[value.concept].push(value.id)
             }
-        })
-    const omopTableKeys = chunkIds(Object.keys(omopTablesObject)) 
+            else {
+                omopConceptsObject[value.concept] = [value.id]
+            }
+        }
+    })
+    sourceFieldLibrary.map(value => {
+        if (value.scan_report_table) {
+            if (scanReportTablesObject[value.scan_report_table]) {
+                scanReportTablesObject[value.scan_report_table].push(value.id)
+            }
+            else {
+                scanReportTablesObject[value.scan_report_table] = [value.id]
+            }
+        }
+    })
+    omopFieldsLibrary.map(value => {
+        if (value.table) {
+            if (omopTablesObject[value.table]) {
+                omopTablesObject[value.table].push(value.id)
+            }
+            else {
+                omopTablesObject[value.table] = [value.id]
+            }
+        }
+    })
+    const omopTableKeys = chunkIds(Object.keys(omopTablesObject))
     const scanReportValueKeys = chunkIds(Object.keys(scanReportValuesObject))
+    const scanReportFieldKeys = chunkIds(Object.keys(scanReportFieldsObject))
     const scanReportTableKeys = chunkIds(Object.keys(scanReportTablesObject))
     const omopConceptKeys = chunkIds(Object.keys(omopConceptsObject))
-    
+
     // batch query unique ids for these tables
-    const omopTablePromises = [] 
-    const scanReportValuePromises = [] 
+    const omopTablePromises = []
+    const scanReportValuePromises = []
+    const scanReportFieldPromises = []
     const scanReportTablePromises = []
     const omopConceptPromises = []
 
-    for(let i=0;i<omopTableKeys.length;i++){
+    for (let i = 0; i < omopTableKeys.length; i++) {
         omopTablePromises.push(useGet(`${api}/omoptablesfilter/?id__in=${omopTableKeys[i].join()}`))
     }
-    for(let i=0;i<scanReportValueKeys.length;i++){
+    for (let i = 0; i < scanReportValueKeys.length; i++) {
         scanReportValuePromises.push(useGet(`${api}/scanreportvaluesfilter/?id__in=${scanReportValueKeys[i].join()}`))
     }
-    for(let i=0;i<scanReportTableKeys.length;i++){
+    for (let i = 0; i < scanReportTableKeys.length; i++) {
         scanReportTablePromises.push(useGet(`${api}/scanreporttablesfilter/?id__in=${scanReportTableKeys[i].join()}`))
     }
-    for(let i=0;i<omopConceptKeys.length;i++){
+    for (let i = 0; i < omopConceptKeys.length; i++) {
         omopConceptPromises.push(useGet(`${api}/omop/conceptsfilter/?concept_id__in=${omopConceptKeys[i].join()}`))
     }
-    
+    for (let i = 0; i < scanReportFieldKeys.length; i++) {
+        scanReportFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${scanReportFieldKeys[i].join()}`))
+    }
 
-    const secondaryPromises = await Promise.all([Promise.all(omopTablePromises),Promise.all(scanReportValuePromises),Promise.all(scanReportTablePromises),Promise.all(omopConceptPromises)])
-    
+
+    const secondaryPromises = await Promise.all([Promise.all(omopTablePromises), Promise.all(scanReportValuePromises), Promise.all(scanReportTablePromises), Promise.all(omopConceptPromises), Promise.all(scanReportFieldPromises)])
+
     const omopTablesLibrary = [].concat.apply([], secondaryPromises[0])
     const scanReportValueLibrary = [].concat.apply([], secondaryPromises[1])
     const scanReportTableLibrary = [].concat.apply([], secondaryPromises[2])
     const omopConceptLibrary = [].concat.apply([], secondaryPromises[3])
-    
+    const scanReportFieldLibrary = [].concat.apply([], secondaryPromises[4])
+
     omopTablesLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>
-            rule.omop_field.table==element.id?{...rule,omop_field:{...rule.omop_field,table:element}}:rule)
+        mappingRules = mappingRules.map(rule =>
+            rule.omop_field.table == element.id ? { ...rule, omop_field: { ...rule.omop_field, table: element } } : rule)
     })
     omopConceptLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>
-            rule.scanreportconcept.concept==element.concept_id?{...rule,scanreportconcept:{...rule.scanreportconcept,concept:element}}:rule)
+        mappingRules = mappingRules.map(rule =>
+            rule.scanreportconcept.concept == element.concept_id ? { ...rule, scanreportconcept: { ...rule.scanreportconcept, concept: element } } : rule)
     })
     scanReportTableLibrary.forEach(element => {
-        mappingRules = mappingRules.map(rule=>
-            rule.source_field.scan_report_table==element.id?{...rule,source_field:{...rule.source_field,scan_report_table:element}}:rule)
+        mappingRules = mappingRules.map(rule =>
+            rule.source_field.scan_report_table == element.id ? { ...rule, source_field: { ...rule.source_field, scan_report_table: element } } : rule)
     })
 
-    for(let i=0;i<scanReportConceptsLibrary.length;i++){
-        const element = scanReportValueLibrary.find(val=> val.id==scanReportConceptsLibrary[i].object_id)
-        if(element != undefined){
-            element.scan_report_concept = scanReportConceptsLibrary[i]      
-            mappingRules = mappingRules.map(rule=>rule.concept==element.scan_report_concept.id?{...rule,scanreport:element}:rule)
+    for (let i = 0; i < scanReportConceptsLibrary.length; i++) {
+        if (scanReportConceptsLibrary[i].content_type == 17) {
+            const element = scanReportValueLibrary.find(val => val.id == scanReportConceptsLibrary[i].object_id)
+            if (element != undefined) {
+                element.scan_report_concept = scanReportConceptsLibrary[i]
+                mappingRules = mappingRules.map(rule => rule.concept == element.scan_report_concept.id ? { ...rule, scanreport: element } : rule)
+            }
+            
         }
-        
+        else {
+            const element = scanReportFieldLibrary.find(val => val.id == scanReportConceptsLibrary[i].object_id)
+            if (element != undefined) {
+                element.scan_report_concept = scanReportConceptsLibrary[i]
+                mappingRules = mappingRules.map(rule => rule.concept == element.scan_report_concept.id ? { ...rule, scanreport: element } : rule)
+            }
+        }
+
+
     }
 
     tableData.current = mappingRules
-    const scanReport = await useGet(`${api}/scanreports/${id}`)
-    const datapartner = await useGet(`${api}/datapartners/${scanReport.data_partner}`)
-    scanReport.data_partner = datapartner
+    
     switchFilter(3)
     return scanReport
 }
