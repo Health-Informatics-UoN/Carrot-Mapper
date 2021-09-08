@@ -80,8 +80,8 @@ class ScanReportTableSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__'        
 
 class ScanReportFieldSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    name=serializers.CharField(max_length=64, allow_blank=True)
-    description_column=serializers.CharField(max_length=256, allow_blank=True)
+    name=serializers.CharField(max_length=512, allow_blank=True)
+    description_column=serializers.CharField(max_length=512, allow_blank=True)
     class Meta:
         model=ScanReportField
         fields='__all__' 
