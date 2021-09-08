@@ -245,8 +245,13 @@ const MappingTbl = () => {
                     source_field: object.source_field.name,
                 }
                 if (object.omop_field.field.includes("_concept_id")) {
-                    idLists[id][field].term_mapping = {}
-                    idLists[id][field].term_mapping[object.scanreport.value] = object.scanreportconcept.concept.concept_id
+                    if(object.scanreportconcept.content_type==17){
+                        idLists[id][field].term_mapping = {}
+                        idLists[id][field].term_mapping[object.scanreport.value] = object.scanreportconcept.concept.concept_id
+                    }
+                    else{
+                        idLists[id][field].term_mapping = object.scanreportconcept.concept.concept_id
+                    }
                 }
             })
             for (const [k, ob] of Object.entries(idLists)) {
@@ -398,13 +403,13 @@ const MappingTbl = () => {
                                 <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field ? item.source_field.name : null}</Link></Td>
                                 <Td maxW={[50, 100, 200]} >
                                     {item.omop_field.field.includes("_concept_id") ?
-                                        <>
-                                            {item.scanreport &&
-                                                <VStack>
-                                                    <div><span style={{ color: "#dd5064", }}>"{item.scanreport.value}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.scanreportconcept.concept.concept_id}</span></div>
-                                                </VStack>
+                                        <VStack>
+                                            {item.scanreportconcept.content_type == 17 ?
+                                                <div><span style={{ color: "#dd5064", }}>"{item.scanreport.value}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.scanreportconcept.concept.concept_id}</span></div>
+                                                :
+                                                <div>{item.scanreportconcept.concept.concept_id}</div>
                                             }
-                                        </>
+                                        </VStack>
                                         :
                                         null
                                     }
