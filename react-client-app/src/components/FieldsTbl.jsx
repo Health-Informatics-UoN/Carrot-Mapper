@@ -324,7 +324,7 @@ const FieldsTbl = () => {
                                     <Td maxW="500px">{item.description_column}</Td>
                                     <Td>{item.type_column}</Td>
 
-                                    <Td>
+                                    <Td maxW="300px">
                                         {item.conceptsLoaded ?
                                             item.concepts.length > 0 &&
                                             <VStack alignItems='flex-start' >
