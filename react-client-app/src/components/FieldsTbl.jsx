@@ -321,7 +321,7 @@ const FieldsTbl = () => {
                             values.map((item, index) =>
                                 <Tr key={item.id}>
                                     <Td><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.id}>{item.name}</Link></Td>
-                                    <Td maxW="500px">{item.description_column}</Td>
+                                    <Td maxW="250px"><Text maxW="100%" w="max-content">{item.description_column}</Text></Td>
                                     <Td>{item.type_column}</Td>
 
                                     <Td maxW="300px">
@@ -352,7 +352,7 @@ const FieldsTbl = () => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            width='30%'
+                                                            width='70px'
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
