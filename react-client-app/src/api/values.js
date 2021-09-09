@@ -1,6 +1,7 @@
 
 const authToken = window.a
 const api = window.u+'api'
+const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
@@ -274,7 +275,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
 const mapConceptToOmopField = () =>{
     // cached values
     let omopTables = null
-    const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
+    
     // mapping function which is returned by this function
     return async (fields,domain,table) =>{
         //if omop table is not specified
@@ -587,6 +588,6 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 
 
 export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,
-    getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,
+    getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
      getScanReportConcepts, getConcept,getScanReports,authToken,api,
      }

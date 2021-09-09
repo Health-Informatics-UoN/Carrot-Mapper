@@ -22,7 +22,7 @@ import {
 
 import { Formik, Form, } from 'formik'
 import {
-    api, getScanReportConcepts, useDelete, useGet,
+    api, getScanReportConcepts, useDelete, useGet, m_allowed_tables,
     getScanReportTable, saveMappingRules, getScanReportFieldValues, mapConceptToOmopField, usePost
 } from '../api/values'
 import ConceptTag from './ConceptTag'
@@ -95,7 +95,7 @@ const FieldsTbl = () => {
                         return
                     }
 
-                    const m_allowed_tables = ['person', 'measurement', 'condition_occurrence', 'observation', 'drug_exposure']
+
                     const cachedOmopFunction = mapConceptToOmopField()
                     const domain = response.domain_id.toLowerCase()
                     const fields = await useGet(`${api}/omopfields/`)
