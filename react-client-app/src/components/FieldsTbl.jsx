@@ -29,8 +29,8 @@ import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
 const FieldsTbl = () => {
-    const value =/* parseInt(new URLSearchParams(window.location.search).get("search")) */
-        570
+    const value =parseInt(new URLSearchParams(window.location.search).get("search"))
+       // 570
     //285
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
