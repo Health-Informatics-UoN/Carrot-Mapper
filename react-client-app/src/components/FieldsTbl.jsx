@@ -29,9 +29,7 @@ import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
 const FieldsTbl = () => {
-    const value =parseInt(new URLSearchParams(window.location.search).get("search"))
-       // 570
-    //285
+    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [values, setValues] = useState([]);
@@ -42,10 +40,13 @@ const FieldsTbl = () => {
     const scanReportTable = useRef([]);
 
     useEffect(() => {
+        // run on initial render
+        // get field table values for specified id
         getScanReportFieldValues(value, valuesRef).then(val => {
             setValues(val)
             setLoading(false)
         })
+        // get scan report table data to use for checking person id and date event
         getScanReportTable(value).then(table => {
             scanReportTable.current = table
         })
@@ -80,8 +81,10 @@ const FieldsTbl = () => {
             const scanReportValue = values.find(f => f.id === id)
             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
             setValues(valuesRef.current)
+            // check if concept exists
             useGet(`${api}/omop/concepts/${concept}`)
                 .then(async response => {
+                    // if concept does not exist, display error
                     if (response.detail == 'Not found.') {
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                         setValues(valuesRef.current)
@@ -95,7 +98,7 @@ const FieldsTbl = () => {
                         return
                     }
 
-
+                    // check if concept has valid destination field
                     const cachedOmopFunction = mapConceptToOmopField()
                     const domain = response.domain_id.toLowerCase()
                     const fields = await useGet(`${api}/omopfields/`)
@@ -113,6 +116,7 @@ const FieldsTbl = () => {
                         return
 
                     }
+                    // check concepts omop table has been implemented
                     const omopTable = await useGet(`${api}/omoptables/${destination_field.table}`)
                     if (!m_allowed_tables.includes(omopTable.table)) {
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
@@ -126,7 +130,7 @@ const FieldsTbl = () => {
                         onOpen()
                         return
                     }
-
+                    // create scan report concept
                     const data =
                     {
                         concept: concept,
@@ -135,7 +139,7 @@ const FieldsTbl = () => {
                     }
                     usePost(`${api}/scanreportconcepts/`, data)
                         .then(function (response) {
-                            //Re-fetch API data        
+                            //Re-fetch scan report concepts for field     
                             getScanReportConcepts(id).then(scanreportconcepts => {
                                 if (scanreportconcepts.length > 0) {
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
@@ -222,10 +226,10 @@ const FieldsTbl = () => {
     const handleDelete = (id, conceptId) => {
         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
         setValues(valuesRef.current)
-        //PUT Request to API
+        //DEETE Request to API
         useDelete(`scanreportconcepts/${conceptId}`)
             .then(function (response) {
-                //Re-fetch the concepts for that particular scan report
+                //Re-fetch the concepts for that particular field
                 getScanReportConcepts(id).then(scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
                         const conceptIds = scanreportconcepts.map(value => value.concept)
@@ -270,7 +274,7 @@ const FieldsTbl = () => {
     }
 
     if (error) {
-        //Render Loading State
+        //Render Error State
         return (
             <Flex padding="30px">
                 <Flex marginLeft="10px">An Error has occured while fetching values</Flex>
@@ -288,7 +292,7 @@ const FieldsTbl = () => {
         )
     }
     if (values.length < 1) {
-        //Render Loading State
+        //Render Empty List State
         return (
             <Flex padding="30px">
                 <Flex marginLeft="10px">No Field values Found</Flex>
@@ -366,8 +370,8 @@ const FieldsTbl = () => {
                                             )}
                                         </Formik>
                                     </Td>
-                                    <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/"+item.id+"/update/"}>Edit Field</Link></Td>
-                                    <Td><Link href={"/nlp/run?search="+item.id}  style={{ color: "#0000FF", }}>Run NLP</Link></Td>
+                                    <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/" + item.id + "/update/"}>Edit Field</Link></Td>
+                                    <Td><Link href={"/nlp/run?search=" + item.id} style={{ color: "#0000FF", }}>Run NLP</Link></Td>
                                 </Tr>
                             )
                         }

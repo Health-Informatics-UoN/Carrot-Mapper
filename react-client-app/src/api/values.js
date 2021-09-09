@@ -578,7 +578,7 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
     const omopConcepts = [].concat.apply([], conceptPromiseResults)
 
     scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-    // map each scanroport concept to it's value
+    // map each scanreport concept to it's value
     response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
     valuesRef.current = response
     console.log(response)
