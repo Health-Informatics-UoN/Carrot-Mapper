@@ -587,7 +587,8 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 }
 
 const getScanReportTableRows = async (id) =>{
-    const table = useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    let table = useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    table = table.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
     
     return table
 }
