@@ -1,18 +1,18 @@
-import {Tag,TagLabel, TagCloseButton, Wrap} from '@chakra-ui/react';
+import { Tag, Text, TagCloseButton, Wrap } from '@chakra-ui/react';
 import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 
-const ConceptTag = ({conceptId,conceptIdentifier,conceptName, itemId, handleDelete, backgroundColor}) => {
+const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleDelete, backgroundColor }) => {
 
     const tagColour = (id) => {
-        switch(id) {
+        switch (id) {
             case 999:
                 return '#ff0000'
             case 111:
                 return '#33cc33'
-            default: 
-                return backgroundColor      
-            }
+            default:
+                return backgroundColor
+        }
     }
 
     return (
@@ -22,16 +22,15 @@ const ConceptTag = ({conceptId,conceptIdentifier,conceptName, itemId, handleDele
             borderRadius="full"
             variant="solid"
             backgroundColor={tagColour(conceptId)}
-            >
-            <TagLabel padding='5px'>{conceptId}</TagLabel>
-            <TagLabel padding='5px'>{conceptName}</TagLabel>
+        >
+            <Text w="max-content" ml="8px" py="4px">{conceptId + " " + conceptName}</Text>
             <Wrap direction='right'>
-            <TagCloseButton onClick={() => {handleDelete(itemId, conceptIdentifier)}} />
+                <TagCloseButton onClick={() => { handleDelete(itemId, conceptIdentifier) }} />
             </Wrap>
 
- 
-         </Tag>
-        
+
+        </Tag>
+
     )
 }
 
@@ -44,5 +43,5 @@ ConceptTag.propTypes = {
 // Defaults to dark blue
 ConceptTag.defaultProps = {
     backgroundColor: "#3C579E"
-  };
+};
 export default ConceptTag

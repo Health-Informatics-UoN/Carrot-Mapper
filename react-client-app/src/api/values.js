@@ -1,6 +1,7 @@
 
 const authToken = window.a
 const api = window.u+'api'
+const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
@@ -26,6 +27,15 @@ const usePost = async (url,data) =>{
     );
     const res = await response.json();
     return res;
+}
+const useDelete = async (url) => {
+    const response = await fetch(`${api}/${url}`,
+        {
+            method: "DELETE",
+            headers: { Authorization: "Token " + authToken },
+        }
+    );
+    return response;
 }
 // get scan report field with given id
 const getScanReportField = async (id)=>{
@@ -232,26 +242,29 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         data.omop_field = fields.filter(field=> field.field == element && field.table==destination_field.table)[0].id
         promises.push(usePost(`${api}/structuralmappingrules/`,data))
     })
+    // set source field depending on content type
+    if(scan_report_concept.content_type==15){
+        data.source_field = scan_report_concept.object_id 
+    }
+    else{
+        data.source_field = scan_report_value.scan_report_field
+    }
     //_source_concept_id
     data.omop_field = destination_field.id
-    data.source_field = scan_report_value.scan_report_field
     promises.push(usePost(`${api}/structuralmappingrules/`,data))
     //_concept_id
     let tempOmopField = await cachedOmopFunction(fields,domain+"_concept_id")
     data.omop_field = tempOmopField.id
-    data.source_field = scan_report_value.scan_report_field
     promises.push(usePost(`${api}/structuralmappingrules/`,data))
     //_source_value
     tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
-    data.source_field = scan_report_value.scan_report_field
     promises.push(usePost(`${api}/structuralmappingrules/`,data))
     //measurement
     if(domain == 'measurement'){
         tempOmopField = await cachedOmopFunction(fields,"value_as_number","measurement")
         console.log(tempOmopField)
         data.omop_field = tempOmopField.id
-        data.source_field = scan_report_value.scan_report_field
         promises.push(usePost(`${api}/structuralmappingrules/`,data))
     }  
     // when all requests have finished, return
@@ -262,7 +275,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
 const mapConceptToOmopField = () =>{
     // cached values
     let omopTables = null
-    const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
+    
     // mapping function which is returned by this function
     return async (fields,domain,table) =>{
         //if omop table is not specified
@@ -533,9 +546,48 @@ const getMappingRules = async (id, tableData, switchFilter) => {
     return scanReport
 }
 
+const getScanReportFieldValues = async (valueId, valuesRef) => {
+    let response = await useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    if (response.length == 0) {
+        return []
+    }
+    const ids = chunkIds(response.map(value => value.id))
+    const promises = []
+    // send API request for every sublist
+    for (let i = 0; i < ids.length; i++) {
+        promises.push(useGet(`${api}/scanreportconceptsfilter/?object_id__in=${ids[i].join()}`))
+    }
+    const promiseResults = await Promise.all(promises)
+    let scanreportconcepts = [].concat.apply([], promiseResults)
+
+    if (scanreportconcepts.length == 0) {
+        response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
+        valuesRef.current = response
+        return response
+    }
+    const conceptIds = chunkIds(scanreportconcepts.map(value => value.concept))
+
+    const conceptPromises = []
+    // send API request for every sublist
+    for (let i = 0; i < conceptIds.length; i++) {
+        conceptPromises.push(useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
+    }
+
+    const conceptPromiseResults = await Promise.all(conceptPromises)
+
+    const omopConcepts = [].concat.apply([], conceptPromiseResults)
+
+    scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
+    // map each scanreport concept to it's value
+    response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
+    valuesRef.current = response
+    console.log(response)
+    return response
+}
 
 
-export { getScanReportValues,saveMappingRules,
-    getScanReportField,getScanReportTable,getMappingRules,
+
+export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,
+    getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
      getScanReportConcepts, getConcept,getScanReports,authToken,api,
      }
