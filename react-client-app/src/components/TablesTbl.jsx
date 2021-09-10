@@ -20,15 +20,15 @@ import { getScanReportTableRows } from '../api/values'
 
 
 const TablesTbl = () => {
-
-    const [values, setValues] = useState([0, 1, 2, 3, 4, 5]);
+    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
-        getScanReportTableRows(90).then(table=>{
-            console.log(table)
+        getScanReportTableRows(value).then(table=>{
+            
             setValues(table)
             setLoading(false)
         })
