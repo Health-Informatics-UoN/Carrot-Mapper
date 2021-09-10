@@ -10,5 +10,7 @@ Please append a line to the changelog for each change made.
 * ProcessQueue made more robust to errors, with more helpful outputs.
 * API endpoints updates to return records for a list of ids in a table (This is done for tables like: structuralmappingrule, concept, omopfield,omoptable,scanreporttable,scanreportfield,scanreportvalue and scanreportconcept)
 * Added REACT functionality for mapping rules table
+* Added REACT functionality for tables page
+* Pages using REACT now includes Values,Fields,Tables,Mapping Rules
 
 ## v1.0.0 was released 01/09/21
