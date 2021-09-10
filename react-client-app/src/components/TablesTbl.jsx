@@ -68,7 +68,7 @@ const TablesTbl = () => {
                                 <Td>{item.person_id} </Td>
                                 <Td>{item.date_event}</Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/nlp/table/run?search="+item.id}>Run NLP on Table</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "tables/"+406+"/update/"}>Edit Table</Link></Td>  
+                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "tables/"+item.id+"/update/"}>Edit Table</Link></Td>  
                             </Tr>
 
                         )
