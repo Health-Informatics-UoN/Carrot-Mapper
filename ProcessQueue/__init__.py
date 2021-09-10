@@ -112,6 +112,32 @@ def default_zero(input):
     return round(input if input else 0.0, 2)
 
 
+def paginate(entries_to_post):
+    """
+    This expects a list of dicts, and returns a list of lists of dicts, 
+    where the maximum length of each list of dicts, under JSONification, 
+    is less than max_chars
+    """
+    max_chars = 2000
+
+    paginated_entries_to_post = []
+    this_page = []
+    for entry in entries_to_post:
+        # print(len(json.dumps(entry)))
+        if len(json.dumps(this_page)) + len(
+                json.dumps(entry)) < max_chars:
+            this_page.append(entry)
+            # print(len(json.dumps(this_page)))
+        else:
+            paginated_entries_to_post.append(this_page)
+            # print('saved:', len(json.dumps(this_page)))
+            this_page = [entry]
+            # print(len(json.dumps(this_page)))
+    if this_page:
+        paginated_entries_to_post.append(this_page)
+    return paginated_entries_to_post
+
+
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -343,29 +369,43 @@ def main(msg: func.QueueMessage):
 
         print("POST fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
+        paginated_field_entries_to_post = paginate(field_entries_to_post)
+        fields_response_content = []
         # POST Fields
-        fields_response = requests.post(
-            "{}scanreportfields/".format(api_url),
-            data=json.dumps(field_entries_to_post),
-            headers=headers,
-        )
-        print("POST fields finished", datetime.utcnow().strftime("%H:%M:%S.%fZ")) # Can be 90s locally
-        # Reset field_entries_to_post for reuse on next row
-        field_entries_to_post = []
-        print("FIELDS SAVE STATUS >>>", fields_response.status_code, fields_response.reason)
+        for page in paginated_field_entries_to_post:
+            fields_response = requests.post(
+                "{}scanreportfields/".format(api_url),
+                data=json.dumps(page),
+                headers=headers,
+            )
+            # print('dumped:', json.dumps(page))
+            print("FIELDS SAVE STATUS >>>", fields_response.status_code,
+                  fields_response.reason, flush=True)
 
-        if fields_response.status_code != 201:
-            raise HTTPError(' '.join(['Error in fields save:', str(fields_response.status_code), str(json.dumps(field_entries_to_post))]))
+            if fields_response.status_code != 201:
+                raise HTTPError(' '.join(
+                    ['Error in fields save:', str(fields_response.status_code),
+                     str(json.dumps(page))]))
+            
+            fields_content = json.loads(fields_response.content.decode("utf-8"))
+            # print('fc:',fields_content)
+            fields_response_content += fields_content
+            # print('frc:', fields_response_content)
+
+        print("POST fields all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+              flush=True)
+        print('frc:', fields_response_content, flush=True)
+
+        field_entries_to_post = []
 
         # Load result from the response,
         # Save generated field ids, and the corresponding name
-        fields_content = json.loads(fields_response.content.decode("utf-8"))
         # print("FIELDS CONTENT:", fields_content)
         
         # Create a dictionary with field names and field ids
         # as key value pairs
         # e.g ("Field ID":<Field Name>)
-        names_to_ids_dict = {str(element.get("name", None)): str(element.get("id", None)) for element in fields_content}
+        names_to_ids_dict = {str(element.get("name", None)): str(element.get("id", None)) for element in fields_response_content}
 
         # print("Dictionary id:name", names_to_ids_dict)
         # Reset list for values
