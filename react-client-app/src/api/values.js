@@ -585,9 +585,15 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
     return response
 }
 
+const getScanReportTableRows = async (id) =>{
+    const table = useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    
+    return table
+}
+
 
 
 export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,
     getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts, getConcept,getScanReports,authToken,api,
+     getScanReportConcepts, getConcept,getScanReports,authToken,api,getScanReportTableRows,
      }

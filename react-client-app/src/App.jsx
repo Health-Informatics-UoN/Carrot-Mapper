@@ -5,6 +5,7 @@ import DataTbl from './components/DataTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
 import FieldsTbl from './components/FieldsTbl';
+import TablesTbl from './components/TablesTbl';
 
 const App = ({ page }) => {
     const getPage = () => {
@@ -15,6 +16,8 @@ const App = ({ page }) => {
                 return <MappingTbl />
             case "Fields":
                 return <FieldsTbl />
+            case "Tables":
+                return <TablesTbl />
             default:
                 return <DataTbl />
         }
