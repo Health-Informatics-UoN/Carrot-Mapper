@@ -302,9 +302,11 @@ const FieldsTbl = () => {
     else {
         return (
             <div>
+                {isOpen&&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
                 </ScaleFade>
+                }
 
                 <Table variant="striped" colorScheme="greyBasic">
                     <TableCaption></TableCaption>
