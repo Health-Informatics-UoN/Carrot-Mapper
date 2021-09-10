@@ -263,7 +263,6 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     //measurement
     if(domain == 'measurement'){
         tempOmopField = await cachedOmopFunction(fields,"value_as_number","measurement")
-        console.log(tempOmopField)
         data.omop_field = tempOmopField.id
         promises.push(usePost(`${api}/structuralmappingrules/`,data))
     }  
@@ -582,17 +581,19 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
     // map each scanreport concept to it's value
     response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
     valuesRef.current = response
-    console.log(response)
     return response
 }
 
 const getScanReportTableRows = async (id) =>{
+    // get table rows
     let table = await useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    // if table is empty then return
     if(table.length==0){
         return []
     }
-    
+    // sort table
     table = table.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    // get ids of scanroport fields that need to be retrieved and do a batch call
     const fieldIdsObject = {}
     table.map(element=>{   
         if(element.person_id){

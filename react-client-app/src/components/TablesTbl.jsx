@@ -27,12 +27,11 @@ const TablesTbl = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
+        // get table on initial render
         getScanReportTableRows(value).then(table => {
-
             setValues(table)
             setLoading(false)
         })
-
     }, []);
 
     if (loading) {
@@ -61,7 +60,6 @@ const TablesTbl = () => {
                 </Thead>
                 <Tbody>
                     {values.length > 0 ?
-                        // Create new row for every value object
                         values.map((item, index) =>
                             <Tr key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.id}>{item.name}</Link></Td>
