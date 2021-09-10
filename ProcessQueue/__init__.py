@@ -118,7 +118,7 @@ def paginate(entries_to_post):
     where the maximum length of each list of dicts, under JSONification, 
     is less than max_chars
     """
-    max_chars = 2000
+    max_chars = 10000
 
     paginated_entries_to_post = []
     this_page = []
@@ -367,7 +367,7 @@ def main(msg: func.QueueMessage):
         field_entries_to_post.pop()
         # print("FIELDS TO SAVE:", field_entries_to_post)
 
-        print("POST fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        print("POST", len(field_entries_to_post), "fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
         paginated_field_entries_to_post = paginate(field_entries_to_post)
         fields_response_content = []
@@ -380,7 +380,7 @@ def main(msg: func.QueueMessage):
             )
             # print('dumped:', json.dumps(page))
             print("FIELDS SAVE STATUS >>>", fields_response.status_code,
-                  fields_response.reason, flush=True)
+                  fields_response.reason, len(page), flush=True)
 
             if fields_response.status_code != 201:
                 raise HTTPError(' '.join(
@@ -394,7 +394,7 @@ def main(msg: func.QueueMessage):
 
         print("POST fields all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"),
               flush=True)
-        print('frc:', fields_response_content, flush=True)
+        # print('frc:', fields_response_content, flush=True)
 
         field_entries_to_post = []
 
@@ -499,17 +499,28 @@ def main(msg: func.QueueMessage):
             # Append to list
             value_entries_to_post.append(scan_report_value_entry)
 
-        print("POST values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-        # POST value_entries_to_post to ScanReportValues model
-        values_response = requests.post(
-            url=api_url + "scanreportvalues/", 
-            data=json.dumps(value_entries_to_post), 
-            headers=headers
-        )
-        if values_response.status_code != 201:
-            raise HTTPError(' '.join(['Error in values save:', str(values_response.status_code), str(json.dumps(value_entries_to_post))]))
+        print("POST", len(value_entries_to_post), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        
+        paginated_value_entries_to_post = paginate(value_entries_to_post)
+        values_response_content = []
 
-        print("POST values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        for page in paginated_value_entries_to_post:
+
+            # POST value_entries_to_post to ScanReportValues model
+            values_response = requests.post(
+                url="{}scanreportvalues/".format(api_url), 
+                data=json.dumps(page), 
+                headers=headers
+            )
+            print("VALUES SAVE STATUS >>>", values_response.status_code,
+                  values_response.reason, len(page), flush=True)
+            if values_response.status_code != 201:
+                raise HTTPError(' '.join(['Error in values save:', str(values_response.status_code), str(json.dumps(page))]))
+
+            values_content = json.loads(values_response.content.decode("utf-8"))
+            values_response_content += values_content
+
+        print("POST values all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
         # Process conceptIDs in ScanReportValues
         # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
@@ -540,29 +551,41 @@ def main(msg: func.QueueMessage):
                 "content_type": 17,
             } for concept in ids_of_posted_values]
         
-        print("POST concepts", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        print("POST", len(concept_id_data), "concepts", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
-        # POST the ScanReportConcept data to the model
-        concept_response = requests.post(
-            url=api_url + "scanreportconcepts/",
-            headers=headers,
-            data=json.dumps(concept_id_data),
-        )
-        print("POST concepts finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        paginated_concept_id_data = paginate(concept_id_data)
 
-        print("STATUS >>> ", concept_response.status_code)
-        if concept_response.status_code != 201:
-            raise HTTPError(' '.join(['Error in concept save:', str(concept_response.status_code), str(json.dumps(concept_id_data))]))
+        concepts_response_content = []
+
+        for page in paginated_concept_id_data:
+
+            # POST the ScanReportConcept data to the model
+            concepts_response = requests.post(
+                url=api_url + "scanreportconcepts/",
+                headers=headers,
+                data=json.dumps(page),
+            )
+
+            print("CONCEPT SAVE STATUS >>> ", concepts_response.status_code,
+                  concepts_response.reason, flush=True)
+            if concepts_response.status_code != 201:
+                raise HTTPError(' '.join(['Error in concept save:', str(concepts_response.status_code), str(json.dumps(page))]))
+        
+            concepts_content = json.loads(concepts_response.content.decode("utf-8"))
+            concepts_response_content += concepts_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
         # Update ScanReportValue to remove any data added to the conceptID field
         # conceptID field only used temporarily to hold the converted concept code -> conceptID
         # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
         # need for the concept ID to also be saved to ScanReportValue::conceptID
 
-        # Reset conceptID to -1 (default)
+        # Reset conceptID to -1 (default). This doesn't need pagination because it's a
+        # loop over all relevant fields anyway
         put_update_json = json.dumps({"conceptID": -1})
         
-        print("PATCH values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        print("PATCH", len(ids_of_posted_values), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
         for concept in ids_of_posted_values:
             print("PATCH value", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             value_response = requests.patch(
@@ -570,7 +593,7 @@ def main(msg: func.QueueMessage):
                 headers=headers,
                 data=put_update_json,
             )
-            print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             if value_response.status_code != 200:
                 raise HTTPError(' '.join(['Error in value save:', str(value_response.status_code), str(put_update_json)]))
 
