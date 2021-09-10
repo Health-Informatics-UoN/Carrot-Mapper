@@ -358,7 +358,7 @@ const FieldsTbl = () => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            width='70px'
+                                                            width='90px'
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
