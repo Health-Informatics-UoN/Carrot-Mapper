@@ -118,7 +118,7 @@ def paginate(entries_to_post):
     where the maximum length of each list of dicts, under JSONification, 
     is less than max_chars
     """
-    max_chars = os.environ.get("PAGE_MAX_CHARS") if os.environ.get("PAGE_MAX_CHARS") else 10000
+    max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
     
     paginated_entries_to_post = []
     this_page = []
