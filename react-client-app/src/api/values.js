@@ -587,9 +587,34 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 }
 
 const getScanReportTableRows = async (id) =>{
-    let table = useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
-    table = table.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    let table = await useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    if(table.length==0){
+        return []
+    }
     
+    table = table.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    const fieldIdsObject = {}
+    table.map(element=>{   
+        if(element.person_id){
+            fieldIdsObject[element.person_id] = true
+        }
+        if(element.date_event){
+            fieldIdsObject[element.date_event] = true
+        }
+                    
+    })
+    if(Object.keys(fieldIdsObject).length == 0){
+        return table
+    }
+    const fieldIds = chunkIds(Object.keys(fieldIdsObject))
+    const promises = []
+    // send API request for every sublist
+    for (let i = 0; i < fieldIds.length; i++) {
+        promises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
+    }
+    const promiseResult = await Promise.all(promises)
+    const fields = [].concat.apply([], promiseResult)
+    table = table.map(value=>({...value,person_id:fields.find(field=>field.id==value.person_id),date_event:fields.find(field=>field.id==value.date_event)}))
     return table
 }
 

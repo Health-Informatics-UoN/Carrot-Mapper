@@ -10,7 +10,7 @@ import {
     Flex,
     Spinner,
     Link,
-    
+
 } from "@chakra-ui/react"
 
 
@@ -27,12 +27,12 @@ const TablesTbl = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
-        getScanReportTableRows(value).then(table=>{
-            
+        getScanReportTableRows(value).then(table => {
+
             setValues(table)
             setLoading(false)
         })
-        
+
     }, []);
 
     if (loading) {
@@ -65,10 +65,10 @@ const TablesTbl = () => {
                         values.map((item, index) =>
                             <Tr key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.id}>{item.name}</Link></Td>
-                                <Td>{item.person_id} </Td>
-                                <Td>{item.date_event}</Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/nlp/table/run?search="+item.id}>Run NLP on Table</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "tables/"+item.id+"/update/"}>Edit Table</Link></Td>  
+                                <Td>{item.person_id ? item.person_id.name : null} </Td>
+                                <Td>{item.date_event ? item.date_event.name : null}</Td>
+                                <Td><Link style={{ color: "#0000FF", }} href={"/nlp/table/run?search=" + item.id}>Run NLP on Table</Link></Td>
+                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "tables/" + item.id + "/update/"}>Edit Table</Link></Td>
                             </Tr>
 
                         )
