@@ -109,7 +109,7 @@ const getScanReports = async (valueId,setScanReports,scanReportsRef,setLoadingMe
             // If there are values in the table, check for concepts, otherwise, return no values
             if(values.length>0){
                 // set all values to indicate that it is loading concepts
-                const newArr = values.sort((a,b) => (a.value > b.value) ? 1 : ((b.value > a.value) ? -1 :0))
+                const newArr = values.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
                 scanReportsRef.current = newArr.map(scanReport => ({...scanReport, concepts:[],conceptsToLoad:1}))
                 setScanReports(scanReportsRef.current)
                 // Create list of sublists of value ids to pass to the endpoint so that api requests don't exceed character limits
@@ -548,6 +548,7 @@ const getMappingRules = async (id, tableData, switchFilter) => {
 
 const getScanReportFieldValues = async (valueId, valuesRef) => {
     let response = await useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    response = response.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
     if (response.length == 0) {
         return []
     }
