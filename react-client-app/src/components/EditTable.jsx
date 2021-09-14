@@ -10,16 +10,22 @@ const EditTable = () => {
     const [loadingMessage, setLoadingMessage] = useState(null)
 
     useEffect(async () => {
-        const resp = await useGet(`${api}/scanreporttables/${value}`)
-        const t = useGet(`${api}/scanreporttablesfilter/?scan_report=${resp.scan_report}`)
-        const res = useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
-        const promises = await Promise.all([t, res])
+        // get scan report table to use to get tables 
+        const scanreporttable = await useGet(`${api}/scanreporttables/${value}`)
+        // get scan report tables for the scan report the table belongs to
+        const tablesFilter = useGet(`${api}/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
+        // get all fields for the scan report table
+        const fieldsFilter = useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
+        const promises = await Promise.all([tablesFilter, fieldsFilter])
         let options = promises[1]
         let tables = promises[0]
+        // sort the options alphabetically
         options = options.sort((a, b) => a.name.localeCompare(b.name))
+        // add a null option to use to set person_id or date_event to null
         const nullfield = { name: "------", id: null }
         options = [nullfield, ...options]
         setFields(options)
+        // set initial values to current values in the database
         const table = tables.find(table => table.id == value)
         const person_id = options.find(field => field.id == table.person_id)
         const date_event = options.find(field => field.id == table.date_event)
