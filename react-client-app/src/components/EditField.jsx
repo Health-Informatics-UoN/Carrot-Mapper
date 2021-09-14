@@ -10,7 +10,9 @@ const EditField = ({ setTitle }) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading Page")
 
     useEffect(async () => {
+        // get scan report field to use to set initial values
         const scanreportfield = await useGet(`${api}/scanreportfields/${value}/`)
+        // set initial values
         setLoadingMessage(null)
         setTitle("Update Field - " + scanreportfield.name)
         setField(scanreportfield)
@@ -20,7 +22,8 @@ const EditField = ({ setTitle }) => {
     }, []);
 
     const updateField = () => {
-        //setLoadingMessage("Updating field")
+        // update field then redirect
+        setLoadingMessage("Updating field")
         const data =
         {
             is_ignore: isIgnore,
