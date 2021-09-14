@@ -488,6 +488,13 @@ class ScanReportFieldUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)  
+        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
+        url = os.environ.get("CCOM_APP_URL")
+        context["a"] = auth
+        context["u"] = url
+        return context
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
