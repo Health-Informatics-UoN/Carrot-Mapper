@@ -28,6 +28,20 @@ const usePost = async (url,data) =>{
     const res = await response.json();
     return res;
 }
+const usePatch = async (url, body) => {
+    const response = await fetch(`${api}/${url}`,
+        {
+            method: "PATCH",
+            headers: {
+                Authorization: "Token " + authToken,
+                'Content-Type': 'application/json; charset=utf-8'
+            },
+            body: JSON.stringify(body)
+        }
+    );
+    const res = await response.json();
+    return res;
+}
 const useDelete = async (url) => {
     const response = await fetch(`${api}/${url}`,
         {
@@ -623,5 +637,5 @@ const getScanReportTableRows = async (id) =>{
 
 export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,
     getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts, getConcept,getScanReports,authToken,api,getScanReportTableRows,
+     getScanReportConcepts, getConcept,getScanReports,authToken,api,getScanReportTableRows,usePatch,
      }

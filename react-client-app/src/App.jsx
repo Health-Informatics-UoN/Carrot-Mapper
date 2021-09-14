@@ -6,6 +6,7 @@ import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
 import FieldsTbl from './components/FieldsTbl';
 import TablesTbl from './components/TablesTbl';
+import EditTable from './components/EditTable';
 
 const App = ({ page }) => {
     const getPage = () => {
@@ -18,6 +19,8 @@ const App = ({ page }) => {
                 return <FieldsTbl />
             case "Tables":
                 return <TablesTbl />
+            case "Update Table":
+                return <EditTable />
             default:
                 return <DataTbl />
         }
