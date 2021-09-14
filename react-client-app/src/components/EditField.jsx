@@ -52,11 +52,11 @@ const EditField = ({ setTitle }) => {
     }
     return (
         <div>
-            <VStack>
-                <Checkbox isChecked={isIgnore} onChange={(e) => setIsIgnore(e.target.checked)}>Is Ignore</Checkbox>
+            <VStack mt="20px" align="start">
+                <Checkbox isChecked={isIgnore} onChange={(e) => setIsIgnore(e.target.checked)}>Is ignore</Checkbox>
                 <Checkbox isChecked={passFromSource} onChange={(e) => setPassFromSource(e.target.checked)}>Pass from source</Checkbox>
             </VStack>
-            <VStack>
+            <VStack mt="20px" align="start">
                 <Text w="200px">Description Column</Text>
                 <Textarea value={descriptionColumn} onChange={(e) => setDescriptionColumn(e.target.value)} />
             </VStack>
