@@ -12,7 +12,6 @@ Please append a line to the changelog for each change made.
 * Added REACT functionality for mapping rules table
 * Added REACT functionality for tables page
 * ProcessQueue reads in PAGE_MAX_CHARS from the environment to set the max number of chars in a POST request.
-* Added REACT functionality for edit table page
 * Pages using REACT now includes Values,Fields,Tables,Mapping Rules,Edit Table
 
 ## v1.0.0 was released 01/09/21
