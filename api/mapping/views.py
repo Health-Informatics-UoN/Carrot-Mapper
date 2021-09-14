@@ -418,6 +418,10 @@ class ScanReportTableUpdateView(UpdateView):
             .filter(scan_report_table=scan_report_table)\
             .order_by("name")
 
+        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
+        url = os.environ.get("CCOM_APP_URL")
+        context["a"] = auth
+        context["u"] = url
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
 
