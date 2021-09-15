@@ -19,6 +19,7 @@ routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='
 routers.register(r'omop/domains', views.DomainViewSet,basename='domains')
 routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drugstrengths')
 
+routers.register(r'users', views.UserViewSet,basename='users')
 
 routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
 
