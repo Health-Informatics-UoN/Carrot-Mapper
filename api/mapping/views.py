@@ -26,7 +26,8 @@ from .serializers import (
     OmopFieldSerializer,
     StructuralMappingRuleSerializer,
     SourceSerializer,
-    DocumentTypeSerializer,    
+    DocumentTypeSerializer,
+    UserSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -174,6 +175,10 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['drug_concept_id', 'ingredient_concept_id']    
 
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=User.objects.all()
+    serializer_class=UserSerializer    
+    
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=ScanReportSerializer
