@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
+from django.contrib.auth.models import User
 from data.models import (
     Concept,
     Vocabulary,
@@ -67,8 +68,13 @@ class DomainSerializer(serializers.ModelSerializer):
 class DrugStrengthSerializer(serializers.ModelSerializer):
     class Meta:
         model=DrugStrength
-        fields='__all__'        
-
+        fields='__all__'  
+        
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+        
 class ScanReportSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=ScanReport
