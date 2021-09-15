@@ -177,7 +177,13 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=User.objects.all()
+    serializer_class=UserSerializer
+
+class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset=User.objects.all()
     serializer_class=UserSerializer    
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields={'id':['in', 'exact']}
     
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
