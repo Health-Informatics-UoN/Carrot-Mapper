@@ -8,6 +8,7 @@ import FieldsTbl from './components/FieldsTbl';
 import TablesTbl from './components/TablesTbl';
 import EditTable from './components/EditTable';
 import EditField from './components/EditField';
+import ScanReportTbl from './components/ScanReportTbl';
 
 const App = ({ page }) => {
     const [title, setTitle] = useState(page);
@@ -26,7 +27,7 @@ const App = ({ page }) => {
             case "Update Field":
                 return <EditField setTitle={setTitle}/>
             default:
-                return <DataTbl />
+                return <ScanReportTbl setTitle={setTitle}/>
         }
     }
     return (
