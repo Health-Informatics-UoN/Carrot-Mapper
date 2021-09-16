@@ -75,6 +75,7 @@ const ScanReportTbl = (props) => {
             active.current = true
             setDisplayedData(activeReports.current)
             window.history.pushState({}, '', '/scanreports/')
+            setTitle("Scan Reports Active")
         }
 
     }
@@ -83,13 +84,14 @@ const ScanReportTbl = (props) => {
             active.current = false
             setDisplayedData(archivedReports.current)
             window.history.pushState({}, '', '/scanreports/?filter=archived')
+            setTitle("Scan Reports Archived");
         }
 
     }
     window.onpopstate = function (event) {
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-
+        active.current ? setTitle("Scan Reports Active"): setTitle("Scan Reports Archived");
     };
     if (loadingMessage) {
         //Render Loading State
