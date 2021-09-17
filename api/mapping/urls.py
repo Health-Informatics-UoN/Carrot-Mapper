@@ -57,6 +57,7 @@ routers.register(r'omoptablesfilter',views.OmopTableFilterViewSet,basename='omop
 routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
 routers.register(r'omopfieldsfilter',views.OmopFieldFilterViewSet,basename='omopfieldsfilter')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
+routers.register(r'json',views.DownloadJSON,basename='getjson')
 routers.register(r'structuralmappingrulesfilter',views.StructuralMappingRuleFilterViewSet,basename='structuralmappingrulefilter')
 
 routers.register(r'sources',views.SourceViewSet,basename='sources')
@@ -65,7 +66,6 @@ routers.register(r'documenttypes',views.DocumentTypeViewSet,basename='documentty
 urlpatterns = [
     path('api/',include(routers.urls)),
     path('api_auth/',include('rest_framework.urls',namespace='rest_framework')),
-    
     path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('tables/<int:pk>/update/', views.ScanReportTableUpdateView.as_view(), name='scan-report-table-update'),

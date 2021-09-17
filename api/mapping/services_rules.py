@@ -6,7 +6,6 @@ from data.models import Concept, ConceptRelationship
 
 from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, StructuralMappingRule
-from mapping.serializers import ConceptSerializer
 
 from graphviz import Digraph
 
@@ -482,6 +481,7 @@ def get_mapping_rules_list(structural_mapping_rules):
         scan_report_concept_id = rule.concept_id
         scan_report_concept = scan_report_concepts[rule.concept_id]
         concept_id = scan_report_concept.concept_id
+        concept_name = scan_report_concept.concept.concept_name
 
         #work out if we need term_mapping or not
         term_mapping = None
@@ -494,6 +494,7 @@ def get_mapping_rules_list(structural_mapping_rules):
         rules.append(
             {
                 'rule_id':scan_report_concept_id,
+                'rule_name':concept_name,
                 'destination_table':destination_table,
                 'destination_field':destination_field,
                 'source_table':source_table,
@@ -531,7 +532,7 @@ def get_mapping_rules_json(structural_mapping_rules):
     for rule in all_rules:
         #get the rule id
         #i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
-        _id = rule['rule_id']
+        _id = rule['rule_name']
 
         #get the table name
         table_name = rule['destination_table'].table
@@ -549,20 +550,14 @@ def get_mapping_rules_json(structural_mapping_rules):
         # make a new mapping spec for the destination table
         destination_field = rule['destination_field'].field
         cdm[table_name][_id][destination_field] = {
-            'source_table':rule['source_table'].name,
-            'source_field':rule['source_field'].name,
+            'source_table':rule['source_table'].name.replace("\ufeff",""),
+            'source_field':rule['source_field'].name.replace("\ufeff",""),
         }
         #include term_mapping if it's needed
         #will appear for destinations with _concept_id,
         #either as a dict (value map) or as a str/int (field map)
         if rule['term_mapping'] is not None:
             cdm[table_name][_id][destination_field]['term_mapping'] = rule['term_mapping']
-
-    #little trickery to get the json in the right format
-    #the current structure is  { 'cdm': {'person': {'id_0':dict,'id_1':dict...}}}
-    #needs to be :  { 'cdm': {'person': [dict, dict...]}}
-    for table_name in cdm:
-        cdm[table_name] = list(cdm[table_name].values())
 
     #add the metadata and cdm object together
     return {'metadata':metadata,'cdm':cdm}
@@ -578,6 +573,7 @@ def download_mapping_rules(request,qs):
     return_type = "json"
     fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
     #return a response that downloads the json file
+        
     response = HttpResponse(json.dumps(output,indent=6),content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
@@ -590,7 +586,7 @@ def make_dag(data):
     for destination_table_name,destination_tables in data.items():
         dot.node(destination_table_name,shape='box')
 
-        for destination_table in destination_tables:
+        for destination_table in destination_tables.values():
             for destination_field,source in destination_table.items():
                 source_field = source['source_field']
                 source_table = source['source_table']
