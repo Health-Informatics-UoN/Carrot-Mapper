@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack } from "@chakra-ui/react"
+import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
 import { useGet, usePatch, api, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
+import ConceptTag from './ConceptTag'
 import moment from 'moment';
+
 const ScanReportTbl = (props) => {
     const active = useRef(true)
     const data = useRef(null);
@@ -11,6 +13,9 @@ const ScanReportTbl = (props) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [displayedData, setDisplayedData] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Scan Reports")
+    const [datapartnerFilter, setDataPartnerFilter] = useState("All");
+    const [datasetFilter, setDatasetFilter] = useState("All");
+    const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     useEffect(async () => {
         props.setTitle(null)
@@ -88,10 +93,34 @@ const ScanReportTbl = (props) => {
         }
 
     }
+    const applyFilters = (variable) => {
+        let newData = variable.map(scanreport => scanreport)
+        if (authorFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.author.username == authorFilter)
+        }
+        if (datapartnerFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.data_partner.name == datapartnerFilter)
+        }
+        if (datasetFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.dataset == datasetFilter)
+        }
+        return newData
+    }
+    const removeFilter = (a, b) => {
+        if (a.includes("Author")) {
+            setAuthorFilter("All")
+        }
+        if (a.includes("Dataset")) {
+            setDatasetFilter("All")
+        }
+        if (a.includes("Data Partner")) {
+            setDataPartnerFilter("All")
+        }
+    }
     window.onpopstate = function (event) {
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        active.current ? setTitle("Scan Reports Active"): setTitle("Scan Reports Archived");
+        active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
     };
     if (loadingMessage) {
         //Render Loading State
@@ -109,27 +138,66 @@ const ScanReportTbl = (props) => {
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
-                <Button onClick={goToActive}>Active Reports</Button>
-                <Button onClick={goToArchived}>Archived Reports</Button>
+                <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
+                <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href="/scanreports/create/"><Button my="10px">New Scan Report</Button></Link>
+            <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
+            <HStack>
+                <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
+                {[{ title: "Author -", filter: authorFilter }, { title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }].map(filter => {
+                    if (filter.filter == "All") {
+                        return null
+                    }
+                    else {
+                        return (
+                            <ConceptTag key={filter.title} conceptName={filter.filter} conceptId={filter.title} conceptIdentifier={filter.title} itemId={filter.title} handleDelete={removeFilter} />
+                        )
+                    }
+                })}
+            </HStack>
             <Table w="100%" variant="striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr>
                         <Th>ID</Th>
-                        <Th>Data Partner</Th>
-                        <Th>Dataset</Th>
-                        <Th>Added by</Th>
+                        <Th>
+                            <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
+                                <option style={{ fontWeight: "bold" }} disabled>Data Partner</option>
+                                <>
+                                    {[...[...new Set(displayedData.map(data => data.data_partner.name))]]
+
+
+                                        .map((item, index) =>
+                                            <option key={index} value={item}>{item}</option>
+                                        )}
+                                </>
+                            </Select>
+                        </Th>
+                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
+                            <option disabled>Dataset</option>
+                            {[...[...new Set(displayedData.map(data => data.dataset))]]
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{item}</option>
+                                )}
+                        </Select></Th>
+                        <Th >
+                            <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
+                                <option disabled>Added by</option>
+                                {[...[...new Set(displayedData.map(data => data.author.username))]]
+                                    .map((item, index) =>
+                                        <option key={index} value={item}>{item}</option>
+                                    )}
+                            </Select>
+                        </Th>
                         <Th>Date</Th>
                         <Th></Th>
                         <Th>Archive</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {displayedData.length > 0 ?
+                    {applyFilters(displayedData).length > 0 ?
                         // Create new row for every value object
-                        displayedData.map((item, index) =>
+                        applyFilters(displayedData).map((item, index) =>
                             <Tr key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
@@ -138,8 +206,8 @@ const ScanReportTbl = (props) => {
                                 <Td>{item.created_at.displayString}</Td>
                                 <Td>
                                     <HStack>
-                                        <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button>Rules</Button></Link>
-                                        <Link href={"/scanreports/" + item.id + "/assertions/"}><Button>Assertions</Button></Link>
+                                        <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
+                                        <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                     </HStack>
                                 </Td>
                                 <Td>
@@ -148,9 +216,9 @@ const ScanReportTbl = (props) => {
                                             {currentUser == item.author.username &&
                                                 <>
                                                     {item.hidden ?
-                                                        <Button isLoading={item.loading ? true : false} loadingText="Showing" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, false)}>Show</Button>
+                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Unarchiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, false)}>Unarchive</Button>
                                                         :
-                                                        <Button isLoading={item.loading ? true : false} loadingText="Hiding" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, true)}>Hide</Button>
+                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Archiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, true)}>Archive</Button>
                                                     }
                                                 </>
                                             }
