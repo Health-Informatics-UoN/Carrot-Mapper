@@ -107,7 +107,7 @@ const ScanReportTbl = (props) => {
         return newData
     }
     const removeFilter = (a, b) => {
-        if (a.includes("Author")) {
+        if (a.includes("Added By")) {
             setAuthorFilter("All")
         }
         if (a.includes("Dataset")) {
@@ -144,7 +144,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Author -", filter: authorFilter }, { title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }].map(filter => {
+                {[ { title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Added By -", filter: authorFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
