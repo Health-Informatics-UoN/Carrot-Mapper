@@ -164,9 +164,7 @@ const ScanReportTbl = (props) => {
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Data Partner</option>
                                 <>
-                                    {[...[...new Set(displayedData.map(data => data.data_partner.name))]]
-
-
+                                    {[...[...new Set(displayedData.map(data => data.data_partner.name))]].sort((a, b) => a.localeCompare(b))
                                         .map((item, index) =>
                                             <option key={index} value={item}>{item}</option>
                                         )}
@@ -175,7 +173,7 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
                             <option disabled>Dataset</option>
-                            {[...[...new Set(displayedData.map(data => data.dataset))]]
+                            {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
                                 .map((item, index) =>
                                     <option key={index} value={item}>{item}</option>
                                 )}
@@ -183,7 +181,7 @@ const ScanReportTbl = (props) => {
                         <Th >
                             <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
                                 <option disabled>Added by</option>
-                                {[...[...new Set(displayedData.map(data => data.author.username))]]
+                                {[...[...new Set(displayedData.map(data => data.author.username))]].sort((a, b) => a.localeCompare(b))
                                     .map((item, index) =>
                                         <option key={index} value={item}>{item}</option>
                                     )}
