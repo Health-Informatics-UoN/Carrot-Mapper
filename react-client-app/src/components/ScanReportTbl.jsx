@@ -195,7 +195,7 @@ const ScanReportTbl = (props) => {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {applyFilters(displayedData).length > 0 ?
+                    {applyFilters(displayedData).length > 0 &&
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr key={index}>
@@ -228,13 +228,12 @@ const ScanReportTbl = (props) => {
                             </Tr>
 
                         )
-                        :
-                        <Flex padding="30px">
-                            <Flex marginLeft="10px">No Scan Reports available</Flex>
-                        </Flex>
                     }
                 </Tbody>
             </Table>
+            {applyFilters(displayedData).length == 0 &&
+                <Flex marginLeft="10px">No Scan Reports available</Flex>
+            }
         </div>
     );
 }
