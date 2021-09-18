@@ -54,7 +54,7 @@ class ScanReportForm(forms.Form):
 
     def clean_parent_scan_report_file(self):
         parent_scan_report=self.cleaned_data.get("parent_scan_report_file")
-        print(parent_scan_report.id)
+        #print(parent_scan_report.id)   --- This throws an error, 'NoneType' object has no attribute 'id'
         if parent_scan_report is None:
             return parent_scan_report
         return parent_scan_report.id
