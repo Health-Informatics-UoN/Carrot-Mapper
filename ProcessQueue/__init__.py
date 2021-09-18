@@ -150,6 +150,7 @@ def main(msg: func.QueueMessage):
     scan_report_blob = body["scan_report_blob"]
     data_dictionary_blob = body["data_dictionary_blob"]
     parent_sr_id=body['parent_SR_id']
+    scan_report_id=body['scan_report_id']
 
     print("MESSAGE BODY >>>", body)
 
@@ -541,7 +542,18 @@ def main(msg: func.QueueMessage):
         table_idx = table_idx + 1
         worksheet_idx = worksheet_idx + 1
 
-    if parent_sr_id is not "None":
+    print(type(parent_sr_id), flush=True)
+    if isinstance(parent_sr_id, str):
+        print("STRING")
+
+    if parent_sr_id is None:
+        print("NONE")
+
+    if isinstance(parent_sr_id, type(None)):
+        print("NoneType")
+    
+
+    if parent_sr_id is not 'None':
         # Grab Parent Scan Report
         parent_scan_report = requests.get(
                     url=api_url
