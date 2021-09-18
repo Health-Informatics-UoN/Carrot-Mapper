@@ -542,18 +542,8 @@ def main(msg: func.QueueMessage):
         table_idx = table_idx + 1
         worksheet_idx = worksheet_idx + 1
 
-    print(type(parent_sr_id), flush=True)
-    if isinstance(parent_sr_id, str):
-        print("STRING")
-
-    if parent_sr_id is None:
-        print("NONE")
-
-    if isinstance(parent_sr_id, type(None)):
-        print("NoneType")
-    
-
-    if parent_sr_id is not 'None':
+    #if parent_sr_id is not 'None':
+    if parent_sr_id != 'None':
         # Grab Parent Scan Report
         parent_scan_report = requests.get(
                     url=api_url
@@ -627,7 +617,4 @@ def main(msg: func.QueueMessage):
 
         print("Parent SR fields",p_fields)
         print("Child SR fields",c_fields)
-    
-
-        
 
