@@ -18,11 +18,14 @@ const ScanReportTbl = (props) => {
     const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     useEffect(async () => {
+        // run on initial page load
         props.setTitle(null)
         setCurrentUser(window.currentUser)
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
+        // get scan reports and sort by id
         let scanreports = await useGet(`${api}/scanreports/`)
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+        // for each scan report use the data partner and author ids to get name to display
         const dataPartnerObject = {}
         const authorObject = {}
         scanreports.map(scanreport => {
@@ -53,7 +56,7 @@ const ScanReportTbl = (props) => {
         authors.forEach(element => {
             scanreports = scanreports.map(scanreport => scanreport.author == element.id ? { ...scanreport, author: element } : scanreport)
         })
-
+        // split data into active reports and archived report
         data.current = scanreports
         activeReports.current = scanreports.filter(scanreport => scanreport.hidden == false)
         archivedReports.current = scanreports.filter(scanreport => scanreport.hidden == true)
@@ -62,7 +65,7 @@ const ScanReportTbl = (props) => {
         setLoadingMessage(null)
     }, []);
 
-
+    // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
     const activateOrArchiveReport = (id, theIndicator) => {
         setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
         data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
@@ -72,9 +75,8 @@ const ScanReportTbl = (props) => {
             archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
         })
-
-
     }
+    // show active scan reports and change url when 'Active Reports' button is pressed
     const goToActive = () => {
         if (active.current == false) {
             active.current = true
@@ -82,8 +84,8 @@ const ScanReportTbl = (props) => {
             window.history.pushState({}, '', '/scanreports/')
             setTitle("Scan Reports Active")
         }
-
     }
+    // show archived scan reports and change url when 'Archived Reports' button is pressed
     const goToArchived = () => {
         if (active.current == true) {
             active.current = false
@@ -93,6 +95,7 @@ const ScanReportTbl = (props) => {
         }
 
     }
+    // apply currently set filters to data before displaying
     const applyFilters = (variable) => {
         let newData = variable.map(scanreport => scanreport)
         if (authorFilter != "All") {
@@ -106,6 +109,7 @@ const ScanReportTbl = (props) => {
         }
         return newData
     }
+
     const removeFilter = (a, b) => {
         if (a.includes("Added By")) {
             setAuthorFilter("All")
@@ -117,6 +121,7 @@ const ScanReportTbl = (props) => {
             setDataPartnerFilter("All")
         }
     }
+    // when the back button is pressed, display correct data depending on url
     window.onpopstate = function (event) {
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
@@ -144,7 +149,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[ { title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Added By -", filter: authorFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -159,7 +164,7 @@ const ScanReportTbl = (props) => {
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr>
-                        <Th style={{ fontSize: "16px"}}>ID</Th>
+                        <Th style={{ fontSize: "16px" }}>ID</Th>
                         <Th>
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Data Partner</option>
@@ -187,9 +192,9 @@ const ScanReportTbl = (props) => {
                                     )}
                             </Select>
                         </Th>
-                        <Th style={{ fontSize: "16px",textTransform: "none" }}>Date</Th>
+                        <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
                         <Th></Th>
-                        <Th style={{ fontSize: "16px",textTransform: "none" }}>Archive</Th>
+                        <Th style={{ fontSize: "16px", textTransform: "none" }}>Archive</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
