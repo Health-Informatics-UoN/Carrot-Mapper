@@ -15,7 +15,8 @@ import {
     Flex,
     Spinner,
     Link,
-    Text
+    Text,
+    Button
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
@@ -46,6 +47,7 @@ const MappingTbl = () => {
         { name: "observation" },
         { name: "drug_exposure" }
     ]
+    const [isDownloading, setDownloading] = useState(false);
 
 
 
@@ -325,18 +327,9 @@ const MappingTbl = () => {
     return (
         <div >
             <HStack my="10px">
-                <Tag size='lg' variant="solid" backgroundColor="#3db28c"
-                    onClick={() => refreshRules()} style={{ cursor: 'pointer' }}>
-                    <TagLabel padding='5px'>Refresh Rules</TagLabel>
-                </Tag>
-                <Tag size='lg' variant="solid" backgroundColor="#3C579E"
-                    onClick={() => { downloadMappingJSON() }} style={{ cursor: 'pointer' }}>
-                    <TagLabel padding='5px'>Download Mapping JSON</TagLabel>
-                </Tag>
-                <Tag size='lg' variant="solid" backgroundColor="#ffc107"
-                    onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }} style={{ cursor: 'pointer' }}>
-                    <TagLabel padding='5px'>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</TagLabel>
-                </Tag>
+                <Button variant="green" onClick={()=>{refreshRules()}}>Refresh Rules</Button>
+                <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={()=>{window.downloadRules(setDownloading)}}>Download Mapping JSON</Button>
+                <Button variant="yellow" onClick={()=>{ setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
             </HStack>
             <div>
                 <VStack w='full'>
