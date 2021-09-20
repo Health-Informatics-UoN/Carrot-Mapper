@@ -187,9 +187,9 @@ const ScanReportTbl = (props) => {
                                     )}
                             </Select>
                         </Th>
-                        <Th style={{ fontSize: "16px"}}>Date</Th>
+                        <Th style={{ fontSize: "16px",textTransform: "none" }}>Date</Th>
                         <Th></Th>
-                        <Th style={{ fontSize: "16px"}}>Archive</Th>
+                        <Th style={{ fontSize: "16px",textTransform: "none" }}>Archive</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
