@@ -159,7 +159,7 @@ const ScanReportTbl = (props) => {
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr>
-                        <Th>ID</Th>
+                        <Th style={{ fontSize: "16px"}}>ID</Th>
                         <Th>
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Data Partner</option>
@@ -187,9 +187,9 @@ const ScanReportTbl = (props) => {
                                     )}
                             </Select>
                         </Th>
-                        <Th>Date</Th>
+                        <Th style={{ fontSize: "16px"}}>Date</Th>
                         <Th></Th>
-                        <Th>Archive</Th>
+                        <Th style={{ fontSize: "16px"}}>Archive</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
