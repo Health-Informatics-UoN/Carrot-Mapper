@@ -116,6 +116,8 @@
 				},
 				error: function (XMLHttpRequest, textStatus, errorThrown) {
 					//$('#spinner').html(errorThrown);
+					setDownloading(false)
+					alert("Could not download rules")
 				}
 			});
 		}
