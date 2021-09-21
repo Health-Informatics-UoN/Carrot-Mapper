@@ -551,13 +551,15 @@ class ScanReportListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-
+        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
+        url = os.environ.get("CCOM_APP_URL")
         #add the current user to the context
         #this is needed so the hide/show buttons can be only turned on
         #by whoever created the report
         context['current_user'] = self.request.user
         context['filterset'] = self.filterset
-        
+        context['a'] = auth
+        context['u'] = url
         return context
         
     
