@@ -206,7 +206,7 @@ const ScanReportTbl = (props) => {
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
-                                <Td>{item.created_at.displayString}</Td>
+                                <Td minW="230px">{item.created_at.displayString}</Td>
                                 <Td>
                                     <HStack>
                                         <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
