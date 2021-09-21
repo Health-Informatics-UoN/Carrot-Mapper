@@ -35,7 +35,6 @@
 
 		var refreshRules = async function () {
 			//use ajax to post a request to retrieve one
-			console.log("it called")
 			const res = await $.ajax({
 				type: "POST",
 				url: window.location,
@@ -57,6 +56,32 @@
 				}
 			});
 			return response
+		}
+
+		var downloadImage = async function (svg) {
+			
+			var serializer = new XMLSerializer();
+			var source = serializer.serializeToString(svg);
+			//add name spaces.
+			if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+				source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+			}
+			if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+				source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+			}
+
+			//add xml declaration
+			source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+
+			//convert svg source to URI data scheme.
+			var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+			var element = document.createElement("a");
+			element.download = "diagram.svg";
+			element.href = url
+			element.click();
+			element.remove();
+			return "Download successful"
+			
 		}
 
 		var downloadRules = function (setDownloading) {

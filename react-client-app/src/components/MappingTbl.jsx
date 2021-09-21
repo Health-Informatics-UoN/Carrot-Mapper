@@ -139,6 +139,9 @@ const MappingTbl = () => {
                     }
                     svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
                 }
+                if(downLoadingImgRef.current == true){
+                    downloadImage(diagram.getElementsByTagName("svg")[0])
+                }
             })
         }
         else {
@@ -312,12 +315,18 @@ const MappingTbl = () => {
         setLoadingMessage("")
     }
 
-    const downloadImage = () => {
+    const downloadImage = (img) => {
         setDownloadingImg(true)
-        if(mapDiagram.image){
+        if(mapDiagram.image || img){
+            let svg
+            if(img){svg=img}
+            else{svg=mapDiagram.image}
             // download the image then 
-            setDownloadingImg(false)
-            downLoadingImgRef.current = false 
+            window.downloadImage(svg).then(res=>{
+                setDownloadingImg(false)
+                downLoadingImgRef.current = false 
+            })
+            
         }
         else{
             downLoadingImgRef.current = true
