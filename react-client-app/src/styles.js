@@ -16,6 +16,10 @@ const theme = extendTheme({
           bg: "#ffc107",
           color: "white"
         },
+        "red": {
+          bg: "#dc3544",
+          color: "white"
+        },
       },
     },
   },

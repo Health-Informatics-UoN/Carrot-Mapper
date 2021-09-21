@@ -48,6 +48,8 @@ const MappingTbl = () => {
         { name: "drug_exposure" }
     ]
     const [isDownloading, setDownloading] = useState(false);
+    const [isDownloadingImg, setDownloadingImg] = useState(false);
+    const downLoadingImgRef = useRef(false)
 
 
 
@@ -310,6 +312,17 @@ const MappingTbl = () => {
         setLoadingMessage("")
     }
 
+    const downloadImage = () => {
+        setDownloadingImg(true)
+        if(mapDiagram.image){
+            // download the image then 
+            setDownloadingImg(false)
+            downLoadingImgRef.current = false 
+        }
+        else{
+            downLoadingImgRef.current = true
+        }
+    }
 
 
 
@@ -330,6 +343,7 @@ const MappingTbl = () => {
                 <Button variant="green" onClick={()=>{refreshRules()}}>Refresh Rules</Button>
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={()=>{window.downloadRules(setDownloading)}}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={()=>{ setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
+                <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={()=>{ downloadImage()}}>Download Map Diagram</Button>
             </HStack>
             <div>
                 <VStack w='full'>
