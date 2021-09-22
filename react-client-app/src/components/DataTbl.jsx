@@ -40,8 +40,9 @@ import {
   } from "@chakra-ui/react"
 
 import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
-import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,
-    getScanReportField,getScanReportTable,saveMappingRules}  from '../api/values'
+import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,m_allowed_tables,
+    getScanReportField,getScanReportTable,saveMappingRules,mapConceptToOmopField,
+    useDelete, useGet,usePost}  from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import axios from 'axios'
@@ -73,9 +74,9 @@ const DataTbl = () => {
         
       },[]);
     
-    const handleSubmit = (id, concept) => {
+      const handleSubmit = (id, concept) => {
         const table = scanReportTable.current
-        if (concept === ''){
+        if (concept === '') {
             setAlert({
                 hidden: false,
                 status: 'error',
@@ -84,107 +85,162 @@ const DataTbl = () => {
             })
             onOpen()
         }
-        else if(!table.person_id || !table.date_event ){
+        else if (!table.person_id || !table.date_event) {
             // set the error message depending on which value is missing
             let message;
-            if(!table.person_id && !table.date_event){message = 'Please set the person_id and date_event for '}
-            else if(!table.person_id){message = 'Please set the person_id for '}
-            else{message = 'Please set the date_event for '}
+            if (!table.person_id && !table.date_event) { message = 'Please set the person_id and a date_event to ' }
+            else if (!table.person_id) { message = 'Please set the person_id to ' }
+            else { message = 'Please set the date_event to ' }
             setAlert({
                 hidden: false,
                 status: 'error',
-                title: message+table.name+' before you add a concept.',
+                title: message + table.name + ' before you add a concept.',
                 description: 'Unsuccessful'
             })
             onOpen()
         }
         else {
             const scanReportValue = scanReports.find(f => f.id === id)
-            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:1}:scanReport)
-            setScanReports(scanReportsRef.current)         
-            //PUT Request to API
-            const data = 
-            {
-                concept: concept,
-                object_id: id,
-                content_type:17
-            }
-            axios.post(`${api}/scanreportconcepts/`,data, { 
-                headers: { Authorization: "Token " + authToken }
-                
-            })
-            .then(function(response) {
-                //Re-fetch API data        
-                getScanReportConcepts(id).then(concepts => {
-                    if(concepts.length>0){     
-                        const promises=[]      
-                        concepts.map((concept,ind) => {
-                            promises.push(getConcept(concept.concept,concept.id))
-                        })
-                        Promise.all(promises).then((values) => {
-                            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsToLoad:0}:scanReport)
-                            setScanReports(scanReportsRef.current)    
-                            setAlert({
-                                hidden: false,
-                                status: 'success',
-                                title: 'ConceptId linked to the value',
-                                description: 'Response: ' + response.status + ' ' + response.statusText
-                            })
-                            onOpen()
-
-                            const scan_report_concept = concepts.filter(con => con.concept == concept)[0] 
-                            scan_report_concept.concept = values.filter(con => con.concept_id == concept)[0] 
-                            // function to save mapping rules runs after concept is saved
-                            saveMappingRules(scan_report_concept,scanReportValue,table)
-                            .then(values=>{
-                                setAlert({
-                                    hidden: false,
-                                    status: 'success',
-                                    title: 'Success',
-                                    description: 'Mapping Rules created'
-                                })
-                                onOpen()
-                            })
-                            .catch(err=>{
-                                setAlert({
-                                    hidden: false,
-                                    status: 'error',
-                                    title: 'Could not create mapping rules',
-                                    description: err
-                                })
-                                onOpen()
-                            })
-                          });
-                    }
-                    else{ 
-                        scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsToLoad:0}:scanReport)
-                        setScanReports(scanReportsRef.current) 
+            scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
+            setScanReports(scanReportsRef.current)
+            // check if concept exists
+            useGet(`${api}/omop/concepts/${concept}`)
+                .then(async response => {
+                    // if concept does not exist, display error
+                    if (response.detail == 'Not found.') {
+                        scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                        setScanReports(scanReportsRef.current)
                         setAlert({
                             hidden: false,
                             status: 'error',
-                            title: 'Cannot find concepts for this value',
+                            title: "Concept id " + concept + " does not exist in our database.",
                             description: 'Response: ' + response.status + ' ' + response.statusText
                         })
                         onOpen()
+                        return
                     }
-                    
-                })    
-            })
-            .catch(function(error){
-                scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:0}:scanReport)
-                setScanReports(scanReportsRef.current) 
-                
-                if (typeof(error) !== 'undefined' && error.response != null)
-                {
+
+                    // check if concept has valid destination field
+                    const cachedOmopFunction = mapConceptToOmopField()
+                    const domain = response.domain_id.toLowerCase()
+                    const fields = await useGet(`${api}/omopfields/`)
+                    const destination_field = await cachedOmopFunction(fields, domain + "_source_concept_id")
+                    if (destination_field == undefined) {
+                        scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                        setScanReports(scanReportsRef.current)
+                        setAlert({
+                            hidden: false,
+                            status: 'error',
+                            title: "Could not find a destination field for this concept",
+                            description: "Destination field null"
+                        })
+                        onOpen()
+                        return
+
+                    }
+                    // check concepts omop table has been implemented
+                    const omopTable = await useGet(`${api}/omoptables/${destination_field.table}`)
+                    if (!m_allowed_tables.includes(omopTable.table)) {
+                        scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                        setScanReports(scanReportsRef.current)
+                        setAlert({
+                            hidden: false,
+                            status: 'error',
+                            title: "Have not yet implemented concept",
+                            description: `Concept ${response.concept_id} (${response.concept_name}) is from table '${destination_field.table}' which is not implemented yet.`
+                        })
+                        onOpen()
+                        return
+                    }
+                    // create scan report concept
+                    const data =
+                    {
+                        concept: concept,
+                        object_id: id,
+                        content_type: 17
+                    }
+                    usePost(`${api}/scanreportconcepts/`, data)
+                        .then(function (response) {
+                            //Re-fetch scan report concepts for field     
+                            getScanReportConcepts(id).then(scanreportconcepts => {
+                                if (scanreportconcepts.length > 0) {
+                                    const conceptIds = scanreportconcepts.map(value => value.concept)
+                                    useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
+                                        .then((values) => {
+                                            scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
+                                            scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
+                                            setScanReports(scanReportsRef.current)
+                                            setAlert({
+                                                hidden: false,
+                                                status: 'success',
+                                                title: 'ConceptId linked to the value',
+                                                description: 'Response: ' + response.status + ' ' + response.statusText
+                                            })
+                                            onOpen()
+
+                                            const scan_report_concept = scanreportconcepts.filter(con => con.concept.concept_id == concept)[0]
+                                            saveMappingRules(scan_report_concept, scanReportValue, table)
+                                                .then(values => {
+                                                    setAlert({
+                                                        hidden: false,
+                                                        status: 'success',
+                                                        title: 'Success',
+                                                        description: 'Mapping Rules created'
+                                                    })
+                                                    onOpen()
+                                                })
+                                                .catch(err => {
+                                                    setAlert({
+                                                        hidden: false,
+                                                        status: 'error',
+                                                        title: 'Could not create mapping rules',
+                                                        description: "error"
+                                                    })
+                                                    onOpen()
+                                                })
+                                        });
+                                }
+                                else {
+                                    scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [], conceptsLoaded: true } : value)
+                                    setScanReports(scanReportsRef.current)
+                                    setAlert({
+                                        hidden: false,
+                                        status: 'error',
+                                        title: 'Cant find the concepts',
+                                        description: 'Response: ' + response.status + ' ' + response.statusText
+                                    })
+                                    onOpen()
+                                }
+                            })
+                        })
+                        .catch(function (error) {
+                            scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                            setScanReports(scanReportsRef.current)
+
+                            if (typeof (error) !== 'undefined' && error.response != null) {
+                                setAlert({
+                                    status: 'error',
+                                    title: 'Unable to link Concept id to value',
+                                    description: 'Response: ' + error.response.status + ' ' + error.response.statusText
+                                })
+                                onOpen()
+
+                            }
+                        })
+
+
+                })
+                .catch(err => {
+                    scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                    setScanReports(scanReportsRef.current)
                     setAlert({
+                        hidden: false,
                         status: 'error',
-                        title: 'Unable to link Concept id to value',
-                        description: 'Response: ' + error.response.status + ' ' + error.response.statusText
+                        title: "Could not find concept",
+                        description: 'Response: ' + response.status + ' ' + response.statusText
                     })
                     onOpen()
-                   
-                }
-            })  
+                })
         }
     }
 
