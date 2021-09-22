@@ -304,22 +304,21 @@ const DataTbl = () => {
                         <Td>{item.frequency}</Td>
                         
                         <Td>
-                            {item.conceptsToLoad == 0?
-                                item.concepts.length>0&&
-                                    <VStack alignItems='flex-start' >
-                                        {item.concepts.map((concept) => (
-                                                <ConceptTag key={concept.concept_id} conceptName={concept.concept_name} conceptId={concept.concept_id.toString()}  conceptIdentifier={concept.id.toString()}  itemId={item.id} handleDelete={handleDelete} />
-                                            ))}                             
-                                    </VStack>
+                            {item.conceptsLoaded ?
+                                item.concepts.length > 0 &&
+                                <VStack alignItems='flex-start' >
+                                    {item.concepts.map((concept) => (
+                                        <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} />
+                                    ))}
+                                </VStack>
                                 :
-                                item.conceptsToLoad > 0?
+                                item.conceptsLoaded === false ?
                                     <Flex >
                                         <Spinner />
                                         <Flex marginLeft="10px">Loading Concepts</Flex>
                                     </Flex>
                                     :
                                     <Text>Failed to load concepts</Text>
-
                             }
                         </Td>
                         <Td>
