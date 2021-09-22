@@ -12,6 +12,14 @@ const theme = extendTheme({
           bg: "#3db28c",
           color: "white"
         },
+        "yellow": {
+          bg: "#ffc107",
+          color: "white"
+        },
+        "red": {
+          bg: "#dc3544",
+          color: "white"
+        },
       },
     },
   },
