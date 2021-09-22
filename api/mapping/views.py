@@ -25,6 +25,7 @@ from .serializers import (
     OmopTableSerializer,
     OmopFieldSerializer,
     StructuralMappingRuleSerializer,
+    GetRulesJSON,
     SourceSerializer,
     DocumentTypeSerializer,
     UserSerializer,
@@ -125,6 +126,7 @@ from .services_rules import (
 
 from .services_datadictionary import merge_external_dictionary
 
+
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
@@ -184,7 +186,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class=UserSerializer    
     filter_backends=[DjangoFilterBackend]
     filterset_fields={'id':['in', 'exact']}
-    
+
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=ScanReportSerializer
@@ -307,6 +309,12 @@ class OmopFieldFilterViewSet(viewsets.ModelViewSet):
 class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer
+
+class DownloadJSON(viewsets.ModelViewSet):
+    queryset=ScanReport.objects.all()
+    serializer_class=GetRulesJSON
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['id']
     
 class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()

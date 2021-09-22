@@ -3,6 +3,7 @@
 Please append a line to the changelog for each change made.
 
 ## v1.1-beta
+* Mapping rules json structural change, now objects associated to a CDM table are a dictionary (with a key name) rather than just a list.
 * Add ReactJS functionality for values view, including use of snowpack.
 * All ScanReport API endpoints support filtering on return fields.
 * Mapping rules generation and display vastly sped up.
