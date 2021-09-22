@@ -246,23 +246,30 @@ const DataTbl = () => {
 
 
     const handleDelete = (id, conceptId) => {
-        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:1}:scanReport)
+        scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
         setScanReports(scanReportsRef.current)
-        //PUT Request to API
-        axios.delete(`${api}/scanreportconcepts/${conceptId}`, { 
-            headers: { Authorization: "Token " + authToken }
-            
-        })
-        .then(function(response) {
-            //Re-fetch the concepts for that particular scan report
-            getScanReportConcepts(id).then(concepts => {
-                if(concepts.length>0){     
-                    const promises=[]      
-                    concepts.map((concept) => {
-                        promises.push(getConcept(concept.concept,concept.id))
-                    })
-                    Promise.all(promises).then((values) => {
-                        scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[...values],conceptsToLoad:0}:scanReport)
+        //DEETE Request to API
+        useDelete(`scanreportconcepts/${conceptId}`)
+            .then(function (response) {
+                //Re-fetch the concepts for that particular field
+                getScanReportConcepts(id).then(scanreportconcepts => {
+                    if (scanreportconcepts.length > 0) {
+                        const conceptIds = scanreportconcepts.map(value => value.concept)
+                        useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
+                            .then((values) => {
+                                scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
+                                scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
+                                setScanReports(scanReportsRef.current)
+                                setAlert({
+                                    status: 'success',
+                                    title: 'Concept Id Deleted',
+                                    description: 'Response: ' + response.status + ' ' + response.statusText
+                                })
+                                onOpen()
+                            });
+                    }
+                    else {
+                        scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [], conceptsLoaded: true } : value)
                         setScanReports(scanReportsRef.current)
                         setAlert({
                             status: 'success',
@@ -270,37 +277,22 @@ const DataTbl = () => {
                             description: 'Response: ' + response.status + ' ' + response.statusText
                         })
                         onOpen()
-                      });
-                }
-                else{
-                    //    
-                    scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,concepts:[],conceptsToLoad:0}:scanReport)
-                    setScanReports(scanReportsRef.current)
+                    }
+                })
+            })
+            .catch(function (error) {
+                scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
+                setScanReports(scanReportsRef.current)
+                if (typeof (error) !== 'undefined' && error.response != null) {
                     setAlert({
-                        status: 'success',
-                        title: 'Concept Id Deleted',
-                        description: 'Response: ' + response.status + ' ' + response.statusText
+                        status: 'error',
+                        title: 'Unable to delete Concept id from value',
+                        description: 'Response: ' + error.response.status + ' ' + error.response.statusText
                     })
                     onOpen()
+
                 }
-                
             })
-        }) 
-        .catch(function(error){
-            scanReportsRef.current = scanReportsRef.current.map((scanReport)=>scanReport.id==id?{...scanReport,conceptsToLoad:0}:scanReport)
-            setScanReports(scanReportsRef.current) 
-            if (typeof(error) !== 'undefined' && error.response != null)
-            {
-                
-                setAlert({
-                    status: 'error',
-                    title: 'Unable to delete Concept id from value',
-                    description: 'Response: ' + error.response.status + ' ' + error.response.statusText
-                })
-                onOpen()
-               
-            }
-        }) 
     } 
 
     if (error){
