@@ -17,14 +17,65 @@
     </ol>
 </nav>
 
+<h2>Values</h2>
 <div>
-    <!-- Loads in React Components from index.js -->
-    <div id='root'></div>
-    <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
-    </script>
-    <script type="module" src="../../../static/javascript/react/src/index.js"></script>
+    <table class="table" style="float:left;">
+        <thead>
+            <tr>
+                <th scope="col">Value</th>
+                <th scope="col">Value Description</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Concepts</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in object_list %}
+            <tr>
+                <form class="" method="post" action="{% url 'scan_report_value_concept' %}">
+                    {% csrf_token %}
+                    <td>
+                      {{ object.value }}
+                    </td>
+                    <td>{{object.value_description}}</td>
+                    <td>
+                        {{ object.frequency }}
+                    </td>
+                    <td>
+                        {% for concept in object.concepts.all %}
+                        
+                        {% if concept.nlp_entity %}
+                        <span style="color:blue">
+                            {{ concept.concept.concept_id }} - 
+                            {{ concept.concept.concept_name }}
+                            ({{ concept.concept.domain_id }}) - 
+                            Confidence={{concept.nlp_confidence}} - 
+                            {{concept.nlp_vocabulary}}
+                        </span> <a
+                            href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br />
+                        {% else %}
+
+                        <span>
+                            {{ concept.concept.concept_id }} -
+                            {{ concept.concept.concept_name }} ({{ concept.concept.domain_id }})
+                        </span> <a
+                            href="{% url 'scan_report_value_concept-delete' %}?scan_report_field_id={{ object.scan_report_field.id }}&scan_report_concept_id={{ concept.id }}">(delete)</a><br />
+                        {% endif %}
+
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <input type="hidden" name="scan_report_value_id" required id="id_scan_report_value_id"
+                            value="{{ object.id }}">
+                        <input type="number" name="concept_id" required id="id_concept_id" placeholder="New concept id">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </td>
+
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
     <a href="{% url 'tables-structural-mapping' scan_report.id %}">
       <button type="button" class="btn btn-info">Goto Rules</button>

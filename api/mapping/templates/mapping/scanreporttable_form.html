@@ -2,7 +2,7 @@
 
 {% block body %}
 
-
+<h2>Update Table</h2>
 
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
@@ -15,15 +15,9 @@
     </ol>
 </nav>
 
-<div>
-    <!-- Loads in React Components from index.js -->
-    <div id='root'></div>
-    <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
-    </script>
-    <script type="module" src="../../../static/javascript/react/src/editTable.js"></script>
-    
-</div>
+<form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit"   class="btn btn-success" value="Update '{{object.name}}'">
+</form>
 
 {% endblock %}

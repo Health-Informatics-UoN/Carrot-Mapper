@@ -4,8 +4,9 @@ from datetime import datetime
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
-from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, StructuralMappingRule
+from mapping.models import ScanReportField, ScanReportValue
+from mapping.models import ScanReportConcept, OmopField, Concept, StructuralMappingRule
+from mapping.serializers import ConceptSerializer
 
 from graphviz import Digraph
 
@@ -392,177 +393,115 @@ class Concept2OMOP:
         return concept
 
 
-
-def get_mapping_rules_list(structural_mapping_rules):
-    """
-    Args:
-        qs : queryset of all mapping rules
-    Returns:
-        list : a list of rules that can be interpreted by the view.py 
-               page and processed to build a json
-    """
-
-    # Queryset -> list, makes the calls to the db to get the rules 
-    structural_mapping_rules = list(structural_mapping_rules)
     
-    #get all scan_report_concepts that are used
-    #get the ids first so we can make a batch call
-    scan_report_concepts = list(set(
-        [
-            obj.concept_id
-            for obj in structural_mapping_rules
-        ]
-    ))
-    #make the batch call
-    scan_report_concepts = {
-        x.id:x
-        for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))
-    }
-
-    #get all the ids for all ScanReportValues that are used (have been mapped with a concept)
-    scan_report_values = [
-        obj.object_id
-        for obj in scan_report_concepts.values()
-        if obj.content_type.model_class() is ScanReportValue
-    ]
-    #make a batch call to the ORM again..
-    scan_report_values = {
-        obj.id:obj.value
-        for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values))
-    }
-
-    #get all destination field ids
-    destination_fields = [
-        obj.omop_field_id
-        for obj in structural_mapping_rules
-    ]
-    #batch call
-    destination_fields = {
-        obj.id:obj
-        for obj in list(OmopField.objects.filter(pk__in=destination_fields))
-    }
-
-    #again with destination table
-    destination_tables = [
-        obj.table_id for obj in destination_fields.values()
-    ]
-    destination_tables = {
-        obj.id:obj for obj in list(OmopTable.objects.filter(pk__in=destination_tables))
-    }
-
-    #and sources....
-    source_fields = [
-        obj.source_field_id for obj in structural_mapping_rules
-    ]
-    source_fields = {
-        obj.id:obj for obj in list(ScanReportField.objects.filter(pk__in=source_fields))
-    }
-    source_tables = [
-        obj.scan_report_table_id for obj in source_fields.values()
-    ]
-    source_tables = {
-        obj.id:obj for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))
-    }
-
-    #now looop over the rules to actually create the list version of the rules
-    rules = []
-    for rule in structural_mapping_rules:
-
-        #get the fields/tables from the loop up lists
-        #the speed up comes from here as we dont need to keep hitting the DB to get this data
-        #we've already cached it in these dictionaries by making a batch call
-        destination_field = destination_fields[rule.omop_field_id]
-        destination_table = destination_tables[destination_field.table_id]
-
-        source_field = source_fields[rule.source_field_id]
-        source_table = source_tables[source_field.scan_report_table_id]
-
-        #get the concepts again
-        scan_report_concept_id = rule.concept_id
-        scan_report_concept = scan_report_concepts[rule.concept_id]
-        concept_id = scan_report_concept.concept_id
-        concept_name = scan_report_concept.concept.concept_name
-
-        #work out if we need term_mapping or not
-        term_mapping = None
-        if 'concept_id' in destination_field.field:
-            if scan_report_concept.content_type.model_class() is ScanReportValue:
-                term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
-            else:
-                term_mapping = concept_id
-            
-        rules.append(
-            {
-                'rule_id':scan_report_concept_id,
-                'rule_name':concept_name,
-                'destination_table':destination_table,
-                'destination_field':destination_field,
-                'source_table':source_table,
-                'source_field':source_field,
-                'term_mapping':term_mapping
-            })
-            
-    return rules
-
-def get_mapping_rules_json(structural_mapping_rules):
+def get_mapping_rules_json(qs):
     """
     Args:
         qs : queryset of all mapping rules
     Returns:
         dict : formatted json that can be eaten by the TL-Tool
     """
-
     #use the first_qs to get the scan_report dataset name
     #all qs items will be from the same scan_report
-    first_rule = structural_mapping_rules[0]
+    first_qs = qs[0]
 
     #build some metadata
     metadata =  {
         'date_created':datetime.utcnow().isoformat(),
-        'dataset':first_rule.scan_report.dataset
+        'dataset':first_qs.scan_report.dataset
     }
 
-    #get the list of rules
-    #this is the same list/function that is used
-    #!NOTE: we could cache this to speed things up, as the page load will call this once already
-    all_rules = get_mapping_rules_list(structural_mapping_rules)
+    # group all rules in the QuerySet
+    # by the concept they are associated to
+    # Example:
+    # - "person": [ <male>, <female>]
+    # - <male> : [<person_id_rule>, <date_event_rule>, <concept_rule,...]
+    # - <female> : [<person_id_rule>, <date_event_rule>, <concept_rule,...]
+    # The 5 rules for male(female) need to be grouped so the object can be
+    # created
+    object_map = {}
+    for rule in qs:
+        if rule.concept not in object_map:
+            object_map[rule.concept] = []
+        object_map[rule.concept].append(rule)
 
+    #save to a dict
+    #the keys will be the destination_tabls
+    # "cdm" : {
+    #           "person": [],
+    #           "measurement": [],
+    #
+    #         }
     cdm = {}
-    #loop over the list of rules
-    for rule in all_rules:
-        #get the rule id
-        #i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
-        _id = rule['rule_name']
+    
+    #loop over all unique concepts
+    #rules will contain 5 rules:
+    # - person_id, date_event, concept, source_concept, source_value
+    for rules in object_map.values():
 
-        #get the table name
-        table_name = rule['destination_table'].table
+        #use the first rule to get the destinatin tablee
+        #all rules are associated to the same object, so this fine to do
+        first_rule = rules[0]
+        destination_table = first_rule.omop_field.table.table
 
-        #make a new object if we havent come across this cdm table yet
-        if table_name not in cdm:
-            cdm[table_name] = {}
+        #each destination_table will be a list of objects
+        #if the table is not in the cdm dict, add a blank list
+        if destination_table not in cdm:
+            cdm[destination_table] = []
 
-        #reminder, json for ETL needs to be structured like:
-        # { 'cdm': {'person': [person_0, person_1], 'condition_occurence:[c1,c2,c3...] }
-        #if the sub-object (e.g. <person_0>) has not been made, create a new nested document
-        if _id not in cdm[table_name]:
-            cdm[table_name][_id] = {}
-            
-        # make a new mapping spec for the destination table
-        destination_field = rule['destination_field'].field
-        cdm[table_name][_id][destination_field] = {
-            'source_table':rule['source_table'].name.replace("\ufeff",""),
-            'source_field':rule['source_field'].name.replace("\ufeff",""),
-        }
-        #include term_mapping if it's needed
-        #will appear for destinations with _concept_id,
-        #either as a dict (value map) or as a str/int (field map)
-        if rule['term_mapping'] is not None:
-            cdm[table_name][_id][destination_field]['term_mapping'] = rule['term_mapping']
+        #save each cdm object to a dict
+        # "person": [<cdm_obj: male>, <cdm_obj: female>]
+        # <cdm_obj> : {
+        #                'person_id': <rule def>,
+        #                'concept_id': <rule def
+        #                ...
+        #             }
+        cdm_obj = {}
 
-    #add the metadata and cdm object together
+        #loop over all rules to be added to this cdm object
+        for rule in rules:
+
+            #note: needed because some weird whitespace/ byte order marks were appearing in the names
+            source_field = rule.source_field.name.replace(u'\ufeff', '')
+            source_table = rule.source_field.scan_report_table.name.replace(u'\ufeff', '')
+                            
+            destination_field = rule.omop_field.field
+            # !-- todo: add some validation/error check, just incase
+            #_destination_table = rule.omop_field.table.table
+            # if _destination_table != destination_table: something realllly wrong
+
+            #start building the object
+            # Example:
+            # {
+            #        "source_table": "demographic.csv",
+            #        "source_field": "gender",
+            #        "term_mapping": { "M": "8507" }
+            # }
+            cdm_obj[destination_field] = {
+                'source_table':source_table,
+                'source_field':source_field,
+            }
+
+            #if this is a rule for a concept_id
+            if 'concept_id' in destination_field:
+                #check if it's a scan_report_value
+                #otherwise it's a scan_report_field
+                is_scan_report_value = isinstance(rule.concept.content_object,ScanReportValue)
+
+                if is_scan_report_value:
+                    #apply term mapping that says how to map each value to a concept_id
+                    cdm_obj[destination_field]['term_mapping'] = {
+                        rule.concept.content_object.value : rule.concept.concept_id
+                    }
+                else:
+                    #otherwise it's a column level mapping and all values should be
+                    #replace with this concept_id
+                    cdm_obj[destination_field]['term_mapping'] = rule.concept.concept_id
+                    
+        #append the object
+        cdm[destination_table].append(cdm_obj)
+    #return the finalised dict(json)
     return {'metadata':metadata,'cdm':cdm}
-
-
 
 def download_mapping_rules(request,qs):
     #get the mapping rules
@@ -573,7 +512,6 @@ def download_mapping_rules(request,qs):
     return_type = "json"
     fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
     #return a response that downloads the json file
-        
     response = HttpResponse(json.dumps(output,indent=6),content_type='application/json')
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
@@ -581,12 +519,12 @@ def download_mapping_rules(request,qs):
 
 def make_dag(data):
     dot = Digraph(strict=True,format='svg')
-    dot.attr(rankdir='RL')
-
+    dot.attr(rankdir='RL', size='8,5')
+    
     for destination_table_name,destination_tables in data.items():
         dot.node(destination_table_name,shape='box')
 
-        for destination_table in destination_tables.values():
+        for destination_table in destination_tables:
             for destination_field,source in destination_table.items():
                 source_field = source['source_field']
                 source_table = source['source_table']

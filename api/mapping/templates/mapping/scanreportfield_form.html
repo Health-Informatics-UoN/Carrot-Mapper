@@ -15,16 +15,37 @@
     </ol>
 </nav>
 
-<div>
-    <!-- Loads in React Components from index.js -->
-    <div id='root'></div>
-    <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
-    </script>
-    <script type="module" src="../../../static/javascript/react/src/editField.js"></script>
-    
-</div>
+<h2>Update Field-{{object.name}}</h2>
 
+<form method="post" action="#" enctype="multipart/form-data">
+    {% csrf_token %}
+   <!--- <div class="mb-3">
+        {{ form.is_patient_id.errors }}
+        <label class="form-label">{{ form.is_patient_id.label }}</label>
+        {{ form.is_patient_id }}
+    </div>
+    <div class="mb-3">
+        {{ form.is_date_event.errors }}
+        <label class="form-label">{{ form.is_date_event.label }}</label>
+        {{ form.is_date_event }}
+    </div>
+    --->
+    <div class="mb-3">
+        {{ form.is_ignore.errors }}
+        <label class="form-label">{{ form.is_ignore.label }}</label>
+        {{ form.is_ignore }}
+    </div>
+    <div class="mb-3">
+        {{ form.pass_from_source.errors }}
+        <label class="form-label">{{ form.pass_from_source.label }}</label>
+        {{ form.pass_from_source }}
+    </div>
+    <div class="mb-3">
+        {{ form.description_column.errors }}
+        <label class="form-label">{{ form.description_column.label }}</label>
+        {{ form.description_column }}
+    </div>
+    <input type="submit"   class="btn btn-success" value="Update">
+</form>
 
 {% endblock %}
