@@ -28,7 +28,7 @@ import {
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
-const FieldsTbl = () => {
+const FieldsTbl = (props) => {
     const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -224,53 +224,7 @@ const FieldsTbl = () => {
 
 
     const handleDelete = (id, conceptId) => {
-        valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
-        setValues(valuesRef.current)
-        //DEETE Request to API
-        useDelete(`scanreportconcepts/${conceptId}`)
-            .then(function (response) {
-                //Re-fetch the concepts for that particular field
-                getScanReportConcepts(id).then(scanreportconcepts => {
-                    if (scanreportconcepts.length > 0) {
-                        const conceptIds = scanreportconcepts.map(value => value.concept)
-                        useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
-                            .then((values) => {
-                                scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
-                                valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
-                                setValues(valuesRef.current)
-                                setAlert({
-                                    status: 'success',
-                                    title: 'Concept Id Deleted',
-                                    description: 'Response: ' + response.status + ' ' + response.statusText
-                                })
-                                onOpen()
-                            });
-                    }
-                    else {
-                        valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, concepts: [], conceptsLoaded: true } : value)
-                        setValues(valuesRef.current)
-                        setAlert({
-                            status: 'success',
-                            title: 'Concept Id Deleted',
-                            description: 'Response: ' + response.status + ' ' + response.statusText
-                        })
-                        onOpen()
-                    }
-                })
-            })
-            .catch(function (error) {
-                valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
-                setValues(valuesRef.current)
-                if (typeof (error) !== 'undefined' && error.response != null) {
-                    setAlert({
-                        status: 'error',
-                        title: 'Unable to delete Concept id from value',
-                        description: 'Response: ' + error.response.status + ' ' + error.response.statusText
-                    })
-                    onOpen()
-
-                }
-            })
+        props.handleDelete(id,conceptId,scanReportsRef,setScanReports,setAlert,onOpen)
     }
 
     if (error) {

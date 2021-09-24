@@ -114,7 +114,6 @@ const getAllconcepts = async (ids) => {
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
     let values = await useGet(`/scanreportvaluesfilter/?scan_report_field=${valueId}`)
     if (!Array.isArray(values)) {
-        console.log(values)
         setError(true)
         return
     }
@@ -159,7 +158,6 @@ const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadin
         const conceptPromiseResults = await Promise.all(conceptPromises)
         const omopConcepts = [].concat.apply([], conceptPromiseResults)
         scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-        console.log(scanreportconcepts)
         // map each scanreport concept to it's value
         values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
         scanReportsRef.current = values
