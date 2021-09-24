@@ -104,7 +104,7 @@ const DataTbl = () => {
             scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
             setScanReports(scanReportsRef.current)
             // check if concept exists
-            useGet(`${api}/omop/concepts/${concept}`)
+            useGet(`/omop/concepts/${concept}`)
                 .then(async response => {
                     // if concept does not exist, display error
                     if (response.detail == 'Not found.') {
@@ -123,7 +123,7 @@ const DataTbl = () => {
                     // check if concept has valid destination field
                     const cachedOmopFunction = mapConceptToOmopField()
                     const domain = response.domain_id.toLowerCase()
-                    const fields = await useGet(`${api}/omopfields/`)
+                    const fields = await useGet(`/omopfields/`)
                     const destination_field = await cachedOmopFunction(fields, domain + "_source_concept_id")
                     if (destination_field == undefined) {
                         scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
@@ -139,7 +139,7 @@ const DataTbl = () => {
 
                     }
                     // check concepts omop table has been implemented
-                    const omopTable = await useGet(`${api}/omoptables/${destination_field.table}`)
+                    const omopTable = await useGet(`/omoptables/${destination_field.table}`)
                     if (!m_allowed_tables.includes(omopTable.table)) {
                         scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                         setScanReports(scanReportsRef.current)
@@ -159,13 +159,13 @@ const DataTbl = () => {
                         object_id: id,
                         content_type: 17
                     }
-                    usePost(`${api}/scanreportconcepts/`, data)
+                    usePost(`/scanreportconcepts/`, data)
                         .then(function (response) {
                             //Re-fetch scan report concepts for field     
                             getScanReportConcepts(id).then(scanreportconcepts => {
                                 if (scanreportconcepts.length > 0) {
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
-                                    useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
+                                    useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                                         .then((values) => {
                                             scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
                                             scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
@@ -255,7 +255,7 @@ const DataTbl = () => {
                 getScanReportConcepts(id).then(scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
                         const conceptIds = scanreportconcepts.map(value => value.concept)
-                        useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
+                        useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                             .then((values) => {
                                 scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
                                 scanReportsRef.current = scanReportsRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
