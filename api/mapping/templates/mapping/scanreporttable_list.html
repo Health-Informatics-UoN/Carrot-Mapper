@@ -12,21 +12,55 @@
     </ol>
 </nav>
 
-<div>
-    <!-- Loads in React Components from index.js -->
-    <div id='root'></div>
-    <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
-    </script>
-    <script type="module" src="../../../static/javascript/react/src/tablesTable.js"></script>
-    
-</div>
+<h2>Tables</h2>
+
+
+{% if object_list %}
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Person ID</th>
+		<th scope="col">Event Date</th>
+        <th scope="col">Run NLP on Table</th>
+	    <th scope="col">Edit</th>	
+    </tr>
+    </thead>
+    <tbody>
+
+    {% for object in object_list %}
+    <tr>
+        <td><a href="{% url 'fields' %}?search={{ object.id }}">
+            {{ object.name }}</a></td>
+
+	<td>
+	{% if object.person_id %}
+	{{ object.person_id.name }} 
+	{% endif %}
+	</td>
+
+	<td>
+	{% if object.date_event %}
+	{{ object.date_event.name }} 
+	{% endif %}
+	</td>
+
+    <td><a href="{% url 'run-nlp-table' %}?search={{ object.id }}">Run NLP on Table</a></td>
+
+	<td><a href="{% url 'scan-report-table-update' object.id %}">Edit Table</a></td>
+	
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
 <a href="{% url 'tables-structural-mapping' scan_report.id %}">
   <button type="button" class="btn btn-info">Go to Rules</button>
 </a>
 
 
+
+
+{% endif %}
 
 {% endblock %}

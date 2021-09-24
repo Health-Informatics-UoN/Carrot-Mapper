@@ -25,10 +25,8 @@ from .serializers import (
     OmopTableSerializer,
     OmopFieldSerializer,
     StructuralMappingRuleSerializer,
-    GetRulesJSON,
     SourceSerializer,
-    DocumentTypeSerializer,
-    UserSerializer,
+    DocumentTypeSerializer,    
 )
 from .serializers import (
     ConceptSerializer,
@@ -115,7 +113,6 @@ from .services_rules import (
     remove_mapping_rules,
     find_existing_scan_report_concepts,
     download_mapping_rules,
-    get_mapping_rules_list,
     view_mapping_rules,
     find_date_event,
     find_person_id,
@@ -126,7 +123,6 @@ from .services_rules import (
 
 from .services_datadictionary import merge_external_dictionary
 
-
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer
@@ -135,7 +131,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Concept.objects.all()
     serializer_class=ConceptSerializer    
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'concept_id':['in', 'exact'],'concept_code': ['in', 'exact'],'vocabulary_id': ['in', 'exact']}
+    filterset_fields=['concept_id', 'concept_code', 'vocabulary_id']        
 
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset=Vocabulary.objects.all()
@@ -177,16 +173,6 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['drug_concept_id', 'ingredient_concept_id']    
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset=User.objects.all()
-    serializer_class=UserSerializer
-
-class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset=User.objects.all()
-    serializer_class=UserSerializer    
-    filter_backends=[DjangoFilterBackend]
-    filterset_fields={'id':['in', 'exact']}
-
 class ScanReportViewSet(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=ScanReportSerializer
@@ -213,7 +199,7 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportTable.objects.all()
     serializer_class=ScanReportTableSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'scan_report':['in', 'exact'],'name': ['in', 'exact'],'id': ['in', 'exact']}
+    filterset_fields=['scan_report', 'name']
         
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
@@ -230,7 +216,7 @@ class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportField.objects.all()
     serializer_class=ScanReportFieldSerializer  
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'scan_report_table':['in', 'exact'],'name': ['in', 'exact'],'id': ['in', 'exact']}
+    filterset_fields=['scan_report_table', 'name']
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
@@ -247,7 +233,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportConcept.objects.all()
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact'],'id': ['in', 'exact']}
+    filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact']}
     
 class MappingViewSet(viewsets.ModelViewSet):
     queryset=Mapping.objects.all()
@@ -290,31 +276,13 @@ class OmopTableViewSet(viewsets.ModelViewSet):
     queryset=OmopTable.objects.all()
     serializer_class=OmopTableSerializer
 
-class OmopTableFilterViewSet(viewsets.ModelViewSet):
-    queryset=OmopTable.objects.all()
-    serializer_class=OmopTableSerializer    
-    filter_backends=[DjangoFilterBackend]
-    filterset_fields={'id': ['in', 'exact']}    
-
 class OmopFieldViewSet(viewsets.ModelViewSet):
     queryset=OmopField.objects.all()
     serializer_class=OmopFieldSerializer
 
-class OmopFieldFilterViewSet(viewsets.ModelViewSet):
-    queryset=OmopField.objects.all()
-    serializer_class=OmopFieldSerializer
-    filter_backends=[DjangoFilterBackend]
-    filterset_fields={'id': ['in', 'exact']}    
-    
 class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer
-
-class DownloadJSON(viewsets.ModelViewSet):
-    queryset=ScanReport.objects.all()
-    serializer_class=GetRulesJSON
-    filter_backends=[DjangoFilterBackend]
-    filterset_fields=['id']
     
 class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
@@ -345,7 +313,7 @@ class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
     serializer_class=ScanReportValueSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields={'scan_report_field':['in', 'exact'],'value': ['in', 'exact'],'id': ['in', 'exact']}
+    filterset_fields=['scan_report_field', 'value']    
     
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class=ScanReportValueSerializer
@@ -400,8 +368,7 @@ class ScanReportTableListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report
             scan_report_table = self.get_queryset()[0]
@@ -413,8 +380,6 @@ class ScanReportTableListView(ListView):
             {
                 "scan_report": scan_report,
                 "scan_report_table": scan_report_table,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -437,10 +402,6 @@ class ScanReportTableUpdateView(UpdateView):
             .filter(scan_report_table=scan_report_table)\
             .order_by("name")
 
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
-        context["a"] = auth
-        context["u"] = url
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
 
@@ -472,8 +433,7 @@ class ScanReportFieldListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+    
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report_table.scan_report
             scan_report_table = self.get_queryset()[0].scan_report_table
@@ -488,8 +448,6 @@ class ScanReportFieldListView(ListView):
                 "scan_report": scan_report,
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -507,13 +465,6 @@ class ScanReportFieldUpdateView(UpdateView):
             reverse("fields"), self.object.scan_report_table.id
         )
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)  
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
-        context["a"] = auth
-        context["u"] = url
-        return context
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
@@ -551,15 +502,13 @@ class ScanReportListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+
         #add the current user to the context
         #this is needed so the hide/show buttons can be only turned on
         #by whoever created the report
         context['current_user'] = self.request.user
         context['filterset'] = self.filterset
-        context['a'] = auth
-        context['u'] = url
+        
         return context
         
     
@@ -596,8 +545,7 @@ class ScanReportValueListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+
         if len(self.get_queryset()) > 0:
             # scan_report = self.get_queryset()[0].scan_report_table.scan_report
             # scan_report_table = self.get_queryset()[0].scan_report_table
@@ -621,8 +569,6 @@ class ScanReportValueListView(ListView):
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
                 "scan_report_value": scan_report_value,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -697,31 +643,27 @@ class StructuralMappingTableListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
-        pk = self.kwargs.get("pk")
         
+        pk = self.kwargs.get("pk")
         scan_report = ScanReport.objects.get(pk=pk)
 
-        object_list = get_mapping_rules_list(self.get_queryset())        
-        source_tables =  list(set([
-            x['source_table'].name
-            for x in object_list
-        ]))
-
         filtered_omop_table = self.kwargs.get("omop_table")
+        source_tables = list(set(
+            [
+                x.source_field.scan_report_table.name
+                for x in context['object_list']
+            ]
+        ))
+
         current_source_table = self.kwargs.get("source_table")
                 
         context.update(
             {
-                "object_list":object_list,
                 "scan_report": scan_report,
                 "omop_tables": m_allowed_tables,
                 "source_tables":source_tables,
                 "filtered_omop_table":filtered_omop_table,
-                "current_source_table":current_source_table,
-                "a": auth,
-                "u":url
+                "current_source_table":current_source_table
             }
         )
         return context

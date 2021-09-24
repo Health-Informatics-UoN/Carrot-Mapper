@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
-from django.contrib.auth.models import User
 from data.models import (
     Concept,
     Vocabulary,
@@ -29,8 +28,6 @@ from mapping.models import (
     Source,
     DocumentType,
     )
-
-from .services_rules import get_mapping_rules_json
 
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
@@ -70,103 +67,87 @@ class DomainSerializer(serializers.ModelSerializer):
 class DrugStrengthSerializer(serializers.ModelSerializer):
     class Meta:
         model=DrugStrength
-        fields='__all__'  
-        
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id','username')
-        
-class ScanReportSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+        fields='__all__'        
+
+class ScanReportSerializer(serializers.ModelSerializer):
     class Meta:
         model=ScanReport
         fields='__all__'        
 
-class ScanReportTableSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class ScanReportTableSerializer(serializers.ModelSerializer):
     class Meta:
         model=ScanReportTable
         fields='__all__'        
 
 class ScanReportFieldSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    name=serializers.CharField(max_length=512, allow_blank=True, trim_whitespace=False)
-    description_column=serializers.CharField(max_length=512, allow_blank=True, trim_whitespace=False)
+    name=serializers.CharField(max_length=64, allow_blank=True)
+    description_column=serializers.CharField(max_length=256, allow_blank=True)
     class Meta:
         model=ScanReportField
         fields='__all__' 
 
 class ScanReportValueSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    value=serializers.CharField(max_length=128, allow_blank=True, trim_whitespace=False)
+    value=serializers.CharField(max_length=128, allow_blank=True)
     class Meta:
         model=ScanReportValue
         fields='__all__'        
 
-class ScanReportConceptSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class ScanReportConceptSerializer(serializers.ModelSerializer):
     class Meta:
         model=ScanReportConcept
         fields='__all__'        
         
-class MappingSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class MappingSerializer(serializers.ModelSerializer):
     class Meta:
         model=Mapping
         fields='__all__'      
 
-class ClassificationSystemSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class ClassificationSystemSerializer(serializers.ModelSerializer):
     class Meta:
         model=ClassificationSystem
         fields='__all__'               
 
-class DataDictionarySerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class DataDictionarySerializer(serializers.ModelSerializer):
     class Meta:
         model=DataDictionary
         fields='__all__'               
 
-class DocumentSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model=Document
         fields='__all__'               
 
-class DocumentFileSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class DocumentFileSerializer(serializers.ModelSerializer):
     class Meta:
         model=DocumentFile
         fields='__all__'               
 
-class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class DataPartnerSerializer(serializers.ModelSerializer):
     class Meta:
         model=DataPartner
         fields='__all__'               
 
-class OmopFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class OmopFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model=OmopField
         fields='__all__'               
 
-class OmopTableSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class OmopTableSerializer(serializers.ModelSerializer):
     class Meta:
         model=OmopTable
         fields='__all__'               
 
-class StructuralMappingRuleSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class StructuralMappingRuleSerializer(serializers.ModelSerializer):
     class Meta:
         model=StructuralMappingRule
         fields='__all__' 
 
-class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=ScanReport
-        fields='__all__'
-
-    def to_representation(self, scan_report):
-        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
-        rules = get_mapping_rules_json(qs)
-        return rules
-
-
-class SourceSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class SourceSerializer(serializers.ModelSerializer):
     class Meta:
         model=Source
         fields='__all__'         
         
-class DocumentTypeSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class DocumentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model=DocumentType
         fields='__all__'                 
