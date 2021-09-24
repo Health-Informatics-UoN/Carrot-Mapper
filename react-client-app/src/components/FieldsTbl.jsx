@@ -58,7 +58,7 @@ const FieldsTbl = (props) => {
 
 
     const handleDelete = (id, conceptId) => {
-        props.handleDelete(id,conceptId,scanReportsRef,setScanReports,setAlert,onOpen)
+        props.handleDelete(id,conceptId,valuesRef,setValues,setAlert,onOpen)
     }
 
     if (error) {
