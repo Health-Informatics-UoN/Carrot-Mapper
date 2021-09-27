@@ -8,91 +8,61 @@ import {
     Th,
     Td,
     TableCaption,
-    NumberInput,
-    NumberInputField,
-    NumberInputStepper,
-    NumberIncrementStepper,
-    NumberDecrementStepper,
-    Tag,
-    TagLabel,
-    TagCloseButton,
     Text,
     HStack,
     VStack,
-    Stack,
     Flex,
     Spinner,
-    Alert,
-    AlertIcon,
-    AlertTitle,
-    AlertDescription,
-    CloseButton,
-    FormLabel,
-    Box,
-    Fade,
     ScaleFade,
-    useToast,
-    FormControl,
     Input,
     useDisclosure,
-    Collapse
+} from "@chakra-ui/react"
 
-  } from "@chakra-ui/react"
-
-import { Formik, Field, Form, ErrorMessage, FieldArray as FormikActions } from 'formik'
-import {  getConcept, authToken,api,getScanReports, getScanReportConcepts,m_allowed_tables,
-    getScanReportField,getScanReportTable,saveMappingRules,mapConceptToOmopField,
-    useDelete, useGet,usePost}  from '../api/values'
+import { Formik } from 'formik'
+import { getScanReports, getScanReportField, getScanReportTable } from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
-import axios from 'axios'
 
-
-
-
-const DataTbl = (props) => {  
-    const value =parseInt(new URLSearchParams(window.location.search).get("search")) 
-    //6284
-    //21187
+const DataTbl = (props) => {
+    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
-    const {isOpen, onOpen, onClose} = useDisclosure()
+    const { isOpen, onOpen, onClose } = useDisclosure()
     const [scanReports, setScanReports] = useState([]);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const scanReportsRef = useRef([]);
     const scanReportTable = useRef([]);
-    
+
     useEffect(() => {
         // get and store scan report table object to use to check person_id and date_event
-        getScanReportField(value).then(data=>{
-            getScanReportTable(data.scan_report_table).then(table=>{
+        getScanReportField(value).then(data => {
+            getScanReportTable(data.scan_report_table).then(table => {
                 scanReportTable.current = table
             })
         })
         // get scan report values
-        getScanReports(value,setScanReports,scanReportsRef,setLoadingMessage,setError)  
-        
-      },[]);
-    
-      const handleSubmit = (id, concept) => {
-        props.handleSubmit(id,concept,scanReportsRef,setScanReports,setAlert,onOpen,scanReportTable.current,17)  
+        getScanReports(value, setScanReports, scanReportsRef, setLoadingMessage, setError)
+    }, []);
+
+    const handleSubmit = (id, concept) => {
+        props.handleSubmit(id, concept, scanReportsRef, setScanReports, setAlert, onOpen, scanReportTable.current, 17)
     }
 
 
     const handleDelete = (id, conceptId) => {
-        props.handleDelete(id,conceptId,scanReportsRef,setScanReports,setAlert,onOpen)
-    } 
+        props.handleDelete(id, conceptId, scanReportsRef, setScanReports, setAlert, onOpen)
+    }
 
-    if (error){
+    if (error) {
         //Render Loading State
         return (
-            <Flex padding="30px"> 
+            <Flex padding="30px">
                 <Flex marginLeft="10px">An Error has occured while fetching values</Flex>
             </Flex>
         )
     }
 
-    if (scanReports.length<1){
+    if (scanReports.length < 1) {
         //Render Loading State
         return (
             <Flex padding="30px">
@@ -101,98 +71,98 @@ const DataTbl = (props) => {
             </Flex>
         )
     }
-    if (scanReports[0]==undefined){
+    if (scanReports[0] == undefined) {
         //Render Loading State
         return (
             <Flex padding="30px">
-                
+
                 <Flex marginLeft="10px">No Scan Reports Found</Flex>
             </Flex>
         )
     }
-    else { 
+    else {
         return (
             <div>
-                {isOpen&&
-                <ScaleFade initialScale={0.9} in={isOpen}>
-                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
-                </ScaleFade>
+                {isOpen &&
+                    <ScaleFade initialScale={0.9} in={isOpen}>
+                        <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                    </ScaleFade>
                 }
 
                 <Table variant="striped" colorScheme="greyBasic">
-                <TableCaption></TableCaption>
-                <Thead>
-                    <Tr>
-                    <Th>Value</Th>
-                    <Th>Value Description</Th>
-                    <Th>Frequency</Th>
-                    <Th>Concepts</Th>
-                    <Th></Th>
-                    </Tr>
-                </Thead>
-                <Tbody>
-                    {
-                        // Create new row for every value object
-                        scanReports.map((item,index) =>
-                        <Tr key={item.id}>
-                        <Td>{item.value}</Td>
-                        <Td>{item.value_description}</Td>
-                        <Td>{item.frequency}</Td>
-                        
-                        <Td>
-                            {item.conceptsLoaded ?
-                                item.concepts.length > 0 &&
-                                <VStack alignItems='flex-start' >
-                                    {item.concepts.map((concept) => (
-                                        <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} />
-                                    ))}
-                                </VStack>
-                                :
-                                item.conceptsLoaded === false ?
-                                    <Flex >
-                                        <Spinner />
-                                        <Flex marginLeft="10px">Loading Concepts</Flex>
-                                    </Flex>
-                                    :
-                                    <Text>Failed to load concepts</Text>
-                            }
-                        </Td>
-                        <Td>
-
-                        <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
-                            handleSubmit(item.id, data.concept)
-                            actions.resetForm();
-                        }}>
-                        { ( { values, handleChange, handleBlur, handleSubmit }) => (
-                            <Form onSubmit={handleSubmit}>
-                                <HStack>
-                                    <Input  
-                                        width='30%'
-                                        type='number'                                    
-                                        name='concept'
-                                        value={values.concept}
-                                        onChange={handleChange}
-                                        onBlur={handleBlur} />
-                                    <div>
-                                        <Button type='submit' disabled={!item.conceptsToLoad==0} backgroundColor='#3C579E' color='white'>Add</Button>
-                                    </div>
-                                </HStack>
-                            </Form>
-                        )}  
-                        </Formik>  
-                        </Td>
+                    <TableCaption></TableCaption>
+                    <Thead>
+                        <Tr>
+                            <Th>Value</Th>
+                            <Th>Value Description</Th>
+                            <Th>Frequency</Th>
+                            <Th>Concepts</Th>
+                            <Th></Th>
                         </Tr>
-                        
-                        )
-                    }
-                </Tbody>
+                    </Thead>
+                    <Tbody>
+                        {
+                            // Create new row for every value object
+                            scanReports.map((item, index) =>
+                                <Tr key={item.id}>
+                                    <Td>{item.value}</Td>
+                                    <Td>{item.value_description}</Td>
+                                    <Td>{item.frequency}</Td>
+
+                                    <Td>
+                                        {item.conceptsLoaded ?
+                                            item.concepts.length > 0 &&
+                                            <VStack alignItems='flex-start' >
+                                                {item.concepts.map((concept) => (
+                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} />
+                                                ))}
+                                            </VStack>
+                                            :
+                                            item.conceptsLoaded === false ?
+                                                <Flex >
+                                                    <Spinner />
+                                                    <Flex marginLeft="10px">Loading Concepts</Flex>
+                                                </Flex>
+                                                :
+                                                <Text>Failed to load concepts</Text>
+                                        }
+                                    </Td>
+                                    <Td>
+
+                                        <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
+                                            handleSubmit(item.id, data.concept)
+                                            actions.resetForm();
+                                        }}>
+                                            {({ values, handleChange, handleBlur, handleSubmit }) => (
+                                                <Form onSubmit={handleSubmit}>
+                                                    <HStack>
+                                                        <Input
+                                                            width='30%'
+                                                            type='number'
+                                                            name='concept'
+                                                            value={values.concept}
+                                                            onChange={handleChange}
+                                                            onBlur={handleBlur} />
+                                                        <div>
+                                                            <Button type='submit' disabled={!item.conceptsToLoad == 0} backgroundColor='#3C579E' color='white'>Add</Button>
+                                                        </div>
+                                                    </HStack>
+                                                </Form>
+                                            )}
+                                        </Formik>
+                                    </Td>
+                                </Tr>
+
+                            )
+                        }
+                    </Tbody>
                 </Table>
             </div>
         )
 
-    } 
+    }
 
-} 
+}
 
 
 export default DataTbl

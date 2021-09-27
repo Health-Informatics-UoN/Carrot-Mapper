@@ -61,54 +61,15 @@ const getScanReportTable = async (id)=>{
     const table = await useGet(`/scanreporttables/${id}`)
     return table
 }
-// get scan report values for specific id
-const getScanReportValues = async (id) => {
-    const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-    }
-    );
-    const data = response.json();
-    return data;
-}
 // get concepts for a specific scan report
 const getScanReportConcepts = async (id) => {
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id=${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-        importance: "low" 
-    });
-    return response.json();
+    const response = await useGet(`/scanreportconceptsfilter/?object_id=${id}`)
+    return response;
 }
-// get a concept by id
-// pass identifier to use as id to delete the concept from the scan report
-const getConcept = async (id,identifier) => { 
-    const response = await fetch(`${api}/omop/concepts/${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},
-        importance: "high"  
-    }).then(res=>{
-        return res.json().then(function(json) {
-            json.id = identifier;
-            return json;
-          });
-    })
-    return response
-}
-
 // get all concepts for specific scan report before returning
 const getAllconcepts = async (ids) => {   
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id__in=${ids}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-        importance: "low" 
-    });
-    const concepts = await response.json()
-    return concepts;
+    const response = await useGet(`/scanreportconceptsfilter/?object_id__in=${ids}`),    
+    return response;
 }
 
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
@@ -589,7 +550,7 @@ const getScanReportTableRows = async (id) =>{
 
 
 
-export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
+export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
     getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts, getConcept,getScanReports,authToken,api,getScanReportTableRows,usePatch,
+     getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
      }

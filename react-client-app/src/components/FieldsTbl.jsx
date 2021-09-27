@@ -21,10 +21,7 @@ import {
 } from "@chakra-ui/react"
 
 import { Formik, Form, } from 'formik'
-import {
-    api, getScanReportConcepts, useDelete, useGet, m_allowed_tables,
-    getScanReportTable, saveMappingRules, getScanReportFieldValues, mapConceptToOmopField, usePost
-} from '../api/values'
+import {getScanReportTable, getScanReportFieldValues} from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
