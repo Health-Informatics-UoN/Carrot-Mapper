@@ -66,10 +66,50 @@ const getScanReportConcepts = async (id) => {
     const response = await useGet(`/scanreportconceptsfilter/?object_id=${id}`)
     return response;
 }
-// get all concepts for specific scan report before returning
-const getAllconcepts = async (ids) => {   
-    const response = await useGet(`/scanreportconceptsfilter/?object_id__in=${ids}`)   
-    return response;
+
+const getValuesScanReportConcepts = async (values,scanReportsRef={},setScanReports=()=>{}) => {
+    const valueIds = chunkIds(values.map(value => value.id))
+    const valuePromises = []
+    for (let i = 0; i < valueIds.length; i++) {
+        valuePromises.push(useGet(`/scanreportconceptsfilter/?object_id__in=${valueIds[i].join()}`))
+    }
+    const promiseResult = await Promise.all(valuePromises)
+    let scanreportconcepts = [].concat.apply([], promiseResult)
+    if (scanreportconcepts.length == 0) {
+        values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
+        scanReportsRef.current = values
+        return values
+    }
+    const conceptIdsObject = {}
+        scanreportconcepts.map(value => {
+            if (value.concept) {
+                if (conceptIdsObject[value.concept]) {
+                    conceptIdsObject[value.concept].push(value.object_id)
+                }
+                else {
+                    conceptIdsObject[value.concept] = [value.object_id]
+                }
+            }
+        })
+        values = values.map((scanReport) => Object.values(conceptIdsObject).find(arr => arr.includes(scanReport.id)) ?
+        scanReport : { ...scanReport, conceptsLoaded: true })
+        scanReportsRef.current = values
+        setScanReports(scanReportsRef.current)
+
+        const conceptIds = chunkIds(Object.keys(conceptIdsObject))
+
+        const conceptPromises = []
+        for (let i = 0; i < conceptIds.length; i++) {
+            conceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
+        }
+        const conceptPromiseResults = await Promise.all(conceptPromises)
+        const omopConcepts = [].concat.apply([], conceptPromiseResults)
+        scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
+        // map each scanreport concept to it's value
+        values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
+        scanReportsRef.current = values
+        setScanReports(scanReportsRef.current)
+        return values
 }
 
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
@@ -83,53 +123,15 @@ const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadin
         values = values.map(scanReport => ({ ...scanReport, concepts: [], conceptsLoaded: false }))
         scanReportsRef.current = values
         setScanReports(scanReportsRef.current)
-        const valueIds = chunkIds(values.map(value => value.id))
-        const valuePromises = []
-        for (let i = 0; i < valueIds.length; i++) {
-            valuePromises.push(getAllconcepts(valueIds[i].join()))
-        }
-
-        const promiseResult = await Promise.all(valuePromises)
-        // create an array of all the results from the sublists api requests
-        let scanreportconcepts = [].concat.apply([], promiseResult)
-        const conceptIdsObject = {}
-        scanreportconcepts.map(value => {
-            if (value.concept) {
-                if (conceptIdsObject[value.concept]) {
-                    conceptIdsObject[value.concept].push(value.object_id)
-                }
-                else {
-                    conceptIdsObject[value.concept] = [value.object_id]
-                }
-            }
-        })
-
-        values = values.map((scanReport) => Object.values(conceptIdsObject).find(arr => arr.includes(scanReport.id)) ?
-            scanReport : { ...scanReport, conceptsLoaded: true })
-        scanReportsRef.current = values
-        setScanReports(scanReportsRef.current)
-
-        const conceptIds = chunkIds(Object.keys(conceptIdsObject))
-
-        const conceptPromises = []
-        for (let i = 0; i < conceptIds.length; i++) {
-            conceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
-        }
-
-        const conceptPromiseResults = await Promise.all(conceptPromises)
-        const omopConcepts = [].concat.apply([], conceptPromiseResults)
-        scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-        // map each scanreport concept to it's value
-        values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
-        scanReportsRef.current = values
+        values = await getValuesScanReportConcepts(values,scanReportsRef,setScanReports)
         setScanReports(scanReportsRef.current)
         return values
     }
-    else{
+    else {
         // return if there are no scan reports
         scanReportsRef.current = [undefined]
         setScanReports([undefined])
-    } 
+    }
 }
 
 // function to save mapping rules copying python implementation
@@ -476,40 +478,11 @@ const getMappingRules = async (id, tableData, switchFilter) => {
 
 const getScanReportFieldValues = async (valueId, valuesRef) => {
     let response = await useGet(`/scanreportfieldsfilter/?scan_report_table=${valueId}`)
-    response = response.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
     }
-    const ids = chunkIds(response.map(value => value.id))
-    const promises = []
-    // send API request for every sublist
-    for (let i = 0; i < ids.length; i++) {
-        promises.push(useGet(`/scanreportconceptsfilter/?object_id__in=${ids[i].join()}`))
-    }
-    const promiseResults = await Promise.all(promises)
-    let scanreportconcepts = [].concat.apply([], promiseResults)
-
-    if (scanreportconcepts.length == 0) {
-        response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
-        valuesRef.current = response
-        return response
-    }
-    const conceptIds = chunkIds(scanreportconcepts.map(value => value.concept))
-
-    const conceptPromises = []
-    // send API request for every sublist
-    for (let i = 0; i < conceptIds.length; i++) {
-        conceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
-    }
-
-    const conceptPromiseResults = await Promise.all(conceptPromises)
-
-    const omopConcepts = [].concat.apply([], conceptPromiseResults)
-
-    scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-    // map each scanreport concept to it's value
-    response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
-    valuesRef.current = response
+    response = await getValuesScanReportConcepts(response,valuesRef)
     return response
 }
 
