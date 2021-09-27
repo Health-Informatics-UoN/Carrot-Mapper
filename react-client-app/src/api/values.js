@@ -68,7 +68,7 @@ const getScanReportConcepts = async (id) => {
 }
 // get all concepts for specific scan report before returning
 const getAllconcepts = async (ids) => {   
-    const response = await useGet(`/scanreportconceptsfilter/?object_id__in=${ids}`),    
+    const response = await useGet(`/scanreportconceptsfilter/?object_id__in=${ids}`)   
     return response;
 }
 
