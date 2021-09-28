@@ -400,8 +400,6 @@ class ScanReportTableListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report
             scan_report_table = self.get_queryset()[0]
@@ -413,8 +411,6 @@ class ScanReportTableListView(ListView):
             {
                 "scan_report": scan_report,
                 "scan_report_table": scan_report_table,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -437,10 +433,6 @@ class ScanReportTableUpdateView(UpdateView):
             .filter(scan_report_table=scan_report_table)\
             .order_by("name")
 
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
-        context["a"] = auth
-        context["u"] = url
         for key in context['form'].fields.keys():
             context['form'].fields[key].queryset = qs
 
@@ -472,8 +464,7 @@ class ScanReportFieldListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report_table.scan_report
             scan_report_table = self.get_queryset()[0].scan_report_table
@@ -488,8 +479,6 @@ class ScanReportFieldListView(ListView):
                 "scan_report": scan_report,
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -509,10 +498,6 @@ class ScanReportFieldUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)  
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
-        context["a"] = auth
-        context["u"] = url
         return context
 
 @method_decorator(login_required, name="dispatch")
@@ -551,15 +536,11 @@ class ScanReportListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
         #add the current user to the context
         #this is needed so the hide/show buttons can be only turned on
         #by whoever created the report
         context['current_user'] = self.request.user
         context['filterset'] = self.filterset
-        context['a'] = auth
-        context['u'] = url
         return context
         
     
@@ -596,8 +577,7 @@ class ScanReportValueListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
+
         if len(self.get_queryset()) > 0:
             # scan_report = self.get_queryset()[0].scan_report_table.scan_report
             # scan_report_table = self.get_queryset()[0].scan_report_table
@@ -621,8 +601,6 @@ class ScanReportValueListView(ListView):
                 "scan_report_table": scan_report_table,
                 "scan_report_field": scan_report_field,
                 "scan_report_value": scan_report_value,
-                "a": auth,
-                "u":url
             }
         )
 
@@ -697,8 +675,6 @@ class StructuralMappingTableListView(ListView):
     def get_context_data(self, **kwargs):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
-        auth = os.environ.get("COCONNECT_DB_AUTH_TOKEN")
-        url = os.environ.get("CCOM_APP_URL")
         pk = self.kwargs.get("pk")
         
         scan_report = ScanReport.objects.get(pk=pk)
@@ -720,8 +696,6 @@ class StructuralMappingTableListView(ListView):
                 "source_tables":source_tables,
                 "filtered_omop_table":filtered_omop_table,
                 "current_source_table":current_source_table,
-                "a": auth,
-                "u":url
             }
         )
         return context
