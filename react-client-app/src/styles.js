@@ -33,11 +33,10 @@ const theme = extendTheme({
   styles: {
     global: {
       "Tr.largeTbl > Th": {
-        p: "0"
+        p: "5px"
       },
       "Tr.largeTbl > Td": {
-        p: "0",
-        borderRight: "1px solid black"
+        p: "5px",
       },
     },
   },
