@@ -231,7 +231,7 @@ const ScanReportTbl = (props) => {
                                         <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                     </HStack>
                                 </Td>
-                                <Td>
+                                <Td textAlign="center">
                                     {currentUser &&
                                         <>
                                             {currentUser == item.author.username &&
