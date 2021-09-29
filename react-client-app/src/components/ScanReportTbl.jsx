@@ -4,6 +4,7 @@ import { useGet, usePatch, api, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
 import moment from 'moment';
+import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
 const ScanReportTbl = (props) => {
     const active = useRef(true)
@@ -17,6 +18,7 @@ const ScanReportTbl = (props) => {
     const [datasetFilter, setDatasetFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
+    const [expanded, setExpanded] = useState(false);
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
@@ -160,10 +162,10 @@ const ScanReportTbl = (props) => {
                     }
                 })}
             </HStack>
-            <Table w="100%" variant="striped" colorScheme="greyBasic">
+            <Table w="100%" variant={expanded ? "" : "striped"} colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
-                    <Tr>
+                    <Tr className={expanded ? "largeTbl" : ""}>
                         <Th style={{ fontSize: "16px" }}>ID</Th>
                         <Th>
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
@@ -194,14 +196,30 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
                         <Th></Th>
-                        <Th style={{ fontSize: "16px", textTransform: "none" }}>Archive</Th>
+                        <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
+                            <HStack>
+                                <Text mr="10px">Archive</Text>
+                                {!expanded && <ArrowRightIcon  style={{ marginLeft: "auto" }} _hover={{ color: "blue.500", }} onClick={() => setExpanded(true)} />}
+                            </HStack>
+                        </Th>
+                        {expanded &&
+                            <>
+                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Number Fields</Th>
+                                <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
+                                    <HStack>
+                                        <Text>Number of tables</Text>
+                                        {expanded && <ArrowLeftIcon ml="auto" _hover={{ color: "blue.500", }} onClick={() => setExpanded(false)} />}
+                                    </HStack>
+                                </Th>
+                            </>
+                        }
                     </Tr>
                 </Thead>
                 <Tbody>
                     {applyFilters(displayedData).length > 0 &&
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
-                            <Tr key={index}>
+                            <Tr className={expanded ? "largeTbl" : ""} key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
@@ -219,15 +237,33 @@ const ScanReportTbl = (props) => {
                                             {currentUser == item.author.username &&
                                                 <>
                                                     {item.hidden ?
-                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Unarchiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, false)}>Unarchive</Button>
+                                                        <>
+                                                            {item.loading ?
+                                                                <Spinner />
+                                                                :
+                                                                <ViewOffIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, false)} />
+                                                            }
+                                                        </>
                                                         :
-                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Archiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, true)}>Archive</Button>
+                                                        <>
+                                                            {item.loading ?
+                                                                <Spinner />
+                                                                :
+                                                                <ViewIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, true)} />
+                                                            }
+                                                        </>
                                                     }
                                                 </>
                                             }
                                         </>
                                     }
                                 </Td>
+                                {expanded &&
+                                    <>
+                                        <Td>4343</Td>
+                                        <Td>54454</Td>
+                                    </>
+                                }
                             </Tr>
 
                         )
