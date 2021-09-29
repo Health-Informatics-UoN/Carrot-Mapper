@@ -162,7 +162,7 @@ const ScanReportTbl = (props) => {
                     }
                 })}
             </HStack>
-            <Table w="100%" variant={expanded ? "" : "striped"} colorScheme="greyBasic">
+            <Table w="100%" variant= "striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr className={expanded ? "largeTbl" : ""}>
