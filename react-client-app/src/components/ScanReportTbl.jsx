@@ -204,10 +204,10 @@ const ScanReportTbl = (props) => {
                         </Th>
                         {expanded &&
                             <>
-                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Number Fields</Th>
+                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Tables</Th>
                                 <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                                     <HStack>
-                                        <Text>Number of tables</Text>
+                                        <Text>Fields</Text>
                                         {expanded && <ArrowLeftIcon ml="auto" _hover={{ color: "blue.500", }} onClick={() => setExpanded(false)} />}
                                     </HStack>
                                 </Th>
@@ -260,8 +260,8 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>4343</Td>
-                                        <Td>54454</Td>
+                                        <Td>100</Td>
+                                        <Td>1000</Td>
                                     </>
                                 }
                             </Tr>
