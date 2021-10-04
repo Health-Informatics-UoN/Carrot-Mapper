@@ -65,6 +65,28 @@ const ScanReportTbl = (props) => {
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
         setLoadingMessage(null)
+
+        // get table and field count
+        const allTables = await useGet(`/scanreporttables`)
+        data.current.map(report=>{
+          report.tables = allTables.filter(table=>table.scan_report == report.id)
+        })
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+      
+        const allFields = await useGet(`/scanreportfields`)
+        
+        data.current.map(report=>{
+          report.fields = []
+          report.tables.map(table=>{
+            report.fields.push(...allFields.filter(field=>field.scan_report_table==table.id))
+          })
+          
+        })
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
@@ -260,8 +282,8 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>100</Td>
-                                        <Td>1000</Td>
+                                        <Td>{item.tables?item.tables.length:"counting"}</Td>
+                                        <Td>{item.fields?item.fields.length:"counting"}</Td>
                                     </>
                                 }
                             </Tr>
