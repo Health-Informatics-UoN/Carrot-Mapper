@@ -25,7 +25,7 @@ const ScanReportTbl = (props) => {
         setCurrentUser(window.currentUser)
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         // get scan reports and sort by id
-        let scanreports = await useGet(`${api}/scanreports/`)
+        let scanreports = await useGet(`/scanreports/`)
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // for each scan report use the data partner and author ids to get name to display
         const dataPartnerObject = {}
@@ -43,10 +43,10 @@ const ScanReportTbl = (props) => {
         const dataPartnerPromises = []
         const authorPromises = []
         for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`${api}/datapartners/?id__in=${dataPartnerIds[i].join()}`))
+            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`))
         }
         for (let i = 0; i < authorIds.length; i++) {
-            authorPromises.push(useGet(`${api}/usersfilter/?id__in=${authorIds[i].join()}`))
+            authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`))
         }
         const promises = await Promise.all([Promise.all(dataPartnerPromises), Promise.all(authorPromises)])
         const dataPartners = [].concat.apply([], promises[0])
