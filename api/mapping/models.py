@@ -326,11 +326,11 @@ class ScanReportField(BaseModel):
     )
 
     name = models.CharField(
-        max_length=64,
+        max_length=512,
     )
 
     description_column = models.CharField(
-        max_length=256,
+        max_length=512,
     )
 
     type_column = models.CharField(

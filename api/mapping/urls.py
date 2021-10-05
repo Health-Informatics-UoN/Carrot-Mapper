@@ -19,6 +19,8 @@ routers.register(r'omop/conceptsynonyms', views.ConceptSynonymViewSet,basename='
 routers.register(r'omop/domains', views.DomainViewSet,basename='domains')
 routers.register(r'omop/drugstrengths', views.DrugStrengthViewSet,basename='drugstrengths')
 
+routers.register(r'users', views.UserViewSet,basename='users')
+routers.register(r'usersfilter', views.UserFilterViewSet,basename='users')
 
 routers.register(r'scanreports', views.ScanReportViewSet,basename='scanreports')
 
@@ -51,8 +53,11 @@ routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners
 routers.register(r'datapartnersfilter',views.DataPartnerFilterViewSet,basename='datapartnersfilter')
 
 routers.register(r'omoptables',views.OmopTableViewSet,basename='omoptables')
+routers.register(r'omoptablesfilter',views.OmopTableFilterViewSet,basename='omoptablesfilter')
 routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
+routers.register(r'omopfieldsfilter',views.OmopFieldFilterViewSet,basename='omopfieldsfilter')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
+routers.register(r'json',views.DownloadJSON,basename='getjson')
 routers.register(r'structuralmappingrulesfilter',views.StructuralMappingRuleFilterViewSet,basename='structuralmappingrulefilter')
 
 routers.register(r'sources',views.SourceViewSet,basename='sources')
@@ -61,7 +66,6 @@ routers.register(r'documenttypes',views.DocumentTypeViewSet,basename='documentty
 urlpatterns = [
     path('api/',include(routers.urls)),
     path('api_auth/',include('rest_framework.urls',namespace='rest_framework')),
-    
     path('', views.home, name='home'),
     path('tables/', views.ScanReportTableListView.as_view(), name='tables'),
     path('tables/<int:pk>/update/', views.ScanReportTableUpdateView.as_view(), name='scan-report-table-update'),
