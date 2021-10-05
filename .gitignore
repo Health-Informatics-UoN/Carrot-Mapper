@@ -5,7 +5,8 @@
 *.sqlite3
 *.env
 local.settings.json
-
+react-client-app/node_modules/
+api/static/javascript/react
 **/migrations
 */__pycache__/*
 **/pgdata/**
