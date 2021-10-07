@@ -19,7 +19,7 @@ const ScanReportTbl = (props) => {
     const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     const [expanded, setExpanded] = useState(false);
-    const statuses = ["UPINPRO", "UPCOMPL", "UPFAILE", "PENDING", "INPRO25", "INPRO50", "INPRO75", "COMPLET", "BLOCKED"]
+    const statuses = JSON.parse(window.status).map(status=>status.id);
 
     useEffect(async () => {
         // run on initial page load
@@ -167,28 +167,7 @@ const ScanReportTbl = (props) => {
         });
     }
     const mapStatus = (status) => {
-        switch (status) {
-            case 'UPINPRO':
-                return "Upload in Progress"
-            case 'UPCOMPL':
-                return "Upload Complete"
-            case 'UPFAILE':
-                return "Upload Failed"
-            case 'PENDING':
-                return "Mapping Pending"
-            case 'INPRO25':
-                return "In Progress (25%)"
-            case 'INPRO50':
-                return "In Progress (50%)"
-            case 'INPRO75':
-                return "In Progress (75%)"
-            case 'COMPLET':
-                return "Complete"
-            case 'BLOCKED':
-                return "Blocked"
-            default:
-                return "Does not recognise label"
-        }
+        return JSON.parse(window.status).find(item=>item.id==status).label
     }
     if (loadingMessage) {
         //Render Loading State
