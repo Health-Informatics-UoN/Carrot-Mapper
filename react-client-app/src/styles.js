@@ -30,6 +30,16 @@ const theme = extendTheme({
       900: "#1a202c",
     },
   },
+  styles: {
+    global: {
+      "Tr.largeTbl > Th": {
+        p: "5px"
+      },
+      "Tr.largeTbl > Td": {
+        p: "5px",
+      },
+    },
+  },
 })
 
 export default theme

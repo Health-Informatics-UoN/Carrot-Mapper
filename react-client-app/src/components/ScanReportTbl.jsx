@@ -4,6 +4,7 @@ import { useGet, usePatch, api, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
 import moment from 'moment';
+import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
 const ScanReportTbl = (props) => {
     const active = useRef(true)
@@ -17,6 +18,7 @@ const ScanReportTbl = (props) => {
     const [datasetFilter, setDatasetFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
+    const [expanded, setExpanded] = useState(false);
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
@@ -63,6 +65,28 @@ const ScanReportTbl = (props) => {
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
         setLoadingMessage(null)
+
+        // get table and field count
+        const allTables = await useGet(`/scanreporttables`)
+        data.current.map(report=>{
+          report.tables = allTables.filter(table=>table.scan_report == report.id)
+        })
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+      
+        const allFields = await useGet(`/scanreportfields`)
+        
+        data.current.map(report=>{
+          report.fields = []
+          report.tables.map(table=>{
+            report.fields.push(...allFields.filter(field=>field.scan_report_table==table.id))
+          })
+          
+        })
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
@@ -160,10 +184,10 @@ const ScanReportTbl = (props) => {
                     }
                 })}
             </HStack>
-            <Table w="100%" variant="striped" colorScheme="greyBasic">
+            <Table w="100%" variant= "striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
-                    <Tr>
+                    <Tr className={expanded ? "largeTbl" : ""}>
                         <Th style={{ fontSize: "16px" }}>ID</Th>
                         <Th>
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
@@ -194,14 +218,30 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
                         <Th></Th>
-                        <Th style={{ fontSize: "16px", textTransform: "none" }}>Archive</Th>
+                        <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
+                            <HStack>
+                                <Text mr="10px">Archive</Text>
+                                {!expanded && <ArrowRightIcon  style={{ marginLeft: "auto" }} _hover={{ color: "blue.500", }} onClick={() => setExpanded(true)} />}
+                            </HStack>
+                        </Th>
+                        {expanded &&
+                            <>
+                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Tables</Th>
+                                <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
+                                    <HStack>
+                                        <Text>Fields</Text>
+                                        {expanded && <ArrowLeftIcon ml="auto" _hover={{ color: "blue.500", }} onClick={() => setExpanded(false)} />}
+                                    </HStack>
+                                </Th>
+                            </>
+                        }
                     </Tr>
                 </Thead>
                 <Tbody>
                     {applyFilters(displayedData).length > 0 &&
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
-                            <Tr key={index}>
+                            <Tr className={expanded ? "largeTbl" : ""} key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
@@ -213,21 +253,39 @@ const ScanReportTbl = (props) => {
                                         <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                     </HStack>
                                 </Td>
-                                <Td>
+                                <Td textAlign="center">
                                     {currentUser &&
                                         <>
                                             {currentUser == item.author.username &&
                                                 <>
                                                     {item.hidden ?
-                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Unarchiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, false)}>Unarchive</Button>
+                                                        <>
+                                                            {item.loading ?
+                                                                <Spinner />
+                                                                :
+                                                                <ViewOffIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, false)} />
+                                                            }
+                                                        </>
                                                         :
-                                                        <Button variant="blue" isLoading={item.loading ? true : false} loadingText="Archiving" spinnerPlacement="start" onClick={() => activateOrArchiveReport(item.id, true)}>Archive</Button>
+                                                        <>
+                                                            {item.loading ?
+                                                                <Spinner />
+                                                                :
+                                                                <ViewIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, true)} />
+                                                            }
+                                                        </>
                                                     }
                                                 </>
                                             }
                                         </>
                                     }
                                 </Td>
+                                {expanded &&
+                                    <>
+                                        <Td>{item.tables?item.tables.length:"counting"}</Td>
+                                        <Td>{item.fields?item.fields.length:"counting"}</Td>
+                                    </>
+                                }
                             </Tr>
 
                         )
