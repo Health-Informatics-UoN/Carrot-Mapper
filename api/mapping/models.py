@@ -19,7 +19,10 @@ STATUS_CHOICES = [
 ]
 
 class Status(models.TextChoices):
-    PENDING = "PENDING", "Pending"
+    UPLOAD_IN_PROGRESS="UPINPRO","Upload in Progress"
+    UPLOAD_COMPLETE="UPCOMPL","Upload Complete"
+    UPLOAD_FAILED="UPFAILE","Upload Failed"
+    PENDING = "PENDING", "Mapping Pending"
     IN_PROGRESS_25PERCENT="INPRO25","In Progress (25%)"
     IN_PROGRESS_50PERCENT="INPRO50","In Progress (50%)"
     IN_PROGRESS_75PERCENT="INPRO75","In Progress (75%)"
