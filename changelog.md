@@ -3,6 +3,7 @@
 Please append a line to the changelog for each change made.
 
 ## v1.2-beta
+* Status field added to the ScanReport Model and migrations have been applied to ccnetapptestdb to reflect status field in the scanreport model. For dev, prod and test migrations will need to apply. 
 
 ## v1.1 was released 24/09/21
 * Mapping rules json structural change, now objects associated to a CDM table are a dictionary (with a key name) rather than just a list.
