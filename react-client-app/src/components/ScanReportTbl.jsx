@@ -295,7 +295,7 @@ const ScanReportTbl = (props) => {
                                                 <Flex marginLeft="10px">Loading status</Flex>
                                             </Flex>
                                             :
-                                            <Select minW="max-content" style={{ fontWeight: "bold" }} variant="unstyled" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
+                                            <Select minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
                                                 <option style={{ fontWeight: "bold" }} disabled>Status</option>
                                                 {statuses.map((item, index) =>
                                                     <option key={index} value={item}>{mapStatus(item)}</option>
