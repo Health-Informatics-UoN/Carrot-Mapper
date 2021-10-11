@@ -375,11 +375,11 @@ class CountStats(APIView):
         scanreport_count = ScanReport.objects.count()
         scanreporttable_count=ScanReportTable.objects.count()
         scanreportfield_count=ScanReportField.objects.count()
-        scanReportvalue_count=ScanReportValue.objects.count()
+        scaneportvalue_count=ScanReportValue.objects.count()
         content = {'scanreport_count': scanreport_count,
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,
-        'scanreportvalue_count': scanReportvalue_count,
+        'scanreportvalue_count': scanreportvalue_count,
         }
         return Response(content)
 
