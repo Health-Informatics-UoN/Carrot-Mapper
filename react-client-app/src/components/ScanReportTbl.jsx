@@ -19,6 +19,8 @@ const ScanReportTbl = (props) => {
     const [authorFilter, setAuthorFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     const [expanded, setExpanded] = useState(false);
+    const statuses = JSON.parse(window.status).map(status=>status.id);
+
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
@@ -68,21 +70,21 @@ const ScanReportTbl = (props) => {
 
         // get table and field count
         const allTables = await useGet(`/scanreporttables`)
-        data.current.map(report=>{
-          report.tables = allTables.filter(table=>table.scan_report == report.id)
+        data.current.map(report => {
+            report.tables = allTables.filter(table => table.scan_report == report.id)
         })
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-      
+
         const allFields = await useGet(`/scanreportfields`)
-        
-        data.current.map(report=>{
-          report.fields = []
-          report.tables.map(table=>{
-            report.fields.push(...allFields.filter(field=>field.scan_report_table==table.id))
-          })
-          
+
+        data.current.map(report => {
+            report.fields = []
+            report.tables.map(table => {
+                report.fields.push(...allFields.filter(field => field.scan_report_table == table.id))
+            })
+
         })
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
@@ -151,6 +153,22 @@ const ScanReportTbl = (props) => {
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
     };
+    const setStatus = (id, status) => {
+        const patchData = { status: status };
+        data.current = data.current.map((item) => item.id == id ? { ...item, statusLoading: true } : item);
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+        usePatch(`scanreports/${id}/`, patchData).then((res) => {
+            data.current = data.current.map((item) => item.id == id ? { ...item, status, statusLoading: false } : item);
+            activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
+            archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+            active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+        });
+    }
+    const mapStatus = (status) => {
+        return JSON.parse(window.status).find(item=>item.id==status).label
+    }
     if (loadingMessage) {
         //Render Loading State
         return (
@@ -184,10 +202,10 @@ const ScanReportTbl = (props) => {
                     }
                 })}
             </HStack>
-            <Table w="100%" variant= "striped" colorScheme="greyBasic">
+            <Table w="100%" variant="striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
-                    <Tr className={expanded ? "largeTbl" : ""}>
+                    <Tr className={expanded ? "largeTbl" : "mediumTbl"}>
                         <Th style={{ fontSize: "16px" }}>ID</Th>
                         <Th>
                             <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
@@ -221,7 +239,7 @@ const ScanReportTbl = (props) => {
                         <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                             <HStack>
                                 <Text mr="10px">Archive</Text>
-                                {!expanded && <ArrowRightIcon  style={{ marginLeft: "auto" }} _hover={{ color: "blue.500", }} onClick={() => setExpanded(true)} />}
+                                {!expanded && <ArrowRightIcon style={{ marginLeft: "auto" }} _hover={{ color: "blue.500", }} onClick={() => setExpanded(true)} />}
                             </HStack>
                         </Th>
                         {expanded &&
@@ -241,15 +259,28 @@ const ScanReportTbl = (props) => {
                     {applyFilters(displayedData).length > 0 &&
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
-                            <Tr className={expanded ? "largeTbl" : ""} key={index}>
+                            <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
-                                <Td minW="230px">{item.created_at.displayString}</Td>
+                                <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td>
                                     <HStack>
                                         <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
+                                        {item.statusLoading == true ?
+                                            <Flex padding="30px">
+                                                <Spinner />
+                                                <Flex marginLeft="10px">Loading status</Flex>
+                                            </Flex>
+                                            :
+                                            <Select minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
+                                                {statuses.map((item, index) =>
+                                                    <option key={index} value={item}>{mapStatus(item)}</option>
+                                                )}
+                                            </Select>
+                                        }
+
                                         <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                     </HStack>
                                 </Td>
@@ -282,8 +313,8 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.tables?item.tables.length:"counting"}</Td>
-                                        <Td>{item.fields?item.fields.length:"counting"}</Td>
+                                        <Td>{item.tables ? item.tables.length : "counting"}</Td>
+                                        <Td>{item.fields ? item.fields.length : "counting"}</Td>
                                     </>
                                 }
                             </Tr>

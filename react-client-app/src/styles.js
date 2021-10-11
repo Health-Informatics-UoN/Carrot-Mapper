@@ -38,6 +38,12 @@ const theme = extendTheme({
       "Tr.largeTbl > Td": {
         p: "5px",
       },
+      "Tr.mediumTbl > Th": {
+        p: "8px"
+      },
+      "Tr.mediumTbl > Td": {
+        p: "8px",
+      },
     },
   },
 })
