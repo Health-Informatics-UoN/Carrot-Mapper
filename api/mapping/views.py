@@ -10,6 +10,9 @@ from azure.storage.blob import BlobServiceClient
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.renderers import JSONRenderer
+
 from .serializers import (
     ScanReportSerializer,
     ScanReportTableSerializer,
@@ -365,7 +368,59 @@ class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
         self.request.GET['scan_report_table'])
         return qs    
     
+class CountStats(APIView):          
+    renderer_classes = (JSONRenderer, )
 
+    def get(self, request, format=None):
+        scanreport_count = ScanReport.objects.count()
+        scanreporttable_count=ScanReportTable.objects.count()
+        scanreportfield_count=ScanReportField.objects.count()
+        scaneportvalue_count=ScanReportValue.objects.count()
+        content = {'scanreport_count': scanreport_count,
+        'scanreporttable_count': scanreporttable_count,
+        'scanreportfield_count': scanreportfield_count,
+        'scanreportvalue_count': scanreportvalue_count,
+        }
+        return Response(content)
+
+class CountStatsScanReport(APIView):          
+    renderer_classes = (JSONRenderer, )
+
+    def get(self, request, format=None):
+        
+        scanreporttable_count=ScanReportTable.objects.filter(scan_report=self.request.GET['scan_report']).count()        
+        scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=self.request.GET['scan_report']).count()
+        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=self.request.GET['scan_report']).count()
+        content = {
+        'scanreporttable_count': scanreporttable_count,
+        'scanreportfield_count': scanreportfield_count,        
+        'scanreportvalue_count': scanreportvalue_count,
+        }
+        return Response(content)
+
+class CountStatsScanReportTable(APIView):          
+    renderer_classes = (JSONRenderer, )
+
+    def get(self, request, format=None):
+        
+        scanreportfield_count=ScanReportField.objects.filter(scan_report_table=self.request.GET['scan_report_table']).count()
+        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table=self.request.GET['scan_report_table']).count()
+        content = {        
+        'scanreportfield_count': scanreportfield_count,        
+        'scanreportvalue_count': scanreportvalue_count,
+        }
+        return Response(content)
+
+class CountStatsScanReportTableField(APIView):          
+    renderer_classes = (JSONRenderer, )
+
+    def get(self, request, format=None):
+               
+        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field=self.request.GET['scan_report_field']).count()
+        content = {                
+        'scanreportvalue_count': scanreportvalue_count,
+        }
+        return Response(content)        
 # This custom ModelViewSet returns all ScanReportValues for a given ScanReport
 # It also removes all conceptIDs which == -1, leaving only those SRVs with a
 # concept_id which has been looked up with omop_helpers
