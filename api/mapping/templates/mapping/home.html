@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
 {% block body %}
-
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-  </ol>
-</nav>
+<div>
+  <!-- Loads in React Components from index.js -->
+  <div id='root'></div>
+  <script type="text/javascript" >
+      var a = "{{a}}"
+      var u = "{{u}}"
+      var currentUser = "{{current_user}}"
+      var status = "{{status}}".replaceAll("&#x27;",'"')
+  </script>
+  <script type="module" src="../../../static/javascript/react/src/home.js"></script>
+  
+</div>
 
 {% endblock %}

@@ -14,7 +14,8 @@ RUN apt-get update && \
         gettext \
         libpq-dev \
         gcc \
-        graphviz
+        graphviz \
+        git
 
 # Install rustup to allow install of cryptography package
 RUN curl -y --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh

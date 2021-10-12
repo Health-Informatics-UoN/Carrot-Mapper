@@ -5,6 +5,7 @@ Please append a line to the changelog for each change made.
 ## v1.2-beta
 * Status field added to the ScanReport Model and migrations have been applied to ccnetapptestdb. For dev, prod and test system migrations will need to apply. 
 * Scan Reports no longer need Flag or Classification columns on Field Overview sheet.
+* Dashboard of scan report summary stats has been added to the home screen
 
 ## v1.1 was released 24/09/21
 * Mapping rules json structural change, now objects associated to a CDM table are a dictionary (with a key name) rather than just a list.
