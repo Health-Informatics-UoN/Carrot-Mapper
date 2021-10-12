@@ -5,6 +5,7 @@ Please append a line to the changelog for each change made.
 ## v1.2-beta
 * Status field added to the ScanReport Model and migrations have been applied to ccnetapptestdb. For dev, prod and test system migrations will need to apply. 
 * Scan Reports no longer need Flag or Classification columns on Field Overview sheet.
+* Dashboard of scan report summary stats has been added to the home screen
 
 ## v1.1 was released 24/09/21
 * Mapping rules json structural change, now objects associated to a CDM table are a dictionary (with a key name) rather than just a list.
@@ -15,7 +16,7 @@ Please append a line to the changelog for each change made.
 * ProcessQueue made more robust to errors, with more helpful outputs.
 * API endpoints updates to return records for a list of ids in a table (This is done for tables like: structuralmappingrule, concept, omopfield,omoptable,scanreporttable,scanreportfield,scanreportvalue and scanreportconcept)
 * ProcessQueue reads in PAGE_MAX_CHARS from the environment to set the max number of chars in a POST request.
-* Pages using REACT now includes Values,Fields,Tables,Mapping Rules,Edit Table,Edit Field, Scan Reports, Home
+* Pages using REACT now includes Values,Fields,Tables,Mapping Rules,Edit Table,Edit Field, Scan Reports
 * Upgrade django to 3.1.13
 
 ## v1.0.0 was released 01/09/21
