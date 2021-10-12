@@ -147,7 +147,7 @@ const Home = () => {
                                 <Tr key={item.id}>
                                     <Td colSpan="3" >
                                         <Table variant="striped" colorScheme="greyBasic" >
-                                            <TableCaption placement="top">Scan reports with status {item.id}</TableCaption>
+                                            <TableCaption placement="top">Scan reports with status {mapStatus(item.id)}</TableCaption>
                                             <Thead>
                                                 <Tr>
                                                     <Th>ID</Th>
