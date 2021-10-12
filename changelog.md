@@ -15,7 +15,7 @@ Please append a line to the changelog for each change made.
 * ProcessQueue made more robust to errors, with more helpful outputs.
 * API endpoints updates to return records for a list of ids in a table (This is done for tables like: structuralmappingrule, concept, omopfield,omoptable,scanreporttable,scanreportfield,scanreportvalue and scanreportconcept)
 * ProcessQueue reads in PAGE_MAX_CHARS from the environment to set the max number of chars in a POST request.
-* Pages using REACT now includes Values,Fields,Tables,Mapping Rules,Edit Table,Edit Field, Scan Reports
+* Pages using REACT now includes Values,Fields,Tables,Mapping Rules,Edit Table,Edit Field, Scan Reports, Home
 * Upgrade django to 3.1.13
 
 ## v1.0.0 was released 01/09/21
