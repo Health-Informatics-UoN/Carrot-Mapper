@@ -97,24 +97,22 @@ const Home = () => {
             <HStack>
                 <Table w="auto" variant="striped" colorScheme="greyBasic" >
                     <TableCaption placement="top">Scan Report Stats</TableCaption>
-                    <Thead>
-                        <Tr>
-                            <Th>Scanreports</Th>
-                            <Th>Tables</Th>
-                            <Th>Fields</Th>
-                            <Th>Values</Th>
-                        </Tr>
-                    </Thead>
-
-                    <Tbody>
-                        <Tr >
-                            <Td>{countStats.scanreport_count}</Td>
-                            <Td>{countStats.scanreporttable_count}</Td>
-                            <Td>{countStats.scanreportfield_count}</Td>
-                            <Td>{countStats.scanreportvalue_count}</Td>
-                        </Tr>
-                    </Tbody>
-
+                    <Tr>
+                        <Th>Scanreports</Th>
+                        <Td>{countStats.scanreport_count}</Td>
+                    </Tr>
+                    <Tr>
+                        <Th>Tables</Th>
+                        <Td>{countStats.scanreporttable_count}</Td>
+                    </Tr>
+                    <Tr>
+                        <Th>Fields</Th>
+                        <Td>{countStats.scanreportfield_count}</Td>
+                    </Tr>
+                    <Tr>
+                        <Th>Values</Th>
+                        <Td>{countStats.scanreportvalue_count}</Td>
+                    </Tr>
                 </Table>
 
                 {scanreportDonutData &&
