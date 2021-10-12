@@ -9,6 +9,7 @@ import TablesTbl from './components/TablesTbl';
 import EditTable from './components/EditTable';
 import EditField from './components/EditField';
 import ScanReportTbl from './components/ScanReportTbl';
+import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 const App = ({ page }) => {
 
@@ -234,6 +235,8 @@ const App = ({ page }) => {
     const [title, setTitle] = useState(page);
     const getPage = () => {
         switch (page) {
+            case "Home":
+                return <Home />
             case "Values":
                 return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept}/>
             case "Mapping Rules":
