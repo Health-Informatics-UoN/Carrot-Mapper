@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
-import { useGet, usePatch, api, chunkIds } from '../api/values'
+import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
 import moment from 'moment';
@@ -17,9 +17,10 @@ const ScanReportTbl = (props) => {
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [datasetFilter, setDatasetFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
+    const [statusFilter, setStatusFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     const [expanded, setExpanded] = useState(false);
-    const statuses = JSON.parse(window.status).map(status=>status.id);
+    const statuses = JSON.parse(window.status).map(status => status.id);
 
     useEffect(async () => {
         // run on initial page load
@@ -133,6 +134,9 @@ const ScanReportTbl = (props) => {
         if (datasetFilter != "All") {
             newData = newData.filter(scanreport => scanreport.dataset == datasetFilter)
         }
+        if (statusFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.status == statusFilter)
+        }
         return newData
     }
 
@@ -145,6 +149,9 @@ const ScanReportTbl = (props) => {
         }
         if (a.includes("Data Partner")) {
             setDataPartnerFilter("All")
+        }
+        if (a.includes("Status")) {
+            setStatusFilter("All")
         }
     }
     // when the back button is pressed, display correct data depending on url
@@ -167,7 +174,32 @@ const ScanReportTbl = (props) => {
         });
     }
     const mapStatus = (status) => {
-        return JSON.parse(window.status).find(item=>item.id==status).label
+        return JSON.parse(window.status).find(item => item.id == status).label
+    }
+    const mapStatusColour = (status) => {
+
+        switch (status) {
+            case "UPINPRO":
+                return "orange.pastel"
+            case "UPCOMPL":
+                return "green.pastel"
+            case "UPFAILE":
+                return "red.bright"
+            case "PENDING":
+                return "yellow.bright"
+            case "INPRO25":
+                return "prog25"
+            case "INPRO50":
+                return "prog50"
+            case "INPRO75":
+                return "prog75"
+            case "COMPLET":
+                return "green.bright"
+            case "BLOCKED":
+                return "brown.light"
+            default:
+                return "white"
+        }
     }
     if (loadingMessage) {
         //Render Loading State
@@ -191,7 +223,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -236,6 +268,14 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
                         <Th></Th>
+                        <Th><Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Status" readOnly onChange={(option) => setStatusFilter(option.target.value)}>
+                            <option style={{ fontWeight: "bold" }} disabled>Status</option>
+                            {statuses.sort((a, b) => a.localeCompare(b))
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{mapStatus(item)}</option>
+                                )}
+                        </Select></Th>
+                        <Th></Th>
                         <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                             <HStack>
                                 <Text mr="10px">Archive</Text>
@@ -266,23 +306,24 @@ const ScanReportTbl = (props) => {
                                 <Td>{item.author.username}</Td>
                                 <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td>
-                                    <HStack>
-                                        <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
-                                        {item.statusLoading == true ?
-                                            <Flex padding="30px">
-                                                <Spinner />
-                                                <Flex marginLeft="10px">Loading status</Flex>
-                                            </Flex>
-                                            :
-                                            <Select minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
-                                                {statuses.map((item, index) =>
-                                                    <option key={index} value={item}>{mapStatus(item)}</option>
-                                                )}
-                                            </Select>
-                                        }
-
-                                        <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
-                                    </HStack>
+                                    <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
+                                </Td>
+                                <Td>
+                                    {item.statusLoading == true ?
+                                        <Flex padding="30px">
+                                            <Spinner />
+                                            <Flex marginLeft="10px">Loading status</Flex>
+                                        </Flex>
+                                        :
+                                        <Select bg={mapStatusColour(item.status)} minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
+                                            {statuses.map((item, index) =>
+                                                <option key={index} value={item}>{mapStatus(item)}</option>
+                                            )}
+                                        </Select>
+                                    }
+                                </Td>
+                                <Td>
+                                    <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                 </Td>
                                 <Td textAlign="center">
                                     {currentUser &&
