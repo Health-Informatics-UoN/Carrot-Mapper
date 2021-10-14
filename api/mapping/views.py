@@ -376,12 +376,12 @@ class CountStats(APIView):
         scanreporttable_count=ScanReportTable.objects.count()
         scanreportfield_count=ScanReportField.objects.count()
         scanreportvalue_count=ScanReportValue.objects.count()
-        scanreportmappingrules_count=StructuralMappingRule.objects.count()
+        scanreportmappingrule_count=StructuralMappingRule.objects.count()
         content = {'scanreport_count': scanreport_count,
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,
         'scanreportvalue_count': scanreportvalue_count,
-        'scanreportmappingrules_count': scanreportmappingrules_count,
+        'scanreportmappingrule_count': scanreportmappingrule_count,
         }
         return Response(content)
 
