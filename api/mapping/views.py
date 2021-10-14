@@ -376,10 +376,12 @@ class CountStats(APIView):
         scanreporttable_count=ScanReportTable.objects.count()
         scanreportfield_count=ScanReportField.objects.count()
         scanreportvalue_count=ScanReportValue.objects.count()
+        scanreportmappingrules_count=StructuralMappingRule.objects.count()
         content = {'scanreport_count': scanreport_count,
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,
         'scanreportvalue_count': scanreportvalue_count,
+        'scanreportmappingrules_count': scanreportmappingrules_count,
         }
         return Response(content)
 
@@ -391,10 +393,12 @@ class CountStatsScanReport(APIView):
         scanreporttable_count=ScanReportTable.objects.filter(scan_report=self.request.GET['scan_report']).count()        
         scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=self.request.GET['scan_report']).count()
         scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=self.request.GET['scan_report']).count()
+        scanreportmappingrule_count=StructuralMappingRule.objects.filter(scan_report=self.request.GET['scan_report']).count()
         content = {
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,        
         'scanreportvalue_count': scanreportvalue_count,
+        'scanreportmappingrule_count': scanreportmappingrule_count,    
         }
         return Response(content)
 
