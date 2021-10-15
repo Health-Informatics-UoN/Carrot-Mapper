@@ -312,7 +312,6 @@ def main(msg: func.QueueMessage):
     """
     table_idx = 0
     field_entries_to_post = []
-    names_x_ids = {}
 
     # Loop over all rows in Field Overview sheet.
     # For sheets past the first two in the Scan Report
