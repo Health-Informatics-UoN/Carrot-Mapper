@@ -441,10 +441,21 @@ const getMappingRules = async (id, tableData, switchFilter) => {
         mappingRules = mappingRules.map(rule =>
             rule.omop_field.table == element.id ? { ...rule, omop_field: { ...rule.omop_field, table: element } } : rule)
     })
+
+    //-----------------------------------
+    // ------- note: also this code is duplicating what the python code is doing ------------------  
+    // these lines need fixing because rule.scanreportconcept can be undefined, and therefore rule.scanreportconcept.concept causes a crash
+    //Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'concept')
+    //at values.js:485
+    // at Array.map (<anonymous>)
+    // at values.js:484
+    //at Array.forEach (<anonymous>)
+    //at getMappingRules (values.js:483)
     omopConceptLibrary.forEach(element => {
         mappingRules = mappingRules.map(rule =>
             rule.scanreportconcept.concept == element.concept_id ? { ...rule, scanreportconcept: { ...rule.scanreportconcept, concept: element } } : rule)
     })
+    //-----------------------------------
     scanReportTableLibrary.forEach(element => {
         mappingRules = mappingRules.map(rule =>
             rule.source_field.scan_report_table == element.id ? { ...rule, source_field: { ...rule.source_field, scan_report_table: element } } : rule)
@@ -524,6 +535,6 @@ const getScanReportTableRows = async (id) =>{
 
 
 export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
-    getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
+     getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
      getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
      }
