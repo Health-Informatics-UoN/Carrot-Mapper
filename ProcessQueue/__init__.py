@@ -358,8 +358,9 @@ def main(msg: func.QueueMessage):
 
         # print("scan_report_field_entries >>>", field_entries_to_post)
 
-        # If this is a non-empty row (end of a table), continue to the next row. 
-        if any(cell.value for cell in row_cell):
+        # If this is a non-empty row in the first column (end of a table), continue to
+        # the next row.
+        if row_cell[0].value != '':
             continue
 
         # Otherwise, .pop() the empty row from the list, and proceed to POST 
