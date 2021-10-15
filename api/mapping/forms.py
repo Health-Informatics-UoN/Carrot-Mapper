@@ -66,60 +66,28 @@ class ScanReportForm(forms.Form):
 
         # Load in the Excel sheet, grab the first workbook
         file_in_memory = scan_report.read()
-        wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only = True)
-        ws=wb.worksheets[0]
+        wb = openpyxl.load_workbook(filename=BytesIO(file_in_memory), data_only=True)
+        ws = wb.worksheets[0]
 
         # Grab the scan report columns from the first worksheet
         # Define what the column headings should be
-        source_headers = []
-        for values in ws[1]: 
-            source_headers.append(values.value)
+        source_headers = [header.value for header in ws[1]]
 
-        expected_headers=['Table', 'Field', 'Description', 'Type', 'Max length', 'N rows', 'N rows checked', 'Fraction empty', 'N unique values', 'Fraction unique', 'Flag', 'Classification']
+        expected_headers = ['Table', 'Field', 'Description', 'Type', 'Max length',
+                            'N rows', 'N rows checked', 'Fraction empty',
+                            'N unique values', 'Fraction unique']
         
-        # Check if source headers match the expected headers
-        if not source_headers == expected_headers:
-            raise ValidationError("Please check the following columns exist in the Scan Report (Field Overview sheet) in this order: Table, Field, Description, Type, Max length, N rows, N rows checked, Fraction empty, N unique values, Fraction unique, Flag, Classification.")
-
-        # Grab the data from the 'Flag' column
-        # Set to upper if the call value != None to catch any formatting errors
-        flag_column_data = []
-        for cell in ws['K']: 
-            if cell.value is None:
-                flag_column_data.append(cell.value)
-            else:
-                flag_column_data.append(cell.value.upper())
-        
-        # Removes the column name (here, 'Flag') from the list of Flag values
-        flag_column_data.pop(0)
-        
-        # Grab the data from the 'Classification' column
-        # Set to upper if the call value != None to catch any formatting errors
-        classification_column_data = []
-        for cell in ws['L']: 
-            if cell.value is None:
-                classification_column_data.append(cell.value)
-            else:
-                classification_column_data.append(cell.value.upper())
-
-        # Removes the column name (here, 'Classification') from the list of Flag values
-        classification_column_data.pop(0)
-
-        # Define what flags and classifications we allow in respective columns
-        allowed_flags = ['PATIENTID', 'DATE', 'IGNORE', 'PASS_SOURCE']
-        allowed_classifications = ['SNOMED', 'RXNORM', 'ICD9', 'ICD10']
-
-        # Test whether the values in the flag column are in our list of allowed flags
-        if not all(flag in allowed_flags for flag in list(filter(None, flag_column_data))):
-            raise ValidationError("Check 'Flag' column values. Valid options are " + ', '.join(allowed_flags))
-
-        # Test whether the values in the classificcation column are in our list of allowed classifications
-        if not all(classification in allowed_classifications for classification in list(filter(None, classification_column_data))):
-            raise ValidationError("Check 'Classification' column values. Valid options are " + ', '.join(allowed_classifications))
+        # Check if source headers match the expected headers. Allow unexpected
+        # headers after these. This means old Scan Reports with Flag and Classification
+        # columns will be handled cleanly.
+        if not source_headers[:10] == expected_headers:
+            raise ValidationError("Please check the following columns exist in the "
+                                  "Scan Report (Field Overview sheet) in this order: "
+                                  "Table, Field, Description, Type, Max length, "
+                                  "N rows, N rows checked, Fraction empty, "
+                                  "N unique values, Fraction unique.")
 
         return scan_report
-
-
 
 
 class UserCreateForm(UserCreationForm):

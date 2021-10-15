@@ -18,6 +18,17 @@ STATUS_CHOICES = [
     (STATUS_ARCHIVED, "Archived"),
 ]
 
+class Status(models.TextChoices):
+    UPLOAD_IN_PROGRESS="UPINPRO","Upload in Progress"
+    UPLOAD_COMPLETE="UPCOMPL","Upload Complete"
+    UPLOAD_FAILED="UPFAILE","Upload Failed"
+    PENDING = "PENDING", "Mapping Pending"
+    IN_PROGRESS_25PERCENT="INPRO25","In Progress (25%)"
+    IN_PROGRESS_50PERCENT="INPRO50","In Progress (50%)"
+    IN_PROGRESS_75PERCENT="INPRO75","In Progress (75%)"
+    COMPLETE="COMPLET","Complete"
+    BLOCKED = "BLOCKED","Blocked"
+    
 class BaseModel(models.Model):
     """
     To come
@@ -272,6 +283,12 @@ class ScanReport(BaseModel):
 
     file = models.FileField()
 
+    status=models.CharField(
+        max_length=7,
+        choices=Status.choices,
+        default=Status.PENDING,        
+    )
+    
     def __str__(self):
         return str(self.id)
 

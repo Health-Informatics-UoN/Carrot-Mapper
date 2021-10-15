@@ -11,7 +11,7 @@ const EditField = ({ setTitle }) => {
 
     useEffect(async () => {
         // get scan report field to use to set initial values
-        const scanreportfield = await useGet(`${api}/scanreportfields/${value}/`)
+        const scanreportfield = await useGet(`/scanreportfields/${value}/`)
         // set initial values
         setLoadingMessage(null)
         setTitle("Update Field - " + scanreportfield.name)
