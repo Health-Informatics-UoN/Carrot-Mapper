@@ -47,7 +47,6 @@ class ScanReportForm(forms.Form):
     def clean_data_dictionary_file(self):
 
         data_dictionary = self.cleaned_data.get("data_dictionary_file")
-        print(data_dictionary)
 
         if data_dictionary is None:
             return data_dictionary
@@ -81,16 +80,15 @@ class ScanReportForm(forms.Form):
         if not source_headers[:10] == expected_headers:
             raise ValidationError(f"Please check the following columns exist in the "
                                   f"Scan Report (Field Overview sheet) in this order: "
-                                  f"\n Table, Field, Description, Type, Max length, "
+                                  f"Table, Field, Description, Type, Max length, "
                                   f"N rows, N rows checked, Fraction empty, "
-                                  f"N unique values, Fraction unique."
+                                  f"N unique values, Fraction unique. "
                                   f"You provided \n{source_headers[:10]}")
 
         # Check tables are correctly separated in FO - a single empty line between each
         # table
         cell_above = fo_ws['A'][1]
         for cell in fo_ws['A'][1:]:
-            print(cell, cell.value)
             if (cell.value != cell_above.value and
                 cell.value != '' and
                 cell_above.value != '') or \
@@ -115,10 +113,10 @@ class ScanReportForm(forms.Form):
             fo_only = set(expected_sheetnames).difference(wb.sheetnames)
             error_text = f"Tables in Field Overview sheet do not match the sheets supplied."
             if sheets_only:
-                error_text += f"\n{sheets_only} are sheets that do not have matching " \
-                              f"entries in first column of the Field Overview sheet."
+                error_text += f"{sheets_only} are sheets that do not have matching " \
+                              f"entries in first column of the Field Overview sheet. "
             if fo_only:
-                error_text += f"\n{fo_only} are table names in first column of Field " \
+                error_text += f"{fo_only} are table names in first column of Field " \
                               f"Overview sheet but do not have matching sheets supplied."
             raise ValidationError(error_text)
 
@@ -127,7 +125,6 @@ class ScanReportForm(forms.Form):
         current_table_fields = []
         for row in fo_ws.iter_rows(min_row=2):
             # Loop over rows, collecting all fields in each table in turn
-            print(row[:2])
             if row[0].value == '':
                 # We're at the end of the table, so process
                 # Get all field names from the associated sheet, by grabbing the first
@@ -143,15 +140,16 @@ class ScanReportForm(forms.Form):
                     fo_only = set(current_table_fields).difference(table_sheet_fields)
                     error_text = f"Fields in Field Overview against table " \
                                  f"{current_table_name} do not match fields in the " \
-                                 f"associated sheet."
+                                 f"associated sheet. "
                     if sheet_only:
-                        error_text += f"\n{sheet_only} exist in the '{current_table_name}' " \
+                        error_text += f"{sheet_only} exist in the " \
+                                      f"'{current_table_name}' " \
                                       f"sheet but there are no matching entries in " \
                                       f"the second column of the Field Overview " \
                                       f"sheet in the rows associated to the table " \
-                                      f"'{current_table_name}'."
+                                      f"'{current_table_name}'. "
                     if fo_only:
-                        error_text += f"\n{fo_only} exist in second column of Field " \
+                        error_text += f"{fo_only} exist in second column of Field " \
                                       f"Overview sheet against the table " \
                                       f"'{current_table_name}' but there are no " \
                                       f"matching column names in the associated " \
