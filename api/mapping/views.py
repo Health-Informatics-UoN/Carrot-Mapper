@@ -389,42 +389,56 @@ class CountStatsScanReport(APIView):
     renderer_classes = (JSONRenderer, )
 
     def get(self, request, format=None):
-        
-        scanreporttable_count=ScanReportTable.objects.filter(scan_report=self.request.GET['scan_report']).count()        
-        scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=self.request.GET['scan_report']).count()
-        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=self.request.GET['scan_report']).count()
-        scanreportmappingrule_count=StructuralMappingRule.objects.filter(scan_report=self.request.GET['scan_report']).count()
-        content = {
-        'scanreporttable_count': scanreporttable_count,
-        'scanreportfield_count': scanreportfield_count,        
-        'scanreportvalue_count': scanreportvalue_count,
-        'scanreportmappingrule_count': scanreportmappingrule_count,    
-        }
-        return Response(content)
+        parameterlist=list(map(int,self.request.query_params['scan_report'].split(",")))
+        jsonrecords=[]
+        for scanreport in parameterlist:
+            scanreporttable_count=ScanReportTable.objects.filter(scan_report=scanreport).count()        
+            scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=scanreport).count()
+            scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=scanreport).count()
+            scanreportmappingrule_count=StructuralMappingRule.objects.filter(scan_report=scanreport).count()
+            
+            scanreport_content = {
+            'scanreport': scanreport,
+            'scanreporttable_count': scanreporttable_count,
+            'scanreportfield_count': scanreportfield_count,        
+            'scanreportvalue_count': scanreportvalue_count,
+            'scanreportmappingrule_count': scanreportmappingrule_count,               
+            }    
+            jsonrecords.append(scanreport_content)        
+        return Response(jsonrecords)
 
 class CountStatsScanReportTable(APIView):          
     renderer_classes = (JSONRenderer, )
 
     def get(self, request, format=None):
-        
-        scanreportfield_count=ScanReportField.objects.filter(scan_report_table=self.request.GET['scan_report_table']).count()
-        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table=self.request.GET['scan_report_table']).count()
-        content = {        
-        'scanreportfield_count': scanreportfield_count,        
-        'scanreportvalue_count': scanreportvalue_count,
-        }
-        return Response(content)
+        parameterlist=list(map(int,self.request.query_params['scan_report_table'].split(",")))
+        jsonrecords=[]
+        for scanreporttable in parameterlist:
+            scanreportfield_count=ScanReportField.objects.filter(scan_report_table=scanreporttable).count()
+            scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table=scanreporttable).count()
+            
+            scanreporttable_content = {        
+            'scanreporttable': scanreporttable,
+            'scanreportfield_count': scanreportfield_count,        
+            'scanreportvalue_count': scanreportvalue_count,
+            }
+            jsonrecords.append(scanreporttable_content)
+        return Response(jsonrecords)
 
 class CountStatsScanReportTableField(APIView):          
     renderer_classes = (JSONRenderer, )
 
     def get(self, request, format=None):
-               
-        scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field=self.request.GET['scan_report_field']).count()
-        content = {                
-        'scanreportvalue_count': scanreportvalue_count,
-        }
-        return Response(content)        
+        parameterlist=list(map(int,self.request.query_params['scan_report_field'].split(",")))
+        jsonrecords=[]
+        for scanreportfield in parameterlist:
+            scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field=scanreportfield).count()
+            scanreportfield_content={
+            'scanreportfield': scanreportfield,
+            'scanreportvalue_count': scanreportvalue_count
+            }
+            jsonrecords.append(scanreportfield_content)
+        return Response(jsonrecords)        
 # This custom ModelViewSet returns all ScanReportValues for a given ScanReport
 # It also removes all conceptIDs which == -1, leaving only those SRVs with a
 # concept_id which has been looked up with omop_helpers
