@@ -321,7 +321,7 @@ def main(msg: func.QueueMessage):
     for i, row in enumerate(
         fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
     ):
-        if row[0].value != '':
+        if row[0].value != '' and row[0].value is not None:
             current_table_name = row[0].value
             # Create ScanReportField entry
             field_entry = {
