@@ -319,7 +319,7 @@ def main(msg: func.QueueMessage):
     print("Start fields loop", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
     for i, row in enumerate(
-        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row + 1), start=2
+        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
     ):
         if row[0].value != '':
             current_table_name = row[0].value
