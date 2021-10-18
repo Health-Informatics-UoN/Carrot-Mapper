@@ -67,7 +67,7 @@ const getScanReportConcepts = async (id) => {
     return response;
 }
 
-const getValuesScanReportConcepts = async (values,scanReportsRef={},setScanReports=()=>{}) => {
+const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},setScanReports=()=>{}) => {
     const valueIds = chunkIds(values.map(value => value.id))
     const valuePromises = []
     for (let i = 0; i < valueIds.length; i++) {
@@ -75,6 +75,7 @@ const getValuesScanReportConcepts = async (values,scanReportsRef={},setScanRepor
     }
     const promiseResult = await Promise.all(valuePromises)
     let scanreportconcepts = [].concat.apply([], promiseResult)
+    scanreportconcepts = scanreportconcepts.filter(concept=>concept.content_type==contentType)
     if (scanreportconcepts.length == 0) {
         values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
         scanReportsRef.current = values
@@ -123,7 +124,7 @@ const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadin
         values = values.map(scanReport => ({ ...scanReport, concepts: [], conceptsLoaded: false }))
         scanReportsRef.current = values
         setScanReports(scanReportsRef.current)
-        values = await getValuesScanReportConcepts(values,scanReportsRef,setScanReports)
+        values = await getValuesScanReportConcepts(values,17,scanReportsRef,setScanReports)
         setScanReports(scanReportsRef.current)
         return values
     }
@@ -493,7 +494,7 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
     if (response.length == 0) {
         return []
     }
-    response = await getValuesScanReportConcepts(response,valuesRef)
+    response = await getValuesScanReportConcepts(response,15,valuesRef)
     return response
 }
 
