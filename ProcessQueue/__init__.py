@@ -69,20 +69,21 @@ def process_scan_report_sheet_table(sheet):
         sheet.iter_cols(min_col=1,
                         max_col=sheet.max_column,
                         min_row=1,
-                        max_row=sheet.max_row),
+                        max_row=sheet.max_row,
+                        values_only=True),
         start=1
     ):
         if column_idx % 2 == 0:
             continue
 
-        column_header = col[0].value
+        column_header = col[0]
 
         # Works through pairs of value/frequency columns. Skip the frequency columns,
         # and reference them from their value column.
         for row_idx, cell in enumerate(col[1:], start=2):
             if column_idx % 2 == 1:
 
-                value = cell.value
+                value = cell
                 frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
 
                 # As we move down rows, check that there's data there.
