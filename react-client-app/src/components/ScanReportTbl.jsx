@@ -70,23 +70,14 @@ const ScanReportTbl = (props) => {
         setLoadingMessage(null)
 
         // get table and field count
-        const allTables = await useGet(`/scanreporttables`)
-        data.current.map(report => {
-            report.tables = allTables.filter(table => table.scan_report == report.id)
-        })
-        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
-        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
-        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+        const scanreportIds = chunkIds(data.current.map(scanreport => scanreport.id))
+        const countPromises = [];
+        for (let i = 0; i < scanreportIds.length; i++) {
+            countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
+        }
+        const countStats = [].concat.apply([], await Promise.all(countPromises))
+        data.current = data.current.map(report => ({ ...report, ...countStats.find(item => item.scanreport == report.id) }))
 
-        const allFields = await useGet(`/scanreportfields`)
-
-        data.current.map(report => {
-            report.fields = []
-            report.tables.map(table => {
-                report.fields.push(...allFields.filter(field => field.scan_report_table == table.id))
-            })
-
-        })
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
@@ -354,8 +345,8 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.tables ? item.tables.length : "counting"}</Td>
-                                        <Td>{item.fields ? item.fields.length : "counting"}</Td>
+                                        <Td>{item.scanreporttable_count!=undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td>{item.scanreportfield_count!=undefined ? item.scanreportfield_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>
