@@ -403,7 +403,7 @@ def main(msg: func.QueueMessage):
             # Reset list for values
             value_entries_to_post = []
 
-            if current_table_name not in wb.worksheets:
+            if current_table_name not in wb.sheetnames:
                 raise ValueError(f"Attempting to access sheet '{current_table_name}'"
                                  f" in scan report, but no such sheet exists.")
 
