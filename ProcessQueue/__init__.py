@@ -218,10 +218,13 @@ def main(msg: func.QueueMessage):
         container_client = blob_service_client.get_container_client("data-dictionaries")
         blob_dict_client = container_client.get_blob_client(data_dictionary_blob)
         streamdownloader = blob_dict_client.download_blob()
-        data_dictionary = list(
-            csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
+        data_dictionary_intermediate = list(
+                           csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
         )
-
+        # Remove BOM from start of file if it's supplied.
+        data_dictionary = [{key.replace("\ufeff",""): value
+                            for key, value in d.items()}
+                           for d in data_dictionary_intermediate]
     else:
         data_dictionary = None
 
