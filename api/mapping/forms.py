@@ -90,9 +90,9 @@ class ScanReportForm(forms.Form):
         cell_above = fo_ws['A'][1]
         for cell in fo_ws['A'][1:]:
             if (cell.value != cell_above.value and
-                cell.value != '' and
-                cell_above.value != '') or \
-                    (cell.value == '' and cell_above.value == ''):
+                    (cell.value != '' and cell.value is not None) and
+                    (cell_above.value != '' and cell_above.value is not None)
+                ) or (cell.value == '' and cell_above.value == ''):
                 raise ValidationError(f"At {cell}, tables in Field Overview table are "
                                       f"not correctly separated by a single line. "
                                       f"Note: There should be no separator line "
@@ -105,7 +105,8 @@ class ScanReportForm(forms.Form):
 
         # Check tables in FO match supplied sheets
         table_names = list(
-            set(cell.value for cell in fo_ws['A'][1:] if cell.value != '')
+            set(cell.value for cell in fo_ws['A'][1:] if (cell.value != '' and
+                cell.value is not None))
         )
         expected_sheetnames = table_names + ['Field Overview', 'Table Overview', '_']
         if sorted(wb.sheetnames) != sorted(expected_sheetnames):
@@ -125,7 +126,7 @@ class ScanReportForm(forms.Form):
         current_table_fields = []
         for row in fo_ws.iter_rows(min_row=2):
             # Loop over rows, collecting all fields in each table in turn
-            if row[0].value == '':
+            if row[0].value == '' or row[0].value is None:
                 # We're at the end of the table, so process
                 # Get all field names from the associated sheet, by grabbing the first
                 # row, and then grabbing every second column value (because the
@@ -133,7 +134,7 @@ class ScanReportForm(forms.Form):
                 table_sheet_fields = set([cell.value
                                           for cell in next(wb[current_table_name].rows)
                                           ][::2]
-                                         )
+                                           )
                 if sorted(table_sheet_fields) != sorted(current_table_fields):
                     sheet_only = set(table_sheet_fields).difference(
                         current_table_fields)

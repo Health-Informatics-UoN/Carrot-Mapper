@@ -69,20 +69,21 @@ def process_scan_report_sheet_table(sheet):
         sheet.iter_cols(min_col=1,
                         max_col=sheet.max_column,
                         min_row=1,
-                        max_row=sheet.max_row),
+                        max_row=sheet.max_row,
+                        values_only=True),
         start=1
     ):
         if column_idx % 2 == 0:
             continue
 
-        column_header = col[0].value
+        column_header = col[0]
 
         # Works through pairs of value/frequency columns. Skip the frequency columns,
         # and reference them from their value column.
         for row_idx, cell in enumerate(col[1:], start=2):
             if column_idx % 2 == 1:
 
-                value = cell.value
+                value = cell
                 frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
 
                 # As we move down rows, check that there's data there.
@@ -319,32 +320,32 @@ def main(msg: func.QueueMessage):
     print("Start fields loop", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
     for i, row in enumerate(
-        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row + 1), start=2
+        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
     ):
-        if row[0].value != '':
+        if row[0].value != '' and row[0].value is not None:
             current_table_name = row[0].value
             # Create ScanReportField entry
             field_entry = {
                 "scan_report_table": table_name_to_id_map[current_table_name],
                 "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "name": str(row[2].value),
-                "description_column": str(row[3].value),
-                "type_column": str(row[4].value),
-                "max_length": row[5].value,
-                "nrows": row[6].value,
-                "nrows_checked": row[7].value,
-                "fraction_empty": round(row[8].value, 2),
-                "nunique_values": row[9].value,
-                "fraction_unique": round(row[10].value, 2),
-                # "flag_column": str(row[11].value),
+                "name": str(row[1].value),
+                "description_column": str(row[2].value),
+                "type_column": str(row[3].value),
+                "max_length": row[4].value,
+                "nrows": row[5].value,
+                "nrows_checked": row[6].value,
+                "fraction_empty": round(row[7].value, 2),
+                "nunique_values": row[8].value,
+                "fraction_unique": round(row[9].value, 2),
+                # "flag_column": str(row[10].value),
                 "ignore_column": None,
                 "is_birth_date": False,
                 "is_patient_id": False,
                 "is_date_event": False,
                 "is_ignore": False,
                 "pass_from_source": True,
-                # "classification_system": str(row[12].value),
+                # "classification_system": str(row[11].value),
                 "date_type": "",
                 "concept_id": -1,
                 "field_description": None,
@@ -402,7 +403,7 @@ def main(msg: func.QueueMessage):
             # Reset list for values
             value_entries_to_post = []
 
-            if current_table_name not in wb.worksheets:
+            if current_table_name not in wb.sheetnames:
                 raise ValueError(f"Attempting to access sheet '{current_table_name}'"
                                  f" in scan report, but no such sheet exists.")
 
