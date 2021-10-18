@@ -436,8 +436,8 @@ def main(msg: func.QueueMessage):
                         (
                             row["value"]
                             for row in data_dictionary
-                            if str(row["field_name"]) == str(name)
-                            and str(row["code"]) == str(value)
+                            if str(row["code"]) == str(value)
+                            and str(row["field_name"]) == str(name)
                             and str(row["csv_file_name"]) == str(current_table_name)
                         ),
                         None,
