@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { getMappingRules, api } from '../api/values'
+import { getMappingRules, useGet, chunkIds } from '../api/values'
 import FilterTag from './FilterTag'
 
 
@@ -50,11 +50,6 @@ const MappingTbl = () => {
     const [isDownloading, setDownloading] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
-
-
-
-
-
 
     useEffect(() => {
         // on initial load of the page, call setInitialData()
@@ -98,10 +93,10 @@ const MappingTbl = () => {
         }
         else {
             // filter data by primary filter
-            let filteredData = allData.current.filter(value => value.omop_field.table.table == selectedFilter)
+            let filteredData = allData.current.filter(value => value.omop_table.table == selectedFilter)
             // filter data by secondary filter and change the url if needed 
             if (secondaryFilter != "All") {
-                filteredData = filteredData.filter(value => value.source_field.scan_report_table.name == secondaryFilter)
+                filteredData = filteredData.filter(value => value.scanreport_table.name == secondaryFilter)
                 if (popping.current == false) {
                     window.history.pushState({}, '',
                         url.split("mapping_rules/")[0] + "mapping_rules/" + url.split("mapping_rules/")[1].split("/")[0] + "/" + secondaryFilter)
@@ -139,7 +134,7 @@ const MappingTbl = () => {
                     }
                     svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
                 }
-                if(downLoadingImgRef.current == true){
+                if (downLoadingImgRef.current == true) {
                     downloadImage(diagram.getElementsByTagName("svg")[0])
                 }
             })
@@ -158,6 +153,63 @@ const MappingTbl = () => {
 
     }, [mapDiagram]);
 
+    const transformMappingData = async (data) => {
+        if (data.length == 0) {
+            return []
+        }
+        const omopFields = {}
+        const omopTables = {}
+        const scanreportFields = {}
+        const scanreportTables = {}
+        data.map(item => {
+            omopFields[item.destination_field.OmopField] = true
+            omopTables[item.destination_table.OmopTable] = true
+
+            scanreportFields[item.source_field.ScanReportField] = true
+            scanreportTables[item.source_table.ScanReportTable] = true
+        })
+
+        const omopFieldsKeys = chunkIds(Object.keys(omopFields))
+        const omopTablesKeys = chunkIds(Object.keys(omopTables))
+        const scanreportFieldsKeys = chunkIds(Object.keys(scanreportFields))
+        const scanreportTablesKeys = chunkIds(Object.keys(scanreportTables))
+
+
+        const omopFieldsPromises = []
+        const omopTablesPromises = []
+        const scanreportFieldsPromises = []
+        const scanreportTablesPromises = []
+
+        for (let i = 0; i < omopFieldsKeys.length; i++) {
+            omopFieldsPromises.push(useGet(`/omopfieldsfilter/?id__in=${omopFieldsKeys[i].join()}`))
+        }
+        for (let i = 0; i < omopTablesKeys.length; i++) {
+            omopTablesPromises.push(useGet(`/omoptablesfilter/?id__in=${omopTablesKeys[i].join()}`))
+        }
+        for (let i = 0; i < scanreportFieldsKeys.length; i++) {
+            scanreportFieldsPromises.push(useGet(`/scanreportfieldsfilter/?id__in=${scanreportFieldsKeys[i].join()}`))
+        }
+        for (let i = 0; i < scanreportTablesKeys.length; i++) {
+            scanreportTablesPromises.push(useGet(`/scanreporttablesfilter/?id__in=${scanreportTablesKeys[i].join()}`))
+        }
+        const secondaryPromises = await Promise.all([Promise.all(omopFieldsPromises), Promise.all(omopTablesPromises), Promise.all(scanreportFieldsPromises), Promise.all(scanreportTablesPromises)])
+
+        const omopFieldsLibrary = [].concat.apply([], secondaryPromises[0])
+        const omopTablesLibrary = [].concat.apply([], secondaryPromises[1])
+        const scanreportFieldsLibrary = [].concat.apply([], secondaryPromises[2])
+        const scanreportTablesLibrary = [].concat.apply([], secondaryPromises[3])
+
+
+
+        data.map(item => {
+            item.omop_field = omopFieldsLibrary.find(value => value.id == item.destination_field.OmopField)
+            item.omop_table = omopTablesLibrary.find(value => value.id == item.destination_table.OmopTable)
+            item.scanreport_field = scanreportFieldsLibrary.find(value => value.id == item.source_field.ScanReportField)
+            item.scanreport_table = scanreportTablesLibrary.find(value => value.id == item.source_table.ScanReportTable)
+        })
+        return data
+
+    }
 
     window.onpopstate = function (event) {
         // run when the back button is pressed to change variable states accordingly
@@ -181,8 +233,9 @@ const MappingTbl = () => {
     };
     const setInitialData = () => {
         // get all mapping rules for the page unfiltered
-        getMappingRules(scan_report_id, allData, switchFilter).then(res => {
-            scanReport.current = res
+        transformMappingData(JSON.parse(window.mappings)).then(res => {
+            allData.current = res
+            switchFilter(3)
             // apply filters if any are set in the url
             let filter = window.location.href.split("mapping_rules/")
             if (filter.length !== 1 && filter[1] != "") {
@@ -202,81 +255,13 @@ const MappingTbl = () => {
         setLoadingMessage("Refreshing rules")
         window.refreshRules().then(res => {
             setLoadingMessage("Rules Refreshed. Getting Mapping Rules")
-            allData.current = []
-            setValues([])
-            popping.current = true
-            setFilter("All")
-            setSecondaryFilter("All")
-            setInitialData()
+            window.location.reload(true)
         })
             .catch(error => {
                 console.log(error)
             })
     }
 
-    const downloadMappingJSON = () => {
-        let jsonRules = {}
-        jsonRules.metadata = { date_created: new Date().toISOString(), dataset: scanReport.current.dataset }
-
-        jsonRules.cdm = {}
-        // filter data that will be downlowded based on current filters set
-        let data = allData.current
-        if (selectedFilter == "All") {
-            data = allData.current
-        }
-        else {
-            data = allData.current.filter(value => value.omop_field.table.table == selectedFilter)
-        }
-        if (secondaryFilter != "All") {
-            data = data.filter(value => value.source_field.scan_report_table.name == secondaryFilter)
-        }
-        // create the json object from data to be downloaded
-        data.map(object => {
-            const o = object.omop_field.table.table
-            if (!jsonRules.cdm[o]) {
-                jsonRules.cdm[o] = []
-            }
-        })
-        for (const [key, arr] of Object.entries(jsonRules.cdm)) {
-            const idLists = {}
-            const filteredData = data.filter(value => value.omop_field.table.table == key)
-
-            filteredData.map(object => {
-                const field = object.omop_field.field
-                const id = object.scanreportconcept.id
-                if (!idLists[id]) {
-                    idLists[id] = {}
-                }
-                idLists[id][field] = {
-                    source_table: object.source_field.scan_report_table.name,
-                    source_field: object.source_field.name,
-                }
-                if (object.omop_field.field.includes("_concept_id")) {
-                    if(object.scanreportconcept.content_type==17){
-                        idLists[id][field].term_mapping = {}
-                        idLists[id][field].term_mapping[object.scanreport.value] = object.scanreportconcept.concept.concept_id
-                    }
-                    else{
-                        idLists[id][field].term_mapping = object.scanreportconcept.concept.concept_id
-                    }
-                }
-            })
-            for (const [k, ob] of Object.entries(idLists)) {
-                jsonRules.cdm[key].push(ob)
-            }
-        }
-        // create file to be downloaded and download it
-        const result = JSON.stringify(jsonRules, null, 4)
-        const fileName = scanReport.current.data_partner.name + "_" + scanReport.current.dataset + "_structural_mapping";
-        const blob = new Blob([result], { type: 'application/json' });
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = href;
-        link.download = fileName + ".json";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
 
     // change the data that is being displayed according to the currently set primary filter
     const switchFilter = (caller) => {
@@ -286,8 +271,8 @@ const MappingTbl = () => {
             setSecondaryFilters([])
         }
         else {
-            filteredData = allData.current.filter(value => value.omop_field.table.table == selectedFilter)
-            let temp = filteredData.map(data => data.source_field.scan_report_table.name)
+            filteredData = allData.current.filter(value => value.omop_table.table == selectedFilter)
+            let temp = filteredData.map(data => data.scanreport_table.name)
             temp = [...new Set(temp)]
             if (temp.length == 0) {
                 setSecondaryFilters([])
@@ -317,18 +302,18 @@ const MappingTbl = () => {
 
     const downloadImage = (img) => {
         setDownloadingImg(true)
-        if(mapDiagram.image || img){
+        if (mapDiagram.image || img) {
             let svg
-            if(img){svg=img}
-            else{svg=mapDiagram.image}
+            if (img) { svg = img }
+            else { svg = mapDiagram.image }
             // download the image then 
-            window.downloadImage(svg).then(res=>{
+            window.downloadImage(svg).then(res => {
                 setDownloadingImg(false)
-                downLoadingImgRef.current = false 
+                downLoadingImgRef.current = false
             })
-            
+
         }
-        else{
+        else {
             downLoadingImgRef.current = true
         }
     }
@@ -349,10 +334,10 @@ const MappingTbl = () => {
     return (
         <div >
             <HStack my="10px">
-                <Button variant="green" onClick={()=>{refreshRules()}}>Refresh Rules</Button>
-                <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={()=>{window.downloadRules(setDownloading)}}>Download Mapping JSON</Button>
-                <Button variant="yellow" onClick={()=>{ setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
-                <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={()=>{ downloadImage()}}>Download Map Diagram</Button>
+                <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
+                <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadRules(setDownloading) }}>Download Mapping JSON</Button>
+                <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
+                <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
             </HStack>
             <div>
                 <VStack w='full'>
@@ -412,22 +397,25 @@ const MappingTbl = () => {
                         // Create new row for every value object
                         values.map((item, index) =>
                             <Tr key={index}>
-                                <Td maxW={[50, 100, 200]} >{item.concept} </Td>
-                                <Td maxW={[50, 100, 200]} >{item.omop_field.table.table} </Td>
+                                <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
+                                <Td maxW={[50, 100, 200]} >{item.omop_table.table} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.omop_field.field}</Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_field.scan_report_table.id}>{item.source_field ? item.source_field.scan_report_table.name : null}</Link></Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field ? item.source_field.name : null}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.scanreport_table.id}>{item.scanreport_table.name}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.scanreport_field.id}>{item.scanreport_field.name}</Link></Td>
                                 <Td maxW={[50, 100, 200]} >
-                                    {item.omop_field.field.includes("_concept_id") ?
-                                        <VStack>
-                                            {item.scanreportconcept.content_type == 17 ?
-                                                <div><span style={{ color: "#dd5064", }}>"{item.scanreport.value}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.scanreportconcept.concept.concept_id}</span></div>
+                                    {item.term_mapping != null &&
+                                        <>
+                                            {typeof item.term_mapping == "object" ?
+                                                <VStack>
+                                                    <div><span style={{ color: "#dd5064", }}>"{Object.keys(item.term_mapping)[0]}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.term_mapping[Object.keys(item.term_mapping)[0]]}</span></div>
+                                                </VStack>
                                                 :
-                                                <div>{item.scanreportconcept.concept.concept_id}</div>
+                                                JSON.stringify(item.term_mapping)
                                             }
-                                        </VStack>
-                                        :
-                                        null
+
+                                        </>
+
+
                                     }
                                 </Td>
                             </Tr>

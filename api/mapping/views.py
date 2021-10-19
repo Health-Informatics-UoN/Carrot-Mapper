@@ -734,14 +734,6 @@ class StructuralMappingTableListView(ListView):
                 "source_table__name",
                 "source_field__name",
             )
-
-            filter_term = self.kwargs.get("omop_table")
-            if filter_term is not None:
-                qs = qs.filter(omop_field__table__table=filter_term)
-
-                filter_term = self.kwargs.get("source_table")
-                if filter_term is not None:
-                    qs = qs.filter(source_field__scan_report_table__name=filter_term)
                 
         return qs
 
