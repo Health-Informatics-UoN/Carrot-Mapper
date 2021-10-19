@@ -168,16 +168,15 @@ const ScanReportTbl = (props) => {
         return JSON.parse(window.status).find(item => item.id == status).label
     }
     const mapStatusColour = (status) => {
-
         switch (status) {
             case "UPINPRO":
-                return "orange.pastel"
+                return "upload"
             case "UPCOMPL":
-                return "green.pastel"
+                return "upload"
             case "UPFAILE":
-                return "red.bright"
+                return "upload"
             case "PENDING":
-                return "yellow.bright"
+                return "pending"
             case "INPRO25":
                 return "prog25"
             case "INPRO50":
@@ -185,11 +184,23 @@ const ScanReportTbl = (props) => {
             case "INPRO75":
                 return "prog75"
             case "COMPLET":
-                return "green.bright"
+                return "complete"
             case "BLOCKED":
-                return "brown.light"
+                return "blocked"
             default:
-                return "white"
+                return "upload"
+        }
+    }
+    const mapStatusText = (status) => {
+        switch (status) {
+            case "UPINPRO":
+                return "in_progress"
+            case "UPCOMPL":
+                return "complete"
+            case "UPFAILE":
+                return "blocked"
+            default:
+                return "#000000"
         }
     }
     if (loadingMessage) {
@@ -306,9 +317,9 @@ const ScanReportTbl = (props) => {
                                             <Flex marginLeft="10px">Loading status</Flex>
                                         </Flex>
                                         :
-                                        <Select bg={mapStatusColour(item.status)} minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
+                                        <Select bg={mapStatusColour(item.status)} color={mapStatusText(item.status)} minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
                                             {statuses.map((item, index) =>
-                                                <option key={index} value={item}>{mapStatus(item)}</option>
+                                                <option key={index} value={item} style={{color:"#000000"}}>{mapStatus(item)}</option>
                                             )}
                                         </Select>
                                     }
