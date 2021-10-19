@@ -9,7 +9,8 @@ from mapping.models import (DataPartner,
                             DocumentFile, DocumentType,
                             ScanReportField, ScanReport)
 import openpyxl
-from io import BytesIO
+import csv
+from io import BytesIO, StringIO
 
 
 class ShowNameChoiceField(ModelChoiceField):
@@ -54,6 +55,35 @@ class ScanReportForm(forms.Form):
         if not str(data_dictionary).endswith('.csv'):
             raise ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file.")
         
+        csv_reader = csv.reader(StringIO(data_dictionary.read().decode('utf-8-sig')))
+        
+        # Check first line for correct headers to columns
+        header_line = next(csv_reader)
+        if header_line != ['csv_file_name', 'field_name', 'code', 'value']:
+            raise ValidationError(f"Dictionary file has incorrect first line. It must be "
+                                  f"['csv_file_name', 'field_name', 'code', 'value'], but "
+                                  f"you supplied {header_line}. "
+                                  f"If this error is showing extra '' elements, this "
+                                  f"indicates that another line has >4 elements, which "
+                                  f"will need to be corrected.")
+
+        # Check all rows have either 3 or 4 non-empty elements, and only the 4th can be empty.
+        # Start from 2 because we want to use 1-indexing _and_ skip the first row which was 
+        # processed above.
+        for line_no, line in enumerate(csv_reader, start=2):
+            line_length_nonempty = len([element for element in line if element != ''])
+            if line_length_nonempty not in [3, 4]:
+                raise ValidationError(f"Dictionary has "
+                                      f"{line_length_nonempty}"
+                                      f" values in line {line_no} ({line}). All lines must "
+                                      f"have either 3 or 4 entries.")
+            # Check for whether any of the first 3 elements are empty
+            for element_no, element in enumerate(line[:3], start=1):
+                if element == '':
+                    raise ValidationError(f"Dictionary has an empty element in column "
+                                          f"{element_no} in line {line_no}. "
+                                          f"Only the 4th element in any line may be empty.")
+
         return data_dictionary
 
     def run_fast_consistency_checks(self, wb):
