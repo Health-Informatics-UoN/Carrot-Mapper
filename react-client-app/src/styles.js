@@ -43,6 +43,7 @@ const theme = extendTheme({
     pending:"#a3c1e2",
     complete:"#50a95e",
     blocked:"#e84e46",
+    in_progress:"#fbd879"
   },
   styles: {
     global: {

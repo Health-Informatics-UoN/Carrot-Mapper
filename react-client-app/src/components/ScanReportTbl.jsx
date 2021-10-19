@@ -203,7 +203,7 @@ const ScanReportTbl = (props) => {
     const mapStatusText = (status) => {
         switch (status) {
             case "UPINPRO":
-                return "prog75"
+                return "in_progress"
             case "UPCOMPL":
                 return "complete"
             case "UPFAILE":
