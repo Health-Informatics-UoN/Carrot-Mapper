@@ -139,6 +139,24 @@ def paginate(entries_to_post):
     return paginated_entries_to_post
 
 
+def process_failure(api_url, scan_report_id, headers):
+    scan_report_fetched_data = requests.get(
+            url=f"{api_url}scanreports/{scan_report_id}/",
+            headers=headers,
+    )
+
+    scan_report_fetched_data = json.loads(scan_report_fetched_data.content.decode("utf-8"))
+
+    json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}", 
+                            'status': "UPFAILE"})
+
+    failure_response = requests.patch(
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        data=json_data, 
+        headers=headers
+    )
+
+
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -179,27 +197,24 @@ def main(msg: func.QueueMessage):
     print("MESSAGE BODY >>>", body)
 
     # If the message has been dequeued for a second time, then the upload has failed.
-    # Patch the name of the dataset to make it clear that it has failed, and then stop.
+    # Patch the name of the dataset to make it clear that it has failed, 
+    # set the status to 'Upload Failed', and then stop.
     print("dequeue_count", msg.dequeue_count)
     if msg.dequeue_count == 2:
-        scan_report_fetched_data = requests.get(
-            url=f"{api_url}scanreports/{body['scan_report_id']}/",
-            headers=headers,
-        )
+        process_failure(api_url, body['scan_report_id'], headers)
 
-        scan_report_fetched_data = json.loads(scan_report_fetched_data.content.decode("utf-8"))
-
-        json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}"})
-
-        dequeue_response = requests.patch(
-            url=f"{api_url}scanreports/{body['scan_report_id']}/",
-            data=json_data, 
-            headers=headers
-        )
     if msg.dequeue_count > 1:
         raise Exception('dequeue_count > 1')
 
     # Otherwise, this must be the first time we've seen this message. Proceed.
+
+    # Set the status to 'Upload in progress'
+    status_in_progress_response = requests.patch(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            data=json.dumps({'status': "UPINPRO"}), 
+            headers=headers
+        )
+
     print("Get blobs", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # Set Storage Account connection string
     blob_service_client = BlobServiceClient.from_connection_string(
@@ -293,6 +308,7 @@ def main(msg: func.QueueMessage):
     print("TABLE SAVE STATUS >>>", tables_response.status_code)
     # Error on failure
     if tables_response.status_code != 201:
+        process_failure(api_url, body['scan_report_id'], headers)
         raise HTTPError(' '.join(['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
 
     # Load the result of the post request,
@@ -378,6 +394,7 @@ def main(msg: func.QueueMessage):
                       fields_response.reason, len(page), flush=True)
 
                 if fields_response.status_code != 201:
+                    process_failure(api_url, body['scan_report_id'], headers)
                     raise HTTPError(' '.join(
                         ['Error in fields save:', str(fields_response.status_code),
                          str(json.dumps(page))]))
@@ -407,6 +424,7 @@ def main(msg: func.QueueMessage):
             value_entries_to_post = []
 
             if current_table_name not in wb.sheetnames:
+                process_failure(api_url, body['scan_report_id'], headers)
                 raise ValueError(f"Attempting to access sheet '{current_table_name}'"
                                  f" in scan report, but no such sheet exists.")
 
@@ -513,6 +531,7 @@ def main(msg: func.QueueMessage):
                 print("VALUES SAVE STATUS >>>", values_response.status_code,
                       values_response.reason, len(page), flush=True)
                 if values_response.status_code != 201:
+                    process_failure(api_url, body['scan_report_id'], headers)
                     raise HTTPError(' '.join(['Error in values save:', str(values_response.status_code), str(json.dumps(page))]))
 
                 values_content = json.loads(values_response.content.decode("utf-8"))
@@ -567,6 +586,7 @@ def main(msg: func.QueueMessage):
                 print("CONCEPT SAVE STATUS >>> ", concepts_response.status_code,
                       concepts_response.reason, flush=True)
                 if concepts_response.status_code != 201:
+                    process_failure(api_url, body['scan_report_id'], headers)
                     raise HTTPError(' '.join(['Error in concept save:', str(concepts_response.status_code), str(json.dumps(page))]))
 
                 concepts_content = json.loads(concepts_response.content.decode("utf-8"))
@@ -593,6 +613,14 @@ def main(msg: func.QueueMessage):
                 )
                 # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
                 if value_response.status_code != 200:
+                    process_failure(api_url, body['scan_report_id'], headers)
                     raise HTTPError(' '.join(['Error in value save:', str(value_response.status_code), str(put_update_json)]))
 
             print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+    # Set the status to 'Upload Complete'
+    status_complete_response = requests.patch(
+            url=f"{api_url}scanreports/{body['scan_report_id']}/",
+            data=json.dumps({'status': "UPCOMPL"}), 
+            headers=headers
+        )
