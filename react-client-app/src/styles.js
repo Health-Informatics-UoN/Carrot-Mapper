@@ -34,10 +34,15 @@ const theme = extendTheme({
     green: { pastel: "#C1E1C1", bright: "#66FF00" },
     red: { pastel: "#FF6961", bright: "#EE4B2B" },
     yellow: { pastel: "#FDFD96", bright: "#FFFF00" },
-    prog25: "#BFDF00",//75% Yellow, Green
-    prog50: "#80D100",//50% Y, 50% G
-    prog75: "#40C300",//25% Y, 75% G
+    
     brown: { light: "#C89D7C", bright: "#DCB190" },
+    upload:"#ececec",
+    prog25: "#fef0d5",
+    prog50: "#fbe3a9",
+    prog75: "#fbd879",
+    pending:"#a3c1e2",
+    complete:"#50a95e",
+    blocked:"#e84e46",
   },
   styles: {
     global: {
