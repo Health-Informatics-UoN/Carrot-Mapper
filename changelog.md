@@ -7,6 +7,12 @@ Please append a line to the changelog for each change made.
 * Scan Reports no longer need Flag or Classification columns on Field Overview sheet.
 * Scan Report upload now runs fast checks on the file and returns feedback to the user if malformed.
 * Dashboard of scan report summary stats has been added to the home screen
+* New endpoints added to aid the calculation of summary stats.
+* Bugfix: Data dictionary now makes use of the table column.
+* Scan Report upload now sets Status automatically on start/complete/fail.
+* Bugfix: Scan Report upload now handles Nones in supplied spreadsheets.
+* Scan Report upload can handle the removal of BOM from dictionary file if present.
+* Bugfix: concepts were not being correctly filtered by object type in React display. This is now fixed.
 
 ## v1.1 was released 24/09/21
 * Mapping rules json structural change, now objects associated to a CDM table are a dictionary (with a key name) rather than just a list.
