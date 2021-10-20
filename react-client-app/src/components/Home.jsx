@@ -12,11 +12,17 @@ import {
     Flex,
     Spinner,
     Link,
+    Button,
+    Spacer,
+    Stack,
+    Container
 } from "@chakra-ui/react"
 
 import { ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons'
 import { useGet, chunkIds } from '../api/values'
 import Plot from 'react-plotly.js';
+
+
 
 const Home = () => {
     const statusesRef = useRef(JSON.parse(window.status).map((status) => status.id).map(item => ({ id: item, expanded: false, data: [] })));
@@ -25,13 +31,65 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [countStats, setCountStats] = useState(null);
     const [scanreportDonutData, setScanreportDonutData] = useState(null);
+    const [mappingrulesDonutData, setmappingrulesDonutData] = useState(null);
+    const [filter, setFilter] = useState(null);
+    const [timeline, setTimeline] = useState({ day: "counting", week: "counting", month: "counting", three_months: "counting", year: "counting", });
+    useEffect(async () => {
+
+        if (filter) {
+            let filteredReports;
+            let filteredStatuses;
+            let generatedCountStats;
+            if (filter == "All") {
+                filteredReports = scanreportsRef.current
+            }
+            if (filter == "Active") {
+                filteredReports = scanreportsRef.current.filter(scanreport => scanreport.hidden == false)
+
+            }
+            if (filter == "Archived") {
+                filteredReports = scanreportsRef.current.filter(scanreport => scanreport.hidden == true)
+
+            }
+            filteredStatuses = statusesRef.current.map(status => ({ ...status, data: filteredReports.filter(report => report.status == status.id) }))
+            const ts = Math.round(new Date().getTime() / 1000);
+            const ts_24_hours_ago = ts - (24 * 3600);
+            const ts_week_ago = ts - (7 * 24 * 3600);
+            const ts_month_ago = ts - (30 * 24 * 3600);
+            const ts_3_month_ago = ts - (90 * 24 * 3600);
+            const ts_year_ago = ts - (365 * 24 * 3600);
+            const last_24_hours = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_24_hours_ago)
+            const last_week = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_week_ago)
+            const last_month = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_month_ago)
+            const last_3_month = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_3_month_ago)
+            const last_year = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_year_ago)
+            const timeline =
+            {
+                day: last_24_hours.length,
+                week: last_week.length,
+                month: last_month.length,
+                three_months: last_3_month.length,
+                year: last_year.length,
+            }
+
+
+            generatedCountStats =
+            {
+                scanreport_count: filteredReports.length,
+                scanreporttable_count: filteredReports.map(report => report.scanreporttable_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportfield_count: filteredReports.map(report => report.scanreportfield_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportvalue_count: filteredReports.map(report => report.scanreportvalue_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportmappingrule_count: filteredReports.map(report => report.scanreportmappingrule_count).reduce((a, b) => { return a + b; }, 0),
+            }
+            setDonutData(filteredReports)
+            setMappingDonutData(filteredReports)
+            setStatuses(filteredStatuses)
+            setCountStats(generatedCountStats)
+            setTimeline(timeline)
+        }
+    }, [filter]);
 
     useEffect(async () => {
-        useGet(`/countstats`).then(res => {
-            console.log(res)
-            setCountStats(res)
-        })
-
         let scanreports = await useGet(`/scanreports/`)
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
 
@@ -49,17 +107,26 @@ const Home = () => {
         dataPartners.forEach(element => {
             scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
         })
+
+        const scanreportIds = chunkIds(scanreports.map(scanreport => scanreport.id))
+        const countPromises = [];
+        for (let i = 0; i < scanreportIds.length; i++) {
+            countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
+        }
+        const countStats = [].concat.apply([], await Promise.all(countPromises))
+        scanreports = scanreports.map(report => ({ ...report, ...countStats.find(item => item.scanreport == report.id) }))
+
         scanreportsRef.current = scanreports
-        setDonutData(scanreportsRef.current)
-        statusesRef.current = statusesRef.current.map(status => ({ ...status, data: scanreports.filter(report => report.status == status.id) }))
-        setStatuses(statusesRef.current)
+
+        setFilter("Active")
+
         setLoading(false)
     }, []);
 
 
     const expandStatus = (id, expand) => {
-        statusesRef.current = statusesRef.current.map(status => status.id == id ? ({ ...status, expanded: expand }) : status)
-        setStatuses(statusesRef.current)
+
+        setStatuses(stat => stat.map(status => status.id == id ? ({ ...status, expanded: expand }) : status))
     }
 
     const setDonutData = (scanreport_data) => {
@@ -67,6 +134,7 @@ const Home = () => {
             values: [],
             labels: [],
             type: 'pie',
+            textinfo: "value",
             hole: .3,
             title: "Data Partners"
         }
@@ -77,6 +145,26 @@ const Home = () => {
             data.values.push(values.length)
         })
         setScanreportDonutData([data])
+    }
+
+    const setMappingDonutData = (scanreport_data) => {
+        let data = {
+            values: [],
+            labels: [],
+            textinfo: "value",
+            type: 'pie',
+            hole: .3,
+            title: "Data Partners"
+        }
+        data.labels = [...new Set(scanreport_data.map(data => data.data_partner.name))].sort((a, b) => a.localeCompare(b))
+
+        data.labels.map(label => {
+            const values = scanreport_data.filter(report => report.data_partner.name == label)
+            const mapArray = values.map(value => value.scanreportmappingrule_count)
+            const sum = mapArray.reduce((a, b) => { return a + b; }, 0)
+            data.values.push(sum)
+        })
+        setmappingrulesDonutData([data])
     }
 
     const mapStatus = (status) => {
@@ -93,39 +181,95 @@ const Home = () => {
     }
 
     return (
-        <VStack >
-            <HStack>
-                <Table w="auto" variant="striped" colorScheme="greyBasic" >
-                    <TableCaption placement="top">Scan Report Stats</TableCaption>
-                    <Tr>
-                        <Th>Scanreports</Th>
-                        <Td>{countStats.scanreport_count}</Td>
-                    </Tr>
-                    <Tr>
-                        <Th>Tables</Th>
-                        <Td>{countStats.scanreporttable_count}</Td>
-                    </Tr>
-                    <Tr>
-                        <Th>Fields</Th>
-                        <Td>{countStats.scanreportfield_count}</Td>
-                    </Tr>
-                    <Tr>
-                        <Th>Values</Th>
-                        <Td>{countStats.scanreportvalue_count}</Td>
-                    </Tr>
-                </Table>
+        <VStack w="100%">
+            <VStack w="100%">
+                <HStack>
+                    <Button variant={filter == "All" ? "green" : "blue"} onClick={() => { setFilter("All") }}>All Reports</Button>
+                    <Button variant={filter == "Active" ? "green" : "blue"} ml="10px" onClick={() => { setFilter("Active") }}>Active Reports</Button>
+                    <Button variant={filter == "Archived" ? "green" : "blue"} ml="10px" onClick={() => { setFilter("Archived") }}>Archived Reports</Button>
+                </HStack>
+                <HStack>
+                    <Table w="auto" variant="unstyled" colorScheme="greyBasic" border="1px solid black" >
+                        <TableCaption placement="top">Scan Report Stats (All Time)</TableCaption>
+                        <Tr>
+                            <Th>Scanreports</Th>
+                            <Td>{countStats.scanreport_count}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>Tables</Th>
+                            <Td>{countStats.scanreporttable_count}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>Fields</Th>
+                            <Td>{countStats.scanreportfield_count}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>Values</Th>
+                            <Td>{countStats.scanreportvalue_count}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>Mapping Rules</Th>
+                            <Td>{countStats.scanreportmappingrule_count}</Td>
+                        </Tr>
+                    </Table>
 
-                {scanreportDonutData &&
-                    <Plot
-                        data={scanreportDonutData}
-                        layout={{/* width: 320, height: 240, */ title: 'Data Partners' }}
-                    />
-                }
-            </HStack>
+                    <Table w="auto" variant="unstyled" colorScheme="greyBasic" border="1px solid black" >
+                        <TableCaption placement="top">New scan reports uploaded</TableCaption>
+                        <Tr>
+                            <Th>in the last 24h</Th>
+                            <Td>{timeline.day}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>in the 7 days</Th>
+                            <Td>{timeline.week}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>in the last 30 days</Th>
+                            <Td>{timeline.month}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>in the last 90 days</Th>
+                            <Td>{timeline.three_months}</Td>
+                        </Tr>
+                        <Tr>
+                            <Th>in the last 365 days</Th>
+                            <Td>{timeline.year}</Td>
+                        </Tr>
+
+                    </Table>
+
+                </HStack>
+                <Stack direction={["column", "column", "column", "row"]} style={{ width: "100%" }}>
+                    {scanreportDonutData &&
+                        <Container w={["100%", "100%", "100%", "50%"]}>
+                            <Plot
+                                data={scanreportDonutData}
+                                layout={{ autosize: true, title: 'Scanreports by Data Partner' }}
+                                textinfo="text"
+                                useResizeHandler={true}
+                                style={{ width: "100%", height: "auto" }}
+                            />
+                        </Container>
+                    }
+
+                    {mappingrulesDonutData &&
+                        <Container w={["100%", "100%", "100%", "50%"]}>
+                            <Plot
+                                data={mappingrulesDonutData}
+                                layout={{ autosize: true, title: 'Mapping rules by Data Partner' }}
+                                useResizeHandler={true}
+                                style={{ width: "100%", height: "auto" }}
+                            />
+                        </Container>
+                    }
+                </Stack>
+            </VStack>
+
+
 
 
             <Table variant="striped" colorScheme="greyBasic" >
-                <TableCaption placement="top">Scan Report Stats Grouped by status</TableCaption>
+                <TableCaption placement="top">Scan Reports by status</TableCaption>
                 <Thead>
                     <Tr>
                         <Th>Status</Th>
