@@ -413,12 +413,23 @@ def get_mapping_rules_list(structural_mapping_rules):
             for obj in structural_mapping_rules
         ]
     ))
+
+    nmapped_concepts = len(scan_report_concepts)
+        
     #make the batch call
     scan_report_concepts = {
         x.id:x
         for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))
     }
+    ntotal_concepts = len(scan_report_concepts.values())
 
+    if nmapped_concepts != ntotal_concepts:
+        print ("WARNING!! There are a differing number of scan report concepts"
+               " associate to the mapping rules, and those that exist as scan report concepts")
+        
+
+    
+        
     #get all the ids for all ScanReportValues that are used (have been mapped with a concept)
     scan_report_values = [
         obj.object_id
@@ -479,6 +490,9 @@ def get_mapping_rules_list(structural_mapping_rules):
 
         #get the concepts again
         scan_report_concept_id = rule.concept_id
+        if rule.concept_id not in scan_report_concepts:
+            print (f"WARNING!! scan_report_concept {rule.concept_id} no longer exists")
+            continue
         scan_report_concept = scan_report_concepts[rule.concept_id]
         concept_id = scan_report_concept.concept_id
         concept_name = scan_report_concept.concept.concept_name

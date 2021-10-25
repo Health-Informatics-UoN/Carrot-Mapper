@@ -21,6 +21,19 @@
         var csrfmiddlewaretoken = "{{csrf_token}}"
 		var a = "{{a}}"
         var u = "{{u}}"
+
+		// To get the mappings from the python
+		const list ="{{object_list}}".replaceAll("&#x27;",'"').replaceAll("&lt;",'{"').replaceAll("&gt;",'}').replaceAll('"term_mapping": None','"term_mapping": null')
+		var mappings = ''
+		for(let i=0;i<list.length;i++){
+			if(list[i]==":"&&list[i-1]!='"'){
+				mappings += '"'
+			}
+			mappings += list[i]
+		}
+		//
+
+
 		var s = document.createElement("script");
         s.type = "module";
 		s.innerHTML = null;
