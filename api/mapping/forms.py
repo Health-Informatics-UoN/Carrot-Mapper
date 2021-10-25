@@ -11,6 +11,7 @@ from mapping.models import (DataPartner,
 import openpyxl
 import csv
 from io import BytesIO, StringIO
+from collections import Counter
 
 
 class ShowNameChoiceField(ModelChoiceField):
@@ -161,10 +162,34 @@ class ScanReportForm(forms.Form):
                 # Get all field names from the associated sheet, by grabbing the first
                 # row, and then grabbing every second column value (because the
                 # alternate columns should be 'Frequency'
-                table_sheet_fields = set([cell.value
-                                          for cell in next(wb[current_table_name].rows)
-                                          ][::2]
-                                           )
+                table_sheet_fields = [cell.value
+                                      for cell in next(wb[current_table_name].rows)
+                                      ][::2]
+
+                # Check for multiple columns in a single sheet with the same name
+                count_table_sheet_fields = Counter(table_sheet_fields)
+                for field in count_table_sheet_fields:
+                    if count_table_sheet_fields[field] > 1:
+                        raise ValidationError(f"Sheet '{current_table_name}' contains "
+                                              f"more than one field with the name "
+                                              f"'{field}'. "
+                                              f"Field names must be unique within "
+                                              f"a table.")
+
+                # Check for multiple fields with the same name associated to a single
+                # table in the Field Overview sheet
+                count_current_table_fields = Counter(current_table_fields)
+                for field in count_current_table_fields:
+                    if count_current_table_fields[field] > 1:
+                        raise ValidationError(f"Field Overview sheet contains "
+                                              f"more than one field with the name "
+                                              f"'{field}' against the table "
+                                              f"'{current_table_name}'. "
+                                              f"Field names must be unique within "
+                                              f"a table.")
+
+                # Check for any fields that are in only one of the Field Overview and
+                # the associated sheet
                 if sorted(table_sheet_fields) != sorted(current_table_fields):
                     sheet_only = set(table_sheet_fields).difference(
                         current_table_fields)
