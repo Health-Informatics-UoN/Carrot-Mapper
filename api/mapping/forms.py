@@ -54,16 +54,18 @@ class ScanReportForm(forms.Form):
             return data_dictionary
 
         if not str(data_dictionary).endswith('.csv'):
-            raise ValidationError( "You have attempted to upload a data dictionary which is not in CSV format. Please upload a .csv file.")
+            raise ValidationError( "You have attempted to upload a data dictionary "
+                                   "which is not in CSV format. "
+                                   "Please upload a .csv file.")
         
         csv_reader = csv.reader(StringIO(data_dictionary.read().decode('utf-8-sig')))
         
         # Check first line for correct headers to columns
         header_line = next(csv_reader)
         if header_line != ['csv_file_name', 'field_name', 'code', 'value']:
-            raise ValidationError(f"Dictionary file has incorrect first line. It must be "
-                                  f"['csv_file_name', 'field_name', 'code', 'value'], but "
-                                  f"you supplied {header_line}. "
+            raise ValidationError(f"Dictionary file has incorrect first line. It must "
+                                  f"be ['csv_file_name', 'field_name', 'code', "
+                                  f"'value'], but you supplied {header_line}. "
                                   f"If this error is showing extra '' elements, this "
                                   f"indicates that another line has >4 elements, which "
                                   f"will need to be corrected.")
