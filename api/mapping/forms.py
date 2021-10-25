@@ -54,21 +54,24 @@ class ScanReportForm(forms.Form):
             return data_dictionary
 
         if not str(data_dictionary).endswith('.csv'):
-            raise ValidationError( "You have attempted to upload a data dictionary "
-                                   "which is not in CSV format. "
-                                   "Please upload a .csv file.")
+            raise ValidationError("You have attempted to upload a data dictionary "
+                                  "which is not in CSV format. "
+                                  "Please upload a .csv file.")
         
         csv_reader = csv.reader(StringIO(data_dictionary.read().decode('utf-8-sig')))
-        
+
+        errors = []
+
         # Check first line for correct headers to columns
         header_line = next(csv_reader)
         if header_line != ['csv_file_name', 'field_name', 'code', 'value']:
-            raise ValidationError(f"Dictionary file has incorrect first line. It must "
-                                  f"be ['csv_file_name', 'field_name', 'code', "
-                                  f"'value'], but you supplied {header_line}. "
-                                  f"If this error is showing extra '' elements, this "
-                                  f"indicates that another line has >4 elements, which "
-                                  f"will need to be corrected.")
+            errors.append(ValidationError(f"Dictionary file has incorrect first line. "
+                                          f"It must be ['csv_file_name', "
+                                          f"'field_name', 'code', 'value'], but you "
+                                          f"supplied {header_line}. If this error is "
+                                          f"showing extra '' elements, this indicates "
+                                          f"that another line has >4 elements, "
+                                          f"which will need to be corrected."))
 
         # Check all rows have either 3 or 4 non-empty elements, and only the 4th can be empty.
         # Start from 2 because we want to use 1-indexing _and_ skip the first row which was 
@@ -76,16 +79,22 @@ class ScanReportForm(forms.Form):
         for line_no, line in enumerate(csv_reader, start=2):
             line_length_nonempty = len([element for element in line if element != ''])
             if line_length_nonempty not in [3, 4]:
-                raise ValidationError(f"Dictionary has "
-                                      f"{line_length_nonempty}"
-                                      f" values in line {line_no} ({line}). All lines must "
-                                      f"have either 3 or 4 entries.")
+                errors.append(ValidationError(f"Dictionary has "
+                                              f"{line_length_nonempty} "
+                                              f"values in line {line_no} ({line}). "
+                                              f"All lines must "
+                                              f"have either 3 or 4 entries."))
             # Check for whether any of the first 3 elements are empty
             for element_no, element in enumerate(line[:3], start=1):
                 if element == '':
-                    raise ValidationError(f"Dictionary has an empty element in column "
-                                          f"{element_no} in line {line_no}. "
-                                          f"Only the 4th element in any line may be empty.")
+                    errors.append(ValidationError(f"Dictionary has an empty element "
+                                                  f"in column {element_no} in line "
+                                                  f"{line_no}. "
+                                                  f"Only the 4th element in any line "
+                                                  f"may be empty."))
+
+        if errors:
+            raise ValidationError(errors)
 
         return data_dictionary
 
@@ -95,7 +104,7 @@ class ScanReportForm(forms.Form):
         return quickly if there is an issue with the data, and provide feedback to the
         user so they can fix the issue.
         """
-
+        errors = []
         # Get the first sheet 'Field Overview'
         fo_ws = wb.worksheets[0]
 
@@ -111,12 +120,14 @@ class ScanReportForm(forms.Form):
         # headers after these. This means old Scan Reports with Flag and Classification
         # columns will be handled cleanly.
         if not source_headers[:10] == expected_headers:
-            raise ValidationError(f"Please check the following columns exist in the "
-                                  f"Scan Report (Field Overview sheet) in this order: "
-                                  f"Table, Field, Description, Type, Max length, "
-                                  f"N rows, N rows checked, Fraction empty, "
-                                  f"N unique values, Fraction unique. "
-                                  f"You provided \n{source_headers[:10]}")
+            errors.append(ValidationError(f"Please check the following columns exist "
+                                          f"in the Scan Report (Field Overview sheet) "
+                                          f"in this order: "
+                                          f"Table, Field, Description, Type, "
+                                          f"Max length, N rows, N rows checked, "
+                                          f"Fraction empty, N unique values, "
+                                          f"Fraction unique. "
+                                          f"You provided \n{source_headers[:10]}"))
 
         # Check tables are correctly separated in FO - a single empty line between each
         # table
@@ -126,11 +137,12 @@ class ScanReportForm(forms.Form):
                     (cell.value != '' and cell.value is not None) and
                     (cell_above.value != '' and cell_above.value is not None)
                 ) or (cell.value == '' and cell_above.value == ''):
-                raise ValidationError(f"At {cell}, tables in Field Overview table are "
-                                      f"not correctly separated by a single line. "
-                                      f"Note: There should be no separator line "
-                                      f"between the header row and the first row of "
-                                      f"the first table.")
+                errors.append(ValidationError(f"At {cell}, tables in Field Overview "
+                                              f"table are not correctly separated by "
+                                              f"a single line. "
+                                              f"Note: There should be no separator "
+                                              f"line between the header row and the "
+                                              f"first row of the first table."))
             cell_above = cell
 
         # Now that we're happy that the FO sheet is correctly formatted, we can move
@@ -145,14 +157,16 @@ class ScanReportForm(forms.Form):
         if sorted(wb.sheetnames) != sorted(expected_sheetnames):
             sheets_only = set(wb.sheetnames).difference(expected_sheetnames)
             fo_only = set(expected_sheetnames).difference(wb.sheetnames)
-            error_text = f"Tables in Field Overview sheet do not match the sheets supplied."
+            errors.append(ValidationError(f"Tables in Field Overview sheet do not "
+                                          f"match the sheets supplied."))
             if sheets_only:
-                error_text += f"{sheets_only} are sheets that do not have matching " \
-                              f"entries in first column of the Field Overview sheet. "
+                errors.append(ValidationError(f"{sheets_only} are sheets that do not "
+                                              f"have matching entries in first column "
+                                              f"of the Field Overview sheet. "))
             if fo_only:
-                error_text += f"{fo_only} are table names in first column of Field " \
-                              f"Overview sheet but do not have matching sheets supplied."
-            raise ValidationError(error_text)
+                errors.append(ValidationError(f"{fo_only} are table names in first "
+                                              f"column of Field Overview sheet but do "
+                                              f"not have matching sheets supplied."))
 
         # Loop over the rows, and for each table, once we reach the end of the table,
         # compare the fields provided with the fields in the associated sheet
@@ -172,23 +186,23 @@ class ScanReportForm(forms.Form):
                 count_table_sheet_fields = Counter(table_sheet_fields)
                 for field in count_table_sheet_fields:
                     if count_table_sheet_fields[field] > 1:
-                        raise ValidationError(f"Sheet '{current_table_name}' contains "
-                                              f"more than one field with the name "
-                                              f"'{field}'. "
-                                              f"Field names must be unique within "
-                                              f"a table.")
+                        errors.append(ValidationError(f"Sheet '{current_table_name}' "
+                                                      f"contains more than one field "
+                                                      f"with the name '{field}'. "
+                                                      f"Field names must be unique "
+                                                      f"within a table."))
 
                 # Check for multiple fields with the same name associated to a single
                 # table in the Field Overview sheet
                 count_current_table_fields = Counter(current_table_fields)
                 for field in count_current_table_fields:
                     if count_current_table_fields[field] > 1:
-                        raise ValidationError(f"Field Overview sheet contains "
-                                              f"more than one field with the name "
-                                              f"'{field}' against the table "
-                                              f"'{current_table_name}'. "
-                                              f"Field names must be unique within "
-                                              f"a table.")
+                        errors.append(ValidationError(f"Field Overview sheet contains "
+                                                      f"more than one field with the "
+                                                      f"name '{field}' against the "
+                                                      f"table '{current_table_name}'. "
+                                                      f"Field names must be unique "
+                                                      f"within a table."))
 
                 # Check for any fields that are in only one of the Field Overview and
                 # the associated sheet
@@ -196,23 +210,27 @@ class ScanReportForm(forms.Form):
                     sheet_only = set(table_sheet_fields).difference(
                         current_table_fields)
                     fo_only = set(current_table_fields).difference(table_sheet_fields)
-                    error_text = f"Fields in Field Overview against table " \
-                                 f"{current_table_name} do not match fields in the " \
-                                 f"associated sheet. "
+                    errors.append(ValidationError(f"Fields in Field Overview against "
+                                                  f"table {current_table_name} do not "
+                                                  f"match fields in the associated "
+                                                  f"sheet. "))
                     if sheet_only:
-                        error_text += f"{sheet_only} exist in the " \
-                                      f"'{current_table_name}' " \
-                                      f"sheet but there are no matching entries in " \
-                                      f"the second column of the Field Overview " \
-                                      f"sheet in the rows associated to the table " \
-                                      f"'{current_table_name}'. "
+                        errors.append(ValidationError(f"{sheet_only} exist in the "
+                                                      f"'{current_table_name}' sheet "
+                                                      f"but there are no matching "
+                                                      f"entries in the second column "
+                                                      f"of the Field Overview sheet "
+                                                      f"in the rows associated to the "
+                                                      f"table '{current_table_name}'. "
+                                                      f""))
                     if fo_only:
-                        error_text += f"{fo_only} exist in second column of Field " \
-                                      f"Overview sheet against the table " \
-                                      f"'{current_table_name}' but there are no " \
-                                      f"matching column names in the associated " \
-                                      f"sheet '{current_table_name}'."
-                    raise ValidationError(error_text)
+                        errors.append(ValidationError(f"{fo_only} exist in second "
+                                                      f"column of Field Over"
+                                                      f"view sheet against the table "
+                                                      f"'{current_table_name}' but "
+                                                      f"there are no matching column "
+                                                      f"names in the associated sheet "
+                                                      f"'{current_table_name}'."))
 
                 # Reset the list of fields associated to this table as we iterate down
                 # the FO sheet.
@@ -223,6 +241,9 @@ class ScanReportForm(forms.Form):
                 # check for empty lines between tables in the FO sheet.
                 current_table_fields.append(row[1].value)
                 current_table_name = row[0].value
+
+        if errors:
+            raise ValidationError(errors)
 
         return True
 
