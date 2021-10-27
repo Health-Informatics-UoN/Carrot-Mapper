@@ -5,7 +5,7 @@ const m_allowed_tables = ['person','measurement','condition_occurrence','observa
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(url,
+    const response = await fetch(`${api}${url}`,
     {
         method: "GET",
         headers: {Authorization: "Token "+authToken},    
@@ -16,7 +16,7 @@ const useGet = async (url) =>{
 }
 // function for post requests to api with authorization token
 const usePost = async (url,data) =>{
-    const response = await fetch(url,
+    const response = await fetch(`${api}${url}`,
     {
         method: "POST",
         headers: {
@@ -53,86 +53,35 @@ const useDelete = async (url) => {
 }
 // get scan report field with given id
 const getScanReportField = async (id)=>{
-    const field = await useGet(`${api}/scanreportfields/${id}`)
+    const field = await useGet(`/scanreportfields/${id}`)
     return field
 }
 // get scan report table with given id
 const getScanReportTable = async (id)=>{
-    const table = await useGet(`${api}/scanreporttables/${id}`)
+    const table = await useGet(`/scanreporttables/${id}`)
     return table
-}
-// get scan report values for specific id
-const getScanReportValues = async (id) => {
-    const response = await fetch(`${api}/scanreportvaluesfilter/?scan_report_field=${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-    }
-    );
-    const data = response.json();
-    return data;
 }
 // get concepts for a specific scan report
 const getScanReportConcepts = async (id) => {
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id=${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-        importance: "low" 
-    });
-    return response.json();
-}
-// get a concept by id
-// pass identifier to use as id to delete the concept from the scan report
-const getConcept = async (id,identifier) => { 
-    const response = await fetch(`${api}/omop/concepts/${id}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},
-        importance: "high"  
-    }).then(res=>{
-        return res.json().then(function(json) {
-            json.id = identifier;
-            return json;
-          });
-    })
-    return response
+    const response = await useGet(`/scanreportconceptsfilter/?object_id=${id}`)
+    return response;
 }
 
-// get all concepts for specific scan report before returning
-const getAllconcepts = async (ids) => {   
-    const response = await fetch(`${api}/scanreportconceptsfilter/?object_id__in=${ids}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-        importance: "low" 
-    });
-    const concepts = await response.json()
-    return concepts;
-}
-
-const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
-    let values = await useGet(`${api}/scanreportvaluesfilter/?scan_report_field=${valueId}`)
-    if (!Array.isArray(values)) {
-        console.log(values)
-        setError(true)
-        return
+const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},setScanReports=()=>{}) => {
+    const valueIds = chunkIds(values.map(value => value.id))
+    const valuePromises = []
+    for (let i = 0; i < valueIds.length; i++) {
+        valuePromises.push(useGet(`/scanreportconceptsfilter/?object_id__in=${valueIds[i].join()}`))
     }
-    if (values.length > 0) {
-        values = values.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
-        values = values.map(scanReport => ({ ...scanReport, concepts: [], conceptsLoaded: false }))
+    const promiseResult = await Promise.all(valuePromises)
+    let scanreportconcepts = [].concat.apply([], promiseResult)
+    scanreportconcepts = scanreportconcepts.filter(concept=>concept.content_type==contentType)
+    if (scanreportconcepts.length == 0) {
+        values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
         scanReportsRef.current = values
-        setScanReports(scanReportsRef.current)
-        const valueIds = chunkIds(values.map(value => value.id))
-        const valuePromises = []
-        for (let i = 0; i < valueIds.length; i++) {
-            valuePromises.push(getAllconcepts(valueIds[i].join()))
-        }
-
-        const promiseResult = await Promise.all(valuePromises)
-        // create an array of all the results from the sublists api requests
-        let scanreportconcepts = [].concat.apply([], promiseResult)
-        const conceptIdsObject = {}
+        return values
+    }
+    const conceptIdsObject = {}
         scanreportconcepts.map(value => {
             if (value.concept) {
                 if (conceptIdsObject[value.concept]) {
@@ -143,9 +92,8 @@ const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadin
                 }
             }
         })
-
         values = values.map((scanReport) => Object.values(conceptIdsObject).find(arr => arr.includes(scanReport.id)) ?
-            scanReport : { ...scanReport, conceptsLoaded: true })
+        scanReport : { ...scanReport, conceptsLoaded: true })
         scanReportsRef.current = values
         setScanReports(scanReportsRef.current)
 
@@ -153,30 +101,44 @@ const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadin
 
         const conceptPromises = []
         for (let i = 0; i < conceptIds.length; i++) {
-            conceptPromises.push(useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
+            conceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
         }
-
         const conceptPromiseResults = await Promise.all(conceptPromises)
         const omopConcepts = [].concat.apply([], conceptPromiseResults)
         scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-        console.log(scanreportconcepts)
         // map each scanreport concept to it's value
         values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
         scanReportsRef.current = values
         setScanReports(scanReportsRef.current)
         return values
+}
+
+const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
+    let values = await useGet(`/scanreportvaluesfilter/?scan_report_field=${valueId}`)
+    if (!Array.isArray(values)) {
+        setError(true)
+        return
     }
-    else{
+    if (values.length > 0) {
+        values = values.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+        values = values.map(scanReport => ({ ...scanReport, concepts: [], conceptsLoaded: false }))
+        scanReportsRef.current = values
+        setScanReports(scanReportsRef.current)
+        values = await getValuesScanReportConcepts(values,17,scanReportsRef,setScanReports)
+        setScanReports(scanReportsRef.current)
+        return values
+    }
+    else {
         // return if there are no scan reports
         scanReportsRef.current = [undefined]
         setScanReports([undefined])
-    } 
+    }
 }
 
 // function to save mapping rules copying python implementation
 const saveMappingRules = async (scan_report_concept,scan_report_value,table) => {
     const domain = scan_report_concept.concept.domain_id.toLowerCase()
-    const fields = await useGet(`${api}/omopfields/`)
+    const fields = await useGet(`/omopfields/`)
     const cachedOmopFunction = mapConceptToOmopField()
     const m_date_field_mapper = {
         'person': ['birth_datetime'],
@@ -203,14 +165,14 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     //person_id
     data.omop_field = fields.filter(field=> field.field == "person_id" && field.table==destination_field.table)[0].id
     data.source_field = table.person_id
-    promises.push(usePost(`${api}/structuralmappingrules/`,data))
+    promises.push(usePost(`/structuralmappingrules/`,data))
     //date_event
     data.source_field = table.date_event
-    const omopTable = await useGet(`${api}/omoptables/${destination_field.table}`)
+    const omopTable = await useGet(`/omoptables/${destination_field.table}`)
     const date_omop_fields = m_date_field_mapper[omopTable.table]
     date_omop_fields.forEach(element => {
         data.omop_field = fields.filter(field=> field.field == element && field.table==destination_field.table)[0].id
-        promises.push(usePost(`${api}/structuralmappingrules/`,data))
+        promises.push(usePost(`/structuralmappingrules/`,data))
     })
     // set source field depending on content type
     if(scan_report_concept.content_type==15){
@@ -221,20 +183,20 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     }
     //_source_concept_id
     data.omop_field = destination_field.id
-    promises.push(usePost(`${api}/structuralmappingrules/`,data))
+    promises.push(usePost(`/structuralmappingrules/`,data))
     //_concept_id
     let tempOmopField = await cachedOmopFunction(fields,domain+"_concept_id")
     data.omop_field = tempOmopField.id
-    promises.push(usePost(`${api}/structuralmappingrules/`,data))
+    promises.push(usePost(`/structuralmappingrules/`,data))
     //_source_value
     tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
-    promises.push(usePost(`${api}/structuralmappingrules/`,data))
+    promises.push(usePost(`/structuralmappingrules/`,data))
     //measurement
     if(domain == 'measurement'){
         tempOmopField = await cachedOmopFunction(fields,"value_as_number","measurement")
         data.omop_field = tempOmopField.id
-        promises.push(usePost(`${api}/structuralmappingrules/`,data))
+        promises.push(usePost(`/structuralmappingrules/`,data))
     }  
     // when all requests have finished, return
         const values = await Promise.all(promises)
@@ -257,7 +219,7 @@ const mapConceptToOmopField = () =>{
             // if there are more than 1 fields that match the domain
             // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
             if(!omopTables){
-                omopTables = await useGet(`${api}/omoptables/`)
+                omopTables = await useGet(`/omoptables/`)
             } 
             // find correct field to return
             let mappedTables = mappedFields.map(field=> (
@@ -269,7 +231,7 @@ const mapConceptToOmopField = () =>{
             return mappedTables.find(val=> val.isAllowed==true).field
         }
         if(!omopTables){
-            omopTables = await useGet(`${api}/omoptables/`)
+            omopTables = await useGet(`/omoptables/`)
         } 
         // find omop field with specified table and domain
         let mappedTable = omopTables.find(t=>t.table == table)
@@ -304,9 +266,9 @@ const chunkIds = (list) => {
 
 const getMappingRules = async (id, tableData, switchFilter) => {
     // get and sort all mapping rules for a particular scan report
-    let mappingRules = await useGet(`${api}/structuralmappingrulesfilter/?scan_report=${id}`)
-    const scanReport = await useGet(`${api}/scanreports/${id}`)
-    const datapartner = await useGet(`${api}/datapartners/${scanReport.data_partner}`)
+    let mappingRules = await useGet(`/structuralmappingrulesfilter/?scan_report=${id}`)
+    const scanReport = await useGet(`/scanreports/${id}`)
+    const datapartner = await useGet(`/datapartners/${scanReport.data_partner}`)
     scanReport.data_partner = datapartner
     if(mappingRules.length==0){
         tableData.current = mappingRules
@@ -351,18 +313,18 @@ const getMappingRules = async (id, tableData, switchFilter) => {
     const omopFieldKeys = chunkIds(Object.keys(omopFields))
     const omopFieldPromises = []
     for (let i = 0; i < omopFieldKeys.length; i++) {
-        omopFieldPromises.push(useGet(`${api}/omopfieldsfilter/?id__in=${omopFieldKeys[i].join()}`))
+        omopFieldPromises.push(useGet(`/omopfieldsfilter/?id__in=${omopFieldKeys[i].join()}`))
     }
     const scanReportConceptKeys = chunkIds(Object.keys(scanReportConcepts))
     const scanReportConceptPromises = []
     for (let i = 0; i < scanReportConceptKeys.length; i++) {
-        scanReportConceptPromises.push(useGet(`${api}/scanreportconceptsfilter/?id__in=${scanReportConceptKeys[i].join()}`))
+        scanReportConceptPromises.push(useGet(`/scanreportconceptsfilter/?id__in=${scanReportConceptKeys[i].join()}`))
     }
 
     const sourceFieldKeys = chunkIds(Object.keys(sourceFields))
     const sourceFieldPromises = []
     for (let i = 0; i < sourceFieldKeys.length; i++) {
-        sourceFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${sourceFieldKeys[i].join()}`))
+        sourceFieldPromises.push(useGet(`/scanreportfieldsfilter/?id__in=${sourceFieldKeys[i].join()}`))
     }
     const initialPromises = await Promise.all([Promise.all(omopFieldPromises), Promise.all(scanReportConceptPromises), Promise.all(sourceFieldPromises)])
     const omopFieldsLibrary = [].concat.apply([], initialPromises[0])
@@ -452,19 +414,19 @@ const getMappingRules = async (id, tableData, switchFilter) => {
     const omopConceptPromises = []
 
     for (let i = 0; i < omopTableKeys.length; i++) {
-        omopTablePromises.push(useGet(`${api}/omoptablesfilter/?id__in=${omopTableKeys[i].join()}`))
+        omopTablePromises.push(useGet(`/omoptablesfilter/?id__in=${omopTableKeys[i].join()}`))
     }
     for (let i = 0; i < scanReportValueKeys.length; i++) {
-        scanReportValuePromises.push(useGet(`${api}/scanreportvaluesfilter/?id__in=${scanReportValueKeys[i].join()}`))
+        scanReportValuePromises.push(useGet(`/scanreportvaluesfilter/?id__in=${scanReportValueKeys[i].join()}`))
     }
     for (let i = 0; i < scanReportTableKeys.length; i++) {
-        scanReportTablePromises.push(useGet(`${api}/scanreporttablesfilter/?id__in=${scanReportTableKeys[i].join()}`))
+        scanReportTablePromises.push(useGet(`/scanreporttablesfilter/?id__in=${scanReportTableKeys[i].join()}`))
     }
     for (let i = 0; i < omopConceptKeys.length; i++) {
-        omopConceptPromises.push(useGet(`${api}/omop/conceptsfilter/?concept_id__in=${omopConceptKeys[i].join()}`))
+        omopConceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${omopConceptKeys[i].join()}`))
     }
     for (let i = 0; i < scanReportFieldKeys.length; i++) {
-        scanReportFieldPromises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${scanReportFieldKeys[i].join()}`))
+        scanReportFieldPromises.push(useGet(`/scanreportfieldsfilter/?id__in=${scanReportFieldKeys[i].join()}`))
     }
 
 
@@ -480,10 +442,21 @@ const getMappingRules = async (id, tableData, switchFilter) => {
         mappingRules = mappingRules.map(rule =>
             rule.omop_field.table == element.id ? { ...rule, omop_field: { ...rule.omop_field, table: element } } : rule)
     })
+
+    //-----------------------------------
+    // ------- note: also this code is duplicating what the python code is doing ------------------  
+    // these lines need fixing because rule.scanreportconcept can be undefined, and therefore rule.scanreportconcept.concept causes a crash
+    //Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'concept')
+    //at values.js:485
+    // at Array.map (<anonymous>)
+    // at values.js:484
+    //at Array.forEach (<anonymous>)
+    //at getMappingRules (values.js:483)
     omopConceptLibrary.forEach(element => {
         mappingRules = mappingRules.map(rule =>
             rule.scanreportconcept.concept == element.concept_id ? { ...rule, scanreportconcept: { ...rule.scanreportconcept, concept: element } } : rule)
     })
+    //-----------------------------------
     scanReportTableLibrary.forEach(element => {
         mappingRules = mappingRules.map(rule =>
             rule.source_field.scan_report_table == element.id ? { ...rule, source_field: { ...rule.source_field, scan_report_table: element } } : rule)
@@ -516,47 +489,18 @@ const getMappingRules = async (id, tableData, switchFilter) => {
 }
 
 const getScanReportFieldValues = async (valueId, valuesRef) => {
-    let response = await useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${valueId}`)
-    response = response.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    let response = await useGet(`/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
     }
-    const ids = chunkIds(response.map(value => value.id))
-    const promises = []
-    // send API request for every sublist
-    for (let i = 0; i < ids.length; i++) {
-        promises.push(useGet(`${api}/scanreportconceptsfilter/?object_id__in=${ids[i].join()}`))
-    }
-    const promiseResults = await Promise.all(promises)
-    let scanreportconcepts = [].concat.apply([], promiseResults)
-
-    if (scanreportconcepts.length == 0) {
-        response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: [] }))
-        valuesRef.current = response
-        return response
-    }
-    const conceptIds = chunkIds(scanreportconcepts.map(value => value.concept))
-
-    const conceptPromises = []
-    // send API request for every sublist
-    for (let i = 0; i < conceptIds.length; i++) {
-        conceptPromises.push(useGet(`${api}/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
-    }
-
-    const conceptPromiseResults = await Promise.all(conceptPromises)
-
-    const omopConcepts = [].concat.apply([], conceptPromiseResults)
-
-    scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
-    // map each scanreport concept to it's value
-    response = response.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
-    valuesRef.current = response
+    response = await getValuesScanReportConcepts(response,15,valuesRef)
     return response
 }
 
 const getScanReportTableRows = async (id) =>{
     // get table rows
-    let table = await useGet(`${api}/scanreporttablesfilter/?scan_report=${id}`)
+    let table = await useGet(`/scanreporttablesfilter/?scan_report=${id}`)
     // if table is empty then return
     if(table.length==0){
         return []
@@ -581,7 +525,7 @@ const getScanReportTableRows = async (id) =>{
     const promises = []
     // send API request for every sublist
     for (let i = 0; i < fieldIds.length; i++) {
-        promises.push(useGet(`${api}/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
+        promises.push(useGet(`/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
     }
     const promiseResult = await Promise.all(promises)
     const fields = [].concat.apply([], promiseResult)
@@ -591,7 +535,7 @@ const getScanReportTableRows = async (id) =>{
 
 
 
-export { getScanReportValues,saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
-    getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts, getConcept,getScanReports,authToken,api,getScanReportTableRows,usePatch,
+export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
+     getScanReportField,getScanReportTable,getMappingRules,mapConceptToOmopField,m_allowed_tables,
+     getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
      }

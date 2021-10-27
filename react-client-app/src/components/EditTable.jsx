@@ -11,11 +11,11 @@ const EditTable = () => {
 
     useEffect(async () => {
         // get scan report table to use to get tables 
-        const scanreporttable = await useGet(`${api}/scanreporttables/${value}`)
+        const scanreporttable = await useGet(`/scanreporttables/${value}`)
         // get scan report tables for the scan report the table belongs to
-        const tablesFilter = useGet(`${api}/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
+        const tablesFilter = useGet(`/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
-        const fieldsFilter = useGet(`${api}/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
+        const fieldsFilter = useGet(`/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
         const promises = await Promise.all([tablesFilter, fieldsFilter])
         let options = promises[1]
         let tables = promises[0]
