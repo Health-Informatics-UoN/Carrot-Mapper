@@ -20,7 +20,7 @@ import {
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { getMappingRules, useGet, chunkIds } from '../api/values'
+import { useGet, chunkIds } from '../api/values'
 import FilterTag from './FilterTag'
 
 
