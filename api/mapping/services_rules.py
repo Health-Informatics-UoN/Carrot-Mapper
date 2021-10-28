@@ -93,10 +93,27 @@ def save_person_id_rule(request,
 
     #!todo - turn into a func() is stable/valid for mapping
     #      - this needs to be checked before this step
-    if person_id_source_field == None and request:
-        messages.error(request,'Failed to add concept because there is no'
-                       f'person_id set for this table {source_table}')
+    if person_id_source_field == None:
+        if request:
+            messages.error(request,'Failed to add concept because there is no'
+                           f'person_id set for this table {source_table}')
+        else:
+            print ("failed to make person_id as it was not set")
         return False
+
+    #also need to cause this to fail at this point
+    #we dont want to create a rule for a person if the date hasnt been set either
+    date_event_source_field  = find_date_event(source_table)
+
+    if date_event_source_field == None:
+        if request:
+            messages.error(request,'Failed to add concept because there is no'
+                           f'date_event set for this table {source_table}')
+        else:
+            print ("failed to make date_event as it was not set!")
+        return False
+ 
+    
     
     # get the associated OmopField Object (aka destination_table::person_id)
     person_id_omop_field = OmopField.objects.get(
@@ -123,7 +140,7 @@ def save_date_rule(request,
 
     #!todo - need some checks for this
     date_event_source_field  = find_date_event(source_table)
-    
+
     date_omop_fields = m_date_field_mapper[destination_table.table]
     #loop over all returned
     #most will return just one date event
@@ -205,6 +222,7 @@ def save_mapping_rules(request,scan_report_concept):
                                scan_report_concept,
                                source_table,
                                destination_table):
+        print ("failed as person_id not set")
         return False
 
     if not save_date_rule(request,
@@ -212,6 +230,8 @@ def save_mapping_rules(request,scan_report_concept):
                           scan_report_concept,
                           source_table,
                           destination_table):
+        
+        print ("failed as date_event not set")
         return False
 
 
@@ -219,6 +239,8 @@ def save_mapping_rules(request,scan_report_concept):
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
     #    - all term mapping rules associated need to be applied
+
+    print ("==> creating for source_field",source_field)
     rule_domain_source_concept_id, created = StructuralMappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=omop_field,
@@ -227,6 +249,7 @@ def save_mapping_rules(request,scan_report_concept):
         approved=True,
     )
     rule_domain_source_concept_id.save()
+    print ("    ====> saved",rule_domain_source_concept_id)
 
     # create/update a model for the domain concept_id
     #  - for this destination_field and source_field
