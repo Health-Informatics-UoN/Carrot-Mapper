@@ -29,6 +29,7 @@ from .serializers import (
     OmopFieldSerializer,
     StructuralMappingRuleSerializer,
     GetRulesJSON,
+    GetRulesList,
     SourceSerializer,
     DocumentTypeSerializer,
     UserSerializer,
@@ -316,6 +317,12 @@ class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
 class DownloadJSON(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
     serializer_class=GetRulesJSON
+    filter_backends=[DjangoFilterBackend]
+    filterset_fields=['id']
+
+class RulesList(viewsets.ModelViewSet):
+    queryset=ScanReport.objects.all()
+    serializer_class=GetRulesList
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['id']
     
