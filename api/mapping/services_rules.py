@@ -485,7 +485,36 @@ def get_mapping_rules_list(structural_mapping_rules):
         destination_field = destination_fields[rule.omop_field_id]
         destination_table = destination_tables[destination_field.table_id]
 
+        #something has gone wrong in which the source_field has gone missing...
+        if rule.source_field_id == None:
+            #print some information about this...
+            print (f"WARNING!! source_field for this rule is None! Will try find it...")
+            print (f"conept ({rule.concept_id},{rule.concept.concept_id})")
+
+            #try and find if the content_object still exists
+            #use this to get the source_field
+            content = rule.concept.content_object
+            if rule.concept.content_type.model_class() is ScanReportValue:
+                print (f"value content ({content},{content.value})")
+                print (f"assossiated field ({content.scan_report_field})")
+                source_field_id = content.scan_report_field_id
+            else:
+                print (f"value content ({content},{content.name})")
+                source_field_id = content_id
+                                
+            print (f"destination ({destination_field.field},{destination_table.table})")
+            print (f"Setting ID to {source_field_id}")
+            #replace the source_field with the source_field id from the content object
+            rule.source_field_id = source_field_id
+                    
+        if rule.source_field_id not in source_fields:
+            print (f"WARNING!! source_field {rule.source_field_id} no longer exists")
+            continue
+        
         source_field = source_fields[rule.source_field_id]
+        if source_field.scan_report_table_id not in source_tables:
+            print (f"WARNING!! source_table {rule.source_field_id} no longer exists")
+            continue
         source_table = source_tables[source_field.scan_report_table_id]
 
         #get the concepts again
