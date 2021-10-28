@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
-    SimpleGrid,
     Table,
     Thead,
     Tbody,
@@ -8,116 +7,44 @@ import {
     Th,
     Td,
     TableCaption,
-    Tag,
-    TagLabel,
     HStack,
     VStack,
     Flex,
     Spinner,
     Link,
-    Text,
+    Select,
     Button
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { getMappingRules, useGet, chunkIds } from '../api/values'
-import FilterTag from './FilterTag'
+import { useGet, chunkIds } from '../api/values'
+import ConceptTag from './ConceptTag'
 
 
 
 const MappingTbl = () => {
-    const scan_report_id = window.location.href.split("scanreports/")[1].split("/")[0]
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [mapDiagram, setMapDiagram] = useState({ showing: false, image: null });
-    const allData = useRef([]);
-    const scanReport = useRef(null);
-    const popping = useRef(false);
     const svg = useRef(null);
-    const [selectedFilter, setFilter] = useState("All");
-    const [secondaryFilter, setSecondaryFilter] = useState("All");
-    const [secondaryFilters, setSecondaryFilters] = useState([]);
-    const destinationFilters = [
-        { name: "All" },
-        { name: "person" },
-        { name: "measurement" },
-        { name: "condition_occurrence" },
-        { name: "observation" },
-        { name: "drug_exposure" }
-    ]
+    const [destinationTableFilter, setDestinationTableFilter] = useState([]);
+    const [sourceTableFilter, setSourceTableFilter] = useState([]);
+    const [filters, setFilters] = useState([]);
     const [isDownloading, setDownloading] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
 
     useEffect(() => {
-        // on initial load of the page, call setInitialData()
-        setInitialData()
+        // on initial load of the page,
+        // get all mapping rules for the page unfiltered
+        transformMappingData(JSON.parse(window.mappings)).then(res => {
+            setValues(res)
+            setLoading(false);
+            setLoadingMessage("");
+        })
     }, []);
-
-
-    useEffect(() => {
-        // run when the selected filter is changed
-        if (loading == false) {
-            setLoading(true)
-            // get the current page url
-            const url = window.location.href
-            // only change the url if the back button is not being pressed
-            if (selectedFilter == "All") {
-                if (popping.current == false) {
-                    // change url 
-                    window.history.pushState({}, '', url.split("mapping_rules/")[0] + "mapping_rules/")
-                }
-            }
-            else {
-                if (popping.current == false) {
-                    // change url 
-                    window.history.pushState({}, '', url.split("mapping_rules/")[0] + "mapping_rules/" + selectedFilter)
-                }
-            }
-            // function to change filter data being displayed according to which filter is set
-            switchFilter(1)
-        }
-
-    }, [selectedFilter]);
-
-    useEffect(() => {
-        // run when secondary filter is changed
-
-        // get url of current page
-        const url = window.location.href
-        if (selectedFilter == "All") {
-            // if primary filter is "All" then show all data
-            setValues(allData.current)
-        }
-        else {
-            // filter data by primary filter
-            let filteredData = allData.current.filter(value => value.omop_table.table == selectedFilter)
-            // filter data by secondary filter and change the url if needed 
-            if (secondaryFilter != "All") {
-                filteredData = filteredData.filter(value => value.scanreport_table.name == secondaryFilter)
-                if (popping.current == false) {
-                    window.history.pushState({}, '',
-                        url.split("mapping_rules/")[0] + "mapping_rules/" + url.split("mapping_rules/")[1].split("/")[0] + "/" + secondaryFilter)
-                }
-            }
-            else {
-                if (popping.current == false) {
-                    window.history.pushState({}, '',
-                        url.split("mapping_rules/")[0] + "mapping_rules/" + url.split("mapping_rules/")[1].split("/")[0])
-                }
-            }
-            setValues(filteredData)
-        }
-        // remove the current mapping diagram and get a new one
-        if (svg.current) {
-            if (svg.current.hasChildNodes()) {
-                svg.current.removeChild(mapDiagram.image)
-            }
-        }
-        setMapDiagram(mapDiagram => ({ ...mapDiagram, image: null }))
-    }, [secondaryFilter]);
 
     useEffect(() => {
         // run when map diagram state has changed
@@ -127,7 +54,7 @@ const MappingTbl = () => {
                 setMapDiagram(mapDiagram => ({ ...mapDiagram, image: diagram.getElementsByTagName("svg")[0] }))
                 if (svg.current) {
                     if (svg.current.hasChildNodes()) {
-                        // remove all othwe diagrams if they exist
+                        // remove all other diagrams if they exist
                         while (svg.current.firstChild) {
                             svg.current.removeChild(svg.current.lastChild);
                         }
@@ -142,7 +69,7 @@ const MappingTbl = () => {
         else {
             if (svg.current) {
                 if (svg.current.hasChildNodes()) {
-                    // remove all othwe diagrams if they exist
+                    // remove all other diagrams if they exist
                     while (svg.current.firstChild) {
                         svg.current.removeChild(svg.current.lastChild);
                     }
@@ -150,10 +77,10 @@ const MappingTbl = () => {
                 svg.current.appendChild(mapDiagram.image)
             }
         }
-
     }, [mapDiagram]);
 
     const transformMappingData = async (data) => {
+        // use data from django and call endpoints to get excluded data to be displayed
         if (data.length == 0) {
             return []
         }
@@ -210,45 +137,6 @@ const MappingTbl = () => {
         return data
 
     }
-
-    window.onpopstate = function (event) {
-        // run when the back button is pressed to change variable states accordingly
-        popping.current = true
-        let filter = window.location.href.split("mapping_rules/")
-        if (filter.length !== 1 && filter[1] != "") {
-            // set primary filter if there is one in the url
-            filter = filter[1].split("/")
-            setFilter(filter[0])
-            if (filter[1]) {
-                // set secondary filter if there is one in the url
-                setSecondaryFilter(filter[1])
-            }
-            else {
-                setSecondaryFilter("All")
-            }
-        }
-        else {
-            setFilter("All")
-        }
-    };
-    const setInitialData = () => {
-        // get all mapping rules for the page unfiltered
-        transformMappingData(JSON.parse(window.mappings)).then(res => {
-            allData.current = res
-            switchFilter(3)
-            // apply filters if any are set in the url
-            let filter = window.location.href.split("mapping_rules/")
-            if (filter.length !== 1 && filter[1] != "") {
-                // set primary filter if there is one in the url
-                filter = filter[1].split("/")
-                setFilter(filter[0])
-                if (filter[1]) {
-                    // set secondary filter if there is one in the url
-                    setSecondaryFilter(filter[1])
-                }
-            }
-        })
-    }
     // call refresh rules function from django then get new data
     const refreshRules = () => {
         setLoading(true)
@@ -261,47 +149,11 @@ const MappingTbl = () => {
                 console.log(error)
             })
     }
-
-
-    // change the data that is being displayed according to the currently set primary filter
-    const switchFilter = (caller) => {
-        let filteredData
-        if (selectedFilter == "All") {
-            filteredData = allData.current
-            setSecondaryFilters([])
-        }
-        else {
-            filteredData = allData.current.filter(value => value.omop_table.table == selectedFilter)
-            let temp = filteredData.map(data => data.scanreport_table.name)
-            temp = [...new Set(temp)]
-            if (temp.length == 0) {
-                setSecondaryFilters([])
-            }
-            else {
-                setSecondaryFilters(["All", ...temp])
-            }
-
-        }
-        if (secondaryFilter == "All") {
-            setValues(filteredData)
-            if (svg.current) {
-                if (svg.current.hasChildNodes()) {
-                    svg.current.removeChild(mapDiagram.image)
-                }
-            }
-
-            setMapDiagram(mapDiagram => ({ ...mapDiagram, image: null }))
-        }
-        else {
-            popping.current = true
-            setSecondaryFilter("All")
-        }
-        setLoading(false)
-        setLoadingMessage("")
-    }
-
+    // download map diagram
     const downloadImage = (img) => {
         setDownloadingImg(true)
+        // if the image has been loaded then download it, otherwise, wait until image has been loaded
+        // then call the function again
         if (mapDiagram.image || img) {
             let svg
             if (img) { svg = img }
@@ -311,14 +163,64 @@ const MappingTbl = () => {
                 setDownloadingImg(false)
                 downLoadingImgRef.current = false
             })
-
         }
         else {
+            // used to check if the image is waiting to be downloaded when the image is retrieved
             downLoadingImgRef.current = true
         }
     }
+    // remove the map diagram from html
+    const removeDiagram = () => {
+        if (svg.current) {
+            if (svg.current.hasChildNodes()) {
+                svg.current.removeChild(mapDiagram.image)
+            }
+        }
+        setMapDiagram(mapDiagram => ({ ...mapDiagram, image: null }))
+    }
 
+    // apply destination table and source table filters to data
+    const applyFilters = (variable) => {
+        let newData = variable.map((scanreport) => scanreport);
+        if (destinationTableFilter.length > 0) {
+            newData = newData.filter((rule) => destinationTableFilter.includes(rule.omop_table.table));
+        }
+        if (sourceTableFilter.length > 0) {
+            newData = newData.filter((rule) => sourceTableFilter.includes(rule.scanreport_table.name));
+        }
+        return newData;
+    };
 
+    // if filter does not already exist, create a new destination table filter
+    // and get a new map diagram
+    const setDestinationFilter = (value) => {
+        if (filters.find(filter => filter.name == value) == null) {
+            setFilters(current => [...current, { title: "Destination Table:", name: value }])
+            setDestinationTableFilter(current => [...current, value])
+            removeDiagram()
+        }
+    };
+    // if filter does not already exist, create a new source table filter
+    // and get a new map diagram
+    const setSourceFilter = (value) => {
+        if (filters.find(filter => filter.name == value) == null) {
+            setFilters(current => [...current, { title: "Source Table:", name: value }])
+            setSourceTableFilter(current => [...current, value])
+            removeDiagram()
+        }
+
+    };
+    // remove a filter. Called inside concept tag
+    const removeFilter = (title, name) => {
+        setFilters(current => current.filter(filter => filter.name != name || filter.title != title))
+        removeDiagram()
+        if (title.includes("Destination Table")) {
+            setDestinationTableFilter(current => current.filter(filter => filter != name))
+        }
+        if (title.includes("Source Table")) {
+            setSourceTableFilter(current => current.filter(filter => filter != name))
+        }
+    };
 
     if (loading) {
         //Render Loading State
@@ -339,25 +241,17 @@ const MappingTbl = () => {
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
             </HStack>
+            <div style={{ display: "flex", flexWrap: "wrap" }}>
+                <div style={{ fontWeight: "bold", marginRight: "10px" }} >Filters: </div>
+                {filters.map((filter, index) => {
+                    return (
+                        <div style={{ marginTop: "10px" }}>
+                            <ConceptTag key={index} conceptName={filter.name} conceptId={filter.title} conceptIdentifier={filter.name} itemId={filter.title} handleDelete={removeFilter} />
+                        </div>
+                    )
+                })}
+            </div>
             <div>
-                <VStack w='full'>
-                    <Text fontWeight="bold">Filter on destination table</Text>
-                    <SimpleGrid minChildWidth="170px" spacing="10px" w='full'>
-                        {destinationFilters.map(filter => {
-                            return <FilterTag key={filter.name} tagName={filter.name} handleClick={setFilter} selected={filter.name == selectedFilter} popping={popping} />
-                        })}
-                    </SimpleGrid>
-                </VStack>
-                {secondaryFilters.length > 0 &&
-                    <VStack w='full'>
-                        <Text fontWeight="bold">Filter on source table</Text>
-                        <SimpleGrid minChildWidth="170px" spacing="10px" w='full'>
-                            {secondaryFilters.map(filter => {
-                                return <FilterTag key={filter} tagName={filter} handleClick={setSecondaryFilter} selected={filter == secondaryFilter} popping={popping} />
-                            })}
-                        </SimpleGrid>
-                    </VStack>
-                }
                 {mapDiagram.showing &&
                     <>
                         <div style={{ marginTop: '10px', marginBottom: '10px' }} ref={svg} />
@@ -377,7 +271,6 @@ const MappingTbl = () => {
                         }
                     </>
                 }
-
             </div>
 
             <Table variant="striped" colorScheme="greyBasic">
@@ -385,17 +278,37 @@ const MappingTbl = () => {
                 <Thead>
                     <Tr>
                         <Th>Rule ID</Th>
-                        <Th>Destination Table</Th>
+                        <Th>
+                            <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Destination Table" readOnly onChange={(option) => setDestinationFilter(option.target.value)}>
+                                <option style={{ fontWeight: "bold" }} disabled>Destination Table</option>
+                                <>
+                                    {[...[...new Set(values.map(data => data.omop_table.table))]].sort((a, b) => a.localeCompare(b))
+                                        .map((item, index) =>
+                                            <option key={index} value={item}>{item}</option>
+                                        )}
+                                </>
+                            </Select>
+                        </Th>
                         <Th>Destination Field</Th>
-                        <Th>Source Table</Th>
+                        <Th>
+                            <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Source Table" readOnly onChange={(option) => setSourceFilter(option.target.value)}>
+                                <option style={{ fontWeight: "bold" }} disabled>Source Table</option>
+                                <>
+                                    {[...[...new Set(values.map(data => data.scanreport_table.name))]].sort((a, b) => a.localeCompare(b))
+                                        .map((item, index) =>
+                                            <option key={index} value={item}>{item}</option>
+                                        )}
+                                </>
+                            </Select>
+                        </Th>
                         <Th>Source Field</Th>
                         <Th>Term Map</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {values.length > 0 ?
+                    {applyFilters(values).length > 0 ?
                         // Create new row for every value object
-                        values.map((item, index) =>
+                        applyFilters(values).map((item, index) =>
                             <Tr key={index}>
                                 <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.omop_table.table} </Td>
