@@ -17,12 +17,13 @@ import {
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { useGet, chunkIds } from '../api/values'
+import { useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
 
 
 
 const MappingTbl = () => {
+    const scan_report_id = window.location.href.split("scanreports/")[1].split("/")[0]
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
@@ -39,11 +40,16 @@ const MappingTbl = () => {
     useEffect(() => {
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
-        transformMappingData(JSON.parse(window.mappings)).then(res => {
-            setValues(res)
+        useGet(`/mappingruleslist?id=${scan_report_id}`).then(res => {
+            setValues(res[0].sort((a, b) => (a.rule_id > b.rule_id) ? 1 : ((b.rule_id > a.rule_id) ? -1 : 0)))
             setLoading(false);
             setLoadingMessage("");
         })
+            .catch(err => {
+                setLoading(false);
+                setLoadingMessage("");
+                setError("An error has occured while fetching the rules")
+            })
     }, []);
 
     useEffect(() => {
@@ -79,64 +85,7 @@ const MappingTbl = () => {
         }
     }, [mapDiagram]);
 
-    const transformMappingData = async (data) => {
-        // use data from django and call endpoints to get excluded data to be displayed
-        if (data.length == 0) {
-            return []
-        }
-        const omopFields = {}
-        const omopTables = {}
-        const scanreportFields = {}
-        const scanreportTables = {}
-        data.map(item => {
-            omopFields[item.destination_field.OmopField] = true
-            omopTables[item.destination_table.OmopTable] = true
 
-            scanreportFields[item.source_field.ScanReportField] = true
-            scanreportTables[item.source_table.ScanReportTable] = true
-        })
-
-        const omopFieldsKeys = chunkIds(Object.keys(omopFields))
-        const omopTablesKeys = chunkIds(Object.keys(omopTables))
-        const scanreportFieldsKeys = chunkIds(Object.keys(scanreportFields))
-        const scanreportTablesKeys = chunkIds(Object.keys(scanreportTables))
-
-
-        const omopFieldsPromises = []
-        const omopTablesPromises = []
-        const scanreportFieldsPromises = []
-        const scanreportTablesPromises = []
-
-        for (let i = 0; i < omopFieldsKeys.length; i++) {
-            omopFieldsPromises.push(useGet(`/omopfieldsfilter/?id__in=${omopFieldsKeys[i].join()}`))
-        }
-        for (let i = 0; i < omopTablesKeys.length; i++) {
-            omopTablesPromises.push(useGet(`/omoptablesfilter/?id__in=${omopTablesKeys[i].join()}`))
-        }
-        for (let i = 0; i < scanreportFieldsKeys.length; i++) {
-            scanreportFieldsPromises.push(useGet(`/scanreportfieldsfilter/?id__in=${scanreportFieldsKeys[i].join()}`))
-        }
-        for (let i = 0; i < scanreportTablesKeys.length; i++) {
-            scanreportTablesPromises.push(useGet(`/scanreporttablesfilter/?id__in=${scanreportTablesKeys[i].join()}`))
-        }
-        const secondaryPromises = await Promise.all([Promise.all(omopFieldsPromises), Promise.all(omopTablesPromises), Promise.all(scanreportFieldsPromises), Promise.all(scanreportTablesPromises)])
-
-        const omopFieldsLibrary = [].concat.apply([], secondaryPromises[0])
-        const omopTablesLibrary = [].concat.apply([], secondaryPromises[1])
-        const scanreportFieldsLibrary = [].concat.apply([], secondaryPromises[2])
-        const scanreportTablesLibrary = [].concat.apply([], secondaryPromises[3])
-
-
-
-        data.map(item => {
-            item.omop_field = omopFieldsLibrary.find(value => value.id == item.destination_field.OmopField)
-            item.omop_table = omopTablesLibrary.find(value => value.id == item.destination_table.OmopTable)
-            item.scanreport_field = scanreportFieldsLibrary.find(value => value.id == item.source_field.ScanReportField)
-            item.scanreport_table = scanreportTablesLibrary.find(value => value.id == item.source_table.ScanReportTable)
-        })
-        return data
-
-    }
     // call refresh rules function from django then get new data
     const refreshRules = () => {
         setLoading(true)
@@ -183,10 +132,10 @@ const MappingTbl = () => {
     const applyFilters = (variable) => {
         let newData = variable.map((scanreport) => scanreport);
         if (destinationTableFilter.length > 0) {
-            newData = newData.filter((rule) => destinationTableFilter.includes(rule.omop_table.table));
+            newData = newData.filter((rule) => destinationTableFilter.includes(rule.destination_table.name));
         }
         if (sourceTableFilter.length > 0) {
-            newData = newData.filter((rule) => sourceTableFilter.includes(rule.scanreport_table.name));
+            newData = newData.filter((rule) => sourceTableFilter.includes(rule.source_table.name));
         }
         return newData;
     };
@@ -197,7 +146,7 @@ const MappingTbl = () => {
         if (filters.find(filter => filter.name == value) == null) {
             setFilters(current => [...current, { title: "Destination Table:", name: value }])
             setDestinationTableFilter(current => [...current, value])
-            removeDiagram()
+            //removeDiagram()
         }
     };
     // if filter does not already exist, create a new source table filter
@@ -206,14 +155,14 @@ const MappingTbl = () => {
         if (filters.find(filter => filter.name == value) == null) {
             setFilters(current => [...current, { title: "Source Table:", name: value }])
             setSourceTableFilter(current => [...current, value])
-            removeDiagram()
+            //removeDiagram()
         }
 
     };
     // remove a filter. Called inside concept tag
     const removeFilter = (title, name) => {
         setFilters(current => current.filter(filter => filter.name != name || filter.title != title))
-        removeDiagram()
+        //removeDiagram()
         if (title.includes("Destination Table")) {
             setDestinationTableFilter(current => current.filter(filter => filter != name))
         }
@@ -272,75 +221,78 @@ const MappingTbl = () => {
                     </>
                 }
             </div>
+            {error ?
+                <div>{error}</div>
+                :
+                <Table variant="striped" colorScheme="greyBasic">
+                    <TableCaption></TableCaption>
+                    <Thead>
+                        <Tr>
+                            <Th>Rule ID</Th>
+                            <Th>
+                                <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Destination Table" readOnly onChange={(option) => setDestinationFilter(option.target.value)}>
+                                    <option style={{ fontWeight: "bold" }} disabled>Destination Table</option>
+                                    <>
+                                        {[...[...new Set(values.map(data => data.destination_table.name))]].sort((a, b) => a.localeCompare(b))
+                                            .map((item, index) =>
+                                                <option key={index} value={item}>{item}</option>
+                                            )}
+                                    </>
+                                </Select>
+                            </Th>
+                            <Th>Destination Field</Th>
+                            <Th>
+                                <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Source Table" readOnly onChange={(option) => setSourceFilter(option.target.value)}>
+                                    <option style={{ fontWeight: "bold" }} disabled>Source Table</option>
+                                    <>
+                                        {[...[...new Set(values.map(data => data.source_table.name))]].sort((a, b) => a.localeCompare(b))
+                                            .map((item, index) =>
+                                                <option key={index} value={item}>{item}</option>
+                                            )}
+                                    </>
+                                </Select>
+                            </Th>
+                            <Th>Source Field</Th>
+                            <Th>Term Map</Th>
+                        </Tr>
+                    </Thead>
+                    <Tbody>
+                        {applyFilters(values).length > 0 ?
+                            // Create new row for every value object
+                            applyFilters(values).map((item, index) =>
+                                <Tr key={index}>
+                                    <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
+                                    <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
+                                    <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
+                                    <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_table.id}>{item.source_table.name}</Link></Td>
+                                    <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field.name}</Link></Td>
+                                    <Td maxW={[50, 100, 200]} >
+                                        {item.term_mapping != null &&
+                                            <>
+                                                {typeof item.term_mapping == "object" ?
+                                                    <VStack>
+                                                        <div><span style={{ color: "#dd5064", }}>"{Object.keys(item.term_mapping)[0]}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.term_mapping[Object.keys(item.term_mapping)[0]]}</span></div>
+                                                    </VStack>
+                                                    :
+                                                    JSON.stringify(item.term_mapping)
+                                                }
 
-            <Table variant="striped" colorScheme="greyBasic">
-                <TableCaption></TableCaption>
-                <Thead>
-                    <Tr>
-                        <Th>Rule ID</Th>
-                        <Th>
-                            <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Destination Table" readOnly onChange={(option) => setDestinationFilter(option.target.value)}>
-                                <option style={{ fontWeight: "bold" }} disabled>Destination Table</option>
-                                <>
-                                    {[...[...new Set(values.map(data => data.omop_table.table))]].sort((a, b) => a.localeCompare(b))
-                                        .map((item, index) =>
-                                            <option key={index} value={item}>{item}</option>
-                                        )}
-                                </>
-                            </Select>
-                        </Th>
-                        <Th>Destination Field</Th>
-                        <Th>
-                            <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Source Table" readOnly onChange={(option) => setSourceFilter(option.target.value)}>
-                                <option style={{ fontWeight: "bold" }} disabled>Source Table</option>
-                                <>
-                                    {[...[...new Set(values.map(data => data.scanreport_table.name))]].sort((a, b) => a.localeCompare(b))
-                                        .map((item, index) =>
-                                            <option key={index} value={item}>{item}</option>
-                                        )}
-                                </>
-                            </Select>
-                        </Th>
-                        <Th>Source Field</Th>
-                        <Th>Term Map</Th>
-                    </Tr>
-                </Thead>
-                <Tbody>
-                    {applyFilters(values).length > 0 ?
-                        // Create new row for every value object
-                        applyFilters(values).map((item, index) =>
-                            <Tr key={index}>
-                                <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
-                                <Td maxW={[50, 100, 200]} >{item.omop_table.table} </Td>
-                                <Td maxW={[50, 100, 200]} >{item.omop_field.field}</Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.scanreport_table.id}>{item.scanreport_table.name}</Link></Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.scanreport_field.id}>{item.scanreport_field.name}</Link></Td>
-                                <Td maxW={[50, 100, 200]} >
-                                    {item.term_mapping != null &&
-                                        <>
-                                            {typeof item.term_mapping == "object" ?
-                                                <VStack>
-                                                    <div><span style={{ color: "#dd5064", }}>"{Object.keys(item.term_mapping)[0]}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.term_mapping[Object.keys(item.term_mapping)[0]]}</span></div>
-                                                </VStack>
-                                                :
-                                                JSON.stringify(item.term_mapping)
-                                            }
-
-                                        </>
+                                            </>
 
 
-                                    }
-                                </Td>
-                            </Tr>
+                                        }
+                                    </Td>
+                                </Tr>
 
-                        )
-                        :
-                        <Flex padding="30px">
-                            <Flex marginLeft="10px">Nothing</Flex>
-                        </Flex>
-                    }
-                </Tbody>
-            </Table>
+                            )
+                            :
+                            <Flex padding="30px">
+                                <Flex marginLeft="10px">Nothing</Flex>
+                            </Flex>
+                        }
+                    </Tbody>
+                </Table>
+            }
         </div>
     );
 }
