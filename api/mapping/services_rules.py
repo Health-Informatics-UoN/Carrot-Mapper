@@ -223,7 +223,7 @@ def save_mapping_rules(request,scan_report_concept):
     #check whether the person_id and date events for this table are valid
     #if not, we dont want to create any rules for this concept
     if not validate_person_id_and_date(request,source_table):
-        continue
+        return False
 
     #keep a track of all rules that are being created
     #only safe them if all are successfull
