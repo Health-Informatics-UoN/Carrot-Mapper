@@ -58,6 +58,7 @@ routers.register(r'omopfields',views.OmopFieldViewSet,basename='omopfields')
 routers.register(r'omopfieldsfilter',views.OmopFieldFilterViewSet,basename='omopfieldsfilter')
 routers.register(r'structuralmappingrules',views.StructuralMappingRuleViewSet,basename='structuralmappingrule')
 routers.register(r'json',views.DownloadJSON,basename='getjson')
+routers.register(r'mappingruleslist',views.RulesList,basename='getlist')
 routers.register(r'structuralmappingrulesfilter',views.StructuralMappingRuleFilterViewSet,basename='structuralmappingrulefilter')
 
 routers.register(r'sources',views.SourceViewSet,basename='sources')
