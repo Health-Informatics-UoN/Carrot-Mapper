@@ -30,7 +30,7 @@ from mapping.models import (
     DocumentType,
     )
 
-from .services_rules import get_mapping_rules_json
+from .services_rules import get_mapping_rules_json,get_mapping_rules_list
 
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
@@ -158,6 +158,38 @@ class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
     def to_representation(self, scan_report):
         qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_json(qs)
+        return rules
+
+class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
+    class Meta:
+        model=ScanReport
+        fields='__all__'
+
+    def to_representation(self, scan_report):
+        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
+        rules = get_mapping_rules_list(qs)
+        for rule in rules:
+            rule['destination_table'] = {
+                'id':int(str(rule['destination_table'])),
+                'name':rule['destination_table'].table
+            }
+            
+            rule['destination_field'] = {
+                'id':int(str(rule['destination_field'])),
+                'name':rule['destination_field'].field
+            }
+            
+            rule['source_table'] = {
+                'id':int(str(rule['source_table'])),
+                'name':rule['source_table'].name
+            }
+            
+            rule['source_field'] = {
+                'id':int(str(rule['source_field'])),
+                'name':rule['source_field'].name
+            }
+
+        
         return rules
 
 
