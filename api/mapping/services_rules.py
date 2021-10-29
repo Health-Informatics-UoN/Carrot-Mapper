@@ -593,42 +593,50 @@ def download_mapping_rules(request,qs):
     return response
 
 
-def make_dag(data):
+colorscheme = 'gnbu9'
+
+def make_dag(data,colorscheme = 'gnbu9'):
+   
     dot = Digraph(strict=True,format='svg')
     dot.attr(rankdir='RL')
+    with dot.subgraph(name='cluster_0') as dest, dot.subgraph(name='cluster_1') as inp:
+        dest.attr(style='filled', fillcolor='2', colorscheme='blues9', penwidth='0', label='Destination')
+        inp.attr(style='filled', fillcolor='2', colorscheme='greens9', penwidth='0', label='Source')
+        
+        for destination_table_name,destination_tables in data.items():
+            dest.node(destination_table_name,
+                      shape='folder',style='filled',
+                      fontcolor='white',colorscheme=colorscheme,
+                      fillcolor='9')
 
-    for destination_table_name,destination_tables in data.items():
-        dot.node(destination_table_name,shape='box')
+            for ref_name,destination_table in destination_tables.items():
+                for destination_field,source in destination_table.items():
+                    source_field = source['source_field']
+                    source_table = source['source_table']
+                    
+                    table_name = f"{destination_table_name}_{destination_field}"
+                    dest.node(table_name,
+                             label=destination_field,style='filled,rounded', colorscheme=colorscheme,
+                             fillcolor='7',shape='box',fontcolor='white')
 
-        for destination_table in destination_tables.values():
-            for destination_field,source in destination_table.items():
-                source_field = source['source_field']
-                source_table = source['source_table']
+                    dest.edge(destination_table_name,table_name,arrowhead='none')
 
-                table_name = f"{destination_table_name}_{destination_field}"
-                
-                dot.node(table_name,
-                         label=destination_field,style='filled', fillcolor='yellow',shape='box')
+                    source_field_name =  f"{source_table}_{source_field}"
+                    inp.node(source_field_name,source_field,
+                             colorscheme=colorscheme,
+                             style='filled,rounded',fillcolor='5',shape='box')
+                    
+                    if 'operations' in source:
+                        operations = source['operations']
 
-                dot.edge(destination_table_name,table_name,dir='back')
-
-                source_field_name =  f"{source_table}_{source_field}"
-                
-                dot.node(source_field_name,source_field)
-
-                #if 'operations' in source:
-                #    operations = source['operations']
-
-                if 'term_mapping' in source and source['term_mapping'] is not None:
-                    term_mapping = source['term_mapping']
-                    dot.edge(table_name,source_field_name,dir='back',color='red')
-                        
-                else:                                                    
-                    dot.edge(table_name,source_field_name,dir='back')
-
-                
-                dot.node(source_table,shape='box')
-                dot.edge(source_field_name,source_table,dir='back')
+                    if 'term_mapping' in source and source['term_mapping'] is not None:
+                        term_mapping = source['term_mapping']
+                        dot.edge(table_name,source_field_name,dir='back',color='red',penwidth='2')
+                    else:                                                    
+                        dot.edge(table_name,source_field_name,dir='back',penwidth='2')
+                    
+                    inp.node(source_table,shape='tab',fillcolor='4',colorscheme=colorscheme,style='filled')
+                    inp.edge(source_field_name,source_table,arrowhead='none')
 
     return dot.pipe().decode('utf-8')
 
