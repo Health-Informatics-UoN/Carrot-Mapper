@@ -287,9 +287,10 @@ const ScanReportTbl = (props) => {
                         {expanded &&
                             <>
                                 <Th style={{ fontSize: "16px", textTransform: "none" }}>Tables</Th>
+                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Fields</Th>
                                 <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                                     <HStack>
-                                        <Text>Fields</Text>
+                                        <Text>Mappings</Text>
                                         {expanded && <ArrowLeftIcon ml="auto" _hover={{ color: "blue.500", }} onClick={() => setExpanded(false)} />}
                                     </HStack>
                                 </Th>
@@ -319,7 +320,7 @@ const ScanReportTbl = (props) => {
                                         :
                                         <Select bg={mapStatusColour(item.status)} color={mapStatusText(item.status)} minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
                                             {statuses.map((item, index) =>
-                                                <option key={index} value={item} style={{color:"#000000"}}>{mapStatus(item)}</option>
+                                                <option key={index} value={item} style={{ color: "#000000" }}>{mapStatus(item)}</option>
                                             )}
                                         </Select>
                                     }
@@ -356,8 +357,9 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.scanreporttable_count!=undefined ? item.scanreporttable_count : "counting"}</Td>
-                                        <Td>{item.scanreportfield_count!=undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>
