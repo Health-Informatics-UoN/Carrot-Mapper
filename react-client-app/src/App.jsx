@@ -79,9 +79,9 @@ const App = ({ page }) => {
         else if (!table.person_id || !table.date_event) {
             // set the error message depending on which value is missing
             let message;
-            if (!table.person_id && !table.date_event) { message = 'Please set the person_id and a date_event to ' }
-            else if (!table.person_id) { message = 'Please set the person_id to ' }
-            else { message = 'Please set the date_event to ' }
+            if (!table.person_id && !table.date_event) { message = 'Please set the person_id and a date_event on the table ' }
+            else if (!table.person_id) { message = 'Please set the person_id on the table ' }
+            else { message = 'Please set the date_event on the table ' }
             setAlert({
                 hidden: false,
                 status: 'error',
