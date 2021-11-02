@@ -25,6 +25,7 @@ import Plot from 'react-plotly.js';
 
 
 const Home = () => {
+    // get list of statuses from django app and use them to create a list of objects to be displayed in the status table
     const statusesRef = useRef(JSON.parse(window.status).map((status) => status.id).map(item => ({ id: item, expanded: false, data: [] })));
     const scanreportsRef = useRef(null);
     const [statuses, setStatuses] = useState(statusesRef.current);
@@ -35,34 +36,37 @@ const Home = () => {
     const [filter, setFilter] = useState(null);
     const [timeline, setTimeline] = useState({ day: "counting", week: "counting", month: "counting", three_months: "counting", year: "counting", });
     useEffect(async () => {
-
+        // run every time filter is changed to (active,archived, or all reports)
         if (filter) {
             let filteredReports;
             let filteredStatuses;
             let generatedCountStats;
+            // filter scanreports depending on what filter is applied
             if (filter == "All") {
                 filteredReports = scanreportsRef.current
             }
             if (filter == "Active") {
                 filteredReports = scanreportsRef.current.filter(scanreport => scanreport.hidden == false)
-
             }
             if (filter == "Archived") {
                 filteredReports = scanreportsRef.current.filter(scanreport => scanreport.hidden == true)
-
             }
+            // map scan reports to their statuses
             filteredStatuses = statusesRef.current.map(status => ({ ...status, data: filteredReports.filter(report => report.status == status.id) }))
+            // get current timestamp and use it to get the timestamp of different times by subtracting a certain amount of time
             const ts = Math.round(new Date().getTime() / 1000);
             const ts_24_hours_ago = ts - (24 * 3600);
             const ts_week_ago = ts - (7 * 24 * 3600);
             const ts_month_ago = ts - (30 * 24 * 3600);
             const ts_3_month_ago = ts - (90 * 24 * 3600);
             const ts_year_ago = ts - (365 * 24 * 3600);
+            // use timestamps to make lists of scan reports created after those timestamps
             const last_24_hours = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_24_hours_ago)
             const last_week = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_week_ago)
             const last_month = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_month_ago)
             const last_3_month = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_3_month_ago)
             const last_year = filteredReports.filter(report => Math.round(new Date(report.created_at).getTime() / 1000) >= ts_year_ago)
+            // count each list to get the number of scanreports created within a certain time
             const timeline =
             {
                 day: last_24_hours.length,
@@ -72,7 +76,7 @@ const Home = () => {
                 year: last_year.length,
             }
 
-
+            // generate count stats of filtered data by adding up the count stats of the scan reports in the filtered list
             generatedCountStats =
             {
                 scanreport_count: filteredReports.length,
@@ -81,6 +85,7 @@ const Home = () => {
                 scanreportvalue_count: filteredReports.map(report => report.scanreportvalue_count).reduce((a, b) => { return a + b; }, 0),
                 scanreportmappingrule_count: filteredReports.map(report => report.scanreportmappingrule_count).reduce((a, b) => { return a + b; }, 0),
             }
+            // set the state of the data to be used in the donuts and tables
             setDonutData(filteredReports)
             setMappingDonutData(filteredReports)
             setStatuses(filteredStatuses)
@@ -90,9 +95,12 @@ const Home = () => {
     }, [filter]);
 
     useEffect(async () => {
+        // called on initial page load
+        // get scan reports from endpoint
         let scanreports = await useGet(`/scanreports/`)
+        // sort scan reports
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
-
+        // create a list of unique datapartners and make a batch query to get their data
         const dataPartnerObject = {}
         scanreports.map(scanreport => {
             dataPartnerObject[scanreport.data_partner] = true
@@ -107,7 +115,7 @@ const Home = () => {
         dataPartners.forEach(element => {
             scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
         })
-
+        // create a list of scan report id's and batch query their count stats
         const scanreportIds = chunkIds(scanreports.map(scanreport => scanreport.id))
         const countPromises = [];
         for (let i = 0; i < scanreportIds.length; i++) {
@@ -117,7 +125,7 @@ const Home = () => {
         scanreports = scanreports.map(report => ({ ...report, ...countStats.find(item => item.scanreport == report.id) }))
 
         scanreportsRef.current = scanreports
-
+        // set default filter to active
         setFilter("Active")
 
         setLoading(false)
@@ -125,11 +133,12 @@ const Home = () => {
 
 
     const expandStatus = (id, expand) => {
-
+        // expand or minimize a status in the status table setting it's 'expanded' variable to true or false
         setStatuses(stat => stat.map(status => status.id == id ? ({ ...status, expanded: expand }) : status))
     }
 
     const setDonutData = (scanreport_data) => {
+        // format data in an acceptable form for plotly to create donut chart
         let data = {
             values: [],
             labels: [],
@@ -138,8 +147,9 @@ const Home = () => {
             hole: .3,
             title: "Data Partners"
         }
+        // create an ordered list of unique data partner names
         data.labels = [...new Set(scanreport_data.map(data => data.data_partner.name))].sort((a, b) => a.localeCompare(b))
-
+        // for each data partner, count the number of scan reports and add it to values
         data.labels.map(label => {
             const values = scanreport_data.filter(report => report.data_partner.name == label)
             data.values.push(values.length)
@@ -148,6 +158,7 @@ const Home = () => {
     }
 
     const setMappingDonutData = (scanreport_data) => {
+        // format data in an acceptable form for plotly to create donut chart
         let data = {
             values: [],
             labels: [],
@@ -156,8 +167,9 @@ const Home = () => {
             hole: .3,
             title: "Data Partners"
         }
+        // create an ordered list of unique data partner names
         data.labels = [...new Set(scanreport_data.map(data => data.data_partner.name))].sort((a, b) => a.localeCompare(b))
-
+        // for each data partner, add up the number of mapping rules for every related scan report and add the total to values
         data.labels.map(label => {
             const values = scanreport_data.filter(report => report.data_partner.name == label)
             const mapArray = values.map(value => value.scanreportmappingrule_count)
@@ -168,6 +180,7 @@ const Home = () => {
     }
 
     const mapStatus = (status) => {
+        // get the list of statuses from django app and find the label of the status with a specific name
         return JSON.parse(window.status).find((item) => item.id == status).label;
     };
 
