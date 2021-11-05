@@ -10,6 +10,7 @@ import {
     Flex,
     Spinner,
     Link,
+    Button
 
 } from "@chakra-ui/react"
 
@@ -78,6 +79,7 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
+            <Link href={"/scanreports/"+value+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
         </div>
     );
 }

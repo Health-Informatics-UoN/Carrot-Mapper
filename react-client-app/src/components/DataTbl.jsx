@@ -16,6 +16,7 @@ import {
     ScaleFade,
     Input,
     useDisclosure,
+    Link
 } from "@chakra-ui/react"
 
 import { Formik, Form } from 'formik'
@@ -160,6 +161,7 @@ const DataTbl = (props) => {
                         }
                     </Tbody>
                 </Table>
+                <Link href={"/scanreports/"+scanReportTable.current.scan_report+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 
