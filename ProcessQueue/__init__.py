@@ -538,7 +538,7 @@ def main(msg: func.QueueMessage):
                 values_response_content += values_content
 
             print("POST values all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-
+            value_names_to_ids_dict = {str(element.get("name", None)): str(element.get("id", None)) for element in values_response_content}
             # Process conceptIDs in ScanReportValues
             # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
             print("GET posted values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
