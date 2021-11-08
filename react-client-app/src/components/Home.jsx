@@ -198,7 +198,7 @@ const Home = () => {
                     name: item,
                     xaxis: 'x1',
                     barmode: 'stack',
-                    //marker: { color: stringToColour(item) } // uncomment this to match colours with other graphs
+                    marker: { color: stringToColour(item) }
                 }
             )
         })
