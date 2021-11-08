@@ -219,7 +219,7 @@ const Home = () => {
             title: 'Datapartners in Statuses'
         }
         return { data, layout }
-
+    }
     // takes in a string and returns a hexadecimal colour generated with that string as seed
     var stringToColour = function (str) {
         // if it is a known string we can specify what colour we want it to return
