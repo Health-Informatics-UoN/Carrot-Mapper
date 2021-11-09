@@ -49,59 +49,62 @@ def process_scan_report_sheet_table(sheet):
     data into the format below.
 
     -- Example Table Sheet CSV --
-    column a,frequency,column c,frequency
-    apple,      20,     orange,      5
-    banana,     3,      plantain,    50
+    a,   frequency,          b, frequency
+    apple,      20,     orange,         5
+    banana,      3,   plantain,        50
+    pear,       12,         '',        ''
 
     --
 
     -- output --
-    column a, apple, 20
-    column a, banana, 3
-    column c, orange, 5
-    column c, plantain, 50
+    [(a,    apple, 20),
+     (a,   banana,  3),
+     (a,     pear, 12),
+     (b,   orange,  5),
+     (b, plantain, 50)]
     --
     """
-    results = []
 
-    # Skip headers, set min_row & row_idx=2
-    for column_idx, col in enumerate(
-        sheet.iter_cols(min_col=1,
-                        max_col=sheet.max_column,
-                        min_row=1,
-                        max_row=sheet.max_row,
-                        values_only=True),
-        start=1
+    # Get header entries (skipping every second column which is just 'Frequency')
+    # So headers = ['a', 'b']
+    first_row = sheet[1]
+    headers = [cell.value for cell in first_row[::2]]
+
+    # Set up an empty defaultdict, and fill it with one entry per header (i.e. one
+    # per column)
+    # Append each entry's value with the tuple (value, frequency) so that we end up
+    # with each entry containing one tuple per non-empty entry in the column.
+    #
+    # This will give us
+    #
+    # ordereddict({'a': [('apple', 20), ('banana', 3), ('pear', 12)],
+    #              'b': [('orange', 5), ('plantain', 50)]})
+
+    d = defaultdict(list)
+    # Iterate over all rows beyond the header
+    for row_idx, row in enumerate(
+            sheet.iter_rows(min_col=1,
+                            max_col=sheet.max_column,
+                            min_row=2,
+                            max_row=sheet.max_row,
+                            values_only=True),
+            start=1
     ):
-        if column_idx % 2 == 0:
-            continue
+        # Iterate across the pairs of cells in the row. If the pair is non-empty,
+        # then add it to the relevant dict entry.
+        for col_idx, (header, cell, freq) in \
+                enumerate(zip(headers, row[::2], row[1::2])):
+            if cell != '' or freq != '':
+                d[header].append((str(cell), freq))
 
-        column_header = col[0]
-
-        # Works through pairs of value/frequency columns. Skip the frequency columns,
-        # and reference them from their value column.
-        for row_idx, cell in enumerate(col[1:], start=2):
-            if column_idx % 2 == 1:
-
-                value = cell
-                frequency = sheet.cell(row=row_idx, column=column_idx + 1).value
-
-                # As we move down rows, check that there's data there.
-                # This is required b/c value/frequency col pairs differ
-                # in the number of rows. Break if we hit a fully empty row
-                if (value == "" or value is None) and (
-                    frequency == "" or frequency is None
-                ):
-                    break
-
-                # Append to Results as (Field Name,Value,Frequency)
-                results.append(
-                    (
-                        str(column_header),
-                        str(value),
-                        frequency,
-                    )
-                )
+    # Convert {'a': [('apple', 20), ('banana', 3), ('pear', 12)],
+    #          'b': [('orange', 5), ('plantain', 50)]}
+    # to [('a', 'apple', 20), ('a', 'banana', 3),
+    #      ('a', 'pear', 12), ('b', 'orange', 5),
+    #      ('b', 'plantain', 50)]
+    results = [(str(header), *value)
+               for header, dict_entry in zip(headers, d.values())
+               for value in dict_entry]
     return results
 
 
@@ -251,11 +254,13 @@ def main(msg: func.QueueMessage):
 
     # Get all the table names in the order they appear in the Field Overview page
     table_names = []
-    # Skip header row
-    for cell in fo_ws['A'][1:]:
+    # Iterate over cells in the first column, but because we're in ReadOnly mode we 
+    # can't do that in the simplest manner.
+    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
+        cell_value = row[0].value
         # Check value is both non-empty and not seen before
-        if cell.value and cell.value not in table_names:
-            table_names.append(cell.value)
+        if cell_value and cell_value not in table_names:
+            table_names.append(cell_value)
 
     """
     For each table create a scan_report_table entry,
