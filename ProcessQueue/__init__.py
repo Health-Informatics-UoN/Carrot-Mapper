@@ -157,6 +157,18 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
+def get_existing_concepts(name_ids,content_type,api_url,headers):
+    
+    get_field_concept_ids= requests.get(
+            url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}",
+            headers=headers,
+    )
+    field_concept_ids=json.loads(get_field_concept_ids.content.decode("utf-8"))
+    field_id_to_concept_map ={element.get("object_id", None): str(element.get("concept", None)) for element in field_concept_ids}
+
+    print("FIELD TO CONCEPT MAP DICT",field_id_to_concept_map)
+
+
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -617,6 +629,7 @@ def main(msg: func.QueueMessage):
                     raise HTTPError(' '.join(['Error in value save:', str(value_response.status_code), str(put_update_json)]))
 
             print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            get_existing_concepts(names_to_ids_dict,15,api_url,headers)
 
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
