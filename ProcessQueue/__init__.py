@@ -172,23 +172,52 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     ids=", ".join(ids)
     names=list(name_ids.keys())
     names=", ".join(names)
+
     get_field_names=requests.get(
         url=f"{api_url}scanreportfieldsfilter/?id__in={ids}&name__in={names}",
         headers=headers,
     )
     field_names=json.loads(get_field_names.content.decode("utf-8"))
-    print(field_names)
+    # Need to handle names not being unique before the dictionary is created
     field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
-    print(field_name_to_id_map)
+
+    concepts_to_post=[]
+    concept_response_content=[]
     for name in name_ids.keys():
         try:
             link_id=field_name_to_id_map[name]
             concept_id=field_id_to_concept_map[link_id]
             current_id=name_ids[name]
             print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry={
+                    "nlp_entity": None,
+                    "nlp_entity_type": None,
+                    "nlp_confidence": None,
+                    "nlp_vocabulary": None,
+                    "nlp_processed_string": None,
+                    "concept":concept_id,
+                    "object_id":current_id,
+                    "content_type": content_type,
+                }
+            concepts_to_post.append(concept_entry)
+            
         except:
             continue
+    if concepts_to_post:
+        concept_response = requests.post(
+                    url=api_url + "scanreportconcepts/",
+                    headers=headers,
+                    data=json.dumps(concepts_to_post),
+                )
+        print("CONCEPTS SAVE STATUS >>>", concept_response.status_code,
+                    concept_response.reason, flush=True)
 
+        concept_content = json.loads(concept_response.content.decode("utf-8"))
+        concept_response_content += concept_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            
 
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
