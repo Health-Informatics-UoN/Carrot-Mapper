@@ -167,6 +167,17 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     field_id_to_concept_map ={element.get("object_id", None): str(element.get("concept", None)) for element in field_concept_ids}
 
     print("FIELD TO CONCEPT MAP DICT",field_id_to_concept_map)
+    
+    ids=list(field_id_to_concept_map.keys())
+    ids=", ".join(ids)
+    names=list(name_ids.keys())
+    names=", ".join(names)
+    get_field_names=requests.get(
+        url=f"{api_url}scanreportfieldsfilter/?id__in={ids}&name__in={names}",
+        headers=headers,
+    )
+    field_names=json.loads(get_field_names.content.decode("utf-8"))
+    print(field_names)
 
 
 def main(msg: func.QueueMessage):
