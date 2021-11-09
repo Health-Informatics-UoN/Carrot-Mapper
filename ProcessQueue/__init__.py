@@ -11,6 +11,7 @@ import os
 import csv
 
 from requests.models import HTTPError
+from collections import defaultdict
 
 from shared_code import omop_helpers
 
