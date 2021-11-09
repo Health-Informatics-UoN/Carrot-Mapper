@@ -178,6 +178,16 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     )
     field_names=json.loads(get_field_names.content.decode("utf-8"))
     print(field_names)
+    field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
+    print(field_name_to_id_map)
+    for name in name_ids.keys():
+        try:
+            link_id=field_name_to_id_map[name]
+            concept_id=field_id_to_concept_map[link_id]
+            current_id=name_ids[name]
+            print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
+        except:
+            continue
 
 
 def main(msg: func.QueueMessage):
