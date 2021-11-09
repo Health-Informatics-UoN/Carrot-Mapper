@@ -615,10 +615,16 @@ def main(msg: func.QueueMessage):
     # For sheets past the first two in the Scan Report
     # i.e. all 'data' sheets that are not Field Overview and Table Overview
     print("Start fields loop", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-
+    previous_row_value = None
     for i, row in enumerate(
         fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
     ):
+        # Guard against unnecessary rows beyond the last true row with contents
+        if (previous_row_value is None or previous_row_value == '') and \
+           (row[0].value is None or row[0].value == ''):
+           break
+        previous_row_value = row[0].value
+
         if row[0].value != '' and row[0].value is not None:
             current_table_name = row[0].value
             # Create ScanReportField entry
