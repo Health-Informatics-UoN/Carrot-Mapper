@@ -430,7 +430,6 @@ class ScanReportFieldForm(forms.ModelForm):
         model = ScanReportField
         fields = (
             #"is_patient_id",
-            #"is_date_event",
             "is_ignore",
             "pass_from_source",
             "description_column"

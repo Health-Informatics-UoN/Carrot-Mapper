@@ -687,7 +687,6 @@ def main(msg: func.QueueMessage):
                 "fraction_unique": round(default_zero(row[9].value), 2),
                 "ignore_column": None,
                 # "is_patient_id": False,
-                # "is_date_event": False,
                 # "is_ignore": False,
                 # "pass_from_source": True,
                 # "classification_system": str(row[11].value),
