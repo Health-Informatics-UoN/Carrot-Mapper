@@ -95,7 +95,7 @@ const App = ({ page }) => {
             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
             setValues(valuesRef.current)
             // check if concept exists
-            useGet(`/omop/concepts/${concept}`)
+            useGet(`/omop/concepts/${concept}/`)
                 .then(async response => {
                     // if concept does not exist, display error
                     if (response.detail == 'Not found.') {
@@ -130,7 +130,7 @@ const App = ({ page }) => {
 
                     }
                     // check concepts omop table has been implemented
-                    const omopTable = await useGet(`/omoptables/${destination_field.table}`)
+                    const omopTable = await useGet(`/omoptables/${destination_field.table}/`)
                     if (!m_allowed_tables.includes(omopTable.table)) {
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                         setValues(valuesRef.current)

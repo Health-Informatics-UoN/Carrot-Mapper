@@ -55,12 +55,12 @@ const useDelete = async (url) => {
 }
 // get scan report field with given id
 const getScanReportField = async (id)=>{
-    const field = await useGet(`/scanreportfields/${id}`)
+    const field = await useGet(`/scanreportfields/${id}/`)
     return field
 }
 // get scan report table with given id
 const getScanReportTable = async (id)=>{
-    const table = await useGet(`/scanreporttables/${id}`)
+    const table = await useGet(`/scanreporttables/${id}/`)
     return table
 }
 // get concepts for a specific scan report
@@ -178,7 +178,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     promises.push(usePost(`/structuralmappingrules/`,data))
     //date_event
     data.source_field = table.date_event
-    const omopTable = await useGet(`/omoptables/${destination_field.table}`)
+    const omopTable = await useGet(`/omoptables/${destination_field.table}/`)
     const date_omop_fields = m_date_field_mapper[omopTable.table]
     date_omop_fields.forEach(element => {
         data.omop_field = fields.filter(field=> field.field == element && field.table==destination_field.table)[0].id
