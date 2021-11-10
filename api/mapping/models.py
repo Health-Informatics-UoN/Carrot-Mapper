@@ -378,12 +378,6 @@ class ScanReportField(BaseModel):
         null=True,
     )
 
-    flag_column=models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-    )
-    
     is_patient_id = models.BooleanField(
         default=False,
     )

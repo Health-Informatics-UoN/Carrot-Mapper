@@ -685,7 +685,6 @@ def main(msg: func.QueueMessage):
                 "fraction_empty": round(default_zero(row[7].value), 2),
                 "nunique_values": row[8].value,
                 "fraction_unique": round(default_zero(row[9].value), 2),
-                # "flag_column": str(row[10].value),
                 "ignore_column": None,
                 # "is_birth_date": False,
                 # "is_patient_id": False,
