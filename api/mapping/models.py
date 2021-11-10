@@ -386,10 +386,6 @@ class ScanReportField(BaseModel):
         default=False,
     )
 
-    is_birth_date = models.BooleanField(
-        default=False,
-    )
-
     is_ignore = models.BooleanField(
         default=False,
     )
