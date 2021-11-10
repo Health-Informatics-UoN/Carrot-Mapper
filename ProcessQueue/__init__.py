@@ -695,7 +695,7 @@ def main(msg: func.QueueMessage):
                 # "classification_system": str(row[11].value),
                 "date_type": "",
                 "concept_id": -1,
-                "field_description": None,
+                # "field_description": None,
             }
             # Append each entry to a list
             field_entries_to_post.append(field_entry)
