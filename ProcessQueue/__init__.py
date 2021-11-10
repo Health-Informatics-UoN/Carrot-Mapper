@@ -694,7 +694,7 @@ def main(msg: func.QueueMessage):
                 "pass_from_source": True,
                 # "classification_system": str(row[11].value),
                 "date_type": "",
-                "concept_id": -1,
+                # "concept_id": -1,
                 # "field_description": None,
             }
             # Append each entry to a list
