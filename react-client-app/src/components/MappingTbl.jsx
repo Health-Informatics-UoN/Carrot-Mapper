@@ -40,7 +40,7 @@ const MappingTbl = () => {
     useEffect(() => {
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
-        useGet(`/mappingruleslist?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
+        useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
             setValues(res[0].sort((a, b) => (a.rule_id > b.rule_id) ? 1 : ((b.rule_id > a.rule_id) ? -1 : 0)))
             setLoading(false);
             setLoadingMessage("");
