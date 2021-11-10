@@ -407,7 +407,7 @@ class ScanReportField(BaseModel):
     )
 
     pass_from_source = models.BooleanField(
-        default=False,
+        default=True,
     )
 
     concept_id = models.IntegerField(

@@ -691,7 +691,7 @@ def main(msg: func.QueueMessage):
                 # "is_patient_id": False,
                 # "is_date_event": False,
                 # "is_ignore": False,
-                "pass_from_source": True,
+                # "pass_from_source": True,
                 # "classification_system": str(row[11].value),
                 # "concept_id": -1,
                 # "field_description": None,
