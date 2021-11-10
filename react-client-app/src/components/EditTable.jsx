@@ -11,7 +11,7 @@ const EditTable = () => {
 
     useEffect(async () => {
         // get scan report table to use to get tables 
-        const scanreporttable = await useGet(`/scanreporttables/${value}`)
+        const scanreporttable = await useGet(`/scanreporttables/${value}/`)
         // get scan report tables for the scan report the table belongs to
         const tablesFilter = useGet(`/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
