@@ -43,7 +43,6 @@ routers.register(r'scanreportvaluepks',views.ScanReportValuePKViewSet,basename='
 routers.register(r'scanreportconcepts', views.ScanReportConceptViewSet,basename='scanreportconcepts')
 routers.register(r'scanreportconceptsfilter', views.ScanReportConceptFilterViewSet,basename='scanreportconceptsfilter')
 
-routers.register(r'mappings',views.MappingViewSet,basename='mappings')
 routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
 routers.register(r'datadictionaries',views.DataDictionaryViewSet,basename='DataDictionaries')
 
@@ -87,8 +86,7 @@ urlpatterns = [
 
     path('datadictionary/', views.DataDictionaryListView.as_view(), name='data-dictionary'),
     path('datadictionary/<int:pk>/update', views.DataDictionaryUpdateView.as_view(), name='update-data-dictionary'),
-    path('datadictionary/merge/', views.merge_dictionary, name='merge-data-dictionary'),
- 
+
     path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
     path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 

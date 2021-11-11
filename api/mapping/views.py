@@ -986,19 +986,6 @@ class DataDictionaryUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class DictionarySelectFormView(FormView):
-
-    form_class = DictionarySelectForm
-    template_name = "mapping/mergedictionary.html"
-    success_url = reverse_lazy("data-dictionary")
-
-    def form_valid(self, form):
-
-        # Adapt logic in services.py to merge data dictionary file into DataDictionary model
-        return super().form_valid(form)
-
-
-@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy("password_change_done")
