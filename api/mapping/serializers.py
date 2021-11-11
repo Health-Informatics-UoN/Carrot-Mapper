@@ -17,7 +17,6 @@ from mapping.models import (
     ScanReport,
     ScanReportTable,
     ScanReportConcept,
-    Mapping,
     ClassificationSystem,
     DataDictionary,
     Document,
@@ -102,12 +101,7 @@ class ScanReportValueSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
 class ScanReportConceptSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=ScanReportConcept
-        fields='__all__'        
-        
-class MappingSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Mapping
-        fields='__all__'      
+        fields='__all__'
 
 class ClassificationSystemSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:

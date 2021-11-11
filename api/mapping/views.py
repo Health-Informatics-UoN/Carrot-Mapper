@@ -106,7 +106,6 @@ from .models import (
     ScanReportTable,
     ScanReportValue,
     StructuralMappingRule, ScanReportConcept,
-    Mapping,
     ClassificationSystem,
 )
 
@@ -251,10 +250,6 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
     filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact'],'id': ['in', 'exact']}
-    
-class MappingViewSet(viewsets.ModelViewSet):
-    queryset=Mapping.objects.all()
-    serializer_class=MappingSerializer
 
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset=ClassificationSystem.objects.all()

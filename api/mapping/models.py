@@ -46,27 +46,6 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Mapping(BaseModel):
-    """
-    DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
-    """
-
-    table = models.CharField(
-        max_length=64,
-    )
-
-    field = models.CharField(
-        max_length=64,
-    )
-
-    class Meta:
-        verbose_name = "Mapping"
-        verbose_name_plural = "Mappings"
-
-    def __str__(self):
-        return str(self.id)
-
-
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
