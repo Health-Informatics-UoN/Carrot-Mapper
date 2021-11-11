@@ -19,13 +19,10 @@ from mapping.models import (
     ScanReportConcept,
     ClassificationSystem,
     DataDictionary,
-    Document,
-    DocumentFile,
     DataPartner,
     OmopField,
     OmopTable,
     MappingRule,
-    DocumentType,
     )
 
 from .services_rules import get_mapping_rules_json,get_mapping_rules_list
@@ -111,17 +108,7 @@ class ClassificationSystemSerializer(DynamicFieldsMixin,serializers.ModelSeriali
 class DataDictionarySerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=DataDictionary
-        fields='__all__'               
-
-class DocumentSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Document
-        fields='__all__'               
-
-class DocumentFileSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=DocumentFile
-        fields='__all__'               
+        fields='__all__'
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
@@ -182,11 +169,4 @@ class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
                 'name':rule['source_field'].name
             }
 
-        
         return rules
-
-
-class DocumentTypeSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=DocumentType
-        fields='__all__'                 

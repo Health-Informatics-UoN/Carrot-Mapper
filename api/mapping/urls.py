@@ -46,8 +46,6 @@ routers.register(r'scanreportconceptsfilter', views.ScanReportConceptFilterViewS
 routers.register(r'mappings',views.MappingViewSet,basename='mappings')
 routers.register(r'classificationsystems',views.ClassificationSystemViewSet,basename='classificationsystems')
 routers.register(r'datadictionaries',views.DataDictionaryViewSet,basename='DataDictionaries')
-routers.register(r'documents',views.DocumentViewSet,basename='documents')
-routers.register(r'documentfiles',views.DocumentFileViewSet,basename='documentfiles')
 
 routers.register(r'datapartners',views.DataPartnerViewSet,basename='datapartners')
 routers.register(r'datapartnersfilter',views.DataPartnerFilterViewSet,basename='datapartnersfilter')
@@ -60,8 +58,6 @@ routers.register(r'mappingrules',views.MappingRuleViewSet,basename='mappingrule'
 routers.register(r'json',views.DownloadJSON,basename='getjson')
 routers.register(r'mappingruleslist',views.RulesList,basename='getlist')
 routers.register(r'mappingrulesfilter',views.MappingRuleFilterViewSet,basename='mappingrulefilter')
-
-routers.register(r'documenttypes',views.DocumentTypeViewSet,basename='documenttypes')
 
 urlpatterns = [
     path(r'api/countstats/',views.CountStats.as_view(),name='countstats'),
@@ -96,11 +92,6 @@ urlpatterns = [
     path('nlp/run', views.run_nlp_field_level, name='run-nlp'),
     path('nlp/table/run', views.run_nlp_table_level, name='run-nlp-table'),
 
-    path('documents/create/', views.DocumentFormView.as_view(), name='document-form'),
-    path('documents/', views.DocumentListView.as_view(), name='document-list'),
-    path('documents/<int:pk>/files/', views.DocumentFileListView.as_view(), name='file-list'),
-    path('documents/files/<int:pk>/update/', views.DocumentFileStatusUpdateView.as_view(), name='status-update'),
-    path('documents/<int:pk>/files/create/', views.DocumentFileFormView.as_view(), name='file-form'),
     path('ajax/load-omop-fields/', views.load_omop_fields, name='ajax_load_omop_fields'),
     path('password-change/', views.CCPasswordChangeView.as_view(), name='password_change'),
     path('password-success/', views.CCPasswordChangeDoneView.as_view(), name='password_change_done'),

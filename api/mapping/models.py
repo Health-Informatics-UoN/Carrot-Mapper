@@ -113,29 +113,6 @@ class OmopField(BaseModel):
         return str(self.id)
 
 
-class DocumentType(BaseModel):
-    """
-    To come
-    """
-
-    name = models.CharField(
-        max_length=64,
-    )
-
-    class Meta:
-        verbose_name = "Document Type"
-        verbose_name_plural = "Document Types"
-        constraints = [
-            UniqueConstraint(
-                fields=["name"],
-                name="documenttype_name_unique",
-            )
-        ]
-
-    def __str__(self):
-        return str(self.id)
-
-
 class ScanReportConcept(BaseModel):
     """
     This class stores concepts informed by the user or automatic tools (NLP)
@@ -462,66 +439,6 @@ class ScanReportValue(BaseModel):
         max_length=512,
         blank=True,
         null=True
-    )
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Document(BaseModel):
-    """
-    To come
-    """
-
-    data_partner = models.ForeignKey(
-        DataPartner,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    document_type = models.ForeignKey(
-        DocumentType,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    description = models.CharField(
-        max_length=256,
-    )
-
-    def __str__(self):
-        return str(self.id)
-
-
-class DocumentFile(BaseModel):
-    """
-    To come
-    """
-
-    document_file = models.FileField()
-
-    size = models.IntegerField()
-
-    document = models.ForeignKey(
-        Document,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default=STATUS_ARCHIVED,
     )
 
     def __str__(self):
