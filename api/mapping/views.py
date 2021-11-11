@@ -30,7 +30,6 @@ from .serializers import (
     StructuralMappingRuleSerializer,
     GetRulesJSON,
     GetRulesList,
-    SourceSerializer,
     DocumentTypeSerializer,
     UserSerializer,
 )
@@ -109,7 +108,6 @@ from .models import (
     StructuralMappingRule, ScanReportConcept,
     Mapping,
     ClassificationSystem,
-    Source,
 )
 
 from .services_nlp import start_nlp_field_level
@@ -331,11 +329,7 @@ class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
     queryset=StructuralMappingRule.objects.all()
     serializer_class=StructuralMappingRuleSerializer    
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report']    
-
-class SourceViewSet(viewsets.ModelViewSet):
-    queryset=Source.objects.all()
-    serializer_class=SourceSerializer
+    filterset_fields=['scan_report']
     
 class DocumentTypeViewSet(viewsets.ModelViewSet):
     queryset=DocumentType.objects.all()

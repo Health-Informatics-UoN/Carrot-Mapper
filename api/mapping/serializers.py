@@ -26,7 +26,6 @@ from mapping.models import (
     OmopField,
     OmopTable,
     StructuralMappingRule,
-    Source,
     DocumentType,
     )
 
@@ -193,11 +192,6 @@ class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
         return rules
 
 
-class SourceSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Source
-        fields='__all__'         
-        
 class DocumentTypeSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=DocumentType

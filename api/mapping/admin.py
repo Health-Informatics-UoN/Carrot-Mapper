@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import (
     DocumentType,
-    Source,
     DataPartner,
     ScanReport,
     ScanReportTable,
@@ -28,7 +27,6 @@ admin.site.register(ScanReportTable)
 admin.site.register(ScanReportField)
 admin.site.register(ScanReportValue)
 admin.site.register(ScanReportAssertion)
-admin.site.register(Source)
 admin.site.register(ClassificationSystem)
 admin.site.register(OmopTable)
 admin.site.register(OmopField)

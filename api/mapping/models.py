@@ -46,35 +46,6 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Source(BaseModel):
-    """
-    DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
-    """
-
-    dataset = models.CharField(
-        max_length=64,
-    )
-
-    table = models.CharField(
-        max_length=64,
-    )
-
-    field = models.CharField(
-        max_length=64,
-    )
-
-    mapping = models.ManyToManyField(
-        "Mapping",
-    )
-
-    class Meta:
-        verbose_name = "Source"
-        verbose_name_plural = "Sources"
-
-    def __str__(self):
-        return str(self.id)
-
-
 class Mapping(BaseModel):
     """
     DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
