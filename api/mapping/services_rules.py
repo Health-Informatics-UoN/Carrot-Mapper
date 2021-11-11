@@ -7,7 +7,7 @@ from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
 from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, StructuralMappingRule
+from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
 
 from graphviz import Digraph
 
@@ -99,7 +99,7 @@ def get_person_id_rule(request,
     )
 
     #create a new 1-1 rule 
-    rule_domain_person_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_person_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=person_id_omop_field,
         source_field=person_id_source_field,
@@ -131,7 +131,7 @@ def get_date_rules(request,
         )
 
         #create a new 1-1 rule 
-        rule_domain_date_event, created = StructuralMappingRule.objects.update_or_create(
+        rule_domain_date_event, created = MappingRule.objects.update_or_create(
             scan_report=scan_report,
             omop_field=date_event_omop_field,
             source_field=date_event_source_field,
@@ -252,7 +252,7 @@ def save_mapping_rules(request,scan_report_concept):
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
     #    - all term mapping rules associated need to be applied
-    rule_domain_source_concept_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_source_concept_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=omop_field,
         source_field=source_field,
@@ -266,7 +266,7 @@ def save_mapping_rules(request,scan_report_concept):
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
     #    - all term mapping rules associated need to be applied
-    rule_domain_concept_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_concept_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
@@ -278,7 +278,7 @@ def save_mapping_rules(request,scan_report_concept):
     # create/update a model for the domain source_value
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to false
-    rule_domain_source_value, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_source_value, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
@@ -295,7 +295,7 @@ def save_mapping_rules(request,scan_report_concept):
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
-        rule_domain_value_as_number, created = StructuralMappingRule.objects.update_or_create(
+        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
             scan_report=scan_report,
             omop_field=get_omop_field("value_as_number","measurement"),
             source_field=source_field,
@@ -800,7 +800,7 @@ def remove_mapping_rules(request,scan_report_id):
     Function given a scan_report_id that will find all
     associated mappings and delete them
     """
-    rules = StructuralMappingRule.objects.all()\
+    rules = MappingRule.objects.all()\
         .filter(scan_report__id=scan_report_id)
 
     rules.delete()

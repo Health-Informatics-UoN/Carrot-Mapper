@@ -24,7 +24,7 @@ from mapping.models import (
     DataPartner,
     OmopField,
     OmopTable,
-    StructuralMappingRule,
+    MappingRule,
     DocumentType,
     )
 
@@ -138,9 +138,9 @@ class OmopTableSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
         model=OmopTable
         fields='__all__'               
 
-class StructuralMappingRuleSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class MappingRuleSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
-        model=StructuralMappingRule
+        model=MappingRule
         fields='__all__' 
 
 class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
@@ -149,7 +149,7 @@ class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__'
 
     def to_representation(self, scan_report):
-        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
+        qs = MappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_json(qs)
         return rules
 
@@ -159,7 +159,7 @@ class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__'
 
     def to_representation(self, scan_report):
-        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
+        qs = MappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_list(qs)
         for rule in rules:
             rule['destination_table'] = {

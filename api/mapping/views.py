@@ -27,7 +27,7 @@ from .serializers import (
     DataPartnerSerializer,
     OmopTableSerializer,
     OmopFieldSerializer,
-    StructuralMappingRuleSerializer,
+    MappingRuleSerializer,
     GetRulesJSON,
     GetRulesList,
     DocumentTypeSerializer,
@@ -105,7 +105,7 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    StructuralMappingRule, ScanReportConcept,
+    MappingRule, ScanReportConcept,
     ClassificationSystem,
 )
 
@@ -304,9 +304,9 @@ class OmopFieldFilterViewSet(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields={'id': ['in', 'exact']}    
     
-class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
-    queryset=StructuralMappingRule.objects.all()
-    serializer_class=StructuralMappingRuleSerializer
+class MappingRuleViewSet(viewsets.ModelViewSet):
+    queryset=MappingRule.objects.all()
+    serializer_class=MappingRuleSerializer
 
 class DownloadJSON(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
@@ -320,9 +320,9 @@ class RulesList(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['id']
     
-class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
-    queryset=StructuralMappingRule.objects.all()
-    serializer_class=StructuralMappingRuleSerializer    
+class MappingRuleFilterViewSet(viewsets.ModelViewSet):
+    queryset=MappingRule.objects.all()
+    serializer_class=MappingRuleSerializer
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['scan_report']
     
@@ -373,7 +373,7 @@ class CountStats(APIView):
         scanreporttable_count=ScanReportTable.objects.count()
         scanreportfield_count=ScanReportField.objects.count()
         scanreportvalue_count=ScanReportValue.objects.count()
-        scanreportmappingrule_count=StructuralMappingRule.objects.count()
+        scanreportmappingrule_count=MappingRule.objects.count()
         content = {'scanreport_count': scanreport_count,
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,
@@ -392,7 +392,7 @@ class CountStatsScanReport(APIView):
             scanreporttable_count=ScanReportTable.objects.filter(scan_report=scanreport).count()        
             scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=scanreport).count()
             scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=scanreport).count()
-            scanreportmappingrule_count=StructuralMappingRule.objects.filter(scan_report=scanreport).count()
+            scanreportmappingrule_count=MappingRule.objects.filter(scan_report=scanreport).count()
             
             scanreport_content = {
             'scanreport': scanreport,
@@ -679,7 +679,7 @@ class ScanReportValueListView(ListView):
 
 @method_decorator(login_required, name="dispatch")
 class StructuralMappingTableListView(ListView):
-    model = StructuralMappingRule
+    model = MappingRule
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
@@ -1334,7 +1334,7 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
-    #scan_report_concept.structuralmappingrule.delete()
+    #scan_report_concept.mappingrule.delete()
                 
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name

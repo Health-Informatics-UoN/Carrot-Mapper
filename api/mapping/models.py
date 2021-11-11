@@ -388,7 +388,7 @@ class ScanReportAssertion(BaseModel):
 
 
 #!! TODO --- Give this model a better name(?)
-class StructuralMappingRule(BaseModel):
+class MappingRule(BaseModel):
     """
     To come
     """

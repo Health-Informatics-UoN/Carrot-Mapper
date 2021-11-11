@@ -14,7 +14,7 @@ from .models import (
     Document,
     DocumentFile,
     DataDictionary,
-    StructuralMappingRule,
+    MappingRule,
     NLPModel,
     ScanReportConcept
 )
@@ -30,7 +30,7 @@ admin.site.register(ScanReportAssertion)
 admin.site.register(ClassificationSystem)
 admin.site.register(OmopTable)
 admin.site.register(OmopField)
-admin.site.register(StructuralMappingRule)
+admin.site.register(MappingRule)
 admin.site.register(Document)
 admin.site.register(DocumentFile)
 admin.site.register(DataDictionary)
