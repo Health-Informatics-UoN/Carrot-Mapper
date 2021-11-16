@@ -9,6 +9,7 @@ import openpyxl
 from datetime import datetime
 import os
 import csv
+from collections import Counter
 
 from requests.models import HTTPError
 
@@ -179,6 +180,11 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     )
     field_names=json.loads(get_field_names.content.decode("utf-8"))
     # Need to handle names not being unique before the dictionary is created
+    names=[field['name'] for field in field_names]
+    duplicates=[k for k,v in Counter(names).items() if v>1]
+    unique_names= [name for name in names if name not in duplicates]
+    print(duplicates)
+    print(unique_names)
     field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
 
     concepts_to_post=[]
