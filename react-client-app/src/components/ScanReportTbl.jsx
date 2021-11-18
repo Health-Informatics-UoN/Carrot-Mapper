@@ -31,6 +31,7 @@ const ScanReportTbl = (props) => {
         let scanreports = await useGet(`/scanreports/`)
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // for each scan report use the data partner and author ids to get name to display
+        // get list of unique data partner and auther ids
         const dataPartnerObject = {}
         const authorObject = {}
         scanreports.map(scanreport => {
@@ -41,6 +42,7 @@ const ScanReportTbl = (props) => {
             created_at.displayString = moment(scanreport.created_at.toString()).format('MMM. DD, YYYY, h:mm a')
             scanreport.created_at = created_at
         })
+        // make batch queries with author ids and data partner ids
         const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject))
         const authorIds = chunkIds(Object.keys(authorObject))
         const dataPartnerPromises = []
@@ -54,7 +56,7 @@ const ScanReportTbl = (props) => {
         const promises = await Promise.all([Promise.all(dataPartnerPromises), Promise.all(authorPromises)])
         const dataPartners = [].concat.apply([], promises[0])
         const authors = [].concat.apply([], promises[1])
-
+        // map data partners and authors to their scan reports
         dataPartners.forEach(element => {
             scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
         })
@@ -131,6 +133,7 @@ const ScanReportTbl = (props) => {
         return newData
     }
 
+    // remove a filter on s certain column by checking the tags column name. called inside concept tag
     const removeFilter = (a, b) => {
         if (a.includes("Added By")) {
             setAuthorFilter("All")
@@ -151,6 +154,7 @@ const ScanReportTbl = (props) => {
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
     };
+    // set the status of a scan report by using a patch request then reset the page data
     const setStatus = (id, status) => {
         const patchData = { status: status };
         data.current = data.current.map((item) => item.id == id ? { ...item, statusLoading: true } : item);
@@ -165,9 +169,11 @@ const ScanReportTbl = (props) => {
         });
     }
     const mapStatus = (status) => {
+        // get the list of statuses from django app and find the label of the status with a specific name
         return JSON.parse(window.status).find(item => item.id == status).label
     }
     const mapStatusColour = (status) => {
+        // get colour of specified status name
         switch (status) {
             case "UPINPRO":
                 return "upload"
@@ -191,6 +197,7 @@ const ScanReportTbl = (props) => {
                 return "upload"
         }
     }
+    // get colour of the text of specified status name
     const mapStatusText = (status) => {
         switch (status) {
             case "UPINPRO":
@@ -287,9 +294,10 @@ const ScanReportTbl = (props) => {
                         {expanded &&
                             <>
                                 <Th style={{ fontSize: "16px", textTransform: "none" }}>Tables</Th>
+                                <Th style={{ fontSize: "16px", textTransform: "none" }}>Fields</Th>
                                 <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                                     <HStack>
-                                        <Text>Fields</Text>
+                                        <Text>Mappings</Text>
                                         {expanded && <ArrowLeftIcon ml="auto" _hover={{ color: "blue.500", }} onClick={() => setExpanded(false)} />}
                                     </HStack>
                                 </Th>
@@ -319,7 +327,7 @@ const ScanReportTbl = (props) => {
                                         :
                                         <Select bg={mapStatusColour(item.status)} color={mapStatusText(item.status)} minW="max-content" style={{ fontWeight: "bold" }} variant="outline" value={item.status} onChange={(option) => setStatus(item.id, option.target.value)}>
                                             {statuses.map((item, index) =>
-                                                <option key={index} value={item} style={{color:"#000000"}}>{mapStatus(item)}</option>
+                                                <option key={index} value={item} style={{ color: "#000000" }}>{mapStatus(item)}</option>
                                             )}
                                         </Select>
                                     }
@@ -356,8 +364,9 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.scanreporttable_count!=undefined ? item.scanreporttable_count : "counting"}</Td>
-                                        <Td>{item.scanreportfield_count!=undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>

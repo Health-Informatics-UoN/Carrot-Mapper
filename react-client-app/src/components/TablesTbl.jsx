@@ -10,6 +10,7 @@ import {
     Flex,
     Spinner,
     Link,
+    Button
 
 } from "@chakra-ui/react"
 
@@ -20,6 +21,7 @@ import { getScanReportTableRows } from '../api/values'
 
 
 const TablesTbl = () => {
+    // get the value to use to query the fields endpoint from the page url
     const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -77,6 +79,7 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
+            <Link href={"/scanreports/"+value+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
         </div>
     );
 }

@@ -30,7 +30,7 @@ const EditField = ({ setTitle }) => {
             pass_from_source: passFromSource,
             description_column: descriptionColumn
         }
-
+        // use endpoint to change scan report field value
         usePatch(`scanreportfields/${value}/`, data).then((res) => {
             // redirect
             window.location.href= `${window.u}fields/?search=${field.scan_report_table}`
