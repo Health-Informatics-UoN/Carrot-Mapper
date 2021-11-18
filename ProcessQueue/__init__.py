@@ -171,20 +171,24 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     
     ids=list(field_id_to_concept_map.keys())
     ids=", ".join(ids)
-    names=list(name_ids.keys())
-    names=", ".join(names)
+    names_list=list(name_ids.keys())
+    names=", ".join(names_list)
 
     get_field_names=requests.get(
         url=f"{api_url}scanreportfieldsfilter/?id__in={ids}&name__in={names}",
         headers=headers,
     )
-    field_names=json.loads(get_field_names.content.decode("utf-8"))
-    # Need to handle names not being unique before the dictionary is created
-    names=[field['name'] for field in field_names]
-    duplicates=[k for k,v in Counter(names).items() if v>1]
-    unique_names= [name for name in names if name not in duplicates]
-    print(duplicates)
-    print(unique_names)
+    fields=json.loads(get_field_names.content.decode("utf-8"))
+   
+    existing_mappings=[(field['name'],field_id_to_concept_map[str(field['id'])]) for field in fields]
+
+    field_names=[]
+    for name in names_list:
+        mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping[0] == name]
+        target_concept_ids = set([mapping[1] for mapping in mappings_matching_field_name])
+        if len(target_concept_ids) == 1:
+            field_names.append(name)
+
     field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
 
     concepts_to_post=[]
