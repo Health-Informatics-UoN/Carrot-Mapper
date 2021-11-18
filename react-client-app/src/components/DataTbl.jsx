@@ -16,6 +16,7 @@ import {
     ScaleFade,
     Input,
     useDisclosure,
+    Link
 } from "@chakra-ui/react"
 
 import { Formik, Form } from 'formik'
@@ -24,7 +25,9 @@ import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
 const DataTbl = (props) => {
+    // get value to use in query from page url
     const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    // set page state variables
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [scanReports, setScanReports] = useState([]);
@@ -44,11 +47,12 @@ const DataTbl = (props) => {
         getScanReports(value, setScanReports, scanReportsRef, setLoadingMessage, setError)
     }, []);
 
+    // called to submit a concept to be added. Calls handle submit function from app.js
     const handleSubmit = (id, concept) => {
         props.handleSubmit(id, concept, scanReportsRef, setScanReports, setAlert, onOpen, scanReportTable.current, 17)
     }
 
-
+    // called to delete a concept. Calls handle delete function from app.js
     const handleDelete = (id, conceptId) => {
         props.handleDelete(id, conceptId, scanReportsRef, setScanReports, setAlert, onOpen)
     }
@@ -157,6 +161,7 @@ const DataTbl = (props) => {
                         }
                     </Tbody>
                 </Table>
+                <Link href={"/scanreports/"+scanReportTable.current.scan_report+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 

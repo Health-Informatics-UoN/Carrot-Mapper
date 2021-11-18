@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 
 const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleDelete, backgroundColor }) => {
-
+    // pass id of concept and determine background colour depending on the id
     const tagColour = (id) => {
         switch (id) {
             case 999:

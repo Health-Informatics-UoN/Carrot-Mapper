@@ -171,10 +171,16 @@ class ScanReportForm(forms.Form):
         # Loop over the rows, and for each table, once we reach the end of the table,
         # compare the fields provided with the fields in the associated sheet
         current_table_fields = []
+        last_value = None
         for row in fo_ws.iter_rows(min_row=2):
             # Loop over rows, collecting all fields in each table in turn
             if row[0].value == '' or row[0].value is None:
                 # We're at the end of the table, so process
+                # Firstly, check that we're not two empty lines in a row - if so,
+                # then we're beyond the last true value and iter_rows is just giving
+                # us spurious rows. Abort early.
+                if last_value == '' or last_value is None:
+                    break
                 # Get all field names from the associated sheet, by grabbing the first
                 # row, and then grabbing every second column value (because the
                 # alternate columns should be 'Frequency'
@@ -241,6 +247,8 @@ class ScanReportForm(forms.Form):
                 # check for empty lines between tables in the FO sheet.
                 current_table_fields.append(row[1].value)
                 current_table_name = row[0].value
+
+            last_value = row[0].value
 
         if errors:
             raise ValidationError(errors)

@@ -582,7 +582,8 @@ def get_mapping_rules_json(structural_mapping_rules):
     for rule in all_rules:
         #get the rule id
         #i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
-        _id = rule['rule_name']
+        #append the rule_id to not overwrite mappings to the same concept ID
+        _id = rule['rule_name'] + " " + str(rule['rule_id'])
 
         #get the table name
         table_name = rule['destination_table'].table

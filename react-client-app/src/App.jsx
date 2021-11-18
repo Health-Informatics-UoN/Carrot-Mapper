@@ -37,6 +37,7 @@ const App = ({ page }) => {
                             });
                     }
                     else {
+                        // if scan report now has no concepts set concepts of specified scan report to be an empty array
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, concepts: [], conceptsLoaded: true } : value)
                         setValues(valuesRef.current)
                         setAlert({
@@ -49,6 +50,7 @@ const App = ({ page }) => {
                 })
             })
             .catch(function (error) {
+                // return to original state if an error occurs while trying to delete the concept
                 valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                 setValues(valuesRef.current)
                 if (typeof (error) !== 'undefined' && error.response != null) {
@@ -64,6 +66,7 @@ const App = ({ page }) => {
     }
 
     const handleAddConcept = (id, concept, valuesRef, setValues, setAlert, onOpen, table, content_type) => {
+        // check if input field has anything typed into it
         if (concept === '') {
             setAlert({
                 hidden: false,
@@ -76,9 +79,9 @@ const App = ({ page }) => {
         else if (!table.person_id || !table.date_event) {
             // set the error message depending on which value is missing
             let message;
-            if (!table.person_id && !table.date_event) { message = 'Please set the person_id and a date_event to ' }
-            else if (!table.person_id) { message = 'Please set the person_id to ' }
-            else { message = 'Please set the date_event to ' }
+            if (!table.person_id && !table.date_event) { message = 'Please set the person_id and a date_event on the table ' }
+            else if (!table.person_id) { message = 'Please set the person_id on the table ' }
+            else { message = 'Please set the date_event on the table ' }
             setAlert({
                 hidden: false,
                 status: 'error',
@@ -92,7 +95,7 @@ const App = ({ page }) => {
             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
             setValues(valuesRef.current)
             // check if concept exists
-            useGet(`/omop/concepts/${concept}`)
+            useGet(`/omop/concepts/${concept}/`)
                 .then(async response => {
                     // if concept does not exist, display error
                     if (response.detail == 'Not found.') {
@@ -127,7 +130,7 @@ const App = ({ page }) => {
 
                     }
                     // check concepts omop table has been implemented
-                    const omopTable = await useGet(`/omoptables/${destination_field.table}`)
+                    const omopTable = await useGet(`/omoptables/${destination_field.table}/`)
                     if (!m_allowed_tables.includes(omopTable.table)) {
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                         setValues(valuesRef.current)
@@ -155,6 +158,7 @@ const App = ({ page }) => {
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
                                     useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                                         .then((values) => {
+                                            // save new concepts to state
                                             scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: values.find(con => con.concept_id == element.concept) }))
                                             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, concepts: [...scanreportconcepts], conceptsLoaded: true } : value)
                                             setValues(valuesRef.current)
@@ -165,7 +169,7 @@ const App = ({ page }) => {
                                                 description: 'Response: ' + response.status + ' ' + response.statusText
                                             })
                                             onOpen()
-
+                                            // create mapping rules for new concept
                                             const scan_report_concept = scanreportconcepts.filter(con => con.concept.concept_id == concept)[0]
                                             saveMappingRules(scan_report_concept, scanReportValue, table)
                                                 .then(values => {
@@ -189,6 +193,7 @@ const App = ({ page }) => {
                                         });
                                 }
                                 else {
+                                    // if no concept is found after a concept has been added then something has gone wrong
                                     valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, concepts: [], conceptsLoaded: true } : value)
                                     setValues(valuesRef.current)
                                     setAlert({
@@ -202,6 +207,7 @@ const App = ({ page }) => {
                             })
                         })
                         .catch(function (error) {
+                            // if an error occurs while trying to add the concept, return to original state
                             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                             setValues(valuesRef.current)
 
@@ -219,6 +225,7 @@ const App = ({ page }) => {
 
                 })
                 .catch(err => {
+                    // if an error occurs while trying to check if the concept exists, return to original state
                     valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                     setValues(valuesRef.current)
                     setAlert({
@@ -233,6 +240,7 @@ const App = ({ page }) => {
     }
 
     const [title, setTitle] = useState(page);
+    // render the page specified in the page variable
     const getPage = () => {
         switch (page) {
             case "Home":
