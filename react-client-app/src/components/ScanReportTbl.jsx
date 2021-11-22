@@ -336,10 +336,6 @@ const ScanReportTbl = (props) => {
                                     <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                 </Td>
                                 <Td textAlign="center">
-                                    {currentUser &&
-                                        <>
-                                            {currentUser == item.author.username &&
-                                                <>
                                                     {item.hidden ?
                                                         <>
                                                             {item.loading ?
@@ -357,10 +353,6 @@ const ScanReportTbl = (props) => {
                                                             }
                                                         </>
                                                     }
-                                                </>
-                                            }
-                                        </>
-                                    }
                                 </Td>
                                 {expanded &&
                                     <>
