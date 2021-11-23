@@ -119,6 +119,7 @@ from .services_rules import (
     remove_mapping_rules,
     find_existing_scan_report_concepts,
     download_mapping_rules,
+    download_mapping_rules_as_csv,
     get_mapping_rules_list,
     view_mapping_rules,
     find_date_event,
@@ -696,6 +697,9 @@ class StructuralMappingTableListView(ListView):
         if request.POST.get("download_rules") is not None:
             qs = self.get_queryset()
             return download_mapping_rules(request,qs)
+        elif request.POST.get("download_rules_as_csv") is not None:
+            qs = self.get_queryset()
+            return download_mapping_rules_as_csv(request,qs)
         elif request.POST.get("refresh_rules") is not None:
             #remove all existing rules first
             remove_mapping_rules(request,self.kwargs.get("pk"))
