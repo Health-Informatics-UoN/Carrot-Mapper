@@ -12,9 +12,15 @@ from mapping.services_rules import (
 class Command(BaseCommand):
     help = 'create rules from existing concepts found for a given table id'
 
+    def add_arguments(self, parser):
+        parser.add_argument('--concept-id', required=True, type=int)
+        parser.add_argument('--use-archived', required=True, type=bool)
+
     def handle(self, *args, **options):
-        use_archived = False
-        concept_id = 8507 # id for male
+        use_archived = options['use_archived']
+        concept_id = options['concept_id'] 
+        print(use_archived)
+        print(concept_id)
         scan_report_concepts = ScanReportConcept.objects.filter(concept=concept_id) 
         finalList = []
         
