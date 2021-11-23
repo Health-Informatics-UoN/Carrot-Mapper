@@ -629,6 +629,26 @@ def download_mapping_rules(request,qs):
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
 
+def download_mapping_rules_as_csv(request,qs):
+    #get the mapping rules as a list 
+    output = get_mapping_rules_list(qs)
+
+    #used the first qs item to get the scan_report name the qs is associated with
+    scan_report = qs[0].scan_report
+    #make a file name
+    return_type = "csv"
+    fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+    #return a response that downloads the json file
+        
+    response = HttpResponse(content_type='text/csv',headers={'Content-Disposition':f'attachment; filename="{fname}"'})
+
+    import csv
+    writer = csv.writer(response)
+    writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+    
+    return response
+
+
 
 colorscheme = 'gnbu9'
 

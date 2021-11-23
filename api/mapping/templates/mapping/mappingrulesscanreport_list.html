@@ -167,7 +167,7 @@
 				type: "POST",
 				url: window.location,
 				data: {
-					'download_rules': true,
+					'download_rules_as_csv': true,
 					'csrfmiddlewaretoken': '{{ csrf_token }}',
 				},
 				success: function (response, status, xhr) {
