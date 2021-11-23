@@ -36,7 +36,7 @@ class Command(BaseCommand):
                         scan_report_fields = ScanReportField.objects.filter(pk=scan_value.scan_report_field_id)
                         scan_field = scan_report_fields[0]
                         finalList.append((scan_field.name ,scan_value.value,scan_value.value_description))
-            if (scan_report_concept.content_type_id==15):
+            elif (scan_report_concept.content_type_id==15):
                 # If it is for a field
                 if (use_archived):  
                     scan_report_fields = ScanReportField.objects.filter(pk=scan_report_concept.object_id)
