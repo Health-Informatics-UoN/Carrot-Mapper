@@ -336,23 +336,23 @@ const ScanReportTbl = (props) => {
                                     <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                 </Td>
                                 <Td textAlign="center">
-                                                    {item.hidden ?
-                                                        <>
-                                                            {item.loading ?
-                                                                <Spinner />
-                                                                :
-                                                                <ViewOffIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, false)} />
-                                                            }
-                                                        </>
-                                                        :
-                                                        <>
-                                                            {item.loading ?
-                                                                <Spinner />
-                                                                :
-                                                                <ViewIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, true)} />
-                                                            }
-                                                        </>
-                                                    }
+                                    {item.hidden ?
+                                        <>
+                                            {item.loading ?
+                                                <Spinner />
+                                                :
+                                                <ViewOffIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, false)} />
+                                            }
+                                        </>
+                                        :
+                                        <>
+                                            {item.loading ?
+                                                <Spinner />
+                                                :
+                                                <ViewIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveReport(item.id, true)} />
+                                            }
+                                        </>
+                                    }
                                 </Td>
                                 {expanded &&
                                     <>
