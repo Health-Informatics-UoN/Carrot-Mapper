@@ -231,6 +231,7 @@ const MappingTbl = () => {
                     <Thead>
                         <Tr>
                             <Th>Rule ID</Th>
+                            <Th>Rule Name</Th>
                             <Th>
                                 <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Destination Table" readOnly onChange={(option) => setDestinationFilter(option.target.value)}>
                                     <option style={{ fontWeight: "bold" }} disabled>Destination Table</option>
@@ -264,6 +265,7 @@ const MappingTbl = () => {
                             applyFilters(values).map((item, index) =>
                                 <Tr key={index}>
                                     <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
+                                    <Td maxW={[50, 100, 200]} >{item.rule_name} </Td>
                                     <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
                                     <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
                                     <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_table.id}>{item.source_table.name}</Link></Td>

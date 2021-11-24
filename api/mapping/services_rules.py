@@ -650,7 +650,7 @@ def download_mapping_rules_as_csv(request,qs):
     #setup the headers from the first object
     #replace term_mapping ({'source_value':'concept'}) with separate columns
     headers = [str(x) for x in output[0].keys() if str(x) != 'term_mapping']
-    headers += ['source_value','concept']
+    headers += ['source_value','concept','isFieldMapping']
 
     #write the headers to the csv
     writer.writerow(headers)
@@ -665,6 +665,7 @@ def download_mapping_rules_as_csv(request,qs):
 
         #pop out the term mapping
         term_mapping = content.pop('term_mapping')
+        content['isFieldMapping'] = ''
         #if no term mapping, set columns to blank
         if term_mapping == None:
             content['source_value'] = ''
@@ -674,13 +675,15 @@ def download_mapping_rules_as_csv(request,qs):
             #set these based on the value/key
             content['source_value'] = list(term_mapping.keys())[0]
             content['concept'] = list(term_mapping.values())[0]
+            content['isFieldMapping'] =  '0'
         else:
             #otherwise it is a scalar, it is a term map of a field, so set this
             content['source_value'] = ''
             content['concept'] = term_mapping
+            content['isFieldMapping'] =  '1'
 
         #extract and write the contents now
-        content = [str(x) for x in content.values()]
+        content = [str(content[x]) for x in headers]
         writer.writerow(content)
 
     #rewind the buffer and return the response
