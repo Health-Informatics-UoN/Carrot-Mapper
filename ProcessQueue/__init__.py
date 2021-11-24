@@ -10,7 +10,7 @@ from datetime import datetime
 import os
 import csv
 import psutil
-import resource
+
 
 from requests.models import HTTPError
 from collections import defaultdict
@@ -159,7 +159,6 @@ def paginate(entries_to_post):
 def startup(msg):
     logging.info("Python queue trigger function processed a queue item.")
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # Set up ccom API parameters:
     api_url = os.environ.get("APP_URL") + "api/"
@@ -288,7 +287,6 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     table_entries_to_post = []
     # print("Working on Scan Report >>>", scan_report_id)
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     print("TABLES NAMES >>> ", table_names)
 
     for table_name in table_names:
@@ -333,7 +331,6 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
         process_failure(api_url, scan_report_id, headers)
         raise HTTPError(' '.join(['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     # Load the result of the post request,
     tables_content = json.loads(tables_response.content.decode("utf-8"))
@@ -437,7 +434,6 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
 
     print("POST", len(value_entries_to_post), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     paginated_value_entries_to_post = paginate(value_entries_to_post)
     values_response_content = []
 
@@ -462,7 +458,6 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
 
     print("POST values all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     # Process conceptIDs in ScanReportValues
     # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
     print("GET posted values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -520,7 +515,6 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
 
     print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     # Update ScanReportValue to remove any data added to the conceptID field
     # conceptID field only used temporarily to hold the converted concept code -> conceptID
     # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
@@ -547,7 +541,6 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
-    print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
 
 def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
@@ -664,7 +657,6 @@ def main(msg: func.QueueMessage):
             # POST fields in this table
             print("POST", len(field_entries_to_post), "fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             print('RAM memory % used:', psutil.virtual_memory())
-            print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
             fields_response_content = post_field_entries(field_entries_to_post,
                                                          api_url, scan_report_id,
