@@ -34,6 +34,7 @@ const MappingTbl = () => {
     const [sourceTableFilter, setSourceTableFilter] = useState([]);
     const [filters, setFilters] = useState([]);
     const [isDownloading, setDownloading] = useState(false);
+    const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
 
@@ -189,6 +190,7 @@ const MappingTbl = () => {
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadRules(setDownloading) }}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
+                <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
             </HStack>
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 <div style={{ fontWeight: "bold", marginRight: "10px" }} >Filters: </div>
