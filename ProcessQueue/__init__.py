@@ -10,19 +10,18 @@ from datetime import datetime
 import os
 import csv
 import psutil
-
+import httpx
+import asyncio
 
 from requests.models import HTTPError
 from collections import defaultdict
 
 from shared_code import omop_helpers
 
-
-import logging
-import memory_profiler
-root_logger = logging.getLogger()
-root_logger.handlers[0].setFormatter(logging.Formatter("%(name)s: %(message)s"))
-profiler_logstream = memory_profiler.LogFile('memory_profiler_logs', True)
+# import memory_profiler
+# root_logger = logging.getLogger()
+# root_logger.handlers[0].setFormatter(logging.Formatter("%(name)s: %(message)s"))
+# profiler_logstream = memory_profiler.LogFile('memory_profiler_logs', True)
 
 
 # Agreed vocabs that are accepted for lookup/conversion
@@ -54,7 +53,7 @@ vocabs = [
 ]
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def process_scan_report_sheet_table(sheet):
     """
     This function extracts the
@@ -76,7 +75,7 @@ def process_scan_report_sheet_table(sheet):
      (b, plantain, 50)]
     --
     """
-
+    print('Start process_scan_report_sheet_table', datetime.utcnow().strftime("%H:%M:%S.%fZ"), flush=True)
     # Get header entries (skipping every second column which is just 'Frequency')
     # So headers = ['a', 'b']
     first_row = sheet[1]
@@ -93,31 +92,30 @@ def process_scan_report_sheet_table(sheet):
     #              'b': [('orange', 5), ('plantain', 50)]})
 
     d = defaultdict(list)
-    # Iterate over all rows beyond the header
-    for row_idx, row in enumerate(
-            sheet.iter_rows(min_col=1,
-                            max_col=sheet.max_column,
-                            min_row=2,
-                            max_row=sheet.max_row,
-                            values_only=True),
-            start=1
-    ):
+    # Iterate over all rows beyond the header - use the number of headers*2 to 
+    # set the maximum column rather than relying on sheet.max_col as this is not
+    # always reliably updated by Excel etc.
+    for row in sheet.iter_rows(min_col=1,
+                               max_col=len(headers)*2,
+                               min_row=2,
+                               max_row=sheet.max_row,
+                               values_only=True):
+        # Set boolean to track whether we hit a blank row for early exit below.
+        this_row_empty = True
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
-        for col_idx, (header, cell, freq) in \
-                enumerate(zip(headers, row[::2], row[1::2])):
+        for (header, cell, freq) in zip(headers, row[::2], row[1::2]):
             if cell != '' or freq != '':
                 d[header].append((str(cell), freq))
+                this_row_empty = False
+        # This will trigger if we hit a row that is entirely empty. Short-circuit
+        # to exit early here - this saves us from situations where sheet.max_row is 
+        # incorrectly set (too large)
+        if this_row_empty:
+            break
 
-    # Convert {'a': [('apple', 20), ('banana', 3), ('pear', 12)],
-    #          'b': [('orange', 5), ('plantain', 50)]}
-    # to [('a', 'apple', 20), ('a', 'banana', 3),
-    #      ('a', 'pear', 12), ('b', 'orange', 5),
-    #      ('b', 'plantain', 50)]
-    results = [(str(header), *value)
-               for header, dict_entry in zip(headers, d.values())
-               for value in dict_entry]
-    return results
+    print('Finish process_scan_report_sheet_table', datetime.utcnow().strftime("%H:%M:%S.%fZ"), flush=True)
+    return d
 
 
 def default_zero(input):
@@ -128,7 +126,46 @@ def default_zero(input):
     return round(input if input else 0.0, 2)
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+def perform_chunking(entries_to_post):
+    """
+    This expects a list of dicts, and returns a list of lists of lists of dicts, 
+    where the maximum length of each list of dicts, under JSONification, 
+    is less than max_chars, and the length of each list of lists of dicts is chunk_size
+    """
+    max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
+    chunk_size = int(os.environ.get("CHUNK_SIZE")) if os.environ.get("CHUNK_SIZE") else 6
+
+    chunked_entries_to_post = []
+    this_page = []
+    this_chunk = []
+    page_no = 0
+    for entry in entries_to_post:
+        # If the current page won't be overfull, add the entry to the current page
+        if len(json.dumps(this_page)) + len(
+                json.dumps(entry)) < max_chars:
+            this_page.append(entry)
+        # Otherwise, this page should be added to the current chunk.
+        else:
+            this_chunk.append(this_page)
+            page_no += 1
+            # Now check for a full chunk. If full, then add this chunk to the list of chunks.
+            if page_no % chunk_size == 0:
+                # append the chunk to the list of chunks, then reset the chunk to empty
+                chunked_entries_to_post.append(this_chunk)
+                this_chunk = []
+            # Now add the entry that would have over-filled the page.
+            this_page = [entry]
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
+    if this_page:
+        this_chunk.append(this_page)
+    # Similarly, if a chunk ends up half-filled, add it to thelist of chunks
+    if this_chunk:
+        chunked_entries_to_post.append(this_chunk)
+
+    return chunked_entries_to_post
+
+
+# @memory_profiler.profile(stream=profiler_logstream)
 def paginate(entries_to_post):
     """
     This expects a list of dicts, and returns a list of lists of dicts, 
@@ -140,22 +177,23 @@ def paginate(entries_to_post):
     paginated_entries_to_post = []
     this_page = []
     for entry in entries_to_post:
-        # print(len(json.dumps(entry)))
+        # If the current page won't be overfull, add the entry to the current page
         if len(json.dumps(this_page)) + len(
                 json.dumps(entry)) < max_chars:
             this_page.append(entry)
-            # print(len(json.dumps(this_page)))
         else:
+            # Otherwise, this page should be added to the list of pages.
             paginated_entries_to_post.append(this_page)
-            # print('saved:', len(json.dumps(this_page)))
+            # Now add the entry that would have over-filled the page.
             this_page = [entry]
-            # print(len(json.dumps(this_page)))
+
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
     if this_page:
         paginated_entries_to_post.append(this_page)
     return paginated_entries_to_post
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def startup(msg):
     logging.info("Python queue trigger function processed a queue item.")
     print('RAM memory % used:', psutil.virtual_memory())
@@ -229,7 +267,7 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def parse_blobs(scan_report_blob, data_dictionary_blob):
     print("Get blobs", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # Set Storage Account connection string
@@ -264,7 +302,7 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
     return wb, data_dictionary
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def post_tables(fo_ws, api_url, scan_report_id, headers):
     
     # Get all the table names in the order they appear in the Field Overview page
@@ -343,14 +381,14 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     return table_name_to_id_map
 
 
-@memory_profiler.profile(stream=profiler_logstream)
-def process_values_from_sheet(sheet, data_dictionary, current_table_name,
-                              names_to_ids_dict, api_url, scan_report_id, headers):
+# @memory_profiler.profile(stream=profiler_logstream)
+async def process_values_from_sheet(sheet, data_dictionary, current_table_name,
+                                    names_to_ids_dict, api_url, scan_report_id, headers):
     # print("WORKING ON", sheet.title)
     # Reset list for values
     value_entries_to_post = []
     # Get (col_name, value, frequency) for each field in the table
-    fieldname_value_freq_tuples = process_scan_report_sheet_table(sheet)
+    fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
     """
     For every result of process_scan_report_sheet_table,
@@ -360,101 +398,114 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
     Create JSON array with all the value entries, 
     Send POST request to API with JSON as input
     """
-    for fieldname_value_freq in fieldname_value_freq_tuples:
+    for name, value_freq_tuples in fieldname_value_freq_dict.items():
+        for full_value, frequency in value_freq_tuples:
+            value = full_value[0:127]
 
-        name = fieldname_value_freq[0]
-        value = fieldname_value_freq[1][0:127]
-        frequency = fieldname_value_freq[2]
+            if not frequency:
+                frequency = 0
 
-        if not frequency:
-            frequency = 0
+            if data_dictionary is not None:
+                # Look up value description
+                val_desc = next(
+                    (
+                        row["value"]
+                        for row in data_dictionary
+                        if str(row["code"]) == str(value)
+                        and str(row["field_name"]) == str(name)
+                        and str(row["csv_file_name"]) == str(current_table_name)
+                    ),
+                    None,
+                )
 
-        if data_dictionary is not None:
-            # Look up value description
-            val_desc = next(
-                (
-                    row["value"]
-                    for row in data_dictionary
-                    if str(row["code"]) == str(value)
-                    and str(row["field_name"]) == str(name)
-                    and str(row["csv_file_name"]) == str(current_table_name)
-                ),
-                None,
-            )
+                # Grab data from the 'code' column in the data dictionary
+                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
+                # or it could contain one of our pre-defined vocab names
+                # e.g. SNOMED, RxNorm, ICD9 etc.
+                code = next(
+                    (
+                        row["code"]
+                        for row in data_dictionary
+                        if str(row["field_name"]) == str(name)
+                        and str(row["csv_file_name"]) == str(current_table_name)
+                    ),
+                    None,
+                )
 
-            # Grab data from the 'code' column in the data dictionary
-            # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-            # or it could contain one of our pre-defined vocab names
-            # e.g. SNOMED, RxNorm, ICD9 etc.
-            code = next(
-                (
-                    row["code"]
-                    for row in data_dictionary
-                    if str(row["field_name"]) == str(name)
-                    and str(row["csv_file_name"]) == str(current_table_name)
-                ),
-                None,
-            )
-
-            # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
-            # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
-            if code in vocabs:
-                try:
-                    concept_id = omop_helpers.get_concept_from_concept_code(
-                        concept_code=value,
-                        vocabulary_id=code,
-                        no_source_concept=True,
-                    )
-                    concept_id = concept_id["concept_id"]
-                except:
+                # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
+                # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
+                if code in vocabs:
+                    try:
+                        concept_id = omop_helpers.get_concept_from_concept_code(
+                            concept_code=value,
+                            vocabulary_id=code,
+                            no_source_concept=True,
+                        )
+                        concept_id = concept_id["concept_id"]
+                    except:
+                        concept_id = -1
+                else:
                     concept_id = -1
+
             else:
+                val_desc = None
                 concept_id = -1
 
-        else:
-            val_desc = None
-            concept_id = -1
+            # Create ScanReportValue entry
+            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
+            # to save any looked up conceptIDs in the previous block of code.
+            # The conceptID will be cleared later
+            scan_report_value_entry = {
+                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "value": value,
+                "frequency": int(frequency),
+                "conceptID": concept_id,
+                "value_description": val_desc,
+                "scan_report_field": names_to_ids_dict[name],
+            }
 
-        # Create ScanReportValue entry
-        # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-        # to save any looked up conceptIDs in the previous block of code.
-        # The conceptID will be cleared later
-        scan_report_value_entry = {
-            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "value": value,
-            "frequency": int(frequency),
-            "conceptID": concept_id,
-            "value_description": val_desc,
-            "scan_report_field": names_to_ids_dict[name],
-        }
+            # Append to list
+            value_entries_to_post.append(scan_report_value_entry)
 
-        # Append to list
-        value_entries_to_post.append(scan_report_value_entry)
-
-    print("POST", len(value_entries_to_post), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    print("POST", len(value_entries_to_post), "values to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
-    paginated_value_entries_to_post = paginate(value_entries_to_post)
+    chunked_value_entries_to_post = perform_chunking(value_entries_to_post)
     values_response_content = []
+    print('chunked values list len:', len(chunked_value_entries_to_post))
+    timeout = httpx.Timeout(60.0, connect=30.0)
 
-    for page in paginated_value_entries_to_post:
+    page_count = 0
+    for chunk in chunked_value_entries_to_post:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            tasks = []
+            page_lengths = []
+            for page in chunk:
+                # POST value_entries_to_post to ScanReportValues model
+                tasks.append(
+                    asyncio.ensure_future(
+                        client.post(
+                                    url="{}scanreportvalues/".format(api_url),
+                                    data=json.dumps(page),
+                                    headers=headers
+                                    )
+                                )
+                            )
+                page_lengths.append(len(page))
+                page_count += 1
+            
+            values_responses = await asyncio.gather(*tasks)
 
-        # POST value_entries_to_post to ScanReportValues model
-        values_response = requests.post(
-            url="{}scanreportvalues/".format(api_url),
-            data=json.dumps(page),
-            headers=headers
-        )
-        print("VALUES SAVE STATUS >>>", values_response.status_code,
-              values_response.reason, len(page), flush=True)
-        if values_response.status_code != 201:
-            process_failure(api_url, scan_report_id, headers)
-            raise HTTPError(' '.join(['Error in values save:',
-                                      str(values_response.status_code),
-                                      str(json.dumps(page))]))
+        for i, values_response in enumerate(values_responses):
+            print("VALUES SAVE STATUSES >>>", values_response.status_code,
+                    values_response.reason_phrase, page_lengths[i], flush=True)
+            if values_response.status_code != 201:
+                process_failure(api_url, scan_report_id, headers)
+                raise HTTPError(' '.join(['Error in values save:',
+                                            str(values_response.status_code),
+                                            str(json.dumps(page))]))
 
-        values_content = json.loads(values_response.content.decode("utf-8"))
-        values_response_content += values_content
+            values_response_content += json.loads(values_response.content.decode("utf-8"))
 
     print("POST values all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
@@ -655,7 +706,7 @@ def main(msg: func.QueueMessage):
             # print("scan_report_field_entries >>>", field_entries_to_post)
 
             # POST fields in this table
-            print("POST", len(field_entries_to_post), "fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            print("POST", len(field_entries_to_post), "fields to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             print('RAM memory % used:', psutil.virtual_memory())
 
             fields_response_content = post_field_entries(field_entries_to_post,
@@ -679,9 +730,9 @@ def main(msg: func.QueueMessage):
 
             # Go to Table sheet to process all the values from the sheet
             sheet = wb[current_table_name]
-            process_values_from_sheet(sheet, data_dictionary, current_table_name,
+            asyncio.run(process_values_from_sheet(sheet, data_dictionary, current_table_name,
                                       names_to_ids_dict, api_url, scan_report_id,
-                                      headers)
+                                      headers))
 
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
