@@ -91,31 +91,30 @@ def process_scan_report_sheet_table(sheet):
     #              'b': [('orange', 5), ('plantain', 50)]})
 
     d = defaultdict(list)
-    # Iterate over all rows beyond the header
-    for row_idx, row in enumerate(
-            sheet.iter_rows(min_col=1,
-                            max_col=sheet.max_column,
-                            min_row=2,
-                            max_row=sheet.max_row,
-                            values_only=True),
-            start=1
-    ):
+    # Iterate over all rows beyond the header - use the number of headers*2 to 
+    # set the maximum column rather than relying on sheet.max_col as this is not
+    # always reliably updated by Excel etc.
+    for row in sheet.iter_rows(min_col=1,
+                               max_col=len(headers)*2,
+                               min_row=2,
+                               max_row=sheet.max_row,
+                               values_only=True):
+        # Set boolean to track whether we hit a blank row for early exit below.
+        this_row_empty = True
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
-        for col_idx, (header, cell, freq) in \
-                enumerate(zip(headers, row[::2], row[1::2])):
+        for (header, cell, freq) in zip(headers, row[::2], row[1::2]):
             if cell != '' or freq != '':
                 d[header].append((str(cell), freq))
+                this_row_empty = False
+        # This will trigger if we hit a row that is entirely empty. Short-circuit
+        # to exit early here - this saves us from situations where sheet.max_row is 
+        # incorrectly set (too large)
+        if this_row_empty:
+            break
 
-    # Convert {'a': [('apple', 20), ('banana', 3), ('pear', 12)],
-    #          'b': [('orange', 5), ('plantain', 50)]}
-    # to [('a', 'apple', 20), ('a', 'banana', 3),
-    #      ('a', 'pear', 12), ('b', 'orange', 5),
-    #      ('b', 'plantain', 50)]
-    results = [(str(header), *value)
-               for header, dict_entry in zip(headers, d.values())
-               for value in dict_entry]
-    return results
+    print('Finish process_scan_report_sheet_table', datetime.utcnow().strftime("%H:%M:%S.%fZ"), flush=True)
+    return d
 
 
 def default_zero(input):
@@ -351,7 +350,7 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
     # Reset list for values
     value_entries_to_post = []
     # Get (col_name, value, frequency) for each field in the table
-    fieldname_value_freq_tuples = process_scan_report_sheet_table(sheet)
+    fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
     """
     For every result of process_scan_report_sheet_table,
@@ -361,77 +360,75 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
     Create JSON array with all the value entries, 
     Send POST request to API with JSON as input
     """
-    for fieldname_value_freq in fieldname_value_freq_tuples:
+    for name, value_freq_tuples in fieldname_value_freq_dict.items():
+        for full_value, frequency in value_freq_tuples:
+            value = full_value[0:127]
 
-        name = fieldname_value_freq[0]
-        value = fieldname_value_freq[1][0:127]
-        frequency = fieldname_value_freq[2]
+            if not frequency:
+                frequency = 0
 
-        if not frequency:
-            frequency = 0
+            if data_dictionary is not None:
+                # Look up value description
+                val_desc = next(
+                    (
+                        row["value"]
+                        for row in data_dictionary
+                        if str(row["code"]) == str(value)
+                        and str(row["field_name"]) == str(name)
+                        and str(row["csv_file_name"]) == str(current_table_name)
+                    ),
+                    None,
+                )
 
-        if data_dictionary is not None:
-            # Look up value description
-            val_desc = next(
-                (
-                    row["value"]
-                    for row in data_dictionary
-                    if str(row["code"]) == str(value)
-                    and str(row["field_name"]) == str(name)
-                    and str(row["csv_file_name"]) == str(current_table_name)
-                ),
-                None,
-            )
+                # Grab data from the 'code' column in the data dictionary
+                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
+                # or it could contain one of our pre-defined vocab names
+                # e.g. SNOMED, RxNorm, ICD9 etc.
+                code = next(
+                    (
+                        row["code"]
+                        for row in data_dictionary
+                        if str(row["field_name"]) == str(name)
+                        and str(row["csv_file_name"]) == str(current_table_name)
+                    ),
+                    None,
+                )
 
-            # Grab data from the 'code' column in the data dictionary
-            # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-            # or it could contain one of our pre-defined vocab names
-            # e.g. SNOMED, RxNorm, ICD9 etc.
-            code = next(
-                (
-                    row["code"]
-                    for row in data_dictionary
-                    if str(row["field_name"]) == str(name)
-                    and str(row["csv_file_name"]) == str(current_table_name)
-                ),
-                None,
-            )
-
-            # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
-            # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
-            if code in vocabs:
-                try:
-                    concept_id = omop_helpers.get_concept_from_concept_code(
-                        concept_code=value,
-                        vocabulary_id=code,
-                        no_source_concept=True,
-                    )
-                    concept_id = concept_id["concept_id"]
-                except:
+                # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
+                # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
+                if code in vocabs:
+                    try:
+                        concept_id = omop_helpers.get_concept_from_concept_code(
+                            concept_code=value,
+                            vocabulary_id=code,
+                            no_source_concept=True,
+                        )
+                        concept_id = concept_id["concept_id"]
+                    except:
+                        concept_id = -1
+                else:
                     concept_id = -1
+
             else:
+                val_desc = None
                 concept_id = -1
 
-        else:
-            val_desc = None
-            concept_id = -1
+            # Create ScanReportValue entry
+            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
+            # to save any looked up conceptIDs in the previous block of code.
+            # The conceptID will be cleared later
+            scan_report_value_entry = {
+                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "value": value,
+                "frequency": int(frequency),
+                "conceptID": concept_id,
+                "value_description": val_desc,
+                "scan_report_field": names_to_ids_dict[name],
+            }
 
-        # Create ScanReportValue entry
-        # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-        # to save any looked up conceptIDs in the previous block of code.
-        # The conceptID will be cleared later
-        scan_report_value_entry = {
-            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "value": value,
-            "frequency": int(frequency),
-            "conceptID": concept_id,
-            "value_description": val_desc,
-            "scan_report_field": names_to_ids_dict[name],
-        }
-
-        # Append to list
-        value_entries_to_post.append(scan_report_value_entry)
+            # Append to list
+            value_entries_to_post.append(scan_report_value_entry)
 
     print("POST", len(value_entries_to_post), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
