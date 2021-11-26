@@ -76,7 +76,7 @@ def process_scan_report_sheet_table(sheet):
      (b, plantain, 50)]
     --
     """
-
+    print('Start process_scan_report_sheet_table', datetime.utcnow().strftime("%H:%M:%S.%fZ"), flush=True)
     # Get header entries (skipping every second column which is just 'Frequency')
     # So headers = ['a', 'b']
     first_row = sheet[1]
@@ -714,7 +714,7 @@ def main(msg: func.QueueMessage):
             # print("scan_report_field_entries >>>", field_entries_to_post)
 
             # POST fields in this table
-            print("POST", len(field_entries_to_post), "fields", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            print("POST", len(field_entries_to_post), "fields to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             print('RAM memory % used:', psutil.virtual_memory())
             print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
