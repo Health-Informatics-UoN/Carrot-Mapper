@@ -227,8 +227,55 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
         concept_response_content += concept_content
 
         print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-            
+ 
+def get_value_concepts(values,content_type,api_url,headers):
+    names=[]
+    for value in values:
+        names.append(value['value'])
+    get_value_concept_ids= requests.get(
+            url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}&fields=object_id,concept",
+            headers=headers,
+    )
+    value_concept_ids=json.loads(get_value_concept_ids.content.decode("utf-8"))
+    value_id_to_concept_map ={str(element.get("object_id", None)): str(element.get("concept", None)) for element in value_concept_ids}
 
+    # print("VALUE TO CONCEPT MAP DICT",value_id_to_concept_map)
+
+    ids=list(value_id_to_concept_map.keys())
+    
+    ids=", ".join(ids[:300])
+    
+    # names=list(values.keys())
+    print(values)
+    names=", ".join(names)
+    get_value_names=requests.get(
+        url=f"{api_url}scanreportvaluesfilter/?id__in={ids}&value__in={names}&fields=id,value",
+        headers=headers,
+    )
+    value_names=json.loads(get_value_names.content.decode("utf-8"))
+    value_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in value_names}
+    print(value_name_to_id_map)
+
+
+# def paginate_chars(entries_to_post):
+#     """
+#     This expects a list of dicts, and returns a list of lists of dicts, 
+#     where the maximum length of each list of dicts, under JSONification, 
+#     is less than max_chars
+#     """
+#     max_chars = 2000
+    
+#     paginated_entries_to_post = []
+#     chunks = []
+#     sum=0
+#     for idx,entry in enumerate(entries_to_post,start=0):
+#         sum=sum+len(entry)
+#         paginated_entries_to_post.append(entry)
+#         if sum>max_chars:
+#             index=idx
+#             chunks.append(index)
+#             sum=0
+#     return chunks
 def main(msg: func.QueueMessage):
     logging.info("Python queue trigger function processed a queue item.")
     print(datetime.utcnow().strftime("%H:%M:%S.%fZ"))
