@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block body %}
+
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
@@ -10,10 +11,10 @@
 </nav>
 <h2>New Scan Report</h2>
 
-<form method="post" action="#" enctype="multipart/form-data">{% csrf_token %}
+<form method="post" name="simpleForm" id="simpleForm" action="#" enctype="multipart/form-data">{% csrf_token %}
     <div class="mb-3">
         {{ form.data_partner.errors }}
-        <label class="form-label">{{ form.data_partner.label }}</label>
+        <label class="form-label" id='data_partner'>{{ form.data_partner.label }}</label>
         {{ form.data_partner }}
     </div>
 
@@ -42,7 +43,32 @@
         {%endif%}
 
     </div>
+    <div class="row mx-auto">
+        <div class="spinner-border mx-auto d-none" name="spinner" id="spinner" role="status">
+          <span class="sr-only">Uploading...</span>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary" id="btn">Submit</button>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+<script>
+
+$("#simpleForm").on('submit',function(ev) {      
+        $.ajax({
+        type: "POST",
+        data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}',
+        },
+        beforeSend: function (data) {
+        $('#spinner').addClass('d-none');
+        },
+        success: function (data) {
+            $('#spinner').removeClass('d-none');
+        },
+        error: function(data,XMLHttpRequest, textStatus, errorThrown){
+            $('#spinner').addClass('d-none');
+        }
+	});
+  });
+</script>
 {% endblock %}
