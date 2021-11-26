@@ -17,12 +17,10 @@ from collections import defaultdict
 
 from shared_code import omop_helpers
 
-
-import logging
-import memory_profiler
-root_logger = logging.getLogger()
-root_logger.handlers[0].setFormatter(logging.Formatter("%(name)s: %(message)s"))
-profiler_logstream = memory_profiler.LogFile('memory_profiler_logs', True)
+# import memory_profiler
+# root_logger = logging.getLogger()
+# root_logger.handlers[0].setFormatter(logging.Formatter("%(name)s: %(message)s"))
+# profiler_logstream = memory_profiler.LogFile('memory_profiler_logs', True)
 
 
 # Agreed vocabs that are accepted for lookup/conversion
@@ -54,7 +52,7 @@ vocabs = [
 ]
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def process_scan_report_sheet_table(sheet):
     """
     This function extracts the
@@ -128,7 +126,7 @@ def default_zero(input):
     return round(input if input else 0.0, 2)
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def paginate(entries_to_post):
     """
     This expects a list of dicts, and returns a list of lists of dicts, 
@@ -155,7 +153,7 @@ def paginate(entries_to_post):
     return paginated_entries_to_post
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def startup(msg):
     logging.info("Python queue trigger function processed a queue item.")
     print('RAM memory % used:', psutil.virtual_memory())
@@ -230,7 +228,7 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def parse_blobs(scan_report_blob, data_dictionary_blob):
     print("Get blobs", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # Set Storage Account connection string
@@ -265,7 +263,7 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
     return wb, data_dictionary
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def post_tables(fo_ws, api_url, scan_report_id, headers):
     
     # Get all the table names in the order they appear in the Field Overview page
@@ -346,7 +344,7 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     return table_name_to_id_map
 
 
-@memory_profiler.profile(stream=profiler_logstream)
+# @memory_profiler.profile(stream=profiler_logstream)
 def process_values_from_sheet(sheet, data_dictionary, current_table_name,
                               names_to_ids_dict, api_url, scan_report_id, headers):
     # print("WORKING ON", sheet.title)
