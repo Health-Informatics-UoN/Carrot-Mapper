@@ -137,16 +137,17 @@ def paginate(entries_to_post):
     paginated_entries_to_post = []
     this_page = []
     for entry in entries_to_post:
-        # print(len(json.dumps(entry)))
+        # If the current page won't be overfull, add the entry to the current page
         if len(json.dumps(this_page)) + len(
                 json.dumps(entry)) < max_chars:
             this_page.append(entry)
-            # print(len(json.dumps(this_page)))
         else:
+            # Otherwise, this page should be added to the list of pages.
             paginated_entries_to_post.append(this_page)
-            # print('saved:', len(json.dumps(this_page)))
+            # Now add the entry that would have over-filled the page.
             this_page = [entry]
-            # print(len(json.dumps(this_page)))
+
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
     if this_page:
         paginated_entries_to_post.append(this_page)
     return paginated_entries_to_post
