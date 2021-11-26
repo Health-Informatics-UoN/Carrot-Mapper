@@ -11,6 +11,8 @@ import os
 import csv
 import psutil
 import resource
+import httpx
+import asyncio
 
 from requests.models import HTTPError
 from collections import defaultdict
@@ -123,6 +125,45 @@ def default_zero(input):
     (such as Nones or empty strings) with 0.0.
     """
     return round(input if input else 0.0, 2)
+
+
+def perform_chunking(entries_to_post):
+    """
+    This expects a list of dicts, and returns a list of lists of lists of dicts, 
+    where the maximum length of each list of dicts, under JSONification, 
+    is less than max_chars, and the length of each list of lists of dicts is chunk_size
+    """
+    max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
+    chunk_size = int(os.environ.get("CHUNK_SIZE")) if os.environ.get("CHUNK_SIZE") else 6
+
+    chunked_entries_to_post = []
+    this_page = []
+    this_chunk = []
+    page_no = 0
+    for entry in entries_to_post:
+        # If the current page won't be overfull, add the entry to the current page
+        if len(json.dumps(this_page)) + len(
+                json.dumps(entry)) < max_chars:
+            this_page.append(entry)
+        # Otherwise, this page should be added to the current chunk.
+        else:
+            this_chunk.append(this_page)
+            page_no += 1
+            # Now check for a full chunk. If full, then add this chunk to the list of chunks.
+            if page_no % chunk_size == 0:
+                # append the chunk to the list of chunks, then reset the chunk to empty
+                chunked_entries_to_post.append(this_chunk)
+                this_chunk = []
+            # Now add the entry that would have over-filled the page.
+            this_page = [entry]
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
+    if this_page:
+        this_chunk.append(this_page)
+    # Similarly, if a chunk ends up half-filled, add it to thelist of chunks
+    if this_chunk:
+        chunked_entries_to_post.append(this_chunk)
+
+    return chunked_entries_to_post
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
@@ -345,8 +386,8 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
-def process_values_from_sheet(sheet, data_dictionary, current_table_name,
-                              names_to_ids_dict, api_url, scan_report_id, headers):
+async def process_values_from_sheet(sheet, data_dictionary, current_table_name,
+                                    names_to_ids_dict, api_url, scan_report_id, headers):
     # print("WORKING ON", sheet.title)
     # Reset list for values
     value_entries_to_post = []
@@ -431,30 +472,45 @@ def process_values_from_sheet(sheet, data_dictionary, current_table_name,
             # Append to list
             value_entries_to_post.append(scan_report_value_entry)
 
-    print("POST", len(value_entries_to_post), "values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    print("POST", len(value_entries_to_post), "values to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
     print('resource RSS', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-    paginated_value_entries_to_post = paginate(value_entries_to_post)
+    chunked_value_entries_to_post = perform_chunking(value_entries_to_post)
     values_response_content = []
+    print('chunked values list len:', len(chunked_value_entries_to_post))
+    timeout = httpx.Timeout(60.0, connect=30.0)
 
-    for page in paginated_value_entries_to_post:
+    page_count = 0
+    for chunk in chunked_value_entries_to_post:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            tasks = []
+            page_lengths = []
+            for page in chunk:
+                # POST value_entries_to_post to ScanReportValues model
+                tasks.append(
+                    asyncio.ensure_future(
+                        client.post(
+                                    url="{}scanreportvalues/".format(api_url),
+                                    data=json.dumps(page),
+                                    headers=headers
+                                    )
+                                )
+                            )
+                page_lengths.append(len(page))
+                page_count += 1
+            
+            values_responses = await asyncio.gather(*tasks)
 
-        # POST value_entries_to_post to ScanReportValues model
-        values_response = requests.post(
-            url="{}scanreportvalues/".format(api_url),
-            data=json.dumps(page),
-            headers=headers
-        )
-        print("VALUES SAVE STATUS >>>", values_response.status_code,
-              values_response.reason, len(page), flush=True)
-        if values_response.status_code != 201:
-            process_failure(api_url, scan_report_id, headers)
-            raise HTTPError(' '.join(['Error in values save:',
-                                      str(values_response.status_code),
-                                      str(json.dumps(page))]))
+        for i, values_response in enumerate(values_responses):
+            print("VALUES SAVE STATUSES >>>", values_response.status_code,
+                    values_response.reason_phrase, page_lengths[i], flush=True)
+            if values_response.status_code != 201:
+                process_failure(api_url, scan_report_id, headers)
+                raise HTTPError(' '.join(['Error in values save:',
+                                            str(values_response.status_code),
+                                            str(json.dumps(page))]))
 
-        values_content = json.loads(values_response.content.decode("utf-8"))
-        values_response_content += values_content
+            values_response_content += json.loads(values_response.content.decode("utf-8"))
 
     print("POST values all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
@@ -683,9 +739,9 @@ def main(msg: func.QueueMessage):
 
             # Go to Table sheet to process all the values from the sheet
             sheet = wb[current_table_name]
-            process_values_from_sheet(sheet, data_dictionary, current_table_name,
+            asyncio.run(process_values_from_sheet(sheet, data_dictionary, current_table_name,
                                       names_to_ids_dict, api_url, scan_report_id,
-                                      headers)
+                                      headers))
 
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
