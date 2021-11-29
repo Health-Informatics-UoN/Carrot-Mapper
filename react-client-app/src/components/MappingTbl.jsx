@@ -273,10 +273,21 @@ const MappingTbl = () => {
                                             <>
                                                 {typeof item.term_mapping == "object" ?
                                                     <VStack>
-                                                        <div><span style={{ color: "#dd5064", }}>"{Object.keys(item.term_mapping)[0]}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.term_mapping[Object.keys(item.term_mapping)[0]]}</span></div>
+                                                        <div>
+                                                            <span style={{ color: "#dd5064", }}>
+                                                                "{Object.keys(item.term_mapping)[0]}"
+                                                            </span>
+                                                            <ArrowForwardIcon />
+                                                            <span style={{ color: "#1d8459", }}>
+                                                                {item.term_mapping[Object.keys(item.term_mapping)[0]]+" "}
+                                                                {item.rule_name}
+                                                            </span>
+                                                        </div>
                                                     </VStack>
                                                     :
-                                                    JSON.stringify(item.term_mapping)
+                                                    <div>
+                                                        {JSON.stringify(item.term_mapping)} {item.rule_name}
+                                                    </div>
                                                 }
 
                                             </>
