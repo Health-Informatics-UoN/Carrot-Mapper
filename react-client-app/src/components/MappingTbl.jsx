@@ -279,7 +279,7 @@ const MappingTbl = () => {
                                                             </span>
                                                             <ArrowForwardIcon />
                                                             <span style={{ color: "#1d8459", }}>
-                                                                {item.term_mapping[Object.keys(item.term_mapping)[0]]}
+                                                                {item.term_mapping[Object.keys(item.term_mapping)[0]]+" "}
                                                                 {item.rule_name}
                                                             </span>
                                                         </div>
