@@ -46,56 +46,6 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Source(BaseModel):
-    """
-    DEFINE MODEL TO HOLD INFORMATION ON THE SOURCE DATA TABLES AND COLUMNS
-    """
-
-    dataset = models.CharField(
-        max_length=64,
-    )
-
-    table = models.CharField(
-        max_length=64,
-    )
-
-    field = models.CharField(
-        max_length=64,
-    )
-
-    mapping = models.ManyToManyField(
-        "Mapping",
-    )
-
-    class Meta:
-        verbose_name = "Source"
-        verbose_name_plural = "Sources"
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Mapping(BaseModel):
-    """
-    DEFINE MODEL TO HOLD THE POSSIBLE OMOP MAPPING COMBINATIONS
-    """
-
-    table = models.CharField(
-        max_length=64,
-    )
-
-    field = models.CharField(
-        max_length=64,
-    )
-
-    class Meta:
-        verbose_name = "Mapping"
-        verbose_name_plural = "Mappings"
-
-    def __str__(self):
-        return str(self.id)
-
-
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -158,29 +108,6 @@ class OmopField(BaseModel):
     field = models.CharField(
         max_length=64,
     )
-
-    def __str__(self):
-        return str(self.id)
-
-
-class DocumentType(BaseModel):
-    """
-    To come
-    """
-
-    name = models.CharField(
-        max_length=64,
-    )
-
-    class Meta:
-        verbose_name = "Document Type"
-        verbose_name_plural = "Document Types"
-        constraints = [
-            UniqueConstraint(
-                fields=["name"],
-                name="documenttype_name_unique",
-            )
-        ]
 
     def __str__(self):
         return str(self.id)
@@ -378,21 +305,7 @@ class ScanReportField(BaseModel):
         null=True,
     )
 
-    flag_column=models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-    )
-    
     is_patient_id = models.BooleanField(
-        default=False,
-    )
-
-    is_date_event = models.BooleanField(
-        default=False,
-    )
-
-    is_birth_date = models.BooleanField(
         default=False,
     )
 
@@ -407,14 +320,7 @@ class ScanReportField(BaseModel):
     )
 
     pass_from_source = models.BooleanField(
-        default=False,
-    )
-    
-    DATE_TYPE_CHOICES = []  # TODO Remove it or move it to the top of this file
-    
-    # This field is no longer used, and will be removed in the future.
-    date_type = models.CharField(
-        max_length=128, choices=DATE_TYPE_CHOICES, default="", null=True, blank=True
+        default=True,
     )
 
     concept_id = models.IntegerField(
@@ -459,7 +365,7 @@ class ScanReportAssertion(BaseModel):
 
 
 #!! TODO --- Give this model a better name(?)
-class StructuralMappingRule(BaseModel):
+class MappingRule(BaseModel):
     """
     To come
     """
@@ -533,66 +439,6 @@ class ScanReportValue(BaseModel):
         max_length=512,
         blank=True,
         null=True
-    )
-
-    def __str__(self):
-        return str(self.id)
-
-
-class Document(BaseModel):
-    """
-    To come
-    """
-
-    data_partner = models.ForeignKey(
-        DataPartner,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    owner = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    document_type = models.ForeignKey(
-        DocumentType,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    description = models.CharField(
-        max_length=256,
-    )
-
-    def __str__(self):
-        return str(self.id)
-
-
-class DocumentFile(BaseModel):
-    """
-    To come
-    """
-
-    document_file = models.FileField()
-
-    size = models.IntegerField()
-
-    document = models.ForeignKey(
-        Document,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default=STATUS_ARCHIVED,
     )
 
     def __str__(self):

@@ -17,17 +17,12 @@ from mapping.models import (
     ScanReport,
     ScanReportTable,
     ScanReportConcept,
-    Mapping,
     ClassificationSystem,
     DataDictionary,
-    Document,
-    DocumentFile,
     DataPartner,
     OmopField,
     OmopTable,
-    StructuralMappingRule,
-    Source,
-    DocumentType,
+    MappingRule,
     )
 
 from .services_rules import get_mapping_rules_json,get_mapping_rules_list
@@ -103,12 +98,7 @@ class ScanReportValueSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
 class ScanReportConceptSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=ScanReportConcept
-        fields='__all__'        
-        
-class MappingSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Mapping
-        fields='__all__'      
+        fields='__all__'
 
 class ClassificationSystemSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
@@ -118,17 +108,7 @@ class ClassificationSystemSerializer(DynamicFieldsMixin,serializers.ModelSeriali
 class DataDictionarySerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
         model=DataDictionary
-        fields='__all__'               
-
-class DocumentSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Document
-        fields='__all__'               
-
-class DocumentFileSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=DocumentFile
-        fields='__all__'               
+        fields='__all__'
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
@@ -145,9 +125,9 @@ class OmopTableSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
         model=OmopTable
         fields='__all__'               
 
-class StructuralMappingRuleSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
+class MappingRuleSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
     class Meta:
-        model=StructuralMappingRule
+        model=MappingRule
         fields='__all__' 
 
 class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
@@ -156,7 +136,7 @@ class GetRulesJSON(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__'
 
     def to_representation(self, scan_report):
-        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
+        qs = MappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_json(qs)
         return rules
 
@@ -166,7 +146,7 @@ class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
         fields='__all__'
 
     def to_representation(self, scan_report):
-        qs = StructuralMappingRule.objects.filter(scan_report=scan_report)
+        qs = MappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_list(qs)
         for rule in rules:
             rule['destination_table'] = {
@@ -189,16 +169,4 @@ class GetRulesList(DynamicFieldsMixin,serializers.ModelSerializer):
                 'name':rule['source_field'].name
             }
 
-        
         return rules
-
-
-class SourceSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=Source
-        fields='__all__'         
-        
-class DocumentTypeSerializer(DynamicFieldsMixin,serializers.ModelSerializer):
-    class Meta:
-        model=DocumentType
-        fields='__all__'                 

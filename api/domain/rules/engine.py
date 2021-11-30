@@ -150,7 +150,7 @@ def generate(self, request):
                     continue
 
                 # create a new model
-                mapping, created = StructuralMappingRule.objects.update_or_create(
+                mapping, created = MappingRule.objects.update_or_create(
                     scan_report=scan_report,
                     omop_field=omop_field,
                     source_table=source_table,
@@ -173,7 +173,7 @@ def generate(self, request):
                 # - this is going to be called multiple times needlessly,
                 #  it could be broken out of this loop
                 #  "update" should save us need to check if already exists
-                mapping, created = StructuralMappingRule.objects.update_or_create(
+                mapping, created = MappingRule.objects.update_or_create(
                     scan_report=scan_report,
                     omop_field=person_id_omop_field,
                     source_table=source_table,
@@ -208,7 +208,7 @@ def generate(self, request):
                     )
                     
                     # make another mapping for this date object
-                    mapping, created = StructuralMappingRule.objects.update_or_create(
+                    mapping, created = MappingRule.objects.update_or_create(
                         scan_report=scan_report,
                         omop_field=date_omop_field,
                         source_table=source_table,
@@ -228,7 +228,7 @@ def download_structural_mapping(self, request, return_type="json"):
 
     scan_report = ScanReport.objects.get(pk=pk)
 
-    rules = StructuralMappingRule.objects.filter(scan_report=scan_report)
+    rules = MappingRule.objects.filter(scan_report=scan_report)
     # .order_by('omop_field__table','omop_field__field','source_table__name','source_field__name')
 
     outputs = []

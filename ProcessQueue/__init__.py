@@ -685,17 +685,13 @@ def main(msg: func.QueueMessage):
                 "fraction_empty": round(default_zero(row[7].value), 2),
                 "nunique_values": row[8].value,
                 "fraction_unique": round(default_zero(row[9].value), 2),
-                # "flag_column": str(row[10].value),
                 "ignore_column": None,
-                # "is_birth_date": False,
                 # "is_patient_id": False,
-                # "is_date_event": False,
                 # "is_ignore": False,
-                "pass_from_source": True,
+                # "pass_from_source": True,
                 # "classification_system": str(row[11].value),
-                "date_type": "",
-                "concept_id": -1,
-                "field_description": None,
+                # "concept_id": -1,
+                # "field_description": None,
             }
             # Append each entry to a list
             field_entries_to_post.append(field_entry)

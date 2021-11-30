@@ -19,19 +19,14 @@ from .serializers import (
     ScanReportFieldSerializer,
     ScanReportValueSerializer,    
     ScanReportConceptSerializer,
-    MappingSerializer,
     ClassificationSystemSerializer,
     DataDictionarySerializer,
-    DocumentSerializer,
-    DocumentFileSerializer,
     DataPartnerSerializer,
     OmopTableSerializer,
     OmopFieldSerializer,
-    StructuralMappingRuleSerializer,
+    MappingRuleSerializer,
     GetRulesJSON,
     GetRulesList,
-    SourceSerializer,
-    DocumentTypeSerializer,
     UserSerializer,
 )
 from .serializers import (
@@ -83,9 +78,6 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 
 from .forms import (
-    DictionarySelectForm,
-    DocumentFileForm,
-    DocumentForm,
     ScanReportAssertionForm,
     ScanReportFieldConceptForm,
     ScanReportForm,
@@ -95,9 +87,6 @@ from .forms import (
 from .models import (
     DataDictionary,
     DataPartner,
-    Document,
-    DocumentFile,
-    DocumentType,
     OmopTable,
     OmopField,
     OmopTable,
@@ -106,10 +95,8 @@ from .models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    StructuralMappingRule, ScanReportConcept,
-    Mapping,
+    MappingRule, ScanReportConcept,
     ClassificationSystem,
-    Source,
 )
 
 from .services_nlp import start_nlp_field_level
@@ -128,8 +115,6 @@ from .services_rules import (
     find_standard_concept,
     m_allowed_tables
 )
-
-from .services_datadictionary import merge_external_dictionary
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -253,10 +238,6 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     serializer_class=ScanReportConceptSerializer  
     filter_backends=[DjangoFilterBackend]
     filterset_fields={'concept__concept_id':['in', 'exact'],'object_id': ['in', 'exact'],'id': ['in', 'exact']}
-    
-class MappingViewSet(viewsets.ModelViewSet):
-    queryset=Mapping.objects.all()
-    serializer_class=MappingSerializer
 
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset=ClassificationSystem.objects.all()
@@ -265,14 +246,6 @@ class ClassificationSystemViewSet(viewsets.ModelViewSet):
 class DataDictionaryViewSet(viewsets.ModelViewSet):
     queryset=DataDictionary.objects.all()
     serializer_class=DataDictionarySerializer
-
-class DocumentViewSet(viewsets.ModelViewSet):
-    queryset=Document.objects.all()
-    serializer_class=DocumentSerializer
-
-class DocumentFileViewSet(viewsets.ModelViewSet):
-    queryset=DocumentFile.objects.all()
-    serializer_class=DocumentFileSerializer
 
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset=DataPartner.objects.all()
@@ -311,9 +284,9 @@ class OmopFieldFilterViewSet(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields={'id': ['in', 'exact']}    
     
-class StructuralMappingRuleViewSet(viewsets.ModelViewSet):
-    queryset=StructuralMappingRule.objects.all()
-    serializer_class=StructuralMappingRuleSerializer
+class MappingRuleViewSet(viewsets.ModelViewSet):
+    queryset=MappingRule.objects.all()
+    serializer_class=MappingRuleSerializer
 
 class DownloadJSON(viewsets.ModelViewSet):
     queryset=ScanReport.objects.all()
@@ -327,19 +300,11 @@ class RulesList(viewsets.ModelViewSet):
     filter_backends=[DjangoFilterBackend]
     filterset_fields=['id']
     
-class StructuralMappingRuleFilterViewSet(viewsets.ModelViewSet):
-    queryset=StructuralMappingRule.objects.all()
-    serializer_class=StructuralMappingRuleSerializer    
+class MappingRuleFilterViewSet(viewsets.ModelViewSet):
+    queryset=MappingRule.objects.all()
+    serializer_class=MappingRuleSerializer
     filter_backends=[DjangoFilterBackend]
-    filterset_fields=['scan_report']    
-
-class SourceViewSet(viewsets.ModelViewSet):
-    queryset=Source.objects.all()
-    serializer_class=SourceSerializer
-    
-class DocumentTypeViewSet(viewsets.ModelViewSet):
-    queryset=DocumentType.objects.all()
-    serializer_class=DocumentTypeSerializer
+    filterset_fields=['scan_report']
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset=ScanReportValue.objects.all()
@@ -384,7 +349,7 @@ class CountStats(APIView):
         scanreporttable_count=ScanReportTable.objects.count()
         scanreportfield_count=ScanReportField.objects.count()
         scanreportvalue_count=ScanReportValue.objects.count()
-        scanreportmappingrule_count=StructuralMappingRule.objects.count()
+        scanreportmappingrule_count=MappingRule.objects.count()
         content = {'scanreport_count': scanreport_count,
         'scanreporttable_count': scanreporttable_count,
         'scanreportfield_count': scanreportfield_count,
@@ -403,7 +368,7 @@ class CountStatsScanReport(APIView):
             scanreporttable_count=ScanReportTable.objects.filter(scan_report=scanreport).count()        
             scanreportfield_count=ScanReportField.objects.filter(scan_report_table__scan_report=scanreport).count()
             scanreportvalue_count=ScanReportValue.objects.filter(scan_report_field__scan_report_table__scan_report=scanreport).count()
-            scanreportmappingrule_count=StructuralMappingRule.objects.filter(scan_report=scanreport).count()
+            scanreportmappingrule_count=MappingRule.objects.filter(scan_report=scanreport).count()
             
             scanreport_content = {
             'scanreport': scanreport,
@@ -690,7 +655,7 @@ class ScanReportValueListView(ListView):
 
 @method_decorator(login_required, name="dispatch")
 class StructuralMappingTableListView(ListView):
-    model = StructuralMappingRule
+    model = MappingRule
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
@@ -906,100 +871,6 @@ class ScanReportAssertionsUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class DocumentFormView(FormView):
-    form_class = DocumentForm
-    template_name = "mapping/upload_document.html"
-    success_url = reverse_lazy("document-list")
-
-    def form_valid(self, form):
-        document = Document.objects.create(
-            data_partner=form.cleaned_data["data_partner"],
-            document_type=form.cleaned_data["document_type"],
-            description=form.cleaned_data["description"],
-        )
-        document.owner = self.request.user
-
-        document.save()
-        document_file = DocumentFile.objects.create(
-            document_file=form.cleaned_data["document_file"], size=20, document=document
-        )
-        document_file.save()
-
-        # This code will be required later to import a data dictionary into the DataDictionary model
-        # filepath = document_file.document_file.path
-        # import_data_dictionary_task.delay(filepath)
-
-        return super().form_valid(form)
-
-
-@method_decorator(login_required, name="dispatch")
-class DocumentListView(ListView):
-    model = Document
-
-    def get_queryset(self):
-        qs = super().get_queryset().order_by("data_partner")
-        return qs
-
-
-@method_decorator(login_required, name="dispatch")
-class DocumentFileListView(ListView):
-    model = DocumentFile
-
-    def get_queryset(self):
-        qs = super().get_queryset().order_by('-status','-created_at')
-        search_term = self.kwargs.get("pk")
-        if search_term is not None:
-            qs = qs.filter(document__id=search_term)
-
-        return qs
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        x = Document.objects.get(pk=self.kwargs.get("pk"))
-        context.update(
-            {
-                "document": x,
-            }
-        )
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
-class DocumentFileFormView(FormView):
-    model = DocumentFile
-    form_class = DocumentFileForm
-    template_name = "mapping/upload_document_file.html"
-    # success_url=reverse_lazy('document-list')
-
-    def form_valid(self, form):
-        document=Document.objects.get(pk=self.kwargs.get("pk"))
-        document_file = DocumentFile.objects.create(
-            document_file=form.cleaned_data["document_file"],
-            size=20,
-            document=document,
-            
-        )
-
-        document_file.save()
-
-        return super().form_valid(form)
-
-    def get_success_url(self, **kwargs):
-        self.object = self.kwargs.get("pk")
-        return reverse("file-list", kwargs={"pk": self.object})
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        x = Document.objects.get(pk=self.kwargs.get("pk"))
-        context.update(
-            {
-                "document": x,
-            }
-        )
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
 class DataDictionaryListView(ListView):
     model = DataDictionary
     ordering = ["-source_value"]
@@ -1115,29 +986,6 @@ class DataDictionaryUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class DictionarySelectFormView(FormView):
-
-    form_class = DictionarySelectForm
-    template_name = "mapping/mergedictionary.html"
-    success_url = reverse_lazy("data-dictionary")
-
-    def form_valid(self, form):
-
-        # Adapt logic in services.py to merge data dictionary file into DataDictionary model
-        return super().form_valid(form)
-
-
-@method_decorator(login_required, name="dispatch")
-class DocumentFileStatusUpdateView(UpdateView):
-    model = DocumentFile
-    # success_url=reverse_lazy('file-list')
-    fields = ["status"]
-
-    def get_success_url(self, **kwargs):
-        return reverse("file-list", kwargs={"pk": self.object.document_id})
-
-
-@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy("password_change_done")
@@ -1213,16 +1061,6 @@ def load_omop_fields(request):
         "mapping/omop_table_dropdown_list_options.html",
         {"omop_fields": omop_fields},
     )
-
-def merge_dictionary(request):
-
-    # Grab the scan report ID
-    search_term = request.GET.get("search", None)
-    
-    # This function is called from services_datadictionary.py
-    merge_external_dictionary(request,scan_report_pk=search_term)
-
-    return render(request, "mapping/mergedictionary.html")
 
 
 # Run NLP at the field level
@@ -1345,7 +1183,7 @@ def delete_scan_report_value_concept(request):
 
     scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
 
-    #scan_report_concept.structuralmappingrule.delete()
+    #scan_report_concept.mappingrule.delete()
                 
     concept_id = scan_report_concept.concept.concept_id
     concept_name = scan_report_concept.concept.concept_name
