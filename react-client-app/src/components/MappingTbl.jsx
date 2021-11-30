@@ -34,13 +34,14 @@ const MappingTbl = () => {
     const [sourceTableFilter, setSourceTableFilter] = useState([]);
     const [filters, setFilters] = useState([]);
     const [isDownloading, setDownloading] = useState(false);
+    const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
 
     useEffect(() => {
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
-        useGet(`/mappingruleslist?id=${scan_report_id}`).then(res => {
+        useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
             setValues(res[0].sort((a, b) => (a.rule_id > b.rule_id) ? 1 : ((b.rule_id > a.rule_id) ? -1 : 0)))
             setLoading(false);
             setLoadingMessage("");
@@ -189,6 +190,7 @@ const MappingTbl = () => {
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadRules(setDownloading) }}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
+                <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
             </HStack>
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 <div style={{ fontWeight: "bold", marginRight: "10px" }} >Filters: </div>
@@ -271,10 +273,21 @@ const MappingTbl = () => {
                                             <>
                                                 {typeof item.term_mapping == "object" ?
                                                     <VStack>
-                                                        <div><span style={{ color: "#dd5064", }}>"{Object.keys(item.term_mapping)[0]}"</span><ArrowForwardIcon /><span style={{ color: "#1d8459", }}>{item.term_mapping[Object.keys(item.term_mapping)[0]]}</span></div>
+                                                        <div>
+                                                            <span style={{ color: "#dd5064", }}>
+                                                                "{Object.keys(item.term_mapping)[0]}"
+                                                            </span>
+                                                            <ArrowForwardIcon />
+                                                            <span style={{ color: "#1d8459", }}>
+                                                                {item.term_mapping[Object.keys(item.term_mapping)[0]]+" "}
+                                                                {item.rule_name}
+                                                            </span>
+                                                        </div>
                                                     </VStack>
                                                     :
-                                                    JSON.stringify(item.term_mapping)
+                                                    <div>
+                                                        {JSON.stringify(item.term_mapping)} {item.rule_name}
+                                                    </div>
                                                 }
 
                                             </>

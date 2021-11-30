@@ -142,6 +142,9 @@ const Home = () => {
         let data = {
             values: [],
             labels: [],
+            marker: {
+                colors: null
+            },
             type: 'pie',
             textinfo: "value",
             hole: .3,
@@ -154,6 +157,7 @@ const Home = () => {
             const values = scanreport_data.filter(report => report.data_partner.name == label)
             data.values.push(values.length)
         })
+        data.marker.colors = data.labels.map(label => stringToColour(label))
         setScanreportDonutData([data])
     }
 
@@ -162,6 +166,9 @@ const Home = () => {
         let data = {
             values: [],
             labels: [],
+            marker: {
+                colors: null
+            },
             textinfo: "value",
             type: 'pie',
             hole: .3,
@@ -176,6 +183,7 @@ const Home = () => {
             const sum = mapArray.reduce((a, b) => { return a + b; }, 0)
             data.values.push(sum)
         })
+        data.marker.colors = data.labels.map(label => stringToColour(label))
         setmappingrulesDonutData([data])
     }
 
@@ -183,6 +191,55 @@ const Home = () => {
         // get the list of statuses from django app and find the label of the status with a specific name
         return JSON.parse(window.status).find((item) => item.id == status).label;
     };
+
+    const getGraphData = () => {
+        const stat = JSON.parse(window.status)
+        const data = []
+        const dataPartners = [...new Set(scanreportsRef.current.map(data => data.data_partner.name))].sort((a, b) => a.localeCompare(b))
+        dataPartners.map(item => {
+            data.push(
+                {
+                    x: stat.map((status) => status.label),
+                    y: stat.map((status) => statuses.find(sta => status.id == sta.id)
+                        .data.filter(report => report.data_partner.name == item).length),
+                    type: "bar",
+                    name: item,
+                    xaxis: 'x1',
+                    barmode: 'stack',
+                    marker: { color: stringToColour(item) }
+                }
+            )
+        })
+        const layout = {
+            barmode: "stack",
+            xaxis: {
+                anchor: 'x1',
+                title: 'Statuses'
+            },
+            title: 'Datapartners in Statuses'
+        }
+        return { data, layout }
+    }
+    // takes in a string and returns a hexadecimal colour generated with that string as seed
+    var stringToColour = function (str) {
+        // if it is a known string we can specify what colour we want it to return
+        // otherwise we can just return the generated colour
+        switch (str) {
+            case "University of Nottingham":
+                return '#ffff00'
+            default:
+                var hash = 0;
+                for (var i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                var colour = '#';
+                for (var i = 0; i < 3; i++) {
+                    var value = (hash >> (i * 8)) & 0xFF;
+                    colour += ('00' + value.toString(16)).substr(-2);
+                }
+                return colour;
+        }
+    }
 
     if (loading == true) {
         return (
@@ -278,7 +335,12 @@ const Home = () => {
                 </Stack>
             </VStack>
 
-
+            <Plot
+                data={getGraphData().data}
+                layout={getGraphData().layout}
+                useResizeHandler={true}
+                style={{ width: "100%", height: "auto" }}
+            />
 
 
             <Table variant="striped" colorScheme="greyBasic" >
