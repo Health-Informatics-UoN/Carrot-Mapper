@@ -13,12 +13,15 @@ import {
     Spinner,
     Link,
     Select,
-    Button
+    Button,
+    useDisclosure,
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
 import { useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
+import MappingModal from './MappingModal'
+import SummaryTbl from './SummaryTbl'
 
 
 
@@ -37,6 +40,7 @@ const MappingTbl = () => {
     const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
     useEffect(() => {
         // on initial load of the page,
@@ -185,12 +189,18 @@ const MappingTbl = () => {
     }
     return (
         <div >
+            <MappingModal isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
+                <SummaryTbl values={values}
+                filters={filters}removeFilter={removeFilter} setDestinationFilter={setDestinationFilter}setSourceFilter={setSourceFilter}
+                destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter}/>
+            </MappingModal>
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadRules(setDownloading) }}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
                 <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
+                <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
             </HStack>
             <div style={{ display: "flex", flexWrap: "wrap" }}>
                 <div style={{ fontWeight: "bold", marginRight: "10px" }} >Filters: </div>
