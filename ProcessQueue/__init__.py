@@ -267,29 +267,71 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
-def three_item_dict(three_item_data):
+def remove_BOM(intermediate):
+    return [{key.replace("\ufeff", ""): value
+            for key, value in d.items()}
+            for d in intermediate]
+
+
+def process_three_item_dict(three_item_data):
+    """
+    Converts a list of dictionaries (each with keys 'csv_file_name', 'field_name' and
+    'code') to a nested dictionary with indices 'csv_file_name', 'field_name' and
+    internal value 'code'.
+
+    [{'csv_file_name': 'table1', 'field_name': 'field1', 'value': 'value1', 'code':
+    'code1'},
+    {'csv_file_name': 'table1', 'field_name': 'field2', 'value': 'value2'},
+    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value2', 'code':
+    'code2'},
+    {'csv_file_name': 'table3', 'field_name': 'field3', 'value': 'value3', 'code':
+    'code3'}]
+    ->
+    {'table1': {'field1': 'value1', 'field2': 'value2'},
+     'table2': {'field2': 'value2'},
+     'table3': {'field3': 'value3}
+    }
+    """
     csv_file_names = set(row['csv_file_name'] for row in three_item_data)
-    # print(csv_file_names)
-    new_data_dictionary = dict()
-    for csv_file_name in csv_file_names:
-        new_data_dictionary[csv_file_name] = dict()
-    # print(new_data_dictionary)
+
+    # Initialise the dictionary with the keys, and each value set to a blank dict()
+    new_vocab_dictionary = dict.fromkeys(csv_file_names, dict())
+
+    # Fill each subdict with the data from the input list
     for row in three_item_data:
-        # print(row['field_name'], new_data_dictionary[row['csv_file_name']])
-        new_data_dictionary[row['csv_file_name']][row['field_name']] = row['code']
+        new_vocab_dictionary[row['csv_file_name']][row['field_name']] = row['code']
 
-    return new_data_dictionary
+    return new_vocab_dictionary
 
 
-def four_item_dict(four_item_data):
+def process_four_item_dict(four_item_data):
+    """
+    Converts a list of dictionaries (each with keys 'csv_file_name', 'field_name' and
+    'code' and 'value') to a nested dictionary with indices 'csv_file_name',
+    'field_name', 'code', and internal value 'value'.
+
+    [{'csv_file_name': 'table1', 'field_name': 'field1', 'value': 'value1', 'code':
+    'code1'},
+    {'csv_file_name': 'table1', 'field_name': 'field2', 'value': 'value2', 'code':
+    'code2'},
+    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value2', 'code':
+    'code2'},
+    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value3', 'code':
+    'code3'},
+    {'csv_file_name': 'table3', 'field_name': 'field3', 'value': 'value3', 'code':
+    'code3'}]
+    ->
+    {'table1': {'field1': {'value1': 'code1'}, 'field2': {'value2': 'code2'}},
+     'table2': {'field2': {'value2': 'code2', 'value3': 'code3'}},
+     'table3': {'field3': {'value3': 'code3'}}
+    }
+    """
     csv_file_names = set(row['csv_file_name'] for row in four_item_data)
-    # print(csv_file_names)
-    new_data_dictionary = dict()
-    for csv_file_name in csv_file_names:
-        new_data_dictionary[csv_file_name] = dict()
-    # print(new_data_dictionary)
+
+    # Initialise the dictionary with the keys, and each value set to a blank dict()
+    new_data_dictionary = dict.fromkeys(csv_file_names, dict())
+
     for row in four_item_data:
-        # print(row['field_name'], new_data_dictionary[row['csv_file_name']])
         if row['field_name'] not in new_data_dictionary[row['csv_file_name']]:
             new_data_dictionary[row['csv_file_name']][row['field_name']] = dict()
         new_data_dictionary[row['csv_file_name']][row['field_name']][row['code']] \
@@ -310,45 +352,45 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
     streamdownloader = blob_service_client.get_container_client("scan-reports").\
         get_blob_client(scan_report_blob).download_blob()
     scanreport_bytes = BytesIO(streamdownloader.readall())
+    wb = openpyxl.load_workbook(scanreport_bytes, data_only=True, keep_links=False, read_only=True)
 
     # If dictionary is present, also download dictionary
     if data_dictionary_blob != "None":
         # Access data as StorageStreamerDownloader class
         # Decode and split the stream using csv.reader()
-        container_client = blob_service_client.get_container_client("data-dictionaries")
-        blob_dict_client = container_client.get_blob_client(data_dictionary_blob)
-        streamdownloader = blob_dict_client.download_blob()
+        dict_client = blob_service_client.get_container_client("data-dictionaries")
+        blob_dict_client = dict_client.get_blob_client(data_dictionary_blob)
+
+        # Grab all rows with 4 elements for use as value descriptions
         data_dictionary_intermediate = list(row for row in
                                             csv.DictReader(
-                                                streamdownloader.readall().decode(
-                                                    "utf-8").splitlines())
+                                                blob_dict_client.download_blob().
+                                                readall().decode("utf-8").splitlines())
                                             if row['value'] != ''
                                             )
         # Remove BOM from start of file if it's supplied.
-        dictionary_data = [{key.replace("\ufeff",""): value
-                            for key, value in d.items()}
-                           for d in data_dictionary_intermediate]
+        dictionary_data = remove_BOM(data_dictionary_intermediate)
 
-        data_dictionary = four_item_dict(dictionary_data)
+        # Convert to nested dictionaries, with structure
+        # {tables: {fields: {values: value description}}}
+        data_dictionary = process_four_item_dict(dictionary_data)
 
-        streamdownloader2 = blob_dict_client.download_blob()
+        # Grab all rows with 3 elements for use as possible vocabs
         vocab_dictionary_intermediate = list(row for row in
                                              csv.DictReader(
-                                                streamdownloader2.readall().decode(
-                                                    "utf-8").splitlines())
+                                                blob_dict_client.download_blob().
+                                                readall().decode("utf-8").splitlines())
                                              if row['value'] == ''
                                              )
-        vocab_data = [{key.replace("\ufeff", ""): value
-                            for key, value in d.items()}
-                           for d in vocab_dictionary_intermediate]
+        vocab_data = remove_BOM(vocab_dictionary_intermediate)
 
-        vocab_dictionary = three_item_dict(vocab_data)
+        # Convert to nested dictionaries, with structure
+        # {tables: {fields: vocab}}
+        vocab_dictionary = process_three_item_dict(vocab_data)
 
     else:
         data_dictionary = None
         vocab_dictionary = None
-
-    wb = openpyxl.load_workbook(scanreport_bytes, data_only=True, keep_links=False, read_only=True)
 
     return wb, data_dictionary, vocab_dictionary
 
@@ -458,7 +500,9 @@ async def process_values_from_sheet(sheet, data_dictionary,
                 frequency = 0
 
             if data_dictionary is not None:
-                # Look up value description
+                # Look up value description. We use .get() to guard against
+                # nonexistence in the dictionary without having to manually check. It
+                # returns None if the value is not present
                 table = data_dictionary.get(str(current_table_name))  # dict of fields in table
                 if table:
                     field = data_dictionary[str(current_table_name)].get(str(name))  # dict of values in field in table
@@ -473,14 +517,19 @@ async def process_values_from_sheet(sheet, data_dictionary,
                 # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
                 # or it could contain one of our pre-defined vocab names
                 # e.g. SNOMED, RxNorm, ICD9 etc.
+                # We use .get() to guard against nonexistence in the dictionary
+                # without having to manually check. It returns None if the value is
+                # not present
                 table = vocab_dictionary.get(str(current_table_name))  # dict of fields in table
                 if table:
                     code = vocab_dictionary[str(current_table_name)].get(str(name))  # dict of values, will default to None if field not found in table
                 else:
                     code = None
 
-                # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
-                # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
+                # If 'code' is in our vocab list, try and convert the ScanReportValue
+                # (concept code) to conceptID
+                # If there's a faulty concept code for the vocab, fail gracefully and
+                # set concept_id to default (-1)
                 if code in vocabs:
                     try:
                         concept_id = omop_helpers.get_concept_from_concept_code(
