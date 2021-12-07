@@ -267,6 +267,37 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
+def three_item_dict(three_item_data):
+    csv_file_names = set(row['csv_file_name'] for row in three_item_data)
+    # print(csv_file_names)
+    new_data_dictionary = dict()
+    for csv_file_name in csv_file_names:
+        new_data_dictionary[csv_file_name] = dict()
+    # print(new_data_dictionary)
+    for row in three_item_data:
+        # print(row['field_name'], new_data_dictionary[row['csv_file_name']])
+        new_data_dictionary[row['csv_file_name']][row['field_name']] = row['code']
+
+    return new_data_dictionary
+
+
+def four_item_dict(four_item_data):
+    csv_file_names = set(row['csv_file_name'] for row in four_item_data)
+    # print(csv_file_names)
+    new_data_dictionary = dict()
+    for csv_file_name in csv_file_names:
+        new_data_dictionary[csv_file_name] = dict()
+    # print(new_data_dictionary)
+    for row in four_item_data:
+        # print(row['field_name'], new_data_dictionary[row['csv_file_name']])
+        if row['field_name'] not in new_data_dictionary[row['csv_file_name']]:
+            new_data_dictionary[row['csv_file_name']][row['field_name']] = dict()
+        new_data_dictionary[row['csv_file_name']][row['field_name']][row['code']] \
+            = row['value']
+
+    return new_data_dictionary
+
+
 # @memory_profiler.profile(stream=profiler_logstream)
 def parse_blobs(scan_report_blob, data_dictionary_blob):
     print("Get blobs", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -287,19 +318,39 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
         container_client = blob_service_client.get_container_client("data-dictionaries")
         blob_dict_client = container_client.get_blob_client(data_dictionary_blob)
         streamdownloader = blob_dict_client.download_blob()
-        data_dictionary_intermediate = list(
-                           csv.DictReader(streamdownloader.readall().decode("utf-8").splitlines())
-        )
+        data_dictionary_intermediate = list(row for row in
+                                            csv.DictReader(
+                                                streamdownloader.readall().decode(
+                                                    "utf-8").splitlines())
+                                            if row['value'] != ''
+                                            )
         # Remove BOM from start of file if it's supplied.
-        data_dictionary = [{key.replace("\ufeff",""): value
+        dictionary_data = [{key.replace("\ufeff",""): value
                             for key, value in d.items()}
                            for d in data_dictionary_intermediate]
+
+        data_dictionary = four_item_dict(dictionary_data)
+
+        streamdownloader2 = blob_dict_client.download_blob()
+        vocab_dictionary_intermediate = list(row for row in
+                                             csv.DictReader(
+                                                streamdownloader2.readall().decode(
+                                                    "utf-8").splitlines())
+                                             if row['value'] == ''
+                                             )
+        vocab_data = [{key.replace("\ufeff", ""): value
+                            for key, value in d.items()}
+                           for d in vocab_dictionary_intermediate]
+
+        vocab_dictionary = three_item_dict(vocab_data)
+
     else:
         data_dictionary = None
+        vocab_dictionary = None
 
     wb = openpyxl.load_workbook(scanreport_bytes, data_only=True, keep_links=False, read_only=True)
 
-    return wb, data_dictionary
+    return wb, data_dictionary, vocab_dictionary
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
@@ -382,7 +433,8 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
-async def process_values_from_sheet(sheet, data_dictionary, current_table_name,
+async def process_values_from_sheet(sheet, data_dictionary,
+                                    vocab_dictionary, current_table_name,
                                     names_to_ids_dict, api_url, scan_report_id, headers):
     # print("WORKING ON", sheet.title)
     # Reset list for values
@@ -407,30 +459,25 @@ async def process_values_from_sheet(sheet, data_dictionary, current_table_name,
 
             if data_dictionary is not None:
                 # Look up value description
-                val_desc = next(
-                    (
-                        row["value"]
-                        for row in data_dictionary
-                        if str(row["code"]) == str(value)
-                        and str(row["field_name"]) == str(name)
-                        and str(row["csv_file_name"]) == str(current_table_name)
-                    ),
-                    None,
-                )
+                table = data_dictionary.get(str(current_table_name))  # dict of fields in table
+                if table:
+                    field = data_dictionary[str(current_table_name)].get(str(name))  # dict of values in field in table
+                    if field:
+                        val_desc = data_dictionary[str(current_table_name)][str(name)].get(str(value))
+                    else:
+                        val_desc = None
+                else:
+                    val_desc = None
 
                 # Grab data from the 'code' column in the data dictionary
                 # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
                 # or it could contain one of our pre-defined vocab names
                 # e.g. SNOMED, RxNorm, ICD9 etc.
-                code = next(
-                    (
-                        row["code"]
-                        for row in data_dictionary
-                        if str(row["field_name"]) == str(name)
-                        and str(row["csv_file_name"]) == str(current_table_name)
-                    ),
-                    None,
-                )
+                table = vocab_dictionary.get(str(current_table_name))  # dict of fields in table
+                if table:
+                    code = vocab_dictionary[str(current_table_name)].get(str(name))  # dict of values, will default to None if field not found in table
+                else:
+                    code = None
 
                 # If 'code' is in our vocab list, try and convert the ScanReportValue (concept code) to conceptID
                 # If there's a faulty concept code for the vocab, fail gracefully and set concept_id to default (-1)
@@ -635,7 +682,8 @@ def main(msg: func.QueueMessage):
             headers=headers
         )
 
-    wb, data_dictionary = parse_blobs(scan_report_blob, data_dictionary_blob)
+    wb, data_dictionary, vocab_dictionary = parse_blobs(scan_report_blob,
+                                                  data_dictionary_blob)
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     fo_ws = wb.worksheets[0]
@@ -726,7 +774,8 @@ def main(msg: func.QueueMessage):
 
             # Go to Table sheet to process all the values from the sheet
             sheet = wb[current_table_name]
-            asyncio.run(process_values_from_sheet(sheet, data_dictionary, current_table_name,
+            asyncio.run(process_values_from_sheet(sheet, data_dictionary,
+                                                  vocab_dictionary, current_table_name,
                                       names_to_ids_dict, api_url, scan_report_id,
                                       headers))
 
