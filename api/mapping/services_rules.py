@@ -1,11 +1,13 @@
 import json
+import io
+import csv
 from datetime import datetime
 
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
 from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, StructuralMappingRule
+from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
 
 from graphviz import Digraph
 
@@ -97,7 +99,7 @@ def get_person_id_rule(request,
     )
 
     #create a new 1-1 rule 
-    rule_domain_person_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_person_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=person_id_omop_field,
         source_field=person_id_source_field,
@@ -129,7 +131,7 @@ def get_date_rules(request,
         )
 
         #create a new 1-1 rule 
-        rule_domain_date_event, created = StructuralMappingRule.objects.update_or_create(
+        rule_domain_date_event, created = MappingRule.objects.update_or_create(
             scan_report=scan_report,
             omop_field=date_event_omop_field,
             source_field=date_event_source_field,
@@ -250,7 +252,7 @@ def save_mapping_rules(request,scan_report_concept):
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
     #    - all term mapping rules associated need to be applied
-    rule_domain_source_concept_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_source_concept_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=omop_field,
         source_field=source_field,
@@ -264,7 +266,7 @@ def save_mapping_rules(request,scan_report_concept):
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
     #    - all term mapping rules associated need to be applied
-    rule_domain_concept_id, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_concept_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
@@ -276,7 +278,7 @@ def save_mapping_rules(request,scan_report_concept):
     # create/update a model for the domain source_value
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to false
-    rule_domain_source_value, created = StructuralMappingRule.objects.update_or_create(
+    rule_domain_source_value, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
         omop_field=get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
@@ -293,7 +295,7 @@ def save_mapping_rules(request,scan_report_concept):
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
-        rule_domain_value_as_number, created = StructuralMappingRule.objects.update_or_create(
+        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
             scan_report=scan_report,
             omop_field=get_omop_field("value_as_number","measurement"),
             source_field=source_field,
@@ -629,6 +631,69 @@ def download_mapping_rules(request,qs):
     response['Content-Disposition'] = f'attachment; filename="{fname}"'
     return response
 
+def download_mapping_rules_as_csv(request,qs):
+    #get the mapping rules as a list 
+    output = get_mapping_rules_list(qs)
+
+    #used the first qs item to get the scan_report name the qs is associated with
+    scan_report = qs[0].scan_report
+    #make a csv file name
+    return_type = "csv"
+    fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+    #return a response that downloads the csv file        
+
+    #make a string buffer
+    _buffer = io.StringIO()
+    #setup a csv writter
+    writer = csv.writer(_buffer, lineterminator='\n', delimiter=',',quoting=csv.QUOTE_NONE,)
+
+    #setup the headers from the first object
+    #replace term_mapping ({'source_value':'concept'}) with separate columns
+    headers = [str(x) for x in output[0].keys() if str(x) != 'term_mapping']
+    headers += ['source_value','concept','isFieldMapping']
+
+    #write the headers to the csv
+    writer.writerow(headers)
+
+    #loop over the content
+    for content in output:
+        #replace the django model objects with string names
+        content['destination_table'] = content['destination_table'].table
+        content['destination_field'] = content['destination_field'].field
+        content['source_table'] = content['source_table'].name
+        content['source_field'] = content['source_field'].name
+
+        #pop out the term mapping
+        term_mapping = content.pop('term_mapping')
+        content['isFieldMapping'] = ''
+        #if no term mapping, set columns to blank
+        if term_mapping == None:
+            content['source_value'] = ''
+            content['concept'] = ''
+        elif isinstance(term_mapping,dict):
+            #if is a dict, it's a map between a source value and a concept
+            #set these based on the value/key
+            content['source_value'] = list(term_mapping.keys())[0]
+            content['concept'] = list(term_mapping.values())[0]
+            content['isFieldMapping'] =  '0'
+        else:
+            #otherwise it is a scalar, it is a term map of a field, so set this
+            content['source_value'] = ''
+            content['concept'] = term_mapping
+            content['isFieldMapping'] =  '1'
+
+        #extract and write the contents now
+        content = [str(content[x]) for x in headers]
+        writer.writerow(content)
+
+    #rewind the buffer and return the response
+    _buffer.seek(0)
+    response = HttpResponse(_buffer,content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{fname}"'
+
+    return response
+
+
 
 colorscheme = 'gnbu9'
 
@@ -735,7 +800,7 @@ def remove_mapping_rules(request,scan_report_id):
     Function given a scan_report_id that will find all
     associated mappings and delete them
     """
-    rules = StructuralMappingRule.objects.all()\
+    rules = MappingRule.objects.all()\
         .filter(scan_report__id=scan_report_id)
 
     rules.delete()

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from mapping.models import StructuralMappingRule,ScanReportConcept, ScanReportValue, ScanReportField
+from mapping.models import MappingRule,ScanReportConcept, ScanReportValue, ScanReportField
 from mapping.services_rules import (
     get_mapping_rules_json,
     make_dag
@@ -14,7 +14,7 @@ class Command(BaseCommand):
                             
     def handle(self, *args, **options):
         _id = options['report_id']
-        qs = StructuralMappingRule.objects.filter(scan_report__id=_id)
+        qs = MappingRule.objects.filter(scan_report__id=_id)
         js = get_mapping_rules_json(qs)
         svg = make_dag(js['cdm'])
         print (json.dumps(js,indent=6))

@@ -175,14 +175,14 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     //person_id
     data.omop_field = fields.filter(field=> field.field == "person_id" && field.table==destination_field.table)[0].id
     data.source_field = table.person_id
-    promises.push(usePost(`/structuralmappingrules/`,data))
+    promises.push(usePost(`/mappingrules/`,data))
     //date_event
     data.source_field = table.date_event
     const omopTable = await useGet(`/omoptables/${destination_field.table}/`)
     const date_omop_fields = m_date_field_mapper[omopTable.table]
     date_omop_fields.forEach(element => {
         data.omop_field = fields.filter(field=> field.field == element && field.table==destination_field.table)[0].id
-        promises.push(usePost(`/structuralmappingrules/`,data))
+        promises.push(usePost(`/mappingrules/`,data))
     })
     // set source field depending on content type
     if(scan_report_concept.content_type==15){
@@ -193,20 +193,20 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     }
     //_source_concept_id
     data.omop_field = destination_field.id
-    promises.push(usePost(`/structuralmappingrules/`,data))
+    promises.push(usePost(`/mappingrules/`,data))
     //_concept_id
     let tempOmopField = await cachedOmopFunction(fields,domain+"_concept_id")
     data.omop_field = tempOmopField.id
-    promises.push(usePost(`/structuralmappingrules/`,data))
+    promises.push(usePost(`/mappingrules/`,data))
     //_source_value
     tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
-    promises.push(usePost(`/structuralmappingrules/`,data))
+    promises.push(usePost(`/mappingrules/`,data))
     //measurement
     if(domain == 'measurement'){
         tempOmopField = await cachedOmopFunction(fields,"value_as_number","measurement")
         data.omop_field = tempOmopField.id
-        promises.push(usePost(`/structuralmappingrules/`,data))
+        promises.push(usePost(`/mappingrules/`,data))
     }  
     // when all requests have finished, return
         const values = await Promise.all(promises)

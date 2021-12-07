@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField
 
 from mapping.models import (DataPartner,
-                            DocumentFile, DocumentType,
                             ScanReportField, ScanReport)
 import openpyxl
 import csv
@@ -16,8 +15,6 @@ from collections import Counter
 
 class ShowNameChoiceField(ModelChoiceField):
     def label_from_instance(self, obj):
-        if obj.__class__.__name__=='Document':
-            return str(obj.data_partner.name)
         return obj.name
 
 
@@ -315,83 +312,6 @@ class PasswordChangeForm(forms.Form):
     )
 
 
-class DocumentForm(forms.Form):
-    
-    data_partner = ShowNameChoiceField(
-        label="Data Partner",
-        queryset=DataPartner.objects.order_by("name"),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    document_type = ShowNameChoiceField(
-        label="Type",
-        queryset=DocumentType.objects.order_by("name"),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-
-    description = forms.CharField(
-        label="Description", widget=forms.TextInput(attrs={"class": "form-control"})
-    )
-
-    document_file = forms.FileField(
-        label="File", widget=forms.FileInput(attrs={"class": "form-control"})
-    )
-
-    def clean_document_file(self):
-        if str((self.cleaned_data['document_type']).name).lower()=='data dictionary':
-            try:
-                data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
-                header = data_dictionary_csv.split(',')
-                column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
-
-                if set(column_names) == set(header):
-                    return self.cleaned_data['document_file']
-                else:
-                    raise (forms.ValidationError("Please check your column names in your data dictionary"))
-            except: 
-                raise (forms.ValidationError("Data Dictionary must be .csv file"))
-        else:
-            return self.cleaned_data['document_file']
-
-
-class DocumentFileForm(forms.Form):
-    document_file = forms.FileField(
-        label="Document File", widget=forms.FileInput(attrs={"class": "form-control"})
-    )
-    document_type = ShowNameChoiceField(
-        label="Type",
-        queryset=DocumentType.objects.order_by("name"),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
-    description = forms.CharField(
-        label="Document Description",
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-    )
-
-    def clean_document_type(self):
-        print(self.cleaned_data['document_type'].name)
-        if str((self.cleaned_data['document_type']).name).lower()=='data dictionary':
-            try:
-                data_dictionary_csv = self.cleaned_data['document_file'].read().decode("utf-8-sig").splitlines()[0]
-                header = data_dictionary_csv.split(',')
-                column_names = ["TableName", "FieldName", "FieldDescription", "Value", "ValueDescription"]
-
-                if set(column_names) == set(header):
-                    return self.cleaned_data['document_file']
-                else:
-                    raise (forms.ValidationError("Please check your column names in your data dictionary"))
-            except: 
-                raise (forms.ValidationError("Data Dictionary must be .csv file"))
-        else:
-            return self.cleaned_data['document_file']
-      
-        
-class DictionarySelectForm(forms.Form):
-    document = forms.ModelChoiceField(label="Data Dictionary Document",
-                                      queryset=DocumentFile.objects.filter(status__icontains="LIVE"),
-                                      to_field_name="document")
-
-
 class ScanReportAssertionForm(forms.Form):
     negative_assertion=forms.CharField(
          label="Negative Assertions",
@@ -430,7 +350,6 @@ class ScanReportFieldForm(forms.ModelForm):
         model = ScanReportField
         fields = (
             #"is_patient_id",
-            #"is_date_event",
             "is_ignore",
             "pass_from_source",
             "description_column"
