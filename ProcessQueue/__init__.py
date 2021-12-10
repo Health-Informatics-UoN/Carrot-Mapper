@@ -9,6 +9,7 @@ import openpyxl
 from datetime import datetime
 import os
 import csv
+from collections import Counter
 import psutil
 import httpx
 import asyncio
@@ -266,6 +267,106 @@ def process_failure(api_url, scan_report_id, headers):
         headers=headers
     )
 
+def paginate_chars(entries_to_post,other):
+    """
+    This expects a list of dicts, and returns a list of lists of dicts, 
+    where the maximum length of each list of dicts, under JSONification, 
+    is less than max_chars
+    """
+    max_chars = 2000 - len(other)
+    
+    paginated_entries_to_post = []
+    this_page = []
+    for entry in entries_to_post:
+        # If the current page won't be overfull, add the entry to the current page
+        if len(json.dumps(this_page)) + len(
+                json.dumps(entry)) < max_chars:
+            this_page.append(entry)
+        else:
+            # Otherwise, this page should be added to the list of pages.
+            paginated_entries_to_post.append(this_page)
+            # Now add the entry that would have over-filled the page.
+            this_page = [entry]
+
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
+    if this_page:
+        paginated_entries_to_post.append(this_page)
+    return paginated_entries_to_post
+
+def get_existing_concepts(name_ids,content_type,api_url,headers):
+    
+    get_field_concept_ids= requests.get(
+            url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}",
+            headers=headers,
+    )
+    field_concept_ids=json.loads(get_field_concept_ids.content.decode("utf-8"))
+    field_id_to_concept_map ={element.get("object_id", None): str(element.get("concept", None)) for element in field_concept_ids}
+    
+    print("FIELD TO CONCEPT MAP DICT",field_id_to_concept_map)
+    ids=list(field_id_to_concept_map.keys())
+    names_list=list(name_ids.keys())
+    names=",".join(map(str,names_list))
+    paginatedIds = paginate_chars(ids,names)
+    fields = []
+    for Ids in paginatedIds:
+        ids_to_get = ",".join(map(str, Ids))
+        get_field_names = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={names}",
+            headers=headers,
+        )
+        fieldsV=json.loads(get_field_names.content.decode("utf-8"))
+        fields.append(fieldsV)
+        print("IDS",fieldsV)
+    print("NEW FIELDS BEFORE",fields)
+    fields = [item for sublist in fields for item in sublist]
+    print("NEW FIELDS",fields)
+    existing_mappings=[(field['name'],field_id_to_concept_map[field['id']]) for field in fields]
+
+    field_names=[]
+    for name in names_list:
+        mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping[0] == name]
+        target_concept_ids = set([mapping[1] for mapping in mappings_matching_field_name])
+        if len(target_concept_ids) == 1:
+            field_names.append({"name":name,"id":target_concept_ids})
+
+    field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
+
+    concepts_to_post=[]
+    concept_response_content=[]
+    for name in name_ids.keys():
+        try:
+            link_id=field_name_to_id_map[name]
+            concept_id=field_id_to_concept_map[link_id]
+            current_id=name_ids[name]
+            print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry={
+                    "nlp_entity": None,
+                    "nlp_entity_type": None,
+                    "nlp_confidence": None,
+                    "nlp_vocabulary": None,
+                    "nlp_processed_string": None,
+                    "concept":concept_id,
+                    "object_id":current_id,
+                    "content_type": content_type,
+                }
+            concepts_to_post.append(concept_entry)
+            
+        except:
+            continue
+    if concepts_to_post:
+        concept_response = requests.post(
+                    url=api_url + "scanreportconcepts/",
+                    headers=headers,
+                    data=json.dumps(concepts_to_post),
+                )
+        print("CONCEPTS SAVE STATUS >>>", concept_response.status_code,
+                    concept_response.reason, flush=True)
+
+        concept_content = json.loads(concept_response.content.decode("utf-8"))
+        concept_response_content += concept_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
 def remove_BOM(intermediate):
     return [{key.replace("\ufeff", ""): value
@@ -687,6 +788,7 @@ async def process_values_from_sheet(sheet, data_dictionary,
                                       str(put_update_json)]))
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    get_existing_concepts(names_to_ids_dict,15,api_url,headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
