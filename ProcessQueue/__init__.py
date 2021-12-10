@@ -316,28 +316,40 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
         )
         fieldsV=json.loads(get_field_names.content.decode("utf-8"))
         fields.append(fieldsV)
-        print("IDS",fieldsV)
-    print("NEW FIELDS BEFORE",fields)
+        
     fields = [item for sublist in fields for item in sublist]
     print("NEW FIELDS",fields)
-    existing_mappings=[(field['name'],field_id_to_concept_map[field['id']]) for field in fields]
-
+    existing_mappings=[(field['name'],field_id_to_concept_map[field['id']],field['id']) for field in fields]
+    print("EXISTING MAPPINGS",existing_mappings)
     field_names=[]
     for name in names_list:
         mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping[0] == name]
         target_concept_ids = set([mapping[1] for mapping in mappings_matching_field_name])
+        target_field_id = set([mapping[2] for mapping in mappings_matching_field_name])
         if len(target_concept_ids) == 1:
-            field_names.append({"name":name,"id":target_concept_ids})
+            field_names.append({"name":name,"id":target_field_id.pop(),"concept":target_concept_ids.pop()})
 
     field_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in field_names}
-
+    print("FIELD NAME TO ID MAP",field_name_to_id_map)
     concepts_to_post=[]
     concept_response_content=[]
+    print("NAME IDS",name_ids.keys())
+    
+    try:
+        concept_id=field_id_to_concept_map[92167]
+        print("concept ID from int",concept_id)
+    except:
+        concept_id=field_id_to_concept_map['92167']
+        print("concept ID from string",concept_id)
+
     for name in name_ids.keys():
         try:
             link_id=field_name_to_id_map[name]
-            concept_id=field_id_to_concept_map[link_id]
+            print("Link ID",link_id)
+            concept_id=field_id_to_concept_map[int(link_id)]
+            print("concept ID",concept_id)
             current_id=name_ids[name]
+            print("current ID",current_id)
             print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
             # Create ScanReportConcept entry for copying over the concept
             concept_entry={
