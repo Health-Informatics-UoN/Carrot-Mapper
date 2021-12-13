@@ -380,6 +380,86 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
 
         print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
+def get_value_concepts(values,content_type,api_url,headers):
+    names_list=[]
+    name_ids = {}
+    for value in values:
+        names_list.append(value['value'])
+        name_ids[value['value']] = value['id']
+    get_value_concept_ids= requests.get(
+            url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}&fields=object_id,concept",
+            headers=headers,
+    )
+    value_concept_ids=json.loads(get_value_concept_ids.content.decode("utf-8"))
+    value_id_to_concept_map ={str(element.get("object_id", None)): str(element.get("concept", None)) for element in value_concept_ids}
+
+    print("VALUE TO CONCEPT MAP DICT",value_id_to_concept_map)
+
+    ids=list(value_id_to_concept_map.keys())
+    names=", ".join(map(str,names_list))
+    paginatedIds = paginate_chars(ids,names)
+    print("VALUE names list",names)
+    print("VALUE paginated ids",paginatedIds)
+    value_names = []
+    for Ids in paginatedIds:
+        ids_to_get = ",".join(map(str, Ids))
+        get_value_names=requests.get(
+        url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={names}&fields=id,value",
+        headers=headers,
+        )
+        fieldsV=json.loads(get_value_names.content.decode("utf-8"))
+        value_names.append(fieldsV)
+    value_names = [item for sublist in value_names for item in sublist]
+    print("VALUE names variable",value_names)
+    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id']) for value in value_names]
+    existing_value_names=[]
+    for name in names_list:
+        mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping[0] == name]
+        target_concept_ids = set([mapping[1] for mapping in mappings_matching_value_name])
+        target_value_id = set([mapping[2] for mapping in mappings_matching_value_name])
+        if len(target_concept_ids) == 1:
+            existing_value_names.append({"name":name,"id":target_value_id.pop(),"concept":target_concept_ids.pop()})
+    
+    value_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in existing_value_names}
+    
+
+    concepts_to_post=[]
+    concept_response_content=[]   
+    for name in names_list:
+        try:
+            link_id=value_name_to_id_map[str(name)]
+            concept_id=value_id_to_concept_map[str(link_id)]
+            current_id=name_ids[str(name)]
+            print(f"Found value with id: {link_id} with exsting concept mapping: {concept_id} which matches new value id: {current_id}")
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry={
+                    "nlp_entity": None,
+                    "nlp_entity_type": None,
+                    "nlp_confidence": None,
+                    "nlp_vocabulary": None,
+                    "nlp_processed_string": None,
+                    "concept":concept_id,
+                    "object_id":current_id,
+                    "content_type": content_type,
+                }
+            concepts_to_post.append(concept_entry)
+            
+        except:
+            continue
+    if concepts_to_post:
+        concept_response = requests.post(
+                    url=api_url + "scanreportconcepts/",
+                    headers=headers,
+                    data=json.dumps(concepts_to_post),
+                )
+        print("CONCEPTS SAVE STATUS >>>", concept_response.status_code,
+                    concept_response.reason, flush=True)
+
+        concept_content = json.loads(concept_response.content.decode("utf-8"))
+        concept_response_content += concept_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
 def remove_BOM(intermediate):
     return [{key.replace("\ufeff", ""): value
             for key, value in d.items()}
@@ -801,6 +881,7 @@ async def process_values_from_sheet(sheet, data_dictionary,
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     get_existing_concepts(names_to_ids_dict,15,api_url,headers)
+    get_value_concepts(values_response_content,17,api_url,headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
