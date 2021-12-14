@@ -6,7 +6,7 @@ import string
 import datetime
 
 from azure.storage.queue import QueueClient
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient,ContentSettings
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
@@ -98,6 +98,8 @@ from .models import (
     MappingRule, ScanReportConcept,
     ClassificationSystem,
 )
+
+from .services import download_data_dictionary_blob, download_scan_report_blob
 
 from .services_nlp import start_nlp_field_level
 
@@ -435,6 +437,17 @@ def home(request):
 class ScanReportTableListView(ListView):
     model = ScanReportTable
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("download-dd") is not None:
+            qs = self.get_queryset()
+            scan_report = self.get_queryset()[0].scan_report
+            print(scan_report.data_dictionary)
+            return download_data_dictionary_blob(scan_report.data_dictionary.name,container="data-dictionaries")
+        elif request.POST.get("download-sr") is not None:
+            qs = self.get_queryset()
+            scan_report = self.get_queryset()[0].scan_report
+            return download_scan_report_blob(scan_report.name,container="scan-reports")
+
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
@@ -449,18 +462,26 @@ class ScanReportTableListView(ListView):
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report
             scan_report_table = self.get_queryset()[0]
+            try:
+                data_dictionary=scan_report.data_dictionary
+            except:
+                data_dictionary=None
         else:
             scan_report = None
             scan_report_table = None
+
 
         context.update(
             {
                 "scan_report": scan_report,
                 "scan_report_table": scan_report_table,
+                "data_dictionary": data_dictionary
             }
         )
 
         return context
+
+
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportTableUpdateView(UpdateView):
