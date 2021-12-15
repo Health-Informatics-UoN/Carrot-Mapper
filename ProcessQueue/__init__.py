@@ -318,7 +318,33 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
         fields.append(fieldsV)
         
     fields = [item for sublist in fields for item in sublist]
-    print("NEW FIELDS",fields)
+    print("FIELDS",fields)
+    
+    get_scan_reports = requests.get(
+            url=f"{api_url}scanreports/",
+            headers=headers,
+        )
+    # get active scanreports and map them to fields. Remove any fields in archived reports
+    scanreports =json.loads(get_scan_reports.content.decode("utf-8"))
+    active_reports = [item for item in scanreports if item["hidden"] == False ]
+    active_reports_map = {str(element.get("id", None)): True for element in active_reports}
+    
+    tableIds = set([item['scan_report_table'] for item in fields])
+    tableIdsString = ",".join(map(str,tableIds))
+    get_field_tables = requests.get(
+            url=f"{api_url}scanreporttablesfilter/?id__in={tableIdsString}",
+            headers=headers,
+        )
+    
+    tables =json.loads(get_field_tables.content.decode("utf-8"))
+    
+    table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
+    
+    field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports_map}
+    
+    fields = [item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map]
+    print("FILTERED FIELDS",fields)
+    
     existing_mappings=[(field['name'],field_id_to_concept_map[field['id']],field['id']) for field in fields]
     print("EXISTING MAPPINGS",existing_mappings)
     field_names=[]
@@ -334,22 +360,12 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     concepts_to_post=[]
     concept_response_content=[]
     print("NAME IDS",name_ids.keys())
-    
-    try:
-        concept_id=field_id_to_concept_map[92167]
-        print("concept ID from int",concept_id)
-    except:
-        concept_id=field_id_to_concept_map['92167']
-        print("concept ID from string",concept_id)
 
     for name in name_ids.keys():
         try:
             link_id=field_name_to_id_map[name]
-            print("Link ID",link_id)
             concept_id=field_id_to_concept_map[int(link_id)]
-            print("concept ID",concept_id)
             current_id=name_ids[name]
-            print("current ID",current_id)
             print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
             # Create ScanReportConcept entry for copying over the concept
             concept_entry={
@@ -881,7 +897,7 @@ async def process_values_from_sheet(sheet, data_dictionary,
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     get_existing_concepts(names_to_ids_dict,15,api_url,headers)
-    get_value_concepts(values_response_content,17,api_url,headers)
+    #get_value_concepts(values_response_content,17,api_url,headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
