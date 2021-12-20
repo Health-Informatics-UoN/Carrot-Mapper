@@ -446,19 +446,36 @@ def get_value_concepts(values,content_type,api_url,headers):
     active_reports_map = {str(element.get("id", None)): True for element in active_reports}
     # get fields from values and repeat the process
     fieldIds = set([item['scan_report_field'] for item in value_names])
-    fieldIdsString = ",".join(map(str,fieldIds))
-    get_value_fields = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={fieldIdsString}",
+    paginatedFieldIds = paginate_chars(fieldIds,"")
+
+    fields = []
+    for Ids in paginatedFieldIds:
+        ids_to_get = ",".join(map(str, Ids))
+        
+        get_value_fields = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
             headers=headers,
         )
-    fields =json.loads(get_value_fields.content.decode("utf-8"))
+        fieldsV=json.loads(get_value_fields.content.decode("utf-8"))
+        fields.append(fieldsV)
+        
+    fields = [item for sublist in fields for item in sublist]
+
     tableIds = set([item['scan_report_table'] for item in fields])
-    tableIdsString = ",".join(map(str,tableIds))
-    get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={tableIdsString}",
+    paginatedTableIds = paginate_chars(tableIds,"")
+
+    tables = []
+    for Ids in paginatedTableIds:
+        ids_to_get = ",".join(map(str, Ids))
+        
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
             headers=headers,
-        ) 
-    tables =json.loads(get_field_tables.content.decode("utf-8"))
+        )
+        tablesV=json.loads(get_field_tables.content.decode("utf-8"))
+        tables.append(tablesV)
+        
+    tables = [item for sublist in tables for item in sublist]
     table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
     field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports_map}
     value_id_to_active_scanreport_map = {str(element.get("id", None)): field_id_to_active_scanreport_map[str(element.get("scan_report_field", None))] for element in value_names if str(element.get("scan_report_field", None)) in field_id_to_active_scanreport_map}
