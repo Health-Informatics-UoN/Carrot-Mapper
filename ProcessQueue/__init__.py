@@ -330,13 +330,20 @@ def get_existing_concepts(name_ids,content_type,api_url,headers):
     active_reports_map = {str(element.get("id", None)): True for element in active_reports}
     
     tableIds = set([item['scan_report_table'] for item in fields])
-    tableIdsString = ",".join(map(str,tableIds))
-    get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={tableIdsString}",
+    paginatedTableIds = paginate_chars(tableIds,"")
+
+    tables = []
+    for Ids in paginatedTableIds:
+        ids_to_get = ",".join(map(str, Ids))
+        
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
             headers=headers,
         )
-    
-    tables =json.loads(get_field_tables.content.decode("utf-8"))
+        tablesV=json.loads(get_field_tables.content.decode("utf-8"))
+        tables.append(tablesV)
+        
+    tables = [item for sublist in tables for item in sublist]
     
     table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
     
@@ -932,7 +939,7 @@ async def process_values_from_sheet(sheet, data_dictionary,
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     get_existing_concepts(names_to_ids_dict,15,api_url,headers)
-    #get_value_concepts(values_response_content,17,api_url,headers)
+    get_value_concepts(values_response_content,17,api_url,headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
