@@ -420,98 +420,102 @@ def get_existing_field_concepts(name_ids,content_type,api_url,headers):
 
         print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
-def get_value_concepts(values,content_type,api_url,headers):
-    names_list=[]
-    name_ids = {}
-    for value in values:
-        names_list.append(value['value'])
-        name_ids[value['value']] = value['id']
+def get_existing_value_concepts(values,content_type,api_url,headers):
+
+    """
+    This expects a list of values which have been generated in a newly uploaded scanreport and
+    creates new concepts if any matching names are found with existing fields
+    """
+    # create list of names of newly generated values
+    names_list = [value['value'] for value in values]
+    # create dictionary that maps value names to value ids
+    name_ids = {str(value['value']): value['id'] for value in values}
+    # get all scan report concepts with the concept type of values (or content type but should be values)
     get_value_concept_ids= requests.get(
             url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}&fields=object_id,concept",
             headers=headers,
     )
+    # create dictionary that maps existing value id's to scan report concepts
+    # from the list of existing scan report concepts
     value_concept_ids=json.loads(get_value_concept_ids.content.decode("utf-8"))
     value_id_to_concept_map ={str(element.get("object_id", None)): str(element.get("concept", None)) for element in value_concept_ids}
 
     print("VALUE TO CONCEPT MAP DICT",value_id_to_concept_map)
-
+    # create list of id's from existing values that have a scanreport concept 
     ids=list(value_id_to_concept_map.keys())
+    # create names string to pass to url from list of names made from newly generated values
     names=", ".join(map(str,names_list))
-    paginatedIds = paginate_chars(ids,names)
+    # paginate list of value ids from existing values that have scanreport concepts and
+    # use the list to get existing scanreport values that match the list any of the newly generated names
+    paginated_ids = paginate_chars(ids,names)
     print("VALUE names list",names)
-    print("VALUE paginated ids",paginatedIds)
+    print("VALUE paginated ids",paginated_ids)
     value_names = []
-    for Ids in paginatedIds:
+    for Ids in paginated_ids:
         ids_to_get = ",".join(map(str, Ids))
         get_value_names=requests.get(
         url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={names}&fields=id,value,scan_report_field",
         headers=headers,
         )
-        fieldsV=json.loads(get_value_names.content.decode("utf-8"))
-        value_names.append(fieldsV)
-    value_names = [item for sublist in value_names for item in sublist]
+        value_names.append(json.loads(get_value_names.content.decode("utf-8")))
+    value_names = flatten(value_names)
     print("Unfiltered values",value_names)
 
-    ###
+    # get all scan reports to be used to filter values by only values that come from active scan reports
     get_scan_reports = requests.get(
             url=f"{api_url}scanreports/",
             headers=headers,
         )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports =json.loads(get_scan_reports.content.decode("utf-8"))
-    active_reports = [item for item in scanreports if item["hidden"] == False ]
-    active_reports_map = {str(element.get("id", None)): True for element in active_reports}
-    # get fields from values and repeat the process
-    fieldIds = set([item['scan_report_field'] for item in value_names])
-    paginatedFieldIds = paginate_chars(fieldIds,"")
-
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]  
+    # active reports is list of report ids that are not archived
+    
+    # get field ids from values and use to get scan report fields
+    field_ids = set([item['scan_report_field'] for item in value_names])
+    paginated_field_ids = paginate_chars(field_ids,"")
     fields = []
-    for Ids in paginatedFieldIds:
+    for Ids in paginated_field_ids:
         ids_to_get = ",".join(map(str, Ids))
         
         get_value_fields = requests.get(
             url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
             headers=headers,
         )
-        fieldsV=json.loads(get_value_fields.content.decode("utf-8"))
-        fields.append(fieldsV)
-        
-    fields = [item for sublist in fields for item in sublist]
-
-    tableIds = set([item['scan_report_table'] for item in fields])
-    paginatedTableIds = paginate_chars(tableIds,"")
-
+        fields.append(json.loads(get_value_fields.content.decode("utf-8")))   
+    fields = flatten(fields)
+    # get table id's from fields and repeat the process
+    table_ids = set([item['scan_report_table'] for item in fields])
+    paginated_table_ids = paginate_chars(table_ids,"")
     tables = []
-    for Ids in paginatedTableIds:
+    for Ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, Ids))
         
         get_field_tables = requests.get(
             url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
             headers=headers,
-        )
-        tablesV=json.loads(get_field_tables.content.decode("utf-8"))
-        tables.append(tablesV)
-        
-    tables = [item for sublist in tables for item in sublist]
+        ) 
+        tables.append(json.loads(get_field_tables.content.decode("utf-8"))) 
+    tables = flatten(tables)
+    # map value id to active scan report
     table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
-    field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports_map}
+    field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports}
     value_id_to_active_scanreport_map = {str(element.get("id", None)): field_id_to_active_scanreport_map[str(element.get("scan_report_field", None))] for element in value_names if str(element.get("scan_report_field", None)) in field_id_to_active_scanreport_map}
     value_names = [item for item in value_names if str(item["id"]) in value_id_to_active_scanreport_map]
-    print("values to scan report",value_id_to_active_scanreport_map)
-    print("FILTERED values",value_names)
+    print("VALUES TO SCAN REPORT",value_id_to_active_scanreport_map)
+    print("FILTERED VALUES",value_names)
 
-    ###
-    print("VALUE names variable",value_names)
+    # 
     existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id']) for value in value_names]
-    existing_value_names=[]
+    
+    value_name_to_id_map={}
     for name in names_list:
         mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping[0] == name]
         target_concept_ids = set([mapping[1] for mapping in mappings_matching_value_name])
         target_value_id = set([mapping[2] for mapping in mappings_matching_value_name])
         if len(target_concept_ids) == 1:
-            existing_value_names.append({"name":name,"id":target_value_id.pop(),"concept":target_concept_ids.pop()})
-    value_name_to_id_map ={str(element.get("name", None)): str(element.get("id", None)) for element in existing_value_names}
-    
+            value_name_to_id_map[str(name)] = str(target_value_id.pop())
+            
 
     concepts_to_post=[]
     concept_response_content=[]   
@@ -973,7 +977,7 @@ async def process_values_from_sheet(sheet, data_dictionary,
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     get_existing_field_concepts(names_to_ids_dict,15,api_url,headers)
-    get_value_concepts(values_response_content,17,api_url,headers)
+    get_existing_value_concepts(values_response_content,17,api_url,headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
