@@ -1,5 +1,4 @@
 import os
-import io
 from io import BytesIO, StringIO
 from azure.storage.blob import BlobServiceClient
 import csv
@@ -24,12 +23,10 @@ def download_scan_report_blob(blob_name,container="scan-reports"):
     # scanreport_bytes = BytesIO(streamdownloader.readall())
     # scanreport_bytes.seek(0)
     
-    # wb=openpyxl.load_workbook(streamdownloader.readall())
-    # # print(wb.active)
-    # wb.save(streamdownloader.readall())
+    wb=openpyxl.load_workbook(streamdownloader.readall())
+    # print(wb.active)
+    wb.save(streamdownloader.readall())
     # scanreport_bytes.seek(0)
-    io.open(streamdownloader.readall(), mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True)
-
     response = HttpResponse(streamdownloader.readall(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
     return response
