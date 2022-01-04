@@ -1,9 +1,13 @@
 import os
+import io
 from io import BytesIO, StringIO
 from azure.storage.blob import BlobServiceClient
 import csv
 import openpyxl
+from tempfile import NamedTemporaryFile
+from openpyxl.writer.excel import save_virtual_workbook
 from django.http.response import HttpResponse
+from openpyxl.workbook.workbook import Workbook
 
 
 def download_scan_report_blob(blob_name,container="scan-reports"):
@@ -16,18 +20,18 @@ def download_scan_report_blob(blob_name,container="scan-reports"):
     # Grab scan report data from blob
     streamdownloader = blob_service_client.get_container_client(container).\
         get_blob_client(blob_name).download_blob()
-    scanreport_bytes = BytesIO(streamdownloader.readall().decode("utf-8"))
-    wb = openpyxl.load_workbook(scanreport_bytes)
-    # wb=xlrd.open_workbook(scanreport_bytes)
-    # wb=openpyxl.load_workbook(streamdownloader.readall())
-    # print(wb.worksheets[0].title)
-    wb.save(scanreport_bytes)
-    # wb.close()
-    scanreport_bytes.seek(0)
-    print(scanreport_bytes.read())
-    response = HttpResponse(scanreport_bytes,content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; base64')
-    response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
+  
+    # scanreport_bytes = BytesIO(streamdownloader.readall())
+    # scanreport_bytes.seek(0)
     
+    # wb=openpyxl.load_workbook(streamdownloader.readall())
+    # # print(wb.active)
+    # wb.save(streamdownloader.readall())
+    # scanreport_bytes.seek(0)
+    io.open(streamdownloader.readall(), mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True)
+
+    response = HttpResponse(streamdownloader.readall(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
     return response
         
 def download_data_dictionary_blob(blob_name,container="data-dictionaries"):
