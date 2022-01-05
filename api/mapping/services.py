@@ -2,10 +2,10 @@ import os
 from io import BytesIO, StringIO
 from azure.storage.blob import BlobServiceClient
 import csv
-import openpyxl
+import xlsxwriter
 from tempfile import NamedTemporaryFile
 from openpyxl.writer.excel import save_virtual_workbook
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse,FileResponse
 from openpyxl.workbook.workbook import Workbook
 
 
@@ -19,16 +19,23 @@ def download_scan_report_blob(blob_name,container="scan-reports"):
     # Grab scan report data from blob
     streamdownloader = blob_service_client.get_container_client(container).\
         get_blob_client(blob_name).download_blob()
-  
+    scan_report=streamdownloader.readall()
+
+
     # scanreport_bytes = BytesIO(streamdownloader.readall())
-    # scanreport_bytes.seek(0)
     
-    wb=openpyxl.load_workbook(streamdownloader.readall())
-    # print(wb.active)
-    wb.save(streamdownloader.readall())
+    # wb=openpyxl.Workbook()
+    # wb.save(streamdownloader)
     # scanreport_bytes.seek(0)
-    response = HttpResponse(streamdownloader.readall(),content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    # stream=streamdownloader
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
+
+    book = xlsxwriter.workbook.Workbook(response, {'in_memory': True})
+    sheet = book.add_worksheet('test')       
+    sheet.write(0, 0, 'Hello, world!')
+    book.close()
     return response
         
 def download_data_dictionary_blob(blob_name,container="data-dictionaries"):
