@@ -469,6 +469,7 @@ class ScanReportTableListView(ListView):
         else:
             scan_report = None
             scan_report_table = None
+            data_dictionary=None
 
 
         context.update(
@@ -803,8 +804,8 @@ class ScanReportFormView(FormView):
             }
 
             blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=scan_report.name)
-            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
-        
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open(),content_settings=ContentSettings(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+            # setting content settings for downloading later
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary= DataDictionary.objects.create(

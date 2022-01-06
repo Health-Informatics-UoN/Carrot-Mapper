@@ -61,7 +61,7 @@ const TablesTbl = () => {
         <div >
             <HStack my="10px">
             <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
-            <Button variant="blue" onClick={download_data_dictionary}>Download Data Dictionary File</Button>
+            <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
 
             </HStack>
 
