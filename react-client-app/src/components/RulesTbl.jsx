@@ -57,6 +57,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                         </Th>
                         <Th>Source Field</Th>
                         <Th>Term Map</Th>
+                        <Th>Creation Type</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
@@ -96,6 +97,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
 
                                     }
                                 </Td>
+                                <Td maxW={[50, 100, 200]} >{item.creation_type}</Td>
                             </Tr>
 
                         )
