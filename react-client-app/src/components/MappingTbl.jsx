@@ -177,6 +177,11 @@ const MappingTbl = () => {
         }
     };
 
+    const analyseConcepts = () => {
+        window.analyseConcepts()
+        
+    };
+
     if (loading) {
         //Render Loading State
         return (
@@ -202,6 +207,7 @@ const MappingTbl = () => {
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
                 <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
                 <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
+                <Button variant="blue" onClick={() => { analyseConcepts() }}>Analyse Rules</Button>
             </HStack>
             
             <div>

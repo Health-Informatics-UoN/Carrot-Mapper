@@ -102,6 +102,7 @@ from .models import (
 from .services_nlp import start_nlp_field_level
 
 from .services_rules import (
+    analyse_concepts,
     save_mapping_rules,
     remove_mapping_rules,
     find_existing_scan_report_concepts,
@@ -687,12 +688,17 @@ class StructuralMappingTableListView(ListView):
             else:
                 messages.success(request,
                                  f'Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.')
-                
             return redirect(request.path)
 
         elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request,qs)
+        
+        elif request.POST.get("analyse_concepts") is not None:
+            qs = self.get_queryset()
+            analyse_concepts(self.kwargs.get("pk"))
+            return redirect(request.path)
+
         else:
             messages.error(request,"not working right now!")                
             return redirect(request.path)

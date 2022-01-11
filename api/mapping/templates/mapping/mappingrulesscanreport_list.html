@@ -59,6 +59,19 @@
 			return res;
 		}
 
+		var analyseConcepts = async function () {
+			//use ajax to post a request to retrieve one
+			const res = await $.ajax({
+				type: "POST",
+				url: window.location,
+				data: {
+					'analyse_concepts': true,
+					'csrfmiddlewaretoken': '{{ csrf_token }}',
+				}
+			});
+			return res;
+		}
+
 		var getSVG = async function () {
 			const response = await $.ajax({
 				type: "POST",

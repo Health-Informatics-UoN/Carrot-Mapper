@@ -6,13 +6,12 @@ from datetime import datetime
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship
 
-from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
+from mapping.models import ScanReport, ScanReportTable, ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
 
 from graphviz import Digraph
 
 from django.http import HttpResponse
-
 class NonStandardConceptMapsToSelf(Exception):
     pass
 
@@ -804,3 +803,14 @@ def remove_mapping_rules(request,scan_report_id):
         .filter(scan_report__id=scan_report_id)
 
     rules.delete()
+
+
+def analyse_concepts(scan_report_id):
+    scan_report=ScanReport.objects.get(id=scan_report_id)
+    all_scan_reports=ScanReport.objects.all().exclude(id=scan_report_id)
+    mapping_rules=MappingRule.objects.all().filter(scan_report_id=scan_report_id)
+    all_mapping_rules=MappingRule.objects.all().exclude(scan_report_id=scan_report_id)
+
+    print(mapping_rules)
+    for rule in mapping_rules:
+        print("Concept",rule.concept.concept)
