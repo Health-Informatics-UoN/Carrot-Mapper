@@ -28,6 +28,11 @@ class Status(models.TextChoices):
     IN_PROGRESS_75PERCENT = "INPRO75","Mapping 75%"
     COMPLETE = "COMPLET","Mapping Complete"
     BLOCKED = "BLOCKED","Blocked"
+
+class CreationType(models.TextChoices):
+    Manual = "M","Manual"
+    Vocab = "V","Vocab"
+    Reuse = "R","Reuse"
     
 class BaseModel(models.Model):
     """
@@ -380,6 +385,13 @@ class MappingRule(BaseModel):
     omop_field = models.ForeignKey(
         OmopField,
         on_delete=models.CASCADE
+    )
+
+    #save how the mapping rule was created
+    creation_type=models.CharField(
+        max_length=1,
+        choices=CreationType.choices,
+        default=CreationType.Manual,        
     )
 
     #!! TODO --- STOP USING THIS
