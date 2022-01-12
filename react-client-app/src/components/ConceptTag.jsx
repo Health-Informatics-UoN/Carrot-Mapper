@@ -14,13 +14,13 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
                 if (creation_type) {
                     let color
                     switch (creation_type) {
-                        case "vocab":
+                        case "V":
                             color = "#ff00ff"
                             break
-                        case "reuse":
+                        case "R":
                             color = "#00ff00"
                             break
-                        case "manual":
+                        case "M":
                             color = "#3C579E"
                             break
                         default:
@@ -39,13 +39,13 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
     const mapCreationTypeToString = (type)=>{
         let str
         switch (type) {
-            case "vocab":
+            case "V":
                 str = "added through vocab"
                 break
-            case "reuse":
+            case "R":
                 str = "added through mapping reuse"
                 break
-            case "manual":
+            case "M":
                 str = "manually added"
                 break
             default:
