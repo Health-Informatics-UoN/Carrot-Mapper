@@ -362,9 +362,9 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     scanreports =json.loads(get_scan_reports.content.decode("utf-8"))
     active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]  
     # active reports is list of report ids that are not archived
-    table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
+    table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if str(element["scan_report"]) in active_reports}
     # map field id to active scan report id. (only store field ids that correspond to an active scan report)
-    field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports}
+    field_id_to_active_scanreport_map ={str(element["id"]): table_id_to_active_scanreport_map[str(element["scan_report_table"])] for element in fields if str(element["scan_report_table"]) in table_id_to_active_scanreport_map}
     # filter fields to only include fields that are from active scan reports
     fields = [item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map]
     print("FILTERED FIELDS",fields)
