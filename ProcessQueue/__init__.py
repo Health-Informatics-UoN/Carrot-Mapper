@@ -299,10 +299,11 @@ def flatten(arr):
     newArr = [item for sublist in arr for item in sublist]
     return newArr
 
-def get_existing_field_concepts(name_ids,content_type,api_url,headers):
+def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     """
-    This expects a list of fields which have been generated in a newly uploaded scanreport and
-    creates new concepts if any matching names are found with existing fields
+    This expects a list of fields which have been generated in a newly uploaded 
+    scanreport, and content_type 15. It creates new concepts associated to any 
+    field that matches the name of an existing field with an associated concept.
     """
     # Gets all scan report concepts that are for the type field (or content type which should be field)
     get_field_concept_ids= requests.get(
@@ -314,42 +315,34 @@ def get_existing_field_concepts(name_ids,content_type,api_url,headers):
     field_id_to_concept_map ={element.get("object_id", None): str(element.get("concept", None)) for element in field_concept_ids} 
     print("FIELD TO CONCEPT MAP DICT",field_id_to_concept_map)
     # creates a list of field ids from fields that already exist
-    ids=list(field_id_to_concept_map.keys())
+    existing_ids=list(field_id_to_concept_map.keys())
     # create list of field names from list of newly generated fields
-    names_list=list(name_ids.keys())
-    names=",".join(map(str,names_list))
+    names_list=list(new_field_ids.keys())
+    names_string=",".join(map(str,names_list))
     # paginate the field id's variable so that get request does not exceed character limit
-    paginated_ids = paginate_chars(ids,names)
+    paginated_ids = paginate_chars(existing_ids,names_string)
     # for each list in paginated id's, get scanreport fields that match any of the given id's 
     # and matches any of the newly generated names
     fields = []
-    for Ids in paginated_ids:
-        ids_to_get = ",".join(map(str, Ids))
+    for ids in paginated_ids:
+        ids_to_get = ",".join(map(str, ids))
         get_field_names = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={names}",
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={names_string}",
             headers=headers,
         )
         fields.append(json.loads(get_field_names.content.decode("utf-8")))    
     fields = flatten(fields)
     print("FIELDS",fields)
     
-    # get all scanreports to be used to check active scan reports
-    get_scan_reports = requests.get(
-            url=f"{api_url}scanreports/",
-            headers=headers,
-        )
-    # get active scanreports and map them to fields. Remove any fields in archived reports
-    scanreports =json.loads(get_scan_reports.content.decode("utf-8"))
-    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]  
-    # active reports is list of report ids that are not archived
+    
     
     # get a list of table ids for all the fields that have matching names
     table_ids = set([item['scan_report_table'] for item in fields])
     # get tables from list of table ids
     paginated_table_ids = paginate_chars(table_ids,"")
     tables = []
-    for Ids in paginated_table_ids:
-        ids_to_get = ",".join(map(str, Ids))
+    for ids in paginated_table_ids:
+        ids_to_get = ",".join(map(str, ids))
         
         get_field_tables = requests.get(
             url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
@@ -359,6 +352,16 @@ def get_existing_field_concepts(name_ids,content_type,api_url,headers):
     tables = flatten(tables)
     print("TABLES",tables)
     # map table id's to scanreport id
+
+    # get all scanreports to be used to check active scan reports
+    get_scan_reports = requests.get(
+            url=f"{api_url}scanreports/",
+            headers=headers,
+        )
+    # get active scanreports and map them to fields. Remove any fields in archived reports
+    scanreports =json.loads(get_scan_reports.content.decode("utf-8"))
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]  
+    # active reports is list of report ids that are not archived
     table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
     # map field id to active scan report id. (only store field ids that correspond to an active scan report)
     field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports}
@@ -383,14 +386,14 @@ def get_existing_field_concepts(name_ids,content_type,api_url,headers):
     print("FIELD NAME TO ID MAP",field_name_to_id_map)
     concepts_to_post=[]
     concept_response_content=[]
-    print("NAME IDS",name_ids.keys())
+    print("NAME IDS",new_field_ids.keys())
 
-    for name in name_ids.keys():
+    for name,id in new_field_ids.items():
         try:
             link_id=field_name_to_id_map[name]
             concept_id=field_id_to_concept_map[int(link_id)]
-            current_id=name_ids[name]
-            print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {current_id}")
+            
+            print(f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {id}")
             # Create ScanReportConcept entry for copying over the concept
             concept_entry={
                     "nlp_entity": None,
@@ -399,22 +402,27 @@ def get_existing_field_concepts(name_ids,content_type,api_url,headers):
                     "nlp_vocabulary": None,
                     "nlp_processed_string": None,
                     "concept":concept_id,
-                    "object_id":current_id,
+                    "object_id":id,
                     "content_type": content_type,
                 }
             concepts_to_post.append(concept_entry)    
         except KeyError:
             continue
     if concepts_to_post:
-        concept_response = requests.post(
+
+        paginated_concepts_to_post = paginate_chars(concepts_to_post,"")
+        concept_response = []
+        for concepts_to_post_item in paginated_concepts_to_post:  
+            get_concept_response = requests.post(
                     url=api_url + "scanreportconcepts/",
                     headers=headers,
-                    data=json.dumps(concepts_to_post),
+                    data=json.dumps(concepts_to_post_item),
                 )
-        print("CONCEPTS SAVE STATUS >>>", concept_response.status_code,
-                    concept_response.reason, flush=True)
+            print("CONCEPTS SAVE STATUS >>>", get_concept_response.status_code,
+                    get_concept_response.reason, flush=True)
+            concept_response.append(json.loads(get_concept_response.content.decode("utf-8"))) 
+        concept_content = flatten(concept_response)
 
-        concept_content = json.loads(concept_response.content.decode("utf-8"))
         concept_response_content += concept_content
 
         print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
