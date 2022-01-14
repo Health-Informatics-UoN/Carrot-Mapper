@@ -9,7 +9,6 @@ import openpyxl
 from datetime import datetime
 import os
 import csv
-from collections import Counter
 import psutil
 import httpx
 import asyncio
