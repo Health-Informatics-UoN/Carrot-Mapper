@@ -20,8 +20,14 @@ const App = ({ page }) => {
         useDelete(`scanreportconcepts/${conceptId}`)
             .then(function (response) {
                 //Re-fetch the concepts for that particular field
-                getScanReportConcepts(id).then(scanreportconcepts => {
+                getScanReportConcepts(id).then(async scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
+
+                        // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
+                        // all the mapping rules at the moment which works but needs to be fixed
+                        const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
+                        scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
+
                         const conceptIds = scanreportconcepts.map(value => value.concept)
                         useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                             .then((values) => {
@@ -153,8 +159,13 @@ const App = ({ page }) => {
                     usePost(`/scanreportconcepts/`, data)
                         .then(function (response) {
                             //Re-fetch scan report concepts for field     
-                            getScanReportConcepts(id).then(scanreportconcepts => {
+                            getScanReportConcepts(id).then(async scanreportconcepts => {
                                 if (scanreportconcepts.length > 0) {
+                                    // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
+                                    // all the mapping rules at the moment which works but needs to be fixed
+                                    const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
+                                    scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
+
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
                                     useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                                         .then((values) => {
