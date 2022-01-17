@@ -302,9 +302,9 @@ def flatten(arr):
     return newArr
 
 
-def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
+def reuse_existing_field_concepts(new_fields_map,content_type,api_url,headers):
     """
-    This expects a list of fields which have been generated in a newly uploaded 
+    This expects a dict of field names to ids which have been generated in a newly uploaded 
     scanreport, and content_type 15. It creates new concepts associated to any 
     field that matches the name of an existing field with an associated concept.
     """
@@ -320,17 +320,16 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     # creates a list of field ids from fields that already exist
     existing_ids=list(field_id_to_concept_map.keys())
     # create list of field names from list of newly generated fields
-    names_list=list(new_field_ids.keys())
-    names_string=",".join(map(str,names_list))
+    new_fields_names_string=",".join(map(str,list(new_fields_map.keys())))
     # paginate the field id's variable so that get request does not exceed character limit
-    paginated_ids = paginate(existing_ids,2000,names_string)
+    paginated_ids = paginate(existing_ids,2000,new_fields_names_string)
     # for each list in paginated id's, get scanreport fields that match any of the given id's 
     # and matches any of the newly generated names
     fields = []
     for ids in paginated_ids:
         ids_to_get = ",".join(map(str, ids))
         get_field_names = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={names_string}",
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={new_fields_names_string}",
             headers=headers,
         )
         fields.append(json.loads(get_field_names.content.decode("utf-8")))    
@@ -375,7 +374,7 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     existing_mappings=[(field['name'],field_id_to_concept_map[field['id']],field['id']) for field in fields]
     print("EXISTING MAPPINGS",existing_mappings)    
     field_name_to_id_map={}
-    for name in names_list:
+    for name in list(new_fields_map.keys()):
         mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping[0] == name]
         target_concept_ids = set([mapping[1] for mapping in mappings_matching_field_name])
         target_field_id = set([mapping[2] for mapping in mappings_matching_field_name])
@@ -389,9 +388,9 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     print("FIELD NAME TO ID MAP",field_name_to_id_map)
     concepts_to_post=[]
     concept_response_content=[]
-    print("NAME IDS",new_field_ids.keys())
+    print("NAME IDS",new_fields_map.keys())
 
-    for name,id in new_field_ids.items():
+    for name,id in new_fields_map.items():
         try:
             link_id=field_name_to_id_map[name]
             concept_id=field_id_to_concept_map[int(link_id)]
@@ -430,7 +429,7 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
 
         print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
-def get_existing_value_concepts(values,content_type,api_url,headers):
+def reuse_existing_value_concepts(values,content_type,api_url,headers):
 
     """
     This expects a list of values which have been generated in a newly uploaded scanreport and
