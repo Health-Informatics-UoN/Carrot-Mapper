@@ -446,10 +446,25 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     value_id_to_concept_map ={str(element.get("object_id", None)): str(element.get("concept", None)) for element in value_concept_ids}
     # create list of names of newly generated values
     new_values_names_list = [value['value'] for value in new_values_map]
+    
+    new_paginated_field_ids = paginate([value['scan_report_field'] for value in new_values_map],2000)
+    new_fields = []
+    for ids in new_paginated_field_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_fields=requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
+            headers=headers,
+        )
+        new_fields.append(json.loads(get_fields.content.decode("utf-8")))
+    new_fields = flatten(new_fields)
+    
+    new_fields_to_name_map = {str(value['id']):value['name'] for value in new_fields}
+    
+    new_values_matching_list = [{"name":value['value'], "description":value['value_description'],"field_name":new_fields_to_name_map[str(value['scan_report_field'])]} for value in new_values_map]
+    
     # create dictionary that maps value names to value ids
     new_value_ids = {str(value['value']): value['id'] for value in new_values_map}
     
-    print("VALUE TO CONCEPT MAP DICT",value_id_to_concept_map)
     # create list of id's from existing values that have a scanreport concept 
     existing_ids=list(value_id_to_concept_map.keys())
     # create names string to pass to url from list of names made from newly generated values
@@ -463,7 +478,7 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     for ids in paginated_ids:
         ids_to_get = ",".join(map(str, ids))
         get_value_names=requests.get(
-            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={new_value_names_string}&fields=id,value,scan_report_field",
+            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={new_value_names_string}&fields=id,value,scan_report_field,value_description",
             headers=headers,
         )
         value_names.append(json.loads(get_value_names.content.decode("utf-8")))
@@ -483,6 +498,8 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
         )
         fields.append(json.loads(get_value_fields.content.decode("utf-8")))   
     fields = flatten(fields)
+    field_id_to_name_map = {str(value['id']): value['name'] for value in fields}
+    print("field id to name map",field_id_to_name_map)
     # get table id's from fields and repeat the process
     table_ids = set([item['scan_report_table'] for item in fields])
     paginated_table_ids = paginate(table_ids,2000,"")
@@ -508,21 +525,23 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     # active reports is list of report ids that are not archived
 
     # map value id to active scan report
-    #table_id_to_scanreport_map ={str(element.get("id", None)): str(element.get("scan_report", None)) for element in tables}
     table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if str(element["scan_report"]) in active_reports}
     field_id_to_active_scanreport_map ={str(element["id"]): table_id_to_active_scanreport_map[str(element["scan_report_table"])] for element in fields if str(element["scan_report_table"]) in table_id_to_active_scanreport_map}
-    #field_id_to_active_scanreport_map ={str(element.get("id", None)): table_id_to_scanreport_map[str(element.get("scan_report_table", None))] for element in fields if  str(table_id_to_scanreport_map[str(element.get("scan_report_table", None))]) in active_reports}
+
     value_id_to_active_scanreport_map = {str(element["id"]): field_id_to_active_scanreport_map[str(element["scan_report_field"])] for element in value_names if str(element["scan_report_field"]) in field_id_to_active_scanreport_map}
     value_names = [item for item in value_names if str(item["id"]) in value_id_to_active_scanreport_map]
     print("VALUES TO SCAN REPORT",value_id_to_active_scanreport_map)
     print("FILTERED VALUES",value_names)
 
     # 
-    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id']) for value in value_names]
+    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id'],value["value_description"],field_id_to_name_map[str(value["scan_report_field"])]) for value in value_names]
     
     value_name_to_id_map={}
-    for name in new_values_names_list:
-        mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping[0] == name]
+    for item in new_values_matching_list:
+        name = item["name"] 
+        description = item["description"] 
+        field_name = item["field_name"] 
+        mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping[0] == name and mapping[3] == description and mapping[4] == field_name]
         target_concept_ids = set([mapping[1] for mapping in mappings_matching_value_name])
         target_value_id = set([mapping[2] for mapping in mappings_matching_value_name])
         if len(target_concept_ids) == 1:
