@@ -166,13 +166,15 @@ def perform_chunking(entries_to_post):
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
-def paginate(entries_to_post):
+def paginate(entries_to_post,max_chars=None,other=''):
     """
     This expects a list of dicts, and returns a list of lists of dicts, 
     where the maximum length of each list of dicts, under JSONification, 
     is less than max_chars
     """
-    max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
+    if not max_chars:
+        max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
+    max_chars = max_chars - len(other)
     
     paginated_entries_to_post = []
     this_page = []
@@ -299,6 +301,7 @@ def flatten(arr):
     newArr = [item for sublist in arr for item in sublist]
     return newArr
 
+
 def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     """
     This expects a list of fields which have been generated in a newly uploaded 
@@ -320,7 +323,7 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     names_list=list(new_field_ids.keys())
     names_string=",".join(map(str,names_list))
     # paginate the field id's variable so that get request does not exceed character limit
-    paginated_ids = paginate_chars(existing_ids,names_string)
+    paginated_ids = paginate(existing_ids,2000,names_string)
     # for each list in paginated id's, get scanreport fields that match any of the given id's 
     # and matches any of the newly generated names
     fields = []
@@ -339,7 +342,7 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
     # get a list of table ids for all the fields that have matching names
     table_ids = set([item['scan_report_table'] for item in fields])
     # get tables from list of table ids
-    paginated_table_ids = paginate_chars(table_ids,"")
+    paginated_table_ids = paginate(table_ids,2000,"")
     tables = []
     for ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, ids))
@@ -410,7 +413,7 @@ def get_existing_field_concepts(new_field_ids,content_type,api_url,headers):
             continue
     if concepts_to_post:
 
-        paginated_concepts_to_post = paginate_chars(concepts_to_post,"")
+        paginated_concepts_to_post = paginate(concepts_to_post,"")
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:  
             get_concept_response = requests.post(
@@ -454,7 +457,7 @@ def get_existing_value_concepts(values,content_type,api_url,headers):
     names=", ".join(map(str,names_list))
     # paginate list of value ids from existing values that have scanreport concepts and
     # use the list to get existing scanreport values that match the list any of the newly generated names
-    paginated_ids = paginate_chars(ids,names)
+    paginated_ids = paginate(ids,2000,names)
     print("VALUE names list",names)
     print("VALUE paginated ids",paginated_ids)
     value_names = []
@@ -480,7 +483,7 @@ def get_existing_value_concepts(values,content_type,api_url,headers):
     
     # get field ids from values and use to get scan report fields
     field_ids = set([item['scan_report_field'] for item in value_names])
-    paginated_field_ids = paginate_chars(field_ids,"")
+    paginated_field_ids = paginate(field_ids,2000,"")
     fields = []
     for Ids in paginated_field_ids:
         ids_to_get = ",".join(map(str, Ids))
@@ -493,7 +496,7 @@ def get_existing_value_concepts(values,content_type,api_url,headers):
     fields = flatten(fields)
     # get table id's from fields and repeat the process
     table_ids = set([item['scan_report_table'] for item in fields])
-    paginated_table_ids = paginate_chars(table_ids,"")
+    paginated_table_ids = paginate(table_ids,2000,"")
     tables = []
     for Ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, Ids))
