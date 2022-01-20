@@ -412,7 +412,7 @@ def reuse_existing_field_concepts(new_fields_map,content_type,api_url,headers):
             continue
     if concepts_to_post:
 
-        paginated_concepts_to_post = paginate(concepts_to_post,"")
+        paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:  
             get_concept_response = requests.post(
@@ -474,19 +474,19 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     paginated_ids = paginate(existing_ids,2000,new_value_names_string)
     print("VALUE names list",new_value_names_string)
     print("VALUE paginated ids",paginated_ids)
-    value_names = []
+    existing_scanreport_values = []
     for ids in paginated_ids:
         ids_to_get = ",".join(map(str, ids))
         get_value_names=requests.get(
             url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={new_value_names_string}&fields=id,value,scan_report_field,value_description",
             headers=headers,
         )
-        value_names.append(json.loads(get_value_names.content.decode("utf-8")))
-    value_names = flatten(value_names)
-    print("Unfiltered values",value_names)
+        existing_scanreport_values.append(json.loads(get_value_names.content.decode("utf-8")))
+    existing_scanreport_values = flatten(existing_scanreport_values)
+    print("Unfiltered values",existing_scanreport_values)
 
     # get field ids from values and use to get scan report fields
-    field_ids = set([item['scan_report_field'] for item in value_names])
+    field_ids = set([item['scan_report_field'] for item in existing_scanreport_values])
     paginated_field_ids = paginate(field_ids,2000,"")
     fields = []
     for ids in paginated_field_ids:
@@ -528,13 +528,13 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if str(element["scan_report"]) in active_reports}
     field_id_to_active_scanreport_map ={str(element["id"]): table_id_to_active_scanreport_map[str(element["scan_report_table"])] for element in fields if str(element["scan_report_table"]) in table_id_to_active_scanreport_map}
 
-    value_id_to_active_scanreport_map = {str(element["id"]): field_id_to_active_scanreport_map[str(element["scan_report_field"])] for element in value_names if str(element["scan_report_field"]) in field_id_to_active_scanreport_map}
-    value_names = [item for item in value_names if str(item["id"]) in value_id_to_active_scanreport_map]
+    value_id_to_active_scanreport_map = {str(element["id"]): field_id_to_active_scanreport_map[str(element["scan_report_field"])] for element in existing_scanreport_values if str(element["scan_report_field"]) in field_id_to_active_scanreport_map}
+    existing_scanreport_values = [item for item in existing_scanreport_values if str(item["id"]) in value_id_to_active_scanreport_map]
     print("VALUES TO SCAN REPORT",value_id_to_active_scanreport_map)
-    print("FILTERED VALUES",value_names)
+    print("FILTERED VALUES",existing_scanreport_values)
 
     # 
-    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id'],value["value_description"],field_id_to_name_map[str(value["scan_report_field"])]) for value in value_names]
+    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id'],value["value_description"],field_id_to_name_map[str(value["scan_report_field"])]) for value in existing_scanreport_values]
     
     value_name_to_id_map={}
     for item in new_values_matching_list:
@@ -574,7 +574,7 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
         except:
             continue
     if concepts_to_post:
-        paginated_concepts_to_post = paginate(concepts_to_post,"")
+        paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:  
             get_concept_response = requests.post(
