@@ -5,6 +5,7 @@ Please append a line to the changelog for each change made.
 ## v1.3-beta
 * Scan Report upload page now shows a spinner while uploading a file.
 * Session length set to 24 hours
+* Creation type has been added to mapping rules model. A database migration is required for this
 ## v1.2 was released 29/10/21
 * Status field added to the ScanReport Model and migrations have been applied to ccnetapptestdb. For dev, prod and test system migrations will need to apply. 
 * Scan Reports no longer need Flag or Classification columns on Field Overview sheet.
