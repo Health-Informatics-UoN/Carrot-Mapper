@@ -556,9 +556,6 @@ def get_mapping_rules_list(structural_mapping_rules):
                 'creation_type':creation_type
             })
 
-    print ('print riles/.......')
-    print (rules)
-    print ('/////////////////////')
     return rules
 
 def get_mapping_rules_json(structural_mapping_rules):
