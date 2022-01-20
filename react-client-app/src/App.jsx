@@ -22,7 +22,6 @@ const App = ({ page }) => {
                 //Re-fetch the concepts for that particular field
                 getScanReportConcepts(id).then(async scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
-
                         // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
                         // all the mapping rules at the moment which works but needs to be fixed
                         const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
@@ -161,6 +160,7 @@ const App = ({ page }) => {
                             //Re-fetch scan report concepts for field     
                             getScanReportConcepts(id).then(async scanreportconcepts => {
                                 if (scanreportconcepts.length > 0) {
+
                                     // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
                                     // all the mapping rules at the moment which works but needs to be fixed
                                     const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
