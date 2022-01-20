@@ -24,13 +24,13 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
                             color = "#3C579E"
                             break
                         default:
-                            color = '#3C579E'
+                            color = backgroundColor
                             break;
                     }
                     return color
                 }
                 else {
-                    return '#3C579E'
+                    return backgroundColor
                 }
 
         }
@@ -84,6 +84,6 @@ ConceptTag.propTypes = {
 
 // Defaults to dark blue
 ConceptTag.defaultProps = {
-    //backgroundColor: "#3C579E"
+    backgroundColor: "#3C579E"
 };
 export default ConceptTag
