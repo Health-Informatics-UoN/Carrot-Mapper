@@ -177,6 +177,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         scan_report:table.scan_report,
         concept: scan_report_concept.id, 
         approved:true,
+        creation_type:"M",
     }
     // create mapping rule for the following
     //person_id
