@@ -371,13 +371,13 @@ def reuse_existing_field_concepts(new_fields_map,content_type,api_url,headers):
     fields = [item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map]
     print("FILTERED FIELDS",fields)
 
-    existing_mappings=[(field['name'],field_id_to_concept_map[field['id']],field['id']) for field in fields]
+    existing_mappings=[{"name":field['name'],"concept":field_id_to_concept_map[field['id']],"id":field['id']} for field in fields]
     print("EXISTING MAPPINGS",existing_mappings)    
     field_name_to_id_map={}
     for name in list(new_fields_map.keys()):
-        mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping[0] == name]
-        target_concept_ids = set([mapping[1] for mapping in mappings_matching_field_name])
-        target_field_id = set([mapping[2] for mapping in mappings_matching_field_name])
+        mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping["name"] == name]
+        target_concept_ids = set([mapping["concept"] for mapping in mappings_matching_field_name])
+        target_field_id = set([mapping["id"] for mapping in mappings_matching_field_name])
         if len(target_concept_ids) == 1:
             field_name_to_id_map[str(name)] = str(target_field_id.pop())
 
@@ -534,16 +534,16 @@ def reuse_existing_value_concepts(new_values_map,content_type,api_url,headers):
     print("FILTERED VALUES",existing_scanreport_values)
 
     # 
-    existing_mappings=[(value['value'],value_id_to_concept_map[str(value['id'])],value['id'],value["value_description"],field_id_to_name_map[str(value["scan_report_field"])]) for value in existing_scanreport_values]
+    existing_mappings=[{"name":value['value'],"concept":value_id_to_concept_map[str(value['id'])],"id":value['id'],"description":value["value_description"],"field_name":field_id_to_name_map[str(value["scan_report_field"])]} for value in existing_scanreport_values]
     
     value_name_to_id_map={}
     for item in new_values_matching_list:
         name = item["name"] 
         description = item["description"] 
         field_name = item["field_name"] 
-        mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping[0] == name and mapping[3] == description and mapping[4] == field_name]
-        target_concept_ids = set([mapping[1] for mapping in mappings_matching_value_name])
-        target_value_id = set([mapping[2] for mapping in mappings_matching_value_name])
+        mappings_matching_value_name = [mapping for mapping in existing_mappings if mapping['name'] == name and mapping['description'] == description and mapping['field_name'] == field_name]
+        target_concept_ids = set([mapping['concept'] for mapping in mappings_matching_value_name])
+        target_value_id = set([mapping['id'] for mapping in mappings_matching_value_name])
         if len(target_concept_ids) == 1:
             value_name_to_id_map[str(name)] = str(target_value_id.pop())
             
