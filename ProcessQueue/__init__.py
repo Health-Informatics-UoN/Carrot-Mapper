@@ -363,7 +363,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
-    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False and item["status"] == "COMPLET"]
     # active reports is list of report ids that are not archived
     table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if
                                          str(element["scan_report"]) in active_reports}
@@ -529,7 +529,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
-    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False]
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False and item["status"] == "COMPLET"]
     # active reports is list of report ids that are not archived
 
     # map value id to active scan report
