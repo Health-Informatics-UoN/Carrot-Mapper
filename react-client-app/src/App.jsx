@@ -164,7 +164,7 @@ const App = ({ page }) => {
                                     // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
                                     // all the mapping rules at the moment which works but needs to be fixed
                                     const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
-                                    scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
+                                    scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id).length>0?mappingRules.filter(el=>el.concept==element.id):[{creation_type:"M"}]}))
 
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
                                     useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
