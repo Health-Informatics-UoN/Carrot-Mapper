@@ -99,7 +99,7 @@ from .models import (
     ClassificationSystem,
 )
 
-from .services import download_data_dictionary_blob, download_scan_report_blob
+from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
 
@@ -442,7 +442,6 @@ class ScanReportTableListView(ListView):
             qs = self.get_queryset()
             scan_report = self.get_queryset()[0].scan_report
             return download_data_dictionary_blob(scan_report.data_dictionary.name,container="data-dictionaries")
-        
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
