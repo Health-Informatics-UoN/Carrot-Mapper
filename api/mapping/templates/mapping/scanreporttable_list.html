@@ -23,15 +23,11 @@
         var scan_report_name="{{scan_report_name}}";
         var data_dictionary="{{data_dictionary}}";
         var hide_button=false;
-        console.log(data_dictionary)
         if (data_dictionary=="None"){
             hide_button=true;
         }
 
-        var download_data_dictionary = async function () {
-            console.log("Test 2")
-            
-            console.log(data_dictionary)
+        var download_data_dictionary = async function () {            
 			const response = await $.ajax({
 
 				type: "POST",
