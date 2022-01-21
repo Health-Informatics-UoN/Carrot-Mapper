@@ -19,72 +19,14 @@
     <script type="text/javascript" >
         var a = "{{a}}"
         var u = "{{u}}"
+        var scan_report="{{scan_report}}";
+        var scan_report_name="{{scan_report_name}}";
         var data_dictionary="{{data_dictionary}}";
         var hide_button=false;
         console.log(data_dictionary)
         if (data_dictionary=="None"){
             hide_button=true;
         }
-
-        var download_scan_report = async function () {
-            console.log("Test")
-			const response = await $.ajax({
-				type: "POST",
-				url: window.location,
-				data: {
-					'download-sr': true,
-					'csrfmiddlewaretoken': '{{ csrf_token }}',
-				},
-                success: function (response, status, xhr) {
-
-					//https://stackoverflow.com/questions/16086162/handle-file-download-from-ajax-post
-					var type = xhr.getResponseHeader('Content-Type');
-                    var blob = new Blob([response], { type: type });
-
-					// check for a filename
-					var filename = "";
-					var disposition = xhr.getResponseHeader('Content-Disposition');
-					if (disposition && disposition.indexOf('attachment') !== -1) {
-						var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-						var matches = filenameRegex.exec(disposition);
-						if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-					}
-
-					if (typeof window.navigator.msSaveBlob !== 'undefined') {
-						// IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
-						window.navigator.msSaveBlob(blob, filename);
-					}
-					else {
-						var URL = window.URL || window.webkitURL;
-						var downloadUrl = URL.createObjectURL(blob);
-						if (filename) {
-							// use HTML5 a[download] attribute to specify filename
-							var a = document.createElement("a");
-							// safari doesn't support this yet
-							if (typeof a.download === 'undefined') {
-								window.location.href = downloadUrl;
-							}
-							else {
-								a.href = downloadUrl;
-								a.download = filename;
-								document.body.appendChild(a);
-								a.click();
-							}
-						}
-						else {
-							window.location = downloadUrl;
-						}
-						setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
-
-					}
-				},
-				error: function (XMLHttpRequest, textStatus, errorThrown) {
-					alert("Could not download Scan Report file")
-				}
-			});
-            console.log(response);
-			return response
-		}
 
         var download_data_dictionary = async function () {
             console.log("Test 2")

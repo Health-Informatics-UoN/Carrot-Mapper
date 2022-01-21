@@ -441,13 +441,8 @@ class ScanReportTableListView(ListView):
         if request.POST.get("download-dd") is not None:
             qs = self.get_queryset()
             scan_report = self.get_queryset()[0].scan_report
-            print(scan_report.data_dictionary)
             return download_data_dictionary_blob(scan_report.data_dictionary.name,container="data-dictionaries")
-        elif request.POST.get("download-sr") is not None:
-            qs = self.get_queryset()
-            scan_report = self.get_queryset()[0].scan_report
-            return download_scan_report_blob(scan_report.name,container="scan-reports")
-
+        
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
@@ -461,6 +456,7 @@ class ScanReportTableListView(ListView):
         context = super().get_context_data(**kwargs)
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report
+            scan_report_name= scan_report.name
             scan_report_table = self.get_queryset()[0]
             try:
                 data_dictionary=scan_report.data_dictionary
@@ -468,6 +464,7 @@ class ScanReportTableListView(ListView):
                 data_dictionary=None
         else:
             scan_report = None
+            scan_report_name = None
             scan_report_table = None
             data_dictionary=None
 
@@ -475,6 +472,7 @@ class ScanReportTableListView(ListView):
         context.update(
             {
                 "scan_report": scan_report,
+                "scan_report_name": scan_report_name,
                 "scan_report_table": scan_report_table,
                 "data_dictionary": data_dictionary
             }
@@ -1276,3 +1274,26 @@ def delete_scan_report_field_concept(request):
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/fields/?search={}".format(scan_report_table_id))
+
+
+class DownloadScanReportViewSet(viewsets.ViewSet):
+    def list(self, request, pk):
+        scan_report = ScanReport.objects.get(id=pk)
+        # scan_report = ScanReportSerializer(scan_reports, many=False).data
+        # Set Storage Account connection string
+        print(scan_report)
+        blob_name=scan_report.name
+        container='scan-reports'
+        blob_service_client = BlobServiceClient.from_connection_string(
+            os.environ.get("STORAGE_CONN_STRING")
+        )
+        
+        # Grab scan report data from blob
+        streamdownloader = blob_service_client.get_container_client(container).\
+            get_blob_client(blob_name).download_blob()
+        scan_report=streamdownloader.readall()
+
+        response = HttpResponse(scan_report,content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
+
+        return response

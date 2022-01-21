@@ -63,6 +63,7 @@ urlpatterns = [
     path(r'api/countstatsscanreport/',views.CountStatsScanReport.as_view(),name='countstatsscanreport'),
     path(r'api/countstatsscanreporttable/',views.CountStatsScanReportTable.as_view(),name='countstatsscanreporttable'),
     path(r'api/countstatsscanreporttablefield/',views.CountStatsScanReportTableField.as_view(),name='countstatsscanreporttablefield'),
+    path(r'api/scanreports/<int:pk>/download/',views.DownloadScanReportViewSet.as_view({'get': 'list'})),
     path('api/',include(routers.urls)),
     path('api_auth/',include('rest_framework.urls',namespace='rest_framework')),
     path('', views.home, name='home'),

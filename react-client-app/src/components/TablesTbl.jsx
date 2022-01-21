@@ -17,6 +17,7 @@ import {
 
 
 import { getScanReportTableRows } from '../api/values'
+import { downloadXLSXFile } from '../api/download'
 
 
 
@@ -38,7 +39,7 @@ const TablesTbl = () => {
     }, []);
 
     const download_scan_report = () => {
-        window.download_scan_report()
+        downloadXLSXFile()
         
     };
 
