@@ -30,12 +30,6 @@ class Status(models.TextChoices):
     BLOCKED = "BLOCKED","Blocked"
 
 
-class CreationType(models.TextChoices):
-    Manual = "M","Manual"
-    Vocab = "V","Vocab"
-    Reuse = "R","Reuse"
-
-
 class BaseModel(models.Model):
     """
     To come
@@ -397,11 +391,12 @@ class MappingRule(BaseModel):
         on_delete=models.CASCADE
     )
 
-    # save how the mapping rule was created
-    creation_type = models.CharField(
+    #save how the mapping rule was created
+    creation_type=models.CharField(
         max_length=1,
         choices=CreationType.choices,
         default=CreationType.Manual,
+
     )
 
     #!! TODO --- STOP USING THIS
