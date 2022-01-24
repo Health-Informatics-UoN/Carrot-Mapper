@@ -30,6 +30,12 @@ class Status(models.TextChoices):
     BLOCKED = "BLOCKED","Blocked"
 
 
+class CreationType(models.TextChoices):
+    Manual = "M","Manual"
+    Vocab = "V","Vocab"
+    Reuse = "R","Reuse"
+
+
 class BaseModel(models.Model):
     """
     To come
