@@ -4,6 +4,7 @@ Please append a line to the changelog for each change made.
 
 ## v1.3-beta
 * Scan Report upload page now shows a spinner while uploading a file.
+* Scan Reports and Data Dictionaries can be downloaded from the ScanReportTables page
 * Session length set to 24 hours
 * Creation type has been added to mapping rules model. A database migration is required for this
 ## v1.2 was released 29/10/21
