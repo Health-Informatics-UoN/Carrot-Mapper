@@ -151,8 +151,6 @@ class ScanReport(BaseModel):
 
     name = models.CharField(max_length=256,)
 
-    dataset = models.CharField(max_length=128,)
-
     hidden = models.BooleanField(default=False,)
 
     file = models.FileField()
