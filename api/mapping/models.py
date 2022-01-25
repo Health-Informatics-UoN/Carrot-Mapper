@@ -2,6 +2,7 @@
 To come
 """
 
+import uuid
 from django.conf import settings
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
