@@ -2,7 +2,6 @@
 To come
 """
 
-import uuid
 from django.conf import settings
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
@@ -151,6 +150,8 @@ class ScanReport(BaseModel):
 
     name = models.CharField(max_length=256,)
 
+    dataset = models.CharField(max_length=128,)
+
     hidden = models.BooleanField(default=False,)
 
     file = models.FileField()
@@ -165,15 +166,6 @@ class ScanReport(BaseModel):
         null=True,
         blank=True,
         related_name="data_dictionary",
-    )
-
-    dataset = models.ForeignKey(
-        "Dataset",
-        on_delete=models.CASCADE,
-        related_name="scan_reports",
-        related_query_name="scan_report",
-        blank=True,  # remove when existing SRs associated to DS
-        null=True,  # remove when existing SRs associated to DS
     )
 
     def __str__(self):
