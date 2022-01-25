@@ -9,6 +9,7 @@ Please append a line to the changelog for each change made.
 * Creation type has been added to ScanReportConcept model. A database migration is required for this
 * Session length set to 24 hours
 * Bump Django version to 3.1.14
+* Moved creation_type field from MappingRule model to ScanreportConcept. This will require a migration
 
 ## v1.3.0 was released 07/12/21
 * Scan Report uploads are massively sped up by using asynchronous requests.

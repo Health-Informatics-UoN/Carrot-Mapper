@@ -180,6 +180,14 @@ class ScanReportConcept(BaseModel):
 
     )
 
+    #save how the mapping rule was created
+    creation_type=models.CharField(
+        max_length=1,
+        choices=CreationType.choices,
+        default=CreationType.Manual,
+
+    )
+
     def __str__(self):
         return str(self.id)
 
@@ -395,14 +403,6 @@ class MappingRule(BaseModel):
     omop_field = models.ForeignKey(
         OmopField,
         on_delete=models.CASCADE
-    )
-
-    #save how the mapping rule was created
-    creation_type=models.CharField(
-        max_length=1,
-        choices=CreationType.choices,
-        default=CreationType.Manual,
-
     )
 
     #!! TODO --- STOP USING THIS
