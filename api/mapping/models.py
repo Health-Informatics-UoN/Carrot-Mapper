@@ -169,12 +169,14 @@ class ScanReport(BaseModel):
         related_name="data_dictionary",
     )
 
-    # dataset = models.ForeignKey(
-    #     "Dataset",
-    #     on_delete=models.CASCADE,
-    #     related_name="scan_reports",
-    #     related_query_name="scan_report",
-    # )
+    dataset = models.ForeignKey(
+        "Dataset",
+        on_delete=models.CASCADE,
+        related_name="scan_reports",
+        related_query_name="scan_report",
+        blank=True,  # remove when existing SRs associated to DS
+        null=True,  # remove when existing SRs associated to DS
+    )
 
     def __str__(self):
         return str(self.id)
