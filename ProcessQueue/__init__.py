@@ -411,6 +411,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
                 "concept": concept_id,
                 "object_id": id,
                 "content_type": content_type,
+                "creation_type": "R",
             }
             concepts_to_post.append(concept_entry)
         except KeyError:
@@ -587,6 +588,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
                 "concept": concept_id,
                 "object_id": id,
                 "content_type": content_type,
+                "creation_type": "R",
             }
             concepts_to_post.append(concept_entry)
 
