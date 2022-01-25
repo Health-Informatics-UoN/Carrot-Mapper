@@ -1034,8 +1034,8 @@ async def process_values_from_sheet(sheet, data_dictionary,
                                       str(put_update_json)]))
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-    get_existing_field_concepts(names_to_ids_dict, 15, api_url, headers)
-    get_existing_value_concepts(values_response_content, 17, api_url, headers)
+    reuse_existing_field_concepts(names_to_ids_dict, 15, api_url, headers)
+    reuse_existing_value_concepts(values_response_content, 17, api_url, headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
