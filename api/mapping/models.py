@@ -372,6 +372,7 @@ class Dataset(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     name = models.CharField(max_length=100)
     # `projects` field added by M2M field in `Project`
+    # `scan_reports` field added by FK field in `ScanReport`
 
     class Meta:
         verbose_name = "Dataset"
