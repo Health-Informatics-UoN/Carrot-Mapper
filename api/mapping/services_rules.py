@@ -543,7 +543,7 @@ def get_mapping_rules_list(structural_mapping_rules):
             else:
                 term_mapping = concept_id
 
-        creation_type = rule.creation_type
+        creation_type = scan_report_concept.creation_type
         rules.append(
             {
                 'rule_id':scan_report_concept_id,
