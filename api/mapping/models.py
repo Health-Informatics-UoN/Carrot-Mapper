@@ -151,6 +151,7 @@ class ScanReport(BaseModel):
 
     name = models.CharField(max_length=256,)
 
+    # TODO: rename to `dataset_name`
     dataset = models.CharField(max_length=128,)
 
     hidden = models.BooleanField(default=False,)
@@ -167,6 +168,16 @@ class ScanReport(BaseModel):
         null=True,
         blank=True,
         related_name="data_dictionary",
+    )
+
+    # TODO: rename to `dataset`
+    parent_dataset = models.ForeignKey(
+        "Dataset",
+        on_delete=models.CASCADE,
+        related_name="scan_reports",
+        related_query_name="scan_report",
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
