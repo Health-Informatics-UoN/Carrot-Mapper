@@ -8,6 +8,7 @@ Please append a line to the changelog for each change made.
 * Scan Reports and Data Dictionaries can be downloaded from the ScanReportTables page
 * Creation type has been added to ScanReportConcept model. A database migration is required for this
 * Session length set to 24 hours
+* Bump Django version to 3.1.14
 
 ## v1.3.0 was released 07/12/21
 * Scan Report uploads are massively sped up by using asynchronous requests.
