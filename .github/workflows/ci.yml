@@ -30,6 +30,7 @@ jobs:
        with:
          submodules: 'recursive'
      - name: Blacken Python code
+       continue-on-error: true
        uses: jpetrucciani/black-check@21.12b0
        with:
          path: '.'
