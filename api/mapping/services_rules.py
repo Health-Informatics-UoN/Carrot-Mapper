@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 
 from django.contrib import messages
-from data.models import Concept, ConceptRelationship
+from data.models import Concept, ConceptRelationship, ConceptAncestor
 
 from mapping.models import ScanReport, ScanReportTable, ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
@@ -813,4 +813,27 @@ def analyse_concepts(scan_report_id):
 
     print(mapping_rules)
     for rule in mapping_rules:
-        print("Concept",rule.concept.concept)
+        print("Concept code",rule.concept.concept.concept_code)
+        concept=ScanReportConcept.objects.filter(concept=rule.concept.concept)
+        conceptID=rule.concept.concept.concept_id
+
+        print("Concept ID",conceptID)
+        print("Concept Name",rule.concept.concept.concept_name)
+        concept_ancestors=ConceptAncestor.objects.filter(descendant_concept_id=conceptID)
+        ancestors_dict={}
+        for ancestor in concept_ancestors:
+            ancestors_dict.update({ancestor.ancestor_concept_id:ancestor.descendant_concept_id})
+            separation=ancestor.min_levels_of_separation
+    print(ancestors_dict)
+
+
+    # for scanreport_id in all_scan_reports:
+    #     sr_mappings=MappingRule.objects.all().filter(scan_report_id=scanreport_id)
+    #     for mapping in sr_mappings:
+    #         concept=mapping.concept.concept.concept_id
+    #         try:
+    #             print(ancestors_dict[concept])
+    #         except: 
+    #             continue
+
+            
