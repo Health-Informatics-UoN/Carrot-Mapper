@@ -13,7 +13,7 @@ from .models import (
     DataDictionary,
     MappingRule,
     NLPModel,
-    ScanReportConcept
+    ScanReportConcept,
 )
 
 

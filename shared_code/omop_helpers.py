@@ -1,23 +1,29 @@
 import requests, json, os, time
 
-api_url = os.environ.get('APP_URL')+"api/"
-api_header = {"Authorization": "Token {}".format(
-    os.environ.get('AZ_FUNCTION_KEY'))} 
+api_url = os.environ.get("APP_URL") + "api/"
+api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
+
 
 def find_standard_concept(source_concept):
 
-    concept_relation = requests.get(url=api_url+'omop/conceptrelationshipfilter',
-                                    headers=api_header,
-                                    params={'concept_id_1': source_concept['concept_id'],
-                                            'relationship_id': 'Maps to'})
+    concept_relation = requests.get(
+        url=api_url + "omop/conceptrelationshipfilter",
+        headers=api_header,
+        params={
+            "concept_id_1": source_concept["concept_id"],
+            "relationship_id": "Maps to",
+        },
+    )
 
     concept_relation = json.loads(concept_relation.content.decode("utf-8"))
     concept_relation = concept_relation[0]
 
-    if concept_relation['concept_id_2'] != concept_relation['concept_id_1']:
-        concept = requests.get(url=api_url+'omop/conceptsfilter',
-                                headers=api_header,
-                                params={'concept_id': concept_relation['concept_id_2']})
+    if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:
+        concept = requests.get(
+            url=api_url + "omop/conceptsfilter",
+            headers=api_header,
+            params={"concept_id": concept_relation["concept_id_2"]},
+        )
         concept = json.loads(concept.content.decode("utf-8"))
         concept = concept[0]
         return concept
@@ -26,14 +32,12 @@ def find_standard_concept(source_concept):
         return source_concept
 
 
-def get_concept_from_concept_code(concept_code,
-                                  vocabulary_id,
-                                  no_source_concept=False):
+def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
 
     # NLP returns SNOMED as SNOWMEDCT_US
     # This sets SNOWMEDCT_US to SNOWMED if this function is
     # used within services_nlp.py
-    if vocabulary_id == 'SNOMEDCT_US':
+    if vocabulary_id == "SNOMEDCT_US":
         vocabulary_id = "SNOMED"
 
     # It's RXNORM in NLP but RxNorm in OMOP db, so must convert
@@ -43,16 +47,17 @@ def get_concept_from_concept_code(concept_code,
         vocabulary_id = vocabulary_id
 
     # obtain the source_concept given the code and vocab
-    source_concept = requests.get(url=api_url+'omop/conceptsfilter',
-                                  headers=api_header,
-                                  params={'concept_code': concept_code,
-                                          'vocabulary_id': vocabulary_id})
+    source_concept = requests.get(
+        url=api_url + "omop/conceptsfilter",
+        headers=api_header,
+        params={"concept_code": concept_code, "vocabulary_id": vocabulary_id},
+    )
 
     source_concept = json.loads(source_concept.content.decode("utf-8"))
     source_concept = source_concept[0]
 
     # if the source_concept is standard
-    if source_concept['standard_concept'] == 'S':
+    if source_concept["standard_concept"] == "S":
         # the concept is the same as the source_concept
         concept = source_concept
     else:
@@ -65,6 +70,7 @@ def get_concept_from_concept_code(concept_code,
     else:
         # return both as a tuple
         return (source_concept, concept)
+
 
 def concept_code_to_id(codes):
     """
@@ -87,12 +93,13 @@ def concept_code_to_id(codes):
                 concept_code=str(item[5]), vocabulary_id=str(item[4])
             )
 
-            item.append(x[1]['concept_id'])
+            item.append(x[1]["concept_id"])
             codes_dict.append(dict(zip(keys, item)))
         except:
             print("Concept Code", item[5], "not found!")
 
     return codes_dict
+
 
 def get_data_from_nlp(url, headers, post_response_url):
 
@@ -102,7 +109,7 @@ def get_data_from_nlp(url, headers, post_response_url):
         job = req.json()
 
         while job["status"] != "succeeded":
-            print('Waiting...')
+            print("Waiting...")
             req = requests.get(url, headers=headers)
             job = req.json()
             time.sleep(3)
@@ -110,6 +117,7 @@ def get_data_from_nlp(url, headers, post_response_url):
             get_response = job["results"]
 
     return get_response
+
 
 def process_nlp_response(get_response):
     """
