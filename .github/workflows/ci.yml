@@ -36,7 +36,7 @@ jobs:
        with:
          submodules: 'recursive'
      - name: Blacken Python code
-       uses: piotrpawlaczek/python-blacken@v20.8b1
+       uses: piotrpawlaczek/python-blacken@stable
        with:
          only-check: 'no'
      - name: Make envfile
