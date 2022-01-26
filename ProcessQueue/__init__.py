@@ -96,7 +96,7 @@ def process_scan_report_sheet_table(sheet):
     # set the maximum column rather than relying on sheet.max_col as this is not
     # always reliably updated by Excel etc.
     for row in sheet.iter_rows(min_col=1,
-                               max_col=len(headers)*2,
+                               max_col=len(headers) * 2,
                                min_row=2,
                                max_row=sheet.max_row,
                                values_only=True):
@@ -166,14 +166,16 @@ def perform_chunking(entries_to_post):
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
-def paginate(entries_to_post):
+def paginate(entries_to_post, max_chars=None, other=''):
     """
     This expects a list of dicts, and returns a list of lists of dicts, 
     where the maximum length of each list of dicts, under JSONification, 
     is less than max_chars
     """
-    max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
-    
+    if not max_chars:
+        max_chars = int(os.environ.get("PAGE_MAX_CHARS")) if os.environ.get("PAGE_MAX_CHARS") else 10000
+    max_chars = max_chars - len(other)
+
     paginated_entries_to_post = []
     this_page = []
     for entry in entries_to_post:
@@ -208,21 +210,21 @@ def startup(msg):
 
     # Get message from queue
     message = {
-            "id": msg.id,
-            "body": msg.get_body().decode("utf-8"),
-            "expiration_time": (
-                msg.expiration_time.isoformat() if msg.expiration_time else None
-            ),
-            "insertion_time": (
-                msg.insertion_time.isoformat() if msg.insertion_time else None
-            ),
-            "time_next_visible": (
-                msg.time_next_visible.isoformat() if msg.time_next_visible else None
-            ),
-            "pop_receipt": msg.pop_receipt,
-            "dequeue_count": msg.dequeue_count,
-        }
-    
+        "id": msg.id,
+        "body": msg.get_body().decode("utf-8"),
+        "expiration_time": (
+            msg.expiration_time.isoformat() if msg.expiration_time else None
+        ),
+        "insertion_time": (
+            msg.insertion_time.isoformat() if msg.insertion_time else None
+        ),
+        "time_next_visible": (
+            msg.time_next_visible.isoformat() if msg.time_next_visible else None
+        ),
+        "pop_receipt": msg.pop_receipt,
+        "dequeue_count": msg.dequeue_count,
+    }
+
     print("message:", type(message), message)
     # Grab message body from storage queues,
     # extract filenames for scan reports and dictionaries
@@ -251,25 +253,369 @@ def startup(msg):
 
 def process_failure(api_url, scan_report_id, headers):
     scan_report_fetched_data = requests.get(
-            url=f"{api_url}scanreports/{scan_report_id}/",
-            headers=headers,
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        headers=headers,
     )
 
     scan_report_fetched_data = json.loads(scan_report_fetched_data.content.decode("utf-8"))
 
-    json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}", 
+    json_data = json.dumps({'dataset': f"FAILED: {scan_report_fetched_data['dataset']}",
                             'status': "UPFAILE"})
 
     failure_response = requests.patch(
         url=f"{api_url}scanreports/{scan_report_id}/",
-        data=json_data, 
+        data=json_data,
         headers=headers
     )
 
 
+def paginate_chars(entries_to_post, other):
+    """
+    This expects a list of dicts, and returns a list of lists of dicts, 
+    where the maximum length of each list of dicts, under JSONification, 
+    is less than max_chars
+    """
+    max_chars = 2000 - len(other)
+
+    paginated_entries_to_post = []
+    this_page = []
+    for entry in entries_to_post:
+        # If the current page won't be overfull, add the entry to the current page
+        if len(json.dumps(this_page)) + len(
+                json.dumps(entry)) < max_chars:
+            this_page.append(entry)
+        else:
+            # Otherwise, this page should be added to the list of pages.
+            paginated_entries_to_post.append(this_page)
+            # Now add the entry that would have over-filled the page.
+            this_page = [entry]
+
+    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
+    if this_page:
+        paginated_entries_to_post.append(this_page)
+    return paginated_entries_to_post
+
+
+def flatten(arr):
+    """
+    This expects a list of lists and returns a flattened list
+    """
+    newArr = [item for sublist in arr for item in sublist]
+    return newArr
+
+
+def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
+    """
+    This expects a dict of field names to ids which have been generated in a newly uploaded 
+    scanreport, and content_type 15. It creates new concepts associated to any 
+    field that matches the name of an existing field with an associated concept.
+    """
+    # Gets all scan report concepts that are for the type field (or content type which should be field)
+    get_field_concept_ids = requests.get(
+        url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}",
+        headers=headers,
+    )
+    field_concept_ids = json.loads(get_field_concept_ids.content.decode("utf-8"))
+    # Creates a dictionary that maps field id's to scan report concept id's 
+    field_id_to_concept_map = {element.get("object_id", None): str(element.get("concept", None)) for element in
+                               field_concept_ids}
+    print("FIELD TO CONCEPT MAP DICT", field_id_to_concept_map)
+    # creates a list of field ids from fields that already exist
+    existing_ids = list(field_id_to_concept_map.keys())
+    # create list of field names from list of newly generated fields
+    new_fields_names_string = ",".join(map(str, list(new_fields_map.keys())))
+    # paginate the field id's variable so that get request does not exceed character limit
+    paginated_ids = paginate(existing_ids, 2000, new_fields_names_string)
+    # for each list in paginated id's, get scanreport fields that match any of the given id's 
+    # and matches any of the newly generated names
+    fields = []
+    for ids in paginated_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_field_names = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={new_fields_names_string}",
+            headers=headers,
+        )
+        fields.append(json.loads(get_field_names.content.decode("utf-8")))
+    fields = flatten(fields)
+    print("FIELDS", fields)
+
+    # get a list of table ids for all the fields that have matching names
+    table_ids = set([item['scan_report_table'] for item in fields])
+    # get tables from list of table ids
+    paginated_table_ids = paginate(table_ids, 2000, "")
+    tables = []
+    for ids in paginated_table_ids:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
+            headers=headers,
+        )
+        tables.append(json.loads(get_field_tables.content.decode("utf-8")))
+    tables = flatten(tables)
+    print("TABLES", tables)
+    # map table id's to scanreport id
+
+    # get all scanreports to be used to check active scan reports
+    get_scan_reports = requests.get(
+        url=f"{api_url}scanreports/",
+        headers=headers,
+    )
+    # get active scanreports and map them to fields. Remove any fields in archived reports
+    scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False and item["status"] == "COMPLET"]
+    # active reports is list of report ids that are not archived
+    table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if
+                                         str(element["scan_report"]) in active_reports}
+    # map field id to active scan report id. (only store field ids that correspond to an active scan report)
+    field_id_to_active_scanreport_map = {
+        str(element["id"]): table_id_to_active_scanreport_map[str(element["scan_report_table"])] for element in fields
+        if str(element["scan_report_table"]) in table_id_to_active_scanreport_map}
+    # filter fields to only include fields that are from active scan reports
+    fields = [item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map]
+    print("FILTERED FIELDS", fields)
+
+    existing_mappings = [{"name": field['name'], "concept": field_id_to_concept_map[field['id']], "id": field['id']} for
+                         field in fields]
+    print("EXISTING MAPPINGS", existing_mappings)
+    field_name_to_id_map = {}
+    for name in list(new_fields_map.keys()):
+        mappings_matching_field_name = [mapping for mapping in existing_mappings if mapping["name"] == name]
+        target_concept_ids = set([mapping["concept"] for mapping in mappings_matching_field_name])
+        target_field_id = set([mapping["id"] for mapping in mappings_matching_field_name])
+        if len(target_concept_ids) == 1:
+            field_name_to_id_map[str(name)] = str(target_field_id.pop())
+
+    # replace field_name_to_id_map with field name to concept id map
+    # field_name_to_concept_id_map = { element.key: field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
+
+    print("FIELD NAME TO ID MAP", field_name_to_id_map)
+    concepts_to_post = []
+    concept_response_content = []
+    print("NAME IDS", new_fields_map.keys())
+
+    for name, id in new_fields_map.items():
+        try:
+            link_id = field_name_to_id_map[name]
+            concept_id = field_id_to_concept_map[int(link_id)]
+
+            print(
+                f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {id}")
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry = {
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept_id,
+                "object_id": id,
+                "content_type": content_type,
+                "creation_type": "R",
+            }
+            concepts_to_post.append(concept_entry)
+        except KeyError:
+            continue
+    if concepts_to_post:
+
+        paginated_concepts_to_post = paginate(concepts_to_post)
+        concept_response = []
+        for concepts_to_post_item in paginated_concepts_to_post:
+            get_concept_response = requests.post(
+                url=api_url + "scanreportconcepts/",
+                headers=headers,
+                data=json.dumps(concepts_to_post_item),
+            )
+            print("CONCEPTS SAVE STATUS >>>", get_concept_response.status_code,
+                  get_concept_response.reason, flush=True)
+            concept_response.append(json.loads(get_concept_response.content.decode("utf-8")))
+        concept_content = flatten(concept_response)
+
+        concept_response_content += concept_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+
+def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers):
+    """
+    This expects a dict of value names to ids which have been generated in a newly uploaded scanreport and
+    creates new concepts if any matching names are found with existing fields
+    """
+    # get all scan report concepts with the concept type of values (or content type but should be values)
+    get_value_concept_ids = requests.get(
+        url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}&fields=object_id,concept",
+        headers=headers,
+    )
+    # create dictionary that maps existing value id's to scan report concepts
+    # from the list of existing scan report concepts
+    value_concept_ids = json.loads(get_value_concept_ids.content.decode("utf-8"))
+    value_id_to_concept_map = {str(element.get("object_id", None)): str(element.get("concept", None)) for element in
+                               value_concept_ids}
+    # create list of names of newly generated values
+    new_values_names_list = [value['value'] for value in new_values_map]
+
+    new_paginated_field_ids = paginate([value['scan_report_field'] for value in new_values_map], 2000)
+    new_fields = []
+    for ids in new_paginated_field_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_fields = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
+            headers=headers,
+        )
+        new_fields.append(json.loads(get_fields.content.decode("utf-8")))
+    new_fields = flatten(new_fields)
+
+    new_fields_to_name_map = {str(value['id']): value['name'] for value in new_fields}
+
+    new_values_matching_list = [{"name": value['value'], "description": value['value_description'],
+                                 "field_name": new_fields_to_name_map[str(value['scan_report_field'])]} for value in
+                                new_values_map]
+
+    # create dictionary that maps value names to value ids
+    new_value_ids = {str(value['value']): value['id'] for value in new_values_map}
+
+    # create list of id's from existing values that have a scanreport concept 
+    existing_ids = list(value_id_to_concept_map.keys())
+    # create names string to pass to url from list of names made from newly generated values
+    new_value_names_string = ",".join(map(str, new_values_names_list))
+    # paginate list of value ids from existing values that have scanreport concepts and
+    # use the list to get existing scanreport values that match the list any of the newly generated names
+    paginated_ids = paginate(existing_ids, 2000, new_value_names_string)
+    print("VALUE names list", new_value_names_string)
+    print("VALUE paginated ids", paginated_ids)
+    existing_scanreport_values = []
+    for ids in paginated_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_value_names = requests.get(
+            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={new_value_names_string}&fields=id,value,scan_report_field,value_description",
+            headers=headers,
+        )
+        existing_scanreport_values.append(json.loads(get_value_names.content.decode("utf-8")))
+    existing_scanreport_values = flatten(existing_scanreport_values)
+    print("Unfiltered values", existing_scanreport_values)
+
+    # get field ids from values and use to get scan report fields
+    field_ids = set([item['scan_report_field'] for item in existing_scanreport_values])
+    paginated_field_ids = paginate(field_ids, 2000, "")
+    fields = []
+    for ids in paginated_field_ids:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_value_fields = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
+            headers=headers,
+        )
+        fields.append(json.loads(get_value_fields.content.decode("utf-8")))
+    fields = flatten(fields)
+    field_id_to_name_map = {str(value['id']): value['name'] for value in fields}
+    print("field id to name map", field_id_to_name_map)
+    # get table id's from fields and repeat the process
+    table_ids = set([item['scan_report_table'] for item in fields])
+    paginated_table_ids = paginate(table_ids, 2000, "")
+    tables = []
+    for ids in paginated_table_ids:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
+            headers=headers,
+        )
+        tables.append(json.loads(get_field_tables.content.decode("utf-8")))
+    tables = flatten(tables)
+
+    # get all scan reports to be used to filter values by only values that come from active scan reports
+    get_scan_reports = requests.get(
+        url=f"{api_url}scanreports/",
+        headers=headers,
+    )
+    # get active scanreports and map them to fields. Remove any fields in archived reports
+    scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
+    active_reports = [str(item['id']) for item in scanreports if item["hidden"] == False and item["status"] == "COMPLET"]
+    # active reports is list of report ids that are not archived
+
+    # map value id to active scan report
+    table_id_to_active_scanreport_map = {str(element["id"]): str(element["scan_report"]) for element in tables if
+                                         str(element["scan_report"]) in active_reports}
+    field_id_to_active_scanreport_map = {
+        str(element["id"]): table_id_to_active_scanreport_map[str(element["scan_report_table"])] for element in fields
+        if str(element["scan_report_table"]) in table_id_to_active_scanreport_map}
+
+    value_id_to_active_scanreport_map = {
+        str(element["id"]): field_id_to_active_scanreport_map[str(element["scan_report_field"])] for element in
+        existing_scanreport_values if str(element["scan_report_field"]) in field_id_to_active_scanreport_map}
+    existing_scanreport_values = [item for item in existing_scanreport_values if
+                                  str(item["id"]) in value_id_to_active_scanreport_map]
+    print("VALUES TO SCAN REPORT", value_id_to_active_scanreport_map)
+    print("FILTERED VALUES", existing_scanreport_values)
+
+    # 
+    existing_mappings = [
+        {"name": value['value'], "concept": value_id_to_concept_map[str(value['id'])], "id": value['id'],
+         "description": value["value_description"], "field_name": field_id_to_name_map[str(value["scan_report_field"])]}
+        for value in existing_scanreport_values]
+
+    value_name_to_id_map = {}
+    for item in new_values_matching_list:
+        name = item["name"]
+        description = item["description"]
+        field_name = item["field_name"]
+        mappings_matching_value_name = [mapping for mapping in existing_mappings if
+                                        mapping['name'] == name and mapping['description'] == description and mapping[
+                                            'field_name'] == field_name]
+        target_concept_ids = set([mapping['concept'] for mapping in mappings_matching_value_name])
+        target_value_id = set([mapping['id'] for mapping in mappings_matching_value_name])
+        if len(target_concept_ids) == 1:
+            value_name_to_id_map[str(name)] = str(target_value_id.pop())
+
+    concepts_to_post = []
+    concept_response_content = []
+    for name, id in new_value_ids.items():
+        try:
+            link_id = value_name_to_id_map[str(name)]
+            print("VALUE link id", link_id)
+            concept_id = value_id_to_concept_map[str(link_id)]
+            print("VALUE concept id", value_name_to_id_map)
+            # current_id=new_value_ids[str(name)]
+            print(
+                f"Found value with id: {link_id} with exsting concept mapping: {concept_id} which matches new value id: {id}")
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry = {
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept_id,
+                "object_id": id,
+                "content_type": content_type,
+                "creation_type": "R",
+            }
+            concepts_to_post.append(concept_entry)
+
+        except:
+            continue
+    if concepts_to_post:
+        paginated_concepts_to_post = paginate(concepts_to_post)
+        concept_response = []
+        for concepts_to_post_item in paginated_concepts_to_post:
+            get_concept_response = requests.post(
+                url=api_url + "scanreportconcepts/",
+                headers=headers,
+                data=json.dumps(concepts_to_post_item),
+            )
+            print("CONCEPTS SAVE STATUS >>>", get_concept_response.status_code,
+                  get_concept_response.reason, flush=True)
+            concept_response.append(json.loads(get_concept_response.content.decode("utf-8")))
+        concept_content = flatten(concept_response)
+
+        concept_response_content += concept_content
+
+        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+
+
 def remove_BOM(intermediate):
     return [{key.replace("\ufeff", ""): value
-            for key, value in d.items()}
+             for key, value in d.items()}
             for d in intermediate]
 
 
@@ -349,7 +695,7 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
     )
 
     # Grab scan report data from blob
-    streamdownloader = blob_service_client.get_container_client("scan-reports").\
+    streamdownloader = blob_service_client.get_container_client("scan-reports"). \
         get_blob_client(scan_report_blob).download_blob()
     scanreport_bytes = BytesIO(streamdownloader.readall())
     wb = openpyxl.load_workbook(scanreport_bytes, data_only=True, keep_links=False, read_only=True)
@@ -365,7 +711,7 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
         data_dictionary_intermediate = list(row for row in
                                             csv.DictReader(
                                                 blob_dict_client.download_blob().
-                                                readall().decode("utf-8").splitlines())
+                                                    readall().decode("utf-8").splitlines())
                                             if row['value'] != ''
                                             )
         # Remove BOM from start of file if it's supplied.
@@ -378,8 +724,8 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
         # Grab all rows with 3 elements for use as possible vocabs
         vocab_dictionary_intermediate = list(row for row in
                                              csv.DictReader(
-                                                blob_dict_client.download_blob().
-                                                readall().decode("utf-8").splitlines())
+                                                 blob_dict_client.download_blob().
+                                                     readall().decode("utf-8").splitlines())
                                              if row['value'] == ''
                                              )
         vocab_data = remove_BOM(vocab_dictionary_intermediate)
@@ -397,7 +743,6 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
 
 # @memory_profiler.profile(stream=profiler_logstream)
 def post_tables(fo_ws, api_url, scan_report_id, headers):
-    
     # Get all the table names in the order they appear in the Field Overview page
     table_names = []
     # Iterate over cells in the first column, but because we're in ReadOnly mode we 
@@ -421,7 +766,6 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     print("TABLES NAMES >>> ", table_names)
 
     for table_name in table_names:
-
         # print("WORKING ON TABLE >>> ", table_name)
 
         # Truncate table names because sheet names are truncated to 31 characters in Excel
@@ -449,8 +793,8 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     print("POST tables", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     # POST request to scanreporttables
     tables_response = requests.post(
-        "{}scanreporttables/".format(api_url), 
-        data=json.dumps(table_entries_to_post), 
+        "{}scanreporttables/".format(api_url),
+        data=json.dumps(table_entries_to_post),
         headers=headers
     )
 
@@ -460,7 +804,8 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     # Error on failure
     if tables_response.status_code != 201:
         process_failure(api_url, scan_report_id, headers)
-        raise HTTPError(' '.join(['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
+        raise HTTPError(' '.join(
+            ['Error in table save:', str(tables_response.status_code), str(json.dumps(table_entries_to_post))]))
     print('RAM memory % used:', psutil.virtual_memory())
 
     # Load the result of the post request,
@@ -522,7 +867,8 @@ async def process_values_from_sheet(sheet, data_dictionary,
                 # not present
                 table = vocab_dictionary.get(str(current_table_name))  # dict of fields in table
                 if table:
-                    code = vocab_dictionary[str(current_table_name)].get(str(name))  # dict of values, will default to None if field not found in table
+                    code = vocab_dictionary[str(current_table_name)].get(
+                        str(name))  # dict of values, will default to None if field not found in table
                 else:
                     code = None
 
@@ -564,7 +910,8 @@ async def process_values_from_sheet(sheet, data_dictionary,
             # Append to list
             value_entries_to_post.append(scan_report_value_entry)
 
-    print("POST", len(value_entries_to_post), "values to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    print("POST", len(value_entries_to_post), "values to table", current_table_name,
+          datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     print('RAM memory % used:', psutil.virtual_memory())
     chunked_value_entries_to_post = perform_chunking(value_entries_to_post)
     values_response_content = []
@@ -581,25 +928,25 @@ async def process_values_from_sheet(sheet, data_dictionary,
                 tasks.append(
                     asyncio.ensure_future(
                         client.post(
-                                    url="{}scanreportvalues/".format(api_url),
-                                    data=json.dumps(page),
-                                    headers=headers
-                                    )
-                                )
-                            )
+                            url="{}scanreportvalues/".format(api_url),
+                            data=json.dumps(page),
+                            headers=headers
+                        )
+                    )
+                )
                 page_lengths.append(len(page))
                 page_count += 1
-            
+
             values_responses = await asyncio.gather(*tasks)
 
         for i, values_response in enumerate(values_responses):
             print("VALUES SAVE STATUSES >>>", values_response.status_code,
-                    values_response.reason_phrase, page_lengths[i], flush=True)
+                  values_response.reason_phrase, page_lengths[i], flush=True)
             if values_response.status_code != 201:
                 process_failure(api_url, scan_report_id, headers)
                 raise HTTPError(' '.join(['Error in values save:',
-                                            str(values_response.status_code),
-                                            str(json.dumps(page))]))
+                                          str(values_response.status_code),
+                                          str(json.dumps(page))]))
 
             values_response_content += json.loads(values_response.content.decode("utf-8"))
 
@@ -610,8 +957,8 @@ async def process_values_from_sheet(sheet, data_dictionary,
     print("GET posted values", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     get_ids_of_posted_values = requests.get(
         url=api_url
-        + "scanreportvaluepks/?scan_report="
-        + str(scan_report_id),
+            + "scanreportvaluepks/?scan_report="
+            + str(scan_report_id),
         headers=headers,
     )
     print("GET posted values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
@@ -621,18 +968,18 @@ async def process_values_from_sheet(sheet, data_dictionary,
     # Create a list for a bulk data upload to the ScanReportConcept model
 
     concept_id_data = [{
-            "nlp_entity": None,
-            "nlp_entity_type": None,
-            "nlp_confidence": None,
-            "nlp_vocabulary": None,
-            "nlp_processed_string": None,
-            "concept": concept["conceptID"],
-            "object_id": concept["id"],
-            # TODO: we should query this value from the API
-            # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-            # but that's not available from an Azure Function.
-            "content_type": 17,
-        } for concept in ids_of_posted_values]
+        "nlp_entity": None,
+        "nlp_entity_type": None,
+        "nlp_confidence": None,
+        "nlp_vocabulary": None,
+        "nlp_processed_string": None,
+        "concept": concept["conceptID"],
+        "object_id": concept["id"],
+        # TODO: we should query this value from the API
+        # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+        # but that's not available from an Azure Function.
+        "content_type": 17,
+    } for concept in ids_of_posted_values]
 
     print("POST", len(concept_id_data), "concepts", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
 
@@ -687,6 +1034,8 @@ async def process_values_from_sheet(sheet, data_dictionary,
                                       str(put_update_json)]))
 
     print("PATCH values finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+    reuse_existing_field_concepts(names_to_ids_dict, 15, api_url, headers)
+    reuse_existing_value_concepts(values_response_content, 17, api_url, headers)
     print('RAM memory % used:', psutil.virtual_memory())
 
 
@@ -722,17 +1071,16 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
 
 
 def main(msg: func.QueueMessage):
-
     api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id = startup(msg)
     # Set the status to 'Upload in progress'
     status_in_progress_response = requests.patch(
-            url=f"{api_url}scanreports/{scan_report_id}/",
-            data=json.dumps({'status': "UPINPRO"}), 
-            headers=headers
-        )
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        data=json.dumps({'status': "UPINPRO"}),
+        headers=headers
+    )
 
     wb, data_dictionary, vocab_dictionary = parse_blobs(scan_report_blob,
-                                                  data_dictionary_blob)
+                                                        data_dictionary_blob)
     # Get the first sheet 'Field Overview',
     # to populate ScanReportTable & ScanReportField models
     fo_ws = wb.worksheets[0]
@@ -758,12 +1106,12 @@ def main(msg: func.QueueMessage):
     print("Start fields loop", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
     previous_row_value = None
     for i, row in enumerate(
-        fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
+            fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2
     ):
         # Guard against unnecessary rows beyond the last true row with contents
         if (previous_row_value is None or previous_row_value == '') and \
-           (row[0].value is None or row[0].value == ''):
-           break
+                (row[0].value is None or row[0].value == ''):
+            break
         previous_row_value = row[0].value
 
         if row[0].value != '' and row[0].value is not None:
@@ -799,7 +1147,8 @@ def main(msg: func.QueueMessage):
             # print("scan_report_field_entries >>>", field_entries_to_post)
 
             # POST fields in this table
-            print("POST", len(field_entries_to_post), "fields to table", current_table_name, datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+            print("POST", len(field_entries_to_post), "fields to table", current_table_name,
+                  datetime.utcnow().strftime("%H:%M:%S.%fZ"))
             print('RAM memory % used:', psutil.virtual_memory())
 
             fields_response_content = post_field_entries(field_entries_to_post,
@@ -811,7 +1160,7 @@ def main(msg: func.QueueMessage):
             # as key value pairs
             # e.g ("Field Name": Field ID)
             names_to_ids_dict = {str(element.get("name", None)):
-                                 str(element.get("id", None))
+                                     str(element.get("id", None))
                                  for element in fields_response_content}
 
             # print("Dictionary id:name", names_to_ids_dict)
@@ -825,13 +1174,13 @@ def main(msg: func.QueueMessage):
             sheet = wb[current_table_name]
             asyncio.run(process_values_from_sheet(sheet, data_dictionary,
                                                   vocab_dictionary, current_table_name,
-                                      names_to_ids_dict, api_url, scan_report_id,
-                                      headers))
+                                                  names_to_ids_dict, api_url, scan_report_id,
+                                                  headers))
 
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
-            url=f"{api_url}scanreports/{scan_report_id}/",
-            data=json.dumps({'status': "UPCOMPL"}), 
-            headers=headers
-        )
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        data=json.dumps({'status': "UPCOMPL"}),
+        headers=headers
+    )
     wb.close()

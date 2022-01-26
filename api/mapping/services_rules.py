@@ -541,7 +541,8 @@ def get_mapping_rules_list(structural_mapping_rules):
                 term_mapping = {scan_report_values[scan_report_concept.object_id]:concept_id}
             else:
                 term_mapping = concept_id
-            
+
+        creation_type = scan_report_concept.creation_type
         rules.append(
             {
                 'rule_id':scan_report_concept_id,
@@ -550,9 +551,10 @@ def get_mapping_rules_list(structural_mapping_rules):
                 'destination_field':destination_field,
                 'source_table':source_table,
                 'source_field':source_field,
-                'term_mapping':term_mapping
+                'term_mapping':term_mapping,
+                'creation_type':creation_type
             })
-            
+
     return rules
 
 def get_mapping_rules_json(structural_mapping_rules):

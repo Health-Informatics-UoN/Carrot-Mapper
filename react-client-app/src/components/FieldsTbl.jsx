@@ -122,7 +122,8 @@ const FieldsTbl = (props) => {
                                             item.concepts.length > 0 &&
                                             <VStack alignItems='flex-start' >
                                                 {item.concepts.map((concept) => (
-                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} />
+                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} 
+                                                    creation_type={concept.creation_type?concept.creation_type:undefined}/>
                                                 ))}
                                             </VStack>
                                             :

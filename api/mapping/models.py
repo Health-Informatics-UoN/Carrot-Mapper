@@ -28,7 +28,14 @@ class Status(models.TextChoices):
     IN_PROGRESS_75PERCENT = "INPRO75","Mapping 75%"
     COMPLETE = "COMPLET","Mapping Complete"
     BLOCKED = "BLOCKED","Blocked"
-    
+
+
+class CreationType(models.TextChoices):
+    Manual = "M","Manual"
+    Vocab = "V","Vocab"
+    Reuse = "R","Reuse"
+
+
 class BaseModel(models.Model):
     """
     To come
@@ -173,6 +180,14 @@ class ScanReportConcept(BaseModel):
 
     )
 
+    #save how the mapping rule was created
+    creation_type=models.CharField(
+        max_length=1,
+        choices=CreationType.choices,
+        default=CreationType.Manual,
+
+    )
+
     def __str__(self):
         return str(self.id)
 
@@ -214,6 +229,14 @@ class ScanReport(BaseModel):
         max_length=7,
         choices=Status.choices,
         default=Status.UPLOAD_IN_PROGRESS,        
+    )
+
+    data_dictionary = models.ForeignKey(
+        "DataDictionary",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name = 'data_dictionary'
     )
     
     def __str__(self):
@@ -449,42 +472,17 @@ class DataDictionary(BaseModel):
     """
     To come
     """
+    name = models.CharField(
+        max_length=256,
+        blank=True,
+        null=True
+    )
 
-    source_value = models.ForeignKey(
-        ScanReportValue,
+    scan_report=models.ForeignKey(
+        ScanReport,
         on_delete=models.CASCADE,
-    )
-
-    dictionary_table = models.CharField(
-        max_length=128,
         blank=True,
-        null=True,
-    )
-
-    dictionary_field = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-
-    dictionary_field_description = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    dictionary_value = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-
-    dictionary_value_description = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    definition_fixed = models.BooleanField(
-        default=False,
+        null=True
     )
 
     def __str__(self):

@@ -6,7 +6,7 @@ import string
 import datetime
 
 from azure.storage.queue import QueueClient
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient,ContentSettings
 
 from rest_framework import status, viewsets
 from rest_framework.response import Response
@@ -98,6 +98,8 @@ from .models import (
     MappingRule, ScanReportConcept,
     ClassificationSystem,
 )
+
+from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
 
@@ -436,6 +438,11 @@ def home(request):
 class ScanReportTableListView(ListView):
     model = ScanReportTable
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("download-dd") is not None:
+            qs = self.get_queryset()
+            scan_report = self.get_queryset()[0].scan_report
+            return download_data_dictionary_blob(scan_report.data_dictionary.name,container="data-dictionaries")
     def get_queryset(self):
         qs = super().get_queryset()
         search_term = self.request.GET.get("search", None)
@@ -449,19 +456,31 @@ class ScanReportTableListView(ListView):
         context = super().get_context_data(**kwargs)
         if len(self.get_queryset()) > 0:
             scan_report = self.get_queryset()[0].scan_report
+            scan_report_name= scan_report.name
             scan_report_table = self.get_queryset()[0]
+            try:
+                data_dictionary=scan_report.data_dictionary
+            except:
+                data_dictionary=None
         else:
             scan_report = None
+            scan_report_name = None
             scan_report_table = None
+            data_dictionary=None
+
 
         context.update(
             {
                 "scan_report": scan_report,
+                "scan_report_name": scan_report_name,
                 "scan_report_table": scan_report_table,
+                "data_dictionary": data_dictionary
             }
         )
 
         return context
+
+
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportTableUpdateView(UpdateView):
@@ -756,11 +775,17 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_valid(self, form):
-
+        
+        # Create random alphanumeric to link scan report to data dictionary
+        # Create datetime stamp for scan report and data dictionary upload time
+        rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
+        print(dt,rand)
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data["data_partner"],
-            dataset=form.cleaned_data["dataset"]
+            dataset=form.cleaned_data["dataset"],
+            name=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx"
         )
         
         scan_report.author = self.request.user
@@ -768,38 +793,41 @@ class ScanReportFormView(FormView):
 
         # Grab Azure storage credentials
         blob_service_client = BlobServiceClient.from_connection_string(os.getenv('STORAGE_CONN_STRING'))
-
-        # Create random alphanumeric to link scan report to data dictionary
-        # Create datetime stamp for scan report and data dictionary upload time
-        rand = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
-        dt = '{:%Y%m%d-%H%M%S_}'.format(datetime.datetime.now())
-
+        
         print("FILE >>> ", str(form.cleaned_data.get('scan_report_file')))
-        print("STRING TEST >>>> ", os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
-
+        print("STRING TEST >>>> ", scan_report.name)
+        
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
         if form.cleaned_data.get('data_dictionary_file') is None:
             azure_dict={
                 "scan_report_id":scan_report.id,
-                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
+                "scan_report_blob":scan_report.name,
                 "data_dictionary_blob":"None",
             }
 
-            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
-            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
-        
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=scan_report.name)
+            blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open(),content_settings=ContentSettings(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+            # setting content settings for downloading later
         # Else upload the scan report and the data dictionary
         else:
+            data_dictionary= DataDictionary.objects.create(
+                name=os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv",
+                scan_report=scan_report
+            )
+            data_dictionary.save()
+            scan_report.data_dictionary=data_dictionary
+            scan_report.save()
+            
             azure_dict={
                 "scan_report_id":scan_report.id,
-                "scan_report_blob":os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx",
-                "data_dictionary_blob":os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv",
+                "scan_report_blob":scan_report.name,
+                "data_dictionary_blob":data_dictionary.name,
             }
 
-            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]+"_"+dt+rand+".xlsx")
+            blob_client = blob_service_client.get_blob_client(container="scan-reports", blob=scan_report.name)
             blob_client.upload_blob(form.cleaned_data.get('scan_report_file').open())
-            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]+"_"+dt+rand+".csv")
+            blob_client = blob_service_client.get_blob_client(container="data-dictionaries", blob=data_dictionary.name)
             blob_client.upload_blob(form.cleaned_data.get('data_dictionary_file').open())
     
         print('Azure Dictionary >>> ', azure_dict)
@@ -1251,3 +1279,26 @@ def delete_scan_report_field_concept(request):
     messages.success(request, "Concept {} - {} removed successfully.".format(concept_id, concept_name))
 
     return redirect("/fields/?search={}".format(scan_report_table_id))
+
+
+class DownloadScanReportViewSet(viewsets.ViewSet):
+    def list(self, request, pk):
+        scan_report = ScanReport.objects.get(id=pk)
+        # scan_report = ScanReportSerializer(scan_reports, many=False).data
+        # Set Storage Account connection string
+        print(scan_report)
+        blob_name=scan_report.name
+        container='scan-reports'
+        blob_service_client = BlobServiceClient.from_connection_string(
+            os.environ.get("STORAGE_CONN_STRING")
+        )
+        
+        # Grab scan report data from blob
+        streamdownloader = blob_service_client.get_container_client(container).\
+            get_blob_client(blob_name).download_blob()
+        scan_report=streamdownloader.readall()
+
+        response = HttpResponse(scan_report,content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="{blob_name}"'
+
+        return response
