@@ -35,6 +35,8 @@ jobs:
      - uses: actions/checkout@v2
        with:
          submodules: 'recursive'
+     - name: "Run Black on Python code"
+       uses: piotrpawlaczek/python-blacken@v20.8b1
      - name: Make envfile
        run: |
          touch .env
