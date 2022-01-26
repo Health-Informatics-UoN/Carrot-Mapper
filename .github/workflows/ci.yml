@@ -38,7 +38,9 @@ jobs:
      - name: Blacken Python code
        uses: piotrpawlaczek/python-blacken@v20.8b1
        with:
-         args: '--safe .'
+         sanity-check: 'safe'
+         path: '.'
+         only-check: 'no'
      - name: Make envfile
        run: |
          touch .env
