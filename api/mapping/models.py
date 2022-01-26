@@ -132,6 +132,11 @@ class ScanReportConcept(BaseModel):
 
     content_object = GenericForeignKey()
 
+    # save how the mapping rule was created
+    creation_type = models.CharField(
+        max_length=1, choices=CreationType.choices, default=CreationType.Manual,
+    )
+
     def __str__(self):
         return str(self.id)
 
@@ -294,11 +299,6 @@ class MappingRule(BaseModel):
     # connect the rule to a destination_field (and therefore destination_table)
     # e.g. condition_concept_id
     omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
-
-    # save how the mapping rule was created
-    creation_type = models.CharField(
-        max_length=1, choices=CreationType.choices, default=CreationType.Manual,
-    )
 
     #!! TODO --- STOP USING THIS
     source_table = models.ForeignKey(
