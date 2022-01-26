@@ -33,7 +33,7 @@ jobs:
        uses: jpetrucciani/black-check@21.12b0
        with:
          path: '.'
-         black_flags: '--safe --verbose'
+         black_flags: '--safe --verbose --diff'
  build:
    #needs: pylint
    runs-on: ubuntu-latest
