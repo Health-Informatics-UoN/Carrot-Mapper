@@ -4,7 +4,7 @@ const api = window.u+'api'
 
 export const downloadXLSXFile = async () => {
     
-    const url= api+'/scanreports/'+window.scan_report+'/download';
+    const url= api+'/scanreports/'+window.scan_report+'/download/';
     const headers = {'Content-Type': 'blob',Authorization: "Token "+authToken};
     const config = {method: 'GET', url: url, responseType: 'blob', headers};
 
