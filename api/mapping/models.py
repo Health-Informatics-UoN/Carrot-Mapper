@@ -368,7 +368,7 @@ class NLPModel(models.Model):
         return str(self.id)
 
 
-class Dataset(models.Model):
+class Dataset(BaseModel):
     """
     Model for datasets which contain scan reports.
     """
@@ -386,7 +386,7 @@ class Dataset(models.Model):
         return self.name
 
 
-class Project(models.Model):
+class Project(BaseModel):
     """
     Model for projects which are made up of datasets.
     """
