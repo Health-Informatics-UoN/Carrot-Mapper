@@ -36,11 +36,10 @@ jobs:
        with:
          submodules: 'recursive'
      - name: Blacken Python code
-       uses: piotrpawlaczek/python-blacken@v20.8b1
+       uses: jpetrucciani/black-check@21.12b0
        with:
-         sanity-check: 'safe'
          path: '.'
-         only-check: 'no'
+         black_flags: '--safe --verbose'
      - name: Make envfile
        run: |
          touch .env
