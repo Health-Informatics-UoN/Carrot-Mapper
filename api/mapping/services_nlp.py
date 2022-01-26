@@ -10,8 +10,7 @@ from data.models import Concept, ConceptRelationship
 from django.db.models import Q
 from django.contrib import messages
 
-from .models import (ScanReportAssertion,
-                     ScanReportField, ScanReportValue)
+from .models import ScanReportAssertion, ScanReportField, ScanReportValue
 from .services_rules import get_concept_from_concept_code
 
 # Get an instance of a logger
@@ -113,23 +112,27 @@ def start_nlp_field_level(request, search_term):
 
         # We want to use the field description if available
         # However, we fall back to field name if field_description is "" (blank)
-        field_text = field.description_column if field.description_column is not "" else field.name
+        field_text = (
+            field.description_column
+            if field.description_column is not ""
+            else field.name
+        )
 
         document = {
             "documents": [
                 {
                     "language": "en",
-                    "id": str(field.id)+'_field',
-                    "text": field_text.replace("_", " ")
+                    "id": str(field.id) + "_field",
+                    "text": field_text.replace("_", " "),
                 }
             ]
         }
 
         payload = json.dumps(document)
 
-        message_bytes = payload.encode('ascii')
+        message_bytes = payload.encode("ascii")
         base64_bytes = base64.b64encode(message_bytes)
-        base64_message = base64_bytes.decode('ascii')
+        base64_message = base64_bytes.decode("ascii")
 
         # Send JSON payload to nlp-processing-queue in Azure
         queue = QueueClient.from_connection_string(
@@ -139,8 +142,11 @@ def start_nlp_field_level(request, search_term):
 
         queue.send_message(base64_message)
 
-        messages.success(request, "Running NLP at the field level for {}. Check back soon for results from the NLP API.".format(
-            field.name)
+        messages.success(
+            request,
+            "Running NLP at the field level for {}. Check back soon for results from the NLP API.".format(
+                field.name
+            ),
         )
 
         return True
@@ -148,8 +154,7 @@ def start_nlp_field_level(request, search_term):
     else:
 
         # Grab assertions for the ScanReport
-        assertions = ScanReportAssertion.objects.filter(
-            scan_report__id=scan_report_id)
+        assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
 
         # Grab values associated with the ScanReportField
@@ -158,31 +163,44 @@ def start_nlp_field_level(request, search_term):
             scan_report_field=search_term
         ).filter(~Q(value__in=neg_assertions))
 
-        messages.success(request, "Running NLP at the value level for {}. Check back soon for results from the NLP API.".format(
-            field.name)
+        messages.success(
+            request,
+            "Running NLP at the value level for {}. Check back soon for results from the NLP API.".format(
+                field.name
+            ),
         )
 
         # Send data to Azure Storage Queue
         for item in scan_report_values:
 
-            field_text = item.scan_report_field.description_column if item.scan_report_field.description_column is not None else item.scan_report_field.name
-            value_text = item.value_description if item.value_description is not None else item.value
+            field_text = (
+                item.scan_report_field.description_column
+                if item.scan_report_field.description_column is not None
+                else item.scan_report_field.name
+            )
+            value_text = (
+                item.value_description
+                if item.value_description is not None
+                else item.value
+            )
 
             document = {
                 "documents": [
                     {
                         "language": "en",
-                        "id": str(item.id)+'_value',
-                        "text": field_text.replace("_", " ")+', '+value_text.replace("_", " ")
+                        "id": str(item.id) + "_value",
+                        "text": field_text.replace("_", " ")
+                        + ", "
+                        + value_text.replace("_", " "),
                     }
                 ]
             }
 
             payload = json.dumps(document)
 
-            message_bytes = payload.encode('ascii')
+            message_bytes = payload.encode("ascii")
             base64_bytes = base64.b64encode(message_bytes)
-            base64_message = base64_bytes.decode('ascii')
+            base64_message = base64_bytes.decode("ascii")
 
             # Send JSON payload to nlp-processing-queue in Azure
             queue = QueueClient.from_connection_string(
