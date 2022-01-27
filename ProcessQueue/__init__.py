@@ -1133,6 +1133,7 @@ async def process_values_from_sheet(
             # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
             # but that's not available from an Azure Function.
             "content_type": 17,
+            "creation_type": "V",
         }
         for concept in ids_of_posted_values
     ]
