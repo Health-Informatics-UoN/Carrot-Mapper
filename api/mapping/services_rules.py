@@ -41,10 +41,10 @@ def find_date_event(source_table):
     """
     convienience function to return the source field of a date event
     for a destination table from the current source table
-    
+
     Paramaters:
       - source_table (ScanReportTable): object for the scan report table
-    
+
     Returns:
       - ScanReportField : the source_field that has been marked as the date event
     """
@@ -173,7 +173,7 @@ def find_destination_table(request, concept):
 
 def validate_person_id_and_date(request, source_table):
     """
-    Before creating any rules, we need to make sure the person_id and date_event 
+    Before creating any rules, we need to make sure the person_id and date_event
     has been set
     """
 
@@ -321,14 +321,14 @@ def save_mapping_rules(request, scan_report_concept):
 
 def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
     """
-    Given a concept_code and vocabularly id, 
+    Given a concept_code and vocabularly id,
     return the source_concept and concept objects
 
-    If the concept is a standard concept, 
+    If the concept is a standard concept,
     source_concept will be the same object
 
     Parameters:
-      concept_code (str) : the concept code  
+      concept_code (str) : the concept code
       vocabulary_id (str) : SNOMED etc.
       no_source_concept (bool) : only return the concept
     Returns:
@@ -375,7 +375,7 @@ def find_standard_concept(source_concept):
     Args:
       - source_concept(Concept): originally found, potentially non-standard concept
     Returns:
-      - Concept: either the same object as input (if input is standard), or a newly found 
+      - Concept: either the same object as input (if input is standard), or a newly found
     """
 
     # if is standard, return self
@@ -438,7 +438,7 @@ def get_mapping_rules_list(structural_mapping_rules):
     Args:
         qs : queryset of all mapping rules
     Returns:
-        list : a list of rules that can be interpreted by the view.py 
+        list : a list of rules that can be interpreted by the view.py
                page and processed to build a json
     """
 
@@ -646,7 +646,10 @@ def download_mapping_rules_as_csv(request, qs):
     _buffer = io.StringIO()
     # setup a csv writter
     writer = csv.writer(
-        _buffer, lineterminator="\n", delimiter=",", quoting=csv.QUOTE_NONE,
+        _buffer,
+        lineterminator="\n",
+        delimiter=",",
+        quoting=csv.QUOTE_NONE,
     )
 
     # setup the headers from the first object
