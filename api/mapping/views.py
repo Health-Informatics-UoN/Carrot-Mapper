@@ -989,7 +989,9 @@ class ScanReportAssertionView(ListView):
 
         x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
         context.update(
-            {"scan_report": x,}
+            {
+                "scan_report": x,
+            }
         )
         return context
 
@@ -1122,7 +1124,9 @@ class DataDictionaryListView(ListView):
             scan_report = None
 
         context.update(
-            {"scan_report": scan_report,}
+            {
+                "scan_report": scan_report,
+            }
         )
 
         return context
@@ -1349,7 +1353,8 @@ def save_scan_report_value_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept, content_object=scan_report_value,
+                    concept=concept,
+                    content_object=scan_report_value,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
@@ -1415,7 +1420,8 @@ def save_scan_report_field_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept, content_object=scan_report_field,
+                    concept=concept,
+                    content_object=scan_report_field,
                 )
 
                 save_mapping_rules(request, scan_report_concept)

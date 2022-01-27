@@ -18,7 +18,12 @@ def main(msg: func.QueueMessage):
         "Content-Type": "application/json; utf-8",
     }
 
-    message = json.dumps({"id": msg.id, "body": msg.get_body().decode("utf-8"),})
+    message = json.dumps(
+        {
+            "id": msg.id,
+            "body": msg.get_body().decode("utf-8"),
+        }
+    )
 
     message = json.loads(message)
     print("MESSAGE >>> ", message)

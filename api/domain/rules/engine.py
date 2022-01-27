@@ -136,7 +136,11 @@ def generate(self, request):
                     # do not make a warning about this
                     if all(
                         x not in destination_field
-                        for x in ["_source_value", "_source_concept_id", "_concept_id",]
+                        for x in [
+                            "_source_value",
+                            "_source_concept_id",
+                            "_concept_id",
+                        ]
                     ):
                         messages.warning(
                             request,
