@@ -45,7 +45,7 @@ class ScanReportForm(forms.Form):
 
     class Meta:
         model = ScanReport
-        fields = ("data_partner", "dataset", "scan_report_file", "parent_dataser")
+        fields = ("data_partner", "dataset", "scan_report_file", "parent_dataset")
 
     def clean_data_dictionary_file(self):
 
