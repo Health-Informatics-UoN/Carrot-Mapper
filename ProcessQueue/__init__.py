@@ -130,7 +130,7 @@ def process_scan_report_sheet_table(sheet):
 
 def default_zero(input):
     """
-    Helper function that returns the input, replacing anything Falsey 
+    Helper function that returns the input, replacing anything Falsey
     (such as Nones or empty strings) with 0.0.
     """
     return round(input if input else 0.0, 2)
@@ -138,8 +138,8 @@ def default_zero(input):
 
 def perform_chunking(entries_to_post):
     """
-    This expects a list of dicts, and returns a list of lists of lists of dicts, 
-    where the maximum length of each list of dicts, under JSONification, 
+    This expects a list of dicts, and returns a list of lists of lists of dicts,
+    where the maximum length of each list of dicts, under JSONification,
     is less than max_chars, and the length of each list of lists of dicts is chunk_size
     """
     max_chars = (
@@ -183,8 +183,8 @@ def perform_chunking(entries_to_post):
 # @memory_profiler.profile(stream=profiler_logstream)
 def paginate(entries_to_post, max_chars=None, other=""):
     """
-    This expects a list of dicts, and returns a list of lists of dicts, 
-    where the maximum length of each list of dicts, under JSONification, 
+    This expects a list of dicts, and returns a list of lists of dicts,
+    where the maximum length of each list of dicts, under JSONification,
     is less than max_chars
     """
     if not max_chars:
@@ -271,7 +271,8 @@ def startup(msg):
 
 def process_failure(api_url, scan_report_id, headers):
     scan_report_fetched_data = requests.get(
-        url=f"{api_url}scanreports/{scan_report_id}/", headers=headers,
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        headers=headers,
     )
 
     scan_report_fetched_data = json.loads(
@@ -292,8 +293,8 @@ def process_failure(api_url, scan_report_id, headers):
 
 def paginate_chars(entries_to_post, other):
     """
-    This expects a list of dicts, and returns a list of lists of dicts, 
-    where the maximum length of each list of dicts, under JSONification, 
+    This expects a list of dicts, and returns a list of lists of dicts,
+    where the maximum length of each list of dicts, under JSONification,
     is less than max_chars
     """
     max_chars = 2000 - len(other)
@@ -326,8 +327,8 @@ def flatten(arr):
 
 def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
     """
-    This expects a dict of field names to ids which have been generated in a newly uploaded 
-    scanreport, and content_type 15. It creates new concepts associated to any 
+    This expects a dict of field names to ids which have been generated in a newly uploaded
+    scanreport, and content_type 15. It creates new concepts associated to any
     field that matches the name of an existing field with an associated concept.
     """
     # Gets all scan report concepts that are for the type field (or content type which should be field)
@@ -379,7 +380,10 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # map table id's to scanreport id
 
     # get all scanreports to be used to check active scan reports
-    get_scan_reports = requests.get(url=f"{api_url}scanreports/", headers=headers,)
+    get_scan_reports = requests.get(
+        url=f"{api_url}scanreports/",
+        headers=headers,
+    )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
     active_reports = [
@@ -586,7 +590,10 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     tables = flatten(tables)
 
     # get all scan reports to be used to filter values by only values that come from active scan reports
-    get_scan_reports = requests.get(url=f"{api_url}scanreports/", headers=headers,)
+    get_scan_reports = requests.get(
+        url=f"{api_url}scanreports/",
+        headers=headers,
+    )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
     active_reports = [
@@ -1126,6 +1133,7 @@ async def process_values_from_sheet(
             # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
             # but that's not available from an Azure Function.
             "content_type": 17,
+            "creation_type": "V",
         }
         for concept in ids_of_posted_values
     ]
@@ -1145,7 +1153,9 @@ async def process_values_from_sheet(
 
         # POST the ScanReportConcept data to the model
         concepts_response = requests.post(
-            url=api_url + "scanreportconcepts/", headers=headers, data=json.dumps(page),
+            url=api_url + "scanreportconcepts/",
+            headers=headers,
+            data=json.dumps(page),
         )
 
         print(
