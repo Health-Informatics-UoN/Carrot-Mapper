@@ -5,8 +5,7 @@ from mapping.models import Dataset, ScanReport, Project
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        """Add `project_name`, `dataset_name` and `scanreports` args.
-        """
+        """Add `project_name`, `dataset_name` and `scanreports` args."""
         parser.add_argument(
             "--project_name",
             required=False,
@@ -42,7 +41,8 @@ class Command(BaseCommand):
         # `get_or_create` returns a tuple of (`QuerySet`, `bool`); extract the first element.
         project = Project.objects.get_or_create(name=project_name)[0]
         default_dataset = Dataset.objects.get_or_create(
-            name=dataset_name, project=project.id,
+            name=dataset_name,
+            project=project.id,
         )[0]
 
         if scan_reports:
