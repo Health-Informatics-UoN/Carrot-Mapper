@@ -2,6 +2,7 @@
 To come
 """
 
+import uuid
 from django.conf import settings
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
@@ -212,6 +213,7 @@ class ScanReport(BaseModel):
         max_length=256,
     )
 
+    # TODO: rename to `dataset_name`
     dataset = models.CharField(
         max_length=128,
     )
@@ -234,6 +236,16 @@ class ScanReport(BaseModel):
         null=True,
         blank=True,
         related_name="data_dictionary",
+    )
+
+    # TODO: rename to `dataset`
+    parent_dataset = models.ForeignKey(
+        "Dataset",
+        on_delete=models.CASCADE,
+        related_name="scan_reports",
+        related_query_name="scan_report",
+        null=True,
+        blank=True,
     )
 
     def __str__(self):
@@ -475,3 +487,43 @@ class NLPModel(models.Model):
 
     def __str__(self):
         return str(self.id)
+
+
+class Dataset(BaseModel):
+    """
+    Model for datasets which contain scan reports.
+    """
+
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    name = models.CharField(max_length=100)
+    # `projects` field added by M2M field in `Project`
+    # `scan_reports` field added by FK field in `ScanReport`
+
+    class Meta:
+        verbose_name = "Dataset"
+        verbose_name_plural = "Datasets"
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Project(BaseModel):
+    """
+    Model for projects which are made up of datasets.
+    """
+
+    id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
+    name = models.CharField(max_length=100, unique=True)
+    datasets = models.ManyToManyField(
+        Dataset, related_name="projects", related_query_name="project", blank=True
+    )
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="projects", related_query_name="project"
+    )
+
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
+
+    def __str__(self) -> str:
+        return self.name

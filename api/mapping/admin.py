@@ -14,6 +14,8 @@ from .models import (
     MappingRule,
     NLPModel,
     ScanReportConcept,
+    Dataset,
+    Project,
 )
 
 
@@ -30,3 +32,5 @@ admin.site.register(MappingRule)
 admin.site.register(DataDictionary)
 admin.site.register(NLPModel)
 admin.site.register(ScanReportConcept)
+admin.site.register(Dataset)
+admin.site.register(Project)
