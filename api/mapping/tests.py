@@ -16,8 +16,10 @@ class TestProjectListView(TestCase):
 
         # Set up test project
         self.visible_project = Project(
-            name="Unit test project", members=[self.test_user]
+            name="Unit test project"
         )
+        self.visible_project.save()
+        self.visible_project.members.add(self.test_user1)
 
     def test_retrieved_queryset(self):
         return False
