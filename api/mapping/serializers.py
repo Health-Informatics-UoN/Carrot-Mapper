@@ -23,6 +23,8 @@ from mapping.models import (
     OmopField,
     OmopTable,
     MappingRule,
+    Project,
+    Dataset,
 )
 
 from .services_rules import get_mapping_rules_json, get_mapping_rules_list
@@ -85,6 +87,16 @@ class UserSerializer(serializers.ModelSerializer):
 class ScanReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
+        fields = "__all__"
+
+class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = "__all__"
+
+class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
         fields = "__all__"
 
 

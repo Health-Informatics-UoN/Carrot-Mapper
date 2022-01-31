@@ -28,6 +28,8 @@ from .serializers import (
     GetRulesJSON,
     GetRulesList,
     UserSerializer,
+    ProjectSerializer,
+    DatasetSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -99,6 +101,8 @@ from .models import (
     MappingRule,
     ScanReportConcept,
     ClassificationSystem,
+    Project,
+    Dataset,
 )
 
 from .services import download_data_dictionary_blob
@@ -211,6 +215,55 @@ class ScanReportViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+class ProjectFilterViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "name": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
+
+class DatasetViewSet(viewsets.ModelViewSet):
+    queryset = Dataset.objects.all()
+    serializer_class = DatasetSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+class DatasetFilterViewSet(viewsets.ModelViewSet):
+    queryset = Dataset.objects.all()
+    serializer_class = DatasetSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "name": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
 
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):

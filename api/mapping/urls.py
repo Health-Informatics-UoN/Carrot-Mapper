@@ -42,6 +42,22 @@ routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
 
 routers.register(r"scanreports", views.ScanReportViewSet, basename="scanreports")
 
+routers.register(r"projects", views.ProjectViewSet, basename="projects")
+
+routers.register(
+    r"projectsfilter",
+    views.ProjectFilterViewSet,
+    basename="projectsfilter",
+)
+
+routers.register(r"datasets", views.DatasetViewSet, basename="datasets")
+
+routers.register(
+    r"datasetsfilter",
+    views.DatasetFilterViewSet,
+    basename="datasetsfilter",
+)
+
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
