@@ -204,7 +204,7 @@ class ProjectListView(ListAPIView):
     serializer_class = ProjectSerializer
 
     def get_queryset(self):
-        return Project.objects.filter(members=self.request.user)
+        return Project.objects.all()
 
 
 class ProjectCreateView(CreateAPIView):
