@@ -42,7 +42,7 @@ class Command(BaseCommand):
         project = Project.objects.get_or_create(name=project_name)[0]
         default_dataset = Dataset.objects.get_or_create(
             name=dataset_name,
-            project=project.id,
+            project=project.id,  # This doesn't work, add using `.projects.add` on next line
         )[0]
 
         if scan_reports:
