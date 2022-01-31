@@ -32,19 +32,11 @@ class Concept(models.Model):
         max_length=50,
     )
 
-    valid_start_date = models.DateField(
+    valid_start_date = models.DateField()
 
-    )
+    valid_end_date = models.DateField()
 
-    valid_end_date = models.DateField(
-
-    )
-
-    invalid_reason = models.CharField(
-        max_length=1,
-        blank=True,
-        null=True
-    )
+    invalid_reason = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
         managed = False

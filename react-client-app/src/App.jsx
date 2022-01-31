@@ -20,8 +20,10 @@ const App = ({ page }) => {
         useDelete(`scanreportconcepts/${conceptId}`)
             .then(function (response) {
                 //Re-fetch the concepts for that particular field
-                getScanReportConcepts(id).then(scanreportconcepts => {
+                getScanReportConcepts(id).then(async scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
+                        
+
                         const conceptIds = scanreportconcepts.map(value => value.concept)
                         useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                             .then((values) => {
@@ -148,13 +150,15 @@ const App = ({ page }) => {
                     {
                         concept: concept,
                         object_id: id,
-                        content_type: content_type
+                        content_type: content_type,
+                        creation_type:"M",
                     }
                     usePost(`/scanreportconcepts/`, data)
                         .then(function (response) {
                             //Re-fetch scan report concepts for field     
-                            getScanReportConcepts(id).then(scanreportconcepts => {
+                            getScanReportConcepts(id).then(async scanreportconcepts => {
                                 if (scanreportconcepts.length > 0) {
+
                                     const conceptIds = scanreportconcepts.map(value => value.concept)
                                     useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
                                         .then((values) => {

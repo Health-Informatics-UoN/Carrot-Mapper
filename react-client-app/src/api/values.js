@@ -112,6 +112,13 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
         }
         const conceptPromiseResults = await Promise.all(conceptPromises)
         const omopConcepts = [].concat.apply([], conceptPromiseResults)
+
+        // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
+        // all the mapping rules at the moment which works but needs to be fixed
+        const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
+        scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
+
+
         scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
         // map each scanreport concept to it's value
         values = values.map(element => ({ ...element, conceptsLoaded: true, concepts: scanreportconcepts.filter(concept => concept.object_id == element.id) }))
@@ -170,6 +177,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         scan_report:table.scan_report,
         concept: scan_report_concept.id, 
         approved:true,
+        creation_type:"M",
     }
     // create mapping rule for the following
     //person_id
