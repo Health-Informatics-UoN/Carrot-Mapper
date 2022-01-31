@@ -1,3 +1,4 @@
+import imp
 import json
 import os
 import base64
@@ -11,6 +12,13 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import (
+    ListAPIView,
+    CreateAPIView,
+    DestroyAPIView,
+    UpdateAPIView,
+    RetrieveAPIView,
+)
 from rest_framework.renderers import JSONRenderer
 
 from .serializers import (
@@ -28,6 +36,7 @@ from .serializers import (
     GetRulesJSON,
     GetRulesList,
     UserSerializer,
+    ProjectSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -91,6 +100,7 @@ from .models import (
     OmopTable,
     OmopField,
     OmopTable,
+    Project,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
@@ -183,6 +193,17 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DrugStrengthSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
+
+
+class ProjectListView(ListAPIView):
+    """
+    API view to show all project a User is on.
+    """
+
+    permission_classes = []
+
+    def get_queryset(self):
+        return Project.objects.filter(members=self.request.user)
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -990,9 +1011,7 @@ class ScanReportAssertionView(ListView):
 
         x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
         context.update(
-            {
-                "scan_report": x,
-            }
+            {"scan_report": x,}
         )
         return context
 
@@ -1125,9 +1144,7 @@ class DataDictionaryListView(ListView):
             scan_report = None
 
         context.update(
-            {
-                "scan_report": scan_report,
-            }
+            {"scan_report": scan_report,}
         )
 
         return context
@@ -1354,8 +1371,7 @@ def save_scan_report_value_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_value,
+                    concept=concept, content_object=scan_report_value,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
@@ -1421,8 +1437,7 @@ def save_scan_report_field_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_field,
+                    concept=concept, content_object=scan_report_field,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
