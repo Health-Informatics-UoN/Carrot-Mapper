@@ -201,9 +201,46 @@ class ProjectListView(ListAPIView):
     """
 
     permission_classes = []
+    serializer_class = ProjectSerializer
 
     def get_queryset(self):
         return Project.objects.filter(members=self.request.user)
+
+
+class ProjectCreateView(CreateAPIView):
+    """
+    API view to create a project.
+    """
+
+    permission_classes = []
+    serializer_class = ProjectSerializer
+
+
+class ProjectDestroyView(DestroyAPIView):
+    """
+    API view to destroy a project.
+    """
+
+    permission_classes = []
+    serializer_class = ProjectSerializer
+
+
+class ProjectRetrieveView(RetrieveAPIView):
+    """
+    API view to retrieve a single project.
+    """
+
+    permission_classes = []
+    serializer_class = ProjectSerializer
+
+
+class ProjectUpdateView(UpdateAPIView):
+    """
+    API view to update a project.
+    """
+
+    permission_classes = []
+    serializer_class = ProjectSerializer
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
