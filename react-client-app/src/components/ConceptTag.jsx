@@ -15,10 +15,10 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
                     let color
                     switch (creation_type) {
                         case "V":
-                            color = "#ff00ff"
+                            color = "#BEA9DF"
                             break
                         case "R":
-                            color = "#00ff00"
+                            color = "#3db28c"
                             break
                         case "M":
                             color = "#3C579E"
