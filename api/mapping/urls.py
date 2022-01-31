@@ -5,6 +5,7 @@ from . import views
 
 routers = routers.DefaultRouter()
 
+
 routers.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
 routers.register(
     r"omop/conceptsfilter", views.ConceptFilterViewSet, basename="conceptsfilter"
@@ -40,22 +41,6 @@ routers.register(r"users", views.UserViewSet, basename="users")
 routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
 
 routers.register(r"scanreports", views.ScanReportViewSet, basename="scanreports")
-
-routers.register(r"projects", views.ProjectViewSet, basename="projects")
-
-routers.register(
-    r"projectsfilter",
-    views.ProjectFilterViewSet,
-    basename="projectsfilter",
-)
-
-routers.register(r"datasets", views.DatasetViewSet, basename="datasets")
-
-routers.register(
-    r"datasetsfilter",
-    views.DatasetFilterViewSet,
-    basename="datasetsfilter",
-)
 
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
@@ -98,6 +83,7 @@ routers.register(
 routers.register(
     r"scanreportvaluepks", views.ScanReportValuePKViewSet, basename="scanreportvaluepks"
 )
+
 
 routers.register(
     r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"
@@ -154,6 +140,9 @@ urlpatterns = [
         views.CountStatsScanReportTableField.as_view(),
         name="countstatsscanreporttablefield",
     ),
+    path(r"api/datasets/", views.DatasetList.as_view(), name="datasets",),
+    path(r"api/datasets/<str:id>", views.DatasetValue.as_view(), name="datasets-filter",),
+
     path(
         r"api/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
