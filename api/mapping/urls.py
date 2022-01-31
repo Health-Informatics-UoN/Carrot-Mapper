@@ -5,7 +5,6 @@ from . import views
 
 routers = routers.DefaultRouter()
 
-
 routers.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
 routers.register(
     r"omop/conceptsfilter", views.ConceptFilterViewSet, basename="conceptsfilter"
@@ -99,7 +98,6 @@ routers.register(
 routers.register(
     r"scanreportvaluepks", views.ScanReportValuePKViewSet, basename="scanreportvaluepks"
 )
-
 
 routers.register(
     r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"

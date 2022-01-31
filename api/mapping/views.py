@@ -232,6 +232,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+
 class ProjectFilterViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -240,6 +241,7 @@ class ProjectFilterViewSet(viewsets.ModelViewSet):
         "name": ["in", "exact"],
         "id": ["in", "exact"],
     }
+
 
 class DatasetViewSet(viewsets.ModelViewSet):
     queryset = Dataset.objects.all()
@@ -255,6 +257,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
 
 class DatasetFilterViewSet(viewsets.ModelViewSet):
     queryset = Dataset.objects.all()
@@ -946,10 +949,10 @@ class ScanReportFormView(FormView):
             data_partner=form.cleaned_data["data_partner"],
             dataset=form.cleaned_data["dataset"],
             name=os.path.splitext(str(form.cleaned_data.get("scan_report_file")))[0]
-            + "_"
-            + dt
-            + rand
-            + ".xlsx",
+                 + "_"
+                 + dt
+                 + rand
+                 + ".xlsx",
         )
 
         scan_report.author = self.request.user
@@ -988,10 +991,10 @@ class ScanReportFormView(FormView):
                 name=os.path.splitext(
                     str(form.cleaned_data.get("data_dictionary_file"))
                 )[0]
-                + "_"
-                + dt
-                + rand
-                + ".csv",
+                     + "_"
+                     + dt
+                     + rand
+                     + ".csv",
                 scan_report=scan_report,
             )
             data_dictionary.save()
@@ -1114,7 +1117,6 @@ class DataDictionaryListView(ListView):
 
         search_term = self.request.GET.get("search", None)
         if search_term is not None:
-
             assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
             neg_assertions = assertions.values_list("negative_assertion")
 
@@ -1123,13 +1125,13 @@ class DataDictionaryListView(ListView):
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(source_value__scan_report_field__pass_from_source=True)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .distinct("source_value__scan_report_field")
-                .order_by("source_value__scan_report_field")
+                    .filter(source_value__scan_report_field__pass_from_source=True)
+                    .filter(source_value__scan_report_field__is_patient_id=False)
+                    .filter(source_value__scan_report_field__is_date_event=False)
+                    .filter(source_value__scan_report_field__is_ignore=False)
+                    .exclude(source_value__value="List truncated...")
+                    .distinct("source_value__scan_report_field")
+                    .order_by("source_value__scan_report_field")
             )
 
             # Grabs everything but removes all where pass_from_source=False
@@ -1138,12 +1140,12 @@ class DataDictionaryListView(ListView):
                 qs.filter(
                     source_value__scan_report_field__scan_report_table__scan_report__id=search_term
                 )
-                .filter(source_value__scan_report_field__pass_from_source=False)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .exclude(source_value__value__in=neg_assertions)
+                    .filter(source_value__scan_report_field__pass_from_source=False)
+                    .filter(source_value__scan_report_field__is_patient_id=False)
+                    .filter(source_value__scan_report_field__is_date_event=False)
+                    .filter(source_value__scan_report_field__is_ignore=False)
+                    .exclude(source_value__value="List truncated...")
+                    .exclude(source_value__value__in=neg_assertions)
             )
 
             # Stick qs_1 and qs_2 together
@@ -1284,7 +1286,6 @@ def load_omop_fields(request):
 
 # Run NLP at the field level
 def run_nlp_field_level(request):
-
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
     start_nlp_field_level(request, search_term=search_term)
@@ -1294,7 +1295,6 @@ def run_nlp_field_level(request):
 
 # Run NLP for all fields/values within a table
 def run_nlp_table_level(request):
-
     search_term = request.GET.get("search", None)
     table = ScanReportTable.objects.get(pk=search_term)
     fields = ScanReportField.objects.filter(scan_report_table=search_term)
@@ -1316,7 +1316,6 @@ def validate_concept(request, source_concept):
 
 
 def validate_standard_concept(request, source_concept):
-
     # if it's a standard concept -- pass
     if source_concept.standard_concept == "S":
         messages.success(
@@ -1381,7 +1380,7 @@ def save_scan_report_value_concept(request):
             )
 
             if not pass_content_object_validation(
-                request, scan_report_value.scan_report_field.scan_report_table
+                    request, scan_report_value.scan_report_field.scan_report_table
             ):
                 return redirect(
                     "/values/?search={}".format(scan_report_value.scan_report_field.id)
@@ -1448,7 +1447,7 @@ def save_scan_report_field_concept(request):
             )
 
             if not pass_content_object_validation(
-                request, scan_report_field.scan_report_table
+                    request, scan_report_field.scan_report_table
             ):
                 return redirect(
                     "/fields/?search={}".format(scan_report_field.scan_report_table.id)
@@ -1485,7 +1484,6 @@ def save_scan_report_field_concept(request):
 
 
 def delete_scan_report_field_concept(request):
-
     scan_report_table_id = request.GET.get("scan_report_table_id")
     scan_report_concept_id = request.GET.get("scan_report_concept_id")
 
@@ -1519,8 +1517,8 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         # Grab scan report data from blob
         streamdownloader = (
             blob_service_client.get_container_client(container)
-            .get_blob_client(blob_name)
-            .download_blob()
+                .get_blob_client(blob_name)
+                .download_blob()
         )
         scan_report = streamdownloader.readall()
 
