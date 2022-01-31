@@ -461,10 +461,6 @@ class DataDictionary(BaseModel):
 
     name = models.CharField(max_length=256, blank=True, null=True)
 
-    scan_report = models.ForeignKey(
-        ScanReport, on_delete=models.CASCADE, blank=True, null=True
-    )
-
     def __str__(self):
         return str(self.id)
 
