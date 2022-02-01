@@ -110,7 +110,7 @@ from .models import (
     ScanReportConcept,
     ClassificationSystem,
 )
-
+from .permissions import CanViewProject
 from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
@@ -210,7 +210,7 @@ class ProjectRetrieveView(RetrieveAPIView):
     API view to retrieve a single project.
     """
 
-    permission_classes = []
+    permission_classes = [CanViewProject]
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 

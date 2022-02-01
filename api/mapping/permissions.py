@@ -8,4 +8,4 @@ class CanViewProject(permissions.BasePermission):
         """
         Return `True` if the User's ID is in the Project's members.
         """
-        return request.user.id in obj.members
+        return obj.members.filter(id=request.user.id).exists()
