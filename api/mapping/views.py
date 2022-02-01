@@ -33,6 +33,7 @@ from .serializers import (
     GetRulesList,
     UserSerializer,
     ProjectSerializer,
+    ProjectNameSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -193,11 +194,11 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ProjectListView(ListAPIView):
     """
-    API view to show all projects.
+    API view to show all projects' names.
     """
 
     permission_classes = []
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectNameSerializer
     queryset = Project.objects.all()
 
 
@@ -1372,8 +1373,7 @@ def save_scan_report_value_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_value,
+                    concept=concept, content_object=scan_report_value,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
@@ -1439,8 +1439,7 @@ def save_scan_report_field_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_field,
+                    concept=concept, content_object=scan_report_field,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
