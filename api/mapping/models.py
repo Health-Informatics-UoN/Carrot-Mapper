@@ -114,7 +114,10 @@ class ScanReportConcept(BaseModel):
     nlp_entity_type = models.CharField(max_length=64, null=True, blank=True)
 
     nlp_confidence = models.DecimalField(
-        max_digits=3, decimal_places=2, null=True, blank=True,
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
     )
 
     nlp_vocabulary = models.CharField(max_length=64, null=True, blank=True)
@@ -133,7 +136,9 @@ class ScanReportConcept(BaseModel):
 
     # save how the mapping rule was created
     creation_type = models.CharField(
-        max_length=1, choices=CreationType.choices, default=CreationType.Manual,
+        max_length=1,
+        choices=CreationType.choices,
+        default=CreationType.Manual,
     )
 
     def __str__(self):
@@ -146,11 +151,17 @@ class ScanReport(BaseModel):
     """
 
     data_partner = models.ForeignKey(
-        DataPartner, on_delete=models.CASCADE, blank=True, null=True,
+        DataPartner,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True,
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
 
     name = models.CharField(max_length=256)
@@ -163,7 +174,9 @@ class ScanReport(BaseModel):
     file = models.FileField()
 
     status = models.CharField(
-        max_length=7, choices=Status.choices, default=Status.UPLOAD_IN_PROGRESS,
+        max_length=7,
+        choices=Status.choices,
+        default=Status.UPLOAD_IN_PROGRESS,
     )
 
     data_dictionary = models.ForeignKey(
