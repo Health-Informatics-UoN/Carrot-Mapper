@@ -15,11 +15,10 @@ class TestProjectListView(TestCase):
         self.test_user2.save()
 
         # Set up test project
-        self.visible_project = Project(
-            name="Unit test project"
-        )
+        self.visible_project = Project(name="Unit test project")
         self.visible_project.save()
         self.visible_project.members.add(self.test_user1)
 
     def test_retrieved_queryset(self):
+        # TODO: write test logic once test environment is set up.
         return False
