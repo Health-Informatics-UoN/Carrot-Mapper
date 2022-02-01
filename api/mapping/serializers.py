@@ -163,7 +163,7 @@ class MappingRuleSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Serialiser for showing all details of a Project. Use in RetrieveViews
-    where User is permitted to view a particular Project. 
+    where User is permitted to view a particular Project.
     """
 
     class Meta:

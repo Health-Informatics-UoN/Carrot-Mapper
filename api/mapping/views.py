@@ -1373,7 +1373,8 @@ def save_scan_report_value_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept, content_object=scan_report_value,
+                    concept=concept,
+                    content_object=scan_report_value,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
@@ -1439,7 +1440,8 @@ def save_scan_report_field_concept(request):
             pass_concept_check = validate_concept(request, concept)
             if pass_concept_check:
                 scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept, content_object=scan_report_field,
+                    concept=concept,
+                    content_object=scan_report_field,
                 )
 
                 save_mapping_rules(request, scan_report_concept)
