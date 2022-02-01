@@ -197,7 +197,7 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ProjectListView(ListAPIView):
     """
-    API view to show all project a User is on.
+    API view to show all projects.
     """
 
     permission_classes = []
@@ -208,6 +208,7 @@ class ProjectListView(ListAPIView):
 class ProjectRetrieveView(RetrieveAPIView):
     """
     API view to retrieve a single project.
+    Will return 401 Unauthorized if User isn't a member.
     """
 
     permission_classes = [CanViewProject]
