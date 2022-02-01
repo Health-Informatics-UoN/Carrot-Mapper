@@ -208,7 +208,7 @@ class ProjectListView(ListAPIView):
 class ProjectRetrieveView(RetrieveAPIView):
     """
     API view to retrieve a single project.
-    Will return 401 Unauthorized if User isn't a member.
+    Will return 403 Forbidden if User isn't a member.
     """
 
     permission_classes = [CanViewProject]
