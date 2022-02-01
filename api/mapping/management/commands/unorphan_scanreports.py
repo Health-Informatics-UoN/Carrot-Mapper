@@ -40,8 +40,6 @@ class Command(BaseCommand):
 
         # `get_or_create` returns a tuple of (`QuerySet`, `bool`); extract the first element.
         project, _ = Project.objects.get_or_create(name=project_name)
-        default_dataset, _ = Dataset.objects.get_or_create(name=dataset_name)
-        default_dataset.projects.add(project)
 
         if scan_reports:
             # Find the scan reports in your list which aren't in a dataset
@@ -60,6 +58,8 @@ class Command(BaseCommand):
                 orphan.parent_dataset = new_dataset
             # Otherwise use the specified or default dataset
             else:
+                default_dataset, _ = Dataset.objects.get_or_create(name=dataset_name)
+                default_dataset.projects.add(project)
                 orphan.parent_dataset = default_dataset
 
             orphan.save()
