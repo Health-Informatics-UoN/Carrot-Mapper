@@ -140,7 +140,7 @@ const App = ({ page }) => {
                             hidden: false,
                             status: 'error',
                             title: "Have not yet implemented concept",
-                            description: `Concept ${response.concept_id} (${response.concept_name}) is from table '${destination_field.table}' which is not implemented yet.`
+                            description: `Concept ${response.concept_id} (${response.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`
                         })
                         onOpen()
                         return
