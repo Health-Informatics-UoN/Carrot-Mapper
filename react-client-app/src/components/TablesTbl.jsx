@@ -10,12 +10,14 @@ import {
     Flex,
     Spinner,
     Link,
-    Button
+    Button,
+    HStack
 
 } from "@chakra-ui/react"
 
 
 import { getScanReportTableRows } from '../api/values'
+import { downloadXLSXFile } from '../api/download'
 
 
 
@@ -36,6 +38,15 @@ const TablesTbl = () => {
         })
     }, []);
 
+    const download_scan_report = () => {
+        downloadXLSXFile()
+        
+    };
+
+    const download_data_dictionary = () => {
+        window.download_data_dictionary()
+    };
+
     if (loading) {
         //Render Loading State
         return (
@@ -49,6 +60,12 @@ const TablesTbl = () => {
     }
     return (
         <div >
+            <HStack my="10px">
+            <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
+            <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
+
+            </HStack>
+
             <Table variant="striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>

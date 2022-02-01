@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class Concept2OMOP:
-
     @staticmethod
     def get_rules_by_scan_report_concept(scan_report_concept_id):
 
@@ -18,13 +17,15 @@ class Concept2OMOP:
 
         logger.info("concept_id: {}".format(_scan_report_concept.concept.concept_id))
 
-        _concept = Concept.objects.get(concept_id=_scan_report_concept.concept.concept_id)
+        _concept = Concept.objects.get(
+            concept_id=_scan_report_concept.concept.concept_id
+        )
 
         serializer = serializers.Concept(_concept)
 
         concept = serializer.data
 
-        if concept.get('domain_id') == 'Condition':
+        if concept.get("domain_id") == "Condition":
             """
             https://ohdsi.github.io/TheBookOfOhdsi/CommonDataModel.html#conditionOccurrence
 
@@ -58,9 +59,7 @@ def generate(self, request):
 
     # this is taking a long time to run/filter
     # find all fields that have been mapped with a concept id (>=0, default=-1)
-    fields = ScanReportField.objects.filter(
-        scan_report_table__scan_report=scan_report
-    )
+    fields = ScanReportField.objects.filter(scan_report_table__scan_report=scan_report)
     # find fields that have a concept_id set,
     # OR find fields that have at least one value with a concept_id set
     fields = fields.filter(scanreportvalue__conceptID__gte=0) | fields.filter(
@@ -70,17 +69,17 @@ def generate(self, request):
     # make unique
     fields = fields.distinct()
 
-    #get unique source tables that are used
+    # get unique source tables that are used
     source_tables = []
     for field in fields:
         source_table = field.scan_report_table
         source_tables.append(source_table)
     source_tables = list(set(source_tables))
 
-    #call a check to firstly validate that person_ids have been set
-    #in all the source tables that we actually use
-    if not self.validate_person_ids(request,source_tables):
-        return 
+    # call a check to firstly validate that person_ids have been set
+    # in all the source tables that we actually use
+    if not self.validate_person_ids(request, source_tables):
+        return
 
     # loop over found fields
     for field in fields:
@@ -183,30 +182,36 @@ def generate(self, request):
                 )
                 mapping.save()
                 try:
-                    primary_date_source_field = self.find_date_event(destination_table,source_table)
+                    primary_date_source_field = self.find_date_event(
+                        destination_table, source_table
+                    )
                 except KeyError:
-                    messages.error(request,f"No implementation for date-event for {destination_table} yet")
-                    
+                    messages.error(
+                        request,
+                        f"No implementation for date-event for {destination_table} yet",
+                    )
+
                 if primary_date_source_field is None:
-                    messages.error(request,f"Failed to generate rules. You need to set an event date for {destination_table} in table {source_table}.")
+                    messages.error(
+                        request,
+                        f"Failed to generate rules. You need to set an event date for {destination_table} in table {source_table}.",
+                    )
                     self.clean()
                     return
 
                 # this is just looking up a dictionary in the OmopDetails() class
                 # e.g. { "person":["birth_datetime"]... }
                 # this could easily be in MappingPipelines
-                date_omop_fields = omop_lookup.get_date_fields(
-                    omop_field.table.table
-                )
-                #loop over all returned
-                #most will return just one
-                #in the case of condition_occurrence, return start and end
+                date_omop_fields = omop_lookup.get_date_fields(omop_field.table.table)
+                # loop over all returned
+                # most will return just one
+                # in the case of condition_occurrence, return start and end
                 for date_omop_field in date_omop_fields:
                     # get the actual omop field object
                     date_omop_field = OmopField.objects.get(
                         table__table=destination_table, field=date_omop_field
                     )
-                    
+
                     # make another mapping for this date object
                     mapping, created = MappingRule.objects.update_or_create(
                         scan_report=scan_report,
@@ -302,8 +307,10 @@ def download_structural_mapping(self, request, return_type="json"):
 
     elif return_type == "json":
         outputs = self.get_final_json(outputs)
-        response = HttpResponse(json.dumps(outputs,indent=6),content_type='application/json')
-        response['Content-Disposition'] = f'attachment; filename="{fname}"'
+        response = HttpResponse(
+            json.dumps(outputs, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
         return response
     else:
         # implement other return types if needed
@@ -316,31 +323,34 @@ def json_to_svg(self, data):
 
 
 # need a quality check if multiple date events are found in the table
-def find_date_event(self,destination_table,source_table):
+def find_date_event(self, destination_table, source_table):
     lookup = {
-        'person':'birth_date',
-        'measurement':'measurement_date',
-        'condition_occurrence':'condition_date',
-        'observation':'observation_date'
+        "person": "birth_date",
+        "measurement": "measurement_date",
+        "condition_occurrence": "condition_date",
+        "observation": "observation_date",
     }
 
     field = lookup[destination_table]
 
-    return getattr(source_table,field)
+    return getattr(source_table, field)
 
 
 def find_person_id(self, source_table):
     return source_table.person_id
 
 
-def validate_person_ids(self,request,source_tables):
+def validate_person_ids(self, request, source_tables):
     is_valid = True
-    #loop over source_tables looking for person_ids
+    # loop over source_tables looking for person_ids
     for table in source_tables:
         if table.person_id == None:
-            messages.error(request,f"Cannot generate rules. Table \"{table}\" is used but you have not set the person_id.")
+            messages.error(
+                request,
+                f'Cannot generate rules. Table "{table}" is used but you have not set the person_id.',
+            )
             is_valid = False
-            
+
     return is_valid
 
 
@@ -399,4 +409,3 @@ def get_final_json(self, _mapping_data, tables=None, source_tables=None):
     )
 
     return structural_mapping
-

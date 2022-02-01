@@ -18,17 +18,25 @@ STATUS_CHOICES = [
     (STATUS_ARCHIVED, "Archived"),
 ]
 
+
 class Status(models.TextChoices):
-    UPLOAD_IN_PROGRESS = "UPINPRO","Upload in Progress"
-    UPLOAD_COMPLETE = "UPCOMPL","Upload Complete"
-    UPLOAD_FAILED = "UPFAILE","Upload Failed"
+    UPLOAD_IN_PROGRESS = "UPINPRO", "Upload in Progress"
+    UPLOAD_COMPLETE = "UPCOMPL", "Upload Complete"
+    UPLOAD_FAILED = "UPFAILE", "Upload Failed"
     PENDING = "PENDING", "Mapping 0%"
-    IN_PROGRESS_25PERCENT = "INPRO25","Mapping 25%"
-    IN_PROGRESS_50PERCENT = "INPRO50","Mapping 50%"
-    IN_PROGRESS_75PERCENT = "INPRO75","Mapping 75%"
-    COMPLETE = "COMPLET","Mapping Complete"
-    BLOCKED = "BLOCKED","Blocked"
-    
+    IN_PROGRESS_25PERCENT = "INPRO25", "Mapping 25%"
+    IN_PROGRESS_50PERCENT = "INPRO50", "Mapping 50%"
+    IN_PROGRESS_75PERCENT = "INPRO75", "Mapping 75%"
+    COMPLETE = "COMPLET", "Mapping Complete"
+    BLOCKED = "BLOCKED", "Blocked"
+
+
+class CreationType(models.TextChoices):
+    Manual = "M", "Manual"
+    Vocab = "V", "Vocab"
+    Reuse = "R", "Reuse"
+
+
 class BaseModel(models.Model):
     """
     To come
@@ -118,6 +126,7 @@ class ScanReportConcept(BaseModel):
     This class stores concepts informed by the user or automatic tools (NLP)
     and users a generic relation to connect it to a ScanReportValue or ScanReportValue
     """
+
     nlp_entity = models.CharField(
         max_length=64,
         null=True,
@@ -165,12 +174,15 @@ class ScanReportConcept(BaseModel):
         on_delete=models.CASCADE,
     )
 
-    object_id = models.PositiveIntegerField(
+    object_id = models.PositiveIntegerField()
 
-    )
+    content_object = GenericForeignKey()
 
-    content_object = GenericForeignKey(
-
+    # save how the mapping rule was created
+    creation_type = models.CharField(
+        max_length=1,
+        choices=CreationType.choices,
+        default=CreationType.Manual,
     )
 
     def __str__(self):
@@ -204,18 +216,26 @@ class ScanReport(BaseModel):
         max_length=128,
     )
 
-    hidden =  models.BooleanField(
+    hidden = models.BooleanField(
         default=False,
     )
 
     file = models.FileField()
 
-    status=models.CharField(
+    status = models.CharField(
         max_length=7,
         choices=Status.choices,
-        default=Status.UPLOAD_IN_PROGRESS,        
+        default=Status.UPLOAD_IN_PROGRESS,
     )
-    
+
+    data_dictionary = models.ForeignKey(
+        "DataDictionary",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="data_dictionary",
+    )
+
     def __str__(self):
         return str(self.id)
 
@@ -234,7 +254,7 @@ class ScanReportTable(BaseModel):
         max_length=256,
     )
 
-    #Quick notes:
+    # Quick notes:
     # - "ScanReportField", instead of ScanReportField,
     #    because ScanReportField has yet been defined, so you get a crash
     #    Using the quotes to look up via the name, works just fine
@@ -245,7 +265,7 @@ class ScanReportTable(BaseModel):
         on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
-        related_name = 'person_id'
+        related_name="person_id",
     )
 
     date_event = models.ForeignKey(
@@ -253,11 +273,12 @@ class ScanReportTable(BaseModel):
         on_delete=models.DO_NOTHING,
         null=True,
         blank=True,
-        related_name = 'date_event'
+        related_name="date_event",
     )
-    
+
     def __str__(self):
         return str(self.id)
+
 
 class ScanReportField(BaseModel):
     """
@@ -329,17 +350,13 @@ class ScanReportField(BaseModel):
         null=True,
         # This field is not used anymore
     )
-    
-    field_description = models.CharField(
-        max_length=256,
-        blank=True,
-        null=True
-    )
+
+    field_description = models.CharField(max_length=256, blank=True, null=True)
 
     concepts = GenericRelation(
         ScanReportConcept,
     )
-    
+
     def __str__(self):
         return str(self.id)
 
@@ -369,39 +386,25 @@ class MappingRule(BaseModel):
     """
     To come
     """
-    #save the scan_report link to make it easier when performing lookups on scan_report_id
-    scan_report = models.ForeignKey(
-        ScanReport,
-        on_delete=models.CASCADE
-    )
 
-    #connect the rule to a destination_field (and therefore destination_table)
-    #e.g. condition_concept_id
-    omop_field = models.ForeignKey(
-        OmopField,
-        on_delete=models.CASCADE
-    )
+    # save the scan_report link to make it easier when performing lookups on scan_report_id
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
+
+    # connect the rule to a destination_field (and therefore destination_table)
+    # e.g. condition_concept_id
+    omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
 
     #!! TODO --- STOP USING THIS
     source_table = models.ForeignKey(
-        ScanReportTable,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
-    
-    #connect the rule with a source_field (and therefore source_table)
-    source_field = models.ForeignKey(
-        ScanReportField,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
+        ScanReportTable, on_delete=models.CASCADE, blank=True, null=True
     )
 
-    concept = models.ForeignKey(
-        ScanReportConcept,
-        on_delete=models.CASCADE
+    # connect the rule with a source_field (and therefore source_table)
+    source_field = models.ForeignKey(
+        ScanReportField, on_delete=models.CASCADE, null=True, blank=True
     )
+
+    concept = models.ForeignKey(ScanReportConcept, on_delete=models.CASCADE)
 
     approved = models.BooleanField(default=False)
 
@@ -423,9 +426,7 @@ class ScanReportValue(BaseModel):
         max_length=128,
     )
 
-    frequency = models.IntegerField(
-
-    )
+    frequency = models.IntegerField()
 
     conceptID = models.IntegerField(
         default=-1,
@@ -434,12 +435,8 @@ class ScanReportValue(BaseModel):
     concepts = GenericRelation(
         ScanReportConcept,
     )
-    
-    value_description  = models.CharField(
-        max_length=512,
-        blank=True,
-        null=True
-    )
+
+    value_description = models.CharField(max_length=512, blank=True, null=True)
 
     def __str__(self):
         return str(self.id)
@@ -450,42 +447,7 @@ class DataDictionary(BaseModel):
     To come
     """
 
-    source_value = models.ForeignKey(
-        ScanReportValue,
-        on_delete=models.CASCADE,
-    )
-
-    dictionary_table = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-
-    dictionary_field = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-
-    dictionary_field_description = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    dictionary_value = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-    )
-
-    dictionary_value_description = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    definition_fixed = models.BooleanField(
-        default=False,
-    )
+    name = models.CharField(max_length=256, blank=True, null=True)
 
     def __str__(self):
         return str(self.id)
