@@ -202,9 +202,7 @@ class ProjectListView(ListAPIView):
 
     permission_classes = []
     serializer_class = ProjectSerializer
-
-    def get_queryset(self):
-        return Project.objects.all()
+    queryset = Project.objects.all()
 
 
 class ProjectRetrieveView(RetrieveAPIView):
@@ -214,6 +212,7 @@ class ProjectRetrieveView(RetrieveAPIView):
 
     permission_classes = []
     serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
