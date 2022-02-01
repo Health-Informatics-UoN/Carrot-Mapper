@@ -939,7 +939,6 @@ class ScanReportFormView(FormView):
                 + dt
                 + rand
                 + ".csv",
-                scan_report=scan_report,
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
