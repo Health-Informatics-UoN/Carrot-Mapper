@@ -1,4 +1,3 @@
-import imp
 import json
 import os
 import base64
@@ -14,9 +13,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (
     ListAPIView,
-    CreateAPIView,
-    DestroyAPIView,
-    UpdateAPIView,
     RetrieveAPIView,
 )
 from rest_framework.renderers import JSONRenderer
