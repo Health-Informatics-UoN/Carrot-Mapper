@@ -921,11 +921,7 @@ class ScanReportFormView(FormView):
             data_partner=form.cleaned_data["data_partner"],
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
-            name=os.path.splitext(str(form.cleaned_data.get("scan_report_file")))[0]
-            + "_"
-            + dt
-            + rand
-            + ".xlsx",
+            name=f"{os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]}_{dt}{rand}.xlsx",
         )
 
         scan_report.author = self.request.user
@@ -961,13 +957,7 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=os.path.splitext(
-                    str(form.cleaned_data.get("data_dictionary_file"))
-                )[0]
-                + "_"
-                + dt
-                + rand
-                + ".csv",
+                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}_{dt}{rand}.csv",
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
