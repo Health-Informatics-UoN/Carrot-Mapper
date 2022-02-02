@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from mapping.models import DataPartner, Dataset, ScanReport, Project
 
 
 class Command(BaseCommand):
@@ -22,4 +23,27 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        pass
+        """Logic for finding unpartnered Datasets
+        and adding them to a Data Partner.
+        """
+
+        data_partner_name = options.get("data_partner")
+        dataset_names = options.get("datasets")
+
+        print(f"Datasets will be added to Data Partner: {data_partner_name}")
+
+        if dataset_names:
+            # Get only the specified datasets
+            print("Fetching the specified datasets...")
+            orphaned_datasets = Dataset.objects.filter(name__in=dataset_names)
+        else:
+            # Get only the datasets with no data partner
+            print("No datasets given. Fetching the unpartnered datasets...")
+            orphaned_datasets = Dataset.objects.filter(data_partner=None)
+
+        # Attach datasets to the data partner
+        print(f"Attaching datasets to Data Partner: {data_partner_name}")
+        for dataset in orphaned_datasets:
+            data_partner, _ = DataPartner.objects.get_or_create(name=data_partner_name)
+            dataset.data_partner = data_partner
+            dataset.save()
