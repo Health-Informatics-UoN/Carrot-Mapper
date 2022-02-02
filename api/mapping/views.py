@@ -222,11 +222,10 @@ class DatasetListView(generics.ListAPIView):
     serializer_class = DatasetSerializer
     #permission_classes = []
 
-class DatasetRetrieveView(generics.ListAPIView):
+class DatasetRetrieveView(generics.RetrieveAPIView):
     """
     This view should return a single dataset from an id
     """
-    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     #permission_classes = []
     def get_queryset(self):
