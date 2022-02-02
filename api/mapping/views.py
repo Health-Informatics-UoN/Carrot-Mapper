@@ -903,6 +903,11 @@ class StructuralMappingTableListView(ListView):
         return context
 
 
+def modify_filename(filename, dt, rand):
+    split_filename = os.path.splitext(str(filename))
+    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
+
+
 @method_decorator(login_required, name="dispatch")
 class ScanReportFormView(FormView):
     form_class = ScanReportForm
@@ -921,7 +926,7 @@ class ScanReportFormView(FormView):
             data_partner=form.cleaned_data["data_partner"],
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
-            name=f"{os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]}_{dt}_{rand}.xlsx",
+            name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
         scan_report.author = self.request.user
@@ -957,7 +962,9 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}_{dt}_{rand}.csv",
+                name=modify_filename(
+                    form.cleaned_data.get("data_dictionary_file"), dt, rand
+                ),
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
