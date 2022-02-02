@@ -140,9 +140,16 @@ urlpatterns = [
         views.CountStatsScanReportTableField.as_view(),
         name="countstatsscanreporttablefield",
     ),
-    path(r"api/datasets/", views.DatasetListView.as_view(), name="dataset_list",),
-    path(r"api/datasets/<str:pk>", views.DatasetRetrieveView.as_view(), name="datasets_retrieve",),
-
+    path(
+        r"api/datasets/",
+        views.DatasetListView.as_view(),
+        name="dataset_list",
+    ),
+    path(
+        r"api/datasets/<str:pk>",
+        views.DatasetRetrieveView.as_view(),
+        name="datasets_retrieve",
+    ),
     path(
         r"api/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),

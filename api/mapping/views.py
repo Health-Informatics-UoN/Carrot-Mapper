@@ -242,20 +242,24 @@ class ScanReportViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+
 class DatasetListView(generics.ListAPIView):
     """
     API view to show all datasets.
     """
+
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    #permission_classes = []
+    # permission_classes = []
+
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
     """
     This view should return a single dataset from an id
     """
+
     serializer_class = DatasetSerializer
-    #permission_classes = []
+    # permission_classes = []
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs["pk"])
         return qs
