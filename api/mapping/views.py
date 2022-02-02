@@ -9,7 +9,6 @@ from azure.storage.queue import QueueClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
 from rest_framework import status, viewsets, generics
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
@@ -215,20 +214,23 @@ class ScanReportViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
-class DatasetList(generics.ListCreateAPIView):
+class DatasetListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    #permission_classes = [IsAdminUser]
+    #permission_classes = []
 
-class DatasetValue(generics.ListCreateAPIView):
+class DatasetRetrieveView(generics.ListAPIView):
+    """
+    This view should return a single dataset from an id
+    """
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
+    #permission_classes = []
     def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        qs = Dataset.objects.filter(id=self.kwargs["id"])
+        qs = Dataset.objects.filter(id=self.kwargs["pk"])
         return qs
 
 
