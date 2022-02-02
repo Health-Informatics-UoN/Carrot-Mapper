@@ -11,6 +11,10 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import (
+    ListAPIView,
+    RetrieveAPIView,
+)
 from rest_framework.renderers import JSONRenderer
 
 from .serializers import (
@@ -28,6 +32,8 @@ from .serializers import (
     GetRulesJSON,
     GetRulesList,
     UserSerializer,
+    ProjectSerializer,
+    ProjectNameSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -91,6 +97,7 @@ from .models import (
     OmopTable,
     OmopField,
     OmopTable,
+    Project,
     ScanReport,
     ScanReportAssertion,
     ScanReportField,
@@ -100,7 +107,7 @@ from .models import (
     ScanReportConcept,
     ClassificationSystem,
 )
-
+from .permissions import CanViewProject
 from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
@@ -183,6 +190,27 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DrugStrengthSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
+
+
+class ProjectListView(ListAPIView):
+    """
+    API view to show all projects' names.
+    """
+
+    permission_classes = []
+    serializer_class = ProjectNameSerializer
+    queryset = Project.objects.all()
+
+
+class ProjectRetrieveView(RetrieveAPIView):
+    """
+    API view to retrieve a single project.
+    Will return 403 Forbidden if User isn't a member.
+    """
+
+    permission_classes = [CanViewProject]
+    serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -988,11 +1016,7 @@ class ScanReportAssertionView(ListView):
         context = super().get_context_data(**kwargs)
 
         x = ScanReport.objects.get(pk=self.kwargs.get("pk"))
-        context.update(
-            {
-                "scan_report": x,
-            }
-        )
+        context.update({"scan_report": x})
         return context
 
     def get_queryset(self):
@@ -1123,11 +1147,7 @@ class DataDictionaryListView(ListView):
         else:
             scan_report = None
 
-        context.update(
-            {
-                "scan_report": scan_report,
-            }
-        )
+        context.update({"scan_report": scan_report})
 
         return context
 
