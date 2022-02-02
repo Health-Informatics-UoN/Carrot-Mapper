@@ -146,7 +146,7 @@ urlpatterns = [
         name="dataset_list",
     ),
     path(
-        r"api/datasets/<str:pk>",
+        r"api/datasets/<int:pk>",
         views.DatasetRetrieveView.as_view(),
         name="datasets_retrieve",
     ),
