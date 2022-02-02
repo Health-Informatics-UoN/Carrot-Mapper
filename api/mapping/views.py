@@ -914,14 +914,14 @@ class ScanReportFormView(FormView):
         # Create random alphanumeric to link scan report to data dictionary
         # Create datetime stamp for scan report and data dictionary upload time
         rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
-        dt = "{:%Y%m%d-%H%M%S_}".format(datetime.datetime.now())
+        dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             data_partner=form.cleaned_data["data_partner"],
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
-            name=f"{os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]}_{dt}{rand}.xlsx",
+            name=f"{os.path.splitext(str(form.cleaned_data.get('scan_report_file')))[0]}_{dt}_{rand}.xlsx",
         )
 
         scan_report.author = self.request.user
@@ -957,7 +957,7 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}_{dt}{rand}.csv",
+                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}_{dt}_{rand}.csv",
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
