@@ -242,6 +242,13 @@ urlpatterns = [
         views.CCPasswordChangeDoneView.as_view(),
         name="password_change_done",
     ),
+    # Project URLs
+    path("projects", views.ProjectListView.as_view(), name="project_list"),
+    path(
+        "projects/<int:pk>",
+        views.ProjectRetrieveView.as_view(),
+        name="project_retrieve",
+    ),
 ]
 # if settings.DEBUG: # new
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

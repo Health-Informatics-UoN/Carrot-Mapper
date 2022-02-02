@@ -1,7 +1,7 @@
 
 const authToken = window.a
 const api = window.u+'api'
-const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
+const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
@@ -162,7 +162,8 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'condition_occurrence': ['condition_start_datetime','condition_end_datetime'],
         'measurement':['measurement_datetime'],
         'observation':['observation_datetime'],
-        'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime']
+        'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
+	'procedure_occurrence':['procedure_datetime']
         }
     const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
     // if a destination field can't be found for concept domain, return error
