@@ -218,7 +218,7 @@ class ScanReportViewSet(viewsets.ModelViewSet):
 class DatasetList(generics.ListCreateAPIView):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    permission_classes = [IsAdminUser]
+    #permission_classes = [IsAdminUser]
 
 class DatasetValue(generics.ListCreateAPIView):
     queryset = Dataset.objects.all()
