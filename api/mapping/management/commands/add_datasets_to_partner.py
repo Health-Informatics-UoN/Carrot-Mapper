@@ -18,7 +18,7 @@ class Command(BaseCommand):
             nargs="*",
             help="""(Optional) The names of the dataset(s) to add to the data partner.
             By default find all datasets with no data partner and add them to the specified
-            data partner or to the data partner of the dataset's first scan report.
+            data partner.
             """,
         )
 
@@ -45,10 +45,5 @@ class Command(BaseCommand):
         print(f"Attaching datasets to Data Partner: {data_partner_name}")
         for dataset in orphaned_datasets:
             data_partner, _ = DataPartner.objects.get_or_create(name=data_partner_name)
-            # Use the first scan report's data partner if it exists
-            if partner_from_scanreport := dataset.scan_reports.first():
-                dataset.data_partner = partner_from_scanreport.data_partner
-            # Else, use the one specified in the command line
-            else:
-                dataset.data_partner = data_partner
+            dataset.data_partner = data_partner
             dataset.save()
