@@ -1,17 +1,12 @@
 from django.db import models
 
+
 class ConceptSynonym(models.Model):
-    concept_id = models.IntegerField(
-        primary_key=True
-    )
-    
-    concept_synonym_name = models.CharField(
-        max_length=1000
-    )
+    concept_id = models.IntegerField(primary_key=True)
 
-    language_concept_id = models.IntegerField(
+    concept_synonym_name = models.CharField(max_length=1000)
 
-    )
+    language_concept_id = models.IntegerField()
 
     class Meta:
         managed = False
