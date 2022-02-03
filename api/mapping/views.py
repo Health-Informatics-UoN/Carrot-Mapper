@@ -8,7 +8,7 @@ import datetime
 from azure.storage.queue import QueueClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (
@@ -32,6 +32,7 @@ from .serializers import (
     GetRulesJSON,
     GetRulesList,
     UserSerializer,
+    DatasetSerializer,
     ProjectSerializer,
     ProjectNameSerializer,
 )
@@ -106,6 +107,7 @@ from .models import (
     MappingRule,
     ScanReportConcept,
     ClassificationSystem,
+    Dataset,
 )
 from .permissions import CanViewProject
 from .services import download_data_dictionary_blob
@@ -239,6 +241,28 @@ class ScanReportViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class DatasetListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
+
+    queryset = Dataset.objects.all()
+    serializer_class = DatasetSerializer
+    # permission_classes = []
+
+
+class DatasetRetrieveView(generics.RetrieveAPIView):
+    """
+    This view should return a single dataset from an id
+    """
+
+    serializer_class = DatasetSerializer
+    # permission_classes = []
+    def get_queryset(self):
+        qs = Dataset.objects.filter(id=self.kwargs["pk"])
+        return qs
 
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
