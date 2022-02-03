@@ -381,8 +381,6 @@ class Dataset(BaseModel):
         on_delete=models.CASCADE,
         related_name="datasets",
         related_query_name="dataset",
-        # TODO: dis-allow null after all DBs are migrated
-        null=True,
     )
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
