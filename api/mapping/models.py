@@ -151,13 +151,6 @@ class ScanReport(BaseModel):
     To come
     """
 
-    data_partner = models.ForeignKey(
-        DataPartner,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
