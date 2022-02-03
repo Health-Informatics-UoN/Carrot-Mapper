@@ -30,7 +30,7 @@ class Command(BaseCommand):
         data_partner_name = options.get("data_partner")
         dataset_names = options.get("datasets")
 
-        print(f"Datasets will be added to Data Partner: {data_partner_name}")
+        print(f"Datasets will be added to Data Partner: {data_partner_name}.")
 
         if dataset_names:
             # Get only the specified datasets
@@ -42,13 +42,22 @@ class Command(BaseCommand):
             orphaned_datasets = Dataset.objects.filter(data_partner=None)
 
         # Attach datasets to the data partner
-        print(f"Attaching datasets to Data Partner: {data_partner_name}")
         for dataset in orphaned_datasets:
-            data_partner, _ = DataPartner.objects.get_or_create(name=data_partner_name)
             # Use the first scan report's data partner if it exists
             if partner_from_scanreport := dataset.scan_reports.first():
+                print(
+                    f"{dataset.name}'s scan reports belong to {partner_from_scanreport.data_partner.name}."
+                )
+                print(
+                    f"Attaching {dataset.name} to Data Partner: {partner_from_scanreport.data_partner.name}."
+                )
                 dataset.data_partner = partner_from_scanreport.data_partner
             # Else, use the one specified in the command line
             else:
+                print(f"{dataset.name} is unpartnered.")
+                print(f"Attaching {dataset.name} to Data Partner: {data_partner.name}.")
+                data_partner, _ = DataPartner.objects.get_or_create(
+                    name=data_partner_name
+                )
                 dataset.data_partner = data_partner
             dataset.save()
