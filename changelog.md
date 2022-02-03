@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v1.5.0
+* Added Project and Dataset tables to the database.
+* Added `add_datasets_to_partner` management command.
+* Removed data_partner field from ScanReport. Added data_partner field to Dataset.
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migrations to add data_partner field to __Dataset__. Allow the field to be NULL.
+    2. Run the `add_datasets_to_partner` command.
+    3. Create a migration to remove the data_partner field from __ScanReport__ and remove the NULL constraint from data_partner from __Dataset__. 
+
 ## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
   archived will now be reused by new Scan Reports as they are uploaded.
