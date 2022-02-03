@@ -2,7 +2,7 @@
 
 Please append a line to the changelog for each change made.
 
-## v1.4-beta
+## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
   archived will now be reused by new Scan Reports as they are uploaded.
 * Scan Reports and Data Dictionaries can be downloaded from the ScanReportTables page
