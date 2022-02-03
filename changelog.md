@@ -2,7 +2,7 @@
 
 Please append a line to the changelog for each change made.
 
-## v1.5.0
+## v1.5.0-beta
 * Added Project and Dataset tables to the database.
 * Added `add_datasets_to_partner` management command.
 * Removed data_partner field from ScanReport. Added data_partner field to Dataset.
