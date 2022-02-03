@@ -67,6 +67,7 @@ class DataPartner(BaseModel):
     """
 
     name = models.CharField(max_length=64)
+    # `datasets` field added by FK field in `Dataset`
 
     class Meta:
         verbose_name = "Data Partner"
@@ -382,6 +383,14 @@ class Dataset(BaseModel):
     """
 
     name = models.CharField(max_length=100)
+    data_partner = models.ForeignKey(
+        DataPartner,
+        on_delete=models.CASCADE,
+        related_name="datasets",
+        related_query_name="dataset",
+        # TODO: dis-allow null after all DBs are migrated
+        null=True,
+    )
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
 
