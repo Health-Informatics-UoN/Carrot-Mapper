@@ -101,20 +101,34 @@ const Home = () => {
         // sort scan reports
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // create a list of unique datapartners and make a batch query to get their data
-        const dataPartnerObject = {}
+        const datasetObject = {};
         scanreports.map(scanreport => {
-            dataPartnerObject[scanreport.data_partner] = true
+            datasetObject[scanreport.parent_dataset] = true;
         })
-        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject))
-        const dataPartnerPromises = []
+        const datasetIds = Object.keys(datasetObject)
+        const datasetPromises = [];
+        for (let i = 0; i < datasetIds.length; i++) {
+            datasetPromises.push(useGet(`/datasets/${datasetIds[i]}`));
+        }
+        let datasets = await Promise.all(datasetPromises)
+        datasets = [].concat.apply([], datasets)
+        datasets.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset == element.id ? { ...scanreport, parent_dataset: element } : scanreport);
+        });
+        const dataPartnerObject = {};
+        datasets.map((dataset) => {
+            dataPartnerObject[dataset.data_partner] = true;
+        });
+        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
+        const dataPartnerPromises = [];
         for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`))
+            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
         }
         let dataPartners = await Promise.all(dataPartnerPromises)
-        dataPartners = [].concat.apply([], dataPartners)
-        dataPartners.forEach(element => {
-            scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
-        })
+        dataPartners = dataPartners[0]
+        dataPartners.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport);
+        });
         // create a list of scan report id's and batch query their count stats
         const scanreportIds = chunkIds(scanreports.map(scanreport => scanreport.id))
         const countPromises = [];
