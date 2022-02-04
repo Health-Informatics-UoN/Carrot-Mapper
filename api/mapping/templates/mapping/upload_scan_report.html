@@ -12,11 +12,6 @@
 <h2>New Scan Report</h2>
 
 <form method="post" name="simpleForm" id="simpleForm" action="#" enctype="multipart/form-data">{% csrf_token %}
-    <div class="mb-3">
-        {{ form.data_partner.errors }}
-        <label class="form-label" id='data_partner'>{{ form.data_partner.label }}</label>
-        {{ form.data_partner }}
-    </div>
 
     <div class="mb-3">
         {{ form.dataset.errors }}
