@@ -392,6 +392,12 @@ class Dataset(BaseModel):
         choices=VisibilityChoices.choices,
         default=VisibilityChoices.PUBLIC,
     )
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_viewings",
+        related_query_name="dataset_viewing",
+        blank=True
+    )
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
 
