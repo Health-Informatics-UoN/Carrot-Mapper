@@ -196,6 +196,12 @@ class ScanReport(BaseModel):
         blank=True,
     )
 
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
+
     def __str__(self):
         return str(self.id)
 
