@@ -202,6 +202,13 @@ class ScanReport(BaseModel):
         default=VisibilityChoices.PUBLIC,
     )
 
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="scanreport_viewings",
+        related_query_name="scanreport_viewing",
+        blank=True
+    )
+
     def __str__(self):
         return str(self.id)
 
