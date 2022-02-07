@@ -387,6 +387,11 @@ class Dataset(BaseModel):
         related_name="datasets",
         related_query_name="dataset",
     )
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
 
