@@ -37,6 +37,11 @@ class CreationType(models.TextChoices):
     Reuse = "R", "Reuse"
 
 
+class VisibilityChoices(models.TextChoices):
+    PUBLIC = "PUBLIC", "Public"
+    RESTRICTED = "RESTRICTED", "Restricted"
+
+
 class BaseModel(models.Model):
     """
     To come
