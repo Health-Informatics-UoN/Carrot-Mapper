@@ -18,11 +18,6 @@ class ShowNameChoiceField(ModelChoiceField):
 
 
 class ScanReportForm(forms.Form):
-    data_partner = ShowNameChoiceField(
-        label="Data Partner",
-        queryset=DataPartner.objects.order_by("name"),
-        widget=forms.Select(attrs={"class": "form-control"}),
-    )
     dataset = forms.CharField(
         label="Scan Report name",
         widget=forms.TextInput(attrs={"class": "form-control"}),
@@ -45,7 +40,7 @@ class ScanReportForm(forms.Form):
 
     class Meta:
         model = ScanReport
-        fields = ("data_partner", "dataset", "scan_report_file", "parent_dataset")
+        fields = ("dataset", "scan_report_file", "parent_dataset")
 
     def clean_data_dictionary_file(self):
 
