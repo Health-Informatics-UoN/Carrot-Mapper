@@ -20,7 +20,8 @@ class CanViewDataset(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Return `True` if the User's ID is in the Project's members.
+        Return `True` if, the dataset is 'public' and the User's ID is in the Project's members,
+        or, the dataset is 'restricted' and the User's ID is in a project the User is a member of.
         """
         visibility = obj.visibility
 
@@ -34,11 +35,10 @@ class CanViewDataset(permissions.BasePermission):
         elif visibility == "PUBLIC":
             # filter by projects that have dataset obj.parent_dataset
             # filter by projects that have user as a member
-            self.message = "You are not part of any projects for this dataset"
+            self.message = "You are not a member of any projects for this dataset"
             return Project.objects.filter(
                 datasets__id=obj.id, members__id=request.user.id
             ).exists()
-        print("VISIBILITY IS", visibility)
         return False
 
 
@@ -47,7 +47,8 @@ class CanViewScanReport(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Return `True` if the User's ID is in the Project's members.
+        Return `True` if, the scan report is 'public' and the User's ID is in the Project's members,
+        or, the scan report is 'restricted' and the User's ID is in a project the User is a member of.
         """
         visibility = obj.visibility
         # if the visibility is restricted
@@ -61,7 +62,7 @@ class CanViewScanReport(permissions.BasePermission):
             # get projects
             # filter by projects that have dataset obj.parent_dataset
             # filter by projects that have user as a member
-            self.message = "You are not part of any projects for this scan report"
+            self.message = "You are not a member of any projects for this scan report"
             return Project.objects.filter(
                 datasets__id=obj.parent_dataset, members__id=request.user.id
             ).exists()
