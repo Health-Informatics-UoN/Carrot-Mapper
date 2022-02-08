@@ -110,7 +110,7 @@ DATABASES = {
         "TEST": {
             "NAME": "throwaway-db",
             "MIRROR": "default",
-        }
+        },
     }
 }
 
