@@ -107,6 +107,10 @@ DATABASES = {
         "NAME": os.getenv("COCONNECT_DB_NAME"),
         "USER": os.getenv("COCONNECT_DB_USER"),
         "PASSWORD": os.getenv("COCONNECT_DB_PASSWORD"),
+        "TEST": {
+            "NAME": "throwaway-db",
+            "MIRROR": "default",
+        }
     }
 }
 
