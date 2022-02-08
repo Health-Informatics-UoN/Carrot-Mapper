@@ -109,7 +109,11 @@ from .models import (
     ClassificationSystem,
     Dataset,
 )
-from .permissions import CanViewProject
+from .permissions import (
+    CanViewProject,
+    CanViewDataset,
+    CanViewScanReport,
+)
 from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
@@ -250,7 +254,7 @@ class DatasetListView(generics.ListAPIView):
 
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    # permission_classes = []
+    
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -259,7 +263,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    # permission_classes = []
+    permission_classes = [CanViewDataset]
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs["pk"])
         return qs
