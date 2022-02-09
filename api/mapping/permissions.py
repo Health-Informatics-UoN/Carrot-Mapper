@@ -64,7 +64,7 @@ class CanViewScanReport(permissions.BasePermission):
             # filter by projects that have user as a member
             self.message = "You are not a member of any projects for this scan report"
             return Project.objects.filter(
-                datasets__id=obj.parent_dataset, members__id=request.user.id
+                datasets__id=obj.parent_dataset.id, members__id=request.user.id
             ).exists()
 
         return False
