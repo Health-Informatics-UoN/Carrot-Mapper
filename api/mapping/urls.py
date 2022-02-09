@@ -41,7 +41,6 @@ routers.register(r"users", views.UserViewSet, basename="users")
 routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
 
 
-
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
