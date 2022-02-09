@@ -9,9 +9,9 @@ import {
     ModalCloseButton,
     Button,
   } from '@chakra-ui/react'
-function AnalysisModal({ isOpenAnalse, onOpenAnalyse, onCloseAnalyse, children }) {
+function AnalysisModal({ isOpenAnalyse, onOpenAnalyse, onCloseAnalyse, children }) {
     return (
-        <Modal isOpenAnalse={isOpenAnalse} onCloseAnalyse={onCloseAnalyse} size={'full'}>
+        <Modal isOpen={isOpenAnalyse} onClose={onCloseAnalyse} size={'full'}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Analysis View</ModalHeader>
