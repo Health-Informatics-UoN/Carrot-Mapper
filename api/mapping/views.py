@@ -231,7 +231,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"]}
 
 
-class ScanReportViewSet(viewsets.ModelViewSet):
+class ScanReportListViewSet(generics.ListAPIView):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportSerializer
 
