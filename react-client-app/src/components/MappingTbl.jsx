@@ -45,8 +45,7 @@ const MappingTbl = () => {
     const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
-    const {isOpen, onOpen, onClose } = useDisclosure()
-    const {isOpenAnalyse, onOpenAnalyse, onCloseAnalyse } = useDisclosure()
+    const {isOpen:isOpenAnalyse, onOpen:onOpenAnalyse, onClose:onCloseAnalyse } = useDisclosure()
     
 
 
