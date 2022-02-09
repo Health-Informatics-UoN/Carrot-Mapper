@@ -108,7 +108,7 @@ const Home = () => {
         const datasetIds = chunkIds(Object.keys(datasetObject))
         const datasetPromises = []
         for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i]}`))
+            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i].join()}`))
         }
         let datasets = await Promise.all(datasetPromises)
         datasets = [].concat.apply([], datasets)
