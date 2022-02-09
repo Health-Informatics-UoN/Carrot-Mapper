@@ -246,6 +246,15 @@ class ScanReportViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+class ScanReportRetrieveView(generics.RetrieveAPIView):
+    """
+    This view should return a single scanreport from an id
+    """
+    serializer_class = ScanReportSerializer
+    permission_classes = [CanViewScanReport]
+    def get_queryset(self):
+        qs = ScanReport.objects.filter(id=self.kwargs["pk"])
+        return qs
 
 class DatasetListView(generics.ListAPIView):
     """

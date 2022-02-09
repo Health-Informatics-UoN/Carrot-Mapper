@@ -151,6 +151,11 @@ urlpatterns = [
         name="datasets_retrieve",
     ),
     path(
+        r"api/scanreports/<int:pk>",
+        views.ScanReportRetrieveView.as_view(),
+        name="scanreports_retrieve",
+    ),
+    path(
         r"api/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
