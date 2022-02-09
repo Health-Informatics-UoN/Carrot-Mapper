@@ -1,6 +1,8 @@
+from calendar import c
 import json
 import io
 import csv
+import time
 from datetime import datetime
 
 from django.contrib import messages
@@ -12,6 +14,7 @@ from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, Map
 from graphviz import Digraph
 
 from django.http import HttpResponse
+from django.db.models import Q
 
 
 class NonStandardConceptMapsToSelf(Exception):
@@ -613,6 +616,9 @@ def get_mapping_rules_json(structural_mapping_rules):
     # add the metadata and cdm object together
     return {"metadata": metadata, "cdm": cdm}
 
+    # add the metadata and cdm object together
+    return {"metadata": metadata, "cdm": cdm}
+
 
 def download_mapping_rules(request, qs):
     # get the mapping rules
@@ -846,27 +852,47 @@ def remove_mapping_rules(request, scan_report_id):
 def analyse_concepts(scan_report_id):
     scan_report = ScanReport.objects.get(id=scan_report_id)
     all_scan_reports = ScanReport.objects.all().exclude(id=scan_report_id)
-    mapping_rules = MappingRule.objects.all().filter(scan_report_id=scan_report_id)
+    # mapping_rules = MappingRule.objects.all().filter(scan_report_id=scan_report_id)
     all_mapping_rules = MappingRule.objects.all().exclude(scan_report_id=scan_report_id)
 
-    print(mapping_rules)
-    for rule in mapping_rules:
-        print("Concept code", rule.concept.concept.concept_code)
-        concept = ScanReportConcept.objects.filter(concept=rule.concept.concept)
-        conceptID = rule.concept.concept.concept_id
+    mapping_rules = (
+        MappingRule.objects.all()
+        .filter(scan_report_id=scan_report_id)
+        .values_list("concept__concept", flat=True)
+        .distinct()
+    )
+    all_mapping_rules = MappingRule.objects.exclude(
+        scan_report_id=scan_report_id
+    ).values_list("concept__concept", flat=True)
+    descendants_list = []
+    ancestors_list = []
 
-        print("Concept ID", conceptID)
-        print("Concept Name", rule.concept.concept.concept_name)
-        concept_ancestors = ConceptAncestor.objects.filter(
-            descendant_concept_id=conceptID
-        )
-        ancestors_dict = {}
-        for ancestor in concept_ancestors:
-            ancestors_dict.update(
-                {ancestor.ancestor_concept_id: ancestor.descendant_concept_id}
-            )
-            separation = ancestor.min_levels_of_separation
-    print(ancestors_dict)
+    for rule in mapping_rules:
+        # print("Concept ID",conceptID)
+        # print("Concept name",concept_name )
+        # print("Concept ID",conceptID)
+        # print("Concept Name",rule.concept.concept.concept_name)
+
+        try:
+            descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
+            ancestors = ConceptAncestor.objects.filter(descendant_concept_id=rule)
+            for descendant in descendants:
+                desc = descendant.descendant_concept_id
+                if (desc in all_mapping_rules) & (desc != rule):
+                    concept = Concept.objects.get(concept_id=desc)
+                    descendants_list.append((desc, concept.concept_name))
+            for ancestor in ancestors:
+                anc = ancestor.ancestor_concept_id
+                if (anc in all_mapping_rules) & (anc != rule):
+                    concept = Concept.objects.get(concept_id=anc)
+                    ancestors_list.append((anc, concept.concept_name))
+
+        except:
+            pass
+
+    # print(ancestors_list)
+    # print(descendants_list)
+    return {"ancestors": ancestors_list, "descendants": descendants_list}
 
     # for scanreport_id in all_scan_reports:
     #     sr_mappings=MappingRule.objects.all().filter(scan_report_id=scanreport_id)

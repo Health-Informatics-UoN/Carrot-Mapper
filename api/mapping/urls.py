@@ -122,6 +122,7 @@ routers.register(r"mappingruleslist", views.RulesList, basename="getlist")
 routers.register(
     r"mappingrulesfilter", views.MappingRuleFilterViewSet, basename="mappingrulefilter"
 )
+routers.register(r"analyse", views.AnalyseRules, basename="getanalysis")
 
 urlpatterns = [
     path(r"api/countstats/", views.CountStats.as_view(), name="countstats"),

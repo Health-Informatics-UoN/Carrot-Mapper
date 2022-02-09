@@ -21,14 +21,18 @@ import { ArrowForwardIcon } from '@chakra-ui/icons'
 import { useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
 import MappingModal from './MappingModal'
+import AnalysisModal from './AnalysisModal'
 import SummaryTbl from './SummaryTbl'
 import RulesTbl from './RulesTbl'
+import AnalysisTbl from './AnalysisTbl'
+import ConceptAnalysis from './ConceptAnalysis'
 
 
 
 const MappingTbl = () => {
     const scan_report_id = window.location.href.split("scanreports/")[1].split("/")[0]
     const [values, setValues] = useState([]);
+    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -41,7 +45,10 @@ const MappingTbl = () => {
     const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
-    const { isOpen, onOpen, onClose } = useDisclosure()
+    const {isOpen, onOpen, onClose } = useDisclosure()
+    const {isOpenAnalyse, onOpenAnalyse, onCloseAnalyse } = useDisclosure()
+    
+
 
     useEffect(() => {
         // on initial load of the page,
@@ -177,10 +184,20 @@ const MappingTbl = () => {
         }
     };
 
-    const analyseConcepts = () => {
-        window.analyseConcepts()
+    useEffect(() => {
+        useGet(`/analyse/${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
+            setData(res)
+            setLoading(false);
+            setLoadingMessage("");
+            console.log(res);
+        })
+            .catch(err => {
+                setLoading(false);
+                setLoadingMessage("");
+                setError("An error has occured while fetching the rules")
+            })
         
-    };
+    }, []);
 
     if (loading) {
         //Render Loading State
@@ -200,6 +217,9 @@ const MappingTbl = () => {
                 filters={filters}removeFilter={removeFilter} setDestinationFilter={setDestinationFilter}setSourceFilter={setSourceFilter}
                 destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter}/>
             </MappingModal>
+            <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
+                <ConceptAnalysis data={data} values={values}filters={filters}/>
+            </AnalysisModal>
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadRules(setDownloading) }}>Download Mapping JSON</Button>
@@ -207,7 +227,7 @@ const MappingTbl = () => {
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
                 <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
                 <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
-                <Button variant="blue" onClick={() => { analyseConcepts() }}>Analyse Rules</Button>
+                <Button variant="blue" onClick={onOpenAnalyse}>Analyse Rules</Button>
             </HStack>
             
             <div>

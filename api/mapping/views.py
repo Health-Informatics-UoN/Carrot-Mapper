@@ -18,6 +18,7 @@ from rest_framework.generics import (
 from rest_framework.renderers import JSONRenderer
 
 from .serializers import (
+    GetRulesAnalysis,
     ScanReportSerializer,
     ScanReportTableSerializer,
     ScanReportFieldSerializer,
@@ -419,6 +420,13 @@ class DownloadJSON(viewsets.ModelViewSet):
 class RulesList(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()
     serializer_class = GetRulesList
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["id"]
+
+
+class AnalyseRules(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = GetRulesAnalysis
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["id"]
 
@@ -876,21 +884,26 @@ class StructuralMappingTableListView(ListView):
                     request,
                     f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
                 )
-
             return redirect(request.path)
 
         elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request, qs)
-
         elif request.POST.get("analyse_concepts") is not None:
             qs = self.get_queryset()
             analyse_concepts(self.kwargs.get("pk"))
             return redirect(request.path)
-
         else:
             messages.error(request, "not working right now!")
             return redirect(request.path)
+
+        # elif request.POST.get("get_svg") is not None:
+        #     qs = self.get_queryset()
+        #     return view_mapping_rules(request, qs)
+
+        # else:
+        #     messages.error(request, "not working right now!")
+        #     return redirect(request.path)
 
     def get_queryset(self):
 
@@ -993,9 +1006,14 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=modify_filename(
-                    form.cleaned_data.get("data_dictionary_file"), dt, rand
-                ),
+                name=os.path.splitext(
+                    str(form.cleaned_data.get("data_dictionary_file"))
+                )[0]
+                + "_"
+                + dt
+                + rand
+                + ".csv",
+                scan_report=scan_report,
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary

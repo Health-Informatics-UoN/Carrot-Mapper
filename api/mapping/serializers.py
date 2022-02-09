@@ -27,7 +27,11 @@ from mapping.models import (
     Project,
 )
 
-from .services_rules import get_mapping_rules_json, get_mapping_rules_list
+from .services_rules import (
+    analyse_concepts,
+    get_mapping_rules_json,
+    get_mapping_rules_list,
+)
 
 
 class ConceptSerializer(serializers.ModelSerializer):
@@ -229,3 +233,14 @@ class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
             }
 
         return rules
+
+
+class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ScanReport
+        fields = "__all__"
+
+    def to_representation(self, scan_report):
+        # qs = MappingRule.objects.filter(scan_report=scan_report)
+        analysis = analyse_concepts(scan_report.id)
+        return analysis
