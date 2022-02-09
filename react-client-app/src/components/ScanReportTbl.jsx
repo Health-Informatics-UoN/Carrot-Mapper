@@ -43,15 +43,15 @@ const ScanReportTbl = (props) => {
             scanreport.created_at = created_at;
         });
 
-        const authorIds = chunkIds(Object.keys(authorObject));
-        const datasetIds = Object.keys(datasetObject)
+        const authorIds = chunkIds(Object.keys(authorObject))
+        const datasetIds = chunkIds(Object.keys(datasetObject))
         const authorPromises = [];
         const datasetPromises = [];
         for (let i = 0; i < authorIds.length; i++) {
             authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
         }
         for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasets/${datasetIds[i]}`));
+            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i]}`));
         }
         const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
         const authors = [].concat.apply([], promises[0]);

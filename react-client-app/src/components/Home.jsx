@@ -105,10 +105,10 @@ const Home = () => {
         scanreports.map(scanreport => {
             datasetObject[scanreport.parent_dataset] = true
         })
-        const datasetIds = Object.keys(datasetObject)
+        const datasetIds = chunkIds(Object.keys(datasetObject))
         const datasetPromises = []
         for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasets/${datasetIds[i]}`))
+            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i]}`))
         }
         let datasets = await Promise.all(datasetPromises)
         datasets = [].concat.apply([], datasets)
