@@ -5,7 +5,13 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField
 
-from mapping.models import DataPartner, Dataset, ScanReportField, ScanReport, VisibilityChoices
+from mapping.models import (
+    DataPartner,
+    Dataset,
+    ScanReportField,
+    ScanReport,
+    VisibilityChoices,
+)
 import openpyxl
 import csv
 from io import BytesIO, StringIO
