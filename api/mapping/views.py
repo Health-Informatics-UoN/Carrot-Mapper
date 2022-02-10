@@ -109,7 +109,11 @@ from .models import (
     ClassificationSystem,
     Dataset,
 )
-from .permissions import CanViewProject
+from .permissions import (
+    CanViewProject,
+    CanViewDataset,
+    CanViewScanReport,
+)
 from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
@@ -227,7 +231,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"]}
 
 
-class ScanReportViewSet(viewsets.ModelViewSet):
+class ScanReportListViewSet(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportSerializer
 
@@ -243,6 +247,19 @@ class ScanReportViewSet(viewsets.ModelViewSet):
         )
 
 
+class ScanReportRetrieveView(generics.RetrieveAPIView):
+    """
+    This view should return a single scanreport from an id
+    """
+
+    serializer_class = ScanReportSerializer
+    permission_classes = [CanViewScanReport]
+
+    def get_queryset(self):
+        qs = ScanReport.objects.filter(id=self.kwargs["pk"])
+        return qs
+
+
 class DatasetListView(generics.ListAPIView):
     """
     API view to show all datasets.
@@ -250,7 +267,6 @@ class DatasetListView(generics.ListAPIView):
 
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
-    # permission_classes = []
 
 
 class DatasetFilterView(generics.ListAPIView):
@@ -272,7 +288,8 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    # permission_classes = []
+    permission_classes = [CanViewDataset]
+
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs["pk"])
         return qs
