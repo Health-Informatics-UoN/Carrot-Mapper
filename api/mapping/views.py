@@ -967,7 +967,6 @@ class ScanReportFormView(FormView):
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
-            data_partner=form.cleaned_data["data_partner"],
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
