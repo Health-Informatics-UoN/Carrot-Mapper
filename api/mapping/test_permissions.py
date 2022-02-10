@@ -2,9 +2,9 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
-from .permissions import CanViewProject
-from .views import ProjectRetrieveView
-from .models import Project
+from .permissions import CanViewProject, CanViewDataset
+from .views import ProjectRetrieveView, DatasetRetrieveView
+from .models import Project, Dataset
 
 
 class TestCanViewProject(TestCase):
@@ -66,3 +66,47 @@ class TestCanViewProject(TestCase):
         self.assertFalse(
             self.permission.has_object_permission(request, self.view, self.project)
         )
+
+
+class TestCanViewDataset(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who can see the Dataset whether restricted or public
+        self.restricted_user = User.objects.create(
+            username="gandalf", password="thegrey"
+        )
+        # Give them a token
+        Token.objects.create(user=self.restricted_user)
+
+        # Create user who can see the Dataset when public only
+        self.public_user = User.objects.create(
+            username="aragorn", password="elissar"
+        )
+        # Give them a token
+        Token.objects.create(user=self.public_user)
+
+        # Create user who cannot access the Project
+        self.user_without_perm = User.objects.create(
+            username="balrog", password="youshallnotpass"
+        )
+        # Give them a token
+        Token.objects.create(user=self.user_without_perm)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted users
+        self.project.members.add(self.public_user, self.restricted_user)
+        # Create the public dataset
+        self.public_dataset = Dataset.objects.create(name="Hobbits of the Fellowship")
+        # Create the restricted dataset
+        self.restricted_dataset = Dataset.objects.create(name="Ring bearers")
+        # Add the restricted users
+        self.restricted_dataset.viewers.add(self.restricted_user)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+        # The instance of the view required for the permission class
+        self.view = DatasetRetrieveView.as_view()
+
+        # The permission class
+        self.permission = CanViewDataset()
