@@ -40,8 +40,7 @@ routers.register(
 routers.register(r"users", views.UserViewSet, basename="users")
 routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
 
-routers.register(r"scanreports", views.ScanReportViewSet, basename="scanreports")
-
+routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
@@ -149,6 +148,16 @@ urlpatterns = [
         r"api/datasets/<int:pk>",
         views.DatasetRetrieveView.as_view(),
         name="datasets_retrieve",
+    ),
+    # path(
+    #     r"api/scanreports/",
+    #     views.ScanReportListViewSet.as_view(),
+    #     name="scanreport_list",
+    # ),
+    path(
+        r"api/scanreports/<int:pk>",
+        views.ScanReportRetrieveView.as_view(),
+        name="scanreports_retrieve",
     ),
     path(
         r"api/scanreports/<int:pk>/download/",
