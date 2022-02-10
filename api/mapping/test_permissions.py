@@ -256,10 +256,6 @@ class TestCanViewScanReport(TestCase):
         )
         # Add restriced user to restriced scan report
         self.restricted_scan_report.viewers.add(self.restricted_user)
-        # Add scan reports to dataset
-        self.dataset.scan_reports.add(
-            self.restricted_scan_report, self.public_scan_report
-        )
         # Add dataset to the project
         self.project.datasets.add(self.dataset)
 
@@ -272,7 +268,7 @@ class TestCanViewScanReport(TestCase):
         self.permission = CanViewScanReport()
 
     def test_non_project_member_cannot_view(self):
-        # Make the requests for the Dataset
+        # Make the requests for the Scan Report
         request1 = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
         request2 = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
         # Add the user to the requests; this is not automatic
@@ -304,7 +300,7 @@ class TestCanViewScanReport(TestCase):
         )
 
     def test_restricted_viewership(self):
-        # Make the request for the Dataset
+        # Make the request for the Scan Report
         request = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
@@ -336,7 +332,7 @@ class TestCanViewScanReport(TestCase):
         )
 
     def test_public_viewership(self):
-        # Make the request for the Dataset
+        # Make the request for the Scan Report
         request = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
