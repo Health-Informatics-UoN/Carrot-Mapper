@@ -257,10 +257,11 @@ class TestCanViewScanReport(TestCase):
         # Add restriced user to restriced scan report
         self.restricted_scan_report.viewers.add(self.restricted_user)
         # Add scan reports to dataset
-        self.dataset.scan_reports.add(self.restricted_scan_report, self.public_scan_report)
+        self.dataset.scan_reports.add(
+            self.restricted_scan_report, self.public_scan_report
+        )
         # Add dataset to the project
         self.project.datasets.add(self.dataset)
-        
 
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
