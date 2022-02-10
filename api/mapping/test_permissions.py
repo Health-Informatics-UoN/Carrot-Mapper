@@ -138,3 +138,31 @@ class TestCanViewDataset(TestCase):
         self.assertFalse(
             self.permission.has_object_permission(request2, self.view, self.public_dataset)
         )
+
+    def test_restricted_viewership(self):
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
+        # Add the user to the request; this is not automatic
+        request.user = self.restricted_user
+        # Authenticate the restricted user
+        force_authenticate(
+            request,
+            user=self.restricted_user,
+            token=self.restricted_user.auth_token,
+        )
+        # Assert the restricted has permission to see the view
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.restricted_dataset)
+        )
+        # change the request user to the public user
+        request.user = self.public_user
+        # Authenticate the public user
+        force_authenticate(
+            request,
+            user=self.public_user,
+            token=self.public_user.auth_token,
+        )
+        # Assert the public user has no permission to see the view
+        self.assertFalse(
+            self.permission.has_object_permission(request, self.view, self.restricted_dataset)
+        )
