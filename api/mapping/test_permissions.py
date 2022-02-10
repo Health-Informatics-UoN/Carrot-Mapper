@@ -79,9 +79,7 @@ class TestCanViewDataset(TestCase):
         Token.objects.create(user=self.restricted_user)
 
         # Create user who can see the Dataset when public only
-        self.public_user = User.objects.create(
-            username="aragorn", password="elissar"
-        )
+        self.public_user = User.objects.create(username="aragorn", password="elissar")
         # Give them a token
         Token.objects.create(user=self.public_user)
 
@@ -97,9 +95,13 @@ class TestCanViewDataset(TestCase):
         # Add the permitted users
         self.project.members.add(self.public_user, self.restricted_user)
         # Create the public dataset
-        self.public_dataset = Dataset.objects.create(name="Hobbits of the Fellowship", visibility="PUBLIC")
+        self.public_dataset = Dataset.objects.create(
+            name="Hobbits of the Fellowship", visibility="PUBLIC"
+        )
         # Create the restricted dataset
-        self.restricted_dataset = Dataset.objects.create(name="Ring bearers", visibility="RESTRICTED")
+        self.restricted_dataset = Dataset.objects.create(
+            name="Ring bearers", visibility="RESTRICTED"
+        )
         # Add the restricted users
         self.restricted_dataset.viewers.add(self.restricted_user)
         # Add datasets to the project
@@ -128,7 +130,9 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the user not on the project doesn't have permission to see the view
         self.assertFalse(
-            self.permission.has_object_permission(request1, self.view, self.restricted_dataset)
+            self.permission.has_object_permission(
+                request1, self.view, self.restricted_dataset
+            )
         )
         # Authenticate the user for second request
         force_authenticate(
@@ -138,7 +142,9 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the user not on the project doesn't have permission to see the view
         self.assertFalse(
-            self.permission.has_object_permission(request2, self.view, self.public_dataset)
+            self.permission.has_object_permission(
+                request2, self.view, self.public_dataset
+            )
         )
 
     def test_restricted_viewership(self):
@@ -154,7 +160,9 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the restricted has permission to see the view
         self.assertTrue(
-            self.permission.has_object_permission(request, self.view, self.restricted_dataset)
+            self.permission.has_object_permission(
+                request, self.view, self.restricted_dataset
+            )
         )
         # change the request user to the public user
         request.user = self.public_user
@@ -166,7 +174,9 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the public user has no permission to see the view
         self.assertFalse(
-            self.permission.has_object_permission(request, self.view, self.restricted_dataset)
+            self.permission.has_object_permission(
+                request, self.view, self.restricted_dataset
+            )
         )
 
     def test_public_viewership(self):
@@ -182,7 +192,9 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the restricted has permission to see the view
         self.assertTrue(
-            self.permission.has_object_permission(request, self.view, self.public_dataset)
+            self.permission.has_object_permission(
+                request, self.view, self.public_dataset
+            )
         )
         # change the request user to the public user
         request.user = self.public_user
@@ -194,5 +206,7 @@ class TestCanViewDataset(TestCase):
         )
         # Assert the public user has permission to see the view
         self.assertTrue(
-            self.permission.has_object_permission(request, self.view, self.public_dataset)
+            self.permission.has_object_permission(
+                request, self.view, self.public_dataset
+            )
         )
