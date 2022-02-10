@@ -967,6 +967,7 @@ class ScanReportFormView(FormView):
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
+            visibility=form.cleaned_data["visibility"],
         )
 
         scan_report.author = self.request.user
