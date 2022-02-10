@@ -37,6 +37,11 @@ class CreationType(models.TextChoices):
     Reuse = "R", "Reuse"
 
 
+class VisibilityChoices(models.TextChoices):
+    PUBLIC = "PUBLIC", "Public"
+    RESTRICTED = "RESTRICTED", "Restricted"
+
+
 class BaseModel(models.Model):
     """
     To come
@@ -188,6 +193,19 @@ class ScanReport(BaseModel):
         related_name="scan_reports",
         related_query_name="scan_report",
         null=True,
+        blank=True,
+    )
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
+
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="scanreport_viewings",
+        related_query_name="scanreport_viewing",
         blank=True,
     )
 
@@ -381,6 +399,17 @@ class Dataset(BaseModel):
         on_delete=models.CASCADE,
         related_name="datasets",
         related_query_name="dataset",
+    )
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_viewings",
+        related_query_name="dataset_viewing",
+        blank=True,
     )
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
