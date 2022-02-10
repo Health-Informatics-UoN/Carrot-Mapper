@@ -97,9 +97,9 @@ class TestCanViewDataset(TestCase):
         # Add the permitted users
         self.project.members.add(self.public_user, self.restricted_user)
         # Create the public dataset
-        self.public_dataset = Dataset.objects.create(name="Hobbits of the Fellowship")
+        self.public_dataset = Dataset.objects.create(name="Hobbits of the Fellowship", visibility="PUBLIC")
         # Create the restricted dataset
-        self.restricted_dataset = Dataset.objects.create(name="Ring bearers")
+        self.restricted_dataset = Dataset.objects.create(name="Ring bearers", visibility="RESTRICTED")
         # Add the restricted users
         self.restricted_dataset.viewers.add(self.restricted_user)
 
@@ -110,3 +110,31 @@ class TestCanViewDataset(TestCase):
 
         # The permission class
         self.permission = CanViewDataset()
+
+    def test_non_project_member_cannot_view(self):
+        # Make the requests for the Dataset
+        request1 = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
+        request2 = self.factory.get(f"api/datasets/{self.public_dataset.id}")
+        # Add the user to the requests; this is not automatic
+        request1.user = self.user_without_perm
+        request2.user = self.user_without_perm
+        # Authenticate the user for first request
+        force_authenticate(
+            request1,
+            user=self.user_without_perm,
+            token=self.user_without_perm.auth_token,
+        )
+        # Assert the user not on the project doesn't have permission to see the view
+        self.assertFalse(
+            self.permission.has_object_permission(request1, self.view, self.restricted_dataset)
+        )
+        # Authenticate the user for second request
+        force_authenticate(
+            request2,
+            user=self.user_without_perm,
+            token=self.user_without_perm.auth_token,
+        )
+        # Assert the user not on the project doesn't have permission to see the view
+        self.assertFalse(
+            self.permission.has_object_permission(request2, self.view, self.public_dataset)
+        )
