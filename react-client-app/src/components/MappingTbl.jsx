@@ -186,14 +186,11 @@ const MappingTbl = () => {
 
     useEffect(() => {
         useGet(`/analyse/${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
-            setData(res)
+            setData(res.data)
             setLoading(false);
             setLoadingMessage("");
-            console.log(res);
-            console.log('Object.entries')
-            console.log(
-            Object.entries(res)
-)
+            console.log(res.data);
+ 
         })
             .catch(err => {
                 setLoading(false);

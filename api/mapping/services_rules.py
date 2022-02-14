@@ -2,6 +2,7 @@ from calendar import c
 import json
 import io
 import csv
+from re import A
 import time
 from datetime import datetime
 
@@ -864,10 +865,13 @@ def analyse_concepts(scan_report_id):
     all_mapping_rules = MappingRule.objects.exclude(
         scan_report_id=scan_report_id
     ).values_list("concept__concept", flat=True)
-    descendants_list = []
+    data = []
+    descendant_list = []
     ancestors_list = []
 
     for rule in mapping_rules:
+        # rule_name = rule.concept.concept.concept_name
+        # rule = rule.concept.concept.concept_id
         # print("Concept ID",conceptID)
         # print("Concept name",concept_name )
         # print("Concept ID",conceptID)
@@ -876,23 +880,44 @@ def analyse_concepts(scan_report_id):
         try:
             descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
             ancestors = ConceptAncestor.objects.filter(descendant_concept_id=rule)
+
             for descendant in descendants:
                 desc = descendant.descendant_concept_id
                 if (desc in all_mapping_rules) & (desc != rule):
                     concept = Concept.objects.get(concept_id=desc)
-                    descendants_list.append((desc, concept.concept_name))
+                    rule_name = Concept.objects.get(concept_id=rule).concept_name
+                    descendant_list.append(
+                        {"d_id": desc, "d_name": concept.concept_name}
+                    )
             for ancestor in ancestors:
+
                 anc = ancestor.ancestor_concept_id
+
                 if (anc in all_mapping_rules) & (anc != rule):
                     concept = Concept.objects.get(concept_id=anc)
-                    ancestors_list.append((anc, concept.concept_name))
-
+                    rule_name = Concept.objects.get(concept_id=rule).concept_name
+                    ancestors_list.append(
+                        {
+                            "a_id": anc,
+                            "a_name": concept.concept_name,
+                        }
+                    )
+            data.append(
+                {
+                    "rule_id": rule,
+                    "rule_name": rule_name,
+                    "descendants": descendant_list,
+                    "ancestors": ancestors_list,
+                }
+            )
+            descendant_list = []
+            ancestors_list = []
         except:
             pass
 
     # print(ancestors_list)
     # print(descendants_list)
-    return {"ancestors": ancestors_list, "descendants": descendants_list}
+    return {"data": data}
 
     # for scanreport_id in all_scan_reports:
     #     sr_mappings=MappingRule.objects.all().filter(scan_report_id=scanreport_id)
@@ -901,4 +926,31 @@ def analyse_concepts(scan_report_id):
     #         try:
     #             print(ancestors_dict[concept])
     #         except:
-    #             continue
+
+
+#     #             continue
+# "descendants": {
+#     "descendant": [
+#         {"source_conceptid":"44784217",
+#         "conceptid":4088986,
+#         "concept_name":"Atrial escape complex"}
+#     ]
+# }
+# {["rule":
+#     {id:"44784217"
+#     descendants:[{"conceptid":4088986,
+#                 "concept_name":"Atrial escape complex"}],
+#     "ancestors":[{}]
+#     }
+# ]
+# ["rule":
+# {id:""
+# descendants:[{"conceptid":4088986,
+#             "concept_name":"Atrial escape complex",
+#             "source":236
+#         }],
+# "ancestors":[{}]
+# }
+
+# ]
+# }
