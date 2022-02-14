@@ -31,9 +31,9 @@ class CanViewDataset(permissions.BasePermission):
             self.message = "You must be granted permission to view this dataset"
             return obj.viewers.filter(id=request.user.id).exists()
         # if the visibility is public
-        # check if the user is a member in any projects the parent dataset is in
+        # check if the user is a member in any projects the dataset is in
         elif visibility == "PUBLIC":
-            # filter by projects that have dataset obj.parent_dataset
+            # filter by projects that have dataset obj.id
             # filter by projects that have user as a member
             self.message = "You are not a member of any projects for this dataset"
             return Project.objects.filter(
@@ -43,7 +43,7 @@ class CanViewDataset(permissions.BasePermission):
 
 
 class CanViewScanReport(permissions.BasePermission):
-    message = "You do not have permission to view this"
+    message = "You do not have permission to view this scan report"
 
     def has_object_permission(self, request, view, obj):
         """
