@@ -9,7 +9,15 @@ Please append a line to the changelog for each change made.
   * __IMPORTANT!__ Steps to enact this change:
     1. Create a migrations to add data_partner field to __Dataset__. Allow the field to be NULL.
     2. Run the `add_datasets_to_partner` command.
-    3. Create a migration to remove the data_partner field from __ScanReport__ and remove the NULL constraint from data_partner from __Dataset__. 
+    3. Create a migration to remove the data_partner field from __ScanReport__ and remove the NULL constraint from data_partner from __Dataset__.
+* Added visibility restrictions to Datasets and Scan Reports.
+  * "PUBLIC": anyone on the Project can view the Dataset or Scan Report.
+  * "RESTRICTED": only users in the `viewers` field of the Dataset or Scan Report can view.
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migration to add the `visibility` flag to __Dataset__. Set default to "PUBLIC".
+    2. Create a migration adding a `ManyToManyField` called `viewers` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
+    3. Create a migration to add the `visibility` flag to __ScanReport__. Set default to "PUBLIC".
+    4. Create a migration adding a `ManyToManyField` called `viewers` to __ScanReport__ linking it to `settings.AUTH_USER_MODEL`.
 
 ## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
