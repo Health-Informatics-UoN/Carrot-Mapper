@@ -18,20 +18,16 @@ class TestDatasetListView(TestCase):
 
         # Set up datasets
         self.public_dataset1 = Dataset.objects.create(
-            name="Places in Middle Earth",
-            visibility="PUBLIC"
+            name="Places in Middle Earth", visibility="PUBLIC"
         )
         self.public_dataset2 = Dataset.objects.create(
-            name="Places in Valinor",
-            visibility="PUBLIC"
+            name="Places in Valinor", visibility="PUBLIC"
         )
         self.public_dataset3 = Dataset.objects.create(
-            name="The Rings of Power",
-            visibility="PUBLIC"
+            name="The Rings of Power", visibility="PUBLIC"
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="Fellowship Members",
-            visibility="RESTRICTED"
+            name="Fellowship Members", visibility="RESTRICTED"
         )
         self.restricted_dataset.viewers.add(self.user1)
 
@@ -41,7 +37,7 @@ class TestDatasetListView(TestCase):
         self.project1.datasets.add(
             self.public_dataset1,
             self.public_dataset2,
-            self.restricted_dataset  # user2 can't see
+            self.restricted_dataset,  # user2 can't see
         )
         self.project2 = Project.objects.create(name="The Two Towers")
         self.project2.members.add(self.user1)
@@ -77,7 +73,7 @@ class TestDatasetListView(TestCase):
                 [
                     self.public_dataset1.id,
                     self.public_dataset2.id,
-                    self.restricted_dataset.id
+                    self.restricted_dataset.id,
                 ],
             )
 
@@ -109,7 +105,9 @@ class TestDatasetListView(TestCase):
 
     def test_dataset_filtering(self):
         # Make the request for the public_dataset1
-        request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset1.id})
+        request = self.factory.get(
+            f"api/datasets/", {"id__in": self.public_dataset1.id}
+        )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
         # Authenticate user1
@@ -126,7 +124,9 @@ class TestDatasetListView(TestCase):
         self.assertEqual(response_data[0].get("id"), self.public_dataset1.id)
 
         # Make the request for the public_dataset3
-        request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset3.id})
+        request = self.factory.get(
+            f"api/datasets/", {"id__in": self.public_dataset3.id}
+        )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
         # Authenticate user1
