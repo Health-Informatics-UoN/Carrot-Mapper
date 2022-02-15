@@ -262,33 +262,24 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
 
 class DatasetListView(generics.ListAPIView):
     """
-    API showing a list of Datasets associated to a Project.
-    The GET request requires a `project` param with the ID
-    of a specific project. The view returns 400 Bad Request
-    if `project` is not specified. 
+    API view to show all datasets.
     """
 
+    queryset = Dataset.objects.all()
+    serializer_class = DatasetSerializer
+
+
+class DatasetFilterView(generics.ListAPIView):
+    """
+    API view to filter datasets by list of id's.
+    """
+
+    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
-        "id": ["in", "exact"],
+        "id": ["in"],
     }
-
-    def get_queryset(self):
-        project_id = self.request.query_params.get("project")
-        return Dataset.objects.filter(
-            project__id=int(project_id),
-            project__members=self.request.user.id,
-        )
-
-    def get(self, request, *args, **kwargs):
-        if request.query_params.get("project"):
-            return super().get(request, *args, **kwargs)
-        else:
-            return Response(
-                data={"detail": "You must specify a project ID in the GET params."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
