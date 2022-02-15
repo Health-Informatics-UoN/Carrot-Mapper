@@ -262,7 +262,7 @@ class TestCanViewScanReport(TestCase):
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
         # The instance of the view required for the permission class
-        self.view = DatasetRetrieveView.as_view()
+        self.view = ScanReportRetrieveView.as_view()
 
         # The permission class
         self.permission = CanViewScanReport()
