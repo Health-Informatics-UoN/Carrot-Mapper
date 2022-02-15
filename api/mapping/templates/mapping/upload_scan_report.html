@@ -9,67 +9,14 @@
             reports</a></li>
     </ol>
 </nav>
-<h2>New Scan Report</h2>
 
-<form method="post" name="simpleForm" id="simpleForm" action="#" enctype="multipart/form-data">{% csrf_token %}
+<div> 
+    <div id='root'></div>
+    <script type="text/javascript" >
+        var a = "{{a}}"
+        var u = "{{u}}"
+    </script>
+    <script type="module" src="../../../static/javascript/react/src/uploadScanReport.js"></script>
 
-    <div class="mb-3">
-        {{ form.parent_dataset.errors }}
-        <label class="form-label" id='parent_dataset'>{{ form.parent_dataset.label }}</label>
-        {{ form.parent_dataset }}
-    </div>
-    
-    <div class="mb-3">
-        {{ form.dataset.errors }}
-        <label class="form-label">{{ form.dataset.label}}</label>
-        {{ form.dataset }}
-    </div>
-
-    <div class="mb-3">
-
-        <label class="form-label">{{ form.scan_report_file.label }}</label>
-        {{ form.scan_report_file }}
-        {%if form.scan_report_file.errors%}
-        <div class="alert alert-danger" role="alert">{{ form.scan_report_file.errors }}</div>
-        {%endif%}
-
-    </div>
-
-    <div class="mb-3">
-
-        <label class="form-label">{{ form.data_dictionary_file.label }}</label>
-        {{ form.data_dictionary_file }}
-        {%if form.data_dictionary_file.errors%}
-        <div class="alert alert-danger" role="alert">{{ form.data_dictionary_file.errors }}</div>
-        {%endif%}
-
-    </div>
-    <div class="row mx-auto">
-        <div class="spinner-border mx-auto d-none" name="spinner" id="spinner" role="status">
-          <span class="sr-only">Uploading...</span>
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary" id="btn">Submit</button>
-
-</form>
-<script>
-
-$("#simpleForm").on('submit',function(ev) {      
-        $.ajax({
-        type: "POST",
-        data: {
-        'csrfmiddlewaretoken': '{{ csrf_token }}',
-        },
-        beforeSend: function (data) {
-        $('#spinner').addClass('d-none');
-        },
-        success: function (data) {
-            $('#spinner').removeClass('d-none');
-        },
-        error: function(data,XMLHttpRequest, textStatus, errorThrown){
-            $('#spinner').addClass('d-none');
-        }
-	});
-  });
-</script>
+</div>
 {% endblock %}

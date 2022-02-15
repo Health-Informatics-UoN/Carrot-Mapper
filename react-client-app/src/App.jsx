@@ -11,6 +11,7 @@ import EditField from './components/EditField';
 import ScanReportTbl from './components/ScanReportTbl';
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
+import UploadScanReport from './components/UploadScanReport'
 const App = ({ page }) => {
 
     const handleDeleteConcept = (id, conceptId,valuesRef,setValues,setAlert,onOpen)=>{
@@ -261,6 +262,8 @@ const App = ({ page }) => {
                 return <EditTable />
             case "Update Field":
                 return <EditField setTitle={setTitle}/>
+            case "New Scan Report":
+                return <UploadScanReport setTitle={setTitle}/>
             default:
                 return <ScanReportTbl setTitle={setTitle}/>
         }

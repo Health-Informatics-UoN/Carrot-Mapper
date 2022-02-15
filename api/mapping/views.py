@@ -279,6 +279,7 @@ class DatasetFilterView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
+        "data_partner": ["in","exact"],
     }
 
 

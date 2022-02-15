@@ -25,6 +25,10 @@ const usePost = async (url,data) =>{
         body: JSON.stringify(data)    
     }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const res = await response.json();
     return res;
 }
