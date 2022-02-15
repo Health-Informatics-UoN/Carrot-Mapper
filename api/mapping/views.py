@@ -276,16 +276,17 @@ class DatasetListView(generics.ListAPIView):
         Return only the Datasets which are on projects a user is a member,
         which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
         """
-        public = Dataset.objects.filter(
-            project__members=self.request.user.id,
-            visibility="PUBLIC",
+        return Dataset.objects.filter(
+            Q(
+                project__members=self.request.user.id,
+                visibility="PUBLIC",
+            )
+            | Q(
+                project__members=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility="RESTRICTED",
+            )
         )
-        restricted = Dataset.objects.filter(
-            project__members=self.request.user.id,
-            viewers=self.request.user.id,
-            visibility="RESTRICTED"
-        )
-        return public.union(restricted)
 
 
 class DatasetFilterView(generics.ListAPIView):
