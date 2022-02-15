@@ -51,7 +51,7 @@ const ScanReportTbl = (props) => {
             authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
         }
         for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i].join()}`));
+            datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
         }
         const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
         const authors = [].concat.apply([], promises[0]);
