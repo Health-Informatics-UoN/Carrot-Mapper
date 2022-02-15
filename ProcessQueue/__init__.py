@@ -80,6 +80,8 @@ def process_scan_report_sheet_table(sheet):
         datetime.utcnow().strftime("%H:%M:%S.%fZ"),
         flush=True,
     )
+    sheet.reset_dimensions()
+    sheet.calculate_dimension(force=True)
     # Get header entries (skipping every second column which is just 'Frequency')
     # So headers = ['a', 'b']
     first_row = sheet[1]
@@ -99,8 +101,6 @@ def process_scan_report_sheet_table(sheet):
     # Iterate over all rows beyond the header - use the number of headers*2 to
     # set the maximum column rather than relying on sheet.max_col as this is not
     # always reliably updated by Excel etc.
-    sheet.reset_dimensions()
-    sheet.calculate_dimension(force=True)
     for row in sheet.iter_rows(
         min_col=1,
         max_col=len(headers) * 2,
