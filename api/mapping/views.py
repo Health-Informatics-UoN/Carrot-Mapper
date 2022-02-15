@@ -283,6 +283,7 @@ class DatasetListView(generics.ListAPIView):
         restricted = Dataset.objects.filter(
             project__members=self.request.user.id,
             viewers=self.request.user.id,
+            visibility="RESTRICTED"
         )
         return public.union(restricted)
 
