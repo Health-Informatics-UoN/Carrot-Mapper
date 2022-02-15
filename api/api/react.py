@@ -5,7 +5,7 @@ from mapping.models import Status
 
 def react(request):
     # TODO: this doesn't seem like the right to pass the token to React.
-    # It should probably be done in a cookie. But it's beyond the scope 
+    # It should probably be done in a cookie. But it's beyond the scope
     # of the current work for now.
     return {
         # "a": os.environ.get("COCONNECT_DB_AUTH_TOKEN")
