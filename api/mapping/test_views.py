@@ -56,17 +56,17 @@ class TestDatasetListView(TestCase):
         self.view = DatasetListView.as_view()
 
     def test_dataset_returns(self):
-        # Make the request for the Dataset
+        # Make the request for Datasets
         request = self.factory.get(f"api/datasets/")
         # Add user1 to the request; this is not automatic
         request.user = self.user1
-        # Authenticate the restricted user
+        # Authenticate the user1
         force_authenticate(
             request,
             user=self.user1,
             token=self.user1.auth_token,
         )
-        # Get the response
+        # Get the response data
         response_data = self.view(request).data
 
         # Assert user1 can only public_dataset1, public_dataset2
@@ -87,7 +87,7 @@ class TestDatasetListView(TestCase):
 
         # Add user2 to the request; this is not automatic
         request.user = self.user2
-        # Authenticate the restricted user
+        # Authenticate the user2
         force_authenticate(
             request,
             user=self.user2,
@@ -108,11 +108,11 @@ class TestDatasetListView(TestCase):
             self.assertNotEqual(obj.get("id"), self.public_dataset3.id)
 
     def test_dataset_filtering(self):
-        # Make the request for the Dataset
+        # Make the request for the public_dataset1
         request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset1.id})
         # Add user1 to the request; this is not automatic
         request.user = self.user1
-        # Authenticate the restricted user
+        # Authenticate user1
         force_authenticate(
             request,
             user=self.user1,
@@ -129,7 +129,7 @@ class TestDatasetListView(TestCase):
         request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset3.id})
         # Add user1 to the request; this is not automatic
         request.user = self.user1
-        # Authenticate the restricted user
+        # Authenticate user1
         force_authenticate(
             request,
             user=self.user1,
