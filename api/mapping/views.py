@@ -266,10 +266,6 @@ class DatasetListView(generics.ListAPIView):
     """
 
     serializer_class = DatasetSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "id": ["in"],
-    }
 
     def get_queryset(self):
         """
