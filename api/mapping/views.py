@@ -265,8 +265,26 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in"],
+    }
+
+    def get_queryset(self):
+        """
+        Return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+        public = Dataset.objects.filter(
+            project__members=self.request.user.id,
+            visibility="PUBLIC",
+        )
+        restricted = Dataset.objects.filter(
+            project__members=self.request.user.id,
+            viewers=self.request.user.id,
+        )
+        return public.union(restricted)
 
 
 class DatasetFilterView(generics.ListAPIView):
