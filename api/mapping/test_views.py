@@ -106,3 +106,37 @@ class TestDatasetListView(TestCase):
         # Assert user2 can't see public_dataset3
         for obj in response_data:
             self.assertNotEqual(obj.get("id"), self.public_dataset3.id)
+
+    def test_dataset_filtering(self):
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset1.id})
+        # Add user1 to the request; this is not automatic
+        request.user = self.user1
+        # Authenticate the restricted user
+        force_authenticate(
+            request,
+            user=self.user1,
+            token=self.user1.auth_token,
+        )
+        # Get the response
+        response_data = self.view(request).data
+
+        # Assert only got public_dataset1
+        self.assertEqual(len(response_data), 1)
+        self.assertEqual(response_data[0].get("id"), self.public_dataset1.id)
+
+        # Make the request for the public_dataset3
+        request = self.factory.get(f"api/datasets/", {"id__in": self.public_dataset3.id})
+        # Add user1 to the request; this is not automatic
+        request.user = self.user1
+        # Authenticate the restricted user
+        force_authenticate(
+            request,
+            user=self.user1,
+            token=self.user1.auth_token,
+        )
+        # Get the response
+        response_data = self.view(request).data
+
+        # Assert response is empty
+        self.assertEqual(response_data, [])
