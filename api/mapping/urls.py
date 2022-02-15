@@ -140,14 +140,9 @@ urlpatterns = [
         name="countstatsscanreporttablefield",
     ),
     path(
-        r"api/datasets/",
+        r"api/datasets",
         views.DatasetListView.as_view(),
         name="dataset_list",
-    ),
-    path(
-        r"api/datasetsfilter/",
-        views.DatasetFilterView.as_view(),
-        name="dataset_filter",
     ),
     path(
         r"api/datasets/<int:pk>",
