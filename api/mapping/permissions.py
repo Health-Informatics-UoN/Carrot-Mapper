@@ -54,10 +54,17 @@ class CanViewScanReport(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Return `True` if, the scan report is 'public' and the User's ID is in the Project's members,
-        or, the scan report is 'restricted' and the User's ID is in a project the User is a member of.
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - the ScanReport is 'RESTRICTED' and the User is a ScanReport viewer
+            - the ScanReport is 'PUBLIC' and the User is a member of a Project
+            that the ScanReport's parent Dataset is in.
         """
         visibility = obj.visibility
+        
+        # if the User is the `AZ_FUNCTION_USER` grant permission
+        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return True
         # if the visibility is restricted
         # check if the user is in the viewers field
         if visibility == "RESTRICTED":
