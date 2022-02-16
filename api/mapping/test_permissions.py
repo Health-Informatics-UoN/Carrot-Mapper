@@ -1,3 +1,4 @@
+import os
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -211,6 +212,41 @@ class TestCanViewDataset(TestCase):
             )
         )
 
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
+            self.permission.has_object_permission(
+                request, self.view, self.restricted_dataset
+            )
+        )
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/{self.public_dataset.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on public view
+        self.assertTrue(
+            self.permission.has_object_permission(
+                request, self.view, self.public_dataset
+            )
+        )
 
 class TestCanViewScanReport(TestCase):
     def setUp(self):
