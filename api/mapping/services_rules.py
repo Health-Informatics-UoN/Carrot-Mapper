@@ -3,7 +3,7 @@ import json
 import io
 import csv
 from re import A
-import time
+import itertools
 from datetime import datetime
 
 from django.contrib import messages
@@ -868,6 +868,17 @@ def analyse_concepts(scan_report_id):
     data = []
     descendant_list = []
     ancestors_list = []
+    # for i, val in enumerate(all_mapping_rules):
+    #     a.append(all_mapping_rules[i]["concept__concept"])
+
+    # a = all_mapping_rules
+
+    # a = [
+    #     {k: [x[2] for x in g]}
+    #     for k, g in itertools.groupby(all_mapping_rules, lambda x: x[0])
+    # ]
+
+    # map(lambda x: {x[0]: [x[1], x[2]]}, all_mapping_rules)
 
     for rule in mapping_rules:
         # rule_name = rule.concept.concept.concept_name
@@ -886,8 +897,20 @@ def analyse_concepts(scan_report_id):
                 if (desc in all_mapping_rules) & (desc != rule):
                     concept = Concept.objects.get(concept_id=desc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
+                    source_ids = (
+                        MappingRule.objects.filter(
+                            Q(concept__concept=desc)
+                            & Q(omop_field__field__contains="condition_concept_id")
+                        ).values_list(
+                            "source_field__id", "source_field__scan_report_table__id"
+                        )
+                    ).distinct()
                     descendant_list.append(
-                        {"d_id": desc, "d_name": concept.concept_name}
+                        {
+                            "d_id": desc,
+                            "d_name": concept.concept_name,
+                            "source": source_ids,
+                        }
                     )
             for ancestor in ancestors:
 
@@ -896,10 +919,22 @@ def analyse_concepts(scan_report_id):
                 if (anc in all_mapping_rules) & (anc != rule):
                     concept = Concept.objects.get(concept_id=anc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
+                    source_ids = (
+                        MappingRule.objects.filter(
+                            Q(concept__concept=anc)
+                            & Q(omop_field__field__contains="condition_concept_id")
+                        )
+                        .values_list(
+                            "source_field__id", "source_field__scan_report_table__id"
+                        )
+                        .distinct()
+                    )
+
                     ancestors_list.append(
                         {
                             "a_id": anc,
                             "a_name": concept.concept_name,
+                            "source": source_ids,
                         }
                     )
             data.append(
