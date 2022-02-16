@@ -61,7 +61,7 @@ class CanViewScanReport(permissions.BasePermission):
             that the ScanReport's parent Dataset is in.
         """
         visibility = obj.visibility
-        
+
         # if the User is the `AZ_FUNCTION_USER` grant permission
         if request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return True
