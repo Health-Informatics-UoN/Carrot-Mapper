@@ -268,6 +268,10 @@ class DatasetListView(generics.ListAPIView):
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
 
+class CreateDatasetView(generics.CreateAPIView):
+    serializer_class = DatasetSerializer
+    queryset = Dataset.objects.all()
+
 
 class DatasetFilterView(generics.ListAPIView):
     """

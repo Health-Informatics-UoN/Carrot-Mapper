@@ -154,6 +154,11 @@ urlpatterns = [
         views.DatasetRetrieveView.as_view(),
         name="datasets_retrieve",
     ),
+    path(
+        r"api/datasets/create/",
+        views.CreateDatasetView.as_view(),
+        name="dataset_create",
+    ),
     # path(
     #     r"api/scanreports/",
     #     views.ScanReportListViewSet.as_view(),
