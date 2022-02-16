@@ -80,6 +80,8 @@ def process_scan_report_sheet_table(sheet):
         datetime.utcnow().strftime("%H:%M:%S.%fZ"),
         flush=True,
     )
+    sheet.reset_dimensions()
+    sheet.calculate_dimension(force=True)
     # Get header entries (skipping every second column which is just 'Frequency')
     # So headers = ['a', 'b']
     first_row = sheet[1]
@@ -861,6 +863,8 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     table_names = []
     # Iterate over cells in the first column, but because we're in ReadOnly mode we
     # can't do that in the simplest manner.
+    fo_ws.reset_dimensions()
+    fo_ws.calculate_dimension(force=True)
     for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
         cell_value = row[0].value
         # Check value is both non-empty and not seen before
