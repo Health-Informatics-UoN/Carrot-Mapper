@@ -269,9 +269,9 @@ urlpatterns = [
         name="password_change_done",
     ),
     # Project URLs
-    path("projects", views.ProjectListView.as_view(), name="project_list"),
+    path("api/projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
-        "projects/<int:pk>",
+        "api/projects/<int:pk>/",
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
     ),

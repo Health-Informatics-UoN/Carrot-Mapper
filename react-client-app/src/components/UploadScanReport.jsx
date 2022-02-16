@@ -1,22 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PageHeading from './PageHeading'
-import { Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure } from "@chakra-ui/react"
+import { Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch } from "@chakra-ui/react"
 import { useGet, usePost } from '../api/values'
 import ToastAlert from './ToastAlert'
+import ConceptTag from './ConceptTag'
 
 const UploadScanReport = ({ setTitle }) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const [dataPartners, setDataPartners] = useState([{ name: "------" }]);
-    const [selectedDataPartner, setselectedDataPartner] = useState("------");
+    const [selectedDataPartner, setselectedDataPartner] = useState({ name: "------" });
 
     const [datasets, setDatasets] = useState([{ name: "------" }]);
     const [loadingDataset, setLoadingDataset] = useState(false);
     const [addingDataset, setAddingDataset] = useState(false);
+    const [projectVisibleToPublic, setProjectVisibleToPublic] = useState(true);
+    const [projects, setProjects] = useState([]);
+    const [projectList, setProjectList] = useState(undefined);
+
+    const [users, setUsers] = useState([]);
+    const [usersList, setUsersList] = useState(undefined);
+
     const [addDatasetMessage, setAddDatasetMessage] = useState(null);
 
-    const [selectedDataset, setselectedDataset] = useState("------");
+    const [selectedDataset, setselectedDataset] = useState({ name: "------" });
 
     const scanReportName = useRef();
     const createDatasetRef = useRef();
@@ -28,23 +36,28 @@ const UploadScanReport = ({ setTitle }) => {
         const dataPartnerQuery = await useGet("/datapartners/")
         setDataPartners([{ name: "------" }, ...dataPartnerQuery])
         setLoadingMessage(null)
+        const projectsQuery = await useGet("/projects/")
+        console.log(projectsQuery)
+        setProjectList(projectsQuery)
+        const usersQuery = await useGet("/users/")
+        setUsersList(usersQuery)
     }, []);
 
     useEffect(async () => {
         // change the dataset list
         setLoadingDataset(true)
-        const dataPartnerId = selectedDataPartner == "------" ? undefined : dataPartners.find(dp => dp.name == selectedDataPartner && dp.id != undefined).id
+        const dataPartnerId = selectedDataPartner.id
         if (dataPartnerId != undefined) {
             const datasets_query = await useGet(`/datasetsfilter/?data_partner=${dataPartnerId}`)
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
-            setDatasets([{ name: "------" }, ...datasets_query])
-            if (!datasets_query.find(ds => ds.name == selectedDataset)) {
-                setselectedDataset("------")
+            setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
+            if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
+                setselectedDataset({ name: "------" })
             }
         }
         else {
             setDatasets([{ name: "------" }])
-            setselectedDataset("------")
+            setselectedDataset({ name: "------" })
         }
         setLoadingDataset(false)
 
@@ -65,37 +78,40 @@ const UploadScanReport = ({ setTitle }) => {
         if (newDatasetName == "") { return }
         // creates new dataset under selected datapartner 
         setAddDatasetMessage("Adding Dataset")
-        // first check that the name given is unique for the given dp
-        const data_partner = dataPartners.find(dp => dp.name == selectedDataPartner && dp.id != undefined)
-        const datasets_query = await useGet(`/datasetsfilter/?data_partner=${data_partner.id}`)
-        if (datasets_query.find(ds => ds.name == newDatasetName) != undefined) {
-            setAlert({
-                hidden: false,
-                status: 'error',
-                title: 'Could not add dataset',
-                description: 'Dataset name must be unique for the datapartner'
-            })
-            setAddingDataset(false)
-            setAddDatasetMessage(null)
-            onOpen()
-            return
-        }
-        // if the name is unique, then try to add the datapartner
+        const data_partner = selectedDataPartner
         try {
             const data = {
                 data_partner: data_partner.id,
-                name: newDatasetName
+                name: newDatasetName,
+                visibility:projectVisibleToPublic?"PUBLIC":"RESTRICTED"
             }
-            const newDataset = await usePost(`/datasets/`, data)
-            setAddingDataset(false)
-            setAddDatasetMessage(null)
-            // add newly created dataset to dataset list
-            setDatasets(
-                ds => [{ name: "------" }, newDataset, ...ds.filter(ds2 => ds2.id != undefined)]
-            )
-            // could as a default behaviour set the selected dataset to the newly created dataset but
-            // does not do that currently
-            // could also arrange the datasets by name but not currently implemented
+            if(!projectVisibleToPublic){
+                data.viewers = users.map(item=>item.id)
+            } 
+            const newDataset = await usePost(`/datasets/create/`, data)
+            setLoadingDataset(true)
+            // revalidate
+            const datasets_query = await useGet(`/datasetsfilter/?data_partner=${data_partner.id}`)
+            // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
+            setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
+            // could as a default behaviour set the selected dataset to the newly created dataset using code below
+            // if(datasets_query.find(ds => ds.id == newDataset.id)){
+            //     setselectedDataset(newDataset)
+            // }
+            // else
+            
+            if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
+                setselectedDataset({ name: "------" })
+            }
+            setLoadingDataset(false)
+            closeAddingInterface()
+
+            // Could add newly created dataset to dataset list manually like this rather than revalidating
+            // setDatasets(
+            //     ds => [{ name: "------" }, ...[newDataset, ...ds.filter(ds2 => ds2.id != undefined)].sort((a, b) => a.name.localeCompare(b.name))]
+            // )
+
+            
 
             setAlert({
                 hidden: false,
@@ -112,8 +128,7 @@ const UploadScanReport = ({ setTitle }) => {
                 title: 'Could not add dataset',
                 description: err.statusText ? err.statusText : ""
             })
-            setAddingDataset(false)
-            setAddDatasetMessage(null)
+            closeAddingInterface()
             onOpen()
         }
     }
@@ -121,8 +136,8 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingMessage("Uploading scanreport")
         const uploadObject =
         {
-            data_partner: dataPartners.find(dp => dp.name == selectedDataPartner),
-            dataset: datasets.find(ds => ds.name == selectedDataset),
+            data_partner: selectedDataPartner,
+            dataset: selectedDataset,
             scan_report_name: scanReportName.current.value,
             scan_report: whiteRabbitScanReport,
             data_dictionary: dataDictionary
@@ -131,6 +146,20 @@ const UploadScanReport = ({ setTitle }) => {
 
         //redirect
         window.location.href = `${window.u}scanreports/`
+    }
+    const removeProject = (name) => {
+        setProjects(pj => pj.filter(proj => proj.name != name))
+    }
+    const removeUser = (id) => {
+        setUsers(pj => pj.filter(user => user.id != id))
+    }
+
+    const closeAddingInterface = () => {
+        setAddingDataset(false)
+        setAddDatasetMessage(null)
+        setProjects([])
+        setUsers([])
+        setProjectVisibleToPublic(true)
     }
 
     if (loadingMessage) {
@@ -155,10 +184,10 @@ const UploadScanReport = ({ setTitle }) => {
 
             <Box mt={4}>
                 <Text w="200px">Data Partner</Text>
-                <Select value={selectedDataPartner} onChange={(option) => setselectedDataPartner(option.target.value)
+                <Select value={JSON.stringify(selectedDataPartner)} onChange={(option) => setselectedDataPartner(JSON.parse(option.target.value))
                 } >
                     {dataPartners.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
+                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                     )}
                 </Select>
             </Box>
@@ -170,24 +199,24 @@ const UploadScanReport = ({ setTitle }) => {
                     :
                     <Box>
                         <Box display={{ md: 'flex' }}>
-                            <Select value={selectedDataset} onChange={(option) => setselectedDataset(option.target.value)
+                            <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
                             } >
                                 {datasets.map((item, index) =>
-                                    <option key={index} value={item.name}>{item.name}</option>
+                                    <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                                 )}
                             </Select>
-                            {selectedDataPartner != "------" && !addingDataset &&
+                            {selectedDataPartner.id!=undefined && !addingDataset &&
                                 <Tooltip label="Add new Dataset">
                                     <Button onClick={() => setAddingDataset(true)}>Add new</Button>
                                 </Tooltip>
                             }
                         </Box>
-                        {selectedDataPartner != "------" && addingDataset &&
+                        {selectedDataPartner.id != undefined && addingDataset &&
                             <Box px={4} display="grid" pb={8} bg={"gray.200"} rounded="xl">
                                 {addDatasetMessage ?
                                     <>
                                         <CloseButton size='sm' ml={"auto"} mt={4} isDisabled={addDatasetMessage == "Adding Dataset"}
-                                            onClick={() => setAddingDataset(false)} />
+                                            onClick={closeAddingInterface} />
 
                                         <Flex alignItems={"center"} justifySelf="center" h="full">
                                             {addDatasetMessage == "Adding Dataset" &&
@@ -198,13 +227,72 @@ const UploadScanReport = ({ setTitle }) => {
                                     :
                                     <>
                                         <CloseButton size='sm' ml={"auto"} mt={4}
-                                            onClick={() => setAddingDataset(false)} />
-                                        <Text>Adding Dataset...</Text>
+                                            onClick={closeAddingInterface} />
                                         <Box display={{ md: 'flex' }}>
                                             <Input placeholder='Dataset Name' bg={"white"} ref={createDatasetRef} />
-                                            <Button w={{ base: 'full', md: "inherit" }}
-                                                onClick={createDataset}>Add new</Button>
+
                                         </Box>
+                                        <Box mt="10px">
+                                            <Text fontWeight={"bold"}>Visible to public?</Text>
+                                            <Flex alignItems={"center"}>
+                                                <Switch isChecked={projectVisibleToPublic} onChange={(e) => setProjectVisibleToPublic(restriction => !restriction)} />
+                                                <Text fontWeight={"bold"} ml={2}>{projectVisibleToPublic ? "Public" : "Restricted"}</Text>
+                                            </Flex>
+                                            {!projectVisibleToPublic &&
+                                                <>
+                                                    <Box>
+                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
+                                                            {users.map((user, index) => {
+                                                                return (
+                                                                    <div key={index} style={{ marginTop: "0px" }}>
+                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeUser} />
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                        {usersList == undefined ?
+                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                                            :
+                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user=>user.id!=JSON.parse(option.target.value).id),JSON.parse(option.target.value)])}>
+                                                                <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
+                                                                <>
+                                                                    {usersList.map((item, index) =>
+                                                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                                                    )}
+                                                                </>
+                                                            </Select>
+                                                        }
+                                                    </Box>
+                                                </>
+                                            }
+                                        </Box>
+                                        <Box>
+                                            <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                                                <div style={{ fontWeight: "bold", marginRight: "10px" }} >Projects: </div>
+                                                {projects.map((project, index) => {
+                                                    return (
+                                                        <div key={index} style={{ marginTop: "0px" }}>
+                                                            <ConceptTag conceptName={project.name} conceptId={""} conceptIdentifier={project.name} itemId={project.name} handleDelete={removeProject} />
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                            {projectList == undefined ?
+                                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Projects' />
+                                                :
+                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj=>proj.name!=JSON.parse(option.target.value).name),JSON.parse(option.target.value)])}>
+                                                    <option style={{ fontWeight: "bold" }} disabled>Add Project</option>
+                                                    <>
+                                                        {projectList.map((item, index) =>
+                                                            <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                                                        )}
+                                                    </>
+                                                </Select>
+                                            }
+                                        </Box>
+                                        <Button w="full" mt={4}
+                                            onClick={createDataset}>Add new Dataset</Button>
                                     </>
                                 }
                             </Box>
