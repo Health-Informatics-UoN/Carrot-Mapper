@@ -23,8 +23,9 @@ class CanViewDataset(permissions.BasePermission):
         """
         Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
-            - the dataset is 'RESTRICTED' and the User's ID is in a project the User is a member of.
-            - the dataset is 'PUBLIC' and the User's ID is in the Project's members,
+            - the Dataset is 'RESTRICTED' and the User is a Dataset viewer
+            - the Dataset is 'PUBLIC' and the User is a member of a Project
+            that the Dataset is in.
         """
         visibility = obj.visibility
 
