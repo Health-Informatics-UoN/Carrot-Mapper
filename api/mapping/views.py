@@ -232,8 +232,29 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
     serializer_class = ScanReportSerializer
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all ScanReports.
+
+        Else, return only the ScanReports which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return ScanReport.objects.all()
+        
+        return ScanReport.objects.filter(
+            Q(
+                parent_dataset__project__members=self.request.user.id,
+                visibility="PUBLIC",
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility="RESTRICTED",
+            )
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
