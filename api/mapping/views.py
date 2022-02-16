@@ -262,7 +262,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
 
 class DatasetListView(generics.ListAPIView):
     """
-    API view to show all datasets.
+    API view to show all datasets a user has access to.
     """
 
     serializer_class = DatasetSerializer
@@ -273,9 +273,14 @@ class DatasetListView(generics.ListAPIView):
 
     def get_queryset(self):
         """
-        Return only the Datasets which are on projects a user is a member,
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
         which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
         """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.all()
+        
         return Dataset.objects.filter(
             Q(
                 project__members=self.request.user.id,
