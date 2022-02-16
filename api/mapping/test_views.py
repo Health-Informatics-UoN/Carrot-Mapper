@@ -1,4 +1,4 @@
-from urllib import response
+import os
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
@@ -140,3 +140,24 @@ class TestDatasetListView(TestCase):
 
         # Assert response is empty
         self.assertEqual(response_data, [])
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Get the response
+        response_data = self.view(request).data
+        # Assert az_user can see all datasets
+        for obj in response_data:
+            self.assertTrue(
+                Dataset.objects.filter(id=obj.get("id")).exists()
+            )
