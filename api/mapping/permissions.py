@@ -21,7 +21,7 @@ class CanViewDataset(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Return `True` in any of the following cases: 
+        Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
             - the dataset is 'RESTRICTED' and the User's ID is in a project the User is a member of.
             - the dataset is 'PUBLIC' and the User's ID is in the Project's members,

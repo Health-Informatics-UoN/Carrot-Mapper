@@ -248,6 +248,7 @@ class TestCanViewDataset(TestCase):
             )
         )
 
+
 class TestCanViewScanReport(TestCase):
     def setUp(self):
         User = get_user_model()

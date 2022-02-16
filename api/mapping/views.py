@@ -280,7 +280,7 @@ class DatasetListView(generics.ListAPIView):
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return Dataset.objects.all()
-        
+
         return Dataset.objects.filter(
             Q(
                 project__members=self.request.user.id,
