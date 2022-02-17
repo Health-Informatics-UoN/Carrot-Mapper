@@ -241,6 +241,5 @@ class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
     def to_representation(self, scan_report):
-        # qs = MappingRule.objects.filter(scan_report=scan_report)
         analysis = analyse_concepts(scan_report.id)
         return analysis

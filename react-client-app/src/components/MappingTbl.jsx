@@ -47,7 +47,6 @@ const MappingTbl = () => {
     const downLoadingImgRef = useRef(false)
     const {isOpen, onOpen, onClose } = useDisclosure()
     const {isOpen:isOpenAnalyse, onOpen:onOpenAnalyse, onClose:onCloseAnalyse } = useDisclosure()
-    
 
 
     useEffect(() => {
@@ -189,7 +188,6 @@ const MappingTbl = () => {
             setData(res.data)
             setLoading(false);
             setLoadingMessage("");
-            console.log(res.data);
  
         })
             .catch(err => {

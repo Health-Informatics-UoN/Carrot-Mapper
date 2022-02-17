@@ -2,8 +2,6 @@ from calendar import c
 import json
 import io
 import csv
-from re import A
-import itertools
 from datetime import datetime
 
 from django.contrib import messages
@@ -613,9 +611,6 @@ def get_mapping_rules_json(structural_mapping_rules):
             cdm[table_name][_id][destination_field]["term_mapping"] = rule[
                 "term_mapping"
             ]
-
-    # add the metadata and cdm object together
-    return {"metadata": metadata, "cdm": cdm}
 
     # add the metadata and cdm object together
     return {"metadata": metadata, "cdm": cdm}
