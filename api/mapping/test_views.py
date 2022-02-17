@@ -3,8 +3,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
-from .views import DatasetListView
-from .models import Project, Dataset
+from .views import DatasetListView, ScanReportListViewSet
+from .models import Project, Dataset, ScanReport, VisibilityChoices
 
 
 class TestDatasetListView(TestCase):
@@ -159,3 +159,58 @@ class TestDatasetListView(TestCase):
         # Assert az_user can see all datasets
         for obj in response_data:
             self.assertTrue(Dataset.objects.filter(id=obj.get("id")).exists())
+
+
+class TestScanScanReportListViewset(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Set up users
+        self.user1 = User.objects.create(username="gandalf", password="iwjfijweifje")
+        Token.objects.create(user=self.user1)
+        self.user2 = User.objects.create(username="aragorn", password="ooieriofiejr")
+        Token.objects.create(user=self.user2)
+
+        # Set up datasets
+        self.public_dataset = Dataset.objects.create(
+            name="Places in Middle Earth", visibility="PUBLIC"
+        )
+        self.restricted_dataset = Dataset.objects.create(
+            name="Fellowship Members", visibility="RESTRICTED"
+        )
+        self.restricted_dataset.viewers.add(self.user1)
+
+        # Set up scan reports
+        self.public_scanreport = ScanReport.objects.create(
+            dataset="The Mines of Moria",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.public_dataset
+        )
+        self.restricted_scanreport1 = ScanReport.objects.create(
+            dataset="The Rings of Power",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.public_dataset,
+        )
+        self.restricted_scanreport1.viewers.add(self.user1, self.user2)
+        self.restricted_scanreport2 = ScanReport.objects.create(
+            dataset="The Rings of Power",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.restricted_dataset,
+        )
+        self.restricted_scanreport2.viewers.add(self.user1)
+
+        # Set up projects
+        self.project1 = Project.objects.create(name="The Fellowship of the Ring")
+        self.project1.members.add(self.user1, self.user2)
+        self.project1.datasets.add(
+            self.public_dataset,
+            self.restricted_dataset,  # user2 can't see
+        )
+        self.project2 = Project.objects.create(name="The Two Towers")
+        self.project2.members.add(self.user1)
+        self.project2.datasets.add(self.restricted_dataset)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+
+        # The view for the tests
+        self.view = ScanReportListViewSet.as_view()
