@@ -157,8 +157,8 @@ class TestDatasetListView(TestCase):
         # Get the response
         response_data = self.view(request).data
         # Assert az_user can see all datasets
-        for obj in response_data:
-            self.assertTrue(Dataset.objects.filter(id=obj.get("id")).exists())
+        obj_ids = [obj.get("id") for obj in response_data]
+        self.assertTrue(Dataset.objects.filter(id__in=obj_ids).exists())
 
 
 class TestScanScanReportListViewset(TestCase):
@@ -172,10 +172,10 @@ class TestScanScanReportListViewset(TestCase):
 
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="Places in Middle Earth", visibility="PUBLIC"
+            name="Places in Middle Earth", visibility=VisibilityChoices.PUBLIC
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="Fellowship Members", visibility="RESTRICTED"
+            name="Fellowship Members", visibility=VisibilityChoices.RESTRICTED
         )
         self.restricted_dataset.viewers.add(self.user1)
 
@@ -192,7 +192,7 @@ class TestScanScanReportListViewset(TestCase):
         )
         self.restricted_scanreport1.viewers.add(self.user1, self.user2)
         self.restricted_scanreport2 = ScanReport.objects.create(
-            dataset="The Rings of Power",
+            dataset="The Balrogs of Morgoth",
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.restricted_dataset,
         )
@@ -203,7 +203,7 @@ class TestScanScanReportListViewset(TestCase):
         self.project1.members.add(self.user1, self.user2)
         self.project1.datasets.add(
             self.public_dataset,
-            self.restricted_dataset,  # user2 can't see
+            self.restricted_dataset,
         )
         self.project2 = Project.objects.create(name="The Two Towers")
         self.project2.members.add(self.user1)
@@ -214,6 +214,54 @@ class TestScanScanReportListViewset(TestCase):
 
         # The view for the tests
         self.view = ScanReportListViewSet.as_view({"get": "list"})
+
+    def test_scanreport_returns(self):
+        # Make the request for Datasets
+        request = self.factory.get(f"/scanreports/")
+        # Add user1 to the request; this is not automatic
+        request.user = self.user1
+        # Authenticate the user1
+        force_authenticate(
+            request,
+            user=self.user1,
+            token=self.user1.auth_token,
+        )
+        # Get the response data
+        response_data = self.view(request).data
+
+        # Assert user1 can see all scan reports
+        # and restricted_dataset
+        for obj in response_data:
+            self.assertIn(
+                obj.get("id"),
+                [
+                    self.public_scanreport.id,
+                    self.restricted_scanreport1.id,
+                    self.restricted_scanreport2.id,
+                ],
+            )
+
+        # Add user2 to the request; this is not automatic
+        request.user = self.user2
+        # Authenticate the user2
+        force_authenticate(
+            request,
+            user=self.user2,
+            token=self.user2.auth_token,
+        )
+        # Get the response
+        response_data = self.view(request).data
+
+        # Assert user2 can see public_scanreport and restricted_scanreport1
+        for obj in response_data:
+            self.assertIn(
+                obj.get("id"),
+                [self.public_scanreport.id, self.restricted_scanreport1.id],
+            )
+
+        # Assert user2 can't see restricted_scanreport2
+        for obj in response_data:
+            self.assertNotEqual(obj.get("id"), self.restricted_scanreport2.id)
 
     def test_az_function_user_perm(self):
         User = get_user_model()
@@ -230,6 +278,6 @@ class TestScanScanReportListViewset(TestCase):
         )
         # Get the response
         response_data = self.view(request).data
-        # Assert az_user can see all datasets
-        for obj in response_data:
-            self.assertTrue(ScanReport.objects.filter(id=obj.get("id")).exists())
+        # Assert az_user can see all scan reports
+        obj_ids = [obj.get("id") for obj in response_data]
+        self.assertTrue(ScanReport.objects.filter(id__in=obj_ids).exists())
