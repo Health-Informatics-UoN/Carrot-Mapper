@@ -851,11 +851,6 @@ def remove_mapping_rules(request, scan_report_id):
 
 
 def analyse_concepts(scan_report_id):
-    scan_report = ScanReport.objects.get(id=scan_report_id)
-    all_scan_reports = ScanReport.objects.all().exclude(id=scan_report_id)
-    # mapping_rules = MappingRule.objects.all().filter(scan_report_id=scan_report_id)
-    all_mapping_rules = MappingRule.objects.all().exclude(scan_report_id=scan_report_id)
-
     mapping_rules = (
         MappingRule.objects.all()
         .filter(scan_report_id=scan_report_id)
@@ -868,25 +863,8 @@ def analyse_concepts(scan_report_id):
     data = []
     descendant_list = []
     ancestors_list = []
-    # for i, val in enumerate(all_mapping_rules):
-    #     a.append(all_mapping_rules[i]["concept__concept"])
-
-    # a = all_mapping_rules
-
-    # a = [
-    #     {k: [x[2] for x in g]}
-    #     for k, g in itertools.groupby(all_mapping_rules, lambda x: x[0])
-    # ]
-
-    # map(lambda x: {x[0]: [x[1], x[2]]}, all_mapping_rules)
 
     for rule in mapping_rules:
-        # rule_name = rule.concept.concept.concept_name
-        # rule = rule.concept.concept.concept_id
-        # print("Concept ID",conceptID)
-        # print("Concept name",concept_name )
-        # print("Concept ID",conceptID)
-        # print("Concept Name",rule.concept.concept.concept_name)
 
         try:
             descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
@@ -898,11 +876,18 @@ def analyse_concepts(scan_report_id):
                     concept = Concept.objects.get(concept_id=desc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
                     source_ids = (
-                        MappingRule.objects.filter(
-                            Q(concept__concept=desc)
-                            & Q(omop_field__field__contains="condition_concept_id")
-                        ).values_list(
-                            "source_field__id", "source_field__scan_report_table__id"
+                        MappingRule.objects.filter(Q(concept__concept=desc))
+                        .exclude(
+                            Q(omop_field__field__icontains="person_id")
+                            | Q(omop_field__field__icontains="datetime")
+                            | Q(omop_field__field__icontains=("source"))
+                        )
+                        .values(
+                            "source_field__id",
+                            "source_field__name",
+                            "source_field__scan_report_table__id",
+                            "source_field__scan_report_table__name",
+                            "concept__content_type",
                         )
                     ).distinct()
                     descendant_list.append(
@@ -920,12 +905,18 @@ def analyse_concepts(scan_report_id):
                     concept = Concept.objects.get(concept_id=anc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
                     source_ids = (
-                        MappingRule.objects.filter(
-                            Q(concept__concept=anc)
-                            & Q(omop_field__field__contains="condition_concept_id")
+                        MappingRule.objects.filter(Q(concept__concept=anc))
+                        .exclude(
+                            Q(omop_field__field__icontains="person_id")
+                            | Q(omop_field__field__icontains="datetime")
+                            | Q(omop_field__field__icontains="source")
                         )
-                        .values_list(
-                            "source_field__id", "source_field__scan_report_table__id"
+                        .values(
+                            "source_field__id",
+                            "source_field__name",
+                            "source_field__scan_report_table__id",
+                            "source_field__scan_report_table__name",
+                            "concept__content_type",
                         )
                         .distinct()
                     )
@@ -941,8 +932,12 @@ def analyse_concepts(scan_report_id):
                 {
                     "rule_id": rule,
                     "rule_name": rule_name,
-                    "descendants": descendant_list,
-                    "ancestors": ancestors_list,
+                    "anc_desc": [
+                        {
+                            "descendants": descendant_list,
+                            "ancestors": ancestors_list,
+                        }
+                    ],
                 }
             )
             descendant_list = []
@@ -950,42 +945,4 @@ def analyse_concepts(scan_report_id):
         except:
             pass
 
-    # print(ancestors_list)
-    # print(descendants_list)
     return {"data": data}
-
-    # for scanreport_id in all_scan_reports:
-    #     sr_mappings=MappingRule.objects.all().filter(scan_report_id=scanreport_id)
-    #     for mapping in sr_mappings:
-    #         concept=mapping.concept.concept.concept_id
-    #         try:
-    #             print(ancestors_dict[concept])
-    #         except:
-
-
-#     #             continue
-# "descendants": {
-#     "descendant": [
-#         {"source_conceptid":"44784217",
-#         "conceptid":4088986,
-#         "concept_name":"Atrial escape complex"}
-#     ]
-# }
-# {["rule":
-#     {id:"44784217"
-#     descendants:[{"conceptid":4088986,
-#                 "concept_name":"Atrial escape complex"}],
-#     "ancestors":[{}]
-#     }
-# ]
-# ["rule":
-# {id:""
-# descendants:[{"conceptid":4088986,
-#             "concept_name":"Atrial escape complex",
-#             "source":236
-#         }],
-# "ancestors":[{}]
-# }
-
-# ]
-# }

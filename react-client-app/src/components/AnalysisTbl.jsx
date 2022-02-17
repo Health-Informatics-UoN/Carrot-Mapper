@@ -13,8 +13,7 @@ import {
     Grid,
     GridItem
 } from "@chakra-ui/react"
-import { ArrowForwardIcon } from '@chakra-ui/icons'
-import ConceptTag from './ConceptTag'
+
 
 
 function AnalysisTbl({data,values,filters}) {
@@ -24,8 +23,8 @@ function AnalysisTbl({data,values,filters}) {
                 <Thead>
                     <Tr>
                         <Th>Rule Id</Th>
-                        <Th>Ancestors</Th>
-                        <Th>Descendants</Th>
+                        <Th>Ancestors/Descendants</Th>
+                        <Th>Source</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
@@ -34,13 +33,46 @@ function AnalysisTbl({data,values,filters}) {
                             <Tr key={index}>
                                 <Td>{item.rule_id} - {item.rule_name}</Td>
                                 <Td>
-                                    {item.ancestors.map(ancestor =>
-                                        <div>{ancestor.a_id} - {ancestor.a_name}</div>
+                                    
+                                    {item.anc_desc.map((element) =>
+                                        <div>
+                                        {element.ancestors.map(ancestor=>
+                                            
+                                                <div style={{ color: "#475da7"}}> {ancestor.a_id} - {ancestor.a_name} (A)</div>
+                                            
+                                            )}
+                                        {element.descendants.map(descendant=>
+                                            
+                                                <div style={{ color: "#3db28c"}} > {descendant.d_id} - {descendant.d_name} (D)</div>
+                                            )}
+                                        </div>
                                     )}
                                 </Td>
+
                                 <Td>
-                                    {item.descendants.map(descendant =>
-                                        <div>{descendant.d_id} - {descendant.d_name}</div>
+                                {item.anc_desc.map((element) =>
+                                    <div>
+                                        {element.ancestors.map(ancestor=>
+                                            <div style={{alignSelf: 'flex-start'}}>
+                                                {ancestor.source.map(source_id=>{
+                                                if(source_id.concept__content_type==15)
+                                                    return <Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + source_id.source_field__scan_report_table__id}> {source_id.source_field__name} </Link>
+                                                return <Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + source_id.source_field__id}> {source_id.source_field__name} </Link>
+                                            })}
+                                            </div>
+                                            
+                                    )}
+                                    {element.descendants.map(descendant=>
+                                            <div style={{alignSelf: 'flex-start'}}>
+                                                {descendant.source.map(source_id=>{
+                                                if(source_id.concept__content_type==15)
+                                                    return <Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + source_id.source_field__scan_report_table__id}> {source_id.source_field__name} </Link>
+                                                return <Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + source_id.source_field__id}> {source_id.source_field__name} </Link>
+                                            })}
+                                            </div>
+                                            
+                                    )}
+                                    </div>
                                     )}
                                 </Td>
                             </Tr>
@@ -50,58 +82,7 @@ function AnalysisTbl({data,values,filters}) {
                 </Tbody>
 
             </Table>
-            {/* <Grid templateColumns='repeat(3, 1fr)'>
-                {data.map((item, index) =>
-                    <>
-                        <GridItem w='100%' bg={index % 2 == 0 ? 'blue.500' : 'green.500'}>
-                            {item.id}
-                        </GridItem>
-                        <GridItem w='100%' bg={index % 2 == 0 ? 'blue.500' : 'green.500'}>
-                            {item.ancestors.map(ancestor =>
-                                <div>{ancestor.concept_name}</div>
-                            )}
-                        </GridItem>
-                        <GridItem w='100%' bg={index % 2 == 0 ? 'blue.500' : 'green.500'}>
-                            {item.descendants.map(descendant =>
-                                <div>{descendant.concept_name}</div>
-                            )}
-                        </GridItem>
-                    </>
-
-                )}
-
-            </Grid> */}
         </div>)
 }
 
 export default AnalysisTbl;
-
-
-// return (
-        
-//     <Table variant="striped" colorScheme="greyBasic">
-        
-//         <Thead>
-//             <Tr>
-//                 <Th>Rule ID</Th>
-//                 <Th>Ancestors</Th>
-//                 <Th>Descendants</Th>
-//             </Tr>
-//         </Thead>
-//         <Tbody>
-//         {data.descendants.map((item,index)=>
-        
-//             <Tr key={index}>
-//                 <Td>{item.source_concept_id}</Td>
-//                 <Td>
-//                     {item.ancestor}
-//                 </Td>
-//                 <Td>
-//                     {}
-//                 </Td>
-//             </Tr>
-//         )}     
-//         </Tbody>
-        
-//     </Table>
-// )
