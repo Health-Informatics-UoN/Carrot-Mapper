@@ -108,6 +108,7 @@ from .models import (
     ScanReportConcept,
     ClassificationSystem,
     Dataset,
+    VisibilityChoices,
 )
 from .permissions import (
     CanViewProject,
@@ -247,12 +248,21 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         return ScanReport.objects.filter(
             Q(
                 parent_dataset__project__members=self.request.user.id,
-                visibility="PUBLIC",
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                visibility=VisibilityChoices.PUBLIC,
             )
             | Q(
                 parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
                 viewers=self.request.user.id,
-                visibility="RESTRICTED",
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__viewers=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
             )
         )
 
@@ -305,12 +315,12 @@ class DatasetListView(generics.ListAPIView):
         return Dataset.objects.filter(
             Q(
                 project__members=self.request.user.id,
-                visibility="PUBLIC",
+                visibility=VisibilityChoices.PUBLIC,
             )
             | Q(
                 project__members=self.request.user.id,
                 viewers=self.request.user.id,
-                visibility="RESTRICTED",
+                visibility=VisibilityChoices.RESTRICTED,
             )
         )
 
