@@ -244,7 +244,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReport.objects.all()
-        
+
         return ScanReport.objects.filter(
             Q(
                 parent_dataset__project__members=self.request.user.id,

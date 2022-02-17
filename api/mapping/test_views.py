@@ -183,7 +183,7 @@ class TestScanScanReportListViewset(TestCase):
         self.public_scanreport = ScanReport.objects.create(
             dataset="The Mines of Moria",
             visibility=VisibilityChoices.PUBLIC,
-            parent_dataset=self.public_dataset
+            parent_dataset=self.public_dataset,
         )
         self.restricted_scanreport1 = ScanReport.objects.create(
             dataset="The Rings of Power",
