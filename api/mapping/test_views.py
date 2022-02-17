@@ -213,4 +213,23 @@ class TestScanScanReportListViewset(TestCase):
         self.factory = APIRequestFactory()
 
         # The view for the tests
-        self.view = ScanReportListViewSet.as_view()
+        self.view = ScanReportListViewSet.as_view({"get": "list"})
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"/scanreports/")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Get the response
+        response_data = self.view(request).data
+        # Assert az_user can see all datasets
+        for obj in response_data:
+            self.assertTrue(ScanReport.objects.filter(id=obj.get("id")).exists())
