@@ -1,5 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
+from rest_framework.authtoken.views import obtain_auth_token
 
 from . import views
 
@@ -270,6 +271,8 @@ urlpatterns = [
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
     ),
+    # API token URL
+    path("api-token-auth/", obtain_auth_token, name="api-token-auth"),
 ]
 # if settings.DEBUG: # new
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
