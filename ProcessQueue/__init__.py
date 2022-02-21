@@ -236,8 +236,11 @@ def paginate_two_lists(entries, other, max_chars=None):
 
     paginated_entries = paginate(entries, max_chars / 2)
     paginated_other = paginate(other, max_chars / 2)
-    return [(page_entries, page_other) for page_entries in
-            paginated_entries for page_other in paginated_other]
+    return [
+        (page_entries, page_other)
+        for page_entries in paginated_entries
+        for page_other in paginated_other
+    ]
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
@@ -348,9 +351,9 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     existing_ids = list(field_id_to_concept_map.keys())
     # paginate the field id's variable and field names from list of newly generated
     # fields so that get request does not exceed character limit
-    paginated_ids_and_new_field_names = paginate_two_lists(existing_ids,
-                                                           list(new_fields_map.keys()),
-                                                           max_chars_for_get)
+    paginated_ids_and_new_field_names = paginate_two_lists(
+        existing_ids, list(new_fields_map.keys()), max_chars_for_get
+    )
     # for each list in paginated ids, get scanreport fields that match any of the given
     # ids and matches any of the newly generated names
     fields = []
@@ -359,7 +362,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         new_fields_names = ",".join(map(str, t[1]))
         get_field_names = requests.get(
             url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in="
-                f"{new_fields_names}",
+            f"{new_fields_names}",
             headers=headers,
         )
         fields.append(json.loads(get_field_names.content.decode("utf-8")))
@@ -492,7 +495,10 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
 
         concept_response_content += concept_content
 
-        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        print(
+            "POST concepts all finished in reuse_existing_field_concepts",
+            datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+        )
 
 
 def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers):
@@ -557,8 +563,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         new_values_names = ",".join(map(str, t[1]))
         get_value_names = requests.get(
             url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in="
-                f"{new_values_names}&fields=id,value,scan_report_field,"
-                f"value_description",
+            f"{new_values_names}&fields=id,value,scan_report_field,"
+            f"value_description",
             headers=headers,
         )
         existing_scanreport_values.append(
