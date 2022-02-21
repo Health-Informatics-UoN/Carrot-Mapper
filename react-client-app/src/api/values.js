@@ -1,6 +1,3 @@
-
-// const authToken = window.a
-// const api = window.u+'api'
 const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence']
 
 // function to fetch from api with authorization token
