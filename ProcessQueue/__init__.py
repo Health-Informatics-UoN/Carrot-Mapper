@@ -346,7 +346,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         element.get("object_id", None): str(element.get("concept", None))
         for element in field_concept_ids
     }
-    print("FIELD TO CONCEPT MAP DICT", field_id_to_concept_map)
+    # print("FIELD TO CONCEPT MAP DICT", field_id_to_concept_map)
     # creates a list of field ids from fields that already exist
     existing_ids = list(field_id_to_concept_map.keys())
     # paginate the field id's variable and field names from list of newly generated
@@ -367,7 +367,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         )
         fields.append(json.loads(get_field_names.content.decode("utf-8")))
     fields = flatten(fields)
-    print("FIELDS", fields)
+    # print("FIELDS", fields)
 
     # get a list of table ids for all the fields that have matching names
     table_ids = set([item["scan_report_table"] for item in fields])
@@ -383,7 +383,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         )
         tables.append(json.loads(get_field_tables.content.decode("utf-8")))
     tables = flatten(tables)
-    print("TABLES", tables)
+    # print("TABLES", tables)
     # map table id's to scanreport id
 
     # get all scanreports to be used to check active scan reports
@@ -416,7 +416,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     fields = [
         item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map
     ]
-    print("FILTERED FIELDS", fields)
+    # print("FILTERED FIELDS", fields)
 
     existing_mappings = [
         {
@@ -426,7 +426,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         }
         for field in fields
     ]
-    print("EXISTING MAPPINGS", existing_mappings)
+    # print("EXISTING MAPPINGS", existing_mappings)
     field_name_to_id_map = {}
     for name in list(new_fields_map.keys()):
         mappings_matching_field_name = [
@@ -444,10 +444,10 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # replace field_name_to_id_map with field name to concept id map
     # field_name_to_concept_id_map = { element.key: field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
 
-    print("FIELD NAME TO ID MAP", field_name_to_id_map)
+    # print("FIELD NAME TO ID MAP", field_name_to_id_map)
     concepts_to_post = []
     concept_response_content = []
-    print("NAME IDS", new_fields_map.keys())
+    # print("NAME IDS", new_fields_map.keys())
 
     for name, id in new_fields_map.items():
         try:
@@ -728,7 +728,10 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
 
         concept_response_content += concept_content
 
-        print("POST concepts all finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+        print(
+            datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+            "POST concepts all finished in reuse_existing_value_concepts",
+        )
 
 
 def remove_BOM(intermediate):
@@ -1405,11 +1408,13 @@ def main(msg: func.QueueMessage):
                     headers,
                 )
             )
-
+    print("All tables completed. Now set status to 'Upload Complete'")
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
         url=f"{api_url}scanreports/{scan_report_id}/",
         data=json.dumps({"status": "UPCOMPL"}),
         headers=headers,
     )
+    print("Successfully set status to 'Upload Complete'")
     wb.close()
+    print("Workbook successfully closed")
