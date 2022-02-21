@@ -103,7 +103,7 @@ const ScanReportTbl = (props) => {
         setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
         data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
         const patchData = { hidden: theIndicator }
-        usePatch(`scanreports/${id}/`, patchData).then(res => {
+        usePatch(`/scanreports/${id}/`, patchData).then(res => {
             activeReports.current = data.current.filter(scanreport => scanreport.hidden == false)
             archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
@@ -174,7 +174,7 @@ const ScanReportTbl = (props) => {
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        usePatch(`scanreports/${id}/`, patchData).then((res) => {
+        usePatch(`/scanreports/${id}/`, patchData).then((res) => {
             data.current = data.current.map((item) => item.id == id ? { ...item, status, statusLoading: false } : item);
             activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
             archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);

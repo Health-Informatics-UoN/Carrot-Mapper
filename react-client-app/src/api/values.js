@@ -1,27 +1,20 @@
 
-const authToken = window.a
-const api = window.u+'api'
+// const authToken = window.a
+// const api = window.u+'api'
 const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(`${api}${url}`,
-    {
-        method: "GET",
-        // headers: {Authorization: "Token "+authToken},    
-    }
-    );
+    const response = await fetch(url, {method: "GET"});
     const data = await response.json();
     return data;
 }
 // function for post requests to api with authorization token
 const usePost = async (url,data) =>{
-    const response = await fetch(`${api}${url}`,
+    const response = await fetch(url,
     {
         method: "POST",
-        headers: {
-            // Authorization: "Token "+authToken,
-        'Content-Type': 'application/json; charset=utf-8'},
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
         body: JSON.stringify(data)    
     }
     );
@@ -30,13 +23,10 @@ const usePost = async (url,data) =>{
 }
 // function for patch requests to api with authorization token
 const usePatch = async (url, body) => {
-    const response = await fetch(`${api}/${url}`,
+    const response = await fetch(url,
         {
             method: "PATCH",
-            headers: {
-                // Authorization: "Token " + authToken,
-                'Content-Type': 'application/json; charset=utf-8'
-            },
+            headers: {'Content-Type': 'application/json; charset=utf-8'},
             body: JSON.stringify(body)
         }
     );
@@ -45,12 +35,7 @@ const usePatch = async (url, body) => {
 }
 // function for delete requests to api with authorization token
 const useDelete = async (url) => {
-    const response = await fetch(`${api}/${url}`,
-        {
-            method: "DELETE",
-            // headers: { Authorization: "Token " + authToken },
-        }
-    );
+    const response = await fetch(url, {method: "DELETE"});
     return response;
 }
 // get scan report field with given id

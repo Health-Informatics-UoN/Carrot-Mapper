@@ -49,7 +49,7 @@ const EditTable = () => {
             person_id: person_id.id,
             date_event: date_event.id
         }
-        usePatch(`scanreporttables/${value}/`, data).then((res) => {
+        usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
             window.location.href = `${window.u}tables/?search=${table.scan_report}`
         })
