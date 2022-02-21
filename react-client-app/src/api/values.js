@@ -8,7 +8,7 @@ const useGet = async (url) =>{
     const response = await fetch(`${api}${url}`,
     {
         method: "GET",
-        headers: {Authorization: "Token "+authToken},    
+        // headers: {Authorization: "Token "+authToken},    
     }
     );
     const data = await response.json();
@@ -20,7 +20,7 @@ const usePost = async (url,data) =>{
     {
         method: "POST",
         headers: {
-            Authorization: "Token "+authToken,
+            // Authorization: "Token "+authToken,
         'Content-Type': 'application/json; charset=utf-8'},
         body: JSON.stringify(data)    
     }
@@ -34,7 +34,7 @@ const usePatch = async (url, body) => {
         {
             method: "PATCH",
             headers: {
-                Authorization: "Token " + authToken,
+                // Authorization: "Token " + authToken,
                 'Content-Type': 'application/json; charset=utf-8'
             },
             body: JSON.stringify(body)
@@ -48,7 +48,7 @@ const useDelete = async (url) => {
     const response = await fetch(`${api}/${url}`,
         {
             method: "DELETE",
-            headers: { Authorization: "Token " + authToken },
+            // headers: { Authorization: "Token " + authToken },
         }
     );
     return response;
