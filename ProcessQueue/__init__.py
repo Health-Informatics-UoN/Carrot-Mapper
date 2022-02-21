@@ -52,6 +52,8 @@ vocabs = [
     "UK Biobank",
 ]
 
+max_chars_for_get = 2000
+
 
 # @memory_profiler.profile(stream=profiler_logstream)
 def process_scan_report_sheet_table(sheet):
@@ -138,17 +140,23 @@ def default_zero(input):
     return round(input if input else 0.0, 2)
 
 
+def handle_max_chars(max_chars=None):
+    if not max_chars:
+        max_chars = (
+            int(os.environ.get("PAGE_MAX_CHARS"))
+            if os.environ.get("PAGE_MAX_CHARS")
+            else 10000
+        )
+    return max_chars
+
+
 def perform_chunking(entries_to_post):
     """
     This expects a list of dicts, and returns a list of lists of lists of dicts,
     where the maximum length of each list of dicts, under JSONification,
     is less than max_chars, and the length of each list of lists of dicts is chunk_size
     """
-    max_chars = (
-        int(os.environ.get("PAGE_MAX_CHARS"))
-        if os.environ.get("PAGE_MAX_CHARS")
-        else 10000
-    )
+    max_chars = handle_max_chars()
     chunk_size = (
         int(os.environ.get("CHUNK_SIZE")) if os.environ.get("CHUNK_SIZE") else 6
     )
@@ -182,37 +190,54 @@ def perform_chunking(entries_to_post):
     return chunked_entries_to_post
 
 
-# @memory_profiler.profile(stream=profiler_logstream)
-def paginate(entries_to_post, max_chars=None, other=""):
+def paginate(entries, max_chars=None):
     """
-    This expects a list of dicts, and returns a list of lists of dicts,
-    where the maximum length of each list of dicts, under JSONification,
+    This expects a list of strings, and returns a list of lists of strings,
+    where the maximum length of each list of strings, under JSONification,
     is less than max_chars
     """
-    if not max_chars:
-        max_chars = (
-            int(os.environ.get("PAGE_MAX_CHARS"))
-            if os.environ.get("PAGE_MAX_CHARS")
-            else 10000
-        )
-    max_chars = max_chars - len(other)
+    max_chars = handle_max_chars(max_chars)
 
-    paginated_entries_to_post = []
+    paginated_entries = []
     this_page = []
-    for entry in entries_to_post:
+    for entry in entries:
         # If the current page won't be overfull, add the entry to the current page
         if len(json.dumps(this_page)) + len(json.dumps(entry)) < max_chars:
             this_page.append(entry)
         else:
             # Otherwise, this page should be added to the list of pages.
-            paginated_entries_to_post.append(this_page)
+            paginated_entries.append(this_page)
             # Now add the entry that would have over-filled the page.
             this_page = [entry]
 
     # After all entries are added, check for a half-filled page, and if present add it to the list of pages
     if this_page:
-        paginated_entries_to_post.append(this_page)
-    return paginated_entries_to_post
+        paginated_entries.append(this_page)
+
+    return paginated_entries
+
+
+def paginate_two_lists(entries, other, max_chars=None):
+    """
+    This expects two lists of strings, and returns a list of 2-tuples of lists of
+    strings, where the maximum length of each tuple of list of strings, under
+    JSONification, is less than max_chars
+
+    An optimum strategy to minimise the number of returned tuples would be complex. Here
+    we use a simple heuristic: if the two lists fit together under the limit,
+    then return them as one tuple. Otherwise, split each list to individually fit
+    into max_chars/2, and recombine the product of the two into a list of tuples.
+    """
+    max_chars = handle_max_chars(max_chars)
+
+    # If the two lists are short enough, then return a single tuple
+    if len(json.dumps(entries)) + len(json.dumps(other)) < max_chars:
+        return [(entries, other)]
+
+    paginated_entries = paginate(entries, max_chars / 2)
+    paginated_other = paginate(other, max_chars / 2)
+    return [(page_entries, page_other) for page_entries in
+            paginated_entries for page_other in paginated_other]
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
@@ -293,32 +318,6 @@ def process_failure(api_url, scan_report_id, headers):
     )
 
 
-def paginate_chars(entries_to_post, other):
-    """
-    This expects a list of dicts, and returns a list of lists of dicts,
-    where the maximum length of each list of dicts, under JSONification,
-    is less than max_chars
-    """
-    max_chars = 2000 - len(other)
-
-    paginated_entries_to_post = []
-    this_page = []
-    for entry in entries_to_post:
-        # If the current page won't be overfull, add the entry to the current page
-        if len(json.dumps(this_page)) + len(json.dumps(entry)) < max_chars:
-            this_page.append(entry)
-        else:
-            # Otherwise, this page should be added to the list of pages.
-            paginated_entries_to_post.append(this_page)
-            # Now add the entry that would have over-filled the page.
-            this_page = [entry]
-
-    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
-    if this_page:
-        paginated_entries_to_post.append(this_page)
-    return paginated_entries_to_post
-
-
 def flatten(arr):
     """
     This expects a list of lists and returns a flattened list
@@ -347,17 +346,20 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     print("FIELD TO CONCEPT MAP DICT", field_id_to_concept_map)
     # creates a list of field ids from fields that already exist
     existing_ids = list(field_id_to_concept_map.keys())
-    # create list of field names from list of newly generated fields
-    new_fields_names_string = ",".join(map(str, list(new_fields_map.keys())))
-    # paginate the field id's variable so that get request does not exceed character limit
-    paginated_ids = paginate(existing_ids, 2000, new_fields_names_string)
-    # for each list in paginated id's, get scanreport fields that match any of the given id's
-    # and matches any of the newly generated names
+    # paginate the field id's variable and field names from list of newly generated
+    # fields so that get request does not exceed character limit
+    paginated_ids_and_new_field_names = paginate_two_lists(existing_ids,
+                                                           list(new_fields_map.keys()),
+                                                           max_chars_for_get)
+    # for each list in paginated ids, get scanreport fields that match any of the given
+    # ids and matches any of the newly generated names
     fields = []
-    for ids in paginated_ids:
-        ids_to_get = ",".join(map(str, ids))
+    for t in paginated_ids_and_new_field_names:
+        ids_to_get = ",".join(map(str, t[0]))
+        new_fields_names = ",".join(map(str, t[1]))
         get_field_names = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in={new_fields_names_string}",
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in="
+                f"{new_fields_names}",
             headers=headers,
         )
         fields.append(json.loads(get_field_names.content.decode("utf-8")))
@@ -367,7 +369,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # get a list of table ids for all the fields that have matching names
     table_ids = set([item["scan_report_table"] for item in fields])
     # get tables from list of table ids
-    paginated_table_ids = paginate(table_ids, 2000, "")
+    paginated_table_ids = paginate(table_ids, max_chars_for_get)
     tables = []
     for ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, ids))
@@ -514,7 +516,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     new_values_names_list = [value["value"] for value in new_values_map]
 
     new_paginated_field_ids = paginate(
-        [value["scan_report_field"] for value in new_values_map], 2000
+        [value["scan_report_field"] for value in new_values_map], max_chars_for_get
     )
     new_fields = []
     for ids in new_paginated_field_ids:
@@ -542,18 +544,21 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
 
     # create list of id's from existing values that have a scanreport concept
     existing_ids = list(value_id_to_concept_map.keys())
-    # create names string to pass to url from list of names made from newly generated values
-    new_value_names_string = ",".join(map(str, new_values_names_list))
     # paginate list of value ids from existing values that have scanreport concepts and
     # use the list to get existing scanreport values that match the list any of the newly generated names
-    paginated_ids = paginate(existing_ids, 2000, new_value_names_string)
-    print("VALUE names list", new_value_names_string)
-    print("VALUE paginated ids", paginated_ids)
+    paginated_ids_and_new_value_names = paginate_two_lists(existing_ids,
+                                                           new_values_names_list,
+                                                           max_chars_for_get)
+    # print("VALUE names list", new_value_names_string)
+    # print("VALUE paginated ids", paginated_ids)
     existing_scanreport_values = []
-    for ids in paginated_ids:
-        ids_to_get = ",".join(map(str, ids))
+    for t in paginated_ids_and_new_value_names:
+        ids_to_get = ",".join(map(str, t[0]))
+        new_values_names = ",".join(map(str, t[1]))
         get_value_names = requests.get(
-            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in={new_value_names_string}&fields=id,value,scan_report_field,value_description",
+            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in="
+                f"{new_values_names}&fields=id,value,scan_report_field,"
+                f"value_description",
             headers=headers,
         )
         existing_scanreport_values.append(
@@ -564,7 +569,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
 
     # get field ids from values and use to get scan report fields
     field_ids = set([item["scan_report_field"] for item in existing_scanreport_values])
-    paginated_field_ids = paginate(field_ids, 2000, "")
+    paginated_field_ids = paginate(field_ids, max_chars_for_get)
     fields = []
     for ids in paginated_field_ids:
         ids_to_get = ",".join(map(str, ids))
@@ -579,7 +584,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     print("field id to name map", field_id_to_name_map)
     # get table id's from fields and repeat the process
     table_ids = set([item["scan_report_table"] for item in fields])
-    paginated_table_ids = paginate(table_ids, 2000, "")
+    paginated_table_ids = paginate(table_ids, max_chars_for_get)
     tables = []
     for ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, ids))
