@@ -2,13 +2,13 @@ const m_allowed_tables = ['person','measurement','condition_occurrence','observa
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(url, {method: "GET"});
+    const response = await fetch(`/api${url}`, {method: "GET"});
     const data = await response.json();
     return data;
 }
 // function for post requests to api with authorization token
 const usePost = async (url,data) =>{
-    const response = await fetch(url,
+    const response = await fetch(`/api${url}`,
     {
         method: "POST",
         headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -20,7 +20,7 @@ const usePost = async (url,data) =>{
 }
 // function for patch requests to api with authorization token
 const usePatch = async (url, body) => {
-    const response = await fetch(url,
+    const response = await fetch(`/api${url}`,
         {
             method: "PATCH",
             headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -32,7 +32,7 @@ const usePatch = async (url, body) => {
 }
 // function for delete requests to api with authorization token
 const useDelete = async (url) => {
-    const response = await fetch(url, {method: "DELETE"});
+    const response = await fetch(`/api${url}`, {method: "DELETE"});
     return response;
 }
 // get scan report field with given id
