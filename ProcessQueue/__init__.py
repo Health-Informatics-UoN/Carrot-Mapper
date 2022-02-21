@@ -356,7 +356,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     )
     # for each list in paginated ids, get scanreport fields that match any of the given
     # ids and matches any of the newly generated names
-    fields = []
+    existing_fields_details = []
     for t in paginated_ids_and_new_field_names:
         ids_to_get = ",".join(map(str, t[0]))
         new_fields_names = ",".join(map(str, t[1]))
@@ -365,15 +365,16 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             f"{new_fields_names}",
             headers=headers,
         )
-        fields.append(json.loads(get_field_names.content.decode("utf-8")))
-    fields = flatten(fields)
-    # print("FIELDS", fields)
+        existing_fields_details.append(
+            json.loads(get_field_names.content.decode("utf-8"))
+        )
+    existing_fields_details = flatten(existing_fields_details)
+    # print("existing_fields_details", existing_fields_details)
 
-    # get a list of table ids for all the fields that have matching names
-    table_ids = set([item["scan_report_table"] for item in fields])
-    # get tables from list of table ids
+    # get table ids from fields and repeat the process
+    table_ids = set([item["scan_report_table"] for item in existing_fields_details])
     paginated_table_ids = paginate(table_ids, max_chars_for_get)
-    tables = []
+    existing_tables_details = []
     for ids in paginated_table_ids:
         ids_to_get = ",".join(map(str, ids))
 
@@ -381,56 +382,63 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
             headers=headers,
         )
-        tables.append(json.loads(get_field_tables.content.decode("utf-8")))
-    tables = flatten(tables)
-    # print("TABLES", tables)
-    # map table id's to scanreport id
+        existing_tables_details.append(
+            json.loads(get_field_tables.content.decode("utf-8"))
+        )
+    existing_tables_details = flatten(existing_tables_details)
 
-    # get all scanreports to be used to check active scan reports
+    # get all scan reports to be used to filter values by only values that come from
+    # active scan reports that are marked as 'Mapping Complete'
     get_scan_reports = requests.get(
         url=f"{api_url}scanreports/",
         headers=headers,
     )
     # get active scanreports and map them to fields. Remove any fields in archived reports
     scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
-    active_reports = [
+    active_srs = [
         str(item["id"])
         for item in scanreports
-        if item["hidden"] == False and item["status"] == "COMPLET"
+        if item["hidden"] is False and item["status"] == "COMPLET"
     ]
-    # active reports is list of report ids that are not archived
+    # active reports is list of report ids that are not archived and have the status
+    # 'Mapping Complete'
+
+    # map value id to active scan report
     table_id_to_active_scanreport_map = {
         str(element["id"]): str(element["scan_report"])
-        for element in tables
-        if str(element["scan_report"]) in active_reports
+        for element in existing_tables_details
+        if str(element["scan_report"]) in active_srs
     }
-    # map field id to active scan report id. (only store field ids that correspond to an active scan report)
-    field_id_to_active_scanreport_map = {
+    existing_field_id_to_active_scanreport_map = {
         str(element["id"]): table_id_to_active_scanreport_map[
             str(element["scan_report_table"])
         ]
-        for element in fields
+        for element in existing_fields_details
         if str(element["scan_report_table"]) in table_id_to_active_scanreport_map
     }
     # filter fields to only include fields that are from active scan reports
-    fields = [
-        item for item in fields if str(item["id"]) in field_id_to_active_scanreport_map
+    existing_fields_details_in_active_sr = [
+        item
+        for item in existing_fields_details
+        if str(item["id"]) in existing_field_id_to_active_scanreport_map
     ]
     # print("FILTERED FIELDS", fields)
 
-    existing_mappings = [
+    existing_mappings_to_consider = [
         {
             "name": field["name"],
             "concept": field_id_to_concept_map[field["id"]],
             "id": field["id"],
         }
-        for field in fields
+        for field in existing_fields_details_in_active_sr
     ]
-    # print("EXISTING MAPPINGS", existing_mappings)
+    print(
+        f"{datetime.utcnow().strftime('%H:%M:%S.%fZ')} {existing_mappings_to_consider=}"
+    )
     field_name_to_id_map = {}
     for name in list(new_fields_map.keys()):
         mappings_matching_field_name = [
-            mapping for mapping in existing_mappings if mapping["name"] == name
+            mapping for mapping in existing_mappings_to_consider if mapping["name"] == name
         ]
         target_concept_ids = set(
             [mapping["concept"] for mapping in mappings_matching_field_name]
@@ -472,8 +480,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             concepts_to_post.append(concept_entry)
         except KeyError:
             continue
-    if concepts_to_post:
 
+    if concepts_to_post:
         paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:
@@ -496,8 +504,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         concept_response_content += concept_content
 
         print(
-            "POST concepts all finished in reuse_existing_field_concepts",
             datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+            "POST concepts all finished in reuse_existing_field_concepts",
         )
 
 
@@ -629,7 +637,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     print(
         f"{datetime.utcnow().strftime('%H:%M:%S.%fZ')} {existing_field_id_to_name_map=}"
     )
-    # get table id's from fields and repeat the process
+    # get table ids from fields and repeat the process
     table_ids = set([item["scan_report_table"] for item in existing_fields_details])
     paginated_table_ids = paginate(table_ids, max_chars_for_get)
     existing_tables_details = []
@@ -645,7 +653,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         )
     existing_tables_details = flatten(existing_tables_details)
 
-    # get all scan reports to be used to filter values by only values that come from active scan reports
+    # get all scan reports to be used to filter values by only values that come from
+    # active scan reports that are marked as 'Mapping Complete'
     get_scan_reports = requests.get(
         url=f"{api_url}scanreports/",
         headers=headers,
@@ -771,10 +780,9 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
                 "creation_type": "R",
             }
             concepts_to_post.append(concept_entry)
-
         except KeyError:
-            # Continue if
             continue
+
     if concepts_to_post:
         paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
