@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Checkbox, HStack, Text, Button, Flex, Spinner, VStack, Textarea } from "@chakra-ui/react"
-import { useGet, usePatch, api } from '../api/values'
+import { useGet, usePatch } from '../api/values'
 const EditField = ({ setTitle }) => {
     const value = window.location.href.split("fields/")[1].split("/")[0]
     const [field, setField] = useState(null);

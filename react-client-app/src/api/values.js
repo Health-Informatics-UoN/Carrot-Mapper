@@ -314,5 +314,5 @@ const getScanReportTableRows = async (id) =>{
 
 export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
      getScanReportField,getScanReportTable,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
+     getScanReportConcepts,getScanReports,getScanReportTableRows,usePatch,
      }

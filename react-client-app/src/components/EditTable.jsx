@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Select, HStack, Text, Button, Flex, Spinner } from "@chakra-ui/react"
-import { useGet, usePatch, api } from '../api/values'
+import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
     const value = window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
