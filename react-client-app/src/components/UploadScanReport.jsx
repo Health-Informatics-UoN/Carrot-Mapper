@@ -134,20 +134,27 @@ const UploadScanReport = ({ setTitle }) => {
         }
     }
     const upload = async () => {
-        setLoadingMessage("Uploading scanreport")
         let formData = new FormData()
         await formData.append('parent_dataset', selectedDataset.id)
-        await formData.append('dataset', "samATest")
+        await formData.append('dataset', scanReportName.current.value)
         await formData.append('scan_report_file', whiteRabbitScanReport)
         await formData.append('data_dictionary_file', dataDictionary)
+        setLoadingMessage("Uploading scanreport")
 
-        for (var key of formData.entries()) {
-            console.log(key[0] + ', ' + key[1]);
+        try {
+            const response = await window.uploadScanReport(formData)
+            // redirect if the upload was successful, otherwise show the error message
+            window.location.href = `${window.u}scanreports/`
         }
-        //await window.uploadScanReport(formData)
-
-        //redirect if the upload was successful, otherwise show the error message
-       // window.location.href = `${window.u}scanreports/`
+        catch (err) {
+            setAlert({
+                hidden: false,
+                status: 'error',
+                title: 'Could not upload scanreport',
+                description: err.statusText ? err.statusText : ""
+            })
+            onOpen()
+        }
     }
     const removeProject = (name) => {
         setProjects(pj => pj.filter(proj => proj.name != name))
