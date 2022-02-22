@@ -450,7 +450,9 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     existing_field_name_to_id_map = {}
     for name in list(new_fields_map.keys()):
         mappings_matching_field_name = [
-            mapping for mapping in existing_mappings_to_consider if mapping["name"] == name
+            mapping
+            for mapping in existing_mappings_to_consider
+            if mapping["name"] == name
         ]
         target_concept_ids = set(
             [mapping["concept"] for mapping in mappings_matching_field_name]
@@ -1363,9 +1365,7 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
                 )
             )
 
-        fields_response_content += json.loads(
-            fields_response.content.decode("utf-8")
-        )
+        fields_response_content += json.loads(fields_response.content.decode("utf-8"))
 
     print(
         "POST fields all finished",
