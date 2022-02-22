@@ -37,7 +37,6 @@ const UploadScanReport = ({ setTitle }) => {
         setDataPartners([{ name: "------" }, ...dataPartnerQuery])
         setLoadingMessage(null)
         const projectsQuery = await useGet("/projects/")
-        console.log(projectsQuery)
         setProjectList(projectsQuery)
         const usersQuery = await useGet("/users/")
         setUsersList(usersQuery)
