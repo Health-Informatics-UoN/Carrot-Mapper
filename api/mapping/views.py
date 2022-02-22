@@ -373,6 +373,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
         "concept__concept_id": ["in", "exact"],
         "object_id": ["in", "exact"],
         "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
     }
 
 
