@@ -17,7 +17,7 @@ const App = ({ page }) => {
         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
         setValues(valuesRef.current)
         //DEETE Request to API
-        useDelete(`scanreportconcepts/${conceptId}`)
+        useDelete(`/scanreportconcepts/${conceptId}`)
             .then(function (response) {
                 //Re-fetch the concepts for that particular field
                 getScanReportConcepts(id).then(async scanreportconcepts => {

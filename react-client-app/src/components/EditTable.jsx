@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Select, HStack, Text, Button, Flex, Spinner } from "@chakra-ui/react"
-import { useGet, usePatch, api } from '../api/values'
+import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
     const value = window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
@@ -49,7 +49,7 @@ const EditTable = () => {
             person_id: person_id.id,
             date_event: date_event.id
         }
-        usePatch(`scanreporttables/${value}/`, data).then((res) => {
+        usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
             window.location.href = `${window.u}tables/?search=${table.scan_report}`
         })
