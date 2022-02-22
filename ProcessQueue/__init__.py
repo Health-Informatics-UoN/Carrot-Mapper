@@ -335,29 +335,41 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     scanreport, and content_type 15. It creates new concepts associated to any
     field that matches the name of an existing field with an associated concept.
     """
+    print("reuse_existing_field_concepts", type(new_fields_map), flush=True)
     # Gets all scan report concepts that are for the type field (or content type which should be field)
     get_field_concept_ids = requests.get(
         url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}",
         headers=headers,
     )
-    field_concept_ids = json.loads(get_field_concept_ids.content.decode("utf-8"))
-    # Creates a dictionary that maps field id's to scan report concept id's
-    field_id_to_concept_map = {
-        element.get("object_id", None): str(element.get("concept", None))
-        for element in field_concept_ids
+    # create dictionary that maps existing field ids to scan report concepts
+    # from the list of existing scan report concepts
+    existing_field_concept_ids = json.loads(
+        get_field_concept_ids.content.decode("utf-8")
+    )
+    existing_field_id_to_concept_map = {
+        str(element.get("object_id", None)): str(element.get("concept", None))
+        for element in existing_field_concept_ids
     }
-    # print("FIELD TO CONCEPT MAP DICT", field_id_to_concept_map)
-    # creates a list of field ids from fields that already exist
-    existing_ids = list(field_id_to_concept_map.keys())
+    print(
+        datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+        "field_id:concept_id for all existing fields with concepts:",
+        existing_field_id_to_concept_map,
+        flush=True,
+    )
+
+    # print("FIELD TO CONCEPT MAP DICT", existing_field_id_to_concept_map)
+    # creates a list of field ids from fields that already exist and have a concept
+    existing_ids = list(existing_field_id_to_concept_map.keys())
     # paginate the field id's variable and field names from list of newly generated
     # fields so that get request does not exceed character limit
-    paginated_ids_and_new_field_names = paginate_two_lists(
+    paginated_existing_ids_and_new_field_names = paginate_two_lists(
         existing_ids, list(new_fields_map.keys()), max_chars_for_get
     )
     # for each list in paginated ids, get scanreport fields that match any of the given
-    # ids and matches any of the newly generated names
+    # ids (those with an associated concept) and whose name matches any of the newly
+    # generated names
     existing_fields_details = []
-    for t in paginated_ids_and_new_field_names:
+    for t in paginated_existing_ids_and_new_field_names:
         ids_to_get = ",".join(map(str, t[0]))
         new_fields_names = ",".join(map(str, t[1]))
         get_field_names = requests.get(
@@ -393,11 +405,11 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         url=f"{api_url}scanreports/",
         headers=headers,
     )
-    # get active scanreports and map them to fields. Remove any fields in archived reports
-    scanreports = json.loads(get_scan_reports.content.decode("utf-8"))
+    # get active scanreports and map them to fields. Remove any fields in archived
+    # reports or not marked as 'Mapping Complete'
     active_srs = [
         str(item["id"])
-        for item in scanreports
+        for item in json.loads(get_scan_reports.content.decode("utf-8"))
         if item["hidden"] is False and item["status"] == "COMPLET"
     ]
     # active reports is list of report ids that are not archived and have the status
@@ -427,7 +439,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     existing_mappings_to_consider = [
         {
             "name": field["name"],
-            "concept": field_id_to_concept_map[field["id"]],
+            "concept": existing_field_id_to_concept_map[field["id"]],
             "id": field["id"],
         }
         for field in existing_fields_details_in_active_sr
@@ -435,7 +447,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     print(
         f"{datetime.utcnow().strftime('%H:%M:%S.%fZ')} {existing_mappings_to_consider=}"
     )
-    field_name_to_id_map = {}
+    existing_field_name_to_id_map = {}
     for name in list(new_fields_map.keys()):
         mappings_matching_field_name = [
             mapping for mapping in existing_mappings_to_consider if mapping["name"] == name
@@ -447,23 +459,25 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             [mapping["id"] for mapping in mappings_matching_field_name]
         )
         if len(target_concept_ids) == 1:
-            field_name_to_id_map[str(name)] = str(target_field_id.pop())
+            existing_field_name_to_id_map[str(name)] = str(target_field_id.pop())
 
-    # replace field_name_to_id_map with field name to concept id map
-    # field_name_to_concept_id_map = { element.key: field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
+    # replace existing_field_name_to_id_map with field name to concept id map
+    # field_name_to_concept_id_map = { element.key: existing_field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
 
-    # print("FIELD NAME TO ID MAP", field_name_to_id_map)
+    # print("FIELD NAME TO ID MAP", existing_field_name_to_id_map)
     concepts_to_post = []
     concept_response_content = []
     # print("NAME IDS", new_fields_map.keys())
 
-    for name, id in new_fields_map.items():
+    for name, new_field_id in new_fields_map.items():
         try:
-            link_id = field_name_to_id_map[name]
-            concept_id = field_id_to_concept_map[int(link_id)]
+            existing_field_id = existing_field_name_to_id_map[name]
+            concept_id = existing_field_id_to_concept_map[int(existing_field_id)]
 
             print(
-                f"Found field with id: {link_id} with exsting concept mapping: {concept_id} which matches new field id: {id}"
+                f"Found existing field with id: {existing_field_id} with existing "
+                f"concept mapping: {concept_id} which matches new field id: "
+                f"{new_field_id}"
             )
             # Create ScanReportConcept entry for copying over the concept
             concept_entry = {
@@ -473,7 +487,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
                 "nlp_vocabulary": None,
                 "nlp_processed_string": None,
                 "concept": concept_id,
-                "object_id": id,
+                "object_id": new_field_id,
                 "content_type": content_type,
                 "creation_type": "R",
             }
@@ -520,7 +534,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}&fields=object_id,concept",
         headers=headers,
     )
-    # create dictionary that maps existing value id's to scan report concepts
+    # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
     existing_value_concept_ids = json.loads(
         get_value_concept_ids.content.decode("utf-8")
@@ -1184,6 +1198,7 @@ async def process_values_from_sheet(
                 page_lengths[i],
                 flush=True,
             )
+
             if values_response.status_code != 201:
                 process_failure(api_url, scan_report_id, headers)
                 raise HTTPError(
@@ -1348,10 +1363,9 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
                 )
             )
 
-        fields_content = json.loads(fields_response.content.decode("utf-8"))
-        # print('fc:',fields_content)
-        fields_response_content += fields_content
-        # print('frc:', fields_response_content)
+        fields_response_content += json.loads(
+            fields_response.content.decode("utf-8")
+        )
 
     print(
         "POST fields all finished",
