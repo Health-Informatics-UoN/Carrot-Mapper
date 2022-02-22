@@ -15,6 +15,18 @@
     <script type="text/javascript" >
         var a = "{{a}}"
         var u = "{{u}}"
+
+        var uploadScanReport = async function (formData) {
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+            const res = await $.ajax({
+                type: "POST",
+                processData: false,
+                contentType: false,
+                data: formData,
+                enctype: 'multipart/form-data', 
+            });
+            return res
+        }
     </script>
     <script type="module" src="../../../static/javascript/react/src/uploadScanReport.js"></script>
 

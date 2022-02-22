@@ -83,12 +83,13 @@ const UploadScanReport = ({ setTitle }) => {
             const data = {
                 data_partner: data_partner.id,
                 name: newDatasetName,
-                visibility:projectVisibleToPublic?"PUBLIC":"RESTRICTED"
+                visibility: projectVisibleToPublic ? "PUBLIC" : "RESTRICTED"
             }
-            if(!projectVisibleToPublic){
-                data.viewers = users.map(item=>item.id)
-            } 
+            if (!projectVisibleToPublic) {
+                data.viewers = users.map(item => item.id)
+            }
             const newDataset = await usePost(`/datasets/create/`, data)
+            await mapDatasetToProjects(newDataset, projects)
             setLoadingDataset(true)
             // revalidate
             const datasets_query = await useGet(`/datasetsfilter/?data_partner=${data_partner.id}`)
@@ -99,7 +100,7 @@ const UploadScanReport = ({ setTitle }) => {
             //     setselectedDataset(newDataset)
             // }
             // else
-            
+
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
                 setselectedDataset({ name: "------" })
             }
@@ -111,7 +112,7 @@ const UploadScanReport = ({ setTitle }) => {
             //     ds => [{ name: "------" }, ...[newDataset, ...ds.filter(ds2 => ds2.id != undefined)].sort((a, b) => a.name.localeCompare(b.name))]
             // )
 
-            
+
 
             setAlert({
                 hidden: false,
@@ -132,26 +133,31 @@ const UploadScanReport = ({ setTitle }) => {
             onOpen()
         }
     }
-    const upload = () => {
+    const upload = async () => {
         setLoadingMessage("Uploading scanreport")
-        const uploadObject =
-        {
-            data_partner: selectedDataPartner,
-            dataset: selectedDataset,
-            scan_report_name: scanReportName.current.value,
-            scan_report: whiteRabbitScanReport,
-            data_dictionary: dataDictionary
-        }
-        console.log(uploadObject)
+        let formData = new FormData()
+        await formData.append('parent_dataset', selectedDataset.id)
+        await formData.append('dataset', "samATest")
+        await formData.append('scan_report_file', whiteRabbitScanReport)
+        await formData.append('data_dictionary_file', dataDictionary)
 
-        //redirect
-        window.location.href = `${window.u}scanreports/`
+        for (var key of formData.entries()) {
+            console.log(key[0] + ', ' + key[1]);
+        }
+        //await window.uploadScanReport(formData)
+
+        //redirect if the upload was successful, otherwise show the error message
+       // window.location.href = `${window.u}scanreports/`
     }
     const removeProject = (name) => {
         setProjects(pj => pj.filter(proj => proj.name != name))
     }
     const removeUser = (id) => {
         setUsers(pj => pj.filter(user => user.id != id))
+    }
+    async function mapDatasetToProjects(dataset, projects) {
+        console.log("This is where the dataset would get added to the projects")
+        return
     }
 
     const closeAddingInterface = () => {
@@ -205,7 +211,7 @@ const UploadScanReport = ({ setTitle }) => {
                                     <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                                 )}
                             </Select>
-                            {selectedDataPartner.id!=undefined && !addingDataset &&
+                            {selectedDataPartner.id != undefined && !addingDataset &&
                                 <Tooltip label="Add new Dataset">
                                     <Button onClick={() => setAddingDataset(true)}>Add new</Button>
                                 </Tooltip>
@@ -254,7 +260,7 @@ const UploadScanReport = ({ setTitle }) => {
                                                         {usersList == undefined ?
                                                             <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                                                             :
-                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user=>user.id!=JSON.parse(option.target.value).id),JSON.parse(option.target.value)])}>
+                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
                                                                 <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
                                                                 <>
                                                                     {usersList.map((item, index) =>
@@ -281,7 +287,7 @@ const UploadScanReport = ({ setTitle }) => {
                                             {projectList == undefined ?
                                                 <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Projects' />
                                                 :
-                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj=>proj.name!=JSON.parse(option.target.value).name),JSON.parse(option.target.value)])}>
+                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
                                                     <option style={{ fontWeight: "bold" }} disabled>Add Project</option>
                                                     <>
                                                         {projectList.map((item, index) =>
