@@ -217,32 +217,6 @@ def paginate(entries, max_chars=None):
     return paginated_entries
 
 
-def paginate_two_lists(entries, other, max_chars=None):
-    """
-    This expects two lists of strings, and returns a list of 2-tuples of lists of
-    strings, where the maximum length of each tuple of list of strings, under
-    JSONification, is less than max_chars
-
-    An optimum strategy to minimise the number of returned tuples would be complex. Here
-    we use a simple heuristic: if the two lists fit together under the limit,
-    then return them as one tuple. Otherwise, split each list to individually fit
-    into max_chars/2, and recombine the product of the two into a list of tuples.
-    """
-    max_chars = handle_max_chars(max_chars)
-
-    # If the two lists are short enough, then return a single tuple
-    if len(json.dumps(entries)) + len(json.dumps(other)) < max_chars:
-        return [(entries, other)]
-
-    paginated_entries = paginate(entries, max_chars / 2)
-    paginated_other = paginate(other, max_chars / 2)
-    return [
-        (page_entries, page_other)
-        for page_entries in paginated_entries
-        for page_other in paginated_other
-    ]
-
-
 # @memory_profiler.profile(stream=profiler_logstream)
 def startup(msg):
     logging.info("Python queue trigger function processed a queue item.")
