@@ -64,17 +64,19 @@ class TestDatasetListView(TestCase):
         )
         # Get the response data
         response_data = self.view(request).data
+        expected_objs = [
+            self.public_dataset1.id,
+            self.public_dataset2.id,
+            self.restricted_dataset.id,
+        ]
 
         # Assert user1 can only public_dataset1, public_dataset2
         # and restricted_dataset
+        self.assertEqual(len(response_data), len(expected_objs))
         for obj in response_data:
             self.assertIn(
                 obj.get("id"),
-                [
-                    self.public_dataset1.id,
-                    self.public_dataset2.id,
-                    self.restricted_dataset.id,
-                ],
+                expected_objs,
             )
 
         # Assert user1 can't see public_dataset3
@@ -91,12 +93,14 @@ class TestDatasetListView(TestCase):
         )
         # Get the response
         response_data = self.view(request).data
+        expected_objs = [self.public_dataset1.id, self.public_dataset2.id]
 
         # Assert user2 can only public_dataset1 and public_dataset2
+        self.assertEqual(len(response_data), len(expected_objs))
         for obj in response_data:
             self.assertIn(
                 obj.get("id"),
-                [self.public_dataset1.id, self.public_dataset2.id],
+                expected_objs,
             )
 
         # Assert user2 can't see public_dataset3

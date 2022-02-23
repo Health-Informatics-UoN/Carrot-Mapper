@@ -291,7 +291,7 @@ class DatasetListView(generics.ListAPIView):
                 viewers=self.request.user.id,
                 visibility="RESTRICTED",
             )
-        )
+        ).distinct()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
