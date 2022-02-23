@@ -1,3 +1,4 @@
+import os
 from rest_framework import permissions
 from .models import (
     Project,
@@ -20,11 +21,17 @@ class CanViewDataset(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Return `True` if, the dataset is 'public' and the User's ID is in the Project's members,
-        or, the dataset is 'restricted' and the User's ID is in a project the User is a member of.
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - the Dataset is 'RESTRICTED' and the User is a Dataset viewer
+            - the Dataset is 'PUBLIC' and the User is a member of a Project
+            that the Dataset is in.
         """
         visibility = obj.visibility
 
+        # if the User is the `AZ_FUNCTION_USER` grant permission
+        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return True
         # if the visibility is restricted
         # check if the user is in the viewers field
         if visibility == "RESTRICTED":

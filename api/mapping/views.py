@@ -262,24 +262,36 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
 
 class DatasetListView(generics.ListAPIView):
     """
-    API view to show all datasets.
+    API view to show all datasets a user has access to.
     """
 
-    queryset = Dataset.objects.all()
-    serializer_class = DatasetSerializer
-
-
-class DatasetFilterView(generics.ListAPIView):
-    """
-    API view to filter datasets by list of id's.
-    """
-
-    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
     }
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.all().distinct()
+
+        return Dataset.objects.filter(
+            Q(
+                project__members=self.request.user.id,
+                visibility="PUBLIC",
+            )
+            | Q(
+                project__members=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility="RESTRICTED",
+            )
+        ).distinct()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
