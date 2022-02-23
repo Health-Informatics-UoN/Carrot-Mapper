@@ -68,8 +68,8 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                                 <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_table.id}>{item.source_table.name}</Link></Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field.name}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={"/fields/?search=" + item.source_table.id}>{item.source_table.name}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={"/values/?search=" + item.source_field.id}>{item.source_field.name}</Link></Td>
                                 <Td maxW={[50, 100, 200]} >
                                     {item.term_mapping != null &&
                                         <>

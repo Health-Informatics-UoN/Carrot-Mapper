@@ -310,7 +310,7 @@ class DatasetListView(generics.ListAPIView):
         which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            return Dataset.objects.all()
+            return Dataset.objects.all().distinct()
 
         return Dataset.objects.filter(
             Q(
@@ -322,7 +322,7 @@ class DatasetListView(generics.ListAPIView):
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
-        )
+        ).distinct()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -416,6 +416,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
         "concept__concept_id": ["in", "exact"],
         "object_id": ["in", "exact"],
         "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
     }
 
 
