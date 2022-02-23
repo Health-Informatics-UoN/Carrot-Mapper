@@ -64,6 +64,7 @@ class TestDatasetListView(TestCase):
         )
         # Get the response data
         response_data = self.view(request).data
+        response_data = [obj.get("id") for obj in response_data]
         expected_objs = [
             self.public_dataset1.id,
             self.public_dataset2.id,
@@ -72,16 +73,11 @@ class TestDatasetListView(TestCase):
 
         # Assert user1 can only public_dataset1, public_dataset2
         # and restricted_dataset
-        self.assertEqual(len(response_data), len(expected_objs))
-        for obj in response_data:
-            self.assertIn(
-                obj.get("id"),
-                expected_objs,
-            )
+        self.assertEqual(sorted(response_data), sorted(expected_objs))
 
         # Assert user1 can't see public_dataset3
         for obj in response_data:
-            self.assertNotEqual(obj.get("id"), self.public_dataset3.id)
+            self.assertNotEqual(obj, self.public_dataset3.id)
 
         # Add user2 to the request; this is not automatic
         request.user = self.user2
@@ -93,19 +89,15 @@ class TestDatasetListView(TestCase):
         )
         # Get the response
         response_data = self.view(request).data
+        response_data = [obj.get("id") for obj in response_data]
         expected_objs = [self.public_dataset1.id, self.public_dataset2.id]
 
         # Assert user2 can only public_dataset1 and public_dataset2
-        self.assertEqual(len(response_data), len(expected_objs))
-        for obj in response_data:
-            self.assertIn(
-                obj.get("id"),
-                expected_objs,
-            )
+        self.assertEqual(sorted(response_data), sorted(expected_objs))
 
         # Assert user2 can't see public_dataset3
         for obj in response_data:
-            self.assertNotEqual(obj.get("id"), self.public_dataset3.id)
+            self.assertNotEqual(obj, self.public_dataset3.id)
 
     def test_dataset_filtering(self):
         # Make the request for the public_dataset1
@@ -122,10 +114,11 @@ class TestDatasetListView(TestCase):
         )
         # Get the response
         response_data = self.view(request).data
+        response_data = [obj.get("id") for obj in response_data]
 
         # Assert only got public_dataset1
         self.assertEqual(len(response_data), 1)
-        self.assertEqual(response_data[0].get("id"), self.public_dataset1.id)
+        self.assertEqual(response_data[0], self.public_dataset1.id)
 
         # Make the request for the public_dataset3
         request = self.factory.get(
