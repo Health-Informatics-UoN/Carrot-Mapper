@@ -347,7 +347,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
 
         get_field_tables = requests.get(
             url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&fields=id,"
-                f"scan_report_table",
+            f"scan_report_table",
             headers=headers,
         )
         existing_fields_filtered_by_id.append(
@@ -363,7 +363,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
 
         get_field_tables = requests.get(
             url=f"{api_url}scanreportfieldsfilter/?name__in={ids_to_get}&fields=id,"
-                f"scan_report_table",
+            f"scan_report_table",
             headers=headers,
         )
         existing_fields_filtered_by_name.append(
@@ -374,13 +374,14 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # Combine the results of the two sets of GET requests to identify fields which
     # satisfy both criteria (id and name) and then store their details in
     # existing_field_details
-    cofiltered_field_ids = set(field["id"]
-                               for field in existing_fields_filtered_by_id).\
-                           intersection(set(field["id"]
-                                   for field in existing_fields_filtered_by_name))
-    existing_fields_details = [field
-                               for field in existing_fields_filtered_by_id
-                               if field["id"] in cofiltered_field_ids]
+    cofiltered_field_ids = set(
+        field["id"] for field in existing_fields_filtered_by_id
+    ).intersection(set(field["id"] for field in existing_fields_filtered_by_name))
+    existing_fields_details = [
+        field
+        for field in existing_fields_filtered_by_id
+        if field["id"] in cofiltered_field_ids
+    ]
 
     # get table ids from fields and repeat the process
     table_ids = set([item["scan_report_table"] for item in existing_fields_details])
@@ -603,9 +604,11 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     # paginate list of value ids from existing values that have scanreport concepts and
     # use the list to get existing scanreport values that match the list any of the newly generated names
 
-    paginated_existing_ids = paginate([str(element.get("object_id", None)) for element in existing_value_concept_ids], max_chars_for_get)
-    paginated_new_value_names = paginate(new_values_names_list,
-                                          max_chars_for_get)
+    paginated_existing_ids = paginate(
+        [str(element.get("object_id", None)) for element in existing_value_concept_ids],
+        max_chars_for_get,
+    )
+    paginated_new_value_names = paginate(new_values_names_list, max_chars_for_get)
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
     existing_values_filtered_by_id = []
@@ -630,7 +633,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
 
         get_field_tables = requests.get(
             url=f"{api_url}scanreportvaluesfilter/?name__in={new_values_names}&fields="
-                f"id,value,scan_report_field,value_description",
+            f"id,value,scan_report_field,value_description",
             headers=headers,
         )
         existing_values_filtered_by_name.append(
@@ -641,13 +644,14 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     # Combine the results of the two sets of GET requests to identify values which
     # satisfy both criteria (id and name) and then store their details in
     # existing_value_details
-    cofiltered_value_ids = set(value["id"]
-                               for value in existing_values_filtered_by_id). \
-        intersection(set(value["id"]
-                         for value in existing_values_filtered_by_name))
-    existing_values_details = [value
-                               for value in existing_values_filtered_by_id
-                               if value["id"] in cofiltered_value_ids]
+    cofiltered_value_ids = set(
+        value["id"] for value in existing_values_filtered_by_id
+    ).intersection(set(value["id"] for value in existing_values_filtered_by_name))
+    existing_values_details = [
+        value
+        for value in existing_values_filtered_by_id
+        if value["id"] in cofiltered_value_ids
+    ]
 
     print(
         datetime.utcnow().strftime("%H:%M:%S.%fZ"),
