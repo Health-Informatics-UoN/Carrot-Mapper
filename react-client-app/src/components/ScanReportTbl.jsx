@@ -11,7 +11,6 @@ const ScanReportTbl = (props) => {
     const data = useRef(null);
     const activeReports = useRef(null);
     const archivedReports = useRef(null);
-    const [currentUser, setCurrentUser] = useState(null);
     const [displayedData, setDisplayedData] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Scan Reports")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
@@ -25,7 +24,6 @@ const ScanReportTbl = (props) => {
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
-        setCurrentUser(window.currentUser)
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         // get scan reports and sort by id
         let scanreports = await useGet(`/scanreports/`)
@@ -103,7 +101,7 @@ const ScanReportTbl = (props) => {
         setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
         data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
         const patchData = { hidden: theIndicator }
-        usePatch(`scanreports/${id}/`, patchData).then(res => {
+        usePatch(`/scanreports/${id}/`, patchData).then(res => {
             activeReports.current = data.current.filter(scanreport => scanreport.hidden == false)
             archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
@@ -174,7 +172,7 @@ const ScanReportTbl = (props) => {
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        usePatch(`scanreports/${id}/`, patchData).then((res) => {
+        usePatch(`/scanreports/${id}/`, patchData).then((res) => {
             data.current = data.current.map((item) => item.id == id ? { ...item, status, statusLoading: false } : item);
             activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
             archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);

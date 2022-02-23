@@ -1,27 +1,22 @@
+import Cookies from 'js-cookie';
 
-const authToken = window.a
-const api = window.u+'api'
-const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence']
+const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence','specimen']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(`${api}${url}`,
-    {
-        method: "GET",
-        headers: {Authorization: "Token "+authToken},    
-    }
-    );
+    const response = await fetch(`/api${url}`, {method: "GET"});
     const data = await response.json();
     return data;
 }
 // function for post requests to api with authorization token
 const usePost = async (url,data) =>{
-    const response = await fetch(`${api}${url}`,
+    const response = await fetch(`/api${url}`,
     {
         method: "POST",
         headers: {
-            Authorization: "Token "+authToken,
-        'Content-Type': 'application/json; charset=utf-8'},
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
         body: JSON.stringify(data)    
     }
     );
@@ -34,12 +29,12 @@ const usePost = async (url,data) =>{
 }
 // function for patch requests to api with authorization token
 const usePatch = async (url, body) => {
-    const response = await fetch(`${api}/${url}`,
+    const response = await fetch(`/api${url}`,
         {
             method: "PATCH",
             headers: {
-                Authorization: "Token " + authToken,
-                'Content-Type': 'application/json; charset=utf-8'
+                'Content-Type': 'application/json; charset=utf-8',
+                'X-CSRFToken': Cookies.get('csrftoken'),
             },
             body: JSON.stringify(body)
         }
@@ -49,12 +44,7 @@ const usePatch = async (url, body) => {
 }
 // function for delete requests to api with authorization token
 const useDelete = async (url) => {
-    const response = await fetch(`${api}/${url}`,
-        {
-            method: "DELETE",
-            headers: { Authorization: "Token " + authToken },
-        }
-    );
+    const response = await fetch(`/api${url}`, {method: "DELETE"});
     return response;
 }
 // get scan report field with given id
@@ -167,7 +157,8 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'measurement':['measurement_datetime'],
         'observation':['observation_datetime'],
         'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
-	'procedure_occurrence':['procedure_datetime']
+	'procedure_occurrence':['procedure_datetime'],
+	'specimen':['specimen_datetime']
         }
     const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
     // if a destination field can't be found for concept domain, return error
@@ -336,5 +327,5 @@ const getScanReportTableRows = async (id) =>{
 
 export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
      getScanReportField,getScanReportTable,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
+     getScanReportConcepts,getScanReports,getScanReportTableRows,usePatch,
      }
