@@ -439,7 +439,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     existing_mappings_to_consider = [
         {
             "name": field["name"],
-            "concept": existing_field_id_to_concept_map[field["id"]],
+            "concept": existing_field_id_to_concept_map[str(field["id"])],
             "id": field["id"],
         }
         for field in existing_fields_details_in_active_sr
