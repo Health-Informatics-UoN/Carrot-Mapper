@@ -4,7 +4,7 @@ import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
     FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react"
-import { useGet, usePost } from '../api/values'
+import { useGet, usePost, postForm } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 
@@ -53,7 +53,7 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingDataset(true)
         const dataPartnerId = selectedDataPartner.id
         if (dataPartnerId != undefined) {
-            const datasets_query = await useGet(`/datasetsfilter/?data_partner=${dataPartnerId}`)
+            const datasets_query = await useGet(`/datasets/?data_partner=${dataPartnerId}`)
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
@@ -108,7 +108,7 @@ const UploadScanReport = ({ setTitle }) => {
             await mapDatasetToProjects(newDataset, projects)
             setLoadingDataset(true)
             // revalidate
-            const datasets_query = await useGet(`/datasetsfilter/?data_partner=${data_partner.id}`)
+            const datasets_query = await useGet(`/datasets/?data_partner=${data_partner.id}`)
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
             // could as a default behaviour set the selected dataset to the newly created dataset using code below
@@ -178,14 +178,14 @@ const UploadScanReport = ({ setTitle }) => {
             await formData.append('data_dictionary_file', dataDictionary)
             setUploadLoading(true)
 
-            const response = await window.uploadScanReport(formData)
+            const response = await postForm(window.location.href,formData)
             // redirect if the upload was successful, otherwise show the error message
             window.location.href = `${window.u}scanreports/`
         }
         catch (err) {
             console.log(err)
             setUploadLoading(false)
-            if (err.status == "form-invalid") setFormErrors(err["form-errors"])
+            if (err["form-errors"]) setFormErrors(err["form-errors"])
             setAlert({
                 hidden: false,
                 status: 'error',
