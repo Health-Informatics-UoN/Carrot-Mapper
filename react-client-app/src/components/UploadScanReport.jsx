@@ -133,19 +133,42 @@ const UploadScanReport = ({ setTitle }) => {
         }
     }
     const upload = async () => {
-        let formData = new FormData()
-        await formData.append('parent_dataset', selectedDataset.id)
-        await formData.append('dataset', scanReportName.current.value)
-        await formData.append('scan_report_file', whiteRabbitScanReport)
-        await formData.append('data_dictionary_file', dataDictionary)
-        setLoadingMessage("Uploading scanreport")
-
         try {
+            if (selectedDataPartner.id == undefined) {
+                throw { statusText: "Please select a datapartner" }
+            }
+            if (selectedDataset.id == undefined) {
+                throw { statusText: "Please select a dataset" }
+            }
+            if (!scanReportName.current.value) {
+                throw { statusText: "Please choose a scan report name" }
+            }
+            if (!whiteRabbitScanReport) {
+                throw { statusText: "Please add a scan report file" }
+            }
+            if (whiteRabbitScanReport.name.split('.').pop() != "xlsx") {
+                throw { statusText: "You have attempted to upload a scan report which is not in XLSX format. Please upload a .xlsx file" }
+            }
+            if (dataDictionary && dataDictionary.name.split('.').pop() != "csv") {
+                throw { statusText: "You have attempted to upload a data dictionary which is not in csv format. Please upload a .csv file" }
+            }
+            // let me know if any other tests are needed on the frontend.
+            // The tests on the backend should also trugger an error
+
+            let formData = new FormData()
+            await formData.append('parent_dataset', selectedDataset.id)
+            await formData.append('dataset', scanReportName.current.value)
+            await formData.append('scan_report_file', whiteRabbitScanReport)
+            await formData.append('data_dictionary_file', dataDictionary)
+            setLoadingMessage("Uploading scanreport")
+
             const response = await window.uploadScanReport(formData)
             // redirect if the upload was successful, otherwise show the error message
             window.location.href = `${window.u}scanreports/`
         }
         catch (err) {
+            console.log(err)
+            setLoadingMessage(null)
             setAlert({
                 hidden: false,
                 status: 'error',
