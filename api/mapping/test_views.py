@@ -161,7 +161,4 @@ class TestDatasetListView(TestCase):
         # Get the response
         response_data = self.view(request).data
         # Assert az_user can see all datasets
-        self.assertEqual(
-            len(response_data),
-            Dataset.objects.all().count()
-        )
+        self.assertEqual(len(response_data), Dataset.objects.all().count())

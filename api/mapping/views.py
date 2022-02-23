@@ -279,7 +279,7 @@ class DatasetListView(generics.ListAPIView):
         which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            return Dataset.objects.all()
+            return Dataset.objects.all().distinct()
 
         return Dataset.objects.filter(
             Q(
