@@ -243,7 +243,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            return ScanReport.objects.all()
+            return ScanReport.objects.all().distinct()
 
         return ScanReport.objects.filter(
             Q(
@@ -264,7 +264,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
-        )
+        ).distinct()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
