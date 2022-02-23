@@ -312,7 +312,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     print("reuse_existing_field_concepts", type(new_fields_map), flush=True)
     # Gets all scan report concepts that are for the type field (or content type which should be field)
     get_field_concept_ids = requests.get(
-        url=f"{api_url}scanreportconceptsfilter/?content_type={content_type}",
+        url=f"{api_url}scanreportconceptsfilter/?content_type="
+        f"{content_type}&fields=id,object_id,concept",
         headers=headers,
     )
     # create dictionary that maps existing field ids to scan report concepts
@@ -391,7 +392,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}&fields=id,"
+            f"scan_report",
             headers=headers,
         )
         existing_tables_details.append(
@@ -501,19 +503,19 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:
-            get_concept_response = requests.post(
+            post_concept_response = requests.post(
                 url=api_url + "scanreportconcepts/",
                 headers=headers,
                 data=json.dumps(concepts_to_post_item),
             )
             print(
                 "CONCEPTS SAVE STATUS >>>",
-                get_concept_response.status_code,
-                get_concept_response.reason,
+                post_concept_response.status_code,
+                post_concept_response.reason,
                 flush=True,
             )
             concept_response.append(
-                json.loads(get_concept_response.content.decode("utf-8"))
+                json.loads(post_concept_response.content.decode("utf-8"))
             )
         concept_content = flatten(concept_response)
 
@@ -559,7 +561,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     for ids in new_paginated_field_ids:
         ids_to_get = ",".join(map(str, ids))
         get_fields = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&fields=id,name",
             headers=headers,
         )
         new_fields.append(json.loads(get_fields.content.decode("utf-8")))
@@ -669,7 +671,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_value_fields = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}",
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&fields=id,"
+            f"name,scan_report_table",
             headers=headers,
         )
         existing_fields_details.append(
@@ -690,7 +693,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}",
+            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}&fields=id,"
+            f"scan_report",
             headers=headers,
         )
         existing_tables_details.append(
@@ -832,19 +836,19 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         paginated_concepts_to_post = paginate(concepts_to_post)
         concept_response = []
         for concepts_to_post_item in paginated_concepts_to_post:
-            get_concept_response = requests.post(
+            post_concept_response = requests.post(
                 url=api_url + "scanreportconcepts/",
                 headers=headers,
                 data=json.dumps(concepts_to_post_item),
             )
             print(
                 "CONCEPTS SAVE STATUS >>>",
-                get_concept_response.status_code,
-                get_concept_response.reason,
+                post_concept_response.status_code,
+                post_concept_response.reason,
                 flush=True,
             )
             concept_response.append(
-                json.loads(get_concept_response.content.decode("utf-8"))
+                json.loads(post_concept_response.content.decode("utf-8"))
             )
         concept_content = flatten(concept_response)
 
