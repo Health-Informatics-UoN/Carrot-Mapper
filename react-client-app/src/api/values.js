@@ -1,3 +1,5 @@
+import Cookies from 'js-cookie';
+
 const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence','specimen']
 
 // function to fetch from api with authorization token
@@ -11,7 +13,10 @@ const usePost = async (url,data) =>{
     const response = await fetch(`/api${url}`,
     {
         method: "POST",
-        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
         body: JSON.stringify(data)    
     }
     );
@@ -23,7 +28,10 @@ const usePatch = async (url, body) => {
     const response = await fetch(`/api${url}`,
         {
             method: "PATCH",
-            headers: {'Content-Type': 'application/json; charset=utf-8'},
+            headers: {
+                'Content-Type': 'application/json; charset=utf-8',
+                'X-CSRFToken': Cookies.get('csrftoken'),
+            },
             body: JSON.stringify(body)
         }
     );
