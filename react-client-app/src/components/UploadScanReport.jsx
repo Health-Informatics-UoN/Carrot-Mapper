@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PageHeading from './PageHeading'
-import { Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch } from "@chakra-ui/react"
+import {
+    Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
+    FormControl, FormLabel, FormErrorMessage
+} from "@chakra-ui/react"
 import { useGet, usePost } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
@@ -23,6 +26,7 @@ const UploadScanReport = ({ setTitle }) => {
     const [usersList, setUsersList] = useState(undefined);
 
     const [addDatasetMessage, setAddDatasetMessage] = useState(null);
+    const [formErrors, setFormErrors] = useState({});
 
     const [selectedDataset, setselectedDataset] = useState({ name: "------" });
 
@@ -31,6 +35,7 @@ const UploadScanReport = ({ setTitle }) => {
     const [whiteRabbitScanReport, setWhiteRabbitScanReport] = useState(null);
     const [dataDictionary, setDataDictionary] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
+    const [uploadLoading, setUploadLoading] = useState(false)
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
@@ -43,6 +48,7 @@ const UploadScanReport = ({ setTitle }) => {
     }, []);
 
     useEffect(async () => {
+        setFormErrors({ ...formErrors, datapartner: undefined })
         // change the dataset list
         setLoadingDataset(true)
         const dataPartnerId = selectedDataPartner.id
@@ -62,6 +68,17 @@ const UploadScanReport = ({ setTitle }) => {
 
 
     }, [selectedDataPartner]);
+
+    useEffect(async () => {
+        setFormErrors({ ...formErrors, parent_dataset: undefined })
+    }, [selectedDataset]);
+    useEffect(async () => {
+        setFormErrors({ ...formErrors, scan_report_file: undefined })
+    }, [whiteRabbitScanReport]);
+    useEffect(async () => {
+        setFormErrors({ ...formErrors, data_dictionary_file: undefined })
+    }, [dataDictionary]);
+
 
     function readScanReport() {
         let file = document.getElementById('scanreport').files[0]
@@ -152,15 +169,14 @@ const UploadScanReport = ({ setTitle }) => {
             if (dataDictionary && dataDictionary.name.split('.').pop() != "csv") {
                 throw { statusText: "You have attempted to upload a data dictionary which is not in csv format. Please upload a .csv file" }
             }
-            // let me know if any other tests are needed on the frontend.
-            // The tests on the backend should also trugger an error
+            // The tests on the backend will also trigger an error
 
             let formData = new FormData()
             await formData.append('parent_dataset', selectedDataset.id)
             await formData.append('dataset', scanReportName.current.value)
             await formData.append('scan_report_file', whiteRabbitScanReport)
             await formData.append('data_dictionary_file', dataDictionary)
-            setLoadingMessage("Uploading scanreport")
+            setUploadLoading(true)
 
             const response = await window.uploadScanReport(formData)
             // redirect if the upload was successful, otherwise show the error message
@@ -168,7 +184,8 @@ const UploadScanReport = ({ setTitle }) => {
         }
         catch (err) {
             console.log(err)
-            setLoadingMessage(null)
+            setUploadLoading(false)
+            if (err.status == "form-invalid") setFormErrors(err["form-errors"])
             setAlert({
                 hidden: false,
                 status: 'error',
@@ -217,35 +234,43 @@ const UploadScanReport = ({ setTitle }) => {
             }
             <PageHeading text={"New Scan Report"} />
 
-            <Box mt={4}>
-                <Text w="200px">Data Partner</Text>
+            <FormControl isInvalid={formErrors.datapartner && formErrors.datapartner.length > 0} mt={4}>
+                <FormLabel htmlFor='Data Partner' w="200px">Data Partner</FormLabel >
                 <Select value={JSON.stringify(selectedDataPartner)} onChange={(option) => setselectedDataPartner(JSON.parse(option.target.value))
                 } >
                     {dataPartners.map((item, index) =>
                         <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                     )}
                 </Select>
-            </Box>
+                {formErrors.datapartner && formErrors.datapartner.length > 0 &&
+                    <FormErrorMessage>{formErrors.datapartner[0]}</FormErrorMessage>
+                }
+            </FormControl>
 
             <Box mt={4}>
-                <Text w="200px">Dataset</Text>
+                <FormLabel htmlFor='Dataset' w="200px">Dataset</FormLabel>
                 {loadingDataset ?
                     <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Datasets' />
                     :
                     <Box>
-                        <Box display={{ md: 'flex' }}>
-                            <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
-                            } >
-                                {datasets.map((item, index) =>
-                                    <option key={index} value={JSON.stringify(item)}>{item.name}</option>
-                                )}
-                            </Select>
-                            {selectedDataPartner.id != undefined && !addingDataset &&
-                                <Tooltip label="Add new Dataset">
-                                    <Button onClick={() => setAddingDataset(true)}>Add new</Button>
-                                </Tooltip>
+                        <FormControl isInvalid={formErrors.parent_dataset && formErrors.parent_dataset.length > 0}>
+                            <Box display={{ md: 'flex' }}>
+                                <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
+                                } >
+                                    {datasets.map((item, index) =>
+                                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                                    )}
+                                </Select>
+                                {selectedDataPartner.id != undefined && !addingDataset &&
+                                    <Tooltip label="Add new Dataset">
+                                        <Button onClick={() => setAddingDataset(true)}>Add new</Button>
+                                    </Tooltip>
+                                }
+                            </Box>
+                            {formErrors.parent_dataset && formErrors.parent_dataset.length > 0 &&
+                                <FormErrorMessage>{formErrors.parent_dataset[0]}</FormErrorMessage>
                             }
-                        </Box>
+                        </FormControl>
                         {selectedDataPartner.id != undefined && addingDataset &&
                             <Box px={4} display="grid" pb={8} bg={"gray.200"} rounded="xl">
                                 {addDatasetMessage ?
@@ -337,26 +362,35 @@ const UploadScanReport = ({ setTitle }) => {
             </Box>
 
 
-            <Box mt={4}>
-                <Text w="200px">Scan Report name</Text>
-                <Input ref={scanReportName} />
-            </Box>
+            <FormControl isInvalid={formErrors.dataset && formErrors.dataset.length > 0} mt={4}>
+                <FormLabel htmlFor='Scan Report name' w="200px">Scan Report name</FormLabel>
+                <Input ref={scanReportName} onChange={() => setFormErrors({ ...formErrors, dataset: undefined })} />
+                {formErrors.dataset && formErrors.dataset.length > 0 &&
+                    <FormErrorMessage>{formErrors.dataset[0]}</FormErrorMessage>
+                }
+            </FormControl >
 
-            <Box mt={4} >
-                <Text w="200px">WhiteRabbit ScanReport</Text>
+            <FormControl isInvalid={formErrors.scan_report_file && formErrors.scan_report_file.length > 0} mt={4} >
+                <FormLabel htmlFor='WhiteRabbit ScanReport' w="200px">WhiteRabbit ScanReport</FormLabel>
                 <input type="file" id="scanreport" onChange={readScanReport}
                     style={{ width: "100%", borderWidth: "1px", borderColor: "gray", borderRadius: "5px" }} />
-            </Box>
+                {formErrors.scan_report_file && formErrors.scan_report_file.length > 0 &&
+                    <FormErrorMessage>{formErrors.scan_report_file[0]}</FormErrorMessage>
+                }
+            </FormControl>
 
-            <Box mt={4}>
-                <Text w="200px">Data Dictionary</Text>
+            <FormControl isInvalid={formErrors.data_dictionary_file && formErrors.data_dictionary_file.length > 0} mt={4}>
+                <FormLabel htmlFor='Data Dictionary' w="200px">Data Dictionary</FormLabel>
                 <input type="file" id="datadictionary" onChange={readDataDictionary}
                     style={{ width: "100%", borderWidth: "1px", borderColor: "gray", borderRadius: "5px" }} />
-            </Box>
+                {formErrors.data_dictionary_file && formErrors.data_dictionary_file.length > 0 &&
+                    <FormErrorMessage>{formErrors.data_dictionary_file[0]}</FormErrorMessage>
+                }
+            </FormControl>
 
 
 
-            <Button mt="10px" onClick={upload}>Submit</Button>
+            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
         </Container>
     );
 }

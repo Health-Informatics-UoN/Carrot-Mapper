@@ -973,6 +973,10 @@ class ScanReportFormView(FormView):
     template_name = "mapping/upload_scan_report.html"
     success_url = reverse_lazy("scan-report-list")
 
+    def form_invalid(self, form):
+        error_dict= {'status':'form-invalid','form-errors':form.errors}
+        return HttpResponse(json.dumps(error_dict),content_type="application/json")
+
     def form_valid(self, form):
 
         # Create random alphanumeric to link scan report to data dictionary

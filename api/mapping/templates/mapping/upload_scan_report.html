@@ -26,7 +26,9 @@
                     data: formData,
                     enctype: 'multipart/form-data',
                 });
-                // need to test that it actually throws an error here if the upload is unsuccseeful
+                if (res.status == "form-invalid") {
+                    throw {statusText:"There was a form error",...res}
+                }
                 return res
             }
             catch (err) {
