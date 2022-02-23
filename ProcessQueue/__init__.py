@@ -360,28 +360,53 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # print("FIELD TO CONCEPT MAP DICT", existing_field_id_to_concept_map)
     # creates a list of field ids from fields that already exist and have a concept
     existing_ids = list(existing_field_id_to_concept_map.keys())
+
     # paginate the field id's variable and field names from list of newly generated
-    # fields so that get request does not exceed character limit
-    paginated_existing_ids_and_new_field_names = paginate_two_lists(
-        existing_ids, list(new_fields_map.keys()), max_chars_for_get
-    )
+    # fields so that get requests do not exceed character limit
+    paginated_existing_ids = paginate(existing_ids, max_chars_for_get)
+    paginated_new_field_names = paginate(list(new_fields_map.keys()), max_chars_for_get)
     # for each list in paginated ids, get scanreport fields that match any of the given
-    # ids (those with an associated concept) and whose name matches any of the newly
-    # generated names
-    existing_fields_details = []
-    for t in paginated_existing_ids_and_new_field_names:
-        ids_to_get = ",".join(map(str, t[0]))
-        new_fields_names = ",".join(map(str, t[1]))
-        get_field_names = requests.get(
-            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&name__in="
-            f"{new_fields_names}",
+    # ids (those with an associated concept)
+    existing_fields_filtered_by_id = []
+    for ids in paginated_existing_ids:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?id__in={ids_to_get}&fields=id,"
+                f"scan_report_table",
             headers=headers,
         )
-        existing_fields_details.append(
-            json.loads(get_field_names.content.decode("utf-8"))
+        existing_fields_filtered_by_id.append(
+            json.loads(get_field_tables.content.decode("utf-8"))
         )
-    existing_fields_details = flatten(existing_fields_details)
-    # print("existing_fields_details", existing_fields_details)
+    existing_fields_filtered_by_id = flatten(existing_fields_filtered_by_id)
+
+    # for each list in paginated ids, get scanreport fields whose name matches any of
+    # the newly generated names
+    existing_fields_filtered_by_name = []
+    for ids in paginated_new_field_names:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreportfieldsfilter/?name__in={ids_to_get}&fields=id,"
+                f"scan_report_table",
+            headers=headers,
+        )
+        existing_fields_filtered_by_name.append(
+            json.loads(get_field_tables.content.decode("utf-8"))
+        )
+    existing_fields_filtered_by_name = flatten(existing_fields_filtered_by_name)
+
+    # Combine the results of the two sets of GET requests to identify fields which
+    # satisfy both criteria (id and name) and then store their details in
+    # existing_field_details
+    cofiltered_field_ids = set(field["id"]
+                               for field in existing_fields_filtered_by_id).\
+                           intersection(set(field["id"]
+                                   for field in existing_fields_filtered_by_name))
+    existing_fields_details = [field
+                               for field in existing_fields_filtered_by_id
+                               if field["id"] in cofiltered_field_ids]
 
     # get table ids from fields and repeat the process
     table_ids = set([item["scan_report_table"] for item in existing_fields_details])
