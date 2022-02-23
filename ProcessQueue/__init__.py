@@ -628,27 +628,53 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
 
     # paginate list of value ids from existing values that have scanreport concepts and
     # use the list to get existing scanreport values that match the list any of the newly generated names
-    paginated_ids_and_new_value_names = paginate_two_lists(
-        [str(element.get("object_id", None)) for element in existing_value_concept_ids],
-        new_values_names_list,
-        max_chars_for_get,
-    )
-    # print("VALUE names list", new_value_names_string)
-    # print("VALUE paginated ids", paginated_ids)
-    existing_values_details = []
-    for t in paginated_ids_and_new_value_names:
-        ids_to_get = ",".join(map(str, t[0]))
-        new_values_names = ",".join(map(str, t[1]))
-        get_value_names = requests.get(
-            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&value__in="
-            f"{new_values_names}&fields=id,value,scan_report_field,"
+
+    paginated_existing_ids = paginate([str(element.get("object_id", None)) for element in existing_value_concept_ids], max_chars_for_get)
+    paginated_new_value_names = paginate(new_values_names_list,
+                                          max_chars_for_get)
+    # for each list in paginated ids, get scanreport values that match any of the given
+    # ids (those with an associated concept)
+    existing_values_filtered_by_id = []
+    for ids in paginated_existing_ids:
+        ids_to_get = ",".join(map(str, ids))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreportvaluesfilter/?id__in={ids_to_get}&fields=id,value,scan_report_field,"
             f"value_description",
             headers=headers,
         )
-        existing_values_details.append(
-            json.loads(get_value_names.content.decode("utf-8"))
+        existing_values_filtered_by_id.append(
+            json.loads(get_field_tables.content.decode("utf-8"))
         )
-    existing_values_details = flatten(existing_values_details)
+    existing_values_filtered_by_id = flatten(existing_values_filtered_by_id)
+
+    # for each list in paginated ids, get scanreport values whose name matches any of
+    # the newly generated names
+    existing_values_filtered_by_name = []
+    for names in paginated_new_value_names:
+        new_values_names = ",".join(map(str, names))
+
+        get_field_tables = requests.get(
+            url=f"{api_url}scanreportvaluesfilter/?name__in={new_values_names}&fields="
+                f"id,value,scan_report_field,value_description",
+            headers=headers,
+        )
+        existing_values_filtered_by_name.append(
+            json.loads(get_field_tables.content.decode("utf-8"))
+        )
+    existing_values_filtered_by_name = flatten(existing_values_filtered_by_name)
+
+    # Combine the results of the two sets of GET requests to identify values which
+    # satisfy both criteria (id and name) and then store their details in
+    # existing_value_details
+    cofiltered_value_ids = set(value["id"]
+                               for value in existing_values_filtered_by_id). \
+        intersection(set(value["id"]
+                         for value in existing_values_filtered_by_name))
+    existing_values_details = [value
+                               for value in existing_values_filtered_by_id
+                               if value["id"] in cofiltered_value_ids]
+
     print(
         datetime.utcnow().strftime("%H:%M:%S.%fZ"),
         "Details of existing values "
