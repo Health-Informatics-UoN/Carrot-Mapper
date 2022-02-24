@@ -71,7 +71,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -975,8 +975,10 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_invalid(self, form):
-        error_dict= {'status':'form-invalid','form-errors':form.errors}
-        return HttpResponse(json.dumps(error_dict),content_type="application/json")
+        response = JsonResponse({'status_code': 422,'form-errors':form.errors,'ok':False,'statusText':"Could not process input"})
+        response.status_code = 422
+        return response
+
 
     def form_valid(self, form):
 
