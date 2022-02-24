@@ -28,7 +28,7 @@ const usePost = async (url,data) =>{
     return res;
 }
 const postForm = async (url,data) =>{
-    const response = await fetch(`${url}`,
+    const response = await fetch(url,
     {
         method: "POST",
         headers: {
