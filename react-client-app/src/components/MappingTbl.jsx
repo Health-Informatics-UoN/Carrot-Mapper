@@ -24,7 +24,6 @@ import MappingModal from './MappingModal'
 import AnalysisModal from './AnalysisModal'
 import SummaryTbl from './SummaryTbl'
 import RulesTbl from './RulesTbl'
-import AnalysisTbl from './AnalysisTbl'
 import ConceptAnalysis from './ConceptAnalysis'
 
 
@@ -45,8 +44,8 @@ const MappingTbl = () => {
     const [isDownloadingCSV, setDownloadingCSV] = useState(false);
     const [isDownloadingImg, setDownloadingImg] = useState(false);
     const downLoadingImgRef = useRef(false)
-    const {isOpen, onOpen, onClose } = useDisclosure()
-    const {isOpen:isOpenAnalyse, onOpen:onOpenAnalyse, onClose:onCloseAnalyse } = useDisclosure()
+    const {isOpen, onOpen, onClose} = useDisclosure()
+    const {isOpen:isOpenAnalyse, onOpen:onOpenAnalyse, onClose:onCloseAnalyse} = useDisclosure()
 
 
     useEffect(() => {
@@ -217,7 +216,7 @@ const MappingTbl = () => {
                 destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter}/>
             </MappingModal>
             <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
-                <ConceptAnalysis data={data} values={values}filters={filters}/>
+                <ConceptAnalysis data={data} values={values} filters={filters}/>
             </AnalysisModal>
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>

@@ -5,7 +5,6 @@ function ConceptAnalysis({data, values, filters}) {
     
     return (
         <div>
-            
             <AnalysisTbl data={data} values={values}filters={filters}/>
         </div>
     )

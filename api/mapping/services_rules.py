@@ -1,4 +1,3 @@
-from calendar import c
 import json
 import io
 import csv
@@ -871,7 +870,7 @@ def analyse_concepts(scan_report_id):
                     concept = Concept.objects.get(concept_id=desc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
                     source_ids = (
-                        MappingRule.objects.filter(Q(concept__concept=desc))
+                        MappingRule.objects.filter(concept__concept=desc)
                         .exclude(
                             Q(omop_field__field__icontains="person_id")
                             | Q(omop_field__field__icontains="datetime")
@@ -900,7 +899,7 @@ def analyse_concepts(scan_report_id):
                     concept = Concept.objects.get(concept_id=anc)
                     rule_name = Concept.objects.get(concept_id=rule).concept_name
                     source_ids = (
-                        MappingRule.objects.filter(Q(concept__concept=anc))
+                        MappingRule.objects.filter(concept__concept=anc)
                         .exclude(
                             Q(omop_field__field__icontains="person_id")
                             | Q(omop_field__field__icontains="datetime")

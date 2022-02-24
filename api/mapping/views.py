@@ -1038,13 +1038,8 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=os.path.splitext(
-                    str(form.cleaned_data.get("data_dictionary_file"))
-                )[0]
-                + "_"
-                + dt
-                + rand
-                + ".csv",
+                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}"
+                f"_{dt}{rand}.csv",
                 scan_report=scan_report,
             )
             data_dictionary.save()
