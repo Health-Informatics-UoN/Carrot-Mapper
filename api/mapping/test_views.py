@@ -224,18 +224,16 @@ class TestScanScanReportListViewset(TestCase):
         )
         # Get the response data
         response_data = self.view(request).data
+        response_data = [obj.get("id") for obj in response_data]
+        expected_objs = [
+            self.public_scanreport.id,
+            self.restricted_scanreport1.id,
+            self.restricted_scanreport2.id,
+        ]
 
         # Assert user1 can see all scan reports
         # and restricted_dataset
-        for obj in response_data:
-            self.assertIn(
-                obj.get("id"),
-                [
-                    self.public_scanreport.id,
-                    self.restricted_scanreport1.id,
-                    self.restricted_scanreport2.id,
-                ],
-            )
+        self.assertEqual(sorted(response_data), sorted(expected_objs))
 
         # Add user2 to the request; this is not automatic
         request.user = self.user2
@@ -247,17 +245,15 @@ class TestScanScanReportListViewset(TestCase):
         )
         # Get the response
         response_data = self.view(request).data
+        response_data = [obj.get("id") for obj in response_data]
+        expected_objs = [self.public_scanreport.id, self.restricted_scanreport1.id]
 
         # Assert user2 can see public_scanreport and restricted_scanreport1
-        for obj in response_data:
-            self.assertIn(
-                obj.get("id"),
-                [self.public_scanreport.id, self.restricted_scanreport1.id],
-            )
+        self.assertEqual(sorted(response_data), sorted(expected_objs))
 
         # Assert user2 can't see restricted_scanreport2
         for obj in response_data:
-            self.assertNotEqual(obj.get("id"), self.restricted_scanreport2.id)
+            self.assertNotEqual(obj, self.restricted_scanreport2.id)
 
     def test_az_function_user_perm(self):
         User = get_user_model()
@@ -275,5 +271,4 @@ class TestScanScanReportListViewset(TestCase):
         # Get the response
         response_data = self.view(request).data
         # Assert az_user can see all scan reports
-        obj_ids = [obj.get("id") for obj in response_data]
-        self.assertTrue(ScanReport.objects.filter(id__in=obj_ids).exists())
+        self.assertEqual(len(response_data), ScanReport.objects.all().count())
