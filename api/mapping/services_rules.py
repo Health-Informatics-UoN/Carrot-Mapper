@@ -844,10 +844,20 @@ def remove_mapping_rules(request, scan_report_id):
     rules.delete()
 
 
-def get_concept_hierarchy(rule, h_concept_id):
-    print(h_concept_id)
-    concept = Concept.objects.get(concept_id=h_concept_id)
+def get_concept_details(rule, h_concept_id):
+    """
+    Given a mapping rule and its descendant/ancestor concept id
+    Find the source field/value that the descendant/ancestor is mapped to,
+    Return the mapping rule name, the descendant/ancestor name, and the source fields/tables
+    """
+    # Get the descendant/ancestor concept name
+    concept = Concept.objects.get(concept_id=h_concept_id).concept_name
+    # Get the name of the mapping rule concept
     rule_name = Concept.objects.get(concept_id=rule).concept_name
+    # Get the source field id, source field name, source table id,
+    # source table name and the content type of the descendant/ancestor
+    # Filter out mapping rules pointing to omop fields:
+    # person id, datetime, or source_concept_id to account for duplicated mapping rules
     source_ids = (
         MappingRule.objects.filter(concept__concept=h_concept_id)
         .exclude(
@@ -867,50 +877,73 @@ def get_concept_hierarchy(rule, h_concept_id):
 
 
 def analyse_concepts(scan_report_id):
+    """
+    Given a scan_report_id get all the mapping rules in that Scan Report.
+    Get all the mapping rules from every other Scan Report and compare them against the current ones
+    If there are any ancestors/descendants of the current mapping rules mapped in another Scan Report
+    Find where those ancestors/descendants are mapped to
+    """
+
+    # Get mapping rules for current scan report
     mapping_rules = (
         MappingRule.objects.all()
         .filter(scan_report_id=scan_report_id)
         .values_list("concept__concept", flat=True)
         .distinct()
     )
+    # Get mapping rules for all other scan reports
     all_mapping_rules = MappingRule.objects.exclude(
         scan_report_id=scan_report_id
     ).values_list("concept__concept", flat=True)
+
     data = []
     descendant_list = []
     ancestors_list = []
-
+    # For every mapping rule in the current scan report
     for rule in mapping_rules:
 
         try:
+            # Find the descendants of that rule
             descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
+            # Find the ancestors of that rule
             ancestors = ConceptAncestor.objects.filter(descendant_concept_id=rule)
-
+            # For each descendant found
             for descendant in descendants:
+                # get the concept id
                 desc = descendant.descendant_concept_id
-
+                # Check if the descendant is a mapped concept in any other scan report
+                # and that it's not the same as the original concept
                 if (desc in all_mapping_rules) & (desc != rule):
-                    concept, rule_name, source_ids = get_concept_hierarchy(rule, desc)
+                    # Get all the details for that descendant:
+                    # descendant name, current mapping rule name, where that descendant is mapped to
+                    desc_name, rule_name, source_ids = get_concept_details(rule, desc)
+                    # Append all descendant details to a list
                     descendant_list.append(
                         {
                             "d_id": desc,
-                            "d_name": concept.concept_name,
+                            "d_name": desc_name,
                             "source": source_ids,
                         }
                     )
+            # For each ancestor found
             for ancestor in ancestors:
-
+                # get the concept_id
                 anc = ancestor.ancestor_concept_id
-
+                # If ancestor is a mapping rule in any other scan report,
+                # and is not the same rule as the current one
                 if (anc in all_mapping_rules) & (anc != rule):
-                    concept, rule_name, source_ids = get_concept_hierarchy(rule, anc)
+                    # Get all the details for that ancestor:
+                    # ancestor name, current mapping rule name, where that ancestor is mapped to
+                    concept, rule_name, source_ids = get_concept_details(rule, anc)
+                    # Append all the ancestor details to a list
                     ancestors_list.append(
                         {
                             "a_id": anc,
-                            "a_name": concept.concept_name,
+                            "a_name": concept,
                             "source": source_ids,
                         }
                     )
+            # Append all the descendats/ancestors of the current mapping rule in a dict
             data.append(
                 {
                     "rule_id": rule,
@@ -923,6 +956,7 @@ def analyse_concepts(scan_report_id):
                     ],
                 }
             )
+            # Reset lists before moving on to the next mapping rule
             descendant_list = []
             ancestors_list = []
         except:
