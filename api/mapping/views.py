@@ -108,6 +108,7 @@ from .models import (
     ScanReportConcept,
     ClassificationSystem,
     Dataset,
+    VisibilityChoices,
 )
 from .permissions import (
     CanViewProject,
@@ -232,8 +233,38 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
     serializer_class = ScanReportSerializer
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all ScanReports.
+
+        Else, return only the ScanReports which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return ScanReport.objects.all().distinct()
+
+        return ScanReport.objects.filter(
+            Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__viewers=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+        ).distinct()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -284,12 +315,12 @@ class DatasetListView(generics.ListAPIView):
         return Dataset.objects.filter(
             Q(
                 project__members=self.request.user.id,
-                visibility="PUBLIC",
+                visibility=VisibilityChoices.PUBLIC,
             )
             | Q(
                 project__members=self.request.user.id,
                 viewers=self.request.user.id,
-                visibility="RESTRICTED",
+                visibility=VisibilityChoices.RESTRICTED,
             )
         ).distinct()
 
