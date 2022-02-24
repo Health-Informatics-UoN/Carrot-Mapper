@@ -844,6 +844,28 @@ def remove_mapping_rules(request, scan_report_id):
     rules.delete()
 
 
+def get_concept_hierarchy(rule, h_concept_id):
+    print(h_concept_id)
+    concept = Concept.objects.get(concept_id=h_concept_id)
+    rule_name = Concept.objects.get(concept_id=rule).concept_name
+    source_ids = (
+        MappingRule.objects.filter(concept__concept=h_concept_id)
+        .exclude(
+            Q(omop_field__field__icontains="person_id")
+            | Q(omop_field__field__icontains="datetime")
+            | Q(omop_field__field__icontains=("source"))
+        )
+        .values(
+            "source_field__id",
+            "source_field__name",
+            "source_field__scan_report_table__id",
+            "source_field__scan_report_table__name",
+            "concept__content_type",
+        )
+    ).distinct()
+    return (concept, rule_name, source_ids)
+
+
 def analyse_concepts(scan_report_id):
     mapping_rules = (
         MappingRule.objects.all()
@@ -866,24 +888,9 @@ def analyse_concepts(scan_report_id):
 
             for descendant in descendants:
                 desc = descendant.descendant_concept_id
+
                 if (desc in all_mapping_rules) & (desc != rule):
-                    concept = Concept.objects.get(concept_id=desc)
-                    rule_name = Concept.objects.get(concept_id=rule).concept_name
-                    source_ids = (
-                        MappingRule.objects.filter(concept__concept=desc)
-                        .exclude(
-                            Q(omop_field__field__icontains="person_id")
-                            | Q(omop_field__field__icontains="datetime")
-                            | Q(omop_field__field__icontains=("source"))
-                        )
-                        .values(
-                            "source_field__id",
-                            "source_field__name",
-                            "source_field__scan_report_table__id",
-                            "source_field__scan_report_table__name",
-                            "concept__content_type",
-                        )
-                    ).distinct()
+                    concept, rule_name, source_ids = get_concept_hierarchy(rule, desc)
                     descendant_list.append(
                         {
                             "d_id": desc,
@@ -896,25 +903,7 @@ def analyse_concepts(scan_report_id):
                 anc = ancestor.ancestor_concept_id
 
                 if (anc in all_mapping_rules) & (anc != rule):
-                    concept = Concept.objects.get(concept_id=anc)
-                    rule_name = Concept.objects.get(concept_id=rule).concept_name
-                    source_ids = (
-                        MappingRule.objects.filter(concept__concept=anc)
-                        .exclude(
-                            Q(omop_field__field__icontains="person_id")
-                            | Q(omop_field__field__icontains="datetime")
-                            | Q(omop_field__field__icontains="source")
-                        )
-                        .values(
-                            "source_field__id",
-                            "source_field__name",
-                            "source_field__scan_report_table__id",
-                            "source_field__scan_report_table__name",
-                            "concept__content_type",
-                        )
-                        .distinct()
-                    )
-
+                    concept, rule_name, source_ids = get_concept_hierarchy(rule, anc)
                     ancestors_list.append(
                         {
                             "a_id": anc,
