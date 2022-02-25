@@ -222,15 +222,16 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     //check if this table is in the list of tables that should be skipped (i.e. have no _source_concept_id)
     //note - I see no need for keeping a rule for the source_concept_id for any table anymore
     //     - https://github.com/CO-CONNECT/mapping-pipeline/issues/406
-    //     - Calum 25/02/2022   
+    //     - Calum 25/02/2022
+    let tempOmopField; 
     if(! m_skip_source_concept_id.includes(omopTable.table)){
-         let tempOmopField = await cachedOmopFunction(fields,domain+"_source_concept_id")
+         tempOmopField = await cachedOmopFunction(fields,domain+"_source_concept_id")
 	 data.omop_field = tempOmopField.id
 	 promises.push(usePost(`/mappingrules/`,data))
      }
       
     //_source_value
-    let tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
+    tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
     promises.push(usePost(`/mappingrules/`,data))
     //measurement
