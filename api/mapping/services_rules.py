@@ -851,7 +851,7 @@ def get_concept_details(rule, h_concept_id):
     Return the mapping rule name, the descendant/ancestor name, and the source fields/tables
     """
     # Get the descendant/ancestor concept name
-    concept = Concept.objects.get(concept_id=h_concept_id).concept_name
+    concept_name = Concept.objects.get(concept_id=h_concept_id).concept_name
 
     # Get the source field id, source field name, source table id,
     # source table name and the content type of the descendant/ancestor
@@ -872,7 +872,7 @@ def get_concept_details(rule, h_concept_id):
             "concept__content_type",
         )
     ).distinct()
-    return (concept, source_ids)
+    return (concept_name, source_ids)
 
 
 def analyse_concepts(scan_report_id):
