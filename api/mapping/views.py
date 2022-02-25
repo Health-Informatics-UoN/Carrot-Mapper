@@ -932,7 +932,6 @@ class StructuralMappingTableListView(ListView):
         elif request.POST.get("get_svg") is not None:
             qs = self.get_queryset()
             return view_mapping_rules(request, qs)
-
         else:
             messages.error(request, "not working right now!")
             return redirect(request.path)
@@ -1002,7 +1001,6 @@ class ScanReportFormView(FormView):
             dataset=form.cleaned_data["dataset"],
             parent_dataset=form.cleaned_data["parent_dataset"],
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
-            visibility=form.cleaned_data["visibility"],
         )
 
         scan_report.author = self.request.user
