@@ -301,8 +301,9 @@ class DatasetListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
-        "data_partner": ["in","exact"],
+        "data_partner": ["in", "exact"],
     }
+
 
 class CreateDatasetView(generics.CreateAPIView):
     serializer_class = DatasetSerializer
@@ -1031,10 +1032,16 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_invalid(self, form):
-        response = JsonResponse({'status_code': 422,'form-errors':form.errors,'ok':False,'statusText':"Could not process input"})
+        response = JsonResponse(
+            {
+                "status_code": 422,
+                "form-errors": form.errors,
+                "ok": False,
+                "statusText": "Could not process input",
+            }
+        )
         response.status_code = 422
         return response
-
 
     def form_valid(self, form):
 
