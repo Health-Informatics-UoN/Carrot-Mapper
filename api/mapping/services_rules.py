@@ -852,8 +852,7 @@ def get_concept_details(rule, h_concept_id):
     """
     # Get the descendant/ancestor concept name
     concept = Concept.objects.get(concept_id=h_concept_id).concept_name
-    # Get the name of the mapping rule concept
-    rule_name = Concept.objects.get(concept_id=rule).concept_name
+
     # Get the source field id, source field name, source table id,
     # source table name and the content type of the descendant/ancestor
     # Filter out mapping rules pointing to omop fields:
@@ -899,10 +898,10 @@ def analyse_concepts(scan_report_id):
     data = []
     descendant_list = []
     ancestors_list = []
-    rule_name = ""
     # For every mapping rule in the current scan report
     for rule in mapping_rules:
-
+        # Get the name of the mapping rule concept
+        rule_name = Concept.objects.get(concept_id=rule).concept_name
         # Find the descendants of that rule
         descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
         # Find the ancestors of that rule
@@ -918,7 +917,7 @@ def analyse_concepts(scan_report_id):
 
                 # Get all the details for that descendant:
                 # descendant name, current mapping rule name, where that descendant is mapped to
-                desc_name, rule_name, source_ids = get_concept_details(rule, desc)
+                desc_name, source_ids = get_concept_details(rule, desc)
                 # Append all descendant details to a list
                 descendant_list.append(
                     {
@@ -937,7 +936,7 @@ def analyse_concepts(scan_report_id):
 
                 # Get all the details for that ancestor:
                 # ancestor name, current mapping rule name, where that ancestor is mapped to
-                concept, rule_name, source_ids = get_concept_details(rule, anc)
+                concept, source_ids = get_concept_details(rule, anc)
                 # Append all the ancestor details to a list
                 ancestors_list.append(
                     {
@@ -961,12 +960,6 @@ def analyse_concepts(scan_report_id):
                         }
                     ],
                 }
-            )
-        else:
-            print(
-                "No ancestors or descendants of {} appear in any other Scan Reports".format(
-                    rule
-                )
             )
         # Reset lists before moving on to the next mapping rule
         descendant_list = []
