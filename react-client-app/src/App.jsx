@@ -118,7 +118,7 @@ const App = ({ page }) => {
                     const cachedOmopFunction = mapConceptToOmopField()
                     const domain = response.domain_id.toLowerCase()
                     const fields = await useGet(`/omopfields/`)
-                    const destination_field = await cachedOmopFunction(fields, domain + "_source_concept_id")
+                    const destination_field = await cachedOmopFunction(fields, domain + "_concept_id")
                     if (destination_field == undefined) {
                         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                         setValues(valuesRef.current)

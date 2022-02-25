@@ -230,7 +230,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
      }
       
     //_source_value
-    tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
+    let tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
     promises.push(usePost(`/mappingrules/`,data))
     //measurement
