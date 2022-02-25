@@ -175,8 +175,11 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
 	'procedure_occurrence':['procedure_datetime'],
 	'specimen':['specimen_datetime']
-        }
-    const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
+    }
+    //omop tables that dont have a <domain>_source_concept_id
+    const m_skip_source_concept_id = ['specimen'];
+      
+    const destination_field = await cachedOmopFunction(fields,domain+"_concept_id")
     // if a destination field can't be found for concept domain, return error
     if(destination_field == undefined){
         throw 'Could not find a destination field for this concept'
@@ -211,13 +214,22 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     else{
         data.source_field = scan_report_value.scan_report_field
     }
-    //_source_concept_id
+      
+    //_concept_id
     data.omop_field = destination_field.id
     promises.push(usePost(`/mappingrules/`,data))
-    //_concept_id
-    let tempOmopField = await cachedOmopFunction(fields,domain+"_concept_id")
-    data.omop_field = tempOmopField.id
-    promises.push(usePost(`/mappingrules/`,data))
+
+    //_source_concept_id
+    //check if this table is in the list of tables that should be skipped (i.e. have no _source_concept_id)
+    //note - I see no need for keeping a rule for the source_concept_id for any table anymore
+    //     - https://github.com/CO-CONNECT/mapping-pipeline/issues/406
+    //     - Calum 25/02/2022   
+    if(! m_skip_source_concept_id.includes(omopTable.table)){
+         let tempOmopField = await cachedOmopFunction(fields,domain+"_source_concept_id")
+	 data.omop_field = tempOmopField.id
+	 promises.push(usePost(`/mappingrules/`,data))
+     }
+      
     //_source_value
     tempOmopField = await cachedOmopFunction(fields,domain+"_source_value")
     data.omop_field = tempOmopField.id
