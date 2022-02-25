@@ -167,6 +167,8 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     const domain = scan_report_concept.concept.domain_id.toLowerCase()
     const fields = await useGet(`/omopfields/`)
     const cachedOmopFunction = mapConceptToOmopField()
+    //omop tables that dont have a <domain>_source_concept_id:
+    const m_skip_source_concept_id = ['specimen'];
     const m_date_field_mapper = {
         'person': ['birth_datetime'],
         'condition_occurrence': ['condition_start_datetime','condition_end_datetime'],
@@ -175,10 +177,7 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
 	'procedure_occurrence':['procedure_datetime'],
 	'specimen':['specimen_datetime']
-    }
-    //omop tables that dont have a <domain>_source_concept_id
-    const m_skip_source_concept_id = ['specimen'];
-      
+        }      
     const destination_field = await cachedOmopFunction(fields,domain+"_concept_id")
     // if a destination field can't be found for concept domain, return error
     if(destination_field == undefined){
