@@ -296,29 +296,11 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
         "data_partner": ["in", "exact"],
-    }
-
-
-class CreateDatasetView(generics.CreateAPIView):
-    serializer_class = DatasetSerializer
-    queryset = Dataset.objects.all()
-
-
-class DatasetFilterView(generics.ListAPIView):
-    """
-    API view to show all datasets a user has access to.
-    """
-
-    serializer_class = DatasetSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "id": ["in"],
     }
 
     def get_queryset(self):
@@ -342,6 +324,11 @@ class DatasetFilterView(generics.ListAPIView):
                 visibility=VisibilityChoices.RESTRICTED,
             )
         ).distinct()
+
+
+class CreateDatasetView(generics.CreateAPIView):
+    serializer_class = DatasetSerializer
+    queryset = Dataset.objects.all()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
