@@ -28,7 +28,7 @@ function AnalysisTbl({ data, values, filters }) {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {
+                    {(data).length > 0 ?
                         data.map((item, index) =>
                             <Tr key={index}>
                                 <Td>{item.rule_id} - {item.rule_name}</Td>
@@ -77,7 +77,11 @@ function AnalysisTbl({ data, values, filters }) {
                                 </Td>
                             </Tr>
 
-                        )
+                        ):
+                        <Flex padding="30px">
+                            <Flex marginLeft="10px">No ancestors or descendants of these mappings appear in any other Scan Reports</Flex>
+                        </Flex>
+                        
                     }
                 </Tbody>
 

@@ -899,6 +899,7 @@ def analyse_concepts(scan_report_id):
     data = []
     descendant_list = []
     ancestors_list = []
+    rule_name = ""
     # For every mapping rule in the current scan report
     for rule in mapping_rules:
 
@@ -907,13 +908,15 @@ def analyse_concepts(scan_report_id):
             descendants = ConceptAncestor.objects.filter(ancestor_concept_id=rule)
             # Find the ancestors of that rule
             ancestors = ConceptAncestor.objects.filter(descendant_concept_id=rule)
+
             # For each descendant found
             for descendant in descendants:
                 # get the concept id
                 desc = descendant.descendant_concept_id
                 # Check if the descendant is a mapped concept in any other scan report
                 # and that it's not the same as the original concept
-                if (desc in all_mapping_rules) & (desc != rule):
+                if (desc in all_mapping_rules) and (desc != rule):
+
                     # Get all the details for that descendant:
                     # descendant name, current mapping rule name, where that descendant is mapped to
                     desc_name, rule_name, source_ids = get_concept_details(rule, desc)
@@ -931,7 +934,8 @@ def analyse_concepts(scan_report_id):
                 anc = ancestor.ancestor_concept_id
                 # If ancestor is a mapping rule in any other scan report,
                 # and is not the same rule as the current one
-                if (anc in all_mapping_rules) & (anc != rule):
+                if (anc in all_mapping_rules) and (anc != rule):
+
                     # Get all the details for that ancestor:
                     # ancestor name, current mapping rule name, where that ancestor is mapped to
                     concept, rule_name, source_ids = get_concept_details(rule, anc)
@@ -943,6 +947,7 @@ def analyse_concepts(scan_report_id):
                             "source": source_ids,
                         }
                     )
+
             # Append all the descendants/ancestors of the current mapping rule in a dict
             # Do not append if both lists are empty
             if ancestors_list or descendant_list:
@@ -958,9 +963,20 @@ def analyse_concepts(scan_report_id):
                         ],
                     }
                 )
+            else:
+                raise Exception(
+                    "No ancestors or descendants of {} appear in any other Scan Reports".format(
+                        rule_name
+                    )
+                )
             # Reset lists before moving on to the next mapping rule
             descendant_list = []
             ancestors_list = []
-        except:
-            pass
+        except Exception as e:
+            print(
+                "No ancestors or descendants of {} appear in any other Scan Reports".format(
+                    rule
+                )
+            )
+
     return {"data": data}
