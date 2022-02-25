@@ -872,7 +872,7 @@ def get_concept_details(rule, h_concept_id):
             "concept__content_type",
         )
     ).distinct()
-    return (concept, rule_name, source_ids)
+    return (concept, source_ids)
 
 
 def analyse_concepts(scan_report_id):
