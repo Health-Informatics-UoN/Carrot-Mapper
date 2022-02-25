@@ -943,23 +943,24 @@ def analyse_concepts(scan_report_id):
                             "source": source_ids,
                         }
                     )
-            # Append all the descendats/ancestors of the current mapping rule in a dict
-            data.append(
-                {
-                    "rule_id": rule,
-                    "rule_name": rule_name,
-                    "anc_desc": [
-                        {
-                            "descendants": descendant_list,
-                            "ancestors": ancestors_list,
-                        }
-                    ],
-                }
-            )
+            # Append all the descendants/ancestors of the current mapping rule in a dict
+            # Do not append if both lists are empty
+            if ancestors_list or descendant_list:
+                data.append(
+                    {
+                        "rule_id": rule,
+                        "rule_name": rule_name,
+                        "anc_desc": [
+                            {
+                                "descendants": descendant_list,
+                                "ancestors": ancestors_list,
+                            }
+                        ],
+                    }
+                )
             # Reset lists before moving on to the next mapping rule
             descendant_list = []
             ancestors_list = []
         except:
             pass
-
     return {"data": data}
