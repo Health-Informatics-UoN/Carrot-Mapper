@@ -20,8 +20,28 @@ const usePost = async (url,data) =>{
         body: JSON.stringify(data)    
     }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const res = await response.json();
     return res;
+}
+const postForm = async (url,data) =>{
+    const response = await fetch(url,
+    {
+        method: "POST",
+        headers: {
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+        body: data
+    }
+    );
+    const json = await response.json()
+    if (response.status < 200 || response.status > 300) {
+        throw json
+    }
+    return response;
 }
 // function for patch requests to api with authorization token
 const usePatch = async (url, body) => {
@@ -323,5 +343,5 @@ const getScanReportTableRows = async (id) =>{
 
 export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
      getScanReportField,getScanReportTable,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts,getScanReports,getScanReportTableRows,usePatch,
+     getScanReportConcepts,getScanReports,getScanReportTableRows,usePatch,postForm
      }

@@ -71,7 +71,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -293,13 +293,14 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
 
 class DatasetListView(generics.ListAPIView):
     """
-    API view to show all datasets a user has access to.
+    API view to show all datasets.
     """
 
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
+        "data_partner": ["in", "exact"],
     }
 
     def get_queryset(self):
@@ -323,6 +324,11 @@ class DatasetListView(generics.ListAPIView):
                 visibility=VisibilityChoices.RESTRICTED,
             )
         ).distinct()
+
+
+class CreateDatasetView(generics.CreateAPIView):
+    serializer_class = DatasetSerializer
+    queryset = Dataset.objects.all()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -1011,6 +1017,18 @@ class ScanReportFormView(FormView):
     form_class = ScanReportForm
     template_name = "mapping/upload_scan_report.html"
     success_url = reverse_lazy("scan-report-list")
+
+    def form_invalid(self, form):
+        response = JsonResponse(
+            {
+                "status_code": 422,
+                "form-errors": form.errors,
+                "ok": False,
+                "statusText": "Could not process input",
+            }
+        )
+        response.status_code = 422
+        return response
 
     def form_valid(self, form):
 
