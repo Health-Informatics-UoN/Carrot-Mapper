@@ -267,6 +267,11 @@ class DatasetListView(generics.ListAPIView):
 
     queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in"],
+        "data_partner": ["in","exact"],
+    }
 
 class CreateDatasetView(generics.CreateAPIView):
     serializer_class = DatasetSerializer
@@ -283,7 +288,6 @@ class DatasetFilterView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
-        "data_partner": ["in","exact"],
     }
 
 
