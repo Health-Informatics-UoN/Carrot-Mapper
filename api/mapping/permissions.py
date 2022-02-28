@@ -63,7 +63,7 @@ class CanAdminDataset(permissions.BasePermission):
             return True
         # if the User is in the Dataset's admins, return True,
         # else return false
-        return obj.objects.filter(admins=request.user.id).exists()
+        return obj.admins.filter(id=request.user.id).exists()
 
 
 class CanViewScanReport(permissions.BasePermission):

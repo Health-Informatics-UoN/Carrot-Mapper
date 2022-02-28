@@ -9,7 +9,12 @@ from .permissions import (
     CanAdminDataset,
     CanViewScanReport,
 )
-from .views import ProjectRetrieveView, DatasetRetrieveView, ScanReportRetrieveView
+from .views import (
+    ProjectRetrieveView,
+    DatasetRetrieveView,
+    DatasetUpdateView,
+    ScanReportRetrieveView,
+)
 from .models import Project, Dataset, ScanReport
 
 
@@ -254,7 +259,7 @@ class TestCanViewDataset(TestCase):
         )
 
 
-class TestCanViewDataset(TestCase):
+class TestCanAdminDataset(TestCase):
     def setUp(self):
         User = get_user_model()
         # Create user who is a Dataset admin
@@ -269,6 +274,13 @@ class TestCanViewDataset(TestCase):
         # Give them a token
         Token.objects.create(user=self.non_admin_user)
 
+        # Create user who is not on the Project
+        self.non_project_user = User.objects.create(
+            username="bilbo", password="baggins"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_project_user)
+
         # Create the project
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
@@ -279,16 +291,42 @@ class TestCanViewDataset(TestCase):
         )
         # Add the restricted users
         self.dataset.viewers.add(self.admin_user)
+        self.dataset.admins.add(self.admin_user)
         # Add datasets to the project
         self.project.datasets.add(self.dataset)
 
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
         # The instance of the view required for the permission class
-        self.view = DatasetRetrieveView.as_view()
+        self.view = DatasetUpdateView.as_view()
 
         # The permission class
-        self.permission = CanViewDataset()
+        self.permission = CanAdminDataset()
+
+    def test_only_admin_user_can_view(self):
+        request = self.factory.patch(f"api/datasets/update/{self.dataset.id}")
+        request.user = self.admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.admin_user,
+            token=self.admin_user.auth_token,
+        )
+        # Assert admin_user has permission
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.dataset)
+        )
+        request.user = self.non_admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.non_admin_user,
+            token=self.non_admin_user.auth_token,
+        )
+        # Assert non_admin_user has no permission
+        self.assertFalse(
+            self.permission.has_object_permission(request, self.view, self.dataset)
+        )
 
 
 class TestCanViewScanReport(TestCase):
