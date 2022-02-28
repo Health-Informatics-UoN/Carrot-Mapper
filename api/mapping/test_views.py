@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
-from .views import DatasetListView, ScanReportListViewSet
+from .views import DatasetListView, DatasetUpdateView, ScanReportListViewSet
 from .models import Project, Dataset, ScanReport, VisibilityChoices
 
 
@@ -155,6 +155,40 @@ class TestDatasetListView(TestCase):
         response_data = self.view(request).data
         # Assert az_user can see all datasets
         self.assertEqual(len(response_data), Dataset.objects.all().count())
+
+
+class TestDatasetUpdateView(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Set up users
+        self.admin_user = User.objects.create(
+            username="gandalf", password="hjfiwejfiwef"
+        )
+        Token.objects.create(user=self.admin_user)
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_admin_user)
+        self.non_project_user = User.objects.create(
+            username="bilbo", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_project_user)
+
+        # Set up Project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        self.project.members.add(self.admin_user, self.non_admin_user)
+
+        # Set up Dataset
+        self.dataset = Dataset.objects.create(
+            name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
+        )
+        self.dataset.admins.add(self.admin_user)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+
+        # The view for the tests
+        self.view = DatasetUpdateView.as_view()
 
 
 class TestScanScanReportListViewset(TestCase):
