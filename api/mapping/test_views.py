@@ -1,7 +1,7 @@
 import os
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIRequestFactory, force_authenticate
+from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
 from rest_framework.authtoken.models import Token
 from .views import DatasetListView, DatasetUpdateView, ScanReportListViewSet
 from .models import Project, Dataset, ScanReport, VisibilityChoices
@@ -186,26 +186,28 @@ class TestDatasetUpdateView(TestCase):
         self.project.datasets.add(self.dataset)
 
         # Request factory for setting up requests
-        self.factory = APIRequestFactory()
-
-        # The view for the tests
-        self.view = DatasetUpdateView.as_view()
+        self.client = APIClient()
 
     def test_update_returns(self):
-        request = self.factory.patch(
+        # Authenticate admin user
+        self.client.force_authenticate(self.admin_user)
+        #  Make the request
+        response = self.client.patch(
             f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
         )
-        request.user = self.admin_user
-        # Authenticate the user for the request
-        force_authenticate(
-            request,
-            user=self.admin_user,
-            token=self.admin_user.auth_token,
-        )
-        response = self.view(request)
         response_data = response.data
+        # Ensure admin user can update Dataset
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_data.get("name"), "The Two Towers")
+
+        # Authenticate non admin user
+        self.client.force_authenticate(self.non_admin_user)
+        #  Make the request
+        response = self.client.patch(
+            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+        )
+        # Ensure non admin user is Forbidden
+        self.assertEqual(response.status_code, 403)
 
 
 class TestScanScanReportListViewset(TestCase):
