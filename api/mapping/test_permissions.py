@@ -3,7 +3,12 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
-from .permissions import CanViewProject, CanViewDataset, CanViewScanReport
+from .permissions import (
+    CanViewProject,
+    CanViewDataset,
+    CanAdminDataset,
+    CanViewScanReport,
+)
 from .views import ProjectRetrieveView, DatasetRetrieveView, ScanReportRetrieveView
 from .models import Project, Dataset, ScanReport
 
@@ -247,6 +252,43 @@ class TestCanViewDataset(TestCase):
                 request, self.view, self.public_dataset
             )
         )
+
+
+class TestCanViewDataset(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who is a Dataset admin
+        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.admin_user)
+
+        # Create user who is not a Dataset admin
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="elissar"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_admin_user)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted users
+        self.project.members.add(self.non_admin_user, self.admin_user)
+        # Create the public dataset
+        self.dataset = Dataset.objects.create(
+            name="Hobbits of the Fellowship", visibility="PUBLIC"
+        )
+        # Add the restricted users
+        self.dataset.viewers.add(self.admin_user)
+        # Add datasets to the project
+        self.project.datasets.add(self.dataset)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+        # The instance of the view required for the permission class
+        self.view = DatasetRetrieveView.as_view()
+
+        # The permission class
+        self.permission = CanViewDataset()
 
 
 class TestCanViewScanReport(TestCase):
