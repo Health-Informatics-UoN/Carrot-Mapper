@@ -151,7 +151,7 @@ urlpatterns = [
     ),
     path(
         r"api/datasets/create/",
-        views.CreateDatasetView.as_view(),
+        views.DatasetCreateView.as_view(),
         name="dataset_create",
     ),
     # path(
