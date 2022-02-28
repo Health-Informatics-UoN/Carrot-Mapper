@@ -53,7 +53,7 @@ class TestDatasetListView(TestCase):
 
     def test_dataset_returns(self):
         # Make the request for Datasets
-        request = self.factory.get(f"api/datasets/")
+        request = self.factory.get(f"/api/datasets/")
         # Add user1 to the request; this is not automatic
         request.user = self.user1
         # Authenticate the user1
@@ -102,7 +102,7 @@ class TestDatasetListView(TestCase):
     def test_dataset_filtering(self):
         # Make the request for the public_dataset1
         request = self.factory.get(
-            f"api/datasets/", {"id__in": self.public_dataset1.id}
+            f"/api/datasets/", {"id__in": self.public_dataset1.id}
         )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
@@ -122,7 +122,7 @@ class TestDatasetListView(TestCase):
 
         # Make the request for the public_dataset3
         request = self.factory.get(
-            f"api/datasets/", {"id__in": self.public_dataset3.id}
+            f"/api/datasets/", {"id__in": self.public_dataset3.id}
         )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
@@ -142,7 +142,7 @@ class TestDatasetListView(TestCase):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
         # Make the request for the Dataset
-        request = self.factory.get(f"api/datasets/")
+        request = self.factory.get(f"/api/datasets/")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user
@@ -183,12 +183,29 @@ class TestDatasetUpdateView(TestCase):
             name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
         )
         self.dataset.admins.add(self.admin_user)
+        self.project.datasets.add(self.dataset)
 
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
 
         # The view for the tests
         self.view = DatasetUpdateView.as_view()
+
+    def test_update_returns(self):
+        request = self.factory.patch(
+            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+        )
+        request.user = self.admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.admin_user,
+            token=self.admin_user.auth_token,
+        )
+        response = self.view(request)
+        response_data = response.data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_data.get("name"), "The Two Towers")
 
 
 class TestScanScanReportListViewset(TestCase):
