@@ -341,7 +341,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     permission_classes = [CanViewDataset]
 
     def get_queryset(self):
-        qs = Dataset.objects.filter(id=self.kwargs.get("id"))
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
         return qs
 
 
@@ -351,7 +351,7 @@ class DatasetUpdateView(generics.UpdateAPIView):
     permission_classes = [CanViewDataset & CanAdminDataset]
 
     def get_queryset(self):
-        qs = Dataset.objects.filter(id=self.kwargs.get("id"))
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
         return qs
 
 
