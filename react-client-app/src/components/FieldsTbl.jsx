@@ -145,7 +145,7 @@ const FieldsTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            minW={"80px"}
+                                                            minW={"90px"}
                                                             maxW={"100px"}
                                                             type='number'
                                                             name='concept'

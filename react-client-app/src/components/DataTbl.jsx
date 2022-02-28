@@ -109,9 +109,9 @@ const DataTbl = (props) => {
                             // Create new row for every value object
                             scanReports.map((item, index) =>
                                 <Tr key={item.id}>
-                                    <Td>{item.value}</Td>
+                                    <Td maxW={"300px"}>{item.value}</Td>
                                     <Td maxW={"300px"}>{item.value_description}</Td>
-                                    <Td>{item.frequency}</Td>
+                                    <Td maxW={"300px"}>{item.frequency}</Td>
 
                                     <Td maxW={"300px"}>
                                         {item.conceptsLoaded ?
@@ -142,7 +142,7 @@ const DataTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            minW={"80px"}
+                                                            minW={"90px"}
                                                             maxW={"100px"}
                                                             type='number'
                                                             name='concept'
