@@ -209,6 +209,16 @@ class TestDatasetUpdateView(TestCase):
         # Ensure non admin user is Forbidden
         self.assertEqual(response.status_code, 403)
 
+    def test_non_project_member_forbidden(self):
+        # Authenticate non project user
+        self.client.force_authenticate(self.non_project_user)
+        #  Make the request
+        response = self.client.patch(
+            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+        )
+        # Ensure non project user is Forbidden
+        self.assertEqual(response.status_code, 403)
+
 
 class TestScanScanReportListViewset(TestCase):
     def setUp(self):
