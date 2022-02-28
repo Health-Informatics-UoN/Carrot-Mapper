@@ -15,6 +15,7 @@ const ScanReportTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading Scan Reports")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [datasetFilter, setDatasetFilter] = useState("All");
+    const [nameFilter, setNameFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
@@ -136,7 +137,10 @@ const ScanReportTbl = (props) => {
             newData = newData.filter(scanreport => scanreport.data_partner.name == datapartnerFilter)
         }
         if (datasetFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.dataset == datasetFilter)
+            newData = newData.filter(scanreport => scanreport.parent_dataset.name == datasetFilter)
+        }
+        if (nameFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.dataset == nameFilter)
         }
         if (statusFilter != "All") {
             newData = newData.filter(scanreport => scanreport.status == statusFilter)
@@ -151,6 +155,9 @@ const ScanReportTbl = (props) => {
         }
         if (a.includes("Dataset")) {
             setDatasetFilter("All")
+        }
+        if (a.includes("Name")) {
+            setNameFilter("All")
         }
         if (a.includes("Data Partner")) {
             setDataPartnerFilter("All")
@@ -243,7 +250,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -272,11 +279,20 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Dataset</option>
+                            {[...[...new Set(displayedData.map(data => data.parent_dataset.name))]].sort((a, b) => a.localeCompare(b))
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{item}</option>
+                                )}
+                        </Select></Th>
+
+                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Name" readOnly onChange={(option) => setNameFilter(option.target.value)}>
+                            <option style={{ fontWeight: "bold" }} disabled>Name</option>
                             {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
                                 .map((item, index) =>
                                     <option key={index} value={item}>{item}</option>
                                 )}
                         </Select></Th>
+                        
                         <Th >
                             <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Added by</option>
@@ -323,6 +339,7 @@ const ScanReportTbl = (props) => {
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
+                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.parent_dataset.name}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
