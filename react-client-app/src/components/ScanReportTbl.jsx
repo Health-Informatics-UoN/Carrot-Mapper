@@ -277,13 +277,6 @@ const ScanReportTbl = (props) => {
                                 </>
                             </Select>
                         </Th>
-                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Name" readOnly onChange={(option) => setNameFilter(option.target.value)}>
-                            <option style={{ fontWeight: "bold" }} disabled>Name</option>
-                            {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
-                                .map((item, index) =>
-                                    <option key={index} value={item}>{item}</option>
-                                )}
-                        </Select></Th>
                         <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Dataset</option>
                             {[...[...new Set(displayedData.map(data => data.parent_dataset.name))]].sort((a, b) => a.localeCompare(b))
@@ -291,6 +284,15 @@ const ScanReportTbl = (props) => {
                                     <option key={index} value={item}>{item}</option>
                                 )}
                         </Select></Th>
+
+                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Name" readOnly onChange={(option) => setNameFilter(option.target.value)}>
+                            <option style={{ fontWeight: "bold" }} disabled>Name</option>
+                            {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{item}</option>
+                                )}
+                        </Select></Th>
+                        
                         <Th >
                             <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Added by</option>
@@ -337,8 +339,8 @@ const ScanReportTbl = (props) => {
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.parent_dataset.name}</Link></Td>
+                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td>
