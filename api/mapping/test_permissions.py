@@ -274,13 +274,6 @@ class TestCanAdminDataset(TestCase):
         # Give them a token
         Token.objects.create(user=self.non_admin_user)
 
-        # Create user who is not on the Project
-        self.non_project_user = User.objects.create(
-            username="bilbo", password="baggins"
-        )
-        # Give them a token
-        Token.objects.create(user=self.non_project_user)
-
         # Create the project
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
@@ -325,6 +318,24 @@ class TestCanAdminDataset(TestCase):
         )
         # Assert non_admin_user has no permission
         self.assertFalse(
+            self.permission.has_object_permission(request, self.view, self.dataset)
+        )
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"api/datasets/update/{self.dataset.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
             self.permission.has_object_permission(request, self.view, self.dataset)
         )
 
