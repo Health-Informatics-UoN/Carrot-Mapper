@@ -105,7 +105,6 @@ const FieldsTbl = (props) => {
                             <Th>Concepts</Th>
                             <Th></Th>
                             <Th>Edit</Th>
-                            <Th>Run NLP</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -146,7 +145,8 @@ const FieldsTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            width='90px'
+                                                            minW={"80px"}
+                                                            maxW={"100px"}
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
@@ -161,7 +161,6 @@ const FieldsTbl = (props) => {
                                         </Formik>
                                     </Td>
                                     <Td><Link style={{ color: "#0000FF", }} href={"/fields/" + item.id + "/update/"}>Edit Field</Link></Td>
-                                    <Td><Link href={"/nlp/run?search=" + item.id} style={{ color: "#0000FF", }}>Run NLP</Link></Td>
                                 </Tr>
                             )
                         }
