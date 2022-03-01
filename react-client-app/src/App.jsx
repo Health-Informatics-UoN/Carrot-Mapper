@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ChakraProvider } from "@chakra-ui/react"
 import styles from './styles'
+import DatasetAdminForm from './components/datasetAdminForm'
 import DataTbl from './components/DataTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
@@ -14,7 +15,7 @@ import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, ma
 import UploadScanReport from './components/UploadScanReport'
 const App = ({ page }) => {
 
-    const handleDeleteConcept = (id, conceptId,valuesRef,setValues,setAlert,onOpen)=>{
+    const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {
         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
         setValues(valuesRef.current)
         //DEETE Request to API
@@ -23,7 +24,7 @@ const App = ({ page }) => {
                 //Re-fetch the concepts for that particular field
                 getScanReportConcepts(id).then(async scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
-                        
+
 
                         const conceptIds = scanreportconcepts.map(value => value.concept)
                         useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
@@ -152,7 +153,7 @@ const App = ({ page }) => {
                         concept: concept,
                         object_id: id,
                         content_type: content_type,
-                        creation_type:"M",
+                        creation_type: "M",
                     }
                     usePost(`/scanreportconcepts/`, data)
                         .then(function (response) {
@@ -251,21 +252,23 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept}/>
+                return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
             case "Mapping Rules":
                 return <MappingTbl />
             case "Fields":
-                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept}/>
+                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
             case "Tables":
                 return <TablesTbl />
             case "Update Table":
                 return <EditTable />
             case "Update Field":
-                return <EditField setTitle={setTitle}/>
+                return <EditField setTitle={setTitle} />
             case "New Scan Report":
-                return <UploadScanReport setTitle={setTitle}/>
+                return <UploadScanReport setTitle={setTitle} />
+            case "Dataset Admin":
+                return <DatasetAdminForm setTitle={setTitle} />
             default:
-                return <ScanReportTbl setTitle={setTitle}/>
+                return <ScanReportTbl setTitle={setTitle} />
         }
     }
     return (

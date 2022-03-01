@@ -24,6 +24,19 @@ const DatasetAdminForm = ({ setTitle }) => {
     const datasetViewers = useRef()
     const datasetAdmins = useRef()
 
+    // Set up reactive values
+    useEffect(
+        async () => {
+            let datasetId = window.location.pathname.split("/").pop()
+            datasetId = parseInt(datasetId)
+            setDataset(useGet(`/datasets/${datasetId}`))
+        },
+        [dataset],
+    )
+    return (
+        <h1>{dataset.name}</h1>
+    )
+
 }
 
 export default DatasetAdminForm
