@@ -9,6 +9,7 @@ import ConceptTag from './ConceptTag'
 import { useGet, usePatch, useDelete } from '../api/values'
 
 const DatasetAdminForm = ({ setTitle }) => {
+    let datasetId = window.location.pathname.split("/").pop()
     const { isOpen, onOpen, onClose } = useDisclosure()
 
     // Set up component state
@@ -24,15 +25,15 @@ const DatasetAdminForm = ({ setTitle }) => {
     const datasetViewers = useRef()
     const datasetAdmins = useRef()
 
-    // Set up reactive values
+    // Get dataset
     useEffect(
         async () => {
-            let datasetId = window.location.pathname.split("/").pop()
-            datasetId = parseInt(datasetId)
-            setDataset(useGet(`/datasets/${datasetId}`))
+            const response = await useGet(`/datasets/${datasetId}`)
+            setDataset(response)
         },
-        [dataset],
+        [],
     )
+
     return (
         <h1>{dataset.name}</h1>
     )
