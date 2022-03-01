@@ -4,7 +4,7 @@ import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
     FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react"
-import { useGet, usePost, postForm } from '../api/values'
+import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 
@@ -202,7 +202,16 @@ const UploadScanReport = ({ setTitle }) => {
         setUsers(pj => pj.filter(user => user.id != id))
     }
     async function mapDatasetToProjects(dataset, projects) {
-        console.log("This is where the dataset would get added to the projects")
+        const full_projects = await useGet(`/projects/?name__in=${projects.map(project=>project.name).join()}`)
+        const promises = []
+        full_projects.map(project=>{
+            const data = {
+                id:project.id,
+                datasets:[dataset.id,...project.datasets]
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+        await Promise.all(promises)
         return
     }
 
