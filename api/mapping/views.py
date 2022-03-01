@@ -355,6 +355,16 @@ class DatasetUpdateView(generics.UpdateAPIView):
         return qs
 
 
+class DatasetDeleteView(generics.DestroyAPIView):
+    serializer_class = DatasetSerializer
+    # User must be able to view and be an admin
+    permission_classes = [CanViewDataset & CanAdminDataset]
+
+    def get_queryset(self):
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
+        return qs
+
+
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
