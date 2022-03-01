@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
 from rest_framework.authtoken.models import Token
-from .views import DatasetListView, DatasetUpdateView, ScanReportListViewSet
+from .views import DatasetListView, ScanReportListViewSet
 from .models import Project, Dataset, ScanReport, VisibilityChoices
 
 
@@ -217,6 +217,62 @@ class TestDatasetUpdateView(TestCase):
         response = self.client.patch(
             f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
         )
+        # Ensure non project user is Forbidden
+        self.assertEqual(response.status_code, 403)
+
+
+class TestDatasetDeleteView(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Set up users
+        self.admin_user = User.objects.create(
+            username="gandalf", password="hjfiwejfiwef"
+        )
+        Token.objects.create(user=self.admin_user)
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_admin_user)
+        self.non_project_user = User.objects.create(
+            username="bilbo", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_project_user)
+
+        # Set up Project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        self.project.members.add(self.admin_user, self.non_admin_user)
+
+        # Set up Dataset
+        self.dataset = Dataset.objects.create(
+            name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
+        )
+        self.dataset.admins.add(self.admin_user)
+        self.project.datasets.add(self.dataset)
+
+        # Request factory for setting up requests
+        self.client = APIClient()
+
+    def test_update_returns(self):
+        # Authenticate admin user
+        self.client.force_authenticate(self.admin_user)
+        #  Make the request
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
+        # Ensure admin user can delete Dataset
+        self.assertEqual(response.status_code, 204)
+
+    def test_non_admin_member_forbidden(self):
+        # Authenticate non admin user
+        self.client.force_authenticate(self.non_admin_user)
+        #  Make the request
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
+        # Ensure non admin user is Forbidden
+        self.assertEqual(response.status_code, 403)
+
+    def test_non_project_member_forbidden(self):
+        # Authenticate non project user
+        self.client.force_authenticate(self.non_project_user)
+        #  Make the request
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
         # Ensure non project user is Forbidden
         self.assertEqual(response.status_code, 403)
 
