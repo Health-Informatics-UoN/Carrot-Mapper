@@ -18,6 +18,13 @@ Please append a line to the changelog for each change made.
     2. Create a migration adding a `ManyToManyField` called `viewers` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
     3. Create a migration to add the `visibility` flag to __ScanReport__. Set default to "PUBLIC".
     4. Create a migration adding a `ManyToManyField` called `viewers` to __ScanReport__ linking it to `settings.AUTH_USER_MODEL`.
+* Implemented admins and associated permissions to Datasets.
+  * Admins can update and delete Datasets.
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migration adding a `ManyToManyField` called `admins` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
+* Added API views for updating and deleting Datasets.
+  * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
+  * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
 
 ## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
