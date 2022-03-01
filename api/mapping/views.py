@@ -205,8 +205,13 @@ class ProjectListView(ListAPIView):
     """
 
     permission_classes = []
-    serializer_class = ProjectNameSerializer
     queryset = Project.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"name": ["in", "exact"]}
+    def get_serializer_class(self):
+        if self.request.GET.get('name') != None:
+            return ProjectSerializer
+        return ProjectNameSerializer
 
 
 class ProjectRetrieveView(RetrieveAPIView):
