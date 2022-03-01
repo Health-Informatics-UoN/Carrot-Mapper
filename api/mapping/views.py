@@ -1631,3 +1631,8 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = f'attachment; filename="{blob_name}"'
 
         return response
+
+
+@login_required
+def dataset_admin_page(request, pk):
+    return render(request, "mapping/admin_dataset_form.html")
