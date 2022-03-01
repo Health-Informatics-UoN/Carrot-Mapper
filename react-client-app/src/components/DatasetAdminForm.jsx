@@ -9,5 +9,21 @@ import ConceptTag from './ConceptTag'
 import { useGet, usePatch, useDelete } from '../api/values'
 
 const DatasetAdminForm = ({ setTitle }) => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+
+    // Set up component state
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
+    const [dataset, setDataset] = useState({})
+    const [loadingMessage, setLoadingMessage] = useState("Loading page")
+    const [formErrors, setFormErrors] = useState({});
+
+    // Set up component refs
+    const datasetName = useRef()
+    const datasetVisibility = useRef()
+    const datasetDataPartner = useRef()
+    const datasetViewers = useRef()
+    const datasetAdmins = useRef()
 
 }
+
+export default DatasetAdminForm
