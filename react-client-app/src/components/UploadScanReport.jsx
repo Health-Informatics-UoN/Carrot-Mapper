@@ -39,7 +39,7 @@ const UploadScanReport = ({ setTitle }) => {
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
-        setDataPartners([{ name: "------" }, ...dataPartnerQuery])
+        setDataPartners([{ name: "------" }, ...dataPartnerQuery.sort((a, b) => a.name.localeCompare(b.name))])
         setLoadingMessage(null)
         const projectsQuery = await useGet("/projects/")
         setProjectList(projectsQuery)
@@ -341,8 +341,8 @@ const UploadScanReport = ({ setTitle }) => {
                                             {projectList == undefined ?
                                                 <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Projects' />
                                                 :
-                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
-                                                    <option style={{ fontWeight: "bold" }} disabled>Add Project</option>
+                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Select Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
+                                                    <option style={{ fontWeight: "bold" }} disabled>Select Project</option>
                                                     <>
                                                         {projectList.map((item, index) =>
                                                             <option key={index} value={JSON.stringify(item)}>{item.name}</option>
