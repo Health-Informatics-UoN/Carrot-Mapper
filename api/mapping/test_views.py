@@ -200,6 +200,7 @@ class TestDatasetUpdateView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_data.get("name"), "The Two Towers")
 
+    def test_non_admin_member_forbidden(self):
         # Authenticate non admin user
         self.client.force_authenticate(self.non_admin_user)
         #  Make the request
