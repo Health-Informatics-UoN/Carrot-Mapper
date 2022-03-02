@@ -21,6 +21,8 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({})
     const [uploadLoading, setUploadLoading] = useState(false)
+    const [users, setUsers] = useState([]);
+    const [usersList, setUsersList] = useState(undefined);
 
     // Set up page
     useEffect(
@@ -36,6 +38,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                 dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
             )
             setLoadingMessage(null)
+            const usersQuery = await useGet("/users/")
+            setUsersList(usersQuery)
         },
         [], // Required to stop this effect sending infinite requests
     )
