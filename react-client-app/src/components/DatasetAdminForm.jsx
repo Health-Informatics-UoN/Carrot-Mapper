@@ -30,9 +30,22 @@ const DatasetAdminForm = ({ setTitle }) => {
         async () => {
             const response = await useGet(`/datasets/${datasetId}`)
             setDataset(response)
+            setLoadingMessage(null)
         },
-        [],
+        [], // Required to stop this effect sending infinite requests
     )
+
+    if (loadingMessage) {
+        //Render Loading State
+        return (
+            <div>
+                <Flex padding="30px">
+                    <Spinner />
+                    <Flex marginLeft="10px">{loadingMessage ? loadingMessage : "Loading page"}</Flex>
+                </Flex>
+            </div>
+        )
+    }
 
     return (
         <h1>{dataset.name}</h1>
