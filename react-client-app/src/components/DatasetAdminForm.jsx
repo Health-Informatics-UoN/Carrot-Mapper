@@ -15,18 +15,27 @@ const DatasetAdminForm = ({ setTitle }) => {
     // Set up component state
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
+    const [dataPartners, setDataPartners] = useState();
+    const [selectedDataPartner, setSelectedDataPartner] = useState({ name: "------" })
     const [isPublic, setIsPublic] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
-    const [formErrors, setFormErrors] = useState({});
+    const [formErrors, setFormErrors] = useState({})
 
     // Set up page
     useEffect(
         async () => {
             setTitle(null)
             // Get dataset
-            const response = await useGet(`/datasets/${datasetId}`)
-            setDataset(response)
-            setIsPublic(response.visibility === "PUBLIC")
+            const datasetQuery = await useGet(`/datasets/${datasetId}`)
+            setDataset(datasetQuery)
+            setIsPublic(datasetQuery.visibility === "PUBLIC")
+            const dataPartnerQuery = await useGet("/datapartners/")
+            setDataPartners([{ name: "------" }, ...dataPartnerQuery])
+            setSelectedDataPartner(
+                dataPartnerQuery.find(element => element.id === dataset.data_partner)
+            )
+            console.log("selected datapartner")
+            console.log(selectedDataPartner)
             setLoadingMessage(null)
         },
         [], // Required to stop this effect sending infinite requests
@@ -80,7 +89,15 @@ const DatasetAdminForm = ({ setTitle }) => {
             </FormControl>
             <FormControl>
                 <FormLabel htmlFor="dataset-datapartner">Data Partner</FormLabel>
-                <Input id="dataset-datapartner"></Input>
+                <Select
+                    id="dataset-datapartner"
+                    value={JSON.stringify(selectedDataPartner)}
+                    onChange={(option) => setSelectedDataPartner(JSON.parse(option.target.value))}
+                >
+                    {dataPartners.map((item, index) =>
+                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                    )}
+                </Select>
             </FormControl>
             <FormControl>
                 <FormLabel htmlFor="dataset-viewers">Viewers</FormLabel>
