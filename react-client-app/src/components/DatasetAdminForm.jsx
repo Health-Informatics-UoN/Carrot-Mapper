@@ -51,6 +51,13 @@ const DatasetAdminForm = ({ setTitle }) => {
         setDataset({ ...dataset, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
     }
 
+    // Update dataset data partner
+    function handleDataPartnerSelect(newValue) {
+        const dataPartner = JSON.parse(newValue)
+        setSelectedDataPartner(dataPartner)
+        setDataset({ ...dataset, data_partner: dataPartner.id })
+    }
+
     // Send updated dataset to the DB
     async function upload() {
         /**
@@ -58,7 +65,7 @@ const DatasetAdminForm = ({ setTitle }) => {
          * refresh the page with the new data
          */
         setUploadLoading(true)
-        response = await usePatch(`/datasets/update/${datasetId}`, dataset)
+        const response = await usePatch(`/datasets/update/${datasetId}`, dataset)
         setUploadLoading(false)
         setDataset(response)
     }
@@ -110,7 +117,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 <Select
                     id="dataset-datapartner"
                     value={JSON.stringify(selectedDataPartner)}
-                    onChange={(option) => setSelectedDataPartner(JSON.parse(option.target.value))}
+                    onChange={(option) => handleDataPartnerSelect(option.target.value)}
                 >
                     {dataPartners.map((item, index) =>
                         <option key={index} value={JSON.stringify(item)}>{item.name}</option>
