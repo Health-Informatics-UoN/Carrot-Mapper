@@ -112,6 +112,12 @@ const DatasetAdminForm = ({ setTitle }) => {
                     <Text fontWeight={"bold"} ml={2}>{dataset.visibility}</Text>
                 </Flex>
             </FormControl>
+            {!isPublic &&
+                <FormControl>
+                    <FormLabel htmlFor="dataset-viewers">Viewers</FormLabel>
+                    <Input id="dataset-viewers"></Input>
+                </FormControl>
+            }
             <FormControl>
                 <FormLabel htmlFor="dataset-datapartner">Data Partner</FormLabel>
                 <Select
@@ -123,10 +129,6 @@ const DatasetAdminForm = ({ setTitle }) => {
                         <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                     )}
                 </Select>
-            </FormControl>
-            <FormControl>
-                <FormLabel htmlFor="dataset-viewers">Viewers</FormLabel>
-                <Input id="dataset-viewers"></Input>
             </FormControl>
             <FormControl>
                 <FormLabel htmlFor="dataset-admins">Admins</FormLabel>
