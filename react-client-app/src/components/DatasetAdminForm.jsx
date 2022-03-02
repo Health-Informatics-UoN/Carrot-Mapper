@@ -39,11 +39,16 @@ const DatasetAdminForm = ({ setTitle }) => {
         [], // Required to stop this effect sending infinite requests
     )
 
+    // Update dataset name
+    function handleNameInput(newValue) {
+        setDataset({ ...dataset, name: newValue })
+    }
     // Update dataset visibility
     function handleVisibilitySwitch(newValue) {
         setIsPublic(newValue)
         setDataset({ ...dataset, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
     }
+
 
     if (loadingMessage) {
         //Render Loading State
@@ -65,13 +70,14 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </ScaleFade>
             }
 
-            <PageHeading text={`${dataset.name} admin page`} />
+            <PageHeading text={`Admin Page for Dataset #${dataset.id}`} />
 
             <FormControl>
                 <FormLabel htmlFor="dataset-name">Name</FormLabel>
                 <Input
                     id="dataset-name"
-                    placeholder={dataset.name}
+                    value={dataset.name}
+                    onChange={e => handleNameInput(e.target.value)}
                 />
             </FormControl>
             <FormControl>
