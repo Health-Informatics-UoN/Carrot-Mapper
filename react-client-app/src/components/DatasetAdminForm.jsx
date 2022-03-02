@@ -15,21 +15,18 @@ const DatasetAdminForm = ({ setTitle }) => {
     // Set up component state
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
+    const [visibility, setVisibility] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({});
 
-    // Set up component refs
-    const datasetName = useRef()
-    const datasetVisibility = useRef()
-    const datasetDataPartner = useRef()
-    const datasetViewers = useRef()
-    const datasetAdmins = useRef()
-
-    // Get dataset
+    // Set up page
     useEffect(
         async () => {
+            setTitle(null)
+            // Get dataset
             const response = await useGet(`/datasets/${datasetId}`)
             setDataset(response)
+            setVisibility(response.visibility)
             setLoadingMessage(null)
         },
         [], // Required to stop this effect sending infinite requests
@@ -48,9 +45,46 @@ const DatasetAdminForm = ({ setTitle }) => {
     }
 
     return (
-        <h1>{dataset.name}</h1>
-    )
+        <Container maxW='container.xl'>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
 
+            <PageHeading text={`${dataset.name} admin page`} />
+
+            <FormControl>
+                <FormLabel htmlFor="dataset-name">Name</FormLabel>
+                <Input
+                    id="dataset-name"
+                    placeholder={dataset.name}
+                />
+            </FormControl>
+            <FormControl>
+                <FormLabel htmlFor="dataset-visibility">Visibility</FormLabel>
+                <Flex alignItems={"center"}>
+                    <Switch
+                        id="dataset-visibility"
+                        isChecked={dataset.visibility === "PUBLIC"}
+                    />
+                    <Text fontWeight={"bold"} ml={2}>{dataset.visibility}</Text>
+                </Flex>
+            </FormControl>
+            <FormControl>
+                <FormLabel htmlFor="dataset-datapartner">Data Partner</FormLabel>
+                <Input id="dataset-datapartner"></Input>
+            </FormControl>
+            <FormControl>
+                <FormLabel htmlFor="dataset-viewers">Viewers</FormLabel>
+                <Input id="dataset-viewers"></Input>
+            </FormControl>
+            <FormControl>
+                <FormLabel htmlFor="dataset-admins">Admins</FormLabel>
+                <Input id="dataset-admins"></Input>
+            </FormControl>
+        </Container>
+    )
 }
 
 export default DatasetAdminForm
