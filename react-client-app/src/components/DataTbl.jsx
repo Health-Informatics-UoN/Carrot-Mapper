@@ -142,8 +142,7 @@ const DataTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            minW={"90px"}
-                                                            maxW={"100px"}
+                                                            w={"105px"}
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
