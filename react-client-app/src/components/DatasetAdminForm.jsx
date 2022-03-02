@@ -32,10 +32,8 @@ const DatasetAdminForm = ({ setTitle }) => {
             const dataPartnerQuery = await useGet("/datapartners/")
             setDataPartners([{ name: "------" }, ...dataPartnerQuery])
             setSelectedDataPartner(
-                dataPartnerQuery.find(element => element.id === dataset.data_partner)
+                dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
             )
-            console.log("selected datapartner")
-            console.log(selectedDataPartner)
             setLoadingMessage(null)
         },
         [], // Required to stop this effect sending infinite requests
