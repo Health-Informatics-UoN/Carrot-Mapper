@@ -15,7 +15,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     // Set up component state
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
-    const [visibility, setVisibility] = useState()
+    const [isPublic, setIsPublic] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({});
 
@@ -26,11 +26,17 @@ const DatasetAdminForm = ({ setTitle }) => {
             // Get dataset
             const response = await useGet(`/datasets/${datasetId}`)
             setDataset(response)
-            setVisibility(response.visibility)
+            setIsPublic(response.visibility === "PUBLIC")
             setLoadingMessage(null)
         },
         [], // Required to stop this effect sending infinite requests
     )
+
+    // Update dataset visibility
+    function handleVisibilitySwitch(newValue) {
+        setIsPublic(newValue)
+        setDataset({ ...dataset, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
+    }
 
     if (loadingMessage) {
         //Render Loading State
@@ -66,7 +72,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                 <Flex alignItems={"center"}>
                     <Switch
                         id="dataset-visibility"
-                        isChecked={dataset.visibility === "PUBLIC"}
+                        isChecked={isPublic}
+                        onChange={e => handleVisibilitySwitch(!isPublic)}
                     />
                     <Text fontWeight={"bold"} ml={2}>{dataset.visibility}</Text>
                 </Flex>
