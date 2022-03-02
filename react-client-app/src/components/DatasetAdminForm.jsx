@@ -20,6 +20,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [isPublic, setIsPublic] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({})
+    const [uploadLoading, setUploadLoading] = useState(false)
 
     // Set up page
     useEffect(
@@ -43,10 +44,23 @@ const DatasetAdminForm = ({ setTitle }) => {
     function handleNameInput(newValue) {
         setDataset({ ...dataset, name: newValue })
     }
+
     // Update dataset visibility
     function handleVisibilitySwitch(newValue) {
         setIsPublic(newValue)
         setDataset({ ...dataset, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
+    }
+
+    // Send updated dataset to the DB
+    async function upload() {
+        /**
+         * Send a `PATCH` request updating the dataset and
+         * refresh the page with the new data
+         */
+        setUploadLoading(true)
+        response = await usePatch(`/datasets/update/${datasetId}`, dataset)
+        setUploadLoading(false)
+        setDataset(response)
     }
 
 
@@ -111,6 +125,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                 <FormLabel htmlFor="dataset-admins">Admins</FormLabel>
                 <Input id="dataset-admins"></Input>
             </FormControl>
+
+            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
         </Container>
     )
 }
