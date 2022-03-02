@@ -1358,15 +1358,6 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
 
 
 def main(msg: func.QueueMessage):
-
-    # logging.basicConfig(
-    #     format="%(asctime)s test %(message)s",
-    #     datefmt="%d/%m/%Y %H:%M:%S",
-    #     level=logging.DEBUG,
-    # )
-    logger.info("TEST TEST TEST")
-    logger.info(f"logger is {logger}")
-    logger.debug("TEST DEBUG TEST DEBUG")
     api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id = startup(
         msg
     )
