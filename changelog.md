@@ -22,6 +22,7 @@ Please append a line to the changelog for each change made.
   * Admins can update and delete Datasets.
   * __IMPORTANT!__ Steps to enact this change:
     1. Create a migration adding a `ManyToManyField` called `admins` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
+    2. Run the management command `add_admins_to_datasets` with no arguments to assign a single admin to each existing dataset.
 * Added API views for updating and deleting Datasets.
   * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
   * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
