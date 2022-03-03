@@ -15,6 +15,7 @@ const ScanReportTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading Scan Reports")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [datasetFilter, setDatasetFilter] = useState("All");
+    const [nameFilter, setNameFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
@@ -49,7 +50,7 @@ const ScanReportTbl = (props) => {
             authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
         }
         for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasetsfilter/?id__in=${datasetIds[i].join()}`));
+            datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
         }
         const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
         const authors = [].concat.apply([], promises[0]);
@@ -136,7 +137,10 @@ const ScanReportTbl = (props) => {
             newData = newData.filter(scanreport => scanreport.data_partner.name == datapartnerFilter)
         }
         if (datasetFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.dataset == datasetFilter)
+            newData = newData.filter(scanreport => scanreport.parent_dataset.name == datasetFilter)
+        }
+        if (nameFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.dataset == nameFilter)
         }
         if (statusFilter != "All") {
             newData = newData.filter(scanreport => scanreport.status == statusFilter)
@@ -151,6 +155,9 @@ const ScanReportTbl = (props) => {
         }
         if (a.includes("Dataset")) {
             setDatasetFilter("All")
+        }
+        if (a.includes("Name")) {
+            setNameFilter("All")
         }
         if (a.includes("Data Partner")) {
             setDataPartnerFilter("All")
@@ -243,7 +250,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -272,11 +279,20 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Dataset</option>
+                            {[...[...new Set(displayedData.map(data => data.parent_dataset.name))]].sort((a, b) => a.localeCompare(b))
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{item}</option>
+                                )}
+                        </Select></Th>
+
+                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Name" readOnly onChange={(option) => setNameFilter(option.target.value)}>
+                            <option style={{ fontWeight: "bold" }} disabled>Name</option>
                             {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
                                 .map((item, index) =>
                                     <option key={index} value={item}>{item}</option>
                                 )}
                         </Select></Th>
+                        
                         <Th >
                             <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Added by</option>
@@ -321,15 +337,16 @@ const ScanReportTbl = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.parent_dataset.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
-                                <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
-                                <Td>
+                                <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
+                                <Td >
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
                                 </Td>
-                                <Td>
+                                <Td >
                                     {item.statusLoading == true ?
                                         <Flex padding="30px">
                                             <Spinner />
@@ -343,7 +360,7 @@ const ScanReportTbl = (props) => {
                                         </Select>
                                     }
                                 </Td>
-                                <Td>
+                                <Td >
                                     <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                 </Td>
                                 <Td textAlign="center">
@@ -367,9 +384,9 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
-                                        <Td>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
-                                        <Td>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>

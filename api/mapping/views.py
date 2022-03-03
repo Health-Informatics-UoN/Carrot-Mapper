@@ -71,7 +71,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
@@ -108,6 +108,7 @@ from .models import (
     ScanReportConcept,
     ClassificationSystem,
     Dataset,
+    VisibilityChoices,
 )
 from .permissions import (
     CanViewProject,
@@ -204,8 +205,17 @@ class ProjectListView(ListAPIView):
     """
 
     permission_classes = []
-    serializer_class = ProjectNameSerializer
     queryset = Project.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"name": ["in", "exact"]}
+
+    def get_serializer_class(self):
+        if (
+            self.request.GET.get("name") != None
+            or self.request.GET.get("name__in") != None
+        ):
+            return ProjectSerializer
+        return ProjectNameSerializer
 
 
 class ProjectRetrieveView(RetrieveAPIView):
@@ -215,6 +225,11 @@ class ProjectRetrieveView(RetrieveAPIView):
     """
 
     permission_classes = [CanViewProject]
+    serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
+
+
+class ProjectUpdateView(generics.UpdateAPIView):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
@@ -232,8 +247,38 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
     serializer_class = ScanReportSerializer
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all ScanReports.
+
+        Else, return only the ScanReports which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return ScanReport.objects.all().distinct()
+
+        return ScanReport.objects.filter(
+            Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                parent_dataset__project__members=self.request.user.id,
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__viewers=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+        ).distinct()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -265,21 +310,39 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    queryset = Dataset.objects.all()
-    serializer_class = DatasetSerializer
-
-
-class DatasetFilterView(generics.ListAPIView):
-    """
-    API view to filter datasets by list of id's.
-    """
-
-    queryset = Dataset.objects.all()
     serializer_class = DatasetSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
+        "data_partner": ["in", "exact"],
     }
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.all().distinct()
+
+        return Dataset.objects.filter(
+            Q(
+                project__members=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                project__members=self.request.user.id,
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+        ).distinct()
+
+
+class CreateDatasetView(generics.CreateAPIView):
+    serializer_class = DatasetSerializer
+    queryset = Dataset.objects.all()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -968,6 +1031,18 @@ class ScanReportFormView(FormView):
     form_class = ScanReportForm
     template_name = "mapping/upload_scan_report.html"
     success_url = reverse_lazy("scan-report-list")
+
+    def form_invalid(self, form):
+        response = JsonResponse(
+            {
+                "status_code": 422,
+                "form-errors": form.errors,
+                "ok": False,
+                "statusText": "Could not process input",
+            }
+        )
+        response.status_code = 422
+        return response
 
     def form_valid(self, form):
 

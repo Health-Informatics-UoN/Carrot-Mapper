@@ -145,14 +145,14 @@ urlpatterns = [
         name="dataset_list",
     ),
     path(
-        r"api/datasetsfilter/",
-        views.DatasetFilterView.as_view(),
-        name="dataset_filter",
-    ),
-    path(
         r"api/datasets/<int:pk>",
         views.DatasetRetrieveView.as_view(),
         name="datasets_retrieve",
+    ),
+    path(
+        r"api/datasets/create/",
+        views.CreateDatasetView.as_view(),
+        name="dataset_create",
     ),
     # path(
     #     r"api/scanreports/",
@@ -264,11 +264,16 @@ urlpatterns = [
         name="password_change_done",
     ),
     # Project URLs
-    path("projects", views.ProjectListView.as_view(), name="project_list"),
+    path("api/projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
-        "projects/<int:pk>",
+        "api/projects/<int:pk>/",
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
+    ),
+    path(
+        r"api/projects/update/<int:pk>/",
+        views.ProjectUpdateView.as_view(),
+        name="projects_update",
     ),
 ]
 # if settings.DEBUG: # new
