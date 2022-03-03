@@ -18,6 +18,7 @@ Please append a line to the changelog for each change made.
     2. Create a migration adding a `ManyToManyField` called `viewers` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
     3. Create a migration to add the `visibility` flag to __ScanReport__. Set default to "PUBLIC".
     4. Create a migration adding a `ManyToManyField` called `viewers` to __ScanReport__ linking it to `settings.AUTH_USER_MODEL`.
+* Added uniqueness check to dataset names
 * Added ability to add dataset to projects related dataset list when creating a dataset inside scanreport upload
 * Patched bug where inputs on field and value pages could not be used on small screens by adding width restrictions
 * Removed NLP columns on tables
