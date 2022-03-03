@@ -4,7 +4,7 @@ import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
     FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react"
-import { useGet, usePost, postForm } from '../api/values'
+import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 
@@ -39,7 +39,7 @@ const UploadScanReport = ({ setTitle }) => {
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
-        setDataPartners([{ name: "------" }, ...dataPartnerQuery])
+        setDataPartners([{ name: "------" }, ...dataPartnerQuery.sort((a, b) => a.name.localeCompare(b.name))])
         setLoadingMessage(null)
         const projectsQuery = await useGet("/projects/")
         setProjectList(projectsQuery)
@@ -202,7 +202,16 @@ const UploadScanReport = ({ setTitle }) => {
         setUsers(pj => pj.filter(user => user.id != id))
     }
     async function mapDatasetToProjects(dataset, projects) {
-        console.log("This is where the dataset would get added to the projects")
+        const full_projects = await useGet(`/projects/?name__in=${projects.map(project=>project.name).join()}`)
+        const promises = []
+        full_projects.map(project=>{
+            const data = {
+                id:project.id,
+                datasets:[dataset.id,...project.datasets]
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+        await Promise.all(promises)
         return
     }
 
@@ -341,8 +350,8 @@ const UploadScanReport = ({ setTitle }) => {
                                             {projectList == undefined ?
                                                 <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Projects' />
                                                 :
-                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
-                                                    <option style={{ fontWeight: "bold" }} disabled>Add Project</option>
+                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Select Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
+                                                    <option style={{ fontWeight: "bold" }} disabled>Select Project</option>
                                                     <>
                                                         {projectList.map((item, index) =>
                                                             <option key={index} value={JSON.stringify(item)}>{item.name}</option>
