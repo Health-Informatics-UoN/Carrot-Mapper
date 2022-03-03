@@ -281,6 +281,11 @@ urlpatterns = [
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
     ),
+    path(
+        r"api/projects/update/<int:pk>/",
+        views.ProjectUpdateView.as_view(),
+        name="projects_update",
+    ),
 ]
 # if settings.DEBUG: # new
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

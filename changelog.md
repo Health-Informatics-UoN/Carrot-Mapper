@@ -25,6 +25,9 @@ Please append a line to the changelog for each change made.
 * Added API views for updating and deleting Datasets.
   * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
   * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
+* Added ability to add dataset to projects related dataset list when creating a dataset inside scanreport upload
+* Patched bug where inputs on field and value pages could not be used on small screens by adding width restrictions
+* Removed NLP columns on tables
 
 ## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
