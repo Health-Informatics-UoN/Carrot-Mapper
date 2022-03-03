@@ -25,6 +25,9 @@ Please append a line to the changelog for each change made.
 * Added API views for updating and deleting Datasets.
   * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
   * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
+* Added uniqueness check to dataset names
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migration adding `unique=True` to `name` field in __Dataset__.
 * Added ability to add dataset to projects related dataset list when creating a dataset inside scanreport upload
 * Patched bug where inputs on field and value pages could not be used on small screens by adding width restrictions
 * Removed NLP columns on tables

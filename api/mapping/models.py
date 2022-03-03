@@ -393,7 +393,7 @@ class Dataset(BaseModel):
     Model for datasets which contain scan reports.
     """
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     data_partner = models.ForeignKey(
         DataPartner,
         on_delete=models.CASCADE,
