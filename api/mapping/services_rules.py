@@ -862,7 +862,7 @@ def get_concept_details(rule, h_concept_id):
         .exclude(
             Q(omop_field__field__icontains="person_id")
             | Q(omop_field__field__icontains="datetime")
-            | Q(omop_field__field__icontains=("source"))
+            | Q(omop_field__field__icontains="source")
         )
         .values(
             "source_field__id",
