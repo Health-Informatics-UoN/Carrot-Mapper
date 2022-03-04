@@ -49,6 +49,23 @@ class CanViewDataset(permissions.BasePermission):
         return False
 
 
+class CanAdminDataset(permissions.BasePermission):
+    message = "You are not an admin of this Dataset."
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - the User is in the Dataset's `admins` field
+        """
+        # if the User is the `AZ_FUNCTION_USER` grant permission
+        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return True
+        # if the User is in the Dataset's admins, return True,
+        # else return false
+        return obj.admins.filter(id=request.user.id).exists()
+
+
 class CanViewScanReport(permissions.BasePermission):
     message = "You do not have permission to view this scan report"
 

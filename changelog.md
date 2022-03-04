@@ -18,7 +18,17 @@ Please append a line to the changelog for each change made.
     2. Create a migration adding a `ManyToManyField` called `viewers` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
     3. Create a migration to add the `visibility` flag to __ScanReport__. Set default to "PUBLIC".
     4. Create a migration adding a `ManyToManyField` called `viewers` to __ScanReport__ linking it to `settings.AUTH_USER_MODEL`.
+* Implemented admins and associated permissions to Datasets.
+  * Admins can update and delete Datasets.
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migration adding a `ManyToManyField` called `admins` to __Dataset__ linking it to `settings.AUTH_USER_MODEL`.
+    2. Run the management command `add_admins_to_datasets` with no arguments to assign a single admin to each existing dataset.
+* Added API views for updating and deleting Datasets.
+  * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
+  * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
 * Added uniqueness check to dataset names
+  * __IMPORTANT!__ Steps to enact this change:
+    1. Create a migration adding `unique=True` to `name` field in __Dataset__.
 * Added ability to add dataset to projects related dataset list when creating a dataset inside scanreport upload
 * Patched bug where inputs on field and value pages could not be used on small screens by adding width restrictions
 * Removed NLP columns on tables
