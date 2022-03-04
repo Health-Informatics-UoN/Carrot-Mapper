@@ -3,8 +3,18 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
-from .permissions import CanViewProject, CanViewDataset, CanViewScanReport
-from .views import ProjectRetrieveView, DatasetRetrieveView, ScanReportRetrieveView
+from .permissions import (
+    CanViewProject,
+    CanViewDataset,
+    CanAdminDataset,
+    CanViewScanReport,
+)
+from .views import (
+    ProjectRetrieveView,
+    DatasetRetrieveView,
+    DatasetUpdateView,
+    ScanReportRetrieveView,
+)
 from .models import Project, Dataset, ScanReport
 
 
@@ -118,8 +128,8 @@ class TestCanViewDataset(TestCase):
 
     def test_non_project_member_cannot_view(self):
         # Make the requests for the Dataset
-        request1 = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
-        request2 = self.factory.get(f"api/datasets/{self.public_dataset.id}")
+        request1 = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
+        request2 = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
         # Add the user to the requests; this is not automatic
         request1.user = self.user_without_perm
         request2.user = self.user_without_perm
@@ -150,7 +160,7 @@ class TestCanViewDataset(TestCase):
 
     def test_restricted_viewership(self):
         # Make the request for the Dataset
-        request = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
+        request = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
         # Authenticate the restricted user
@@ -182,7 +192,7 @@ class TestCanViewDataset(TestCase):
 
     def test_public_viewership(self):
         # Make the request for the Dataset
-        request = self.factory.get(f"api/datasets/{self.public_dataset.id}")
+        request = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
         # Authenticate the restricted user
@@ -216,7 +226,7 @@ class TestCanViewDataset(TestCase):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
         # Make the request for the Dataset
-        request = self.factory.get(f"api/datasets/{self.restricted_dataset.id}")
+        request = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user
@@ -232,7 +242,7 @@ class TestCanViewDataset(TestCase):
             )
         )
         # Make the request for the Dataset
-        request = self.factory.get(f"api/datasets/{self.public_dataset.id}")
+        request = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user
@@ -246,6 +256,87 @@ class TestCanViewDataset(TestCase):
             self.permission.has_object_permission(
                 request, self.view, self.public_dataset
             )
+        )
+
+
+class TestCanAdminDataset(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who is a Dataset admin
+        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.admin_user)
+
+        # Create user who is not a Dataset admin
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="elissar"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_admin_user)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted users
+        self.project.members.add(self.non_admin_user, self.admin_user)
+        # Create the public dataset
+        self.dataset = Dataset.objects.create(
+            name="Hobbits of the Fellowship", visibility="PUBLIC"
+        )
+        # Add the restricted users
+        self.dataset.viewers.add(self.admin_user)
+        self.dataset.admins.add(self.admin_user)
+        # Add datasets to the project
+        self.project.datasets.add(self.dataset)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+        # The instance of the view required for the permission class
+        self.view = DatasetUpdateView.as_view()
+
+        # The permission class
+        self.permission = CanAdminDataset()
+
+    def test_only_admin_user_can_view(self):
+        request = self.factory.patch(f"/api/datasets/update/{self.dataset.id}")
+        request.user = self.admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.admin_user,
+            token=self.admin_user.auth_token,
+        )
+        # Assert admin_user has permission
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.dataset)
+        )
+        request.user = self.non_admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.non_admin_user,
+            token=self.non_admin_user.auth_token,
+        )
+        # Assert non_admin_user has no permission
+        self.assertFalse(
+            self.permission.has_object_permission(request, self.view, self.dataset)
+        )
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"/api/datasets/update/{self.dataset.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.dataset)
         )
 
 
@@ -306,8 +397,10 @@ class TestCanViewScanReport(TestCase):
 
     def test_non_project_member_cannot_view(self):
         # Make the requests for the Scan Report
-        request1 = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
-        request2 = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
+        request1 = self.factory.get(
+            f"/api/scanreports/{self.restricted_scan_report.id}"
+        )
+        request2 = self.factory.get(f"/api/scanreports/{self.public_scan_report.id}")
         # Add the user to the requests; this is not automatic
         request1.user = self.user_without_perm
         request2.user = self.user_without_perm
@@ -338,7 +431,7 @@ class TestCanViewScanReport(TestCase):
 
     def test_restricted_viewership(self):
         # Make the request for the Scan Report
-        request = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
+        request = self.factory.get(f"/api/scanreports/{self.restricted_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
         # Authenticate the restricted user
@@ -370,7 +463,7 @@ class TestCanViewScanReport(TestCase):
 
     def test_public_viewership(self):
         # Make the request for the Scan Report
-        request = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
+        request = self.factory.get(f"/api/scanreports/{self.public_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = self.restricted_user
         # Authenticate the restricted user
@@ -404,7 +497,7 @@ class TestCanViewScanReport(TestCase):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
         # Make the request for the Scan Report
-        request = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
+        request = self.factory.get(f"/api/scanreports/{self.restricted_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user
@@ -420,7 +513,7 @@ class TestCanViewScanReport(TestCase):
             )
         )
         # Make the request for the Scan Report
-        request = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
+        request = self.factory.get(f"/api/scanreports/{self.public_scan_report.id}")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user

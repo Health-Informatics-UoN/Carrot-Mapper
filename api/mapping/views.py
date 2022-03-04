@@ -114,6 +114,7 @@ from .models import (
 from .permissions import (
     CanViewProject,
     CanViewDataset,
+    CanAdminDataset,
     CanViewScanReport,
 )
 from .services import download_data_dictionary_blob
@@ -342,7 +343,7 @@ class DatasetListView(generics.ListAPIView):
         ).distinct()
 
 
-class CreateDatasetView(generics.CreateAPIView):
+class DatasetCreateView(generics.CreateAPIView):
     serializer_class = DatasetSerializer
     queryset = Dataset.objects.all()
 
@@ -356,7 +357,27 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     permission_classes = [CanViewDataset]
 
     def get_queryset(self):
-        qs = Dataset.objects.filter(id=self.kwargs["pk"])
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
+        return qs
+
+
+class DatasetUpdateView(generics.UpdateAPIView):
+    serializer_class = DatasetSerializer
+    # User must be able to view and be an admin
+    permission_classes = [CanViewDataset & CanAdminDataset]
+
+    def get_queryset(self):
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
+        return qs
+
+
+class DatasetDeleteView(generics.DestroyAPIView):
+    serializer_class = DatasetSerializer
+    # User must be able to view and be an admin
+    permission_classes = [CanViewDataset & CanAdminDataset]
+
+    def get_queryset(self):
+        qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
         return qs
 
 

@@ -45,8 +45,9 @@ const postForm = async (url,data) =>{
         body: data
     }
     );
-    const json = await response.json()
+    
     if (response.status < 200 || response.status > 300) {
+        const json = await response.json()
         throw json
     }
     return response;
