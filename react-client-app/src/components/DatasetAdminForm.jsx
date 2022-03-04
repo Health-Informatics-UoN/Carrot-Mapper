@@ -146,7 +146,6 @@ const DatasetAdminForm = ({ setTitle }) => {
             onOpen()
         } catch (error) {
             const error_response = await error.json()
-            console.log(error_response)
             setUploadLoading(false)
             if (error_response) {
                 setFormErrors(error_response)
