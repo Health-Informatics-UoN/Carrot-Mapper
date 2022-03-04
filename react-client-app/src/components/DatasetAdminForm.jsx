@@ -62,6 +62,11 @@ const DatasetAdminForm = ({ setTitle }) => {
         setDataset({ ...dataset, data_partner: dataPartner.id })
     }
 
+    // Remove user chip from viewers
+    const removeUser = (id) => {
+        setUsers(pj => pj.filter(user => user.id != id))
+    }
+
     // Send updated dataset to the DB
     async function upload() {
         /**
@@ -117,10 +122,32 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </Flex>
             </FormControl>
             {!isPublic &&
-                <FormControl>
-                    <FormLabel htmlFor="dataset-viewers">Viewers</FormLabel>
-                    <Input id="dataset-viewers"></Input>
-                </FormControl>
+                <>
+                    <Box>
+                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
+                            {users.map((user, index) => {
+                                return (
+                                    <div key={index} style={{ marginTop: "0px" }}>
+                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeUser} />
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        {usersList == undefined ?
+                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                            :
+                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
+                                <>
+                                    {usersList.map((item, index) =>
+                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                    )}
+                                </>
+                            </Select>
+                        }
+                    </Box>
+                </>
             }
             <FormControl>
                 <FormLabel htmlFor="dataset-datapartner">Data Partner</FormLabel>
