@@ -399,3 +399,39 @@ class TestCanViewScanReport(TestCase):
                 request, self.view, self.public_scan_report
             )
         )
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Scan Report
+        request = self.factory.get(f"api/scanreports/{self.restricted_scan_report.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
+            self.permission.has_object_permission(
+                request, self.view, self.restricted_scan_report
+            )
+        )
+        # Make the request for the Scan Report
+        request = self.factory.get(f"api/scanreports/{self.public_scan_report.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on public view
+        self.assertTrue(
+            self.permission.has_object_permission(
+                request, self.view, self.public_scan_report
+            )
+        )

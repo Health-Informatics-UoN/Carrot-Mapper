@@ -11,7 +11,8 @@ Please append a line to the changelog for each change made.
     1. Create a migrations to add data_partner field to **Dataset**. Allow the field to be NULL.
     2. Run the `add_datasets_to_partner` command.
     3. Create a migration to remove the data_partner field from **ScanReport** and remove the NULL constraint from data_partner from **Dataset**.
-- Added visibility restrictions to Datasets and Scan Reports.
+
+* Added visibility restrictions to Datasets and Scan Reports.
   - "PUBLIC": anyone on the Project can view the Dataset or Scan Report.
   - "RESTRICTED": only users in the `viewers` field of the Dataset or Scan Report can view.
   - **IMPORTANT!** Steps to enact this change:
@@ -19,7 +20,11 @@ Please append a line to the changelog for each change made.
     2. Create a migration adding a `ManyToManyField` called `viewers` to **Dataset** linking it to `settings.AUTH_USER_MODEL`.
     3. Create a migration to add the `visibility` flag to **ScanReport**. Set default to "PUBLIC".
     4. Create a migration adding a `ManyToManyField` called `viewers` to **ScanReport** linking it to `settings.AUTH_USER_MODEL`.
-- Added "Analyse Concepts" button to Mapping Rules page which looks through each SRs mapping rules and displays any ancestors/descendants that may appear in other Scan Reports, along with a link to the field/value the ancestor/descendant is mapped to.
+* Added uniqueness check to dataset names
+* Added ability to add dataset to projects related dataset list when creating a dataset inside scanreport upload
+* Patched bug where inputs on field and value pages could not be used on small screens by adding width restrictions
+* Removed NLP columns on tables
+* Added "Analyse Concepts" button to Mapping Rules page which looks through each SRs mapping rules and displays any ancestors/descendants that may appear in other Scan Reports, along with a link to the field/value the ancestor/descendant is mapped to.
 
 ## v1.4.0 was released 02/02/22
 
