@@ -47,7 +47,12 @@ const DatasetAdminForm = ({ setTitle }) => {
                     ...usersQuery.filter(user => datasetQuery.viewers.filter(ds => ds === user.id))
                 ]
             )
-            setAdmins(prevAdmins => [...prevAdmins, datasetQuery.admins])
+            setAdmins(
+                prevAdmins => [
+                    ...prevAdmins,
+                    ...usersQuery.filter(user => datasetQuery.admins.filter(ds => ds === user.id))
+                ]
+            )
         },
         [], // Required to stop this effect sending infinite requests
     )
@@ -73,6 +78,11 @@ const DatasetAdminForm = ({ setTitle }) => {
     // Remove user chip from viewers
     const removeViewer = (id) => {
         setViewers(pj => pj.filter(user => user.id != id))
+    }
+
+    // Remove user chip from viewers
+    const removeAdmin = (id) => {
+        setAdmins(pj => pj.filter(user => user.id != id))
     }
 
     // Send updated dataset to the DB
@@ -135,7 +145,6 @@ const DatasetAdminForm = ({ setTitle }) => {
                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                             <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
                             {viewers.map((viewer, index) => {
-                                console.log(viewer)
                                 return (
                                     <div key={index} style={{ marginTop: "0px" }}>
                                         <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeViewer} />
@@ -170,10 +179,30 @@ const DatasetAdminForm = ({ setTitle }) => {
                     )}
                 </Select>
             </FormControl>
-            <FormControl>
-                <FormLabel htmlFor="dataset-admins">Admins</FormLabel>
-                <Input id="dataset-admins"></Input>
-            </FormControl>
+            <Box>
+                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
+                    {admins.map((viewer, index) => {
+                        return (
+                            <div key={index} style={{ marginTop: "0px" }}>
+                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                            </div>
+                        )
+                    })}
+                </div>
+                {usersList == undefined ?
+                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                    :
+                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                        <option style={{ fontWeight: "bold" }} disabled>Add Admin</option>
+                        <>
+                            {usersList.map((item, index) =>
+                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                            )}
+                        </>
+                    </Select>
+                }
+            </Box>
 
             <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
         </Container>
