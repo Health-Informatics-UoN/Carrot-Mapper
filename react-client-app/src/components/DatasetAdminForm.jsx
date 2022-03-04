@@ -21,8 +21,9 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({})
     const [uploadLoading, setUploadLoading] = useState(false)
-    const [users, setUsers] = useState([]);
-    const [usersList, setUsersList] = useState(undefined);
+    const [viewers, setViewers] = useState([])
+    const [admins, setAdmins] = useState([])
+    const [usersList, setUsersList] = useState(undefined)
 
     // Set up page
     useEffect(
@@ -40,6 +41,13 @@ const DatasetAdminForm = ({ setTitle }) => {
             setLoadingMessage(null)
             const usersQuery = await useGet("/users/")
             setUsersList(usersQuery)
+            setViewers(
+                prevViewers => [
+                    ...prevViewers,
+                    ...usersQuery.filter(user => datasetQuery.viewers.filter(ds => ds === user.id))
+                ]
+            )
+            setAdmins(prevAdmins => [...prevAdmins, datasetQuery.admins])
         },
         [], // Required to stop this effect sending infinite requests
     )
@@ -63,8 +71,8 @@ const DatasetAdminForm = ({ setTitle }) => {
     }
 
     // Remove user chip from viewers
-    const removeUser = (id) => {
-        setUsers(pj => pj.filter(user => user.id != id))
+    const removeViewer = (id) => {
+        setViewers(pj => pj.filter(user => user.id != id))
     }
 
     // Send updated dataset to the DB
@@ -126,10 +134,11 @@ const DatasetAdminForm = ({ setTitle }) => {
                     <Box>
                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                             <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
-                            {users.map((user, index) => {
+                            {viewers.map((viewer, index) => {
+                                console.log(viewer)
                                 return (
                                     <div key={index} style={{ marginTop: "0px" }}>
-                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeUser} />
+                                        <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeViewer} />
                                     </div>
                                 )
                             })}
@@ -137,7 +146,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {usersList == undefined ?
                             <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                             :
-                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setViewers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
                                 <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
                                 <>
                                     {usersList.map((item, index) =>
