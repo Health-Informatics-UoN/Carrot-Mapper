@@ -25,6 +25,25 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [admins, setAdmins] = useState([])
     const [usersList, setUsersList] = useState(undefined)
 
+    function getUsersFromIds(userIds, userObjects) {
+        /**
+         * Get an array user objects with ids in an array of ids.
+         * 
+         * userIds: Array[Number]
+         * userObjects: Array[Object]
+         */
+        const idIterator = userIds.values()
+        let users = []
+        for (let id of idIterator) {
+            for (let obj of userObjects) {
+                if (id === obj.id) {
+                    users.push(obj)
+                }
+            }
+        }
+        return users
+    }
+
     // Set up page
     useEffect(
         async () => {
@@ -44,13 +63,13 @@ const DatasetAdminForm = ({ setTitle }) => {
             setViewers(
                 prevViewers => [
                     ...prevViewers,
-                    ...usersQuery.filter(user => datasetQuery.viewers.filter(ds => ds === user.id))
+                    ...getUsersFromIds(datasetQuery.viewers, usersQuery),
                 ]
             )
             setAdmins(
                 prevAdmins => [
                     ...prevAdmins,
-                    ...usersQuery.filter(user => datasetQuery.admins.filter(ds => ds === user.id))
+                    ...getUsersFromIds(datasetQuery.admins, usersQuery),
                 ]
             )
         },
@@ -92,7 +111,14 @@ const DatasetAdminForm = ({ setTitle }) => {
          * refresh the page with the new data
          */
         setUploadLoading(true)
-        const response = await usePatch(`/datasets/update/${datasetId}`, dataset)
+        const response = await usePatch(
+            `/datasets/update/${datasetId}`,
+            {
+                ...dataset,
+                viewers: [...viewers.map(viewer => viewer.id)],
+                admins: [...admins.map(admin => admin.id)],
+            },
+        )
         setUploadLoading(false)
         setDataset(response)
     }
@@ -193,7 +219,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 {usersList == undefined ?
                     <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                     :
-                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
                         <option style={{ fontWeight: "bold" }} disabled>Add Admin</option>
                         <>
                             {usersList.map((item, index) =>
