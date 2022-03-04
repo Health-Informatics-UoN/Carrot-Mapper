@@ -16,7 +16,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
     const [dataPartners, setDataPartners] = useState();
-    const [selectedDataPartner, setSelectedDataPartner] = useState({ name: "------" })
+    const [selectedDataPartner, setSelectedDataPartner] = useState()
     const [isPublic, setIsPublic] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({})
@@ -53,7 +53,7 @@ const DatasetAdminForm = ({ setTitle }) => {
             setDataset(datasetQuery)
             setIsPublic(datasetQuery.visibility === "PUBLIC")
             const dataPartnerQuery = await useGet("/datapartners/")
-            setDataPartners([{ name: "------" }, ...dataPartnerQuery])
+            setDataPartners([...dataPartnerQuery])
             setSelectedDataPartner(
                 dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
             )
@@ -74,6 +74,20 @@ const DatasetAdminForm = ({ setTitle }) => {
             )
         },
         [], // Required to stop this effect sending infinite requests
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, name: undefined })
+        },
+        [dataset.name],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, data_partner: undefined })
+        },
+        [selectedDataPartner],
     )
 
     // Update dataset name
@@ -110,17 +124,41 @@ const DatasetAdminForm = ({ setTitle }) => {
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
-        setUploadLoading(true)
-        const response = await usePatch(
-            `/datasets/update/${datasetId}`,
-            {
-                ...dataset,
-                viewers: [...viewers.map(viewer => viewer.id)],
-                admins: [...admins.map(admin => admin.id)],
-            },
-        )
-        setUploadLoading(false)
-        setDataset(response)
+        try {
+            setUploadLoading(true)
+            const response = await usePatch(
+                `/datasets/update/${datasetId}`,
+                {
+                    ...dataset,
+                    data_partner: selectedDataPartner.id,
+                    viewers: [...viewers.map(viewer => viewer.id)],
+                    admins: [...admins.map(admin => admin.id)],
+                },
+            )
+            setUploadLoading(false)
+            setDataset(response)
+            setAlert({
+                hidden: false,
+                status: 'success',
+                title: 'Success',
+                description: 'Dataset updated'
+            })
+            onOpen()
+        } catch (error) {
+            const error_response = await error.json()
+            console.log(error_response)
+            setUploadLoading(false)
+            if (error_response) {
+                setFormErrors(error_response)
+            }
+            setAlert({
+                hidden: false,
+                status: 'error',
+                title: 'Could not update dataset',
+                description: error.statusText ? error.statusText : ""
+            })
+            onOpen()
+        }
     }
 
 
@@ -146,13 +184,16 @@ const DatasetAdminForm = ({ setTitle }) => {
 
             <PageHeading text={`Admin Page for Dataset #${dataset.id}`} />
 
-            <FormControl mt={4}>
+            <FormControl mt={4} isInvalid={formErrors.name && formErrors.name.length > 0}>
                 <FormLabel htmlFor="dataset-name" style={{ fontWeight: "bold" }}>Name:</FormLabel>
                 <Input
                     id="dataset-name"
                     value={dataset.name}
                     onChange={e => handleNameInput(e.target.value)}
                 />
+                {formErrors.name && formErrors.name.length > 0 &&
+                    <FormErrorMessage>{formErrors.name[0]}</FormErrorMessage>
+                }
             </FormControl>
             <FormControl mt={4}>
                 <FormLabel htmlFor="dataset-visibility" style={{ fontWeight: "bold" }}>Visibility:</FormLabel>
