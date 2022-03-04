@@ -146,16 +146,16 @@ const DatasetAdminForm = ({ setTitle }) => {
 
             <PageHeading text={`Admin Page for Dataset #${dataset.id}`} />
 
-            <FormControl>
-                <FormLabel htmlFor="dataset-name">Name</FormLabel>
+            <FormControl mt={4}>
+                <FormLabel htmlFor="dataset-name" style={{ fontWeight: "bold" }}>Name:</FormLabel>
                 <Input
                     id="dataset-name"
                     value={dataset.name}
                     onChange={e => handleNameInput(e.target.value)}
                 />
             </FormControl>
-            <FormControl>
-                <FormLabel htmlFor="dataset-visibility">Visibility</FormLabel>
+            <FormControl mt={4}>
+                <FormLabel htmlFor="dataset-visibility" style={{ fontWeight: "bold" }}>Visibility:</FormLabel>
                 <Flex alignItems={"center"}>
                     <Switch
                         id="dataset-visibility"
@@ -167,7 +167,7 @@ const DatasetAdminForm = ({ setTitle }) => {
             </FormControl>
             {!isPublic &&
                 <>
-                    <Box>
+                    <Box mt={4}>
                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                             <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
                             {viewers.map((viewer, index) => {
@@ -181,8 +181,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {usersList == undefined ?
                             <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                             :
-                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setViewers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
+                            <Select bg="white" mt={4} value="Add Viewer" readOnly onChange={(option) => setViewers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                <option disabled>Add Viewer</option>
                                 <>
                                     {usersList.map((item, index) =>
                                         <option key={index} value={JSON.stringify(item)}>{item.username}</option>
@@ -193,8 +193,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                     </Box>
                 </>
             }
-            <FormControl>
-                <FormLabel htmlFor="dataset-datapartner">Data Partner</FormLabel>
+            <FormControl mt={4}>
+                <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
                 <Select
                     id="dataset-datapartner"
                     value={JSON.stringify(selectedDataPartner)}
@@ -205,7 +205,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                     )}
                 </Select>
             </FormControl>
-            <Box>
+            <Box mt={4}>
                 <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                     <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
                     {admins.map((viewer, index) => {
@@ -219,8 +219,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                 {usersList == undefined ?
                     <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                     :
-                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                        <option style={{ fontWeight: "bold" }} disabled>Add Admin</option>
+                    <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                        <option disabled>Add Admin</option>
                         <>
                             {usersList.map((item, index) =>
                                 <option key={index} value={JSON.stringify(item)}>{item.username}</option>
