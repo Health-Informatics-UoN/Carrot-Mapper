@@ -108,11 +108,11 @@ class TestCanViewDataset(TestCase):
         self.project.members.add(self.public_user, self.restricted_user)
         # Create the public dataset
         self.public_dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility="PUBLIC"
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         # Create the restricted dataset
         self.restricted_dataset = Dataset.objects.create(
-            name="Ring bearers", visibility="RESTRICTED"
+            name="Ring bearers", visibility=VisibilityChoices.RESTRICTED
         )
         # Add the restricted users
         self.restricted_dataset.viewers.add(self.restricted_user)
@@ -281,7 +281,7 @@ class TestCanAdminDataset(TestCase):
         self.project.members.add(self.non_admin_user, self.admin_user)
         # Create the public dataset
         self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility="PUBLIC"
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         # Add the restricted users
         self.dataset.viewers.add(self.admin_user)
@@ -369,18 +369,18 @@ class TestCanViewScanReport(TestCase):
         self.project.members.add(self.public_user, self.restricted_user)
         # Create the dataset
         self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility="PUBLIC"
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         # Create the public scan report
         self.public_scan_report = ScanReport.objects.create(
             dataset="Hobbit Heights",
-            visibility="PUBLIC",
+            visibility=VisibilityChoices.PUBLIC,
             parent_dataset=self.dataset,
         )
         # Create the restricted scan report
         self.restricted_scan_report = ScanReport.objects.create(
             dataset="Hobbit Diaries",
-            visibility="RESTRICTED",
+            visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.dataset,
         )
         # Add restriced user to restriced scan report
@@ -565,19 +565,19 @@ class TestCanEditScanReport(TestCase):
         self.project.members.add(self.public_user, self.restricted_user)
         # Create the dataset
         self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility="PUBLIC"
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         self.dataset.admins.add(self.ds_admin_user)
         # Create the public scan report
         self.public_scan_report = ScanReport.objects.create(
             dataset="Hobbit Heights",
-            visibility="PUBLIC",
+            visibility=VisibilityChoices.PUBLIC,
             parent_dataset=self.dataset,
         )
         # Create the restricted scan report
         self.restricted_scan_report = ScanReport.objects.create(
             dataset="Hobbit Diaries",
-            visibility="RESTRICTED",
+            visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.dataset,
         )
         # Add restriced user to restriced scan report
