@@ -9,8 +9,8 @@ const useGet = async (url) =>{
     return data;
 }
 // function for post requests to api with authorization token
-const usePost = async (url,data) =>{
-    const response = await fetch(`/api${url}`,
+const usePost = async (url,data,withApi=true) =>{
+    const response = await fetch(withApi?`/api${url}`:url,
     {
         method: "POST",
         headers: {
@@ -24,7 +24,7 @@ const usePost = async (url,data) =>{
         console.log(response)
         throw response
     }
-    const res = await response.json();
+    const res = withApi? await response.json():response;
     return res;
 }
 const postForm = async (url,data) =>{

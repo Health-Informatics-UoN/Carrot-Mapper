@@ -93,16 +93,18 @@ const MappingTbl = () => {
 
 
     // call refresh rules function from django then get new data
-    const refreshRules = () => {
+    const refreshRules = async () => {
         setLoading(true)
         setLoadingMessage("Refreshing rules")
-        window.refreshRules().then(res => {
+        try{
+            await usePost(window.location.href,{'refresh_rules': true},false)
             setLoadingMessage("Rules Refreshed. Getting Mapping Rules")
             window.location.reload(true)
-        })
-            .catch(error => {
-                console.log(error)
-            })
+        }
+        catch(err){
+            console.log(err)
+        }
+    
     }
     // download map diagram
     const downloadImage = (img) => {
