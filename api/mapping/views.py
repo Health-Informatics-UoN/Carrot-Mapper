@@ -721,7 +721,11 @@ class ScanReportTableListView(ListView):
     model = ScanReportTable
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download-dd") is not None:
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+        except ValueError as e:
+            body = {}
+        if request.POST.get("download-dd") is not None or body.get("download-dd",None) is not None:
             qs = self.get_queryset()
             scan_report = self.get_queryset()[0].scan_report
             return download_data_dictionary_blob(

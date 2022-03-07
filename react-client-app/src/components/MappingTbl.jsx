@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { useGet } from '../api/values'
+import { useGet, usePost } from '../api/values'
 import ConceptTag from './ConceptTag'
 import MappingModal from './MappingModal'
 import SummaryTbl from './SummaryTbl'
@@ -58,10 +58,11 @@ const MappingTbl = () => {
             })
     }, []);
 
-    useEffect(() => {
+    useEffect(async () => {
         // run when map diagram state has changed
         if (!mapDiagram.image) {
             // if no map diagram is loaded, request to get a new one
+            
             const result = await usePost(window.location.href, { 'get_svg': true }, false);
             const diagramString = await result.text()
             var parser = new DOMParser();
