@@ -64,7 +64,7 @@ const MappingTbl = () => {
             // if no map diagram is loaded, request to get a new one
             
             const result = await usePost(window.location.href, { 'get_svg': true }, false);
-            const diagramString = await result.text()
+            const diagramString = await result.data
             var parser = new DOMParser();
             var diagram = parser.parseFromString(diagramString, "text/html");
 

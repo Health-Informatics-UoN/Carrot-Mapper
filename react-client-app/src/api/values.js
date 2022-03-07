@@ -10,21 +10,20 @@ const useGet = async (url) =>{
 }
 // function for post requests to api with authorization token
 const usePost = async (url,data,withApi=true) =>{
-    const response = await fetch(withApi?`/api${url}`:url,
-    {
-        method: "POST",
+    const response = await axios.post(withApi?`/api${url}`:url,
+    data,
+    {    
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
             'X-CSRFToken': Cookies.get('csrftoken'),
-        },
-        body: JSON.stringify(data)    
+        },  
     }
     );
     if (response.status < 200 || response.status > 300) {
         console.log(response)
         throw response
     }
-    const res = withApi? await response.json():response;
+    const res = withApi? await response.data:response;
     return res;
 }
 const postForm = async (url,data) =>{
