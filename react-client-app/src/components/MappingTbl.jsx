@@ -110,33 +110,35 @@ const MappingTbl = () => {
     }
     // download map diagram
     const downloadImage = (img) => {
-        setDownloadingImg(true)
-        // if the image has been loaded then download it, otherwise, wait until image has been loaded
-        // then call the function again
+        setDownloadingImg(true);
         if (mapDiagram.image || img) {
-            let svg
-            if (img) { svg = img }
-            else { svg = mapDiagram.image }
-            // download the image then 
-            window.downloadImage(svg).then(res => {
-                setDownloadingImg(false)
-                downLoadingImgRef.current = false
-            })
+          let svg2;
+          if (img) {
+            svg2 = img;
+          } else {
+            svg2 = mapDiagram.image;
+          }
+          var serializer = new XMLSerializer();
+          var source = serializer.serializeToString(svg2);
+          if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+          }
+          if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+          }
+          source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+          var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+          var element = document.createElement("a");
+          element.download = "diagram.svg";
+          element.href = url;
+          element.click();
+          element.remove();
+          setDownloadingImg(false);
+          downLoadingImgRef.current = false;
+        } else {
+          downLoadingImgRef.current = true;
         }
-        else {
-            // used to check if the image is waiting to be downloaded when the image is retrieved
-            downLoadingImgRef.current = true
-        }
-    }
-    // remove the map diagram from html
-    const removeDiagram = () => {
-        if (svg.current) {
-            if (svg.current.hasChildNodes()) {
-                svg.current.removeChild(mapDiagram.image)
-            }
-        }
-        setMapDiagram(mapDiagram => ({ ...mapDiagram, image: null }))
-    }
+      };
 
     // apply destination table and source table filters to data
     const applyFilters = (variable) => {
@@ -156,7 +158,7 @@ const MappingTbl = () => {
         if (filters.find(filter => filter.name == value) == null) {
             setFilters(current => [...current, { title: "Destination Table:", name: value }])
             setDestinationTableFilter(current => [...current, value])
-            //removeDiagram()
+            
         }
     };
     // if filter does not already exist, create a new source table filter
@@ -165,14 +167,14 @@ const MappingTbl = () => {
         if (filters.find(filter => filter.name == value) == null) {
             setFilters(current => [...current, { title: "Source Table:", name: value }])
             setSourceTableFilter(current => [...current, value])
-            //removeDiagram()
+            
         }
 
     };
     // remove a filter. Called inside concept tag
     const removeFilter = (title, name) => {
         setFilters(current => current.filter(filter => filter.name != name || filter.title != title))
-        //removeDiagram()
+        
         if (title.includes("Destination Table")) {
             setDestinationTableFilter(current => current.filter(filter => filter != name))
         }
