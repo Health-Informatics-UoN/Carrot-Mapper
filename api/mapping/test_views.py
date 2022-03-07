@@ -221,6 +221,63 @@ class TestDatasetUpdateView(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
+class TestDatasetRetrieveView(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Set up users
+        self.admin_user = User.objects.create(
+            username="gandalf", password="hjfiwejfiwef"
+        )
+        Token.objects.create(user=self.admin_user)
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_admin_user)
+        self.non_project_user = User.objects.create(
+            username="bilbo", password="djfoiejwiofjoiewf"
+        )
+        Token.objects.create(user=self.non_project_user)
+
+        # Set up Project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        self.project.members.add(self.admin_user, self.non_admin_user)
+
+        # Set up Dataset
+        self.dataset = Dataset.objects.create(
+            name="The Heights of Hobbits", visibility=VisibilityChoices.RESTRICTED
+        )
+        self.dataset.viewers.add(self.non_admin_user)
+        self.dataset.admins.add(self.admin_user)
+        self.project.datasets.add(self.dataset)
+
+        # Request factory for setting up requests
+        self.client = APIClient()
+
+    def test_non_admin_member_can_see(self):
+        # Authenticate non admin user
+        self.client.force_authenticate(self.non_admin_user)
+        #  Make the request
+        response = self.client.get(f"/api/datasets/{self.dataset.id}")
+        # Ensure non admin user can see
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_member_can_see(self):
+        # Authenticate admin user
+        self.client.force_authenticate(self.admin_user)
+        #  Make the request
+        response = self.client.get(f"/api/datasets/{self.dataset.id}")
+        # Ensure admin user can see
+        self.assertEqual(response.status_code, 200)
+
+    def test_non_project_member_forbidden(self):
+        # Authenticate non project user
+        self.client.force_authenticate(self.non_project_user)
+        #  Make the request
+        response = self.client.get(f"/api/datasets/update/{self.dataset.id}")
+        # Ensure non project user is Forbidden
+        self.assertEqual(response.status_code, 403)
+
+
 class TestDatasetDeleteView(TestCase):
     def setUp(self):
         User = get_user_model()
