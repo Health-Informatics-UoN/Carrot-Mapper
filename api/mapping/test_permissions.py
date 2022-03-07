@@ -284,7 +284,7 @@ class TestCanAdminDataset(TestCase):
             name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         # Add the restricted users
-        self.dataset.viewers.add(self.admin_user)
+        self.dataset.viewers.add(self.non_admin_user)
         self.dataset.admins.add(self.admin_user)
         # Add datasets to the project
         self.project.datasets.add(self.dataset)
