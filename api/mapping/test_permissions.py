@@ -534,56 +534,38 @@ class TestCanViewScanReport(TestCase):
 class TestCanEditScanReport(TestCase):
     def setUp(self):
         User = get_user_model()
-        # Create user who can see the Dataset whether restricted or public
-        self.restricted_user = User.objects.create(
-            username="gandalf", password="thegrey"
+        # Create user who is a Dataset admin
+        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.admin_user)
+
+        # Create user who is not a Dataset admin
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="elissar"
         )
         # Give them a token
-        Token.objects.create(user=self.restricted_user)
-
-        # Create user who can see the Dataset when public only
-        self.public_user = User.objects.create(username="aragorn", password="elissar")
-        # Give them a token
-        Token.objects.create(user=self.public_user)
-
-        # Create user who cannot access the Project
-        self.user_without_perm = User.objects.create(
-            username="balrog", password="youshallnotpass"
-        )
-        # Give them a token
-        Token.objects.create(user=self.user_without_perm)
-
-        # Create user who can see the scan report because they're an admin
-        # of the parent dataset
-        self.ds_admin_user = User.objects.create(username="saruman", password="thewise")
-        # Give them a token
-        Token.objects.create(user=self.ds_admin_user)
+        Token.objects.create(user=self.non_admin_user)
 
         # Create the project
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
-        self.project.members.add(self.public_user, self.restricted_user)
-        # Create the dataset
+        self.project.members.add(self.non_admin_user, self.admin_user)
+        # Create the public dataset
         self.dataset = Dataset.objects.create(
             name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
-        self.dataset.admins.add(self.ds_admin_user)
-        # Create the public scan report
-        self.public_scan_report = ScanReport.objects.create(
-            dataset="Hobbit Heights",
-            visibility=VisibilityChoices.PUBLIC,
-            parent_dataset=self.dataset,
-        )
-        # Create the restricted scan report
-        self.restricted_scan_report = ScanReport.objects.create(
-            dataset="Hobbit Diaries",
+        # Add the restricted users
+        self.dataset.admins.add(self.admin_user)
+        # Add datasets to the project
+        self.project.datasets.add(self.dataset)
+
+        # Add the scan report
+        self.scan_report = ScanReport.objects.create(
+            dataset="The Rings of Power",
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.dataset,
         )
-        # Add restriced user to restriced scan report
-        self.restricted_scan_report.viewers.add(self.restricted_user)
-        # Add dataset to the project
-        self.project.datasets.add(self.dataset)
+        self.scan_report.viewers.add(self.non_admin_user)
 
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
