@@ -99,3 +99,25 @@ class CanViewScanReport(permissions.BasePermission):
             ).exists()
 
         return False
+
+
+class CanEditScanReport(permissions.BasePermission):
+    message = "You do not have permission to edit this Scan Report."
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - (unimplmented) the User is in the Scan Report's `editors` field
+            - the User is in the parent Dataset's `admins` field
+        """
+        # if the User is the `AZ_FUNCTION_USER` grant permission
+        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return True
+
+        # TODO: add check for the User being in the editors field
+        # once it is implemented.
+
+        # if the User is in the parent Dataset's admins, return True,
+        # else return false
+        return obj.parent_dataset.admins.filter(id=request.user.id).exists()
