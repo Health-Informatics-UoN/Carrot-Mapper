@@ -44,7 +44,7 @@ const TablesTbl = () => {
 
     const download_data_dictionary = async () => {
         const response = await usePost(window.location.href, { "download-dd": true }, false);
-        var type = response.headers['Content-Type'];
+        var type = response.headers['content-type'];
         var blob = new Blob([response.data], { type: type });
         var filename = "";
         var disposition = response.headers['content-disposition'];
