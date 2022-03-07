@@ -24,6 +24,7 @@ function AnalysisTbl({ data, values, filters }) {
                     <Tr>
                         <Th>Rule Id</Th>
                         <Th>Ancestors/Descendants</Th>
+                        <Th>Min/Max Separation</Th>
                         <Th>Source</Th>
                     </Tr>
                 </Thead>
@@ -48,7 +49,21 @@ function AnalysisTbl({ data, values, filters }) {
                                         </div>
                                     )}
                                 </Td>
+                                <Td>
+                                    {item.anc_desc.map((element) =>
+                                        <div>
+                                            {element.ancestors.map(ancestor =>
 
+                                                <div style={{ color: "#475da7" }}> {ancestor.level}</div>
+
+                                            )}
+                                            {element.descendants.map(descendant =>
+
+                                                <div style={{ color: "#3db28c" }} > {descendant.level}</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </Td>
                                 <Td>
                                     {item.anc_desc.map((element) =>
                                         <div>
@@ -77,11 +92,11 @@ function AnalysisTbl({ data, values, filters }) {
                                 </Td>
                             </Tr>
 
-                        ):
+                        ) :
                         <Flex padding="30px">
                             <Flex marginLeft="10px">No ancestors or descendants of these mappings appear in any other Scan Reports</Flex>
                         </Flex>
-                        
+
                     }
                 </Tbody>
 
