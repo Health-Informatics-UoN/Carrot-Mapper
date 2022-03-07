@@ -273,7 +273,7 @@ class TestDatasetRetrieveView(TestCase):
         # Authenticate non project user
         self.client.force_authenticate(self.non_project_user)
         #  Make the request
-        response = self.client.get(f"/api/datasets/update/{self.dataset.id}")
+        response = self.client.get(f"/api/datasets/{self.dataset.id}")
         # Ensure non project user is Forbidden
         self.assertEqual(response.status_code, 403)
 
