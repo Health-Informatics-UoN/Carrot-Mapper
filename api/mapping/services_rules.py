@@ -844,7 +844,7 @@ def remove_mapping_rules(request, scan_report_id):
     rules.delete()
 
 
-def get_concept_details(rule, h_concept_id):
+def get_concept_details(h_concept_id):
     """
     Given a mapping rule and its descendant/ancestor concept id
     Find the source field/value that the descendant/ancestor is mapped to,
@@ -911,38 +911,48 @@ def analyse_concepts(scan_report_id):
         for descendant in descendants:
             # get the concept id
             desc = descendant.descendant_concept_id
+            desc_level = (
+                str(descendant.min_levels_of_separation) + "/",
+                str(descendant.max_levels_of_separation),
+            )
             # Check if the descendant is a mapped concept in any other scan report
             # and that it's not the same as the original concept
             if (desc in all_mapping_rules) and (desc != rule):
 
                 # Get all the details for that descendant:
                 # descendant name, current mapping rule name, where that descendant is mapped to
-                desc_name, source_ids = get_concept_details(rule, desc)
+                desc_name, source_ids = get_concept_details(desc)
                 # Append all descendant details to a list
                 descendant_list.append(
                     {
                         "d_id": desc,
                         "d_name": desc_name,
                         "source": source_ids,
+                        "level": desc_level,
                     }
                 )
         # For each ancestor found
         for ancestor in ancestors:
             # get the concept_id
             anc = ancestor.ancestor_concept_id
+            anc_level = (
+                str(ancestor.min_levels_of_separation) + "/",
+                str(ancestor.max_levels_of_separation),
+            )
             # If ancestor is a mapping rule in any other scan report,
             # and is not the same rule as the current one
             if (anc in all_mapping_rules) and (anc != rule):
 
                 # Get all the details for that ancestor:
                 # ancestor name, current mapping rule name, where that ancestor is mapped to
-                concept, source_ids = get_concept_details(rule, anc)
+                concept, source_ids = get_concept_details(anc)
                 # Append all the ancestor details to a list
                 ancestors_list.append(
                     {
                         "a_id": anc,
                         "a_name": concept,
                         "source": source_ids,
+                        "level": anc_level,
                     }
                 )
 
