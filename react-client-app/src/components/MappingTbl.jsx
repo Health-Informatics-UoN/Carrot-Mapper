@@ -62,21 +62,23 @@ const MappingTbl = () => {
         // run when map diagram state has changed
         if (!mapDiagram.image) {
             // if no map diagram is loaded, request to get a new one
-            window.getSVG().then(diagram => {
-                setMapDiagram(mapDiagram => ({ ...mapDiagram, image: diagram.getElementsByTagName("svg")[0] }))
-                if (svg.current) {
-                    if (svg.current.hasChildNodes()) {
-                        // remove all other diagrams if they exist
-                        while (svg.current.firstChild) {
-                            svg.current.removeChild(svg.current.lastChild);
-                        }
+            const result = await usePost(window.location.href, { 'get_svg': true }, false);
+            const diagramString = await result.text()
+            var parser = new DOMParser();
+            var diagram = parser.parseFromString(diagramString, "text/html");
+
+            setMapDiagram((mapDiagram2) => ({ ...mapDiagram2, image: diagram.getElementsByTagName("svg")[0] }));
+            if (svg.current) {
+                if (svg.current.hasChildNodes()) {
+                    while (svg.current.firstChild) {
+                        svg.current.removeChild(svg.current.lastChild);
                     }
-                    svg.current.appendChild(diagram.getElementsByTagName("svg")[0])
                 }
-                if (downLoadingImgRef.current == true) {
-                    downloadImage(diagram.getElementsByTagName("svg")[0])
-                }
-            })
+                svg.current.appendChild(diagram.getElementsByTagName("svg")[0]);
+            }
+            if (downLoadingImgRef.current == true) {
+                downloadImage(diagram.getElementsByTagName("svg")[0]);
+            }
         }
         else {
             if (svg.current) {
@@ -96,15 +98,15 @@ const MappingTbl = () => {
     const refreshRules = async () => {
         setLoading(true)
         setLoadingMessage("Refreshing rules")
-        try{
-            await usePost(window.location.href,{'refresh_rules': true},false)
+        try {
+            await usePost(window.location.href, { 'refresh_rules': true }, false)
             setLoadingMessage("Rules Refreshed. Getting Mapping Rules")
             window.location.reload(true)
         }
-        catch(err){
+        catch (err) {
             console.log(err)
         }
-    
+
     }
     // download map diagram
     const downloadImage = (img) => {
@@ -194,8 +196,8 @@ const MappingTbl = () => {
         <div >
             <MappingModal isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
                 <SummaryTbl values={values}
-                filters={filters}removeFilter={removeFilter} setDestinationFilter={setDestinationFilter}setSourceFilter={setSourceFilter}
-                destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter}/>
+                    filters={filters} removeFilter={removeFilter} setDestinationFilter={setDestinationFilter} setSourceFilter={setSourceFilter}
+                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} />
             </MappingModal>
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
@@ -205,7 +207,7 @@ const MappingTbl = () => {
                 <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
                 <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
             </HStack>
-            
+
             <div>
                 {mapDiagram.showing &&
                     <>
@@ -231,9 +233,9 @@ const MappingTbl = () => {
                 <div>{error}</div>
                 :
                 <RulesTbl values={values}
-                filters={filters}removeFilter={removeFilter} setDestinationFilter={setDestinationFilter}setSourceFilter={setSourceFilter}
-                destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter} applyFilters={applyFilters}/>
-                
+                    filters={filters} removeFilter={removeFilter} setDestinationFilter={setDestinationFilter} setSourceFilter={setSourceFilter}
+                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} applyFilters={applyFilters} />
+
             }
         </div>
     );
