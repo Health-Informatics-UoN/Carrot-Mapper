@@ -2,6 +2,8 @@
 
 *Write a description of the changes you made here.*
 
+### Example
+
 - Added a date of birth field to the user model.
 - Display the date of birth on the user's profile.
 
