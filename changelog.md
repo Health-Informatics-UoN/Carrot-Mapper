@@ -6,6 +6,7 @@ Please append a line to the changelog for each change made.
 * Added Project and Dataset tables to the database.
 * Added `add_datasets_to_partner` management command.
 * Removed data_partner field from ScanReport. Added data_partner field to Dataset.
+* Removed ajax functions and replaced with react fetch requests
   * __IMPORTANT!__ Steps to enact this change:
     1. Create a migrations to add data_partner field to __Dataset__. Allow the field to be NULL.
     2. Run the `add_datasets_to_partner` command.
