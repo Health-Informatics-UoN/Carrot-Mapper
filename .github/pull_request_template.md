@@ -7,8 +7,6 @@
 
 # Migrations
 
-## Important: please complete these migrations *before* merging
-
 *Give details of any database migrations required for the PR here.*
 
 *Otherwise, leave blank.*
@@ -27,3 +25,10 @@
 - Date of birth on the user's profile
 
 <screenshot.jpg>
+
+# Checks
+
+**Important:** please complete these **before** merging.
+- [ ] Run migrations, if any.
+- [ ] Update `changelog.md`.
+- [ ] Run unit tests.
