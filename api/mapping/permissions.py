@@ -35,20 +35,17 @@ def has_viwership(obj: Any, request: Request) -> bool:
     Returns:
         bool: `True` if the request's user has permission, else `False`.
     """
+    visibility_query = (
+        lambda x: Q(visibility=VisibilityChoices.PUBLIC)
+        if x.visibility == VisibilityChoices.PUBLIC
+        else Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
+    )
     checks = {
         Dataset: Dataset.objects.filter(
-            Q(project__members=request.user.id)
-            & (
-                Q(visibility=VisibilityChoices.PUBLIC)
-                | Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
-            )
+            Q(project__members=request.user.id) & visibility_query(obj)
         ).exists(),
         ScanReport: ScanReport.objects.filter(
-            Q(parent_dataset__project__members=request.user.id)
-            & (
-                Q(visibility=VisibilityChoices.PUBLIC)
-                | Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
-            )
+            Q(parent_dataset__project__members=request.user.id) & visibility_query(obj)
         ).exists(),
     }
     return checks.get(type(obj), False)

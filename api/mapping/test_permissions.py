@@ -21,7 +21,7 @@ from .views import (
 from .models import Project, Dataset, ScanReport, VisibilityChoices
 
 
-class TestHasViewerShipe(TestCase):
+class TestHasViewership(TestCase):
     def setUp(self):
         User = get_user_model()
         # Create user who can access the Project
@@ -68,6 +68,7 @@ class TestHasViewerShipe(TestCase):
         self.restricted_dataset = Dataset.objects.create(
             name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
         )
+        self.restricted_dataset.viewers.add(self.user_with_perm)
         self.project.datasets.add(self.public_dataset, self.restricted_dataset)
 
         # Set up scan reports
@@ -88,6 +89,23 @@ class TestHasViewerShipe(TestCase):
 
         # Generic test view, specific view class not required
         self.view = GenericAPIView.as_view()
+
+    def test_dataset_perms(self):
+        # Check user_with_perm can see all datasets
+        self.request.user = self.user_with_perm
+        self.assertTrue(has_viwership(self.public_dataset, self.request))
+        self.assertTrue(has_viwership(self.restricted_dataset, self.request))
+
+        # Check non_restricted_ds_viewer can see public dataset
+        # but not restricted dataset
+        self.request.user = self.non_restricted_ds_viewer
+        self.assertTrue(has_viwership(self.public_dataset, self.request))
+        self.assertFalse(has_viwership(self.restricted_dataset, self.request))
+
+        # Check user_not_on_project can see public dataset
+        self.request.user = self.user_not_on_project
+        self.assertFalse(has_viwership(self.public_dataset, self.request))
+        self.assertFalse(has_viwership(self.restricted_dataset, self.request))
 
 
 class TestCanViewProject(TestCase):
