@@ -32,5 +32,5 @@
 
 **Important:** please complete these **before** merging.
 - [ ] Run migrations, if any.
-- [ ] Update `changelog.md`.
+- [ ] Update `changelog.md`, including migration instructions if any.
 - [ ] Run unit tests.
