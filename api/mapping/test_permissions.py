@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 from .permissions import (
     has_viwership,
     CanViewProject,
-    CanViewDataset,
+    CanView,
     CanAdminDataset,
     CanViewScanReport,
     CanEditScanReport,
@@ -187,7 +187,7 @@ class TestCanViewProject(TestCase):
         )
 
 
-class TestCanViewDataset(TestCase):
+class TestCanView(TestCase):
     def setUp(self):
         User = get_user_model()
         # Create user who can see the Dataset whether restricted or public
@@ -232,7 +232,7 @@ class TestCanViewDataset(TestCase):
         self.view = DatasetRetrieveView.as_view()
 
         # The permission class
-        self.permission = CanViewDataset()
+        self.permission = CanView()
 
     def test_non_project_member_cannot_view(self):
         # Make the requests for the Dataset

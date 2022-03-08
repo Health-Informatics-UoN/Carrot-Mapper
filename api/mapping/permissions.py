@@ -61,38 +61,22 @@ class CanViewProject(permissions.BasePermission):
         return obj.members.filter(id=request.user.id).exists()
 
 
-class CanViewDataset(permissions.BasePermission):
+class CanView(permissions.BasePermission):
 
-    message = "You do not have permission to view this dataset"
+    message = "You do not have permission to view this."
 
     def has_object_permission(self, request, view, obj):
         """
         Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
-            - the Dataset is 'RESTRICTED' and the User is a Dataset viewer
-            - the Dataset is 'PUBLIC' and the User is a member of a Project
-            that the Dataset is in.
+            - the Object is 'RESTRICTED' and the User is a, Object viewer
+            - the Object is 'PUBLIC' and the User is a member of a Project
+            that the Object is in.
         """
-        visibility = obj.visibility
 
-        # if the User is the `AZ_FUNCTION_USER` grant permission
         if is_az_function_user(request.user):
             return True
-        # if the visibility is restricted
-        # check if the user is in the viewers field
-        if visibility == "RESTRICTED":
-            self.message = "You must be granted permission to view this dataset"
-            return obj.viewers.filter(id=request.user.id).exists()
-        # if the visibility is public
-        # check if the user is a member in any projects the dataset is in
-        elif visibility == "PUBLIC":
-            # filter by projects that have dataset obj.id
-            # filter by projects that have user as a member
-            self.message = "You are not a member of any projects for this dataset"
-            return Project.objects.filter(
-                datasets__id=obj.id, members__id=request.user.id
-            ).exists()
-        return False
+        return has_viwership(obj, request)
 
 
 class CanAdminDataset(permissions.BasePermission):

@@ -113,7 +113,7 @@ from .models import (
 from .permissions import (
     CanEditScanReport,
     CanViewProject,
-    CanViewDataset,
+    CanView,
     CanAdminDataset,
     CanViewScanReport,
 )
@@ -353,7 +353,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    permission_classes = [CanViewDataset | CanAdminDataset]
+    permission_classes = [CanView | CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -363,7 +363,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 class DatasetUpdateView(generics.UpdateAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -373,7 +373,7 @@ class DatasetUpdateView(generics.UpdateAPIView):
 class DatasetDeleteView(generics.DestroyAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
