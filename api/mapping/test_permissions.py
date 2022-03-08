@@ -14,8 +14,6 @@ from .permissions import (
 from .views import (
     ProjectRetrieveView,
     DatasetRetrieveView,
-    DatasetUpdateView,
-    ScanReportRetrieveView,
 )
 from .models import Project, Dataset, ScanReport, VisibilityChoices
 
@@ -225,143 +223,84 @@ class TestCanView(TestCase):
         # Add datasets to the project
         self.project.datasets.add(self.restricted_dataset, self.public_dataset)
 
-        # Request factory for setting up requests
+        # Set up request
         self.factory = APIRequestFactory()
-        # The instance of the view required for the permission class
-        self.view = DatasetRetrieveView.as_view()
+        self.request = self.factory.get("/paths/of/the/dead")
+
+        # Generic test view, specific view class not required
+        self.view = GenericAPIView.as_view()
 
         # The permission class
         self.permission = CanView()
 
     def test_non_project_member_cannot_view(self):
-        # Make the requests for the Dataset
-        request1 = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
-        request2 = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
-        # Add the user to the requests; this is not automatic
-        request1.user = self.user_without_perm
-        request2.user = self.user_without_perm
-        # Authenticate the user for first request
-        force_authenticate(
-            request1,
-            user=self.user_without_perm,
-            token=self.user_without_perm.auth_token,
-        )
+        self.request.user = self.user_without_perm
         # Assert the user not on the project doesn't have permission to see the view
         self.assertFalse(
             self.permission.has_object_permission(
-                request1, self.view, self.restricted_dataset
+                self.request, self.view, self.restricted_dataset
             )
         )
-        # Authenticate the user for second request
-        force_authenticate(
-            request2,
-            user=self.user_without_perm,
-            token=self.user_without_perm.auth_token,
-        )
+
         # Assert the user not on the project doesn't have permission to see the view
         self.assertFalse(
             self.permission.has_object_permission(
-                request2, self.view, self.public_dataset
+                self.request, self.view, self.public_dataset
             )
         )
 
     def test_restricted_viewership(self):
-        # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
         # Add the user to the request; this is not automatic
-        request.user = self.restricted_user
-        # Authenticate the restricted user
-        force_authenticate(
-            request,
-            user=self.restricted_user,
-            token=self.restricted_user.auth_token,
-        )
+        self.request.user = self.restricted_user
         # Assert the restricted has permission to see the view
         self.assertTrue(
             self.permission.has_object_permission(
-                request, self.view, self.restricted_dataset
+                self.request, self.view, self.restricted_dataset
             )
         )
         # change the request user to the public user
-        request.user = self.public_user
-        # Authenticate the public user
-        force_authenticate(
-            request,
-            user=self.public_user,
-            token=self.public_user.auth_token,
-        )
+        self.request.user = self.public_user
         # Assert the public user has no permission to see the view
         self.assertFalse(
             self.permission.has_object_permission(
-                request, self.view, self.restricted_dataset
+                self.request, self.view, self.restricted_dataset
             )
         )
 
     def test_public_viewership(self):
-        # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
         # Add the user to the request; this is not automatic
-        request.user = self.restricted_user
-        # Authenticate the restricted user
-        force_authenticate(
-            request,
-            user=self.restricted_user,
-            token=self.restricted_user.auth_token,
-        )
+        self.request.user = self.restricted_user
         # Assert the restricted has permission to see the view
         self.assertTrue(
             self.permission.has_object_permission(
-                request, self.view, self.public_dataset
+                self.request, self.view, self.public_dataset
             )
         )
         # change the request user to the public user
-        request.user = self.public_user
-        # Authenticate the public user
-        force_authenticate(
-            request,
-            user=self.public_user,
-            token=self.public_user.auth_token,
-        )
+        self.request.user = self.public_user
         # Assert the public user has permission to see the view
         self.assertTrue(
             self.permission.has_object_permission(
-                request, self.view, self.public_dataset
+                self.request, self.view, self.public_dataset
             )
         )
 
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
-        # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/{self.restricted_dataset.id}")
+
         # Add the user to the request; this is not automatic
-        request.user = az_user
-        # Authenticate az_user
-        force_authenticate(
-            request,
-            user=az_user,
-            token=az_user.auth_token,
-        )
+        self.request.user = az_user
         # Assert az_user has permission on restricted view
         self.assertTrue(
             self.permission.has_object_permission(
-                request, self.view, self.restricted_dataset
+                self.request, self.view, self.restricted_dataset
             )
-        )
-        # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/{self.public_dataset.id}")
-        # Add the user to the request; this is not automatic
-        request.user = az_user
-        # Authenticate az_user
-        force_authenticate(
-            request,
-            user=az_user,
-            token=az_user.auth_token,
         )
         # Assert az_user has permission on public view
         self.assertTrue(
             self.permission.has_object_permission(
-                request, self.view, self.public_dataset
+                self.request, self.view, self.public_dataset
             )
         )
 
