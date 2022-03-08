@@ -66,8 +66,8 @@ def has_viwership(obj: Any, request: Request) -> bool:
 
     # If `obj` is a scan report table|field|value, get the scan report
     # it belongs to and check the user has permission to view it.
-    if sub_scan_report := scan_report_queries.get(type(obj)):
-        return checks.get(type(sub_scan_report))(obj)
+    if sub_scan_report := scan_report_queries.get(type(obj))(obj):
+        return checks.get(type(sub_scan_report))(sub_scan_report)
 
     # If `obj` is a dataset or scan report, check the user can view it.
     if permission_check := checks.get(type(obj)):

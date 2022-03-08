@@ -382,6 +382,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -409,6 +410,7 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -547,6 +549,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
     serializer_class = ScanReportValueSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
