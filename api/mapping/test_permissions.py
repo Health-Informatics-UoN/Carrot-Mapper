@@ -1,9 +1,11 @@
 import os
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from rest_framework.generics import GenericAPIView
 from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
 from .permissions import (
+    has_viwership,
     CanViewProject,
     CanViewDataset,
     CanAdminDataset,
@@ -17,6 +19,75 @@ from .views import (
     ScanReportRetrieveView,
 )
 from .models import Project, Dataset, ScanReport, VisibilityChoices
+
+
+class TestHasViewerShipe(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who can access the Project
+        self.user_with_perm = User.objects.create(
+            username="gandalf", password="thegrey"
+        )
+        # Give them a token
+        Token.objects.create(user=self.user_with_perm)
+
+        # Create user who cannot access the Project
+        self.user_not_on_project = User.objects.create(
+            username="balrog", password="youshallnotpass"
+        )
+        # Give them a token
+        Token.objects.create(user=self.user_not_on_project)
+
+        # Create user who cannot access the restricted dataset
+        self.non_restricted_ds_viewer = User.objects.create(
+            username="sauron", password="thedeceiver"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_restricted_ds_viewer)
+
+        # Create user who cannot access the restricted scan report
+        self.non_restricted_sr_viewer = User.objects.create(
+            username="saruman", password="thewise"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_restricted_sr_viewer)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted user
+        self.project.members.add(
+            self.user_with_perm,
+            self.non_restricted_ds_viewer,
+            self.non_restricted_sr_viewer,
+        )
+
+        # Set up datasets
+        self.public_dataset = Dataset.objects.create(
+            name="The Fellowship of the Ring", visibility=VisibilityChoices.PUBLIC
+        )
+        self.restricted_dataset = Dataset.objects.create(
+            name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
+        )
+        self.project.datasets.add(self.public_dataset, self.restricted_dataset)
+
+        # Set up scan reports
+        self.public_scanreport = ScanReport.objects.create(
+            dataset="The Shire",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.public_dataset,
+        )
+        self.restricted_scanreport = ScanReport.objects.create(
+            dataset="Moria",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.public_dataset,
+        )
+
+        # Set up request
+        self.factory = APIRequestFactory()
+        self.request = self.factory.get("/paths/of/the/dead")
+
+        # Generic test view, specific view class not required
+        self.view = GenericAPIView.as_view()
 
 
 class TestCanViewProject(TestCase):
