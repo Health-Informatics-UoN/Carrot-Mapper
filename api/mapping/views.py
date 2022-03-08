@@ -1121,8 +1121,7 @@ class ScanReportFormView(FormView):
         else:
             data_dictionary = DataDictionary.objects.create(
                 name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}"
-                f"_{dt}{rand}.csv",
-                scan_report=scan_report,
+                f"_{dt}{rand}.csv"
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
