@@ -442,3 +442,91 @@ class TestCanEditScanReport(TestCase):
                 self.request, self.view, self.scan_report
             )
         )
+
+
+class TestCanEditScanReport(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who is a Dataset admin
+        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.admin_user)
+
+        # Create user who is not a Dataset admin
+        self.non_admin_user = User.objects.create(
+            username="aragorn", password="elissar"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_admin_user)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted users
+        self.project.members.add(self.non_admin_user, self.admin_user)
+        # Create the public dataset
+        self.dataset = Dataset.objects.create(
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
+        )
+        # Add the restricted users
+        self.dataset.admins.add(self.admin_user)
+        # Add datasets to the project
+        self.project.datasets.add(self.dataset)
+
+        # Add the scan report
+        self.scan_report = ScanReport.objects.create(
+            dataset="The Rings of Power",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.dataset,
+        )
+        self.scan_report.viewers.add(self.non_admin_user)
+
+        # Request factory for setting up requests
+        self.factory = APIRequestFactory()
+        # The instance of the view required for the permission class
+        self.view = ScanReportRetrieveView.as_view()
+
+        # The permission class
+        self.permission = CanEditScanReport()
+
+    def test_only_admin_user_can_view(self):
+        request = self.factory.get(f"/api/scanreport/{self.scan_report.id}")
+        request.user = self.admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.admin_user,
+            token=self.admin_user.auth_token,
+        )
+        # Assert admin_user has permission
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.scan_report)
+        )
+        request.user = self.non_admin_user
+        # Authenticate the user for the request
+        force_authenticate(
+            request,
+            user=self.non_admin_user,
+            token=self.non_admin_user.auth_token,
+        )
+        # Assert non_admin_user has no permission
+        self.assertFalse(
+            self.permission.has_object_permission(request, self.view, self.scan_report)
+        )
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        # Make the request for the Dataset
+        request = self.factory.get(f"/api/scanreport/{self.scan_report.id}")
+        # Add the user to the request; this is not automatic
+        request.user = az_user
+        # Authenticate az_user
+        force_authenticate(
+            request,
+            user=az_user,
+            token=az_user.auth_token,
+        )
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
+            self.permission.has_object_permission(request, self.view, self.scan_report)
+        )
