@@ -40,14 +40,17 @@ def has_viwership(obj: Any, request: Request) -> bool:
         else Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
     )
     checks = {
-        Dataset: Dataset.objects.filter(
-            Q(project__members=request.user.id) & visibility_query(obj)
+        Dataset: lambda: Dataset.objects.filter(
+            Q(project__members=request.user.id) & visibility_query(obj), id=obj.id
         ).exists(),
-        ScanReport: ScanReport.objects.filter(
-            Q(parent_dataset__project__members=request.user.id) & visibility_query(obj)
+        ScanReport: lambda: ScanReport.objects.filter(
+            Q(parent_dataset__project__members=request.user.id) & visibility_query(obj),
+            parent_dataset__id=obj.parent_dataset.id,
         ).exists(),
     }
-    return checks.get(type(obj), False)
+    if permission_check := checks.get(type(obj)):
+        return permission_check()
+    return False
 
 
 class CanViewProject(permissions.BasePermission):

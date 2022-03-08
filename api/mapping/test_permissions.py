@@ -13,7 +13,6 @@ from .permissions import (
 )
 from .views import (
     ProjectRetrieveView,
-    DatasetRetrieveView,
 )
 from .models import Project, Dataset, ScanReport, VisibilityChoices
 
