@@ -1,8 +1,22 @@
 import os
+from django.contrib.auth.models import User
 from rest_framework import permissions
 from .models import (
     Project,
 )
+
+
+def is_az_function_user(user: User) -> bool:
+    """Check of the user is the `AZ_FUNCTION_USER`
+
+    Args:
+        user (User): The user to check
+
+    Returns:
+        bool: `True` if `user` is the `AZ_FUNCTION_USER` else `False`
+    """
+
+    return user.username == os.getenv("AZ_FUNCTION_USER")
 
 
 class CanViewProject(permissions.BasePermission):
@@ -30,7 +44,7 @@ class CanViewDataset(permissions.BasePermission):
         visibility = obj.visibility
 
         # if the User is the `AZ_FUNCTION_USER` grant permission
-        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+        if is_az_function_user(request.user):
             return True
         # if the visibility is restricted
         # check if the user is in the viewers field
@@ -59,7 +73,7 @@ class CanAdminDataset(permissions.BasePermission):
             - the User is in the Dataset's `admins` field
         """
         # if the User is the `AZ_FUNCTION_USER` grant permission
-        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+        if is_az_function_user(request.user):
             return True
         # if the User is in the Dataset's admins, return True,
         # else return false
@@ -80,7 +94,7 @@ class CanViewScanReport(permissions.BasePermission):
         visibility = obj.visibility
 
         # if the User is the `AZ_FUNCTION_USER` grant permission
-        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+        if is_az_function_user(request.user):
             return True
         # if the visibility is restricted
         # check if the user is in the viewers field
@@ -112,7 +126,7 @@ class CanEditScanReport(permissions.BasePermission):
             - the User is in the parent Dataset's `admins` field
         """
         # if the User is the `AZ_FUNCTION_USER` grant permission
-        if request.user.username == os.getenv("AZ_FUNCTION_USER"):
+        if is_az_function_user(request.user):
             return True
 
         # TODO: add check for the User being in the editors field
