@@ -5,7 +5,6 @@ from django.db.models.query_utils import Q
 from rest_framework import permissions
 from rest_framework.request import Request
 from .models import (
-    Project,
     Dataset,
     ScanReport,
     VisibilityChoices,

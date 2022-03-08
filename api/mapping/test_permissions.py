@@ -395,55 +395,37 @@ class TestCanAdminDataset(TestCase):
         # Add datasets to the project
         self.project.datasets.add(self.dataset)
 
-        # Request factory for setting up requests
+        # Set up request
         self.factory = APIRequestFactory()
-        # The instance of the view required for the permission class
-        self.view = DatasetUpdateView.as_view()
+        self.request = self.factory.get("/paths/of/the/dead")
 
-        # The permission class
+        # Generic test view, specific view class not required
+        self.view = GenericAPIView.as_view()
+
+        # Set up permission class
         self.permission = CanAdminDataset()
 
     def test_only_admin_user_can_view(self):
-        request = self.factory.patch(f"/api/datasets/update/{self.dataset.id}")
-        request.user = self.admin_user
-        # Authenticate the user for the request
-        force_authenticate(
-            request,
-            user=self.admin_user,
-            token=self.admin_user.auth_token,
-        )
         # Assert admin_user has permission
+        self.request.user = self.admin_user
         self.assertTrue(
-            self.permission.has_object_permission(request, self.view, self.dataset)
-        )
-        request.user = self.non_admin_user
-        # Authenticate the user for the request
-        force_authenticate(
-            request,
-            user=self.non_admin_user,
-            token=self.non_admin_user.auth_token,
+            self.permission.has_object_permission(self.request, self.view, self.dataset)
         )
         # Assert non_admin_user has no permission
+        self.request.user = self.non_admin_user
         self.assertFalse(
-            self.permission.has_object_permission(request, self.view, self.dataset)
+            self.permission.has_object_permission(self.request, self.view, self.dataset)
         )
 
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
-        # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/update/{self.dataset.id}")
+
         # Add the user to the request; this is not automatic
-        request.user = az_user
-        # Authenticate az_user
-        force_authenticate(
-            request,
-            user=az_user,
-            token=az_user.auth_token,
-        )
+        self.request.user = az_user
         # Assert az_user has permission on restricted view
         self.assertTrue(
-            self.permission.has_object_permission(request, self.view, self.dataset)
+            self.permission.has_object_permission(self.request, self.view, self.dataset)
         )
 
 
