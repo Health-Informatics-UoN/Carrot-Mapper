@@ -725,7 +725,10 @@ class ScanReportTableListView(ListView):
             body = json.loads(request.body.decode("utf-8"))
         except ValueError as e:
             body = {}
-        if request.POST.get("download-dd") is not None or body.get("download-dd",None) is not None:
+        if (
+            request.POST.get("download-dd") is not None
+            or body.get("download-dd", None) is not None
+        ):
             qs = self.get_queryset()
             scan_report = self.get_queryset()[0].scan_report
             return download_data_dictionary_blob(
@@ -966,13 +969,22 @@ class StructuralMappingTableListView(ListView):
             body = json.loads(request.body.decode("utf-8"))
         except ValueError as e:
             body = {}
-        if request.POST.get("download_rules") is not None or body.get("download_rules",None) is not None:
+        if (
+            request.POST.get("download_rules") is not None
+            or body.get("download_rules", None) is not None
+        ):
             qs = self.get_queryset()
             return download_mapping_rules(request, qs)
-        elif request.POST.get("download_rules_as_csv") is not None or body.get("download_rules_as_csv",None) is not None:
+        elif (
+            request.POST.get("download_rules_as_csv") is not None
+            or body.get("download_rules_as_csv", None) is not None
+        ):
             qs = self.get_queryset()
             return download_mapping_rules_as_csv(request, qs)
-        elif request.POST.get("refresh_rules") is not None or body.get("refresh_rules",None) is not None:
+        elif (
+            request.POST.get("refresh_rules") is not None
+            or body.get("refresh_rules", None) is not None
+        ):
             # remove all existing rules first
             remove_mapping_rules(request, self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
@@ -1001,7 +1013,10 @@ class StructuralMappingTableListView(ListView):
 
             return redirect(request.path)
 
-        elif request.POST.get("get_svg") is not None or body.get("get_svg",None) is not None:
+        elif (
+            request.POST.get("get_svg") is not None
+            or body.get("get_svg", None) is not None
+        ):
             qs = self.get_queryset()
             return view_mapping_rules(request, qs)
         else:
