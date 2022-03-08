@@ -1,8 +1,14 @@
 import os
+from typing import Any
 from django.contrib.auth.models import User
+from django.db.models.query_utils import Q
 from rest_framework import permissions
+from rest_framework.request import Request
 from .models import (
     Project,
+    Dataset,
+    ScanReport,
+    VisibilityChoices,
 )
 
 
@@ -17,6 +23,35 @@ def is_az_function_user(user: User) -> bool:
     """
 
     return user.username == os.getenv("AZ_FUNCTION_USER")
+
+
+def has_viwership(obj: Any, request: Request) -> bool:
+    """Check the viewership permission on an object.
+
+    Args:
+        obj (Any): The object to check the permissions on.
+        request (Request): The request with the User instance.
+
+    Returns:
+        bool: `True` if the request's user has permission, else `False`.
+    """
+    checks = {
+        Dataset: Dataset.objects.filter(
+            Q(project__members=request.user.id)
+            & (
+                Q(visibility=VisibilityChoices.PUBLIC)
+                | Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
+            )
+        ).exists(),
+        ScanReport: ScanReport.objects.filter(
+            Q(parent_dataset__project__members=request.user.id)
+            & (
+                Q(visibility=VisibilityChoices.PUBLIC)
+                | Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
+            )
+        ).exists(),
+    }
+    return checks.get(type(obj), False)
 
 
 class CanViewProject(permissions.BasePermission):
