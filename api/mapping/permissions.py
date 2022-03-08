@@ -7,6 +7,9 @@ from rest_framework.request import Request
 from .models import (
     Dataset,
     ScanReport,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
     VisibilityChoices,
 )
 
@@ -34,22 +37,42 @@ def has_viwership(obj: Any, request: Request) -> bool:
     Returns:
         bool: `True` if the request's user has permission, else `False`.
     """
+    # Check if visibility is public or restricted
     visibility_query = (
         lambda x: Q(visibility=VisibilityChoices.PUBLIC)
         if x.visibility == VisibilityChoices.PUBLIC
         else Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
     )
+    # Get scan report for the tabel|field|value
+    scan_report_queries = {
+        ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
+        ScanReportField: lambda x: ScanReport.objects.get(
+            id=x.scan_report_table.scan_report.id
+        ),
+        ScanReportValue: lambda x: ScanReport.objects.get(
+            id=x.scan_report_field.scan_report_table.scan_report.id
+        ),
+    }
+    # Permission checks to perform
     checks = {
-        Dataset: lambda: Dataset.objects.filter(
-            Q(project__members=request.user.id) & visibility_query(obj), id=obj.id
+        Dataset: lambda x: Dataset.objects.filter(
+            Q(project__members=request.user.id) & visibility_query(x), id=x.id
         ).exists(),
-        ScanReport: lambda: ScanReport.objects.filter(
-            Q(parent_dataset__project__members=request.user.id) & visibility_query(obj),
-            parent_dataset__id=obj.parent_dataset.id,
+        ScanReport: lambda x: ScanReport.objects.filter(
+            Q(parent_dataset__project__members=request.user.id) & visibility_query(x),
+            parent_dataset__id=x.parent_dataset.id,
         ).exists(),
     }
+
+    # If `obj` is a scan report table|field|value, get the scan report
+    # it belongs to and check the user has permission to view it.
+    if sub_scan_report := scan_report_queries.get(type(obj)):
+        return checks.get(type(sub_scan_report))(obj)
+
+    # If `obj` is a dataset or scan report, check the user can view it.
     if permission_check := checks.get(type(obj)):
-        return permission_check()
+        return permission_check(obj)
+
     return False
 
 
