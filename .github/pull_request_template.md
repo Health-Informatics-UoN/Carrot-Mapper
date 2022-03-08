@@ -21,6 +21,8 @@
 
 *Provide screenshots relevant to the PR here with a brief caption of the behviour above*
 
+*Otherwise, leave blank.*
+
 ### Example
 - Date of brith on the user's profile
 
