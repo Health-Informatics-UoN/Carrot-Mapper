@@ -82,6 +82,7 @@ class TestHasViewership(TestCase):
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.public_dataset,
         )
+        self.restricted_scanreport.viewers.add(self.user_with_perm)
 
         # Set up request
         self.factory = APIRequestFactory()
@@ -102,10 +103,27 @@ class TestHasViewership(TestCase):
         self.assertTrue(has_viwership(self.public_dataset, self.request))
         self.assertFalse(has_viwership(self.restricted_dataset, self.request))
 
-        # Check user_not_on_project can see public dataset
+        # Check user_not_on_project can see nothing
         self.request.user = self.user_not_on_project
         self.assertFalse(has_viwership(self.public_dataset, self.request))
         self.assertFalse(has_viwership(self.restricted_dataset, self.request))
+
+    def test_scan_report_perms(self):
+        # Check user_with_perm can see all scan reports
+        self.request.user = self.user_with_perm
+        self.assertTrue(has_viwership(self.public_scanreport, self.request))
+        self.assertTrue(has_viwership(self.restricted_scanreport, self.request))
+
+        # Check non_restricted_sr_viewer can see public scan report
+        # but not restricted scan report
+        self.request.user = self.non_restricted_sr_viewer
+        self.assertTrue(has_viwership(self.public_scanreport, self.request))
+        self.assertFalse(has_viwership(self.restricted_scanreport, self.request))
+
+        # Check user_not_on_project can see nothing
+        self.request.user = self.user_not_on_project
+        self.assertFalse(has_viwership(self.public_scanreport, self.request))
+        self.assertFalse(has_viwership(self.restricted_scanreport, self.request))
 
 
 class TestCanViewProject(TestCase):
