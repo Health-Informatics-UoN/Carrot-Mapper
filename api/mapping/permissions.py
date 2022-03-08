@@ -96,41 +96,6 @@ class CanAdminDataset(permissions.BasePermission):
         return obj.admins.filter(id=request.user.id).exists()
 
 
-class CanViewScanReport(permissions.BasePermission):
-    message = "You do not have permission to view this scan report"
-
-    def has_object_permission(self, request, view, obj):
-        """
-        Return `True` in any of the following cases:
-            - the User is the `AZ_FUNCTION_USER`
-            - the ScanReport is 'RESTRICTED' and the User is a ScanReport viewer
-            - the ScanReport is 'PUBLIC' and the User is a member of a Project
-            that the ScanReport's parent Dataset is in.
-        """
-        visibility = obj.visibility
-
-        # if the User is the `AZ_FUNCTION_USER` grant permission
-        if is_az_function_user(request.user):
-            return True
-        # if the visibility is restricted
-        # check if the user is in the viewers field
-        if visibility == "RESTRICTED":
-            self.message = "You must be granted permission to view this scan report"
-            return obj.viewers.filter(id=request.user.id).exists()
-        # if the visibility is public
-        # check if the user is a member in any projects the parent dataset is in
-        elif visibility == "PUBLIC":
-            # get projects
-            # filter by projects that have dataset obj.parent_dataset
-            # filter by projects that have user as a member
-            self.message = "You are not a member of any projects for this scan report"
-            return Project.objects.filter(
-                datasets__id=obj.parent_dataset.id, members__id=request.user.id
-            ).exists()
-
-        return False
-
-
 class CanEditScanReport(permissions.BasePermission):
     message = "You do not have permission to edit this Scan Report."
 

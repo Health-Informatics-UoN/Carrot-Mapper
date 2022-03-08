@@ -115,7 +115,6 @@ from .permissions import (
     CanViewProject,
     CanView,
     CanAdminDataset,
-    CanViewScanReport,
 )
 from .services import download_data_dictionary_blob
 
@@ -300,7 +299,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportSerializer
-    permission_classes = [CanViewScanReport | CanEditScanReport]
+    permission_classes = [CanView | CanEditScanReport]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
