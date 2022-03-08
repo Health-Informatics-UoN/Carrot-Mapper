@@ -19,11 +19,11 @@
 
 # Screenshots
 
-*Provide screenshots relevant to the PR here with a brief caption of the behviour above*
+*Provide screenshots relevant to the PR here with a brief caption of the behaviour above*
 
 *Otherwise, leave blank.*
 
 ### Example
-- Date of brith on the user's profile
+- Date of birth on the user's profile
 
 <screenshot.jpg>
