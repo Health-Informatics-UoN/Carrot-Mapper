@@ -112,10 +112,10 @@ from .models import (
     VisibilityChoices,
 )
 from .permissions import (
+    CanEditScanReport,
     CanViewProject,
-    CanViewDataset,
+    CanView,
     CanAdminDataset,
-    CanViewScanReport,
 )
 from .services import download_data_dictionary_blob
 
@@ -301,7 +301,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportSerializer
-    permission_classes = [CanViewScanReport]
+    permission_classes = [CanView | CanEditScanReport]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
@@ -354,7 +354,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    permission_classes = [CanViewDataset]
+    permission_classes = [CanView | CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -364,7 +364,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 class DatasetUpdateView(generics.UpdateAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -374,7 +374,7 @@ class DatasetUpdateView(generics.UpdateAPIView):
 class DatasetDeleteView(generics.DestroyAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -384,6 +384,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -411,6 +412,7 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -556,6 +558,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
     serializer_class = ScanReportValueSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -1144,8 +1147,7 @@ class ScanReportFormView(FormView):
         else:
             data_dictionary = DataDictionary.objects.create(
                 name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}"
-                f"_{dt}{rand}.csv",
-                scan_report=scan_report,
+                f"_{dt}{rand}.csv"
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
@@ -1676,3 +1678,8 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = f'attachment; filename="{blob_name}"'
 
         return response
+
+
+@login_required
+def dataset_admin_page(request, pk):
+    return render(request, "mapping/admin_dataset_form.html")
