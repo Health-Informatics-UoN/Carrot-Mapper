@@ -39,6 +39,7 @@ Please append a line to the changelog for each change made.
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
   * Found at `/datasets/admin/<dataset_id>`.
+* Automatically run unit tests for the Django code from `ci.yaml`.
 
 ## v1.4.0 was released 02/02/22
 
