@@ -142,6 +142,11 @@ urlpatterns = [
     ),
     # Dataset views
     path(
+        "datasets/admin/<int:pk>",
+        views.dataset_admin_page,
+        name="dataset_admin",
+    ),
+    path(
         r"api/datasets/",
         views.DatasetListView.as_view(),
         name="dataset_list",
