@@ -43,7 +43,7 @@ def has_viwership(obj: Any, request: Request) -> bool:
         if x.visibility == VisibilityChoices.PUBLIC
         else Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
     )
-    # Get scan report for the tabel|field|value
+    # Get scan report for the table|field|value
     scan_report_queries = {
         ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
         ScanReportField: lambda x: ScanReport.objects.get(
