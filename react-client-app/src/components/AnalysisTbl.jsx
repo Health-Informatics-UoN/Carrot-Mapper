@@ -24,8 +24,8 @@ function AnalysisTbl({ data, values, filters }) {
                     <Tr>
                         <Th>Rule Id</Th>
                         <Th>
-                            <span style={{ color: "#475da7" }}>Ancestors</span> /
-                            <span style={{ color: "#3db28c" }}>Descendants</span>
+                            <span style={{ color: "#475da7" }}>Ancestors</span> / 
+                            <span style={{ color: "#3db28c" }}> Descendants</span>
                         </Th>
                         <Th>Min/Max Separation</Th>
                         <Th>Source</Th>
