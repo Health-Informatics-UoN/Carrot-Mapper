@@ -57,7 +57,7 @@ jobs:
        SECRET_KEY: ${{ secrets.SECRET_KEY }}
        ALLOWED_HOSTS: "['localhost']"
       working-directory: ./api
-      run: python manage.py test mapping -v2 --parallel
+      run: python manage.py test mapping -v2
 
  build:
    #needs: pylint
