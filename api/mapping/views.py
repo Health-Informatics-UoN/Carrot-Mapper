@@ -300,7 +300,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     This view should return a single scanreport from an id
     """
 
-    serializer_class = ScanReportSerialize
+    serializer_class = ScanReportSerializer
     permission_classes = [CanView | CanEditScanReport]
 
     def get_queryset(self):
