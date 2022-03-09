@@ -25,6 +25,8 @@ Please append a line to the changelog for each change made.
 * Added API views for updating and deleting Datasets.
   * Use `PATCH` `/api/datasets/update/<dataset id>` to update.
   * Use `DELETE` `/api/datasets/delete/<dataset id>` to delete.
+* Added admin form for Datasets on frontend.
+  * Found at `/datasets/admin/<dataset_id>`.
 
 ## v1.4.0 was released 02/02/22
 * Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not 
