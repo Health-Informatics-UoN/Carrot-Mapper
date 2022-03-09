@@ -121,6 +121,7 @@ routers.register(r"mappingruleslist", views.RulesList, basename="getlist")
 routers.register(
     r"mappingrulesfilter", views.MappingRuleFilterViewSet, basename="mappingrulefilter"
 )
+routers.register(r"analyse", views.AnalyseRules, basename="getanalysis")
 
 urlpatterns = [
     path(r"api/countstats/", views.CountStats.as_view(), name="countstats"),
@@ -285,6 +286,11 @@ urlpatterns = [
         "api/projects/<int:pk>/",
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
+    ),
+    path(
+        r"api/projects/update/<int:pk>/",
+        views.ProjectUpdateView.as_view(),
+        name="projects_update",
     ),
 ]
 # if settings.DEBUG: # new

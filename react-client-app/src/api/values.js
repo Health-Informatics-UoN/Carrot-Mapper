@@ -4,7 +4,15 @@ const m_allowed_tables = ['person','measurement','condition_occurrence','observa
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(`/api${url}`, {method: "GET"});
+    const response = await fetch(`/api${url}`, 
+    {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        }
+    }
+    );
     const data = await response.json();
     return data;
 }
@@ -37,8 +45,9 @@ const postForm = async (url,data) =>{
         body: data
     }
     );
-    const json = await response.json()
+    
     if (response.status < 200 || response.status > 300) {
+        const json = await response.json()
         throw json
     }
     return response;
@@ -64,7 +73,13 @@ const usePatch = async (url, body) => {
 }
 // function for delete requests to api with authorization token
 const useDelete = async (url) => {
-    const response = await fetch(`/api${url}`, {method: "DELETE"});
+    const response = await fetch(`/api${url}`, {
+        method: "DELETE", 
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+    }
+});
     return response;
 }
 // get scan report field with given id

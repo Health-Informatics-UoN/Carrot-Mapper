@@ -18,6 +18,7 @@ from rest_framework.generics import (
 from rest_framework.renderers import JSONRenderer
 
 from .serializers import (
+    GetRulesAnalysis,
     ScanReportSerializer,
     ScanReportTableSerializer,
     ScanReportFieldSerializer,
@@ -111,16 +112,17 @@ from .models import (
     VisibilityChoices,
 )
 from .permissions import (
+    CanEditScanReport,
     CanViewProject,
-    CanViewDataset,
+    CanView,
     CanAdminDataset,
-    CanViewScanReport,
 )
 from .services import download_data_dictionary_blob
 
 from .services_nlp import start_nlp_field_level
 
 from .services_rules import (
+    analyse_concepts,
     save_mapping_rules,
     remove_mapping_rules,
     find_existing_scan_report_concepts,
@@ -206,8 +208,17 @@ class ProjectListView(ListAPIView):
     """
 
     permission_classes = []
-    serializer_class = ProjectNameSerializer
     queryset = Project.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"name": ["in", "exact"]}
+
+    def get_serializer_class(self):
+        if (
+            self.request.GET.get("name") != None
+            or self.request.GET.get("name__in") != None
+        ):
+            return ProjectSerializer
+        return ProjectNameSerializer
 
 
 class ProjectRetrieveView(RetrieveAPIView):
@@ -217,6 +228,11 @@ class ProjectRetrieveView(RetrieveAPIView):
     """
 
     permission_classes = [CanViewProject]
+    serializer_class = ProjectSerializer
+    queryset = Project.objects.all()
+
+
+class ProjectUpdateView(generics.UpdateAPIView):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
 
@@ -285,7 +301,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportSerializer
-    permission_classes = [CanViewScanReport]
+    permission_classes = [CanView | CanEditScanReport]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
@@ -338,7 +354,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    permission_classes = [CanViewDataset]
+    permission_classes = [CanView | CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -348,7 +364,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 class DatasetUpdateView(generics.UpdateAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -358,7 +374,7 @@ class DatasetUpdateView(generics.UpdateAPIView):
 class DatasetDeleteView(generics.DestroyAPIView):
     serializer_class = DatasetSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanViewDataset & CanAdminDataset]
+    permission_classes = [CanView & CanAdminDataset]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -368,6 +384,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -395,6 +412,7 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -523,6 +541,13 @@ class RulesList(viewsets.ModelViewSet):
     filterset_fields = ["id"]
 
 
+class AnalyseRules(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = GetRulesAnalysis
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["id"]
+
+
 class MappingRuleFilterViewSet(viewsets.ModelViewSet):
     queryset = MappingRule.objects.all()
     serializer_class = MappingRuleSerializer
@@ -533,6 +558,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
     serializer_class = ScanReportValueSerializer
+    permission_classes = [CanView]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -976,7 +1002,6 @@ class StructuralMappingTableListView(ListView):
                     request,
                     f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
                 )
-
             return redirect(request.path)
 
         elif request.POST.get("get_svg") is not None:
@@ -1098,9 +1123,8 @@ class ScanReportFormView(FormView):
         # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
-                name=modify_filename(
-                    form.cleaned_data.get("data_dictionary_file"), dt, rand
-                ),
+                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}"
+                f"_{dt}{rand}.csv"
             )
             data_dictionary.save()
             scan_report.data_dictionary = data_dictionary
