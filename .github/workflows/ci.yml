@@ -43,6 +43,8 @@ jobs:
       with:
         submodules: 'recursive'
         ref: ${{ github.ref }}
+    - name: Install requirements
+      run: pip install -r requirements.txt
     - name: Run Django unit tests
       env:
        COCONNECT_DB_ENGINE: ${{ secrets.COCONNECT_DB_ENGINE }}
