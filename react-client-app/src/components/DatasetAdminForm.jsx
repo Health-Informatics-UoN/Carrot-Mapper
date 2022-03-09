@@ -48,17 +48,21 @@ const DatasetAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             setTitle(null)
-            // Get dataset
-            const datasetQuery = await useGet(`/datasets/${datasetId}`)
+            const queries = [
+                useGet(`/datasets/${datasetId}`),
+                useGet("/datapartners/"),
+                useGet("/users/"),
+            ]
+            // Get dataset, data partners and users
+            const [datasetQuery, dataPartnerQuery, usersQuery] = await Promise.all(queries)
+            // Set up state from the results of the queries
             setDataset(datasetQuery)
             setIsPublic(datasetQuery.visibility === "PUBLIC")
-            const dataPartnerQuery = await useGet("/datapartners/")
             setDataPartners([...dataPartnerQuery])
             setSelectedDataPartner(
                 dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
             )
             setLoadingMessage(null)
-            const usersQuery = await useGet("/users/")
             setUsersList(usersQuery)
             setViewers(
                 prevViewers => [
@@ -72,6 +76,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                     ...getUsersFromIds(datasetQuery.admins, usersQuery),
                 ]
             )
+            setLoadingMessage(null)  // stop loading when finished
         },
         [], // Required to stop this effect sending infinite requests
     )
