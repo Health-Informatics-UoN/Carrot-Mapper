@@ -36,6 +36,7 @@ Please append a line to the changelog for each change made.
 * Removed NLP columns on tables
 * Use `logging` module in `ProcessQueue`.
 * Added "Analyse Concepts" button to Mapping Rules page which looks through each SRs mapping rules and displays any ancestors/descendants that may appear in other Scan Reports, along with a link to the field/value the ancestor/descendant is mapped to.
+* Removed ajax functions and replaced with react fetch requests
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
   * Found at `/datasets/admin/<dataset_id>`.

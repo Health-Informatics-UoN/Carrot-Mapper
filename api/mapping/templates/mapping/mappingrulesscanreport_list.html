@@ -24,17 +24,6 @@
 		var a = "{{a}}"
         var u = "{{u}}"
 
-		// To get the mappings from the python
-		const list ="{{object_list}}".replaceAll("&#x27;",'"').replaceAll("&lt;",'{"').replaceAll("&gt;",'}').replaceAll('"term_mapping": None','"term_mapping": null')
-		var mappings = ''
-		for(let i=0;i<list.length;i++){
-			if(list[i]==":"&&list[i-1]!='"'){
-				mappings += '"'
-			}
-			mappings += list[i]
-		}
-		//
-
 
 		var s = document.createElement("script");
         s.type = "module";
@@ -47,58 +36,7 @@
 		}
 		document.getElementsByTagName('head')[0].appendChild(s)
 
-
-		var refreshRules = async function () {
-			//use ajax to post a request to retrieve one
-			const res = await $.ajax({
-				type: "POST",
-				url: window.location,
-				data: {
-					'refresh_rules': true,
-					'csrfmiddlewaretoken': '{{ csrf_token }}',
-				}
-			});
-			return res;
-		}
-
-		var getSVG = async function () {
-			const response = await $.ajax({
-				type: "POST",
-				url: window.location,
-				data: {
-					'get_svg': true,
-					'csrfmiddlewaretoken': '{{ csrf_token }}',
-				}
-			});
-			return response
-		}
-
-		var downloadImage = async function (svg) {
-			
-			var serializer = new XMLSerializer();
-			var source = serializer.serializeToString(svg);
-			//add name spaces.
-			if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
-				source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-			}
-			if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
-				source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-			}
-
-			//add xml declaration
-			source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-
-			//convert svg source to URI data scheme.
-			var url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
-			var element = document.createElement("a");
-			element.download = "diagram.svg";
-			element.href = url
-			element.click();
-			element.remove();
-			return "Download successful"
-			
-		}
-
+		
 		var downloadRules = function (setDownloading) {
 			setDownloading(true)
 			$.ajax({
