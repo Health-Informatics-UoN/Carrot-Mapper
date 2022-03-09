@@ -35,6 +35,26 @@ jobs:
        with:
          path: '.'
          black_flags: '--safe --verbose --diff'
+
+ test_python_code:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+        ref: ${{ github.ref }}
+    - name: Run Django unit tests
+      env:
+       COCONNECT_DB_ENGINE: ${{ secrets.COCONNECT_DB_ENGINE }}
+       COCONNECT_DB_HOST: ${{ secrets.COCONNECT_DB_HOST }}
+       COCONNECT_DB_PORT: ${{ secrets.COCONNECT_DB_PORT }}
+       COCONNECT_DB_NAME: ${{ secrets.COCONNECT_DB_NAME }}
+       COCONNECT_DB_USER: ${{ secrets.COCONNECT_DB_USER }}
+       COCONNECT_DB_PASSWORD: ${{ secrets.COCONNECT_DB_PASSWORD }}
+       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      working-directory: ./api
+      run: python manage.py test mapping -v2 --parallel
+
  build:
    #needs: pylint
    runs-on: ubuntu-latest
