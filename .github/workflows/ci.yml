@@ -48,7 +48,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run Django unit tests
       env:
-       DJANGO_SETTINGS_MODULE: ./api/ci_settings.py
+       DJANGO_SETTINGS_MODULE: api.ci_settings
        SECRET_KEY: ${{ secrets.SECRET_KEY }}
        ALLOWED_HOSTS: "['localhost']"
       working-directory: ./api
