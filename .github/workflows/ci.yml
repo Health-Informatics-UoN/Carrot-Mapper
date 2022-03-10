@@ -48,12 +48,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run Django unit tests
       env:
-       COCONNECT_DB_ENGINE: ${{ secrets.COCONNECT_DB_ENGINE }}
-       COCONNECT_DB_HOST: ${{ secrets.COCONNECT_DB_HOST }}
-       COCONNECT_DB_PORT: ${{ secrets.COCONNECT_DB_PORT }}
-       COCONNECT_DB_NAME: ${{ secrets.COCONNECT_DB_NAME }}
-       COCONNECT_DB_USER: ${{ secrets.COCONNECT_DB_USER }}
-       COCONNECT_DB_PASSWORD: ${{ secrets.COCONNECT_DB_PASSWORD }}
+       DJANGO_SETTINGS_MODULE: ./api/ci_settings.py
        SECRET_KEY: ${{ secrets.SECRET_KEY }}
        ALLOWED_HOSTS: "['localhost']"
       working-directory: ./api
