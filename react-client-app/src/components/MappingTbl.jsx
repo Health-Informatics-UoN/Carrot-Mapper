@@ -242,6 +242,59 @@ const MappingTbl = () => {
 
     };
 
+    const downloadCSV = async () => {
+        try {
+            setDownloadingCSV(true)
+            const response = await usePost(window.location.href, { 'download_rules_as_csv': true }, false)
+            var type = response.headers['content-type'];
+            var blob = new Blob([response.data], { type: type });
+
+            // check for a filename
+            var filename = "";
+            var disposition = response.headers['content-disposition'];
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                var matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+            }
+
+
+            if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+                window.navigator.msSaveBlob(blob, filename);
+            }
+            else {
+                var URL = window.URL || window.webkitURL;
+                var downloadUrl = URL.createObjectURL(blob);
+                if (filename) {
+                    // use HTML5 a[download] attribute to specify filename
+                    var a = document.createElement("a");
+                    // safari doesn't support this yet
+                    if (typeof a.download === 'undefined') {
+                        window.location.href = downloadUrl;
+                    }
+                    else {
+                        a.href = downloadUrl;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                    }
+                }
+                else {
+                    window.location = downloadUrl;
+                }
+                setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+
+            }
+            setDownloadingCSV(false)
+        }
+        catch (err) {
+            setDownloadingCSV(false)
+            alert("Could not download csv")
+        }
+
+    }
+
     useEffect(() => {
         useGet(`/analyse/${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
             setData(res.data)
@@ -283,7 +336,7 @@ const MappingTbl = () => {
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={downloadRules}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
                 <Button variant="red" isLoading={isDownloadingImg} loadingText="Downloading" spinnerPlacement="start" onClick={() => { downloadImage() }}>Download Map Diagram</Button>
-                <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={() => { window.downloadCSV(setDownloadingCSV) }}>Download Mapping CSV</Button>
+                <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={downloadCSV}>Download Mapping CSV</Button>
                 <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
                 <Button variant="blue" onClick={onOpenAnalyse}>Analyse Rules</Button>
             </HStack>
