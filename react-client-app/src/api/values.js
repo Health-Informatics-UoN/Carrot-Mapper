@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-
+import axios from 'axios';
 const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence','specimen']
 
 // function to fetch from api with authorization token
