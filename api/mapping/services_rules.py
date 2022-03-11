@@ -614,7 +614,7 @@ def get_mapping_rules_json(structural_mapping_rules):
     # add the metadata and cdm object together
     return {"metadata": metadata, "cdm": cdm}
 
- 
+
 def download_mapping_rules(request, qs):
     # get the mapping rules
     output = get_mapping_rules_json(qs)
