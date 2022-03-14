@@ -195,6 +195,24 @@ class TestHasEditorship(TestCase):
         # Generic test view, specific view class not required
         self.view = GenericAPIView.as_view()
 
+    def test_dataset_perms(self):
+        # Check user_with_perm can edit all datasets
+        # because they are an editor in them
+        self.request.user = self.user_with_perm
+        self.assertTrue(has_editorship(self.public_dataset, self.request))
+        self.assertTrue(has_editorship(self.restricted_dataset, self.request))
+
+        # Check non_restricted_ds_viewer cannot edit public dataset
+        # because they are not in the editors field
+        self.request.user = self.non_restricted_ds_viewer
+        self.assertFalse(has_editorship(self.public_dataset, self.request))
+        self.assertFalse(has_editorship(self.restricted_dataset, self.request))
+
+        # Check user_not_on_project can edit nothing
+        self.request.user = self.user_not_on_project
+        self.assertFalse(has_editorship(self.public_dataset, self.request))
+        self.assertFalse(has_editorship(self.restricted_dataset, self.request))
+
 
 class TestCanViewProject(TestCase):
     def setUp(self):
