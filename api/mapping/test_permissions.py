@@ -7,6 +7,7 @@ from rest_framework.authtoken.models import Token
 from .permissions import (
     has_editorship,
     has_viwership,
+    CanEdit,
     CanViewProject,
     CanView,
     CanAdminDataset,
@@ -479,31 +480,29 @@ class TestCanAdminDataset(TestCase):
         )
 
 
-class TestCanEditScanReport(TestCase):
+class TestCanEdit(TestCase):
     def setUp(self):
         User = get_user_model()
-        # Create user who is a Dataset admin
-        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
+        # Create editor
+        self.editor = User.objects.create(username="gandalf", password="thegrey")
         # Give them a token
-        Token.objects.create(user=self.admin_user)
+        Token.objects.create(user=self.editor)
 
-        # Create user who is not a Dataset admin
-        self.non_admin_user = User.objects.create(
-            username="aragorn", password="elissar"
-        )
+        # Create user who is not an editor
+        self.non_editor = User.objects.create(username="aragorn", password="elissar")
         # Give them a token
-        Token.objects.create(user=self.non_admin_user)
+        Token.objects.create(user=self.non_editor)
 
         # Create the project
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
-        self.project.members.add(self.non_admin_user, self.admin_user)
+        self.project.members.add(self.non_editor, self.editor)
         # Create the public dataset
         self.dataset = Dataset.objects.create(
             name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
         )
         # Add the restricted users
-        self.dataset.admins.add(self.admin_user)
+        self.dataset.admins.add(self.editor)
         # Add datasets to the project
         self.project.datasets.add(self.dataset)
 
@@ -513,7 +512,8 @@ class TestCanEditScanReport(TestCase):
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.dataset,
         )
-        self.scan_report.viewers.add(self.non_admin_user)
+        self.scan_report.viewers.add(self.non_editor, self.editor)
+        self.scan_report.editors.add(self.editor)
 
         # Set up request
         self.factory = APIRequestFactory()
@@ -523,19 +523,36 @@ class TestCanEditScanReport(TestCase):
         self.view = GenericAPIView.as_view()
 
         # The permission class
-        self.permission = CanEditScanReport()
+        self.permission = CanEdit()
 
-    def test_only_admin_user_can_view(self):
-        # Assert admin_user has permission
-        self.request.user = self.admin_user
+    def test_only_editor_has_permission(self):
+        # Assert editor has permission
+        self.request.user = self.editor
         self.assertTrue(
             self.permission.has_object_permission(
                 self.request, self.view, self.scan_report
             )
         )
-        # Assert non_admin_user has no permission
-        self.request.user = self.non_admin_user
+        # Assert non_editor has no permission
+        self.request.user = self.non_editor
         self.assertFalse(
+            self.permission.has_object_permission(
+                self.request, self.view, self.scan_report
+            )
+        )
+
+    def test_dataset_editor_can_edit_scanreport(self):
+        User = get_user_model()
+        ds_editor = User.objects.create(username="gimli", password="andmyaxe")
+        Token.objects.create(user=ds_editor)
+
+        self.dataset.editors.add(ds_editor)
+        self.project.members.add(ds_editor)
+
+        self.request.user = ds_editor
+
+        # Assert ds_editor can edit
+        self.assertTrue(
             self.permission.has_object_permission(
                 self.request, self.view, self.scan_report
             )
