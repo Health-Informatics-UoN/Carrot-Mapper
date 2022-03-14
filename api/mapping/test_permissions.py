@@ -11,7 +11,7 @@ from .permissions import (
     CanViewProject,
     CanView,
     CanAdminDataset,
-    CanEditScanReport,
+    CanAdminScanReport,
 )
 from .views import (
     ProjectRetrieveView,

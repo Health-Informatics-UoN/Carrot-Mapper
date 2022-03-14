@@ -112,7 +112,7 @@ from .models import (
     VisibilityChoices,
 )
 from .permissions import (
-    CanEditScanReport,
+    CanAdminScanReport,
     CanViewProject,
     CanView,
     CanAdminDataset,
@@ -301,7 +301,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportSerializer
-    permission_classes = [CanView | CanEditScanReport]
+    permission_classes = [CanView | CanAdminScanReport]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])

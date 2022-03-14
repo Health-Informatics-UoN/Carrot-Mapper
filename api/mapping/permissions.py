@@ -183,7 +183,7 @@ class CanAdminDataset(permissions.BasePermission):
         return obj.admins.filter(id=request.user.id).exists()
 
 
-class CanEditScanReport(permissions.BasePermission):
+class CanAdminScanReport(permissions.BasePermission):
     message = "You do not have permission to edit this Scan Report."
 
     def has_object_permission(self, request, view, obj):
