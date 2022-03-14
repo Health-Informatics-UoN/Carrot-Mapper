@@ -116,6 +116,7 @@ from .permissions import (
     CanViewProject,
     CanView,
     CanAdminDataset,
+    CanEdit,
 )
 from .services import download_data_dictionary_blob
 
@@ -354,7 +355,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetSerializer
-    permission_classes = [CanView | CanAdminDataset]
+    permission_classes = [CanView | CanAdminDataset | CanEdit]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -363,8 +364,8 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 
 class DatasetUpdateView(generics.UpdateAPIView):
     serializer_class = DatasetSerializer
-    # User must be able to view and be an admin
-    permission_classes = [CanView & CanAdminDataset]
+    # User must be able to view and be an admin or an editor
+    permission_classes = [CanView & (CanAdminDataset | CanEdit)]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
