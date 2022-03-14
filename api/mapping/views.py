@@ -253,6 +253,16 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 class ScanReportListViewSet(viewsets.ModelViewSet):
     serializer_class = ScanReportSerializer
 
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            return [CanView & CanAdminScanReport]
+        if self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            return [CanView & (CanEdit | CanAdminScanReport)]
+        return super().get_permissions()
+
     def get_queryset(self):
         """
         If the User is the `AZ_FUNCTION_USER`, return all ScanReports.
@@ -302,7 +312,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportSerializer
-    permission_classes = [CanView | CanAdminScanReport]
+    permission_classes = [CanView | CanAdminScanReport | CanEdit]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
