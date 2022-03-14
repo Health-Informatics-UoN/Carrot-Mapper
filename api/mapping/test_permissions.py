@@ -181,12 +181,14 @@ class TestHasEditorship(TestCase):
             visibility=VisibilityChoices.PUBLIC,
             parent_dataset=self.public_dataset,
         )
+        self.public_scanreport.editors.add(self.user_with_perm)
         self.restricted_scanreport = ScanReport.objects.create(
             dataset="Moria",
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.public_dataset,
         )
         self.restricted_scanreport.viewers.add(self.user_with_perm)
+        self.restricted_scanreport.editors.add(self.user_with_perm)
 
         # Set up request
         self.factory = APIRequestFactory()
@@ -202,7 +204,7 @@ class TestHasEditorship(TestCase):
         self.assertTrue(has_editorship(self.public_dataset, self.request))
         self.assertTrue(has_editorship(self.restricted_dataset, self.request))
 
-        # Check non_restricted_ds_viewer cannot edit public dataset
+        # Check non_restricted_ds_viewer cannot edit public or restricted dataset
         # because they are not in the editors field
         self.request.user = self.non_restricted_ds_viewer
         self.assertFalse(has_editorship(self.public_dataset, self.request))
@@ -212,6 +214,24 @@ class TestHasEditorship(TestCase):
         self.request.user = self.user_not_on_project
         self.assertFalse(has_editorship(self.public_dataset, self.request))
         self.assertFalse(has_editorship(self.restricted_dataset, self.request))
+
+    def test_scan_report_perms(self):
+        # Check user_with_perm can see edit scan reports
+        # because they are an editor in them
+        self.request.user = self.user_with_perm
+        self.assertTrue(has_editorship(self.public_scanreport, self.request))
+        self.assertTrue(has_editorship(self.restricted_scanreport, self.request))
+
+        # Check non_restricted_ds_viewer cannot edit public or restricted scan report
+        # because they are not in the editors field
+        self.request.user = self.non_restricted_sr_viewer
+        self.assertFalse(has_editorship(self.public_scanreport, self.request))
+        self.assertFalse(has_editorship(self.restricted_scanreport, self.request))
+
+        # Check user_not_on_project can see nothing
+        self.request.user = self.user_not_on_project
+        self.assertFalse(has_editorship(self.public_scanreport, self.request))
+        self.assertFalse(has_editorship(self.restricted_scanreport, self.request))
 
 
 class TestCanViewProject(TestCase):
