@@ -140,7 +140,7 @@ class CanView(permissions.BasePermission):
         """
         Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
-            - the Object is 'RESTRICTED' and the User is a, Object viewer
+            - the Object is 'RESTRICTED' and the User is an Object viewer
             - the Object is 'PUBLIC' and the User is a member of a Project
             that the Object is in.
         """
@@ -148,6 +148,22 @@ class CanView(permissions.BasePermission):
         if is_az_function_user(request.user):
             return True
         return has_viwership(obj, request)
+
+
+class CanEdit(permissions.BasePermission):
+
+    message = "You do not have permission to edit this."
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - the User is an Object editor.
+        """
+
+        if is_az_function_user(request.user):
+            return True
+        return has_editorship(obj, request)
 
 
 class CanAdminDataset(permissions.BasePermission):
