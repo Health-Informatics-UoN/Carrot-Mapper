@@ -77,6 +77,51 @@ def has_viwership(obj: Any, request: Request) -> bool:
     return False
 
 
+def has_editorship(obj: Any, request: Request) -> bool:
+    """Check the editorship permission on an object.
+
+    Args:
+        obj (Any): The object to check the permissions on.
+        request (Request): The request with the User instance.
+
+    Returns:
+        bool: `True` if the request's user has permission, else `False`.
+    """
+    # Get scan report for the table|field|value
+    scan_report_queries = {
+        ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
+        ScanReportField: lambda x: ScanReport.objects.get(
+            id=x.scan_report_table.scan_report.id
+        ),
+        ScanReportValue: lambda x: ScanReport.objects.get(
+            id=x.scan_report_field.scan_report_table.scan_report.id
+        ),
+    }
+    # Permission checks to perform
+    checks = {
+        Dataset: lambda x: Dataset.objects.filter(
+            project__members=request.user.id, editors=request.user.id, id=x.id
+        ).exists(),
+        ScanReport: lambda x: ScanReport.objects.filter(
+            Q(parent_dataset__editors=request.user.id) | Q(editors=request.user.id),
+            parent_dataset__project__members=request.user.id,
+            parent_dataset__id=x.parent_dataset.id,
+        ).exists(),
+    }
+
+    # If `obj` is a scan report table|field|value, get the scan report
+    # it belongs to and check the user has permission to edit it.
+    if sub_scan_report := scan_report_queries.get(type(obj)):
+        sub_scan_report = sub_scan_report(obj)
+        return checks.get(type(sub_scan_report))(sub_scan_report)
+
+    # If `obj` is a dataset or scan report, check the user can edit it.
+    if permission_check := checks.get(type(obj)):
+        return permission_check(obj)
+
+    return False
+
+
 class CanViewProject(permissions.BasePermission):
     message = "You must be a member of this project to view its contents."
 
