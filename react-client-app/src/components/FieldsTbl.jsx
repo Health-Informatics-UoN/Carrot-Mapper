@@ -36,6 +36,7 @@ const FieldsTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const valuesRef = useRef([]);
     const scanReportTable = useRef([]);
+    const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
         // run on initial render
@@ -47,6 +48,7 @@ const FieldsTbl = (props) => {
         // get scan report table data to use for checking person id and date event
         getScanReportTable(value).then(table => {
             scanReportTable.current = table
+            setMappingButtonDisabled(false)
         })
     }, []);
 
@@ -165,6 +167,7 @@ const FieldsTbl = (props) => {
                         }
                     </Tbody>
                 </Table>
+                <Link href={"/scanreports/" + scanReportTable.current.scan_report + "/mapping_rules/"}><Button isDisabled={mappingButtonDisabled} variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 
