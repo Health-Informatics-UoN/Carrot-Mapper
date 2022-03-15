@@ -23,6 +23,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [uploadLoading, setUploadLoading] = useState(false)
     const [viewers, setViewers] = useState([])
     const [admins, setAdmins] = useState([])
+    const [editors, setEditors] = useState([])
     const [usersList, setUsersList] = useState(undefined)
 
     function getUsersFromIds(userIds, userObjects) {
@@ -74,6 +75,12 @@ const DatasetAdminForm = ({ setTitle }) => {
                 prevAdmins => [
                     ...prevAdmins,
                     ...getUsersFromIds(datasetQuery.admins, usersQuery),
+                ]
+            )
+            setEditors(
+                prevEditors => [
+                    ...prevEditors,
+                    ...getUsersFromIds(datasetQuery.editors, usersQuery),
                 ]
             )
             setLoadingMessage(null)  // stop loading when finished
@@ -136,7 +143,9 @@ const DatasetAdminForm = ({ setTitle }) => {
                 {
                     ...dataset,
                     data_partner: selectedDataPartner.id,
+                    visibility: isPublic ? "PUBLIC" : "RESTRICTED",
                     viewers: [...viewers.map(viewer => viewer.id)],
+                    editors: [...editors.map(editor => editor.id)],
                     admins: [...admins.map(admin => admin.id)],
                 },
             )
@@ -250,6 +259,30 @@ const DatasetAdminForm = ({ setTitle }) => {
                     )}
                 </Select>
             </FormControl>
+            <Box mt={4}>
+                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
+                    {editors.map((viewer, index) => {
+                        return (
+                            <div key={index} style={{ marginTop: "0px" }}>
+                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                            </div>
+                        )
+                    })}
+                </div>
+                {usersList == undefined ?
+                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                    :
+                    <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                        <option disabled>Add Editor</option>
+                        <>
+                            {usersList.map((item, index) =>
+                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                            )}
+                        </>
+                    </Select>
+                }
+            </Box>
             <Box mt={4}>
                 <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                     <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
