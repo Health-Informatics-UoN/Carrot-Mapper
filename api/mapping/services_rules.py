@@ -622,7 +622,7 @@ def download_mapping_rules(request, qs):
     scan_report = qs[0].scan_report
     # make a file name
     return_type = "json"
-    fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+    fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
     # return a response that downloads the json file
 
     response = HttpResponse(
@@ -640,7 +640,7 @@ def download_mapping_rules_as_csv(request, qs):
     scan_report = qs[0].scan_report
     # make a csv file name
     return_type = "csv"
-    fname = f"{scan_report.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+    fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
     # return a response that downloads the csv file
 
     # make a string buffer
@@ -650,7 +650,7 @@ def download_mapping_rules_as_csv(request, qs):
         _buffer,
         lineterminator="\n",
         delimiter=",",
-        quoting=csv.QUOTE_NONE,
+        quoting=csv.QUOTE_MINIMAL,
     )
 
     # setup the headers from the first object
