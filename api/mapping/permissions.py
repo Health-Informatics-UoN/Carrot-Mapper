@@ -41,7 +41,7 @@ def has_viwership(obj: Any, request: Request) -> bool:
     visibility_query = (
         lambda x: Q(visibility=VisibilityChoices.PUBLIC)
         if x.visibility == VisibilityChoices.PUBLIC
-        else Q(visibility=VisibilityChoices.RESTRICTED, viewers=request.user.id)
+        else Q(visibility=VisibilityChoices.RESTRICTED) & Q(viewers__id=request.user.id)
     )
     # Get scan report for the table|field|value
     scan_report_queries = {
@@ -56,10 +56,11 @@ def has_viwership(obj: Any, request: Request) -> bool:
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
-            Q(project__members=request.user.id) & visibility_query(x), id=x.id
+            Q(project__members__id=request.user.id) & visibility_query(x), id=x.id
         ).exists(),
         ScanReport: lambda x: ScanReport.objects.filter(
-            Q(parent_dataset__project__members=request.user.id) & visibility_query(x),
+            Q(parent_dataset__project__members__id=request.user.id)
+            & visibility_query(x),
             parent_dataset__id=x.parent_dataset.id,
         ).exists(),
     }
@@ -100,11 +101,12 @@ def has_editorship(obj: Any, request: Request) -> bool:
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
-            project__members=request.user.id, editors=request.user.id, id=x.id
+            project__members__id=request.user.id, editors__id=request.user.id, id=x.id
         ).exists(),
         ScanReport: lambda x: ScanReport.objects.filter(
-            Q(parent_dataset__editors=request.user.id) | Q(editors=request.user.id),
-            parent_dataset__project__members=request.user.id,
+            Q(parent_dataset__editors__id=request.user.id)
+            | Q(editors__id=request.user.id),
+            parent_dataset__project__members__id=request.user.id,
             parent_dataset__id=x.parent_dataset.id,
         ).exists(),
     }
