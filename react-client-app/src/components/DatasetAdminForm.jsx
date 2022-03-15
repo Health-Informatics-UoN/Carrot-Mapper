@@ -124,6 +124,10 @@ const DatasetAdminForm = ({ setTitle }) => {
     const removeViewer = (id) => {
         setViewers(pj => pj.filter(user => user.id != id))
     }
+    // Remove user chip from viewers
+    const removeEditor = (id) => {
+        setEditors(pj => pj.filter(user => user.id != id))
+    }
 
     // Remove user chip from viewers
     const removeAdmin = (id) => {
@@ -265,7 +269,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                     {editors.map((viewer, index) => {
                         return (
                             <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} />
                             </div>
                         )
                     })}
