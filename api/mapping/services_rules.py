@@ -642,7 +642,7 @@ def download_mapping_rules_as_csv(request, qs):
     return_type = "csv"
     fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
     # return a response that downloads the csv file
- 
+
     # make a string buffer
     _buffer = io.StringIO()
     # setup a csv writter
