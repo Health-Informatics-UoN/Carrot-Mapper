@@ -1683,5 +1683,5 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 @login_required
 def dataset_admin_page(request, pk):
     args = {}
-    args['current_user'] = request.user
+    args["current_user"] = request.user
     return render(request, "mapping/admin_dataset_form.html", args)
