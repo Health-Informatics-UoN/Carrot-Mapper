@@ -95,6 +95,24 @@ class ScanReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
 
 class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate_editors(self, editors):
+        if request := self.context.get("request"):
+            user = request.user
+            if not self.instance.admins.filter(id=user.id).exists():
+                raise serializers.ValidationError(
+                    "You must be an admin to change this field."
+                )
+        return editors
+
+    def validate_admins(self, admins):
+        if request := self.context.get("request"):
+            user = request.user
+            if not self.instance.admins.filter(id=user.id).exists():
+                raise serializers.ValidationError(
+                    "You must be an admin to change this field."
+                )
+        return admins
+
     class Meta:
         model = Dataset
         fields = "__all__"
