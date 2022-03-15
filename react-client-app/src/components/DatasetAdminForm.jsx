@@ -12,6 +12,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     let datasetId = window.location.pathname.split("/").pop()
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isAdmin, setIsAdmin] = useState(false)
+    const [currentUser, setCurrentUser] = useState(null);
     // Set up component state
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
@@ -48,6 +49,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             setTitle(null)
+            setCurrentUser(window.currentUser)
             const queries = [
                 useGet(`/datasets/${datasetId}`),
                 useGet("/datapartners/"),
@@ -86,6 +88,24 @@ const DatasetAdminForm = ({ setTitle }) => {
             setFormErrors({ ...formErrors, name: undefined })
         },
         [dataset.name],
+    )
+
+    useEffect(
+        async () => {
+            // if the current user is an admin then set isAdmin to true else to false
+            if(currentUser){
+                if(admins.find(item=>item.username==currentUser)){
+                    setIsAdmin(true)
+                }
+                else{
+                    setIsAdmin(false)
+                }
+            }
+            else{
+                setIsAdmin(false)
+            }
+        },
+        [admins],
     )
 
     useEffect(
