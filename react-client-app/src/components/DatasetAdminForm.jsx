@@ -124,12 +124,12 @@ const DatasetAdminForm = ({ setTitle }) => {
     const removeViewer = (id) => {
         setViewers(pj => pj.filter(user => user.id != id))
     }
-    // Remove user chip from viewers
+    // Remove user chip from editors
     const removeEditor = (id) => {
         setEditors(pj => pj.filter(user => user.id != id))
     }
 
-    // Remove user chip from viewers
+    // Remove user chip from admins
     const removeAdmin = (id) => {
         setAdmins(pj => pj.filter(user => user.id != id))
     }
@@ -166,6 +166,7 @@ const DatasetAdminForm = ({ setTitle }) => {
             const error_response = await error.json()
             setUploadLoading(false)
             if (error_response) {
+                console.log(error_response)
                 setFormErrors(error_response)
             }
             setAlert({
@@ -247,6 +248,9 @@ const DatasetAdminForm = ({ setTitle }) => {
                                     )}
                                 </>
                             </Select>
+                        }
+                        {formErrors.editors && formErrors.editors.length > 0 &&
+                            <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
                         }
                     </Box>
                 </>
