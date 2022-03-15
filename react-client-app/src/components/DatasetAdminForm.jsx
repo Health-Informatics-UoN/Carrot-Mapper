@@ -7,6 +7,7 @@ import PageHeading from './PageHeading'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 import { useGet, usePatch, useDelete } from '../api/values'
+import { arraysEqual } from '../utils/arrayFuncs'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let datasetId = window.location.pathname.split("/").pop()
@@ -161,18 +162,32 @@ const DatasetAdminForm = ({ setTitle }) => {
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
+        const patchData = {
+            name: dataset.name,
+            data_partner: selectedDataPartner.id,
+            visibility: isPublic ? "PUBLIC" : "RESTRICTED",
+        }
+        // Add viewers if they've been altered
+        const newViewers = viewers.map(x => x.id)
+        if (!arraysEqual(newViewers, dataset.viewers)) {
+            patchData.viewers = newViewers
+        }
+        // Add editors if they've been altered
+        const newEditors = editors.map(x => x.id)
+        if (!arraysEqual(newEditors, dataset.editors)) {
+            patchData.editors = newEditors
+        }
+        // Add admins if they've been altered
+        const newAdmins = admins.map(x => x.id)
+        if (!arraysEqual(newAdmins, dataset.admins)) {
+            patchData.admins = newAdmins
+        }
+        console.log(patchData)
         try {
             setUploadLoading(true)
             const response = await usePatch(
                 `/datasets/update/${datasetId}`,
-                {
-                    ...dataset,
-                    data_partner: selectedDataPartner.id,
-                    visibility: isPublic ? "PUBLIC" : "RESTRICTED",
-                    viewers: [...viewers.map(viewer => viewer.id)],
-                    editors: [...editors.map(editor => editor.id)],
-                    admins: [...admins.map(admin => admin.id)],
-                },
+                patchData,
             )
             setUploadLoading(false)
             setDataset(response)
