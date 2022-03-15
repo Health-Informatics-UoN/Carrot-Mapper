@@ -102,6 +102,27 @@ const DatasetAdminForm = ({ setTitle }) => {
         [selectedDataPartner],
     )
 
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, viewers: undefined })
+        },
+        [viewers],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, editors: undefined })
+        },
+        [editors],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, admins: undefined })
+        },
+        [admins],
+    )
+
     // Update dataset name
     function handleNameInput(newValue) {
         setDataset({ ...dataset, name: newValue })
