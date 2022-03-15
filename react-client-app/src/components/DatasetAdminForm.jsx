@@ -224,7 +224,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </Flex>
             </FormControl>
             {!isPublic &&
-                <>
+                <FormControl isInvalid={formErrors.viewers && formErrors.viewers.length > 0}>
                     <Box mt={4}>
                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                             <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
@@ -248,11 +248,11 @@ const DatasetAdminForm = ({ setTitle }) => {
                                 </>
                             </Select>
                         }
-                        {formErrors.editors && formErrors.editors.length > 0 &&
-                            <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
+                        {formErrors.viewers && formErrors.viewers.length > 0 &&
+                            <FormErrorMessage>{formErrors.viewers[0]}</FormErrorMessage>
                         }
                     </Box>
-                </>
+                </FormControl>
             }
             <FormControl mt={4}>
                 <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
@@ -266,54 +266,64 @@ const DatasetAdminForm = ({ setTitle }) => {
                     )}
                 </Select>
             </FormControl>
-            <Box mt={4}>
-                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
-                    {editors.map((viewer, index) => {
-                        return (
-                            <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} />
-                            </div>
-                        )
-                    })}
-                </div>
-                {usersList == undefined ?
-                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                    :
-                    <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                        <option disabled>Add Editor</option>
-                        <>
-                            {usersList.map((item, index) =>
-                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                            )}
-                        </>
-                    </Select>
-                }
-            </Box>
-            <Box mt={4}>
-                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
-                    {admins.map((viewer, index) => {
-                        return (
-                            <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
-                            </div>
-                        )
-                    })}
-                </div>
-                {usersList == undefined ?
-                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                    :
-                    <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                        <option disabled>Add Admin</option>
-                        <>
-                            {usersList.map((item, index) =>
-                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                            )}
-                        </>
-                    </Select>
-                }
-            </Box>
+            <FormControl isInvalid={formErrors.editors && formErrors.editors.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
+                        {editors.map((viewer, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {usersList == undefined ?
+                        <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                        :
+                        <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                            <option disabled>Add Editor</option>
+                            <>
+                                {usersList.map((item, index) =>
+                                    <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                )}
+                            </>
+                        </Select>
+                    }
+                    {formErrors.editors && formErrors.editors.length > 0 &&
+                        <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
+                    }
+                </Box>
+            </FormControl>
+            <FormControl isInvalid={formErrors.admins && formErrors.admins.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
+                        {admins.map((viewer, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {usersList == undefined ?
+                        <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                        :
+                        <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                            <option disabled>Add Admin</option>
+                            <>
+                                {usersList.map((item, index) =>
+                                    <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                )}
+                            </>
+                        </Select>
+                    }
+                    {formErrors.admins && formErrors.admins.length > 0 &&
+                        <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
+                    }
+                </Box>
+            </FormControl>
 
             <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
         </Container>
