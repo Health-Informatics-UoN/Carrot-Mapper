@@ -14,6 +14,18 @@ from .models import (
 )
 
 
+# Get scan report for the table|field|value
+SCAN_REPORT_QUERIES = {
+    ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
+    ScanReportField: lambda x: ScanReport.objects.get(
+        id=x.scan_report_table.scan_report.id
+    ),
+    ScanReportValue: lambda x: ScanReport.objects.get(
+        id=x.scan_report_field.scan_report_table.scan_report.id
+    ),
+}
+
+
 def is_az_function_user(user: User) -> bool:
     """Check of the user is the `AZ_FUNCTION_USER`
 
@@ -43,16 +55,6 @@ def has_viwership(obj: Any, request: Request) -> bool:
         if x.visibility == VisibilityChoices.PUBLIC
         else Q(visibility=VisibilityChoices.RESTRICTED) & Q(viewers__id=request.user.id)
     )
-    # Get scan report for the table|field|value
-    scan_report_queries = {
-        ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
-        ScanReportField: lambda x: ScanReport.objects.get(
-            id=x.scan_report_table.scan_report.id
-        ),
-        ScanReportValue: lambda x: ScanReport.objects.get(
-            id=x.scan_report_field.scan_report_table.scan_report.id
-        ),
-    }
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
@@ -67,7 +69,7 @@ def has_viwership(obj: Any, request: Request) -> bool:
 
     # If `obj` is a scan report table|field|value, get the scan report
     # it belongs to and check the user has permission to view it.
-    if sub_scan_report := scan_report_queries.get(type(obj)):
+    if sub_scan_report := SCAN_REPORT_QUERIES.get(type(obj)):
         sub_scan_report = sub_scan_report(obj)
         return checks.get(type(sub_scan_report))(sub_scan_report)
 
@@ -88,16 +90,6 @@ def has_editorship(obj: Any, request: Request) -> bool:
     Returns:
         bool: `True` if the request's user has permission, else `False`.
     """
-    # Get scan report for the table|field|value
-    scan_report_queries = {
-        ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
-        ScanReportField: lambda x: ScanReport.objects.get(
-            id=x.scan_report_table.scan_report.id
-        ),
-        ScanReportValue: lambda x: ScanReport.objects.get(
-            id=x.scan_report_field.scan_report_table.scan_report.id
-        ),
-    }
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
@@ -113,7 +105,7 @@ def has_editorship(obj: Any, request: Request) -> bool:
 
     # If `obj` is a scan report table|field|value, get the scan report
     # it belongs to and check the user has permission to edit it.
-    if sub_scan_report := scan_report_queries.get(type(obj)):
+    if sub_scan_report := SCAN_REPORT_QUERIES.get(type(obj)):
         sub_scan_report = sub_scan_report(obj)
         return checks.get(type(sub_scan_report))(sub_scan_report)
 
@@ -134,16 +126,6 @@ def is_admin(obj: Any, request: Request) -> bool:
     Returns:
         bool: `True` if the request's user has permission, else `False`.
     """
-    # Get scan report for the table|field|value
-    scan_report_queries = {
-        ScanReportTable: lambda x: ScanReport.objects.get(id=x.scan_report.id),
-        ScanReportField: lambda x: ScanReport.objects.get(
-            id=x.scan_report_table.scan_report.id
-        ),
-        ScanReportValue: lambda x: ScanReport.objects.get(
-            id=x.scan_report_field.scan_report_table.scan_report.id
-        ),
-    }
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
@@ -159,7 +141,7 @@ def is_admin(obj: Any, request: Request) -> bool:
 
     # If `obj` is a scan report table|field|value, get the scan report
     # it belongs to and check the user has permission to edit it.
-    if sub_scan_report := scan_report_queries.get(type(obj)):
+    if sub_scan_report := SCAN_REPORT_QUERIES.get(type(obj)):
         sub_scan_report = sub_scan_report(obj)
         return checks.get(type(sub_scan_report))(sub_scan_report)
 
@@ -214,6 +196,22 @@ class CanEdit(permissions.BasePermission):
         return has_editorship(obj, request)
 
 
+class CanAdmin(permissions.BasePermission):
+
+    message = "You are not an admin of this."
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` in any of the following cases:
+            - the User is the `AZ_FUNCTION_USER`
+            - the User is an Object admin.
+        """
+
+        if is_az_function_user(request.user):
+            return True
+        return is_admin(obj, request)
+
+
 class CanAdminDataset(permissions.BasePermission):
     message = "You are not an admin of this Dataset."
 
@@ -228,7 +226,7 @@ class CanAdminDataset(permissions.BasePermission):
             return True
         # if the User is in the Dataset's admins, return True,
         # else return false
-        return obj.admins.filter(id=request.user.id).exists()
+        return is_admin(obj, request)
 
 
 class CanAdminScanReport(permissions.BasePermission):
@@ -239,6 +237,7 @@ class CanAdminScanReport(permissions.BasePermission):
         Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
             - the User is in the parent Dataset's `admins` field
+            - the User is the author of the Scan Report
         """
         # if the User is the `AZ_FUNCTION_USER` grant permission
         if is_az_function_user(request.user):
@@ -246,4 +245,4 @@ class CanAdminScanReport(permissions.BasePermission):
 
         # if the User is in the parent Dataset's admins, return True,
         # else return false
-        return obj.parent_dataset.admins.filter(id=request.user.id).exists()
+        return is_admin(obj, request)
