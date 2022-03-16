@@ -680,3 +680,99 @@ class TestCanEdit(TestCase):
                 self.request, self.view, self.scan_report
             )
         )
+
+
+class TestCanAdmin(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create editor
+        self.admin = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.admin)
+
+        # Create user who is not an editor
+        self.non_admin = User.objects.create(username="aragorn", password="elissar")
+        # Give them a token
+        Token.objects.create(user=self.non_admin)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted users
+        self.project.members.add(self.non_admin, self.admin)
+        # Create the public dataset
+        self.dataset = Dataset.objects.create(
+            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
+        )
+        # Add the restricted users
+        self.dataset.admins.add(self.admin)
+        # Add datasets to the project
+        self.project.datasets.add(self.dataset)
+
+        # Add the scan report
+        self.scan_report = ScanReport.objects.create(
+            dataset="The Rings of Power",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.dataset,
+        )
+        self.scan_report.viewers.add(self.non_admin, self.admin)
+
+        # Set up request
+        self.factory = APIRequestFactory()
+        self.request = self.factory.get("/paths/of/the/dead")
+
+        # Generic test view, specific view class not required
+        self.view = GenericAPIView.as_view()
+
+        # The permission class
+        self.permission = CanAdmin()
+
+    def test_only_admin_has_permission(self):
+        # Assert editor has permission
+        self.request.user = self.admin
+        self.assertTrue(
+            self.permission.has_object_permission(
+                self.request, self.view, self.scan_report
+            )
+        )
+        # Assert non_editor has no permission
+        self.request.user = self.non_admin
+        self.assertFalse(
+            self.permission.has_object_permission(
+                self.request, self.view, self.scan_report
+            )
+        )
+
+    def test_author_can_admin_scanreport(self):
+        User = get_user_model()
+        author = User.objects.create(username="gimli", password="andmyaxe")
+        Token.objects.create(user=author)
+
+        self.project.members.add(author)
+
+        sr = ScanReport.objects.create(
+            dataset="The Rings of Power",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.dataset,
+            author=author,
+        )
+
+        self.request.user = author
+
+        # Assert ds_editor can edit
+        self.assertTrue(
+            self.permission.has_object_permission(self.request, self.view, sr)
+        )
+
+    def test_az_function_user_perm(self):
+        User = get_user_model()
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+
+        # Add the user to the request; this is not automatic
+        self.request.user = az_user
+
+        # Assert az_user has permission on restricted view
+        self.assertTrue(
+            self.permission.has_object_permission(
+                self.request, self.view, self.scan_report
+            )
+        )
