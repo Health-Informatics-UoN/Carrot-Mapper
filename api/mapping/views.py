@@ -114,10 +114,9 @@ from .models import (
     VisibilityChoices,
 )
 from .permissions import (
-    CanAdminScanReport,
     CanViewProject,
     CanView,
-    CanAdminDataset,
+    CanAdmin,
     CanEdit,
 )
 from .services import download_data_dictionary_blob
@@ -256,11 +255,11 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            return [CanView & CanAdminScanReport]
+            return [CanView & CanAdmin]
         if self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            return [CanView & (CanEdit | CanAdminScanReport)]
+            return [CanView & (CanEdit | CanAdmin)]
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -321,7 +320,7 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = ScanReportViewSerializer
-    permission_classes = [CanView | CanAdminScanReport | CanEdit]
+    permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
@@ -374,7 +373,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     """
 
     serializer_class = DatasetViewSerializer
-    permission_classes = [CanView | CanAdminDataset | CanEdit]
+    permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -384,7 +383,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 class DatasetUpdateView(generics.UpdateAPIView):
     serializer_class = DatasetEditSerializer
     # User must be able to view and be an admin or an editor
-    permission_classes = [CanView & (CanAdminDataset | CanEdit)]
+    permission_classes = [CanView & (CanAdmin | CanEdit)]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -394,7 +393,7 @@ class DatasetUpdateView(generics.UpdateAPIView):
 class DatasetDeleteView(generics.DestroyAPIView):
     serializer_class = DatasetEditSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanView & CanAdminDataset]
+    permission_classes = [CanView & CanAdmin]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
