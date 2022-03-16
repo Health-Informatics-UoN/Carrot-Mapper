@@ -107,7 +107,7 @@ def has_editorship(obj: Any, request: Request) -> bool:
             Q(parent_dataset__editors__id=request.user.id)
             | Q(editors__id=request.user.id),
             parent_dataset__project__members__id=request.user.id,
-            parent_dataset__id=x.parent_dataset.id,
+            id=x.id,
         ).exists(),
     }
 
