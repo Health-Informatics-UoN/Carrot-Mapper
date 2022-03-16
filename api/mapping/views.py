@@ -255,12 +255,14 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            return [CanView & CanAdmin]
-        if self.request.method in ["PUT", "PATCH"]:
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            return [CanView & (CanEdit | CanAdmin)]
-        return super().get_permissions()
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView]
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
