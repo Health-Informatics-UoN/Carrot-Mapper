@@ -12,8 +12,6 @@ from .permissions import (
     CanEdit,
     CanViewProject,
     CanView,
-    CanAdminDataset,
-    CanAdminScanReport,
 )
 from .views import (
     ProjectRetrieveView,
@@ -523,69 +521,6 @@ class TestCanView(TestCase):
             self.permission.has_object_permission(
                 self.request, self.view, self.public_dataset
             )
-        )
-
-
-class TestCanAdminDataset(TestCase):
-    def setUp(self):
-        User = get_user_model()
-        # Create user who is a Dataset admin
-        self.admin_user = User.objects.create(username="gandalf", password="thegrey")
-        # Give them a token
-        Token.objects.create(user=self.admin_user)
-
-        # Create user who is not a Dataset admin
-        self.non_admin_user = User.objects.create(
-            username="aragorn", password="elissar"
-        )
-        # Give them a token
-        Token.objects.create(user=self.non_admin_user)
-
-        # Create the project
-        self.project = Project.objects.create(name="The Fellowship of the Ring")
-        # Add the permitted users
-        self.project.members.add(self.non_admin_user, self.admin_user)
-        # Create the public dataset
-        self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
-        )
-        # Add the restricted users
-        self.dataset.viewers.add(self.non_admin_user)
-        self.dataset.admins.add(self.admin_user)
-        # Add datasets to the project
-        self.project.datasets.add(self.dataset)
-
-        # Set up request
-        self.factory = APIRequestFactory()
-        self.request = self.factory.get("/paths/of/the/dead")
-
-        # Generic test view, specific view class not required
-        self.view = GenericAPIView.as_view()
-
-        # Set up permission class
-        self.permission = CanAdminDataset()
-
-    def test_only_admin_user_can_view(self):
-        # Assert admin_user has permission
-        self.request.user = self.admin_user
-        self.assertTrue(
-            self.permission.has_object_permission(self.request, self.view, self.dataset)
-        )
-        # Assert non_admin_user has no permission
-        self.request.user = self.non_admin_user
-        self.assertFalse(
-            self.permission.has_object_permission(self.request, self.view, self.dataset)
-        )
-
-    def test_az_function_user_perm(self):
-        User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
-
-        # Add the user to the request; this is not automatic
-        self.request.user = az_user
-        # Assert az_user has permission on restricted view
-        self.assertTrue(
-            self.permission.has_object_permission(self.request, self.view, self.dataset)
         )
 
 
