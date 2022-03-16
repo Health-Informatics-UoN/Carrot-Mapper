@@ -210,39 +210,3 @@ class CanAdmin(permissions.BasePermission):
         if is_az_function_user(request.user):
             return True
         return is_admin(obj, request)
-
-
-class CanAdminDataset(permissions.BasePermission):
-    message = "You are not an admin of this Dataset."
-
-    def has_object_permission(self, request, view, obj):
-        """
-        Return `True` in any of the following cases:
-            - the User is the `AZ_FUNCTION_USER`
-            - the User is in the Dataset's `admins` field
-        """
-        # if the User is the `AZ_FUNCTION_USER` grant permission
-        if is_az_function_user(request.user):
-            return True
-        # if the User is in the Dataset's admins, return True,
-        # else return false
-        return is_admin(obj, request)
-
-
-class CanAdminScanReport(permissions.BasePermission):
-    message = "You do not have permission to edit this Scan Report."
-
-    def has_object_permission(self, request, view, obj):
-        """
-        Return `True` in any of the following cases:
-            - the User is the `AZ_FUNCTION_USER`
-            - the User is in the parent Dataset's `admins` field
-            - the User is the author of the Scan Report
-        """
-        # if the User is the `AZ_FUNCTION_USER` grant permission
-        if is_az_function_user(request.user):
-            return True
-
-        # if the User is in the parent Dataset's admins, return True,
-        # else return false
-        return is_admin(obj, request)
