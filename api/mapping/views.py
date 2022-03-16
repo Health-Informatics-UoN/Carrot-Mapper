@@ -261,7 +261,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
             # to edit a scan report
             self.permission_classes = [CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView]
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -415,7 +415,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             # to edit a scan report
             self.permission_classes = [CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView]
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
@@ -454,7 +454,7 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
             # to edit a scan report
             self.permission_classes = [CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView]
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
@@ -611,7 +611,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
             # to edit a scan report
             self.permission_classes = [CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView]
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
