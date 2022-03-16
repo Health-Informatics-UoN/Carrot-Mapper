@@ -40,6 +40,15 @@ Please append a line to the changelog for each change made.
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
   * Found at `/datasets/admin/<dataset_id>`.
+* Implemented editors and associated permissions to Datasets and Scan Reports.
+  - Editors of Datasets cannot add or remove viewers, editors or admins. They cannot
+  delete Datasets, either.
+  - Editors of Scan Reports cannot add or remove viewers, editors. They cannot
+  delete Scan Reports, either.
+  - **IMPORTANT!** Steps to enact this change:
+    1. Create a migration adding a `ManyToManyField` called `editors` to **Dataset** linking it to `settings.AUTH_USER_MODEL`.
+    2. Create a migration adding a `ManyToManyField` called `editors` to **ScanReport** linking it to `settings.AUTH_USER_MODEL`.
+* Added `arraysEqual` function to the React code to test arrays have all the same values.
 
 ## v1.4.0 was released 02/02/22
 
