@@ -7,6 +7,8 @@ from rest_framework.authtoken.models import Token
 from .permissions import (
     has_editorship,
     has_viwership,
+    is_admin,
+    CanAdmin,
     CanEdit,
     CanViewProject,
     CanView,
@@ -233,6 +235,113 @@ class TestHasEditorship(TestCase):
         self.request.user = self.user_not_on_project
         self.assertFalse(has_editorship(self.public_scanreport, self.request))
         self.assertFalse(has_editorship(self.restricted_scanreport, self.request))
+
+
+class TestIsAdmin(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        # Create user who can access the Project
+        self.ds_admin = User.objects.create(username="gandalf", password="thegrey")
+        # Give them a token
+        Token.objects.create(user=self.ds_admin)
+
+        # Create user who cannot access the Project
+        self.user_not_on_project = User.objects.create(
+            username="balrog", password="youshallnotpass"
+        )
+        # Give them a token
+        Token.objects.create(user=self.user_not_on_project)
+
+        # Create user who cannot access the restricted dataset
+        self.non_restricted_ds_viewer = User.objects.create(
+            username="sauron", password="thedeceiver"
+        )
+        # Give them a token
+        Token.objects.create(user=self.non_restricted_ds_viewer)
+
+        # Create user who cannot access the restricted scan report
+        self.sr_author = User.objects.create(username="saruman", password="thewise")
+        # Give them a token
+        Token.objects.create(user=self.sr_author)
+
+        # Create the project
+        self.project = Project.objects.create(name="The Fellowship of the Ring")
+        # Add the permitted user
+        self.project.members.add(
+            self.ds_admin,
+            self.non_restricted_ds_viewer,
+            self.sr_author,
+        )
+
+        # Set up datasets
+        self.public_dataset = Dataset.objects.create(
+            name="The Fellowship of the Ring", visibility=VisibilityChoices.PUBLIC
+        )
+        self.public_dataset.admins.add(self.ds_admin)
+        self.restricted_dataset = Dataset.objects.create(
+            name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
+        )
+        self.restricted_dataset.viewers.add(self.ds_admin)
+        self.restricted_dataset.admins.add(self.ds_admin)
+        self.project.datasets.add(self.public_dataset, self.restricted_dataset)
+
+        # Set up scan reports
+        self.public_scanreport = ScanReport.objects.create(
+            dataset="The Shire",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.public_dataset,
+        )
+        self.restricted_scanreport = ScanReport.objects.create(
+            dataset="Moria",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.restricted_dataset,
+            author=self.sr_author,
+        )
+        self.restricted_scanreport.viewers.add(self.ds_admin)
+
+        # Set up request
+        self.factory = APIRequestFactory()
+        self.request = self.factory.get("/paths/of/the/dead")
+
+        # Generic test view, specific view class not required
+        self.view = GenericAPIView.as_view()
+
+    def test_dataset_perms(self):
+        # Check ds_admin can admin all datasets
+        # because they are an admin in them
+        self.request.user = self.ds_admin
+        self.assertTrue(is_admin(self.public_dataset, self.request))
+        self.assertTrue(is_admin(self.restricted_dataset, self.request))
+
+        # Check non_restricted_ds_viewer cannot admin public or restricted dataset
+        # because they are not in the admins field
+        self.request.user = self.non_restricted_ds_viewer
+        self.assertFalse(is_admin(self.public_dataset, self.request))
+        self.assertFalse(is_admin(self.restricted_dataset, self.request))
+
+        # Check user_not_on_project can edit nothing
+        self.request.user = self.user_not_on_project
+        self.assertFalse(is_admin(self.public_dataset, self.request))
+        self.assertFalse(is_admin(self.restricted_dataset, self.request))
+
+    def test_scan_report_perms(self):
+        # Check ds_admin can see edit scan reports
+        # because they are an editor in them
+        self.request.user = self.ds_admin
+        self.assertTrue(is_admin(self.public_scanreport, self.request))
+        self.assertTrue(is_admin(self.restricted_scanreport, self.request))
+
+        # Check sr_author cannot edit public scan report
+        # but can see restricted_scanreport
+        # because they are the author
+        self.request.user = self.sr_author
+        self.assertFalse(is_admin(self.public_scanreport, self.request))
+        self.assertTrue(is_admin(self.restricted_scanreport, self.request))
+
+        # Check user_not_on_project can see nothing
+        self.request.user = self.user_not_on_project
+        self.assertFalse(is_admin(self.public_scanreport, self.request))
+        self.assertFalse(is_admin(self.restricted_scanreport, self.request))
 
 
 class TestCanViewProject(TestCase):
