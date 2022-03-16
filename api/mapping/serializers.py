@@ -88,13 +88,51 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username")
 
 
-class ScanReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
         fields = "__all__"
 
 
-class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate_viewers(self, viewers):
+        if request := self.context.get("request"):
+            user = request.user
+            if (
+                self.instance.author.id != user.id
+                or not self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author or and admin of the parent dataset 
+                    to change this field."""
+                )
+        return viewers
+
+    def validate_editors(self, editors):
+        if request := self.context.get("request"):
+            user = request.user
+            if (
+                self.instance.author.id != user.id
+                or not self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author or and admin of the parent dataset 
+                    to change this field."""
+                )
+        return editors
+
+    class Meta:
+        model = ScanReport
+        fields = "__all__"
+
+
+class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = "__all__"
+
+
+class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
             user = request.user
