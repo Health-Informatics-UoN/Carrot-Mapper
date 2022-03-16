@@ -192,15 +192,11 @@ class CanAdminScanReport(permissions.BasePermission):
         """
         Return `True` in any of the following cases:
             - the User is the `AZ_FUNCTION_USER`
-            - (unimplmented) the User is in the Scan Report's `editors` field
             - the User is in the parent Dataset's `admins` field
         """
         # if the User is the `AZ_FUNCTION_USER` grant permission
         if is_az_function_user(request.user):
             return True
-
-        # TODO: add check for the User being in the editors field
-        # once it is implemented.
 
         # if the User is in the parent Dataset's admins, return True,
         # else return false
