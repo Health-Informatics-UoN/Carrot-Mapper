@@ -182,7 +182,6 @@ const DatasetAdminForm = ({ setTitle }) => {
         if (!arraysEqual(newAdmins, dataset.admins)) {
             patchData.admins = newAdmins
         }
-        console.log(patchData)
         try {
             setUploadLoading(true)
             const response = await usePatch(
