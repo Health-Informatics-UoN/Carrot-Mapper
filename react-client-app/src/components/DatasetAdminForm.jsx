@@ -342,20 +342,24 @@ const DatasetAdminForm = ({ setTitle }) => {
                             )
                         })}
                     </div>
-                    {usersList == undefined ?
-                        <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                        :
-                        <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                            <option disabled>Add Editor</option>
-                            <>
-                                {usersList.map((item, index) =>
-                                    <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                )}
-                            </>
-                        </Select>
-                    }
-                    {formErrors.editors && formErrors.editors.length > 0 &&
-                        <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
+                    {isAdmin &&
+                        <>
+                            {usersList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Editor</option>
+                                    <>
+                                        {usersList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.editors && formErrors.editors.length > 0 &&
+                                <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
+                            }
+                        </>
                     }
                 </Box>
             </FormControl>
@@ -388,8 +392,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                     }
                 </Box>
             </FormControl>
-
-            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
+            {isAdmin &&
+                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             }
 
         </Container>
