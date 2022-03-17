@@ -375,21 +375,26 @@ const DatasetAdminForm = ({ setTitle }) => {
                             )
                         })}
                     </div>
-                    {usersList == undefined ?
-                        <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                        :
-                        <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                            <option disabled>Add Admin</option>
-                            <>
-                                {usersList.map((item, index) =>
-                                    <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                )}
-                            </>
-                        </Select>
+                    {isAdmin &&
+                        <>
+                            {usersList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Admin</option>
+                                    <>
+                                        {usersList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.admins && formErrors.admins.length > 0 &&
+                                <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
+                            }
+                        </>
                     }
-                    {formErrors.admins && formErrors.admins.length > 0 &&
-                        <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
-                    }
+
                 </Box>
             </FormControl>
             {isAdmin &&
