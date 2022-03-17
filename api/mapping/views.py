@@ -1737,5 +1737,9 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 @login_required
 def dataset_admin_page(request, pk):
     args = {}
-    args["current_user"] = request.user
+    if ds := Dataset.objects.get(id=pk):
+        args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+    else:
+        args["is_admin"] = False
+
     return render(request, "mapping/admin_dataset_form.html", args)
