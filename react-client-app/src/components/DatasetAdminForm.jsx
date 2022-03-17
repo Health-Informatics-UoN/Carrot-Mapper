@@ -311,18 +311,25 @@ const DatasetAdminForm = ({ setTitle }) => {
                     </Box>
                 </FormControl>
             }
-            <FormControl mt={4}>
-                <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
-                <Select
-                    id="dataset-datapartner"
-                    value={JSON.stringify(selectedDataPartner)}
-                    onChange={(option) => handleDataPartnerSelect(option.target.value)}
-                >
-                    {dataPartners.map((item, index) =>
-                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
-                    )}
-                </Select>
-            </FormControl>
+            {isAdmin ?
+                <FormControl mt={4}>
+                    <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
+                    <Select
+                        id="dataset-datapartner"
+                        value={JSON.stringify(selectedDataPartner)}
+                        onChange={(option) => handleDataPartnerSelect(option.target.value)}
+                    >
+                        {dataPartners.map((item, index) =>
+                            <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                        )}
+                    </Select>
+                </FormControl>
+                :
+                <>
+                    <Text fontWeight={"bold"} mt={4}>Data Partner: </Text>
+                    <Input value={selectedDataPartner.name} readOnly={true} />
+                </>
+            }
             <FormControl isInvalid={formErrors.editors && formErrors.editors.length > 0}>
                 <Box mt={4}>
                     <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
