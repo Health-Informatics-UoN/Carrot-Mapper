@@ -93,15 +93,9 @@ const DatasetAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             // if the current user is an admin then set isAdmin to true else to false
-            if(currentUser){
-                if(admins.find(item=>item.username==currentUser)){
+            if(currentUser && admins.find(item=>item.username === currentUser)){
                     setIsAdmin(true)
-                }
-                else{
-                    setIsAdmin(false)
-                }
-            }
-            else{
+            } else {
                 setIsAdmin(false)
             }
         },
