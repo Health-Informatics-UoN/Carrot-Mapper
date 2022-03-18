@@ -7,12 +7,12 @@ import PageHeading from './PageHeading'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 import { useGet, usePatch, useDelete } from '../api/values'
+import { arraysEqual } from '../utils/arrayFuncs'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let datasetId = window.location.pathname.split("/").pop()
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const [isAdmin, setIsAdmin] = useState(false)
-    const [currentUser, setCurrentUser] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     // Set up component state
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const [dataset, setDataset] = useState({})
@@ -24,6 +24,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [uploadLoading, setUploadLoading] = useState(false)
     const [viewers, setViewers] = useState([])
     const [admins, setAdmins] = useState([])
+    const [editors, setEditors] = useState([])
     const [usersList, setUsersList] = useState(undefined)
 
     function getUsersFromIds(userIds, userObjects) {
@@ -49,7 +50,6 @@ const DatasetAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             setTitle(null)
-            setCurrentUser(window.currentUser)
             const queries = [
                 useGet(`/datasets/${datasetId}`),
                 useGet("/datapartners/"),
@@ -78,6 +78,12 @@ const DatasetAdminForm = ({ setTitle }) => {
                     ...getUsersFromIds(datasetQuery.admins, usersQuery),
                 ]
             )
+            setEditors(
+                prevEditors => [
+                    ...prevEditors,
+                    ...getUsersFromIds(datasetQuery.editors, usersQuery),
+                ]
+            )
             setLoadingMessage(null)  // stop loading when finished
         },
         [], // Required to stop this effect sending infinite requests
@@ -92,21 +98,30 @@ const DatasetAdminForm = ({ setTitle }) => {
 
     useEffect(
         async () => {
-            // if the current user is an admin then set isAdmin to true else to false
-            if(currentUser && admins.find(item=>item.username === currentUser)){
-                    setIsAdmin(true)
-            } else {
-                setIsAdmin(false)
-            }
+            setFormErrors({ ...formErrors, data_partner: undefined })
         },
-        [admins],
+        [selectedDataPartner],
     )
 
     useEffect(
         async () => {
-            setFormErrors({ ...formErrors, data_partner: undefined })
+            setFormErrors({ ...formErrors, viewers: undefined })
         },
-        [selectedDataPartner],
+        [viewers],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, editors: undefined })
+        },
+        [editors],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, admins: undefined })
+        },
+        [admins],
     )
 
     // Update dataset name
@@ -131,8 +146,12 @@ const DatasetAdminForm = ({ setTitle }) => {
     const removeViewer = (id) => {
         setViewers(pj => pj.filter(user => user.id != id))
     }
+    // Remove user chip from editors
+    const removeEditor = (id) => {
+        setEditors(pj => pj.filter(user => user.id != id))
+    }
 
-    // Remove user chip from viewers
+    // Remove user chip from admins
     const removeAdmin = (id) => {
         setAdmins(pj => pj.filter(user => user.id != id))
     }
@@ -143,16 +162,31 @@ const DatasetAdminForm = ({ setTitle }) => {
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
+        const patchData = {
+            name: dataset.name,
+            data_partner: selectedDataPartner.id,
+            visibility: isPublic ? "PUBLIC" : "RESTRICTED",
+        }
+        // Add viewers if they've been altered
+        const newViewers = viewers.map(x => x.id)
+        if (!arraysEqual(newViewers, dataset.viewers)) {
+            patchData.viewers = newViewers
+        }
+        // Add editors if they've been altered
+        const newEditors = editors.map(x => x.id)
+        if (!arraysEqual(newEditors, dataset.editors)) {
+            patchData.editors = newEditors
+        }
+        // Add admins if they've been altered
+        const newAdmins = admins.map(x => x.id)
+        if (!arraysEqual(newAdmins, dataset.admins)) {
+            patchData.admins = newAdmins
+        }
         try {
             setUploadLoading(true)
             const response = await usePatch(
                 `/datasets/update/${datasetId}`,
-                {
-                    ...dataset,
-                    data_partner: selectedDataPartner.id,
-                    viewers: [...viewers.map(viewer => viewer.id)],
-                    admins: [...admins.map(admin => admin.id)],
-                },
+                patchData,
             )
             setUploadLoading(false)
             setDataset(response)
@@ -228,15 +262,15 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </Flex>
             </FormControl>
             {!isPublic &&
-                <>
+                <FormControl isInvalid={formErrors.viewers && formErrors.viewers.length > 0}>
                     <Box mt={4}>
                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
                             <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
                             {viewers.map((viewer, index) => {
                                 return (
                                     <div key={index} style={{ marginTop: "0px" }}>
-                                        <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeViewer} 
-                                        readOnly={!isAdmin}/>
+                                        <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeViewer}
+                                            readOnly={!isAdmin} />
                                     </div>
                                 )
                             })}
@@ -257,59 +291,100 @@ const DatasetAdminForm = ({ setTitle }) => {
                                 }
                             </>
                         }
+                        {formErrors.viewers && formErrors.viewers.length > 0 &&
+                            <FormErrorMessage>{formErrors.viewers[0]}</FormErrorMessage>
+                        }
                     </Box>
+                </FormControl>
+            }
+            {isAdmin ?
+                <FormControl mt={4}>
+                    <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
+                    <Select
+                        id="dataset-datapartner"
+                        value={JSON.stringify(selectedDataPartner)}
+                        onChange={(option) => handleDataPartnerSelect(option.target.value)}
+                    >
+                        {dataPartners.map((item, index) =>
+                            <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                        )}
+                    </Select>
+                </FormControl>
+                :
+                <>
+                    <Text fontWeight={"bold"} mt={4}>Data Partner: </Text>
+                    <Input value={selectedDataPartner.name} readOnly={true} />
                 </>
             }
-            {isAdmin?
-            <FormControl mt={4}>
-                <FormLabel htmlFor="dataset-datapartner" style={{ fontWeight: "bold" }}>Data Partner:</FormLabel>
-                <Select
-                    id="dataset-datapartner"
-                    value={JSON.stringify(selectedDataPartner)}
-                    onChange={(option) => handleDataPartnerSelect(option.target.value)}
-                >
-                    {dataPartners.map((item, index) =>
-                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
-                    )}
-                </Select>
+            <FormControl isInvalid={formErrors.editors && formErrors.editors.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
+                        {editors.map((viewer, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {isAdmin &&
+                        <>
+                            {usersList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Editor" readOnly onChange={(option) => setEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Editor</option>
+                                    <>
+                                        {usersList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.editors && formErrors.editors.length > 0 &&
+                                <FormErrorMessage>{formErrors.editors[0]}</FormErrorMessage>
+                            }
+                        </>
+                    }
+                </Box>
             </FormControl>
-            :
-            <>
-            <Text fontWeight={"bold"} mt={4}>Data Partner: </Text>
-            <Input value={selectedDataPartner.name} readOnly={true}/>
-            </>
-            }
-            <Box mt={4}>
-                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
-                    {admins.map((viewer, index) => {
-                        return (
-                            <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} 
-                                readOnly={!isAdmin}/>
-                            </div>
-                        )
-                    })}
-                </div>
-                {isAdmin &&
-                    <>
-                        {usersList == undefined ?
-                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                            :
-                            <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                <option disabled>Add Admin</option>
-                                <>
-                                    {usersList.map((item, index) =>
-                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                    )}
-                                </>
-                            </Select>
-                        }
-                    </>
-                }
-            </Box>
+            <FormControl isInvalid={formErrors.admins && formErrors.admins.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
+                        {admins.map((viewer, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {isAdmin &&
+                        <>
+                            {usersList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Admin" readOnly onChange={(option) => setAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Admin</option>
+                                    <>
+                                        {usersList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.admins && formErrors.admins.length > 0 &&
+                                <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
+                            }
+                        </>
+                    }
+
+                </Box>
+            </FormControl>
             {isAdmin &&
-            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
+                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             }
 
         </Container>
