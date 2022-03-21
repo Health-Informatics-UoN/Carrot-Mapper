@@ -1,8 +1,7 @@
 import React from 'react'
 import {
-    Box, FormControl, FormLabel, FormErrorMessage, Select
+    FormControl, FormLabel, FormErrorMessage, Select
 } from "@chakra-ui/react"
-import ConceptTag from './ConceptTag'
 
 const CCSelectInput = (props) => {
     /**
