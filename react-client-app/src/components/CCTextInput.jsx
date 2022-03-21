@@ -28,14 +28,14 @@ const CCTextInput = (props) => {
                 <Input
                     id={props.id}
                     value={props.value}
-                    readOnly={props.readOnly ? props.readOnly : false}
+                    isReadOnly={props.isReadOnly ? props.isReadOnly : false}
                     onChange={e => props.handleInput(e.target.value)}
                 />
                 :
                 <Input
                     id={props.id}
                     value={props.value}
-                    readOnly={props.readOnly ? props.readOnly : false}
+                    isReadOnly={props.isReadOnly ? props.isReadOnly : false}
                 />
             }
             {props.formErrors && props.formErrors.length > 0 &&
