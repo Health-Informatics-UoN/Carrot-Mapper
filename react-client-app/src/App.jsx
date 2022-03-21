@@ -10,6 +10,7 @@ import TablesTbl from './components/TablesTbl';
 import EditTable from './components/EditTable';
 import EditField from './components/EditField';
 import ScanReportTbl from './components/ScanReportTbl';
+import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
@@ -267,6 +268,8 @@ const App = ({ page }) => {
                 return <UploadScanReport setTitle={setTitle} />
             case "Dataset Admin":
                 return <DatasetAdminForm setTitle={setTitle} />
+            case "Scan Report Admin":
+                return <ScanReportAdminForm setTitle={setTitle} />
             default:
                 return <ScanReportTbl setTitle={setTitle} />
         }
