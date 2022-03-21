@@ -6,9 +6,7 @@ import {
     Text,
     GridItem,
 } from "@chakra-ui/react"
-const truncate = (str) => {
-    return str.length > 20 ? str.substring(0, 20) + "..." : str;
-}
+
 function AnalysisTbl({ data }) {
 
     return (
@@ -40,8 +38,8 @@ function AnalysisTbl({ data }) {
                                                         {ancestor.source.map(source_id => {
 
                                                             if (source_id.concept__content_type == 15)
-                                                                return <Text><Link style={{ color: "#0000FF", }} href={"/fields/?search=" + source_id.source_field__scan_report_table__id}> {truncate(source_id.source_field__name)} </Link> </Text>
-                                                            return <Text><Link style={{ color: "#0000FF", }} href={"/values/?search=" + source_id.source_field__id}> {truncate(source_id.source_field__name)} </Link></Text>
+                                                                return <Text maxWidth={"200px"}><Link style={{ color: "#0000FF", }} href={"/fields/?search=" + source_id.source_field__scan_report_table__id}> {(source_id.source_field__name)} </Link> </Text>
+                                                            return <Text maxWidth={"200px"}><Link style={{ color: "#0000FF" }} href={"/values/?search=" + source_id.source_field__id}> {(source_id.source_field__name)} </Link></Text>
                                                         })}
                                                     </div>
 
