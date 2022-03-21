@@ -22,7 +22,7 @@ const CCTextInput = (props) => {
         throw "`handleInput` must be a function."
     }
     return (
-        <FormControl mt={props.mt} isInvalid={props.formErrors.name && props.formErrors.name.length > 0}>
+        <FormControl mt={props.mt} isInvalid={props.formErrors && props.formErrors.length > 0}>
             <FormLabel htmlFor={props.id} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
             {props.handleInput !== undefined && typeof (props.handleInput) !== 'function' ?
                 <Input
@@ -38,8 +38,8 @@ const CCTextInput = (props) => {
                     readOnly={props.readOnly ? props.readOnly : false}
                 />
             }
-            {props.formErrors.name && props.formErrors.name.length > 0 &&
-                <FormErrorMessage>{props.formErrors.name[0]}</FormErrorMessage>
+            {props.formErrors && props.formErrors.length > 0 &&
+                <FormErrorMessage>{props.formErrors[0]}</FormErrorMessage>
             }
         </FormControl>
     )
