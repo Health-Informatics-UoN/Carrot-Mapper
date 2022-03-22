@@ -29,23 +29,23 @@ const CCSelectInput = (props) => {
             <FormLabel htmlFor={props.id} w="200px">{props.label}</FormLabel>
             {props.handleInput !== undefined && typeof (props.handleInput) === 'function' ?
                 <Select
-                    value={JSON.stringify(props.value)}
+                    value={props.value}
                     onChange={
                         (option) => props.handleInput(option.target.value)
                     }
                     isReadOnly={props.isReadOnly ? props.isReadOnly : false}
                 >
                     {props.selectOptions.map((item, index) =>
-                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                        <option key={index} value={item}>{item}</option>
                     )}
                 </Select>
                 :
                 <Select
-                    value={JSON.stringify(props.value)}
+                    value={props.value}
                     isReadOnly={props.isReadOnly ? props.isReadOnly : false}
                 >
                     {props.selectOptions.map((item, index) =>
-                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                        <option key={index} value={item}>{item}</option>
                     )}
                 </Select>
             }

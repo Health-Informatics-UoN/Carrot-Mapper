@@ -23,6 +23,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
     const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     const [datasets, setDatasets] = useState();
     const [selectedDataset, setSelectedDataset] = useState()
+    const [author, setAuthor] = useState();
     const [isPublic, setIsPublic] = useState()
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [formErrors, setFormErrors] = useState({})
@@ -67,6 +68,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
             setSelectedDataset(
                 datasetsQuery.find(element => element.id === scanReportQuery.parent_dataset)
             )
+            setAuthor(
+                usersQuery.find(element => element.id == scanReportQuery.author)
+            )
             setIsPublic(scanReportQuery.visibility === "PUBLIC")
             setUsersList(usersQuery)
             setViewers(
@@ -100,9 +104,18 @@ const ScanReportAdminForm = ({ setTitle }) => {
 
     // Update scan report parent dataset
     function handleDatasetSelect(newValue) {
-        const dataset = JSON.parse(newValue)
+        const dataset = datasets.find(el => el.name === newValue)
+        console.log(dataset)
         setSelectedDataset(dataset)
         setScanReport({ ...scanReport, parent_dataset: dataset.id })
+    }
+
+    // Update scan report author
+    function handleAuthorSelect(newValue) {
+        const newAuthor = usersList.find(el => el.username === newValue)
+        console.log(newAuthor)
+        setAuthor(newAuthor)
+        setScanReport({ ...scanReport, author: newAuthor.id })
     }
 
     if (loadingMessage) {
@@ -133,6 +146,15 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 isReadOnly={!isAdmin}
                 formErrors={formErrors.dataset}
             />
+            <CCSelectInput
+                id={"scanreport-author"}
+                label={"Author"}
+                value={author.username}
+                selectOptions={usersList.map(item => item.username)}
+                handleInput={handleAuthorSelect}
+                // isReadOnly={!isAdmin}
+                formErrors={formErrors.dataset}
+            />
             <CCSwitchInput
                 id={"scanreport-visibility"}
                 label={"Visibility"}
@@ -146,7 +168,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 id={"scanreport-dataset"}
                 label={"Dataset"}
                 value={selectedDataset}
-                selectOptions={datasets}
+                selectOptions={datasets.map(item => item.name)}
                 handleInput={handleDatasetSelect}
                 isReadOnly={!isAdmin}
                 formErrors={formErrors.dataset}
