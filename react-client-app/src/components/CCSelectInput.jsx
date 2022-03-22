@@ -31,7 +31,7 @@ const CCSelectInput = (props) => {
                 <Select
                     value={JSON.stringify(props.value)}
                     onChange={
-                        (option) => props.handleInput(JSON.parse(option.target.value))
+                        (option) => props.handleInput(option.target.value)
                     }
                     isReadOnly={props.isReadOnly ? props.isReadOnly : false}
                 >

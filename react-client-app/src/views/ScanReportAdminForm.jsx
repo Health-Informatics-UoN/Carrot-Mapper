@@ -87,16 +87,22 @@ const ScanReportAdminForm = ({ setTitle }) => {
     )
 
 
-    // Update dataset name
+    // Update scan report dataset (the actual name)
     function handleNameInput(newValue) {
         setScanReport({ ...scanReport, dataset: newValue })
     }
 
-    // Update dataset visibility
+    // Update scan report visibility
     function handleVisibilitySwitch(newValue) {
-        console.log(newValue)
         setIsPublic(newValue)
         setScanReport({ ...scanReport, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
+    }
+
+    // Update scan report parent dataset
+    function handleDatasetSelect(newValue) {
+        const dataset = JSON.parse(newValue)
+        setSelectedDataset(dataset)
+        setScanReport({ ...scanReport, parent_dataset: dataset.id })
     }
 
     if (loadingMessage) {
@@ -141,6 +147,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Dataset"}
                 value={selectedDataset}
                 selectOptions={datasets}
+                handleInput={handleDatasetSelect}
                 isReadOnly={!isAdmin}
                 formErrors={formErrors.dataset}
             />
