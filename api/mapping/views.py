@@ -1743,3 +1743,18 @@ def dataset_admin_page(request, pk):
         args["is_admin"] = False
 
     return render(request, "mapping/admin_dataset_form.html", args)
+
+
+@login_required
+def scanreport_admin_page(request, pk):
+    args = {}
+    if sr := ScanReport.objects.get(id=pk):
+        is_admin = (
+            sr.author.id == request.user.id
+            or sr.parent_dataset.admins.filter(id=request.user.id).exists()
+        )
+        args["is_admin"] = is_admin
+    else:
+        args["is_admin"] = False
+
+    return render(request, "mapping/admin_scanreport_form.html", args)

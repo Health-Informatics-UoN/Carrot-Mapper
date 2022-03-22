@@ -223,6 +223,11 @@ urlpatterns = [
         name="scan-report-form",
     ),
     path(
+        "scanreports/<int:pk>/admin",
+        views.scanreport_admin_page,
+        name="scan-report-admin-form",
+    ),
+    path(
         "scanreports/<int:pk>/assertions/",
         views.ScanReportAssertionView.as_view(),
         name="scan-report-assertion",
