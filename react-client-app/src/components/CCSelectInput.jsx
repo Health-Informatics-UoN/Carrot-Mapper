@@ -33,7 +33,7 @@ const CCSelectInput = (props) => {
                     onChange={
                         (option) => props.handleInput(option.target.value)
                     }
-                    isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                    isDisabled={props.isDisabled ? props.isDisabled : false}
                 >
                     {props.selectOptions.map((item, index) =>
                         <option key={index} value={item}>{item}</option>
@@ -42,7 +42,7 @@ const CCSelectInput = (props) => {
                 :
                 <Select
                     value={props.value}
-                    isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                    isDisabled={props.isDisabled ? props.isDisabled : false}
                 >
                     {props.selectOptions.map((item, index) =>
                         <option key={index} value={item}>{item}</option>

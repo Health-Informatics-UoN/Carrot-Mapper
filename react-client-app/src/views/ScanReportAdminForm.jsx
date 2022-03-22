@@ -143,7 +143,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Name"}
                 value={scanReport.dataset}
                 handleInput={handleNameInput}
-                isReadOnly={!isAdmin}
+                isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             <CCSelectInput
@@ -152,14 +152,14 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 value={author.username}
                 selectOptions={usersList.map(item => item.username)}
                 handleInput={handleAuthorSelect}
-                // isReadOnly={!isAdmin}
+                isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             <CCSwitchInput
                 id={"scanreport-visibility"}
                 label={"Visibility"}
                 isChecked={isPublic}
-                isReadOnly={!isAdmin}
+                isDisabled={!isAdmin}
                 handleInput={handleVisibilitySwitch}
                 checkedMessage={"PUBLIC"}
                 notCheckedMessage={"RESTRICTED"}
@@ -170,7 +170,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 value={selectedDataset}
                 selectOptions={datasets.map(item => item.name)}
                 handleInput={handleDatasetSelect}
-                isReadOnly={!isAdmin}
+                isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             {isAdmin &&

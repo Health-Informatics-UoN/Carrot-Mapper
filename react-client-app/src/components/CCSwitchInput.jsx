@@ -37,14 +37,14 @@ const CCSwitchInput = (props) => {
                     <Switch
                         id={props.id}
                         isChecked={props.isChecked ? props.isChecked : false}
-                        isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                        isDisabled={props.isDisabled ? props.isDisabled : false}
                         onChange={e => props.handleInput(!props.isChecked)}
                     />
                     :
                     <Switch
                         id={props.id}
                         isChecked={props.isChecked ? props.isChecked : false}
-                        isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                        isDisabled={props.isDisabled ? props.isDisabled : false}
                     />
                 }
                 <Text
