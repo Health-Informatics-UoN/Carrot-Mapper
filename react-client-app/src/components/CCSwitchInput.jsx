@@ -33,7 +33,7 @@ const CCSwitchInput = (props) => {
         <FormControl mt={4}>
             <FormLabel htmlFor={props.id} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
             <Flex alignItems={"center"}>
-                {props.handleInput !== undefined && typeof (props.handleInput) !== 'function' ?
+                {props.handleInput !== undefined && typeof (props.handleInput) === 'function' ?
                     <Switch
                         id={props.id}
                         isChecked={props.isChecked ? props.isChecked : false}

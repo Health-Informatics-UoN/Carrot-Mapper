@@ -124,14 +124,14 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Name"}
                 value={scanReport.dataset}
                 handleInput={handleNameInput}
-                // isReadOnly={!isAdmin}
+                isReadOnly={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             <CCSwitchInput
                 id={"scanreport-visibility"}
                 label={"Visibility"}
                 isChecked={isPublic}
-                // isReadOnly={!isAdmin}
+                isReadOnly={!isAdmin}
                 handleInput={handleVisibilitySwitch}
                 checkedMessage={"PUBLIC"}
                 notCheckedMessage={"RESTRICTED"}

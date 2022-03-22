@@ -24,7 +24,7 @@ const CCTextInput = (props) => {
     return (
         <FormControl mt={props.mt} isInvalid={props.formErrors && props.formErrors.length > 0}>
             <FormLabel htmlFor={props.id} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
-            {props.handleInput !== undefined && typeof (props.handleInput) !== 'function' ?
+            {props.handleInput !== undefined && typeof (props.handleInput) === 'function' ?
                 <Input
                     id={props.id}
                     value={props.value}
