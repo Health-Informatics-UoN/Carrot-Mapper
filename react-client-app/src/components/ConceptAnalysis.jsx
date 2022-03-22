@@ -1,11 +1,11 @@
 import React from 'react'
 import AnalysisTbl from './AnalysisTbl'
 
-function ConceptAnalysis({data, values, filters}) {
-    
+function ConceptAnalysis({ data }) {
+
     return (
         <div>
-            <AnalysisTbl data={data} values={values}filters={filters}/>
+            <AnalysisTbl data={data} />
         </div>
     )
 }
