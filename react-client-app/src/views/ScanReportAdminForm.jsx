@@ -57,6 +57,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
             // Set up state from the results of the queries
             setScanReport(scanReportQuery)
             setDatasets(datasetsQuery)
+            setSelectedDataset(
+                datasetsQuery.find(element => element.id === scanReportQuery.parent_dataset)
+            )
             setIsPublic(scanReportQuery.visibility === "PUBLIC")
             setUsersList(usersQuery)
             setViewers(
@@ -101,6 +104,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 id={"scanreport-name"}
                 label={"Name"}
                 isReadOnly={!isAdmin}
+                formErrors={formErrors.name}
             />
             <CCSwitchInput
                 id={"scanreport-visibility"}
@@ -113,8 +117,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
             <CCSelectInput
                 id={"scanreport-dataset"}
                 label={"Dataset"}
-                value={ }
+                value={selectedDataset}
                 isReadOnly={!isAdmin}
+                formErrors={formErrors.dataset}
             />
             {isAdmin &&
                 <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
