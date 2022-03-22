@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-    FormControl, FormLabel, Switch
+    Flex, FormControl, FormLabel, Switch, Text
 } from "@chakra-ui/react"
 
 const CCSwitchInput = (props) => {
@@ -33,12 +33,20 @@ const CCSwitchInput = (props) => {
         <FormControl mt={4}>
             <FormLabel htmlFor={props.id} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
             <Flex alignItems={"center"}>
-                <Switch
-                    id={props.id}
-                    isChecked={props.isChecked ? props.isChecked : false}
-                    isReadOnly={props.isReadOnly ? props.isReadOnly : false}
-                    onChange={e => props.handleInput(e.checked)}
-                />
+                {props.handleInput !== undefined && typeof (props.handleInput) !== 'function' ?
+                    <Switch
+                        id={props.id}
+                        isChecked={props.isChecked ? props.isChecked : false}
+                        isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                        onChange={e => props.handleInput(e.checked)}
+                    />
+                    :
+                    <Switch
+                        id={props.id}
+                        isChecked={props.isChecked ? props.isChecked : false}
+                        isReadOnly={props.isReadOnly ? props.isReadOnly : false}
+                    />
+                }
                 <Text
                     fontWeight={"bold"}
                     ml={2}

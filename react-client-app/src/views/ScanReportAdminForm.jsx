@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
+import PageHeading from '../components/PageHeading'
+import ToastAlert from '../components/ToastAlert'
+import ConceptTag from '../components/ConceptTag'
 import CCSelectInput from '../components/CCSelectInput'
 import CCSwitchInput from '../components/CCSwitchInput'
 import CCTextInput from '../components/CCTextInput'
 import { useGet, usePatch, useDelete } from '../api/values'
+import {
+    Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
+    FormControl, FormLabel, FormErrorMessage
+} from "@chakra-ui/react"
 
 
 const ScanReportAdminForm = ({ setTitle }) => {
@@ -99,10 +106,11 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
                 </ScaleFade>
             }
-            <PageHeading text={`Scan Report #${dataset.id}`} />
+            <PageHeading text={`Scan Report #${scanReport.id}`} />
             <CCTextInput
                 id={"scanreport-name"}
                 label={"Name"}
+                value={scanReport.name}
                 isReadOnly={!isAdmin}
                 formErrors={formErrors.name}
             />
@@ -118,6 +126,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 id={"scanreport-dataset"}
                 label={"Dataset"}
                 value={selectedDataset}
+                selectOptions={datasets}
                 isReadOnly={!isAdmin}
                 formErrors={formErrors.dataset}
             />
