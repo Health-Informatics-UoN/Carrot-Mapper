@@ -87,6 +87,18 @@ const ScanReportAdminForm = ({ setTitle }) => {
     )
 
 
+    // Update dataset name
+    function handleNameInput(newValue) {
+        setScanReport({ ...scanReport, dataset: newValue })
+    }
+
+    // Update dataset visibility
+    function handleVisibilitySwitch(newValue) {
+        console.log(newValue)
+        setIsPublic(newValue)
+        setScanReport({ ...scanReport, visibility: newValue ? "PUBLIC" : "RESTRICTED" })
+    }
+
     if (loadingMessage) {
         //Render Loading State
         return (
@@ -110,15 +122,17 @@ const ScanReportAdminForm = ({ setTitle }) => {
             <CCTextInput
                 id={"scanreport-name"}
                 label={"Name"}
-                value={scanReport.name}
-                isReadOnly={!isAdmin}
-                formErrors={formErrors.name}
+                value={scanReport.dataset}
+                handleInput={handleNameInput}
+                // isReadOnly={!isAdmin}
+                formErrors={formErrors.dataset}
             />
             <CCSwitchInput
                 id={"scanreport-visibility"}
                 label={"Visibility"}
                 isChecked={isPublic}
-                isReadOnly={!isAdmin}
+                // isReadOnly={!isAdmin}
+                handleInput={handleVisibilitySwitch}
                 checkedMessage={"PUBLIC"}
                 notCheckedMessage={"RESTRICTED"}
             />
