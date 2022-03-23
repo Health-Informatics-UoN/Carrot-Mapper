@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PageHeading from '../components/PageHeading'
 import ToastAlert from '../components/ToastAlert'
-import ConceptTag from '../components/ConceptTag'
+import CCMultiSelectInput from '../components/CCMultiSelectInput'
 import CCSelectInput from '../components/CCSelectInput'
 import CCSwitchInput from '../components/CCSwitchInput'
 import CCTextInput from '../components/CCTextInput'
 import { useGet, usePatch, useDelete } from '../api/values'
 import {
-    Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
-    FormControl, FormLabel, FormErrorMessage
+    Button, Flex, Spinner, Container, ScaleFade, useDisclosure
 } from "@chakra-ui/react"
 
 
@@ -118,6 +117,16 @@ const ScanReportAdminForm = ({ setTitle }) => {
         setScanReport({ ...scanReport, author: newAuthor.id })
     }
 
+    // Update scan report viewers
+    function handleViewersInput(newViewers) {
+        console.log(newViewers)
+    }
+
+    // Update scan report editors
+    function handleEditorsInput(newEditors) {
+        console.log(newEditors)
+    }
+
     if (loadingMessage) {
         //Render Loading State
         return (
@@ -163,6 +172,24 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 handleInput={handleVisibilitySwitch}
                 checkedMessage={"PUBLIC"}
                 notCheckedMessage={"RESTRICTED"}
+            />
+            {!isPublic &&
+                <CCMultiSelectInput
+                    id={"scanreport-viewers"}
+                    label={"Viewers"}
+                    isDisabled={!isAdmin}
+                    selectOptions={usersList.map(item => item.username)}
+                    currentSelections={viewers.map(item => item.username)}
+                    handleInput={handleViewersInput}
+                />
+            }
+            <CCMultiSelectInput
+                id={"scanreport-editors"}
+                label={"Editors"}
+                isDisabled={!isAdmin}
+                selectOptions={usersList.map(item => item.username)}
+                currentSelections={editors.map(item => item.username)}
+                handleInput={handleEditorsInput}
             />
             <CCSelectInput
                 id={"scanreport-dataset"}
