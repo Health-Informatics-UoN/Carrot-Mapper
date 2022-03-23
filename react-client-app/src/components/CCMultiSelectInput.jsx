@@ -12,10 +12,10 @@ const CCMultiSelectInput = (props) => {
      *  label (String): the text for the label.
      *  selectOptions (Array): the options to choose from.
      *  handleInput (Function): the action to perform when the input changes.
-     *  handleDelete (Function): the action to perform to remove choices.
      * 
      * Optional args:
-     *  currentSelections (Array): choices that are already selected.
+     *  currentSelections (Array): choices that are already selected. Default: `[]`
+     *  isDisabled (Boolean): input is disabled or not. Default: `false`
      */
     // Check for required arguments
     if (!props.id) {
