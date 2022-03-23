@@ -265,7 +265,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
-        if self.request.method == "GET":
+        if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
             return ScanReportViewSerializer
         if self.request.method in ["PUT", "PATCH", "DELETE"]:
