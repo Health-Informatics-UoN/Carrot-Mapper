@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
+import {
+    Button, Flex, Spinner, Container, ScaleFade, useDisclosure
+} from "@chakra-ui/react"
 import PageHeading from '../components/PageHeading'
 import ToastAlert from '../components/ToastAlert'
 import CCMultiSelectInput from '../components/CCMultiSelectInput'
@@ -6,9 +9,7 @@ import CCSelectInput from '../components/CCSelectInput'
 import CCSwitchInput from '../components/CCSwitchInput'
 import CCTextInput from '../components/CCTextInput'
 import { useGet, usePatch, useDelete } from '../api/values'
-import {
-    Button, Flex, Spinner, Container, ScaleFade, useDisclosure
-} from "@chakra-ui/react"
+import { arraysEqual } from '../utils/arrayFuncs'
 
 
 const ScanReportAdminForm = ({ setTitle }) => {
@@ -141,6 +142,58 @@ const ScanReportAdminForm = ({ setTitle }) => {
         setEditors(newEditors)
     }
 
+    // Send updated scan report to the DB
+    async function upload() {
+        /**
+         * Send a `PATCH` request updating the scan report and
+         * refresh the page with the new data
+         */
+        const patchData = {
+            dataset: scanReport.dataset,
+            parent_dataset: selectedDataset.id,
+            visibility: isPublic ? "PUBLIC" : "RESTRICTED",
+        }
+        // Add viewers if they've been altered
+        const newViewers = viewers.map(x => x.id)
+        if (!arraysEqual(newViewers, scanReport.viewers)) {
+            patchData.viewers = newViewers
+        }
+        // Add editors if they've been altered
+        const newEditors = editors.map(x => x.id)
+        if (!arraysEqual(newEditors, scanReport.editors)) {
+            patchData.editors = newEditors
+        }
+        try {
+            setUploadLoading(true)
+            const response = await usePatch(
+                `/scanreports/${scanReportId}/`,
+                patchData,
+            )
+            setUploadLoading(false)
+            setScanReport(response)
+            setAlert({
+                hidden: false,
+                status: 'success',
+                title: 'Success',
+                description: 'Scan report updated'
+            })
+            onOpen()
+        } catch (error) {
+            const error_response = await error.json()
+            setUploadLoading(false)
+            if (error_response) {
+                setFormErrors(error_response)
+            }
+            setAlert({
+                hidden: false,
+                status: 'error',
+                title: 'Could not update scan report',
+                description: error.statusText ? error.statusText : ""
+            })
+            onOpen()
+        }
+    }
+
     if (loadingMessage) {
         //Render Loading State
         return (
@@ -166,7 +219,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Name"}
                 value={scanReport.dataset}
                 handleInput={handleNameInput}
-                isDisabled={!isAdmin}
+                // isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             <CCSelectInput
@@ -216,6 +269,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
+            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             {isAdmin &&
                 <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             }
