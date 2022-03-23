@@ -117,14 +117,28 @@ const ScanReportAdminForm = ({ setTitle }) => {
         setScanReport({ ...scanReport, author: newAuthor.id })
     }
 
-    // Update scan report viewers
-    function handleViewersInput(newViewers) {
-        console.log(newViewers)
+    // Add scan report viewers
+    function addViewer(newViewer) {
+        newViewer = usersList.find(el => el.username === newViewer)
+        setViewers(previous => [...previous, newViewer])
+    }
+
+    // Remove a scan report viewer
+    function removeViewer(oldViewer) {
+        const newViewers = viewers.filter(el => el.username !== oldViewer)
+        setViewers(newViewers)
     }
 
     // Update scan report editors
-    function handleEditorsInput(newEditors) {
-        console.log(newEditors)
+    function addEditor(newEditor) {
+        newEditor = usersList.find(el => el.username === newEditor)
+        setEditors(previous => [...previous, newEditor])
+    }
+
+    // Remove a scan report viewer
+    function removeEditor(oldEditor) {
+        const newEditors = editors.filter(el => el.username !== oldEditor)
+        setEditors(newEditors)
     }
 
     if (loadingMessage) {
@@ -180,7 +194,8 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     isDisabled={!isAdmin}
                     selectOptions={usersList.map(item => item.username)}
                     currentSelections={viewers.map(item => item.username)}
-                    handleInput={handleViewersInput}
+                    handleInput={addViewer}
+                    handleDelete={removeViewer}
                 />
             }
             <CCMultiSelectInput
@@ -189,7 +204,8 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 isDisabled={!isAdmin}
                 selectOptions={usersList.map(item => item.username)}
                 currentSelections={editors.map(item => item.username)}
-                handleInput={handleEditorsInput}
+                handleInput={addEditor}
+                handleDelete={removeEditor}
             />
             <CCSelectInput
                 id={"scanreport-dataset"}
