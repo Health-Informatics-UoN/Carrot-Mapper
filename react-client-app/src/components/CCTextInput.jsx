@@ -22,7 +22,7 @@ const CCTextInput = (props) => {
         throw "`handleInput` must be a function."
     }
     return (
-        <FormControl mt={props.mt} isInvalid={props.formErrors && props.formErrors.length > 0}>
+        <FormControl mt={4} isInvalid={props.formErrors && props.formErrors.length > 0}>
             <FormLabel htmlFor={props.id} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
             {props.handleInput !== undefined && typeof (props.handleInput) === 'function' ?
                 <Input

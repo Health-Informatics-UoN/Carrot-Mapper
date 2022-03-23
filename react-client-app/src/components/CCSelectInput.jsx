@@ -26,7 +26,7 @@ const CCSelectInput = (props) => {
     }
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
-            <FormLabel htmlFor={props.id} w="200px">{props.label}</FormLabel>
+            <FormLabel htmlFor={props.id} w="200px" style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
             {props.handleInput !== undefined && typeof (props.handleInput) === 'function' ?
                 <Select
                     value={props.value}
