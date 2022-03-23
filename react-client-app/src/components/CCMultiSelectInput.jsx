@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React from 'react'
+import ConceptTag from './ConceptTag'
 import {
     Flex, FormControl, FormLabel, FormErrorMessage, Select
 } from "@chakra-ui/react"
@@ -12,6 +13,7 @@ const CCMultiSelectInput = (props) => {
      *  label (String): the text for the label.
      *  selectOptions (Array): the options to choose from.
      *  handleInput (Function): the action to perform when the input changes.
+     *  handleDelete (Function): the action to perform to remove a selection.
      * 
      * Optional args:
      *  currentSelections (Array): choices that are already selected. Default: `[]`
@@ -31,29 +33,25 @@ const CCMultiSelectInput = (props) => {
     if (!props.handleInput || typeof (props.handleInput) !== 'function') {
         throw "`handleInput` must be a function."
     }
-
-    // Check optional arguments
-    const [currentSelections, setCurrentSelections] = useState(
-        props.currentSelections ? props.currentSelections : []
-    )
+    // Check handleDelete is defined and a functions
+    if (!props.handleDelete || typeof (props.handleDelete) !== 'function') {
+        throw "`handleDelete` must be a function."
+    }
 
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
             <Flex flexWrap={true}>
-                <FormLabel htmlFor={props.id} w="200px" style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
-                {currentSelections.map((item, index) => {
+                <FormLabel htmlFor={props.id} mr={4} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
+                {props.currentSelections.map((item, index) => {
                     return (
-                        <div key={index} style={{ marginTop: "0px" }}>
+                        <div key={index} style={{ marginTop: "0px", marginBottom: "10px" }}>
                             <ConceptTag
                                 conceptName={item}
                                 conceptId={""}
                                 conceptIdentifier={item}
                                 itemId={item}
-                                handleDelete={
-                                    setCurrentSelections(
-                                        () => currentSelections.filter(element => element !== item)
-                                    )
-                                }
+                                handleDelete={() => props.handleDelete(item)}
+                                readOnly={props.isDisabled}
                             />
                         </div>
                     )
@@ -64,7 +62,7 @@ const CCMultiSelectInput = (props) => {
                     value={"---Select---"}
                     isReadOnly={true}
                     onChange={
-                        (e) => props.handleInput(currentSelections)
+                        (e) => props.handleInput(e.target.value)
                     }
                     isDisabled={props.isDisabled ? props.isDisabled : false}
                 >
@@ -74,10 +72,11 @@ const CCMultiSelectInput = (props) => {
                     )}
                 </Select>
             }
-            {props.formErrors && props.formErrors.length > 0 &&
+            {
+                props.formErrors && props.formErrors.length > 0 &&
                 <FormErrorMessage>{props.formErrors[0]}</FormErrorMessage>
             }
-        </FormControl>
+        </FormControl >
     )
 }
 
