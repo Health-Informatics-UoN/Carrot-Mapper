@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Flex, FormControl, FormLabel, FormErrorMessage, Select
 } from "@chakra-ui/react"
@@ -31,15 +31,16 @@ const CCMultiSelectInput = (props) => {
     if (!props.handleInput || typeof (props.handleInput) !== 'function') {
         throw "`handleInput` must be a function."
     }
-    // Check handleInput is defined and a functions
-    if (!props.handleDelete || typeof (props.handleDelete) !== 'function') {
-        throw "`handleDelete` must be a function."
-    }
+
+    // Check optional arguments
+    const [currentSelections, setCurrentSelections] = useState(
+        props.currentSelections ? props.currentSelections : []
+    )
 
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
             <Flex flexWrap={true}>
-                <FormLabel htmlFor={props.id} w="200px">{props.label}</FormLabel>
+                <FormLabel htmlFor={props.id} w="200px" style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
                 {currentSelections.map((item, index) => {
                     return (
                         <div key={index} style={{ marginTop: "0px" }}>
@@ -48,24 +49,31 @@ const CCMultiSelectInput = (props) => {
                                 conceptId={""}
                                 conceptIdentifier={item}
                                 itemId={item}
-                                handleDelete={props.handleDelete}
+                                handleDelete={
+                                    setCurrentSelections(
+                                        () => currentSelections.filter(element => element !== item)
+                                    )
+                                }
                             />
                         </div>
                     )
                 })}
             </Flex>
-            <Select
-                value={"---Select---"}
-                isReadOnly={true}
-                onChange={
-                    (option) => props.handleInput(option.target.value)
-                }
-                isDisabled={props.isDisabled ? props.isDisabled : false}
-            >
-                {props.selectOptions.map((item, index) =>
-                    <option key={index} value={item}>{item}</option>
-                )}
-            </Select>
+            {!props.isDisabled &&
+                <Select
+                    value={"---Select---"}
+                    isReadOnly={true}
+                    onChange={
+                        (e) => props.handleInput(currentSelections)
+                    }
+                    isDisabled={props.isDisabled ? props.isDisabled : false}
+                >
+                    <option disabled>---Select---</option>
+                    {props.selectOptions.map((item, index) =>
+                        <option key={index} value={item}>{item}</option>
+                    )}
+                </Select>
+            }
             {props.formErrors && props.formErrors.length > 0 &&
                 <FormErrorMessage>{props.formErrors[0]}</FormErrorMessage>
             }
