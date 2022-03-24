@@ -49,6 +49,13 @@ Please append a line to the changelog for each change made.
     1. Create a migration adding a `ManyToManyField` called `editors` to **Dataset** linking it to `settings.AUTH_USER_MODEL`.
     2. Create a migration adding a `ManyToManyField` called `editors` to **ScanReport** linking it to `settings.AUTH_USER_MODEL`.
 * Added `arraysEqual` function to the React code to test arrays have all the same values.
+* Created new reusable form components:
+  - `CCTextInput`: for text inputs.
+  - `CCSwitchInput`: for boolean switches.
+  - `CCSelectInput`: for selecting a single choice.
+  - `CCMultiSelectInput`: for selecting multiple choices.
+* Added admin form for Scan Reports on frontend.
+  - Found at `/scanreports/<scanreport_id>/admin`.
 
 ## v1.4.0 was released 02/02/22
 
