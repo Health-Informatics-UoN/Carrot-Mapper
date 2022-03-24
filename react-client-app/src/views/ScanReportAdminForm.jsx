@@ -90,6 +90,42 @@ const ScanReportAdminForm = ({ setTitle }) => {
         [], // Required to stop this effect sending infinite requests
     )
 
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, dataset: undefined })
+        },
+        [scanReport.dataset],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, author: undefined })
+        },
+        [author],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, viewers: undefined })
+        },
+        [viewers],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, editors: undefined })
+        },
+        [editors],
+    )
+
+    useEffect(
+        async () => {
+            setFormErrors({ ...formErrors, parent_dataset: undefined })
+        },
+        [selectedDataset],
+    )
+
+
 
     // Update scan report dataset (the actual name)
     function handleNameInput(newValue) {
@@ -105,7 +141,6 @@ const ScanReportAdminForm = ({ setTitle }) => {
     // Update scan report parent dataset
     function handleDatasetSelect(newValue) {
         const dataset = datasets.find(el => el.name === newValue)
-        console.log(dataset)
         setSelectedDataset(dataset)
         setScanReport({ ...scanReport, parent_dataset: dataset.id })
     }
@@ -113,7 +148,6 @@ const ScanReportAdminForm = ({ setTitle }) => {
     // Update scan report author
     function handleAuthorSelect(newValue) {
         const newAuthor = usersList.find(el => el.username === newValue)
-        console.log(newAuthor)
         setAuthor(newAuthor)
         setScanReport({ ...scanReport, author: newAuthor.id })
     }
@@ -219,7 +253,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Name"}
                 value={scanReport.dataset}
                 handleInput={handleNameInput}
-                // isDisabled={!isAdmin}
+                isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
             />
             <CCSelectInput
@@ -249,6 +283,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     currentSelections={viewers.map(item => item.username)}
                     handleInput={addViewer}
                     handleDelete={removeViewer}
+                    formErrors={formErrors.viewers}
                 />
             }
             <CCMultiSelectInput
@@ -259,6 +294,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 currentSelections={editors.map(item => item.username)}
                 handleInput={addEditor}
                 handleDelete={removeEditor}
+                formErrors={formErrors.editors}
             />
             <CCSelectInput
                 id={"scanreport-dataset"}
@@ -267,9 +303,8 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 selectOptions={datasets.map(item => item.name)}
                 handleInput={handleDatasetSelect}
                 isDisabled={!isAdmin}
-                formErrors={formErrors.dataset}
+                formErrors={formErrors.parent_dataset}
             />
-            <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             {isAdmin &&
                 <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
             }
