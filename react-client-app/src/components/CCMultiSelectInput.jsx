@@ -18,6 +18,7 @@ const CCMultiSelectInput = (props) => {
      * Optional args:
      *  currentSelections (Array): choices that are already selected. Default: `[]`
      *  isDisabled (Boolean): input is disabled or not. Default: `false`
+     *  formErrors (Array): the errors to display when the input is invalid. Default: `undefined`
      */
     // Check for required arguments
     if (!props.id) {
