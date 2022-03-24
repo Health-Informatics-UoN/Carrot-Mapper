@@ -223,9 +223,9 @@ urlpatterns = [
         name="scan-report-form",
     ),
     path(
-        "scanreports/<int:pk>/admin",
+        "scanreports/<int:pk>/details",
         views.scanreport_admin_page,
-        name="scan-report-admin-form",
+        name="scan-report-details-form",
     ),
     path(
         "scanreports/<int:pk>/assertions/",
