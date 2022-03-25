@@ -329,7 +329,7 @@ const MappingTbl = () => {
                     destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} />
             </MappingModal>
             <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
-                <ConceptAnalysis data={data} values={values} filters={filters} />
+                <ConceptAnalysis data={data} />
             </AnalysisModal>
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>

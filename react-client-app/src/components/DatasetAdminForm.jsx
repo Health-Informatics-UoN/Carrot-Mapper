@@ -10,7 +10,8 @@ import { useGet, usePatch, useDelete } from '../api/values'
 import { arraysEqual } from '../utils/arrayFuncs'
 
 const DatasetAdminForm = ({ setTitle }) => {
-    let datasetId = window.location.pathname.split("/").pop()
+    let pathArray = window.location.pathname.split("/")
+    let datasetId = pathArray[pathArray.length-2]
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     // Set up component state
@@ -197,6 +198,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 description: 'Dataset updated'
             })
             onOpen()
+            window.location.reload(true)
         } catch (error) {
             const error_response = await error.json()
             setUploadLoading(false)
@@ -234,7 +236,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </ScaleFade>
             }
 
-            <PageHeading text={`Admin Page for Dataset #${dataset.id}`} />
+            <PageHeading text={`Details Page - Dataset #${dataset.id}`} />
 
             <FormControl mt={4} isInvalid={formErrors.name && formErrors.name.length > 0}>
                 <FormLabel htmlFor="dataset-name" style={{ fontWeight: "bold" }}>Name:</FormLabel>
@@ -323,7 +325,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {editors.map((viewer, index) => {
                             return (
                                 <div key={index} style={{ marginTop: "0px" }}>
-                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} />
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} 
+                                    readOnly={!isAdmin}/>
                                 </div>
                             )
                         })}
@@ -356,7 +359,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {admins.map((viewer, index) => {
                             return (
                                 <div key={index} style={{ marginTop: "0px" }}>
-                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} />
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} 
+                                    readOnly={!isAdmin}/>
                                 </div>
                             )
                         })}
