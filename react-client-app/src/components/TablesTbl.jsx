@@ -130,7 +130,14 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
-            <Link href={"/scanreports/" + value + "/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
+            <HStack>
+                <Link href={"/scanreports/" + value + "/mapping_rules/"}>
+                    <Button variant="blue" my="10px">Go to Rules</Button>
+                </Link>
+                <Link href={"/scanreports/" + value + "/details"}>
+                    <Button variant="blue" my="10px">View Details</Button>
+                </Link>
+            </HStack>
         </div>
     );
 }
