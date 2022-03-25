@@ -56,6 +56,8 @@ Please append a line to the changelog for each change made.
   - `CCMultiSelectInput`: for selecting multiple choices.
 * Added admin form for Scan Reports on frontend.
   - Found at `/scanreports/<scanreport_id>/details`.
+* Added link to scan report details page to scan report list page.
+* Added link to scan report details page to scan report tables page.
 
 ## v1.4.0 was released 02/02/22
 
