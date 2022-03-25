@@ -1747,6 +1747,16 @@ def dataset_admin_page(request, pk):
 
     return render(request, "mapping/admin_dataset_form.html", args)
 
+@login_required
+def dataset_retrieve_page(request, pk):
+    args = {}
+    if ds := Dataset.objects.get(id=pk):
+        args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+    else:
+        args["is_admin"] = False
+
+    return render(request, "mapping/datasets_content.html", args)
+
 
 @login_required
 def scanreport_admin_page(request, pk):

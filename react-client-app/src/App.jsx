@@ -14,6 +14,7 @@ import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
+import DatasetsContent from './components/DatasetsContent'
 const App = ({ page }) => {
 
     const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {
@@ -268,6 +269,8 @@ const App = ({ page }) => {
                 return <UploadScanReport setTitle={setTitle} />
             case "Dataset Admin":
                 return <DatasetAdminForm setTitle={setTitle} />
+            case "Dataset Content":
+                return <DatasetsContent setTitle={setTitle}/>
             case "Scan Report Admin":
                 return <ScanReportAdminForm setTitle={setTitle} />
             default:
