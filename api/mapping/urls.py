@@ -153,8 +153,13 @@ urlpatterns = [
     ),
     path(
         r"api/datasets/<int:pk>",
-        views.dataset_retrieve_page,
+        views.DatasetRetrieveView.as_view(),
         name="dataset_retrieve",
+    ),
+    path(
+        r"api/dataset/<int:pk>",
+        views.dataset_content_page,
+        name="dataset_content",
     ),
     path(
         r"api/datasets/update/<int:pk>",
