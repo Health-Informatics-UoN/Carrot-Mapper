@@ -272,6 +272,8 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportEditSerializer
         return super().get_serializer_class()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"parent_dataset": ["exact"]}
 
     def get_queryset(self):
         """
