@@ -319,17 +319,17 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportRetrieveView(generics.RetrieveAPIView):
-    """
-    This view should return a single scanreport from an id
-    """
+# class ScanReportRetrieveView(generics.RetrieveAPIView):
+#     """
+#     This view should return a single scanreport from an id
+#     """
 
-    serializer_class = ScanReportViewSerializer
-    permission_classes = [CanView | CanAdmin | CanEdit]
+#     serializer_class = ScanReportViewSerializer
+#     permission_classes = [CanView | CanAdmin | CanEdit]
 
-    def get_queryset(self):
-        qs = ScanReport.objects.filter(id=self.kwargs["pk"])
-        return qs
+#     def get_queryset(self):
+#         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
+#         return qs
 
 
 class DatasetListView(generics.ListAPIView):
