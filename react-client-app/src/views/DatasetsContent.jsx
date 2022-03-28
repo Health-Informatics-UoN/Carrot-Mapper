@@ -306,6 +306,7 @@ const DatasetsContent = (props) => {
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
                         <Th></Th>
+                        <Th></Th>
                         <Th><Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Status" readOnly onChange={(option) => setStatusFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Status</option>
                             {statuses.sort((a, b) => a.localeCompare(b))
@@ -346,10 +347,10 @@ const DatasetsContent = (props) => {
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
-                                    <Flex align="center">
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
+                                </Td>
+                                <Td >
                                     <Link href={"/datasets/" + datasetId + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
-                                    </Flex>
                                 </Td>
                                 <Td >
                                     {item.statusLoading === true ?
