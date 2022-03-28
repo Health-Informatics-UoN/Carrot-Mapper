@@ -314,7 +314,6 @@ const DatasetsContent = (props) => {
                                 )}
                         </Select></Th>
                         <Th></Th>
-                        <Th></Th>
                         <Th p="0" style={{ fontSize: "16px", textTransform: "none" }} >
                             <HStack>
                                 <Text mr="10px">Archive</Text>
@@ -347,10 +346,10 @@ const DatasetsContent = (props) => {
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
+                                    <Flex align="center">
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
-                                </Td>
-                                <Td maxW={"100px"}>
-                                <Link href={"/datasets/" + datasetId + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
+                                    <Link href={"/datasets/" + datasetId + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
+                                    </Flex>
                                 </Td>
                                 <Td >
                                     {item.statusLoading === true ?
