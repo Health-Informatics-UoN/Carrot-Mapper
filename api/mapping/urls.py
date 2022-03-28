@@ -161,7 +161,6 @@ urlpatterns = [
         views.DatasetRetrieveView.as_view(),
         name="dataset_retrieve",
     ),
-    
     path(
         r"api/datasets/update/<int:pk>",
         views.DatasetUpdateView.as_view(),
