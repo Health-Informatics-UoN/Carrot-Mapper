@@ -252,6 +252,8 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"parent_dataset": ["exact"]}
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
@@ -272,8 +274,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportEditSerializer
         return super().get_serializer_class()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"parent_dataset": ["exact"]}
+    
 
     def get_queryset(self):
         """

@@ -14,7 +14,7 @@ import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
-import DatasetsContent from './components/DatasetsContent'
+import DatasetsContent from './views/DatasetsContent'
 const App = ({ page }) => {
 
     const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {

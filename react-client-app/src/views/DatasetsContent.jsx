@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
-import PageHeading from './PageHeading'
-import ConceptTag from './ConceptTag'
+import PageHeading from '../components/PageHeading'
+import ConceptTag from '../components/ConceptTag'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
@@ -27,7 +27,7 @@ const DatasetsContent = (props) => {
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
-        window.location.search == '?filter=archived' ? active.current = false : active.current = true
+        window.location.search === '?filter=archived' ? active.current = false : active.current = true
         // get scan reports and sort by id
         let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
@@ -58,10 +58,10 @@ const DatasetsContent = (props) => {
         const authors = [].concat.apply([], promises[0]);
         const datasets = [].concat.apply([], promises[1]);
         authors.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.author == element.id ? { ...scanreport, author: element } : scanreport);
+            scanreports = scanreports.map((scanreport) => scanreport.author === element.id ? { ...scanreport, author: element } : scanreport);
         });
         datasets.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset == element.id ? { ...scanreport, parent_dataset: element } : scanreport);
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset === element.id ? { ...scanreport, parent_dataset: element } : scanreport);
         });
         const dataPartnerObject = {};
         datasets.map((dataset) => {
@@ -75,12 +75,12 @@ const DatasetsContent = (props) => {
         let dataPartners = await Promise.all(dataPartnerPromises)
         dataPartners = dataPartners[0]
         dataPartners.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport);
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner === element.id ? { ...scanreport, data_partner: element } : scanreport);
         });
         // split data into active reports and archived report
         data.current = scanreports
-        activeReports.current = scanreports.filter(scanreport => scanreport.hidden == false)
-        archivedReports.current = scanreports.filter(scanreport => scanreport.hidden == true)
+        activeReports.current = scanreports.filter(scanreport => scanreport.hidden === false)
+        archivedReports.current = scanreports.filter(scanreport => scanreport.hidden === true)
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
         setLoadingMessage(null)
@@ -92,27 +92,27 @@ const DatasetsContent = (props) => {
             countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
         }
         const countStats = [].concat.apply([], await Promise.all(countPromises))
-        data.current = data.current.map(report => ({ ...report, ...countStats.find(item => item.scanreport == report.id) }))
+        data.current = data.current.map(report => ({ ...report, ...countStats.find(item => item.scanreport === report.id) }))
 
-        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
-        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden === false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden === true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
     const activateOrArchiveReport = (id, theIndicator) => {
-        setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
-        data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
+        setDisplayedData(currentData => currentData.map(scanreport => scanreport.id === id ? { ...scanreport, loading: true } : scanreport))
+        data.current = data.current.map(scanreport => scanreport.id === id ? { ...scanreport, hidden: theIndicator } : scanreport)
         const patchData = { hidden: theIndicator }
         usePatch(`/scanreports/${id}/`, patchData).then(res => {
-            activeReports.current = data.current.filter(scanreport => scanreport.hidden == false)
-            archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
+            activeReports.current = data.current.filter(scanreport => scanreport.hidden === false)
+            archivedReports.current = data.current.filter(scanreport => scanreport.hidden === true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
         })
     }
     // show active scan reports and change url when 'Active Reports' button is pressed
     const goToActive = () => {
-        if (active.current == false) {
+        if (active.current === false) {
             active.current = true
             setDisplayedData(activeReports.current)
             window.history.pushState({}, '', '/scanreports/')
@@ -121,7 +121,7 @@ const DatasetsContent = (props) => {
     }
     // show archived scan reports and change url when 'Archived Reports' button is pressed
     const goToArchived = () => {
-        if (active.current == true) {
+        if (active.current === true) {
             active.current = false
             setDisplayedData(archivedReports.current)
             window.history.pushState({}, '', '/scanreports/?filter=archived')
@@ -132,20 +132,20 @@ const DatasetsContent = (props) => {
     // apply currently set filters to data before displaying
     const applyFilters = (variable) => {
         let newData = variable.map(scanreport => scanreport)
-        if (authorFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.author.username == authorFilter)
+        if (authorFilter !=="All") {
+            newData = newData.filter(scanreport => scanreport.author.username === authorFilter)
         }
-        if (datapartnerFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.data_partner.name == datapartnerFilter)
+        if (datapartnerFilter !=="All") {
+            newData = newData.filter(scanreport => scanreport.data_partner.name === datapartnerFilter)
         }
-        if (datasetFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.parent_dataset.name == datasetFilter)
+        if (datasetFilter !=="All") {
+            newData = newData.filter(scanreport => scanreport.parent_dataset.name === datasetFilter)
         }
-        if (nameFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.dataset == nameFilter)
+        if (nameFilter !=="All") {
+            newData = newData.filter(scanreport => scanreport.dataset === nameFilter)
         }
-        if (statusFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.status == statusFilter)
+        if (statusFilter !=="All") {
+            newData = newData.filter(scanreport => scanreport.status === statusFilter)
         }
         return newData
     }
@@ -170,27 +170,27 @@ const DatasetsContent = (props) => {
     }
     // when the back button is pressed, display correct data depending on url
     window.onpopstate = function (event) {
-        window.location.search == '?filter=archived' ? active.current = false : active.current = true
+        window.location.search === '?filter=archived' ? active.current = false : active.current = true
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
     };
     // set the status of a scan report by using a patch request then reset the page data
     const setStatus = (id, status) => {
         const patchData = { status: status };
-        data.current = data.current.map((item) => item.id == id ? { ...item, statusLoading: true } : item);
-        activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
-        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+        data.current = data.current.map((item) => item.id === id ? { ...item, statusLoading: true } : item);
+        activeReports.current = data.current.filter((scanreport) => scanreport.hidden === false);
+        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden === true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         usePatch(`/scanreports/${id}/`, patchData).then((res) => {
-            data.current = data.current.map((item) => item.id == id ? { ...item, status, statusLoading: false } : item);
-            activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
-            archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
+            data.current = data.current.map((item) => item.id === id ? { ...item, status, statusLoading: false } : item);
+            activeReports.current = data.current.filter((scanreport) => scanreport.hidden === false);
+            archivedReports.current = data.current.filter((scanreport) => scanreport.hidden === true);
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
         });
     }
     const mapStatus = (status) => {
         // get the list of statuses from django app and find the label of the status with a specific name
-        return JSON.parse(window.status).find(item => item.id == status).label
+        return JSON.parse(window.status).find(item => item.id === status).label
     }
     const mapStatusColour = (status) => {
         // get colour of specified status name
@@ -249,12 +249,11 @@ const DatasetsContent = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
-            <Link href={"/datasets/"+ datasetId + "/details"}><Button variant="blue" ml="10px" my="10px">Details</Button></Link>
+            <Link href={"/datasets/"+ datasetId + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
-                    if (filter.filter == "All") {
+                    if (filter.filter === "All") {
                         return null
                     }
                     else {
@@ -350,7 +349,7 @@ const DatasetsContent = (props) => {
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
                                 </Td>
                                 <Td >
-                                    {item.statusLoading == true ?
+                                    {item.statusLoading === true ?
                                         <Flex padding="30px">
                                             <Spinner />
                                             <Flex marginLeft="10px">Loading status</Flex>
@@ -387,9 +386,9 @@ const DatasetsContent = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td maxW={"100px"}>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
-                                        <Td maxW={"100px"}>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
-                                        <Td maxW={"100px"}>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreporttable_count !==undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportfield_count !==undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportmappingrule_count !==undefined ? item.scanreportmappingrule_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>
@@ -398,7 +397,7 @@ const DatasetsContent = (props) => {
                     }
                 </Tbody>
             </Table>
-            {applyFilters(displayedData).length == 0 &&
+            {applyFilters(displayedData).length === 0 &&
                 <Flex marginLeft="10px">No Scan Reports available</Flex>
             }
         </div>
