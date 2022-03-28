@@ -8,7 +8,7 @@ import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui
 
 const DatasetsContent = (props) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length-2]
+    let datasetId = pathArray[pathArray.length-1]
     const active = useRef(true)
     const data = useRef(null);
     const activeReports = useRef(null);
