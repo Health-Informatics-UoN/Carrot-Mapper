@@ -58,6 +58,8 @@ Please append a line to the changelog for each change made.
   - Found at `/scanreports/<scanreport_id>/details`.
 * Added link to scan report details page to scan report list page.
 * Added link to scan report details page to scan report tables page.
+* Added Datasets content page which displays all the scanreports in a given dataset
+* Change the dataset link to go to the dataset content page
 
 ## v1.4.0 was released 02/02/22
 
