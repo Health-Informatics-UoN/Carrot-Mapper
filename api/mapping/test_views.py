@@ -389,6 +389,22 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
+        # user who is not an admin the parent dataset
+        non_admin_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_admin_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(non_admin_user)
+        non_admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_admin_response.data])
+        expected_objs = [self.scanreport1.id]
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
     def test_editor_perms(self):
         pass
 
