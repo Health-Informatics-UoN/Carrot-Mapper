@@ -36,9 +36,26 @@ Please append a line to the changelog for each change made.
 * Removed NLP columns on tables
 * Use `logging` module in `ProcessQueue`.
 * Added "Analyse Concepts" button to Mapping Rules page which looks through each SRs mapping rules and displays any ancestors/descendants that may appear in other Scan Reports, along with a link to the field/value the ancestor/descendant is mapped to.
+* Removed ajax functions and replaced with react fetch requests
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
   * Found at `/datasets/admin/<dataset_id>`.
+* Implemented editors and associated permissions to Datasets and Scan Reports.
+  - Editors of Datasets cannot add or remove viewers, editors or admins. They cannot
+  delete Datasets, either.
+  - Editors of Scan Reports cannot add or remove viewers, editors. They cannot
+  delete Scan Reports, either.
+  - **IMPORTANT!** Steps to enact this change:
+    1. Create a migration adding a `ManyToManyField` called `editors` to **Dataset** linking it to `settings.AUTH_USER_MODEL`.
+    2. Create a migration adding a `ManyToManyField` called `editors` to **ScanReport** linking it to `settings.AUTH_USER_MODEL`.
+* Added `arraysEqual` function to the React code to test arrays have all the same values.
+* Created new reusable form components:
+  - `CCTextInput`: for text inputs.
+  - `CCSwitchInput`: for boolean switches.
+  - `CCSelectInput`: for selecting a single choice.
+  - `CCMultiSelectInput`: for selecting multiple choices.
+* Added admin form for Scan Reports on frontend.
+  - Found at `/scanreports/<scanreport_id>/details`.
 
 ## v1.4.0 was released 02/02/22
 

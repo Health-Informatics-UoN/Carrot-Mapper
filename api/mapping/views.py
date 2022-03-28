@@ -19,7 +19,8 @@ from rest_framework.renderers import JSONRenderer
 
 from .serializers import (
     GetRulesAnalysis,
-    ScanReportSerializer,
+    ScanReportEditSerializer,
+    ScanReportViewSerializer,
     ScanReportTableSerializer,
     ScanReportFieldSerializer,
     ScanReportValueSerializer,
@@ -33,7 +34,8 @@ from .serializers import (
     GetRulesJSON,
     GetRulesList,
     UserSerializer,
-    DatasetSerializer,
+    DatasetEditSerializer,
+    DatasetViewSerializer,
     ProjectSerializer,
     ProjectNameSerializer,
 )
@@ -112,10 +114,10 @@ from .models import (
     VisibilityChoices,
 )
 from .permissions import (
-    CanEditScanReport,
     CanViewProject,
     CanView,
-    CanAdminDataset,
+    CanAdmin,
+    CanEdit,
 )
 from .services import download_data_dictionary_blob
 
@@ -250,7 +252,26 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
-    serializer_class = ScanReportSerializer
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportViewSerializer
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportEditSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
         """
@@ -300,8 +321,8 @@ class ScanReportRetrieveView(generics.RetrieveAPIView):
     This view should return a single scanreport from an id
     """
 
-    serializer_class = ScanReportSerializer
-    permission_classes = [CanView | CanEditScanReport]
+    serializer_class = ScanReportViewSerializer
+    permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
         qs = ScanReport.objects.filter(id=self.kwargs["pk"])
@@ -313,7 +334,7 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    serializer_class = DatasetSerializer
+    serializer_class = DatasetViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
@@ -344,8 +365,11 @@ class DatasetListView(generics.ListAPIView):
 
 
 class DatasetCreateView(generics.CreateAPIView):
-    serializer_class = DatasetSerializer
+    serializer_class = DatasetViewSerializer
     queryset = Dataset.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(admins=[self.request.user])
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -353,8 +377,8 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     This view should return a single dataset from an id
     """
 
-    serializer_class = DatasetSerializer
-    permission_classes = [CanView | CanAdminDataset]
+    serializer_class = DatasetViewSerializer
+    permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -362,9 +386,9 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
 
 
 class DatasetUpdateView(generics.UpdateAPIView):
-    serializer_class = DatasetSerializer
-    # User must be able to view and be an admin
-    permission_classes = [CanView & CanAdminDataset]
+    serializer_class = DatasetEditSerializer
+    # User must be able to view and be an admin or an editor
+    permission_classes = [CanView & (CanAdmin | CanEdit)]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -372,9 +396,9 @@ class DatasetUpdateView(generics.UpdateAPIView):
 
 
 class DatasetDeleteView(generics.DestroyAPIView):
-    serializer_class = DatasetSerializer
+    serializer_class = DatasetEditSerializer
     # User must be able to view and be an admin
-    permission_classes = [CanView & CanAdminDataset]
+    permission_classes = [CanView & CanAdmin]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
@@ -384,7 +408,18 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
-    permission_classes = [CanView]
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -412,7 +447,18 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
-    permission_classes = [CanView]
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -558,7 +604,18 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
     serializer_class = ScanReportValueSerializer
-    permission_classes = [CanView]
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -733,7 +790,14 @@ class ScanReportTableListView(ListView):
     model = ScanReportTable
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download-dd") is not None:
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+        except ValueError as e:
+            body = {}
+        if (
+            request.POST.get("download-dd") is not None
+            or body.get("download-dd", None) is not None
+        ):
             qs = self.get_queryset()
             scan_report = self.get_queryset()[0].scan_report
             return download_data_dictionary_blob(
@@ -970,13 +1034,26 @@ class StructuralMappingTableListView(ListView):
     template_name = "mapping/mappingrulesscanreport_list.html"
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get("download_rules") is not None:
+        try:
+            body = json.loads(request.body.decode("utf-8"))
+        except ValueError as e:
+            body = {}
+        if (
+            request.POST.get("download_rules") is not None
+            or body.get("download_rules", None) is not None
+        ):
             qs = self.get_queryset()
             return download_mapping_rules(request, qs)
-        elif request.POST.get("download_rules_as_csv") is not None:
+        elif (
+            request.POST.get("download_rules_as_csv") is not None
+            or body.get("download_rules_as_csv", None) is not None
+        ):
             qs = self.get_queryset()
             return download_mapping_rules_as_csv(request, qs)
-        elif request.POST.get("refresh_rules") is not None:
+        elif (
+            request.POST.get("refresh_rules") is not None
+            or body.get("refresh_rules", None) is not None
+        ):
             # remove all existing rules first
             remove_mapping_rules(request, self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
@@ -1004,7 +1081,10 @@ class StructuralMappingTableListView(ListView):
                 )
             return redirect(request.path)
 
-        elif request.POST.get("get_svg") is not None:
+        elif (
+            request.POST.get("get_svg") is not None
+            or body.get("get_svg", None) is not None
+        ):
             qs = self.get_queryset()
             return view_mapping_rules(request, qs)
         else:
@@ -1659,4 +1739,25 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 
 @login_required
 def dataset_admin_page(request, pk):
-    return render(request, "mapping/admin_dataset_form.html")
+    args = {}
+    if ds := Dataset.objects.get(id=pk):
+        args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+    else:
+        args["is_admin"] = False
+
+    return render(request, "mapping/admin_dataset_form.html", args)
+
+
+@login_required
+def scanreport_admin_page(request, pk):
+    args = {}
+    if sr := ScanReport.objects.get(id=pk):
+        is_admin = (
+            sr.author.id == request.user.id
+            or sr.parent_dataset.admins.filter(id=request.user.id).exists()
+        )
+        args["is_admin"] = is_admin
+    else:
+        args["is_admin"] = False
+
+    return render(request, "mapping/admin_scanreport_form.html", args)

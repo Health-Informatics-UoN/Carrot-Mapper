@@ -2,7 +2,7 @@ import { Tag, Text, TagCloseButton, Wrap, Tooltip } from '@chakra-ui/react';
 import React, { useState } from 'react'
 import PropTypes from 'prop-types';
 
-const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleDelete, backgroundColor, creation_type }) => {
+const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleDelete, backgroundColor, creation_type, readOnly = false }) => {
     // pass id of concept and determine background colour depending on the id
     const tagColour = (id) => {
         switch (id) {
@@ -36,7 +36,7 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
         }
     }
 
-    const mapCreationTypeToString = (type)=>{
+    const mapCreationTypeToString = (type) => {
         let str
         switch (type) {
             case "V":
@@ -55,7 +55,7 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
         return str
     }
     return (
-        <Tooltip label={creation_type?`${conceptId} ${conceptName} (${mapCreationTypeToString(creation_type)})`:null}>
+        <Tooltip label={creation_type ? `${conceptId} ${conceptName} (${mapCreationTypeToString(creation_type)})` : null}>
             <Tag
                 size='lg'
                 key={conceptId}
@@ -64,9 +64,11 @@ const ConceptTag = ({ conceptId, conceptIdentifier, conceptName, itemId, handleD
                 backgroundColor={tagColour(conceptId)}
             >
                 <Text w="max-content" ml="8px" py="4px">{conceptId + " " + conceptName} {creation_type ? `(${creation_type.charAt(0)})` : ""}</Text>
-                <Wrap direction='right'>
-                    <TagCloseButton onClick={() => { handleDelete(itemId, conceptIdentifier) }} />
-                </Wrap>
+                {!readOnly &&
+                    <Wrap direction='right'>
+                        <TagCloseButton onClick={() => { handleDelete(itemId, conceptIdentifier) }} />
+                    </Wrap>
+                }
 
 
             </Tag>

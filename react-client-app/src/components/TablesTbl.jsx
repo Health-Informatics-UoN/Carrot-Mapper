@@ -15,8 +15,7 @@ import {
 
 } from "@chakra-ui/react"
 
-
-import { getScanReportTableRows } from '../api/values'
+import { getScanReportTableRows, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
 
 
@@ -40,11 +39,48 @@ const TablesTbl = () => {
 
     const download_scan_report = () => {
         downloadXLSXFile()
-        
+
     };
 
-    const download_data_dictionary = () => {
-        window.download_data_dictionary()
+    const download_data_dictionary = async () => {
+        const response = await usePost(window.location.href, { "download-dd": true }, false);
+        var type = response.headers['content-type'];
+        var blob = new Blob([response.data], { type: type });
+        var filename = "";
+        var disposition = response.headers['content-disposition'];
+        if (disposition && disposition.indexOf('attachment') !== -1) {
+            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            var matches = filenameRegex.exec(disposition);
+            if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+        }
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+            window.navigator.msSaveBlob(blob, filename);
+        }
+        else {
+            var URL = window.URL || window.webkitURL;
+            var downloadUrl = URL.createObjectURL(blob);
+            if (filename) {
+                // use HTML5 a[download] attribute to specify filename
+                var a = document.createElement("a");
+                // safari doesn't support this yet
+                if (typeof a.download === 'undefined') {
+                    window.location.href = downloadUrl;
+                }
+                else {
+                    a.href = downloadUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                }
+            }
+            else {
+                //window.location = downloadUrl;
+            }
+            setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+
+        }
+
     };
 
     if (loading) {
@@ -61,8 +97,8 @@ const TablesTbl = () => {
     return (
         <div >
             <HStack my="10px">
-            <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
-            <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
+                <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
+                <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
 
             </HStack>
 
@@ -94,7 +130,7 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
-            <Link href={"/scanreports/"+value+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
+            <Link href={"/scanreports/" + value + "/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
         </div>
     );
 }
