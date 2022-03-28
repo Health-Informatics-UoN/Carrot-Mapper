@@ -250,7 +250,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -292,7 +292,7 @@ const ScanReportTbl = (props) => {
                                     <option key={index} value={item}>{item}</option>
                                 )}
                         </Select></Th>
-                        
+
                         <Th >
                             <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
                                 <option style={{ fontWeight: "bold" }} disabled>Added by</option>
@@ -303,6 +303,7 @@ const ScanReportTbl = (props) => {
                             </Select>
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
+                        <Th></Th>
                         <Th></Th>
                         <Th><Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Status" readOnly onChange={(option) => setStatusFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Status</option>
@@ -339,12 +340,15 @@ const ScanReportTbl = (props) => {
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id+ "/details"}>{item.parent_dataset.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id + "/details"}>{item.parent_dataset.name}</Link></Td>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
+                                </Td>
+                                <Td >
+                                    <Link href={"/scanreports/" + item.id + "/details"}><Button variant="blue">Details</Button></Link>
                                 </Td>
                                 <Td >
                                     {item.statusLoading == true ?

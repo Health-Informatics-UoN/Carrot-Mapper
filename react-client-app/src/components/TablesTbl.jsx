@@ -8,6 +8,7 @@ import {
     Td,
     TableCaption,
     Flex,
+    Spacer,
     Spinner,
     Link,
     Button,
@@ -96,11 +97,21 @@ const TablesTbl = () => {
     }
     return (
         <div >
-            <HStack my="10px">
-                <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
-                <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
-
-            </HStack>
+            <Flex my="10px">
+                <HStack>
+                    <Link href={"/scanreports/" + value + "/details"}>
+                        <Button variant="blue" my="10px">Scan Report Details</Button>
+                    </Link>
+                    <Link href={"/scanreports/" + value + "/mapping_rules/"}>
+                        <Button variant="blue" my="10px">Go to Rules</Button>
+                    </Link>
+                </HStack>
+                <Spacer />
+                <HStack>
+                    <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
+                    <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
+                </HStack>
+            </Flex>
 
             <Table variant="striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
@@ -130,7 +141,6 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
-            <Link href={"/scanreports/" + value + "/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
         </div>
     );
 }
