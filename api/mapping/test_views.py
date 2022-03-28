@@ -451,7 +451,38 @@ class TestScanReportListViewset(TestCase):
         self.assertListEqual(observed_objs, expected_objs)
 
     def test_az_function_user_perms(self):
-        pass
+        """Authors can see all public SRs and restricted SRs they are the author of."""
+        User = get_user_model()
+
+        # user who is the author of a scan report
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        self.project.members.add(az_user)
+        self.scanreport3.author = az_user
+        self.scanreport3.save()
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(az_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_count = len(admin_response.data)
+        expected_count = ScanReport.objects.all().count()
+
+        # Assert the observed results are the same as the expected
+        self.assertEqual(observed_count, expected_count)
+
+        # user who is not the author of a scan report
+        non_az_user = User.objects.create(username="saruman", password="fiwuenfwinefiw")
+        self.project.members.add(non_az_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(non_az_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        expected_objs = sorted([self.scanreport1.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
 
 
 # class TestScanReportRetrieveView(TestCase):
