@@ -434,6 +434,22 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
+        # user who is not the author of a scan report
+        non_author_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_author_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(non_author_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        expected_objs = sorted([self.scanreport1.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
     def test_az_function_user_perms(self):
         pass
 
