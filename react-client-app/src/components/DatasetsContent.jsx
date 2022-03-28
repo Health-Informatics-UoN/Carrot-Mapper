@@ -250,7 +250,7 @@ const DatasetsContent = (props) => {
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
-            <Link href={"/datasets/"+ datasetId + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
+            <Link href={"/datasets/"+ datasetId + "/details"}><Button variant="blue" ml="10px" my="10px">Details</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter },{ title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
