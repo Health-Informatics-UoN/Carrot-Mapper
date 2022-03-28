@@ -39,7 +39,7 @@ Please append a line to the changelog for each change made.
 * Removed ajax functions and replaced with react fetch requests
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
-  * Found at `/datasets/admin/<dataset_id>`.
+  * Found at `/datasets/<dataset_id>/details`.
 * Implemented editors and associated permissions to Datasets and Scan Reports.
   - Editors of Datasets cannot add or remove viewers, editors or admins. They cannot
   delete Datasets, either.
@@ -56,6 +56,8 @@ Please append a line to the changelog for each change made.
   - `CCMultiSelectInput`: for selecting multiple choices.
 * Added admin form for Scan Reports on frontend.
   - Found at `/scanreports/<scanreport_id>/details`.
+* Added link to scan report details page to scan report list page.
+* Added link to scan report details page to scan report tables page.
 
 ## v1.4.0 was released 02/02/22
 

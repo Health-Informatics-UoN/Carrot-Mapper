@@ -299,7 +299,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
             <CCSelectInput
                 id={"scanreport-dataset"}
                 label={"Dataset"}
-                value={selectedDataset}
+                value={selectedDataset.name}
                 selectOptions={datasets.map(item => item.name)}
                 handleInput={handleDatasetSelect}
                 isDisabled={!isAdmin}
