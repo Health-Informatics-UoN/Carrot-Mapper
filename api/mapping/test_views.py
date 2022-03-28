@@ -369,6 +369,9 @@ class TestScanReportListViewset(TestCase):
         self.client = APIClient()
 
     def test_admin_user_get(self):
+        """Users who are admins of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are the admin of.
+        """
         User = get_user_model()
 
         # user who is an admin the parent dataset
@@ -410,6 +413,26 @@ class TestScanReportListViewset(TestCase):
 
     def test_viewer_perms(self):
         pass
+
+    def test_author_get(self):
+        """Authors can see all public SRs and restricted SRs they are the author of."""
+        User = get_user_model()
+
+        # user who is the author of a scan report
+        author_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(author_user)
+        self.scanreport3.author = author_user
+        self.scanreport3.save()
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(author_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        expected_objs = sorted([self.scanreport1.id, self.scanreport3.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
 
     def test_az_function_user_perms(self):
         pass
