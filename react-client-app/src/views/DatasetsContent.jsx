@@ -20,7 +20,7 @@ const DatasetsContent = (props) => {
     const [nameFilter, setNameFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
-    const [title, setTitle] = useState("Scan Reports Active");
+    const [title, setTitle] = useState(`Scanreports in Dataset #${datasetId}`);
     const [expanded, setExpanded] = useState(false);
     const statuses = JSON.parse(window.status).map(status => status.id);
 
@@ -82,7 +82,7 @@ const DatasetsContent = (props) => {
         activeReports.current = scanreports.filter(scanreport => scanreport.hidden === false)
         archivedReports.current = scanreports.filter(scanreport => scanreport.hidden === true)
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
+        active.current ? setTitle(`Scanreports in Dataset #${datasetId}`) : setTitle(`Scanreports in Dataset #${datasetId}`);
         setLoadingMessage(null)
 
         // get table and field count
@@ -115,8 +115,8 @@ const DatasetsContent = (props) => {
         if (active.current === false) {
             active.current = true
             setDisplayedData(activeReports.current)
-            window.history.pushState({}, '', '/scanreports/')
-            setTitle("Scan Reports Active")
+            window.history.pushState({}, '', `/datasets/${datasetId}`)
+            setTitle(`Scanreports in Dataset #${datasetId}`)
         }
     }
     // show archived scan reports and change url when 'Archived Reports' button is pressed
@@ -124,8 +124,8 @@ const DatasetsContent = (props) => {
         if (active.current === true) {
             active.current = false
             setDisplayedData(archivedReports.current)
-            window.history.pushState({}, '', '/scanreports/?filter=archived')
-            setTitle("Scan Reports Archived");
+            window.history.pushState({}, '', `/datasets/${datasetId}?filter=archived`)
+            setTitle(`Scanreports in Dataset #${datasetId}`);
         }
 
     }
@@ -172,7 +172,7 @@ const DatasetsContent = (props) => {
     window.onpopstate = function (event) {
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        active.current ? setTitle("Scan Reports Active") : setTitle("Scan Reports Archived");
+        active.current ? setTitle(`Scanreports in Dataset #${datasetId}`) : setTitle(`Scanreports in Dataset #${datasetId}`);
     };
     // set the status of a scan report by using a patch request then reset the page data
     const setStatus = (id, status) => {
