@@ -449,7 +449,44 @@ class TestScanReportListViewset(TestCase):
         self.assertListEqual(observed_objs, expected_objs)
 
     def test_viewer_perms(self):
-        pass
+        """Users who are viewers of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are a viewer of.
+        """
+        User = get_user_model()
+
+        # user who is an admin the parent dataset
+        viewer_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(viewer_user)
+        self.public_dataset.viewers.add(viewer_user)
+        self.restricted_dataset.viewers.add(viewer_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(viewer_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        expected_objs = sorted(
+            [self.scanreport1.id, self.scanreport2.id, self.scanreport3.id]
+        )
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+        # user who is not an admin the parent dataset
+        non_viewer_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_viewer_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(non_viewer_user)
+        non_admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_admin_response.data])
+        expected_objs = [self.scanreport1.id]
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
 
     def test_author_get(self):
         """Authors can see all public SRs and restricted SRs they are the author of."""
