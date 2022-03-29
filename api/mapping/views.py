@@ -1229,13 +1229,18 @@ class ScanReportFormView(FormView):
         dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
+        parent_dataset = form.cleaned_data["parent_dataset"]
         scan_report = ScanReport.objects.create(
             dataset=form.cleaned_data["dataset"],
-            parent_dataset=form.cleaned_data["parent_dataset"],
+            parent_dataset=parent_dataset,
+            visibility=parent_dataset.visibility,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
         scan_report.author = self.request.user
+        if parent_dataset.visibility == VisibilityChoices.RESTRICTED:
+            scan_report.viewers.set(parent_dataset.viewers.all())
+            scan_report.editors.set(parent_dataset.editors.all())
         scan_report.save()
 
         # Grab Azure storage credentials
