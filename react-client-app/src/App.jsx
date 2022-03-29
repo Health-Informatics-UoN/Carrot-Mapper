@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { ChakraProvider } from "@chakra-ui/react"
 import styles from './styles'
 import DatasetAdminForm from './components/DatasetAdminForm'
-import DataTbl from './components/DataTbl'
+import ValuesTbl from './components/ValuesTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
 import FieldsTbl from './components/FieldsTbl';
@@ -15,6 +15,7 @@ import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
 import DatasetTbl from './components/DatasetTbl'
+import DatasetsContent from './views/DatasetsContent'
 const App = ({ page }) => {
 
     const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {
@@ -254,7 +255,7 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
             case "Mapping Rules":
                 return <MappingTbl />
             case "Fields":
@@ -269,6 +270,8 @@ const App = ({ page }) => {
                 return <UploadScanReport setTitle={setTitle} />
             case "Dataset Admin":
                 return <DatasetAdminForm setTitle={setTitle} />
+            case "Dataset Content":
+                return <DatasetsContent setTitle={setTitle} />
             case "Scan Report Admin":
                 return <ScanReportAdminForm setTitle={setTitle} />
             case "Dataset List":

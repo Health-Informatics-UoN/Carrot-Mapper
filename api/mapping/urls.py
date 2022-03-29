@@ -152,6 +152,11 @@ urlpatterns = [
         name="dataset_admin",
     ),
     path(
+        "datasets/<int:pk>",
+        views.dataset_content_page,
+        name="dataset_content",
+    ),
+    path(
         r"api/datasets/",
         views.DatasetListView.as_view(),
         name="dataset_list",
