@@ -360,6 +360,11 @@ class TestScanReportListViewset(TestCase):
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.restricted_dataset,
         )
+        self.scanreport4 = ScanReport.objects.create(
+            dataset="The Elves of Lothlorien",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.restricted_dataset,
+        )
 
         # Set up projects
         self.project = Project.objects.create(name="The Fellowship of The Ring")
@@ -386,7 +391,12 @@ class TestScanReportListViewset(TestCase):
         self.assertEqual(admin_response.status_code, 200)
         observed_objs = sorted([obj.get("id") for obj in admin_response.data])
         expected_objs = sorted(
-            [self.scanreport1.id, self.scanreport2.id, self.scanreport3.id]
+            [
+                self.scanreport1.id,
+                self.scanreport2.id,
+                self.scanreport3.id,
+                self.scanreport4.id,
+            ]
         )
 
         # Assert the observed results are the same as the expected
@@ -408,7 +418,7 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
-    def test_editor_perms(self):
+    def test_editor_get(self):
         """Users who are editors of the parent dataset can see all public SRs
         and restricted SRs whose parent dataset they are an editor of.
         """
@@ -426,7 +436,12 @@ class TestScanReportListViewset(TestCase):
         self.assertEqual(editor_response.status_code, 200)
         observed_objs = sorted([obj.get("id") for obj in editor_response.data])
         expected_objs = sorted(
-            [self.scanreport1.id, self.scanreport2.id, self.scanreport3.id]
+            [
+                self.scanreport1.id,
+                self.scanreport2.id,
+                self.scanreport3.id,
+                self.scanreport4.id,
+            ]
         )
 
         # Assert the observed results are the same as the expected
@@ -448,7 +463,7 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
-    def test_viewer_perms(self):
+    def test_viewer_get(self):
         """Users who are viewers of the parent dataset can see all public SRs
         and restricted SRs whose parent dataset they are a viewer of.
         """
@@ -465,7 +480,7 @@ class TestScanReportListViewset(TestCase):
         viewer_response = self.client.get("/api/scanreports/")
         self.assertEqual(viewer_response.status_code, 200)
         observed_objs = sorted([obj.get("id") for obj in viewer_response.data])
-        expected_objs = sorted([self.scanreport1.id])
+        expected_objs = sorted([self.scanreport1.id, self.scanreport4.id])
 
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
@@ -522,7 +537,7 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
-    def test_az_function_user_perms(self):
+    def test_az_function_user_get(self):
         """AZ_FUNCTION_USER can see all public SRs and restricted SRs."""
         User = get_user_model()
 
