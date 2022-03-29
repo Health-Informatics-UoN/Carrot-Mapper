@@ -24,7 +24,7 @@ import { getScanReports, getScanReportField, getScanReportTable } from '../api/v
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
-const DataTbl = (props) => {
+const ValuesTbl = (props) => {
     // get value to use in query from page url
     const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     // set page state variables
@@ -173,5 +173,5 @@ const DataTbl = (props) => {
 }
 
 
-export default DataTbl
+export default ValuesTbl
 

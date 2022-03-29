@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { ChakraProvider } from "@chakra-ui/react"
 import styles from './styles'
 import DatasetAdminForm from './components/DatasetAdminForm'
-import DataTbl from './components/DataTbl'
+import ValuesTbl from './components/ValuesTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
 import FieldsTbl from './components/FieldsTbl';
@@ -254,7 +254,7 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
             case "Mapping Rules":
                 return <MappingTbl />
             case "Fields":
