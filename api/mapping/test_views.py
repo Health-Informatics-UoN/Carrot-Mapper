@@ -465,9 +465,7 @@ class TestScanReportListViewset(TestCase):
         viewer_response = self.client.get("/api/scanreports/")
         self.assertEqual(viewer_response.status_code, 200)
         observed_objs = sorted([obj.get("id") for obj in viewer_response.data])
-        expected_objs = sorted(
-            [self.scanreport1.id, self.scanreport2.id, self.scanreport3.id]
-        )
+        expected_objs = sorted([self.scanreport1.id])
 
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
