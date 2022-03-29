@@ -62,7 +62,9 @@ Please append a line to the changelog for each change made.
 * Change the dataset link to go to the dataset content page
 * Changed Scan Report upload procedure.
   - Scan Report inherits visibility from parent Dataset.
-  - Scan Report inherits viewers and editors from parent Dataset.
+  - Scan Report inherits visibility from parent Dataset at upload.
+* Public Scan Reports under restricted Datasets are only visible to those
+with visibility of the Dataset.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
 

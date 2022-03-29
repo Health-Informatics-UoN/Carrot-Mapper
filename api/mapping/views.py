@@ -364,6 +364,28 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
                 parent_dataset__visibility=VisibilityChoices.RESTRICTED,
                 parent_dataset__editors=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
+            )
+            # parent dataset is restricted but SR is public checks
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset editors
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__editors=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset admins
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__admins=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset viewers
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__viewers=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
             ),
             parent_dataset__project__members=self.request.user.id,
         ).distinct()
