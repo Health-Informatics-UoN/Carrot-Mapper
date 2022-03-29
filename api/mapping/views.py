@@ -1224,9 +1224,6 @@ class ScanReportFormView(FormView):
         )
 
         scan_report.author = self.request.user
-        if parent_dataset.visibility == VisibilityChoices.RESTRICTED:
-            scan_report.viewers.set(parent_dataset.viewers.all())
-            scan_report.editors.set(parent_dataset.editors.all())
         scan_report.save()
 
         # Grab Azure storage credentials
