@@ -751,105 +751,86 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     logger.debug(f"{existing_mappings_to_consider=}")
 
     value_details_to_id_map = {}
+    for item in new_values_full_details:
+        name = item["name"]
+        description = item["description"]
+        field_name = item["field_name"]
+        mappings_matching_value_name = [
+            mapping
+            for mapping in existing_mappings_to_consider
+            if mapping["name"] == name
+            and mapping["description"] == description
+            and mapping["field_name"] == field_name
+        ]
+        target_concept_ids = set(
+            [mapping["concept"] for mapping in mappings_matching_value_name]
+        )
+        target_value_id = set(
+            [mapping["id"] for mapping in mappings_matching_value_name]
+        )
+        if len(target_concept_ids) == 1:
+            value_details_to_id_map[
+                (str(name), str(description), str(field_name))
+            ] = str(target_value_id.pop())
 
-    for new_value in new_values_full_details:
-        value_id = str(new_value["id"])
-        # If a new value already has an existing concept (added from data dictionary vocab)
-        if value_id in existing_value_id_to_concept_map.keys():
-            for existing_mapping in existing_mappings_to_consider[:]:
-                # If the existing concept is the same as the one we plan to reuse
-                # Remove it from the existing_mappings_to_consider
-                if (
-                    existing_mapping["concept"]
-                    == existing_value_id_to_concept_map[value_id]
-                ):
-                    existing_mappings_to_consider.remove(existing_mapping)
-
-    if existing_mappings_to_consider:
-        for item in new_values_full_details:
-            name = item["name"]
-            description = item["description"]
-            field_name = item["field_name"]
-
-            mappings_matching_value_name = [
-                mapping
-                for mapping in existing_mappings_to_consider
-                if mapping["name"] == name
-                and mapping["description"] == description
-                and mapping["field_name"] == field_name
+    concepts_to_post = []
+    concept_response_content = []
+    for new_value_detail in new_values_full_details:
+        try:
+            existing_value_id = value_details_to_id_map[
+                (
+                    str(new_value_detail["name"]),
+                    str(new_value_detail["description"]),
+                    str(new_value_detail["field_name"]),
+                )
             ]
-
-            target_concept_ids = set(
-                [mapping["concept"] for mapping in mappings_matching_value_name]
+            # print("VALUE existing value id", existing_value_id)
+            concept_id = existing_value_id_to_concept_map[str(existing_value_id)]
+            # print("VALUE existing concept id", concept_id)
+            new_value_id = str(new_value_detail["id"])
+            logger.info(
+                f"Found existing value with id: {existing_value_id} with existing "
+                f"concept mapping: {concept_id} which matches new value id: "
+                f"{new_value_id}"
             )
-            target_value_id = set(
-                [mapping["id"] for mapping in mappings_matching_value_name]
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry = {
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept_id,
+                "object_id": new_value_id,
+                "content_type": content_type,
+                "creation_type": "R",
+            }
+            concepts_to_post.append(concept_entry)
+        except KeyError:
+            continue
+
+    if concepts_to_post:
+        paginated_concepts_to_post = paginate(concepts_to_post)
+        concept_response = []
+        for concepts_to_post_item in paginated_concepts_to_post:
+            post_concept_response = requests.post(
+                url=api_url + "scanreportconcepts/",
+                headers=headers,
+                data=json.dumps(concepts_to_post_item),
             )
-            if len(target_concept_ids) == 1:
-                value_details_to_id_map[
-                    (str(name), str(description), str(field_name))
-                ] = str(target_value_id.pop())
+            logger.info(
+                f"CONCEPTS SAVE STATUS >>> "
+                f"{post_concept_response.status_code} "
+                f"{post_concept_response.reason}"
+            )
+            concept_response.append(
+                json.loads(post_concept_response.content.decode("utf-8"))
+            )
+        concept_content = flatten(concept_response)
 
-        concepts_to_post = []
-        concept_response_content = []
+        concept_response_content += concept_content
 
-        for new_value_detail in new_values_full_details:
-            try:
-                existing_value_id = value_details_to_id_map[
-                    (
-                        str(new_value_detail["name"]),
-                        str(new_value_detail["description"]),
-                        str(new_value_detail["field_name"]),
-                    )
-                ]
-                # print("VALUE existing value id", existing_value_id)
-                concept_id = existing_value_id_to_concept_map[str(existing_value_id)]
-                # print("VALUE existing concept id", concept_id)
-                new_value_id = str(new_value_detail["id"])
-                logger.info(
-                    f"Found existing value with id: {existing_value_id} with existing "
-                    f"concept mapping: {concept_id} which matches new value id: "
-                    f"{new_value_id}"
-                )
-                # Create ScanReportConcept entry for copying over the concept
-                concept_entry = {
-                    "nlp_entity": None,
-                    "nlp_entity_type": None,
-                    "nlp_confidence": None,
-                    "nlp_vocabulary": None,
-                    "nlp_processed_string": None,
-                    "concept": concept_id,
-                    "object_id": new_value_id,
-                    "content_type": content_type,
-                    "creation_type": "R",
-                }
-                concepts_to_post.append(concept_entry)
-            except KeyError:
-                continue
-
-        if concepts_to_post:
-            print("concepts_to_post", concepts_to_post)
-            paginated_concepts_to_post = paginate(concepts_to_post)
-            concept_response = []
-            for concepts_to_post_item in paginated_concepts_to_post:
-                post_concept_response = requests.post(
-                    url=api_url + "scanreportconcepts/",
-                    headers=headers,
-                    data=json.dumps(concepts_to_post_item),
-                )
-                logger.info(
-                    f"CONCEPTS SAVE STATUS >>> "
-                    f"{post_concept_response.status_code} "
-                    f"{post_concept_response.reason}"
-                )
-                concept_response.append(
-                    json.loads(post_concept_response.content.decode("utf-8"))
-                )
-            concept_content = flatten(concept_response)
-
-            concept_response_content += concept_content
-
-            logger.info("POST concepts all finished in reuse_existing_value_concepts")
+        logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
 def remove_BOM(intermediate):
