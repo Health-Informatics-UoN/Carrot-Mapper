@@ -111,7 +111,6 @@ const DatasetTbl = (props) => {
                         </Select>
                         <Th>Visibility</Th>
                         <Th>Creation Date</Th>
-                        <Th>Details</Th>
                     </Tr>
                 </Thead>
                 <Tbody>
