@@ -1738,6 +1738,11 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 
 
 @login_required
+def dataset_list_page(request):
+    return render(request, "mapping/dataset_list.html")
+
+
+@login_required
 def dataset_admin_page(request, pk):
     args = {}
     if ds := Dataset.objects.get(id=pk):
