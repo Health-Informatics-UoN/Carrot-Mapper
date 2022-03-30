@@ -100,10 +100,10 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
             user = request.user
             if (
                 self.instance.author.id != user.id
-                or not self.instance.parent_dataset.admins.filter(id=user.id).exists()
+                and not self.instance.parent_dataset.admins.filter(id=user.id).exists()
             ):
                 raise serializers.ValidationError(
-                    """You must be the author or and admin of the parent dataset 
+                    """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
                 )
         return viewers
@@ -113,10 +113,10 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
             user = request.user
             if (
                 self.instance.author.id != user.id
-                or not self.instance.parent_dataset.admins.filter(id=user.id).exists()
+                and not self.instance.parent_dataset.admins.filter(id=user.id).exists()
             ):
                 raise serializers.ValidationError(
-                    """You must be the author or and admin of the parent dataset 
+                    """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
                 )
         return editors
