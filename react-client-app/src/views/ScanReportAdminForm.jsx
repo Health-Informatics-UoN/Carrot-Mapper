@@ -184,6 +184,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
          */
         const patchData = {
             dataset: scanReport.dataset,
+            author: author.id,
             parent_dataset: selectedDataset.id,
             visibility: isPublic ? "PUBLIC" : "RESTRICTED",
         }
