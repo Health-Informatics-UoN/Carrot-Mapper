@@ -7,6 +7,8 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
                 reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ sr_id }}">
+            {{ sr_dataset }}</a></li>
     </ol>
 </nav>
 
