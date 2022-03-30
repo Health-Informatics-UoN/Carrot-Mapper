@@ -1825,6 +1825,8 @@ def dataset_admin_page(request, pk):
     args = {}
     if ds := Dataset.objects.get(id=pk):
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+        args["dataset_name"] = ds.name
+        args["dataset_id"] = pk
     else:
         args["is_admin"] = False
 

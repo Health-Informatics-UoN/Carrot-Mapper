@@ -150,7 +150,7 @@ const ScanReportTbl = (props) => {
 
     // remove a filter on s certain column by checking the tags column name. called inside concept tag
     const removeFilter = (a, b) => {
-        if (a.includes("Added By")) {
+        if (a.includes("Author")) {
             setAuthorFilter("All")
         }
         if (a.includes("Dataset")) {
@@ -250,7 +250,7 @@ const ScanReportTbl = (props) => {
             <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Author -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -294,8 +294,8 @@ const ScanReportTbl = (props) => {
                         </Select></Th>
 
                         <Th >
-                            <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
-                                <option style={{ fontWeight: "bold" }} disabled>Added by</option>
+                            <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Author" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
+                                <option style={{ fontWeight: "bold" }} disabled>Author</option>
                                 {[...[...new Set(displayedData.map(data => data.author.username))]].sort((a, b) => a.localeCompare(b))
                                     .map((item, index) =>
                                         <option key={index} value={item}>{item}</option>
