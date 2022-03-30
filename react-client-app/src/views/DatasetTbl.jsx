@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
-import PageHeading from './PageHeading'
-import ConceptTag from './ConceptTag'
+import PageHeading from '../components/PageHeading'
+import ConceptTag from '../components/ConceptTag'
 import moment from 'moment';
 
 const DatasetTbl = (props) => {
