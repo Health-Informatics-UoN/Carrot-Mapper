@@ -427,17 +427,14 @@ class DatasetListView(generics.ListAPIView):
         return Dataset.objects.filter(
             Q(visibility=VisibilityChoices.PUBLIC)
             | Q(
-                project__members=self.request.user.id,
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
             | Q(
-                project__members=self.request.user.id,
                 editors=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
             | Q(
-                project__members=self.request.user.id,
                 admins=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             ),
