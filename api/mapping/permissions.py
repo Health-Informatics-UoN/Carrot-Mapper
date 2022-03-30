@@ -58,12 +58,32 @@ def has_viewership(obj: Any, request: Request) -> bool:
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
-            Q(project__members__id=request.user.id) & visibility_query(x), id=x.id
+            Q(visibility=VisibilityChoices.PUBLIC)
+            | Q(viewers__id=request.user.id, visibility=VisibilityChoices.RESTRICTED)
+            | Q(editors__id=request.user.id, visibility=VisibilityChoices.RESTRICTED)
+            | Q(admins__id=request.user.id, visibility=VisibilityChoices.RESTRICTED),
+            project__members__id=request.user.id,
+            id=x.id,
         ).exists(),
         ScanReport: lambda x: ScanReport.objects.filter(
-            Q(parent_dataset__project__members__id=request.user.id)
-            & visibility_query(x),
-            parent_dataset__id=x.parent_dataset.id,
+            Q(visibility=VisibilityChoices.PUBLIC)
+            | Q(
+                parent_dataset__viewers__id=request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                parent_dataset__editors__id=request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                parent_dataset__admins__id=request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(viewers__id=request.user.id, visibility=VisibilityChoices.RESTRICTED)
+            | Q(editors__id=request.user.id, visibility=VisibilityChoices.RESTRICTED)
+            | Q(author__id=request.user.id, visibility=VisibilityChoices.RESTRICTED),
+            parent_dataset__project__members__id=request.user.id,
+            id=x.id,
         ).exists(),
     }
 
