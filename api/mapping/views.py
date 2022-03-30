@@ -1237,11 +1237,9 @@ class ScanReportFormView(FormView):
         dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
-        parent_dataset = form.cleaned_data["parent_dataset"]
         scan_report = ScanReport.objects.create(
             dataset=form.cleaned_data["dataset"],
-            parent_dataset=parent_dataset,
-            visibility=parent_dataset.visibility,
+            parent_dataset=form.cleaned_data["parent_dataset"],
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
