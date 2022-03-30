@@ -14,6 +14,7 @@ import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
+import DatasetTbl from './views/DatasetTbl'
 import DatasetsContent from './views/DatasetsContent'
 const App = ({ page }) => {
 
@@ -270,9 +271,11 @@ const App = ({ page }) => {
             case "Dataset Admin":
                 return <DatasetAdminForm setTitle={setTitle} />
             case "Dataset Content":
-                return <DatasetsContent setTitle={setTitle}/>
+                return <DatasetsContent setTitle={setTitle} />
             case "Scan Report Admin":
                 return <ScanReportAdminForm setTitle={setTitle} />
+            case "Dataset List":
+                return <DatasetTbl setTitle={setTitle} />
             default:
                 return <ScanReportTbl setTitle={setTitle} />
         }
