@@ -425,15 +425,23 @@ class DatasetListView(generics.ListAPIView):
             return Dataset.objects.all().distinct()
 
         return Dataset.objects.filter(
-            Q(
-                project__members=self.request.user.id,
-                visibility=VisibilityChoices.PUBLIC,
-            )
+            Q(visibility=VisibilityChoices.PUBLIC)
             | Q(
                 project__members=self.request.user.id,
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
+            | Q(
+                project__members=self.request.user.id,
+                editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                project__members=self.request.user.id,
+                admins=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            ),
+            project__members=self.request.user.id,
         ).distinct()
 
 
