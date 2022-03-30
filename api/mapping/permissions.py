@@ -49,12 +49,6 @@ def has_viewership(obj: Any, request: Request) -> bool:
     Returns:
         bool: `True` if the request's user has permission, else `False`.
     """
-    # Check if visibility is public or restricted
-    visibility_query = (
-        lambda x: Q(visibility=VisibilityChoices.PUBLIC)
-        if x.visibility == VisibilityChoices.PUBLIC
-        else Q(visibility=VisibilityChoices.RESTRICTED) & Q(viewers__id=request.user.id)
-    )
     # Permission checks to perform
     checks = {
         Dataset: lambda x: Dataset.objects.filter(
