@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from rest_framework.authtoken.models import Token
 from .permissions import (
     has_editorship,
-    has_viwership,
+    has_viewership,
     is_admin,
     CanAdmin,
     CanEdit,
@@ -92,36 +92,36 @@ class TestHasViewership(TestCase):
     def test_dataset_perms(self):
         # Check user_with_perm can see all datasets
         self.request.user = self.user_with_perm
-        self.assertTrue(has_viwership(self.public_dataset, self.request))
-        self.assertTrue(has_viwership(self.restricted_dataset, self.request))
+        self.assertTrue(has_viewership(self.public_dataset, self.request))
+        self.assertTrue(has_viewership(self.restricted_dataset, self.request))
 
         # Check non_restricted_ds_viewer can see public dataset
         # but not restricted dataset
         self.request.user = self.non_restricted_ds_viewer
-        self.assertTrue(has_viwership(self.public_dataset, self.request))
-        self.assertFalse(has_viwership(self.restricted_dataset, self.request))
+        self.assertTrue(has_viewership(self.public_dataset, self.request))
+        self.assertFalse(has_viewership(self.restricted_dataset, self.request))
 
         # Check user_not_on_project can see nothing
         self.request.user = self.user_not_on_project
-        self.assertFalse(has_viwership(self.public_dataset, self.request))
-        self.assertFalse(has_viwership(self.restricted_dataset, self.request))
+        self.assertFalse(has_viewership(self.public_dataset, self.request))
+        self.assertFalse(has_viewership(self.restricted_dataset, self.request))
 
     def test_scan_report_perms(self):
         # Check user_with_perm can see all scan reports
         self.request.user = self.user_with_perm
-        self.assertTrue(has_viwership(self.public_scanreport, self.request))
-        self.assertTrue(has_viwership(self.restricted_scanreport, self.request))
+        self.assertTrue(has_viewership(self.public_scanreport, self.request))
+        self.assertTrue(has_viewership(self.restricted_scanreport, self.request))
 
         # Check non_restricted_sr_viewer can see public scan report
         # but not restricted scan report
         self.request.user = self.non_restricted_sr_viewer
-        self.assertTrue(has_viwership(self.public_scanreport, self.request))
-        self.assertFalse(has_viwership(self.restricted_scanreport, self.request))
+        self.assertTrue(has_viewership(self.public_scanreport, self.request))
+        self.assertFalse(has_viewership(self.restricted_scanreport, self.request))
 
         # Check user_not_on_project can see nothing
         self.request.user = self.user_not_on_project
-        self.assertFalse(has_viwership(self.public_scanreport, self.request))
-        self.assertFalse(has_viwership(self.restricted_scanreport, self.request))
+        self.assertFalse(has_viewership(self.public_scanreport, self.request))
+        self.assertFalse(has_viewership(self.restricted_scanreport, self.request))
 
 
 class TestHasEditorship(TestCase):
