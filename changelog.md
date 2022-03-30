@@ -69,6 +69,8 @@ with visibility of the Dataset.
   - Link to Datasets list page to navigation bar
   - Link to Scan Report List page for each Dataset
   - Link to Dataset details page for each dataset
+* Remove unused ajax POST function.
+* Remove unused JS variables.
 
 ## v1.4.0 was released 02/02/22
 
