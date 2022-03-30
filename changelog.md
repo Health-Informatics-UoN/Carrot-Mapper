@@ -39,12 +39,12 @@ Please append a line to the changelog for each change made.
 * Removed ajax functions and replaced with react fetch requests
 * Added permissions to view and edit Scan Reports.
 * Added admin form for Datasets on frontend.
-  * Found at `/datasets/<dataset_id>/details`.
+  - Found at `/datasets/<dataset_id>/details`.
 * Implemented editors and associated permissions to Datasets and Scan Reports.
   - Editors of Datasets cannot add or remove viewers, editors or admins. They cannot
-  delete Datasets, either.
+    delete Datasets, either.
   - Editors of Scan Reports cannot add or remove viewers, editors. They cannot
-  delete Scan Reports, either.
+    delete Scan Reports, either.
   - **IMPORTANT!** Steps to enact this change:
     1. Create a migration adding a `ManyToManyField` called `editors` to **Dataset** linking it to `settings.AUTH_USER_MODEL`.
     2. Create a migration adding a `ManyToManyField` called `editors` to **ScanReport** linking it to `settings.AUTH_USER_MODEL`.
@@ -66,6 +66,11 @@ Please append a line to the changelog for each change made.
 with visibility of the Dataset.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
+* Created Dataset List page
+  - Display Dataset information (ID, Name, Data Partner, Visibility, Created_at)
+  - Link to Datasets list page to navigation bar
+  - Link to Scan Report List page for each Dataset
+  - Link to Dataset details page for each dataset
 
 ## v1.4.0 was released 02/02/22
 

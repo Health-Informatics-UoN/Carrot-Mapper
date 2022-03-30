@@ -142,6 +142,11 @@ urlpatterns = [
     ),
     # Dataset views
     path(
+        "datasets/",
+        views.dataset_list_page,
+        name="datasets",
+    ),
+    path(
         "datasets/<int:pk>/details",
         views.dataset_admin_page,
         name="dataset_admin",
