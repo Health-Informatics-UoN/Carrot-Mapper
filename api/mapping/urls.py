@@ -181,16 +181,6 @@ urlpatterns = [
         views.DatasetCreateView.as_view(),
         name="dataset_create",
     ),
-    # path(
-    #     r"api/scanreports/",
-    #     views.ScanReportListViewSet.as_view(),
-    #     name="scanreport_list",
-    # ),
-    path(
-        r"api/scanreports/<int:pk>",
-        views.ScanReportRetrieveView.as_view(),
-        name="scanreports_retrieve",
-    ),
     path(
         r"api/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),

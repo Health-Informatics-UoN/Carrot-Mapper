@@ -334,182 +334,239 @@ class TestDatasetDeleteView(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
-class TestScanScanReportListViewset(TestCase):
+class TestScanReportListViewset(TestCase):
     def setUp(self):
-        User = get_user_model()
-        # Set up users
-        self.user1 = User.objects.create(username="gandalf", password="iwjfijweifje")
-        Token.objects.create(user=self.user1)
-        self.user2 = User.objects.create(username="aragorn", password="ooieriofiejr")
-        Token.objects.create(user=self.user2)
-
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="Places in Middle Earth", visibility=VisibilityChoices.PUBLIC
+            name="The Shire", visibility=VisibilityChoices.PUBLIC
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="Fellowship Members", visibility=VisibilityChoices.RESTRICTED
+            name="The Mines of Moria", visibility=VisibilityChoices.RESTRICTED
         )
-        self.restricted_dataset.viewers.add(self.user1)
 
         # Set up scan reports
-        self.public_scanreport = ScanReport.objects.create(
-            dataset="The Mines of Moria",
+        self.scanreport1 = ScanReport.objects.create(
+            dataset="The Heights of Hobbits",
             visibility=VisibilityChoices.PUBLIC,
             parent_dataset=self.public_dataset,
         )
-        self.restricted_scanreport1 = ScanReport.objects.create(
-            dataset="The Rings of Power",
+        self.scanreport2 = ScanReport.objects.create(
+            dataset="The Kinds of Orcs",
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.public_dataset,
         )
-        self.restricted_scanreport1.viewers.add(self.user1, self.user2)
-        self.restricted_scanreport2 = ScanReport.objects.create(
-            dataset="The Balrogs of Morgoth",
+        self.scanreport3 = ScanReport.objects.create(
+            dataset="The Ents of Fangorn Forest",
             visibility=VisibilityChoices.RESTRICTED,
             parent_dataset=self.restricted_dataset,
         )
-        self.restricted_scanreport2.viewers.add(self.user1)
+        self.scanreport4 = ScanReport.objects.create(
+            dataset="The Elves of Lothlorien",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.restricted_dataset,
+        )
 
         # Set up projects
-        self.project1 = Project.objects.create(name="The Fellowship of the Ring")
-        self.project1.members.add(self.user1, self.user2)
-        self.project1.datasets.add(
-            self.public_dataset,
-            self.restricted_dataset,
-        )
-        self.project2 = Project.objects.create(name="The Two Towers")
-        self.project2.members.add(self.user1)
-        self.project2.datasets.add(self.restricted_dataset)
+        self.project = Project.objects.create(name="The Fellowship of The Ring")
+        self.project.datasets.add(self.public_dataset, self.restricted_dataset)
 
-        # Request factory for setting up requests
-        self.factory = APIRequestFactory()
-
-        # The view for the tests
-        self.view = ScanReportListViewSet.as_view({"get": "list"})
-
-    def test_scanreport_returns(self):
-        # Make the request for Datasets
-        request = self.factory.get(f"/scanreports/")
-        # Add user1 to the request; this is not automatic
-        request.user = self.user1
-        # Authenticate the user1
-        force_authenticate(
-            request,
-            user=self.user1,
-            token=self.user1.auth_token,
-        )
-        # Get the response data
-        response_data = self.view(request).data
-        response_data = [obj.get("id") for obj in response_data]
-        expected_objs = [
-            self.public_scanreport.id,
-            self.restricted_scanreport1.id,
-            self.restricted_scanreport2.id,
-        ]
-
-        # Assert user1 can see all scan reports
-        # and restricted_dataset
-        self.assertEqual(sorted(response_data), sorted(expected_objs))
-
-        # Add user2 to the request; this is not automatic
-        request.user = self.user2
-        # Authenticate the user2
-        force_authenticate(
-            request,
-            user=self.user2,
-            token=self.user2.auth_token,
-        )
-        # Get the response
-        response_data = self.view(request).data
-        response_data = [obj.get("id") for obj in response_data]
-        expected_objs = [self.public_scanreport.id, self.restricted_scanreport1.id]
-
-        # Assert user2 can see public_scanreport and restricted_scanreport1
-        self.assertEqual(sorted(response_data), sorted(expected_objs))
-
-        # Assert user2 can't see restricted_scanreport2
-        for obj in response_data:
-            self.assertNotEqual(obj, self.restricted_scanreport2.id)
-
-    def test_az_function_user_perm(self):
-        User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
-        # Make the request for the Dataset
-        request = self.factory.get(f"/scanreports/")
-        # Add the user to the request; this is not automatic
-        request.user = az_user
-        # Authenticate az_user
-        force_authenticate(
-            request,
-            user=az_user,
-            token=az_user.auth_token,
-        )
-        # Get the response
-        response_data = self.view(request).data
-        # Assert az_user can see all scan reports
-        self.assertEqual(len(response_data), ScanReport.objects.all().count())
-
-
-class TestScanReportRetrieveView(TestCase):
-    def setUp(self):
-        User = get_user_model()
-        # Set up users
-        self.ds_admin_user = User.objects.create(
-            username="gandalf", password="hjfiwejfiwef"
-        )
-        Token.objects.create(user=self.ds_admin_user)
-        self.non_ds_admin_user = User.objects.create(
-            username="aragorn", password="djfoiejwiofjoiewf"
-        )
-        Token.objects.create(user=self.non_ds_admin_user)
-        self.non_project_user = User.objects.create(
-            username="bilbo", password="djfoiejwiofjoiewf"
-        )
-        Token.objects.create(user=self.non_project_user)
-
-        # Set up Project
-        self.project = Project.objects.create(name="The Fellowship of the Ring")
-        self.project.members.add(self.ds_admin_user, self.non_ds_admin_user)
-
-        # Set up Dataset
-        self.dataset = Dataset.objects.create(
-            name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
-        )
-        self.dataset.admins.add(self.ds_admin_user)
-        self.project.datasets.add(self.dataset)
-
-        # Set up Scan Report
-        self.scan_report = ScanReport.objects.create(
-            dataset="The Rings of Power",
-            visibility=VisibilityChoices.RESTRICTED,
-            parent_dataset=self.dataset,
-        )
-        self.scan_report.viewers.add(self.non_ds_admin_user)
-
-        # Request factory for setting up requests
+        # Set up API client
         self.client = APIClient()
 
-    def test_non_ds_admin_member_can_see(self):
-        # Authenticate non ds admin user
-        self.client.force_authenticate(self.non_ds_admin_user)
-        #  Make the request
-        response = self.client.get(f"/api/scanreports/{self.scan_report.id}")
-        # Ensure non ds admin user can see
-        self.assertEqual(response.status_code, 200)
+    def test_admin_user_get(self):
+        """Users who are admins of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are the admin of.
+        """
+        User = get_user_model()
 
-    def test_ds_admin_member_can_see(self):
-        # Authenticate ds admin user
-        self.client.force_authenticate(self.ds_admin_user)
-        #  Make the request
-        response = self.client.get(f"/api/scanreports/{self.scan_report.id}")
-        # Ensure ds admin user can see
-        self.assertEqual(response.status_code, 200)
+        # user who is an admin of the parent dataset
+        admin_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(admin_user)
+        self.public_dataset.admins.add(admin_user)
+        self.restricted_dataset.admins.add(admin_user)
 
-    def test_non_project_member_forbidden(self):
-        # Authenticate non project user
-        self.client.force_authenticate(self.non_project_user)
-        #  Make the request
-        response = self.client.get(f"/api/scanreports/{self.scan_report.id}")
-        # Ensure non project user is Forbidden
-        self.assertEqual(response.status_code, 403)
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(admin_user)
+        admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        expected_objs = sorted(
+            [
+                self.scanreport1.id,
+                self.scanreport2.id,
+                self.scanreport3.id,
+                self.scanreport4.id,
+            ]
+        )
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+        # user who is not an admin of the parent dataset
+        non_admin_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_admin_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(non_admin_user)
+        non_admin_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_admin_response.data])
+        expected_objs = [self.scanreport1.id]
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_editor_get(self):
+        """Users who are editors of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are an editor of.
+        """
+        User = get_user_model()
+
+        # user who is an editor of the parent dataset
+        editor_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(editor_user)
+        self.public_dataset.editors.add(editor_user)
+        self.restricted_dataset.editors.add(editor_user)
+
+        # Get data editor_user should be able to see
+        self.client.force_authenticate(editor_user)
+        editor_response = self.client.get("/api/scanreports/")
+        self.assertEqual(editor_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in editor_response.data])
+        expected_objs = sorted(
+            [
+                self.scanreport1.id,
+                self.scanreport2.id,
+                self.scanreport3.id,
+                self.scanreport4.id,
+            ]
+        )
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+        # user who is not an editor of the parent dataset
+        non_editor_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_editor_user)
+
+        # Get data non_editor_user should be able to see
+        self.client.force_authenticate(non_editor_user)
+        non_editor_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_editor_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_editor_response.data])
+        expected_objs = [self.scanreport1.id]
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_viewer_get(self):
+        """Users who are viewers of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are a viewer of.
+        """
+        User = get_user_model()
+
+        # user who is an viewer of the parent dataset
+        viewer_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(viewer_user)
+        self.public_dataset.viewers.add(viewer_user)
+        self.restricted_dataset.viewers.add(viewer_user)
+
+        # Get data viewer_user should be able to see
+        self.client.force_authenticate(viewer_user)
+        viewer_response = self.client.get("/api/scanreports/")
+        self.assertEqual(viewer_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in viewer_response.data])
+        expected_objs = sorted([self.scanreport1.id, self.scanreport4.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+        # user who is not an viewer of the parent dataset
+        non_viewer_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_viewer_user)
+
+        # Get data non_viewer_user should be able to see
+        self.client.force_authenticate(non_viewer_user)
+        non_viewer_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_viewer_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_viewer_response.data])
+        expected_objs = [self.scanreport1.id]
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_author_get(self):
+        """Authors can see all public SRs and restricted SRs they are the author of."""
+        User = get_user_model()
+
+        # user who is the author of a scan report
+        author_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(author_user)
+        self.scanreport3.author = author_user
+        self.scanreport3.save()
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(author_user)
+        author_response = self.client.get("/api/scanreports/")
+        self.assertEqual(author_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in author_response.data])
+        expected_objs = sorted([self.scanreport1.id, self.scanreport3.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+        # user who is not the author of a scan report
+        non_author_user = User.objects.create(
+            username="saruman", password="fiwuenfwinefiw"
+        )
+        self.project.members.add(non_author_user)
+
+        # Get data non_author_user should be able to see
+        self.client.force_authenticate(non_author_user)
+        non_author_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_author_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_author_response.data])
+        expected_objs = sorted([self.scanreport1.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_az_function_user_get(self):
+        """AZ_FUNCTION_USER can see all public SRs and restricted SRs."""
+        User = get_user_model()
+
+        # AZ_FUNCTION_USER
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        self.project.members.add(az_user)
+        self.scanreport3.author = az_user
+        self.scanreport3.save()
+
+        # Get data az_user should be able to see
+        self.client.force_authenticate(az_user)
+        az_response = self.client.get("/api/scanreports/")
+        self.assertEqual(az_response.status_code, 200)
+        observed_count = len(az_response.data)
+        expected_count = ScanReport.objects.all().count()
+
+        # Assert the observed results are the same as the expected
+        self.assertEqual(observed_count, expected_count)
+
+        # user who is not the AZ_FUNCTION_USER
+        non_az_user = User.objects.create(username="saruman", password="fiwuenfwinefiw")
+        self.project.members.add(non_az_user)
+
+        # Get data non_az_user should be able to see
+        self.client.force_authenticate(non_az_user)
+        non_az_response = self.client.get("/api/scanreports/")
+        self.assertEqual(non_az_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in non_az_response.data])
+        expected_objs = sorted([self.scanreport1.id])
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)

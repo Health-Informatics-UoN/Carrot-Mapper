@@ -60,6 +60,12 @@ Please append a line to the changelog for each change made.
 * Added link to scan report details page to scan report tables page.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
+* Changed Scan Report upload procedure.
+  - Scan Report inherits visibility from parent Dataset at upload.
+* Public Scan Reports under restricted Datasets are only visible to those
+with visibility of the Dataset.
+* Added Datasets content page which displays all the scanreports in a given dataset
+* Change the dataset link to go to the dataset content page
 * Created Dataset List page
   - Display Dataset information (ID, Name, Data Partner, Visibility, Created_at)
   - Link to Datasets list page to navigation bar

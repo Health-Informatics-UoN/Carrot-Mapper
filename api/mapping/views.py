@@ -287,24 +287,107 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
             return ScanReport.objects.all().distinct()
 
         return ScanReport.objects.filter(
+            # parent dataset and SR are public checks
             Q(
-                parent_dataset__project__members=self.request.user.id,
+                # parent dataset and SR are public
                 parent_dataset__visibility=VisibilityChoices.PUBLIC,
                 visibility=VisibilityChoices.PUBLIC,
             )
+            # parent dataset is public but SR restricted checks
             | Q(
-                parent_dataset__project__members=self.request.user.id,
+                # parent dataset is public
+                # SR is restricted and user is in SR viewers
                 parent_dataset__visibility=VisibilityChoices.PUBLIC,
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
             | Q(
-                parent_dataset__project__members=self.request.user.id,
+                # parent dataset is public
+                # SR is restricted and user is in SR editors
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset is public
+                # SR is restricted and user is SR author
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                author=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset is public
+                # SR is restricted and user is in parent dataset editors
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                parent_dataset__editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset is public
+                # SR is restricted and user is in parent dataset admins
+                parent_dataset__visibility=VisibilityChoices.PUBLIC,
+                parent_dataset__admins=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            # parent dataset and SR are restricted checks
+            | Q(
+                # parent dataset and SR are restricted
+                # user is in SR viewers
                 parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                parent_dataset__viewers=self.request.user.id,
                 viewers=self.request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )
+            | Q(
+                # parent dataset and SR are restricted
+                # user is in SR editors
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset and SR are restricted
+                # user is SR author
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                author=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset and SR are restricted
+                # user is in parent dataset admins
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__admins=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                # parent dataset and SR are restricted
+                # user is in parent dataset editors
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            # parent dataset is restricted but SR is public checks
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset editors
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__editors=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset admins
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__admins=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            )
+            | Q(
+                # parent dataset is restricted and SR public
+                # user is in parent dataset viewers
+                parent_dataset__visibility=VisibilityChoices.RESTRICTED,
+                parent_dataset__viewers=self.request.user.id,
+                visibility=VisibilityChoices.PUBLIC,
+            ),
+            parent_dataset__project__members=self.request.user.id,
         ).distinct()
 
     def create(self, request, *args, **kwargs):
@@ -317,19 +400,6 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
-
-
-class ScanReportRetrieveView(generics.RetrieveAPIView):
-    """
-    This view should return a single scanreport from an id
-    """
-
-    serializer_class = ScanReportViewSerializer
-    permission_classes = [CanView | CanAdmin | CanEdit]
-
-    def get_queryset(self):
-        qs = ScanReport.objects.filter(id=self.kwargs["pk"])
-        return qs
 
 
 class DatasetListView(generics.ListAPIView):
@@ -1167,9 +1237,11 @@ class ScanReportFormView(FormView):
         dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
+        parent_dataset = form.cleaned_data["parent_dataset"]
         scan_report = ScanReport.objects.create(
             dataset=form.cleaned_data["dataset"],
-            parent_dataset=form.cleaned_data["parent_dataset"],
+            parent_dataset=parent_dataset,
+            visibility=parent_dataset.visibility,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
