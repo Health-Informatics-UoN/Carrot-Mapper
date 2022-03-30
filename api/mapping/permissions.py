@@ -39,7 +39,7 @@ def is_az_function_user(user: User) -> bool:
     return user.username == os.getenv("AZ_FUNCTION_USER")
 
 
-def has_viwership(obj: Any, request: Request) -> bool:
+def has_viewership(obj: Any, request: Request) -> bool:
     """Check the viewership permission on an object.
 
     Args:
@@ -177,7 +177,7 @@ class CanView(permissions.BasePermission):
 
         if is_az_function_user(request.user):
             return True
-        return has_viwership(obj, request)
+        return has_viewership(obj, request)
 
 
 class CanEdit(permissions.BasePermission):
