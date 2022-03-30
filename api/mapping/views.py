@@ -1853,6 +1853,8 @@ def scanreport_admin_page(request, pk):
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
+        args["sr_id"] = pk
+        args["sr_dataset"] = sr.dataset
     else:
         args["is_admin"] = False
 
