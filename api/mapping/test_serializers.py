@@ -69,7 +69,71 @@ class TestScanReportEditSerializer(TestCase):
         self.assertListEqual(serializer.validate_editors([new_editor]), [new_editor])
 
     def test_validate_viewers(self):
-        pass
+        User = get_user_model()
+        new_viewer = User.objects.create(username="samwise", password="ejojwejfefe")
+        request = APIRequestFactory().patch(
+            "/the/path/to/isengard", data={"viewers": [new_viewer]}
+        )
+        # check non admin can't alter viewers
+        request.user = self.non_admin_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"viewers": [new_viewer]},
+            context={"request": request},
+        )
+        self.assertRaises(
+            ValidationError, serializer.validate_viewers, viewers=[new_viewer]
+        )
+
+        # check author can alter viewers
+        request.user = self.author_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"viewers": [new_viewer]},
+            context={"request": request},
+        )
+        self.assertListEqual(serializer.validate_viewers([new_viewer]), [new_viewer])
+
+        # check admin can alter viewers
+        request.user = self.admin_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"viewers": [new_viewer]},
+            context={"request": request},
+        )
+        self.assertListEqual(serializer.validate_viewers([new_viewer]), [new_viewer])
 
     def test_validate_author(self):
-        pass
+        User = get_user_model()
+        new_author = User.objects.create(username="samwise", password="ejojwejfefe")
+        request = APIRequestFactory().patch(
+            "/the/path/to/isengard", data={"author": new_author}
+        )
+        # check non admin can't alter author
+        request.user = self.non_admin_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"author": new_author},
+            context={"request": request},
+        )
+        self.assertRaises(
+            ValidationError, serializer.validate_author, author=new_author
+        )
+
+        # check author can alter autho
+        request.user = self.author_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"author": new_author},
+            context={"request": request},
+        )
+        self.assertEqual(serializer.validate_author(new_author), new_author)
+
+        # check admin can alter author
+        request.user = self.admin_user
+        serializer = ScanReportEditSerializer(
+            self.scanreport,
+            data={"author": new_author},
+            context={"request": request},
+        )
+        self.assertEqual(serializer.validate_author(new_author), new_author)
