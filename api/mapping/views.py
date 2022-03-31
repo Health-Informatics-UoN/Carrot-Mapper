@@ -38,6 +38,7 @@ from .serializers import (
     DatasetViewSerializer,
     ProjectSerializer,
     ProjectNameSerializer,
+    ProjectDatasetSerializer,
 )
 from .serializers import (
     ConceptSerializer,
@@ -216,10 +217,13 @@ class ProjectListView(ListAPIView):
 
     def get_serializer_class(self):
         if (
-            self.request.GET.get("name") != None
-            or self.request.GET.get("name__in") != None
+            self.request.GET.get("name") is not None
+            or self.request.GET.get("name__in") is not None
         ):
             return ProjectSerializer
+        if self.request.GET.get("datasets") is not None:
+            return ProjectDatasetSerializer
+
         return ProjectNameSerializer
 
 
