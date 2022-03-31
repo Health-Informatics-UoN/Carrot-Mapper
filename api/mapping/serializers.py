@@ -254,7 +254,7 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name","members"]
+        fields = ["name", "members"]
 
 
 class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
