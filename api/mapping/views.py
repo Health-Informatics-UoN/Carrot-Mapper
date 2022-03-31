@@ -222,8 +222,7 @@ class ProjectListView(ListAPIView):
         return ProjectNameSerializer
 
     def get_queryset(self):
-        if self.request.GET.get("dataset") != None:
-            dataset = self.request.GET.get("dataset")
+        if dataset := self.request.GET.get("dataset"):
             return Project.objects.filter(datasets__exact=dataset).distinct()
 
         return Project.objects.all()
