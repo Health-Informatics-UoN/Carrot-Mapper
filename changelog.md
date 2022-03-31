@@ -71,7 +71,8 @@ with visibility of the Dataset.
   - Link to Dataset details page for each dataset
 * Remove unused ajax POST function.
 * Remove unused JS variables.
-
+* Users must now be the author of a Scan Report or an admin of the parent Dataset
+to change the author of a Scan Report.
 ## v1.4.0 was released 02/02/22
 
 - Mapping rules within existing Scan Reports that are (a) set to 'Mapping Complete' and (b) not
