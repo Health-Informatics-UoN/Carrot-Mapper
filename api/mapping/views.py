@@ -216,13 +216,12 @@ class ProjectListView(ListAPIView):
     filterset_fields = {"name": ["in", "exact"]}
 
     def get_serializer_class(self):
-        print(self.request.GET)
         if (
-            self.request.GET.get("name") != None
-            or self.request.GET.get("name__in") != None
+            self.request.GET.get("name") is not None
+            or self.request.GET.get("name__in") is not None
         ):
             return ProjectSerializer
-        if self.request.GET.get("datasets") != None:
+        if self.request.GET.get("datasets") is not None:
             return ProjectDatasetSerializer
 
         return ProjectNameSerializer
