@@ -40,10 +40,12 @@ class ScanReportAdmin(admin.ModelAdmin):
 
     def get_name(self, obj):
         return obj.dataset
+
     get_name.short_description = "Scan Report Name"
 
     def get_parent_dataset(self, obj):
         return "%s: %s" % (obj.parent_dataset.id, obj.parent_dataset.name)
+
     get_parent_dataset.short_description = "Parent Dataset"
 
 
@@ -70,12 +72,7 @@ class ScanReportTableAdmin(admin.ModelAdmin):
 
 
 class ScanReportFieldAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "get_name",
-        "get_scan_report_table",
-        "get_scan_report"
-    )
+    list_display = ("id", "get_name", "get_scan_report_table", "get_scan_report")
 
     def get_name(self, obj):
         return obj.name
@@ -88,8 +85,10 @@ class ScanReportFieldAdmin(admin.ModelAdmin):
     get_scan_report_table.short_description = "Scan Report Table"
 
     def get_scan_report(self, obj):
-        return "%s: %s" % (obj.scan_report_table.scan_report.id,
-                           obj.scan_report_table.scan_report.dataset)
+        return "%s: %s" % (
+            obj.scan_report_table.scan_report.id,
+            obj.scan_report_table.scan_report.dataset,
+        )
 
     get_scan_report.short_description = "Scan Report"
 
@@ -104,10 +103,12 @@ class ScanReportValueAdmin(admin.ModelAdmin):
 
     def get_name(self, obj):
         return obj.value
+
     get_name.short_description = "Value"
 
     def get_field(self, obj):
         return "%s: %s" % (obj.scan_report_field.id, obj.scan_report_field.name)
+
     get_field.short_description = "Scan Report Field"
 
 
@@ -128,12 +129,16 @@ class MappingRuleAdmin(admin.ModelAdmin):
     )
 
     def get_concept(self, obj):
-        return "%s: %s" % (obj.concept.concept.concept_id,
-                           obj.concept.concept.concept_name)
+        return "%s: %s" % (
+            obj.concept.concept.concept_id,
+            obj.concept.concept.concept_name,
+        )
+
     get_concept.short_description = "OMOP Concept"
 
     def get_omop_field(self, obj):
         return "%s" % (obj.omop_field.field)
+
     get_omop_field.short_description = "OMOP Field"
 
 
@@ -160,6 +165,7 @@ class OmopFieldAdmin(admin.ModelAdmin):
 
     def get_table(self, obj):
         return "%s: %s" % (obj.table.id, obj.table.table)
+
     get_table.short_description = "OMOP Table"
 
 
