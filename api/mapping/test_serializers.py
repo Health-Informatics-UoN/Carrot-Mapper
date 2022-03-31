@@ -120,7 +120,7 @@ class TestScanReportEditSerializer(TestCase):
             ValidationError, serializer.validate_author, author=new_author
         )
 
-        # check author can alter autho
+        # check author can alter author
         request.user = self.author_user
         serializer = ScanReportEditSerializer(
             self.scanreport,
