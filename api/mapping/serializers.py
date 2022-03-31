@@ -267,7 +267,17 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name"]
+        fields = ["name", "members"]
+
+
+class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serialiser for only showing the names of Projects. Use in non-admin ListViews.
+    """
+
+    class Meta:
+        model = Project
+        fields = ["name", "datasets"]
 
 
 class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
