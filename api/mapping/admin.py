@@ -25,6 +25,19 @@ class ScanReportAdmin(admin.ModelAdmin):
         "viewers",
         "editors",
     )
+    list_display = (
+        "id",
+        "get_name",
+        "get_parent_dataset",
+    )
+
+    def get_name(self, obj):
+        return obj.dataset
+    get_name.short_description = "Scan Report Name"
+
+    def get_parent_dataset(self, obj):
+        return "%s: %s" % (obj.parent_dataset.id, obj.parent_dataset.name)
+    get_parent_dataset.short_description = "Parent Dataset"
 
 
 class ScanReportTableAdmin(admin.ModelAdmin):
@@ -67,6 +80,10 @@ class ProjectAdmin(admin.ModelAdmin):
     filter_horizontal = (
         "datasets",
         "members",
+    )
+    list_display = (
+        "name",
+        "id",
     )
 
 
