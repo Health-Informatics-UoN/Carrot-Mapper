@@ -71,6 +71,7 @@ with visibility of the Dataset.
   - Link to Dataset details page for each dataset
 * Remove unused ajax POST function.
 * Remove unused JS variables.
+* Improved django admin pages' responsiveness and informativeness
 
 ## v1.4.0 was released 02/02/22
 
