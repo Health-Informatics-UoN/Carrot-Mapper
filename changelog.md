@@ -2,7 +2,7 @@
 
 Please append a line to the changelog for each change made.
 
-## v1.5.0-beta
+## v2.0.0-beta
 
 - Added Project and Dataset tables to the database.
 - Added `add_datasets_to_partner` management command.
@@ -71,6 +71,7 @@ with visibility of the Dataset.
   - Link to Dataset details page for each dataset
 * Remove unused ajax POST function.
 * Remove unused JS variables.
+* Can now include a datasets query in the projects list endpoint to include datasets in the result
 * Improved django admin pages' responsiveness and informativeness
 
 ## v1.4.0 was released 02/02/22
