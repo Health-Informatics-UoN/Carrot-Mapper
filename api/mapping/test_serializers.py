@@ -20,16 +20,29 @@ class TestScanReportEditSerializer(TestCase):
         self.non_admin_user = User.objects.create(
             username="saruman", password="pjwjfefjefew"
         )
+        self.viewer_user = User.objects.create(
+            username="thewatcher", password="oidoijewfoj"
+        )
         self.project = Project.objects.create(name="The Fellowship of The Ring")
-        self.dataset = Dataset.objects.create(
+        self.public_dataset = Dataset.objects.create(
             name="Places in Middle Earth", visibility=VisibilityChoices.PUBLIC
         )
-        self.dataset.admins.add(self.admin_user)
-        self.project.datasets.add(self.dataset)
-        self.scanreport = ScanReport.objects.create(
+        self.restricted_dataset = Dataset.objects.create(
+            name="Forbidden Places in Middle Earth",
+            visibility=VisibilityChoices.RESTRICTED,
+        )
+        self.public_dataset.admins.add(self.admin_user)
+        self.project.datasets.add(self.public_dataset, self.restricted_dataset)
+        self.public_scanreport = ScanReport.objects.create(
             dataset="The Shire",
             visibility=VisibilityChoices.PUBLIC,
-            parent_dataset=self.dataset,
+            parent_dataset=self.public_dataset,
+            author=self.author_user,
+        )
+        self.restricted_scanreport = ScanReport.objects.create(
+            dataset="Cirith Ungol",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.restricted_dataset,
             author=self.author_user,
         )
 
@@ -42,7 +55,7 @@ class TestScanReportEditSerializer(TestCase):
         # check non admin can't alter editors
         request.user = self.non_admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"editors": [new_editor]},
             context={"request": request},
         )
@@ -50,10 +63,27 @@ class TestScanReportEditSerializer(TestCase):
             ValidationError, serializer.validate_editors, editors=[new_editor]
         )
 
+        # check viewer can't alter editors on restricted SRs
+        request.user = self.viewer_user
+        self.restricted_dataset.viewers.add(self.viewer_user)
+        serializer = ScanReportEditSerializer(
+            self.restricted_scanreport,
+            data={"editors": [new_editor]},
+            context={"request": request},
+        )
+        self.assertRaises(
+            ValidationError, serializer.validate_editors, editors=[new_editor]
+        )
+        self.restricted_dataset.viewers.remove(self.viewer_user)
+        self.restricted_scanreport.viewers.add(self.viewer_user)
+        self.assertRaises(
+            ValidationError, serializer.validate_editors, editors=[new_editor]
+        )
+
         # check author can alter editors
         request.user = self.author_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"editors": [new_editor]},
             context={"request": request},
         )
@@ -62,7 +92,7 @@ class TestScanReportEditSerializer(TestCase):
         # check admin can alter editors
         request.user = self.admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"editors": [new_editor]},
             context={"request": request},
         )
@@ -77,7 +107,7 @@ class TestScanReportEditSerializer(TestCase):
         # check non admin can't alter viewers
         request.user = self.non_admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"viewers": [new_viewer]},
             context={"request": request},
         )
@@ -85,10 +115,27 @@ class TestScanReportEditSerializer(TestCase):
             ValidationError, serializer.validate_viewers, viewers=[new_viewer]
         )
 
+        # check viewer can't alter viewers on restricted SRs
+        request.user = self.viewer_user
+        self.restricted_dataset.viewers.add(self.viewer_user)
+        serializer = ScanReportEditSerializer(
+            self.restricted_scanreport,
+            data={"viewers": [new_viewer]},
+            context={"request": request},
+        )
+        self.assertRaises(
+            ValidationError, serializer.validate_viewers, viewers=[new_viewer]
+        )
+        self.restricted_dataset.viewers.remove(self.viewer_user)
+        self.restricted_scanreport.viewers.add(self.viewer_user)
+        self.assertRaises(
+            ValidationError, serializer.validate_viewers, viewers=[new_viewer]
+        )
+
         # check author can alter viewers
         request.user = self.author_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"viewers": [new_viewer]},
             context={"request": request},
         )
@@ -97,7 +144,7 @@ class TestScanReportEditSerializer(TestCase):
         # check admin can alter viewers
         request.user = self.admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"viewers": [new_viewer]},
             context={"request": request},
         )
@@ -112,7 +159,7 @@ class TestScanReportEditSerializer(TestCase):
         # check non admin can't alter author
         request.user = self.non_admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"author": new_author},
             context={"request": request},
         )
@@ -120,10 +167,27 @@ class TestScanReportEditSerializer(TestCase):
             ValidationError, serializer.validate_author, author=new_author
         )
 
+        # check viewer can't alter author on restricted SRs
+        request.user = self.viewer_user
+        self.restricted_dataset.viewers.add(self.viewer_user)
+        serializer = ScanReportEditSerializer(
+            self.restricted_scanreport,
+            data={"author": [new_author]},
+            context={"request": request},
+        )
+        self.assertRaises(
+            ValidationError, serializer.validate_author, author=new_author
+        )
+        self.restricted_dataset.viewers.remove(self.viewer_user)
+        self.restricted_scanreport.viewers.add(self.viewer_user)
+        self.assertRaises(
+            ValidationError, serializer.validate_author, author=new_author
+        )
+
         # check author can alter author
         request.user = self.author_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"author": new_author},
             context={"request": request},
         )
@@ -132,7 +196,7 @@ class TestScanReportEditSerializer(TestCase):
         # check admin can alter author
         request.user = self.admin_user
         serializer = ScanReportEditSerializer(
-            self.scanreport,
+            self.public_scanreport,
             data={"author": new_author},
             context={"request": request},
         )
