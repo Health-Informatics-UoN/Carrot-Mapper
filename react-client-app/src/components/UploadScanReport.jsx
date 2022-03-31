@@ -41,7 +41,7 @@ const UploadScanReport = ({ setTitle }) => {
         const dataPartnerQuery = await useGet("/datapartners/")
         setDataPartners([{ name: "------" }, ...dataPartnerQuery.sort((a, b) => a.name.localeCompare(b.name))])
         setLoadingMessage(null)
-        const projectsQuery = await useGet("/projects/")
+        const projectsQuery = await useGet("/projects/?datasets=true")
         setProjectList(projectsQuery)
         const usersQuery = await useGet("/users/")
         setUsersList(usersQuery)
@@ -178,7 +178,7 @@ const UploadScanReport = ({ setTitle }) => {
             await formData.append('data_dictionary_file', dataDictionary)
             setUploadLoading(true)
 
-            const response = await postForm(window.location.href,formData)
+            const response = await postForm(window.location.href, formData)
             // redirect if the upload was successful, otherwise show the error message
             window.location.pathname = `/scanreports/`
         }
@@ -202,12 +202,12 @@ const UploadScanReport = ({ setTitle }) => {
         setUsers(pj => pj.filter(user => user.id != id))
     }
     async function mapDatasetToProjects(dataset, projects) {
-        const full_projects = await useGet(`/projects/?name__in=${projects.map(project=>project.name).join()}`)
+        const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
         const promises = []
-        full_projects.map(project=>{
+        full_projects.map(project => {
             const data = {
-                id:project.id,
-                datasets:[dataset.id,...project.datasets]
+                id: project.id,
+                datasets: [dataset.id, ...project.datasets]
             }
             promises.push(usePatch(`/projects/update/${project.id}/`, data))
         })
@@ -264,12 +264,24 @@ const UploadScanReport = ({ setTitle }) => {
                     <Box>
                         <FormControl isInvalid={formErrors.parent_dataset && formErrors.parent_dataset.length > 0}>
                             <Box display={{ md: 'flex' }}>
-                                <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
-                                } >
-                                    {datasets.map((item, index) =>
-                                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
-                                    )}
-                                </Select>
+                                {projectList ?
+                                    <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
+                                    } >
+
+                                        <option value={JSON.stringify({ name: "------" })}>------</option>
+                                        {projectList.sort((a, b) => a.name.localeCompare(b.name)).map((item, index) =>
+                                            <>
+                                                <optgroup label={item.name}>
+                                                    {datasets.filter(dat => item.datasets.includes(dat.id)).map((item2, index2) =>
+                                                        <option style={{ marginLeft: '20px' }} key={index2} value={JSON.stringify(item2)}>{item2.name}</option>
+                                                    )}
+                                                </optgroup>
+                                            </>
+                                        )}
+                                    </Select>
+                                    :
+                                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Datasets' />
+                                }
                                 {selectedDataPartner.id != undefined && !addingDataset &&
                                     <Tooltip label="Add new Dataset">
                                         <Button onClick={() => setAddingDataset(true)}>Add new</Button>
