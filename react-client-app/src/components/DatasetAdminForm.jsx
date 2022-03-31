@@ -54,10 +54,12 @@ const DatasetAdminForm = ({ setTitle }) => {
             const queries = [
                 useGet(`/datasets/${datasetId}`),
                 useGet("/datapartners/"),
-                useGet("/users/"),
+                useGet("/usersfilter/?is_active=true"),
+                useGet(`/projects/?dataset=${datasetId}`)
             ]
             // Get dataset, data partners and users
-            const [datasetQuery, dataPartnerQuery, usersQuery] = await Promise.all(queries)
+            const [datasetQuery, dataPartnerQuery, usersQuery,projectsQuery] = await Promise.all(queries)
+            const validUsers = [...(new Set(projectsQuery.map(project=>project.members).flat()))]
             // Set up state from the results of the queries
             setDataset(datasetQuery)
             setIsPublic(datasetQuery.visibility === "PUBLIC")
@@ -66,7 +68,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
             )
             setLoadingMessage(null)
-            setUsersList(usersQuery)
+            setUsersList(usersQuery.filter(user=>validUsers.includes(user.id)))
             setViewers(
                 prevViewers => [
                     ...prevViewers,
