@@ -19,18 +19,69 @@ from .models import (
 )
 
 
+class ScanReportAdmin(admin.ModelAdmin):
+    raw_id_fields = ("data_dictionary",)
+    filter_horizontal = (
+        "viewers",
+        "editors",
+    )
+
+
+class ScanReportTableAdmin(admin.ModelAdmin):
+    raw_id_fields = (
+        "person_id",
+        "date_event",
+    )
+
+
+class ScanReportValueAdmin(admin.ModelAdmin):
+    raw_id_fields = ("scan_report_field",)
+
+
+class MappingRuleAdmin(admin.ModelAdmin):
+    raw_id_fields = (
+        "scan_report",
+        "omop_field",
+        "source_table",
+        "source_field",
+        "concept",
+    )
+
+
+class ScanReportConceptAdmin(admin.ModelAdmin):
+    raw_id_fields = (
+        "concept",
+        "content_object",
+    )
+
+
+class DatasetAdmin(admin.ModelAdmin):
+    filter_horizontal = (
+        "viewers",
+        "admins",
+        "editors",
+    )
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    filter_horizontal = (
+        "datasets",
+        "members",
+    )
+
+
 admin.site.register(DataPartner)
-admin.site.register(ScanReport)
-admin.site.register(ScanReportTable)
+admin.site.register(ScanReport, ScanReportAdmin)
+admin.site.register(ScanReportTable, ScanReportTableAdmin)
 admin.site.register(ScanReportField)
-admin.site.register(ScanReportValue)
+admin.site.register(ScanReportValue, ScanReportValueAdmin)
 admin.site.register(ScanReportAssertion)
 admin.site.register(ClassificationSystem)
 admin.site.register(OmopTable)
 admin.site.register(OmopField)
-admin.site.register(MappingRule)
+admin.site.register(MappingRule, MappingRuleAdmin)
 admin.site.register(DataDictionary)
 admin.site.register(NLPModel)
-admin.site.register(ScanReportConcept)
-admin.site.register(Dataset)
-admin.site.register(Project)
+admin.site.register(ScanReportConcept, ScanReportConceptAdmin)
+admin.site.register(Dataset, DatasetAdmin)
+admin.site.register(Project, ProjectAdmin)
