@@ -254,7 +254,7 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name"]
+        fields = ["name", "members"]
 
 
 class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):

@@ -211,7 +211,6 @@ class ProjectListView(ListAPIView):
     """
 
     permission_classes = []
-    queryset = Project.objects.all()
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"name": ["in", "exact"]}
 
@@ -225,6 +224,12 @@ class ProjectListView(ListAPIView):
             return ProjectDatasetSerializer
 
         return ProjectNameSerializer
+
+    def get_queryset(self):
+        if dataset := self.request.GET.get("dataset"):
+            return Project.objects.filter(datasets__exact=dataset).distinct()
+
+        return Project.objects.all()
 
 
 class ProjectRetrieveView(RetrieveAPIView):
@@ -252,7 +257,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"id": ["in", "exact"]}
+    filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
