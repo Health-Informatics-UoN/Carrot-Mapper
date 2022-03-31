@@ -71,6 +71,7 @@ with visibility of the Dataset.
   - Link to Dataset details page for each dataset
 * Remove unused ajax POST function.
 * Remove unused JS variables.
+* Can now include a datasets query in the projects list endpoint to include datasets in the result
 
 ## v1.4.0 was released 02/02/22
 
