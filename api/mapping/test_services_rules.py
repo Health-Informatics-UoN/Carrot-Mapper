@@ -26,7 +26,7 @@ class TestMisalignedMappings(TestCase):
         self.user1 = User.objects.create(username="oliver", password="uhafcvbsyrgf")
         # Generate Token for the user
         Token.objects.create(user=self.user1)
-        # Create Dataser
+        # Create Dataset
         self.data_partner = DataPartner.objects.create(name="Data Partner")
         self.dataset1 = Dataset.objects.create(
             name="Dataset", visibility="PUBLIC", data_partner=self.data_partner

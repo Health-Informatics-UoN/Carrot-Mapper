@@ -1,10 +1,11 @@
 import os
+from unittest import mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
 from rest_framework.authtoken.models import Token
 from .views import DatasetListView, ScanReportListViewSet
-from .models import Project, Dataset, ScanReport, VisibilityChoices
+from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
 
 
 class TestDatasetListView(TestCase):
@@ -16,18 +17,28 @@ class TestDatasetListView(TestCase):
         self.user2 = User.objects.create(username="aragorn", password="ooieriofiejr")
         Token.objects.create(user=self.user2)
 
+        # Set up a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Set up datasets
         self.public_dataset1 = Dataset.objects.create(
-            name="Places in Middle Earth", visibility="PUBLIC"
+            name="Places in Middle Earth",
+            visibility="PUBLIC",
+            data_partner=self.data_partner,
         )
         self.public_dataset2 = Dataset.objects.create(
-            name="Places in Valinor", visibility="PUBLIC"
+            name="Places in Valinor",
+            visibility="PUBLIC",
+            data_partner=self.data_partner,
         )
         self.public_dataset3 = Dataset.objects.create(
-            name="The Rings of Power", visibility="PUBLIC"
+            name="The Rings of Power",
+            visibility="PUBLIC",
+            data_partner=self.data_partner,
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="Fellowship Members", visibility="RESTRICTED"
+            name="Fellowship Members",
+            visibility="RESTRICTED",
+            data_partner=self.data_partner,
         )
         self.restricted_dataset.viewers.add(self.user1)
 
@@ -138,6 +149,7 @@ class TestDatasetListView(TestCase):
         # Assert response is empty
         self.assertEqual(response_data, [])
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
@@ -178,9 +190,14 @@ class TestDatasetUpdateView(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         self.project.members.add(self.admin_user, self.non_admin_user)
 
+        # Set up Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
         # Set up Dataset
         self.dataset = Dataset.objects.create(
-            name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
+            name="The Heights of Hobbits",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.dataset.admins.add(self.admin_user)
         self.project.datasets.add(self.dataset)
@@ -242,9 +259,14 @@ class TestDatasetRetrieveView(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         self.project.members.add(self.admin_user, self.non_admin_user)
 
+        # Set up Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
         # Set up Dataset
         self.dataset = Dataset.objects.create(
-            name="The Heights of Hobbits", visibility=VisibilityChoices.RESTRICTED
+            name="The Heights of Hobbits",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         self.dataset.viewers.add(self.non_admin_user)
         self.dataset.admins.add(self.admin_user)
@@ -299,9 +321,14 @@ class TestDatasetDeleteView(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         self.project.members.add(self.admin_user, self.non_admin_user)
 
+        # Set up Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
         # Set up Dataset
         self.dataset = Dataset.objects.create(
-            name="The Heights of Hobbits", visibility=VisibilityChoices.PUBLIC
+            name="The Heights of Hobbits",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.dataset.admins.add(self.admin_user)
         self.project.datasets.add(self.dataset)
@@ -336,12 +363,19 @@ class TestDatasetDeleteView(TestCase):
 
 class TestScanReportListViewset(TestCase):
     def setUp(self):
+        # Set up Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="The Shire", visibility=VisibilityChoices.PUBLIC
+            name="The Shire",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="The Mines of Moria", visibility=VisibilityChoices.RESTRICTED
+            name="The Mines of Moria",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
 
         # Set up scan reports
@@ -537,6 +571,7 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_get(self):
         """AZ_FUNCTION_USER can see all public SRs and restricted SRs."""
         User = get_user_model()

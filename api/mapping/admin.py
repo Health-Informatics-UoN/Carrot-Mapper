@@ -172,7 +172,10 @@ class OmopFieldAdmin(admin.ModelAdmin):
 class ScanReportConceptAdmin(admin.ModelAdmin):
     raw_id_fields = (
         "concept",
-        "content_object",
+        # "content_object",  # This is not in raw_id_fields because unit test throw
+        # an error as content_object is a GenericForeignKey and not a ForeignKey or
+        # ManyToMany. However, this does mean navigating to the ScanReportConcept
+        # admin page will be very slow.
     )
     list_display = (
         "id",

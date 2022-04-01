@@ -77,6 +77,7 @@ to change the author of a Scan Report.
 * Improved django admin pages' responsiveness and informativeness
 * Users who are not admins/editors of a scan report table cannot edit the form data.
 * User is now automatically added as admin to Datasets they create.
+* Fixed failing unittests.
 
 ## v1.4.0 was released 02/02/22
 

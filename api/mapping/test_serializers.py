@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ValidationError
-from .models import Project, Dataset, ScanReport, VisibilityChoices
+from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
 from .serializers import ScanReportEditSerializer
 
 
@@ -25,12 +25,16 @@ class TestScanReportEditSerializer(TestCase):
         )
         self.editor_user = User.objects.create(username="sauron", password="oijfowfjef")
         self.project = Project.objects.create(name="The Fellowship of The Ring")
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         self.public_dataset = Dataset.objects.create(
-            name="Places in Middle Earth", visibility=VisibilityChoices.PUBLIC
+            name="Places in Middle Earth",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset = Dataset.objects.create(
             name="Forbidden Places in Middle Earth",
             visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         self.public_dataset.admins.add(self.admin_user)
         self.project.datasets.add(self.public_dataset, self.restricted_dataset)
