@@ -100,6 +100,7 @@ const UploadScanReport = ({ setTitle }) => {
                 data_partner: data_partner.id,
                 name: newDatasetName,
                 visibility: projectVisibleToPublic ? "PUBLIC" : "RESTRICTED"
+                admins: users.map(item => item.id),
             }
             if (!projectVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
