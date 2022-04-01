@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
@@ -138,6 +139,7 @@ class TestDatasetListView(TestCase):
         # Assert response is empty
         self.assertEqual(response_data, [])
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
@@ -537,6 +539,7 @@ class TestScanReportListViewset(TestCase):
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_get(self):
         """AZ_FUNCTION_USER can see all public SRs and restricted SRs."""
         User = get_user_model()

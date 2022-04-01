@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.generics import GenericAPIView
@@ -504,6 +505,7 @@ class TestCanView(TestCase):
             )
         )
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
@@ -602,6 +604,7 @@ class TestCanEdit(TestCase):
             )
         )
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
@@ -698,6 +701,7 @@ class TestCanAdmin(TestCase):
             self.permission.has_object_permission(self.request, self.view, sr)
         )
 
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
