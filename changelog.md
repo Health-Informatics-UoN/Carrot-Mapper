@@ -73,6 +73,7 @@ with visibility of the Dataset.
 * Remove unused JS variables.
 * Can now include a datasets query in the projects list endpoint to include datasets in the result
 * Improved django admin pages' responsiveness and informativeness
+* Users who are not admins/editors of a scan report table cannot edit the form data.
 
 ## v1.4.0 was released 02/02/22
 
