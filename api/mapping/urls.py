@@ -191,7 +191,7 @@ urlpatterns = [
     path("tables/", views.ScanReportTableListView.as_view(), name="tables"),
     path(
         "tables/<int:pk>/update/",
-        views.ScanReportTableUpdateView.as_view(),
+        views.update_scanreport_table_page,
         name="scan-report-table-update",
     ),
     path("fields/", views.ScanReportFieldListView.as_view(), name="fields"),
