@@ -17,7 +17,7 @@ class TestScanReportEditSerializer(TestCase):
         self.author_user = User.objects.create(
             username="frodo", password="owdjqwojdowjjwf"
         )
-        self.non_admin_user = User.objects.create(
+        self.non_viewer_user = User.objects.create(
             username="saruman", password="pjwjfefjefew"
         )
         self.viewer_user = User.objects.create(
@@ -59,7 +59,7 @@ class TestScanReportEditSerializer(TestCase):
             context={"request": request},
         )
         # check non admin can't alter editors
-        request.user = self.non_admin_user
+        request.user = self.non_viewer_user
         self.assertRaises(
             ValidationError, serializer.validate_editors, editors=[new_editor]
         )
@@ -108,7 +108,7 @@ class TestScanReportEditSerializer(TestCase):
             context={"request": request},
         )
         # check non admin can't alter viewers
-        request.user = self.non_admin_user
+        request.user = self.non_viewer_user
         self.assertRaises(
             ValidationError, serializer.validate_viewers, viewers=[new_viewer]
         )
@@ -158,7 +158,7 @@ class TestScanReportEditSerializer(TestCase):
         )
 
         # check non admin can't alter author
-        request.user = self.non_admin_user
+        request.user = self.non_viewer_user
         self.assertRaises(
             ValidationError, serializer.validate_author, author=new_author
         )
