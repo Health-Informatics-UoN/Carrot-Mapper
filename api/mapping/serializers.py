@@ -95,6 +95,19 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate_author(self, author):
+        if request := self.context.get("request"):
+            user = request.user
+            if not (
+                self.instance.author.id == user.id
+                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author of the scan report or an admin of the parent dataset 
+                    to change this field."""
+                )
+        return author
+
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
             user = request.user
