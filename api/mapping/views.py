@@ -954,6 +954,28 @@ class ScanReportTableUpdateView(UpdateView):
         return "{}?search={}".format(reverse("tables"), self.object.scan_report.id)
 
 
+@login_required
+def update_scanreport_table_page(request, pk):
+    # Get the SR table
+    sr_table = ScanReportTable.objects.get(id=pk)
+    # Determine if the user can edit the form
+    can_edit = False
+    if (
+        sr_table.scan_report.author.id == request.user.id
+        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+        or sr_table.scan_report.parent_dataset.editors.filter(
+            id=request.user.id
+        ).exists()
+        or sr_table.scan_report.parent_dataset.admins.filter(
+            id=request.user.id
+        ).exists()
+    ):
+        can_edit = True
+    # Set the page context
+    context = {"object": sr_table, "can_edit": can_edit}
+    return render(request, "mapping/scanreporttable_form.html", context=context)
+
+
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ListView):
     model = ScanReportField
