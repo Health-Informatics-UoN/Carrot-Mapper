@@ -17,7 +17,7 @@ from .permissions import (
 from .views import (
     ProjectRetrieveView,
 )
-from .models import Project, Dataset, ScanReport, VisibilityChoices
+from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
 
 
 class TestHasViewership(TestCase):
@@ -60,12 +60,19 @@ class TestHasViewership(TestCase):
             self.non_restricted_sr_viewer,
         )
 
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="The Fellowship of the Ring", visibility=VisibilityChoices.PUBLIC
+            name="The Fellowship of the Ring",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset = Dataset.objects.create(
-            name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
+            name="The Two Towers",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset.viewers.add(self.user_with_perm)
         self.project.datasets.add(self.public_dataset, self.restricted_dataset)
@@ -165,13 +172,19 @@ class TestHasEditorship(TestCase):
             self.non_restricted_sr_viewer,
         )
 
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="The Fellowship of the Ring", visibility=VisibilityChoices.PUBLIC
+            name="The Fellowship of the Ring",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.public_dataset.editors.add(self.user_with_perm)
         self.restricted_dataset = Dataset.objects.create(
-            name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
+            name="The Two Towers",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset.viewers.add(self.user_with_perm)
         self.restricted_dataset.editors.add(self.user_with_perm)
@@ -272,13 +285,19 @@ class TestIsAdmin(TestCase):
             self.sr_author,
         )
 
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Set up datasets
         self.public_dataset = Dataset.objects.create(
-            name="The Fellowship of the Ring", visibility=VisibilityChoices.PUBLIC
+            name="The Fellowship of the Ring",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         self.public_dataset.admins.add(self.ds_admin)
         self.restricted_dataset = Dataset.objects.create(
-            name="The Two Towers", visibility=VisibilityChoices.RESTRICTED
+            name="The Two Towers",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         self.restricted_dataset.viewers.add(self.ds_admin)
         self.restricted_dataset.admins.add(self.ds_admin)
@@ -430,13 +449,20 @@ class TestCanView(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
         self.project.members.add(self.public_user, self.restricted_user)
+
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Create the public dataset
         self.public_dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
+            name="Hobbits of the Fellowship",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         # Create the restricted dataset
         self.restricted_dataset = Dataset.objects.create(
-            name="Ring bearers", visibility=VisibilityChoices.RESTRICTED
+            name="Ring bearers",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
         )
         # Add the restricted users
         self.restricted_dataset.viewers.add(self.restricted_user)
@@ -543,9 +569,14 @@ class TestCanEdit(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
         self.project.members.add(self.non_editor, self.editor)
+
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Create the public dataset
         self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
+            name="Hobbits of the Fellowship",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         # Add the restricted users
         self.dataset.admins.add(self.editor)
@@ -637,9 +668,13 @@ class TestCanAdmin(TestCase):
         self.project = Project.objects.create(name="The Fellowship of the Ring")
         # Add the permitted users
         self.project.members.add(self.non_admin, self.admin)
+        # Create a Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         # Create the public dataset
         self.dataset = Dataset.objects.create(
-            name="Hobbits of the Fellowship", visibility=VisibilityChoices.PUBLIC
+            name="Hobbits of the Fellowship",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
         )
         # Add the restricted users
         self.dataset.admins.add(self.admin)
