@@ -18,7 +18,7 @@ const UploadScanReport = ({ setTitle }) => {
     const [datasets, setDatasets] = useState([{ name: "------" }]);
     const [loadingDataset, setLoadingDataset] = useState(false);
     const [addingDataset, setAddingDataset] = useState(false);
-    const [projectVisibleToPublic, setProjectVisibleToPublic] = useState(true);
+    const [datasetVisibleToPublic, setDatasetVisibleToPublic] = useState(true);
     const [projects, setProjects] = useState([]);
     const [projectList, setProjectList] = useState(undefined);
 
@@ -99,10 +99,10 @@ const UploadScanReport = ({ setTitle }) => {
             const data = {
                 data_partner: data_partner.id,
                 name: newDatasetName,
-                visibility: projectVisibleToPublic ? "PUBLIC" : "RESTRICTED"
+                visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
                 admins: users.map(item => item.id),
             }
-            if (!projectVisibleToPublic) {
+            if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
             }
             const newDataset = await usePost(`/datasets/create/`, data)
@@ -221,7 +221,7 @@ const UploadScanReport = ({ setTitle }) => {
         setAddDatasetMessage(null)
         setProjects([])
         setUsers([])
-        setProjectVisibleToPublic(true)
+        setDatasetVisibleToPublic(true)
     }
 
     if (loadingMessage) {
@@ -317,10 +317,10 @@ const UploadScanReport = ({ setTitle }) => {
                                         <Box mt="10px">
                                             <Text fontWeight={"bold"}>Visible to public?</Text>
                                             <Flex alignItems={"center"}>
-                                                <Switch isChecked={projectVisibleToPublic} onChange={(e) => setProjectVisibleToPublic(restriction => !restriction)} />
-                                                <Text fontWeight={"bold"} ml={2}>{projectVisibleToPublic ? "Public" : "Restricted"}</Text>
+                                                <Switch isChecked={datasetVisibleToPublic} onChange={(e) => setDatasetVisibleToPublic(restriction => !restriction)} />
+                                                <Text fontWeight={"bold"} ml={2}>{datasetVisibleToPublic ? "Public" : "Restricted"}</Text>
                                             </Flex>
-                                            {!projectVisibleToPublic &&
+                                            {!datasetVisibleToPublic &&
                                                 <>
                                                     <Box>
                                                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
