@@ -9,6 +9,7 @@ const EditTable = () => {
     const [selectedPerson, setPerson] = useState("------");
     const [selectedDate, setDate] = useState("------");
     const [loadingMessage, setLoadingMessage] = useState(null)
+    const canEdit = window.canEdit
 
     useEffect(async () => {
         // get scan report table to use to get tables 
@@ -76,16 +77,24 @@ const EditTable = () => {
                 label={"Person ID"}
                 selectOptions={fields.map((item) => item.name)}
                 handleInput={setPerson}
-                isDisabled={false}
+                isDisabled={!canEdit}
             />
             <CCSelectInput
                 id={"table-date-event"}
                 label={"Date Event"}
                 selectOptions={fields.map((item) => item.name)}
                 handleInput={setDate}
-                isDisabled={false}
+                isDisabled={!canEdit}
             />
-            <Button bgColor="#3db28c" mt="10px" onClick={updateTable}>Update {table.name} </Button>
+            {canEdit &&
+                <Button
+                    bgColor="#3db28c"
+                    mt="10px"
+                    onClick={updateTable}
+                >
+                    Update {table.name}
+                </Button>
+            }
         </div>
     );
 }
