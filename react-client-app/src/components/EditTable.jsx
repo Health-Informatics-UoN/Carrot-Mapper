@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Select, HStack, Text, Button, Flex, Spinner } from "@chakra-ui/react"
+import { Button, Flex, Spinner } from "@chakra-ui/react"
+import CCSelectInput from './CCSelectInput'
 import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
     const value = window.location.href.split("tables/")[1].split("/")[0]
@@ -70,23 +71,20 @@ const EditTable = () => {
     }
     return (
         <div>
-            <HStack>
-                <Text w="200px">person_id:</Text>
-                <Select value={selectedPerson} onChange={(option) => setPerson(option.target.value)
-                } >
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
-            <HStack>
-                <Text w="200px">date_event:</Text>
-                <Select value={selectedDate} onChange={(option) => setDate(option.target.value)}>
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
+            <CCSelectInput
+                id={"table-person-id"}
+                label={"Person ID"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setPerson}
+                isDisabled={false}
+            />
+            <CCSelectInput
+                id={"table-date-event"}
+                label={"Date Event"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setDate}
+                isDisabled={false}
+            />
             <Button bgColor="#3db28c" mt="10px" onClick={updateTable}>Update {table.name} </Button>
         </div>
     );
