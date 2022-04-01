@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Flex, Spinner } from "@chakra-ui/react"
+import { Button, Flex, Spinner, useDisclosure, ScaleFade } from "@chakra-ui/react"
 import CCSelectInput from './CCSelectInput'
+import ToastAlert from '../components/ToastAlert'
 import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const value = window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
     const [table, setTable] = useState(null);
@@ -56,7 +59,13 @@ const EditTable = () => {
             window.location.href = `/tables/?search=${table.scan_report}`
         })
             .catch(err => {
-                console.log(err)
+                setAlert({
+                    hidden: false,
+                    status: 'error',
+                    title: 'Could not update scan report table',
+                    description: err.statusText ? err.statusText : ""
+                })
+                onOpen()
             })
     }
     if (!table || !fields || loadingMessage) {
@@ -72,6 +81,11 @@ const EditTable = () => {
     }
     return (
         <div>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
             <CCSelectInput
                 id={"table-person-id"}
                 label={"Person ID"}
