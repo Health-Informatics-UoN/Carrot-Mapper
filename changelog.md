@@ -75,6 +75,7 @@ with visibility of the Dataset.
 to change the author of a Scan Report.
 * Can now include a datasets query in the projects list endpoint to include datasets in the result
 * Improved django admin pages' responsiveness and informativeness
+* User is now automatically added as admin to Datasets they create.
 
 ## v1.4.0 was released 02/02/22
 
