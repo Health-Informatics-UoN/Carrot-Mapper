@@ -36,6 +36,7 @@ const FieldsTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const valuesRef = useRef([]);
     const scanReportTable = useRef([]);
+    const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
         // run on initial render
@@ -47,6 +48,7 @@ const FieldsTbl = (props) => {
         // get scan report table data to use for checking person id and date event
         getScanReportTable(value).then(table => {
             scanReportTable.current = table
+            setMappingButtonDisabled(false)
         })
     }, []);
 
@@ -105,7 +107,6 @@ const FieldsTbl = (props) => {
                             <Th>Concepts</Th>
                             <Th></Th>
                             <Th>Edit</Th>
-                            <Th>Run NLP</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -146,7 +147,7 @@ const FieldsTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            width='90px'
+                                                            w={"105px"}
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
@@ -161,12 +162,12 @@ const FieldsTbl = (props) => {
                                         </Formik>
                                     </Td>
                                     <Td><Link style={{ color: "#0000FF", }} href={"/fields/" + item.id + "/update/"}>Edit Field</Link></Td>
-                                    <Td><Link href={"/nlp/run?search=" + item.id} style={{ color: "#0000FF", }}>Run NLP</Link></Td>
                                 </Tr>
                             )
                         }
                     </Tbody>
                 </Table>
+                <Link href={"/scanreports/" + scanReportTable.current.scan_report + "/mapping_rules/"}><Button isDisabled={mappingButtonDisabled} variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 

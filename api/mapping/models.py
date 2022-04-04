@@ -208,6 +208,12 @@ class ScanReport(BaseModel):
         related_query_name="scanreport_viewing",
         blank=True,
     )
+    editors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="scanreport_editors",
+        related_query_name="scanreport_editor",
+        blank=True,
+    )
 
     def __str__(self):
         return str(self.id)
@@ -393,7 +399,7 @@ class Dataset(BaseModel):
     Model for datasets which contain scan reports.
     """
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     data_partner = models.ForeignKey(
         DataPartner,
         on_delete=models.CASCADE,
@@ -409,6 +415,18 @@ class Dataset(BaseModel):
         settings.AUTH_USER_MODEL,
         related_name="dataset_viewings",
         related_query_name="dataset_viewing",
+        blank=True,
+    )
+    admins = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_admins",
+        related_query_name="dataset_admin",
+        blank=True,
+    )
+    editors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_editors",
+        related_query_name="dataset_editor",
         blank=True,
     )
     # `projects` field added by M2M field in `Project`

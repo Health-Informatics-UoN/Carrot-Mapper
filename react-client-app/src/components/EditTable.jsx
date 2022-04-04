@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Select, HStack, Text, Button, Flex, Spinner } from "@chakra-ui/react"
+import { Button, Flex, Spinner, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import CCSelectInput from './CCSelectInput'
+import ToastAlert from '../components/ToastAlert'
 import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const value = window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
     const [table, setTable] = useState(null);
     const [selectedPerson, setPerson] = useState("------");
     const [selectedDate, setDate] = useState("------");
     const [loadingMessage, setLoadingMessage] = useState(null)
+    const canEdit = window.canEdit
 
     useEffect(async () => {
         // get scan report table to use to get tables 
@@ -54,7 +59,13 @@ const EditTable = () => {
             window.location.href = `/tables/?search=${table.scan_report}`
         })
             .catch(err => {
-                console.log(err)
+                setAlert({
+                    hidden: false,
+                    status: 'error',
+                    title: 'Could not update scan report table',
+                    description: err.statusText ? err.statusText : ""
+                })
+                onOpen()
             })
     }
     if (!table || !fields || loadingMessage) {
@@ -70,24 +81,34 @@ const EditTable = () => {
     }
     return (
         <div>
-            <HStack>
-                <Text w="200px">person_id:</Text>
-                <Select value={selectedPerson} onChange={(option) => setPerson(option.target.value)
-                } >
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
-            <HStack>
-                <Text w="200px">date_event:</Text>
-                <Select value={selectedDate} onChange={(option) => setDate(option.target.value)}>
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
-            <Button bgColor="#3db28c" mt="10px" onClick={updateTable}>Update {table.name} </Button>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
+            <CCSelectInput
+                id={"table-person-id"}
+                label={"Person ID"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setPerson}
+                isDisabled={!canEdit}
+            />
+            <CCSelectInput
+                id={"table-date-event"}
+                label={"Date Event"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setDate}
+                isDisabled={!canEdit}
+            />
+            {canEdit &&
+                <Button
+                    bgColor="#3db28c"
+                    mt="10px"
+                    onClick={updateTable}
+                >
+                    Update {table.name}
+                </Button>
+            }
         </div>
     );
 }

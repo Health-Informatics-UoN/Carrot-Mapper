@@ -24,7 +24,7 @@ import { getScanReports, getScanReportField, getScanReportTable } from '../api/v
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
-const DataTbl = (props) => {
+const ValuesTbl = (props) => {
     // get value to use in query from page url
     const value = parseInt(new URLSearchParams(window.location.search).get("search"))
     // set page state variables
@@ -35,12 +35,14 @@ const DataTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const scanReportsRef = useRef([]);
     const scanReportTable = useRef([]);
+    const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
         // get and store scan report table object to use to check person_id and date_event
         getScanReportField(value).then(data => {
             getScanReportTable(data.scan_report_table).then(table => {
                 scanReportTable.current = table
+                setMappingButtonDisabled(false)
             })
         })
         // get scan report values
@@ -101,7 +103,7 @@ const DataTbl = (props) => {
                             <Th>Value Description</Th>
                             <Th>Frequency</Th>
                             <Th>Concepts</Th>
-                            <Th></Th>
+                            <Th px={2}></Th>
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -109,17 +111,17 @@ const DataTbl = (props) => {
                             // Create new row for every value object
                             scanReports.map((item, index) =>
                                 <Tr key={item.id}>
-                                    <Td>{item.value}</Td>
-                                    <Td>{item.value_description}</Td>
-                                    <Td>{item.frequency}</Td>
+                                    <Td maxW={"300px"}>{item.value}</Td>
+                                    <Td maxW={"300px"}>{item.value_description}</Td>
+                                    <Td maxW={"300px"}>{item.frequency}</Td>
 
-                                    <Td>
+                                    <Td maxW={"300px"}>
                                         {item.conceptsLoaded ?
                                             item.concepts.length > 0 &&
                                             <VStack alignItems='flex-start' >
                                                 {item.concepts.map((concept) => (
-                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete} 
-                                                    creation_type={concept.creation_type?concept.creation_type:undefined}/>
+                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete}
+                                                        creation_type={concept.creation_type ? concept.creation_type : undefined} />
                                                 ))}
                                             </VStack>
                                             :
@@ -132,7 +134,7 @@ const DataTbl = (props) => {
                                                 <Text>Failed to load concepts</Text>
                                         }
                                     </Td>
-                                    <Td>
+                                    <Td w={"150px"} px={2}>
 
                                         <Formik initialValues={{ concept: '' }} onSubmit={(data, actions) => {
                                             handleSubmit(item.id, data.concept)
@@ -142,7 +144,7 @@ const DataTbl = (props) => {
                                                 <Form onSubmit={handleSubmit}>
                                                     <HStack>
                                                         <Input
-                                                            width='30%'
+                                                            w={"105px"}
                                                             type='number'
                                                             name='concept'
                                                             value={values.concept}
@@ -162,7 +164,7 @@ const DataTbl = (props) => {
                         }
                     </Tbody>
                 </Table>
-                <Link href={"/scanreports/"+scanReportTable.current.scan_report+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
+                <Link href={"/scanreports/" + scanReportTable.current.scan_report + "/mapping_rules/"}><Button isDisabled={mappingButtonDisabled} variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 
@@ -171,5 +173,5 @@ const DataTbl = (props) => {
 }
 
 
-export default DataTbl
+export default ValuesTbl
 

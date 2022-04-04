@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block body %}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'datasets' %}">Datasets</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'dataset_content' pk=dataset_id %}">{{dataset_name}}</a></li>
+
+    </ol>
+</nav>
+
+<div>
+    <div id='root'></div>
+    <script type="text/javascript" >
+        var isAdmin = "{{is_admin}}" === "True" ? true : false
+    </script>
+    <script type="module" src="../../../static/javascript/react/src/datasetAdminPage.js"></script>
+
+</div>
+{% endblock %}

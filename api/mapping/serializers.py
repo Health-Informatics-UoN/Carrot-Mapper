@@ -27,7 +27,11 @@ from mapping.models import (
     Project,
 )
 
-from .services_rules import get_mapping_rules_json, get_mapping_rules_list
+from .services_rules import (
+    analyse_concepts,
+    get_mapping_rules_json,
+    get_mapping_rules_list,
+)
 
 
 class ConceptSerializer(serializers.ModelSerializer):
@@ -84,13 +88,91 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username")
 
 
-class ScanReportSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
         fields = "__all__"
 
 
-class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate_author(self, author):
+        if request := self.context.get("request"):
+            user = request.user
+            if not (
+                self.instance.author.id == user.id
+                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author of the scan report or an admin of the parent dataset 
+                    to change this field."""
+                )
+        return author
+
+    def validate_viewers(self, viewers):
+        if request := self.context.get("request"):
+            user = request.user
+            if not (
+                self.instance.author.id == user.id
+                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author of the scan report or an admin of the parent dataset 
+                    to change this field."""
+                )
+        return viewers
+
+    def validate_editors(self, editors):
+        if request := self.context.get("request"):
+            user = request.user
+            if not (
+                self.instance.author.id == user.id
+                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
+            ):
+                raise serializers.ValidationError(
+                    """You must be the author of the scan report or an admin of the parent dataset 
+                    to change this field."""
+                )
+        return editors
+
+    class Meta:
+        model = ScanReport
+        fields = "__all__"
+
+
+class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = "__all__"
+
+
+class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate_viewers(self, viewers):
+        if request := self.context.get("request"):
+            user = request.user
+            if not self.instance.admins.filter(id=user.id).exists():
+                raise serializers.ValidationError(
+                    "You must be an admin to change this field."
+                )
+        return viewers
+
+    def validate_editors(self, editors):
+        if request := self.context.get("request"):
+            user = request.user
+            if not self.instance.admins.filter(id=user.id).exists():
+                raise serializers.ValidationError(
+                    "You must be an admin to change this field."
+                )
+        return editors
+
+    def validate_admins(self, admins):
+        if request := self.context.get("request"):
+            user = request.user
+            if not self.instance.admins.filter(id=user.id).exists():
+                raise serializers.ValidationError(
+                    "You must be an admin to change this field."
+                )
+        return admins
+
     class Meta:
         model = Dataset
         fields = "__all__"
@@ -185,7 +267,17 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name"]
+        fields = ["name", "members"]
+
+
+class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serialiser for only showing the names of Projects. Use in non-admin ListViews.
+    """
+
+    class Meta:
+        model = Project
+        fields = ["name", "datasets"]
 
 
 class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -229,3 +321,13 @@ class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
             }
 
         return rules
+
+
+class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ScanReport
+        fields = "__all__"
+
+    def to_representation(self, scan_report):
+        analysis = analyse_concepts(scan_report.id)
+        return analysis

@@ -4,7 +4,7 @@ import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
     FormControl, FormLabel, FormErrorMessage
 } from "@chakra-ui/react"
-import { useGet, usePost, postForm } from '../api/values'
+import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 
@@ -18,7 +18,7 @@ const UploadScanReport = ({ setTitle }) => {
     const [datasets, setDatasets] = useState([{ name: "------" }]);
     const [loadingDataset, setLoadingDataset] = useState(false);
     const [addingDataset, setAddingDataset] = useState(false);
-    const [projectVisibleToPublic, setProjectVisibleToPublic] = useState(true);
+    const [datasetVisibleToPublic, setDatasetVisibleToPublic] = useState(true);
     const [projects, setProjects] = useState([]);
     const [projectList, setProjectList] = useState(undefined);
 
@@ -39,9 +39,9 @@ const UploadScanReport = ({ setTitle }) => {
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
-        setDataPartners([{ name: "------" }, ...dataPartnerQuery])
+        setDataPartners([{ name: "------" }, ...dataPartnerQuery.sort((a, b) => a.name.localeCompare(b.name))])
         setLoadingMessage(null)
-        const projectsQuery = await useGet("/projects/")
+        const projectsQuery = await useGet("/projects/?datasets=true")
         setProjectList(projectsQuery)
         const usersQuery = await useGet("/users/")
         setUsersList(usersQuery)
@@ -99,9 +99,10 @@ const UploadScanReport = ({ setTitle }) => {
             const data = {
                 data_partner: data_partner.id,
                 name: newDatasetName,
-                visibility: projectVisibleToPublic ? "PUBLIC" : "RESTRICTED"
+                visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
+                admins: users.map(item => item.id),
             }
-            if (!projectVisibleToPublic) {
+            if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
             }
             const newDataset = await usePost(`/datasets/create/`, data)
@@ -178,7 +179,7 @@ const UploadScanReport = ({ setTitle }) => {
             await formData.append('data_dictionary_file', dataDictionary)
             setUploadLoading(true)
 
-            const response = await postForm(window.location.href,formData)
+            const response = await postForm(window.location.href, formData)
             // redirect if the upload was successful, otherwise show the error message
             window.location.pathname = `/scanreports/`
         }
@@ -202,7 +203,16 @@ const UploadScanReport = ({ setTitle }) => {
         setUsers(pj => pj.filter(user => user.id != id))
     }
     async function mapDatasetToProjects(dataset, projects) {
-        console.log("This is where the dataset would get added to the projects")
+        const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
+        const promises = []
+        full_projects.map(project => {
+            const data = {
+                id: project.id,
+                datasets: [dataset.id, ...project.datasets]
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+        await Promise.all(promises)
         return
     }
 
@@ -211,7 +221,7 @@ const UploadScanReport = ({ setTitle }) => {
         setAddDatasetMessage(null)
         setProjects([])
         setUsers([])
-        setProjectVisibleToPublic(true)
+        setDatasetVisibleToPublic(true)
     }
 
     if (loadingMessage) {
@@ -255,12 +265,24 @@ const UploadScanReport = ({ setTitle }) => {
                     <Box>
                         <FormControl isInvalid={formErrors.parent_dataset && formErrors.parent_dataset.length > 0}>
                             <Box display={{ md: 'flex' }}>
-                                <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
-                                } >
-                                    {datasets.map((item, index) =>
-                                        <option key={index} value={JSON.stringify(item)}>{item.name}</option>
-                                    )}
-                                </Select>
+                                {projectList ?
+                                    <Select value={JSON.stringify(selectedDataset)} onChange={(option) => setselectedDataset(JSON.parse(option.target.value))
+                                    } >
+
+                                        <option value={JSON.stringify({ name: "------" })}>------</option>
+                                        {projectList.sort((a, b) => a.name.localeCompare(b.name)).map((item, index) =>
+                                            <>
+                                                <optgroup label={item.name}>
+                                                    {datasets.filter(dat => item.datasets.includes(dat.id)).map((item2, index2) =>
+                                                        <option style={{ marginLeft: '20px' }} key={index2} value={JSON.stringify(item2)}>{item2.name}</option>
+                                                    )}
+                                                </optgroup>
+                                            </>
+                                        )}
+                                    </Select>
+                                    :
+                                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Datasets' />
+                                }
                                 {selectedDataPartner.id != undefined && !addingDataset &&
                                     <Tooltip label="Add new Dataset">
                                         <Button onClick={() => setAddingDataset(true)}>Add new</Button>
@@ -295,10 +317,10 @@ const UploadScanReport = ({ setTitle }) => {
                                         <Box mt="10px">
                                             <Text fontWeight={"bold"}>Visible to public?</Text>
                                             <Flex alignItems={"center"}>
-                                                <Switch isChecked={projectVisibleToPublic} onChange={(e) => setProjectVisibleToPublic(restriction => !restriction)} />
-                                                <Text fontWeight={"bold"} ml={2}>{projectVisibleToPublic ? "Public" : "Restricted"}</Text>
+                                                <Switch isChecked={datasetVisibleToPublic} onChange={(e) => setDatasetVisibleToPublic(restriction => !restriction)} />
+                                                <Text fontWeight={"bold"} ml={2}>{datasetVisibleToPublic ? "Public" : "Restricted"}</Text>
                                             </Flex>
-                                            {!projectVisibleToPublic &&
+                                            {!datasetVisibleToPublic &&
                                                 <>
                                                     <Box>
                                                         <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
@@ -341,8 +363,8 @@ const UploadScanReport = ({ setTitle }) => {
                                             {projectList == undefined ?
                                                 <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Projects' />
                                                 :
-                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
-                                                    <option style={{ fontWeight: "bold" }} disabled>Add Project</option>
+                                                <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Select Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(proj => proj.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
+                                                    <option style={{ fontWeight: "bold" }} disabled>Select Project</option>
                                                     <>
                                                         {projectList.map((item, index) =>
                                                             <option key={index} value={JSON.stringify(item)}>{item.name}</option>
