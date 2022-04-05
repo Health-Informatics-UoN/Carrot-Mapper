@@ -21,14 +21,22 @@ const UploadScanReport = ({ setTitle }) => {
     const [datasetVisibleToPublic, setDatasetVisibleToPublic] = useState(true);
     const [projects, setProjects] = useState([]);
     const [projectList, setProjectList] = useState(undefined);
+    const [loadingProjectUsers, setLoadingProjectUsers] = useState(true);
 
     const [users, setUsers] = useState([]);
-    const [usersList, setUsersList] = useState(undefined);
+    const [activeUsersList, setActiveUsersList] = useState(undefined);
+    const [scanreportViewers, setScanreportViewers] = useState([]);
+    const [scanreportEditors, setScanreportEditors] = useState([]);
+    const [datasetEditors, setDatasetEditors] = useState([]);
+    const [datasetAdmins, setDatasetAdmins] = useState([]);
 
     const [addDatasetMessage, setAddDatasetMessage] = useState(null);
     const [formErrors, setFormErrors] = useState({});
 
     const [selectedDataset, setselectedDataset] = useState({ name: "------" });
+
+    const [selectedDatasetProjectMembers, setSelectedDatasetProjectMembers] = useState([]);
+    const [loadingDatasetProjects, setLoadingDatasetProjects] = useState(true);
 
     const scanReportName = useRef();
     const createDatasetRef = useRef();
@@ -36,6 +44,9 @@ const UploadScanReport = ({ setTitle }) => {
     const [dataDictionary, setDataDictionary] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [uploadLoading, setUploadLoading] = useState(false)
+
+
+
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
@@ -43,10 +54,10 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingMessage(null)
         const projectsQuery = await useGet("/projects/?datasets=true")
         setProjectList(projectsQuery)
-        const usersQuery = await useGet("/users/")
-        setUsersList(usersQuery)
+        const usersQuery = await useGet("/users/?is_active=true")
+        setActiveUsersList(usersQuery)
+        setLoadingDatasetProjects(false)
     }, []);
-
     useEffect(async () => {
         setFormErrors({ ...formErrors, datapartner: undefined })
         // change the dataset list
@@ -65,19 +76,65 @@ const UploadScanReport = ({ setTitle }) => {
             setselectedDataset({ name: "------" })
         }
         setLoadingDataset(false)
-
+        setScanreportViewers([]);
+        setScanreportEditors([]);
 
     }, [selectedDataPartner]);
 
     useEffect(async () => {
         setFormErrors({ ...formErrors, parent_dataset: undefined })
+        setSelectedDatasetProjectMembers([])
+        setLoadingDatasetProjects(true)
+        if (selectedDataset.id) {
+            // set projects to only those for the selected dataset
+            const datasetProjects = await useGet(`/projects/?dataset=${selectedDataset.id}`)
+            let datasetProjectMembers = [...(new Set(datasetProjects.map(project => project.members).flat()))]
+            if (selectedDataset.visibility === "RESTRICTED") {
+                // filter datasetProjectMembers down to just viewers editors or admins of the dataset
+                const validDatasetMembers = [...(new Set([...selectedDataset.viewers, ...selectedDataset.editors, ...selectedDataset.admins]))]
+                datasetProjectMembers = datasetProjectMembers.filter(item => validDatasetMembers.includes(item))
+            }
+            setSelectedDatasetProjectMembers(datasetProjectMembers)
+            // remove already selected users that aren't in project members
+            setScanreportViewers(viewers => viewers.filter(viewer => datasetProjectMembers.includes(viewer.id)))
+            setScanreportEditors(viewers => viewers.filter(viewer => datasetProjectMembers.includes(viewer.id)))
+        }
+        setLoadingDatasetProjects(false)
     }, [selectedDataset]);
+
     useEffect(async () => {
         setFormErrors({ ...formErrors, scan_report_file: undefined })
     }, [whiteRabbitScanReport]);
+    
     useEffect(async () => {
         setFormErrors({ ...formErrors, data_dictionary_file: undefined })
     }, [dataDictionary]);
+
+    useEffect(async () => {
+        setLoadingProjectUsers(true)
+        if (projectList) {
+            const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
+            setProjectList(projectList => projectList.map(project => full_projects.find(el => el.id === project.id) ? full_projects.find(el => el.id === project.id) : project))
+        }
+        setLoadingProjectUsers(false)
+    }, [projects]);
+
+    useEffect(async () => {  
+        if (projectList && activeUsersList) {
+            // remove any viewers, admins and editors that are no longer valid
+            setDatasetAdmins(currentAdminList=>currentAdminList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+            .includes(item.id)))
+            setDatasetEditors(currentEditorList=>currentEditorList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+            .includes(item.id)))
+            setUsers(currentViewerList=>currentViewerList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+            .includes(item.id)))   
+        }
+        else{
+            setDatasetAdmins([])
+            setDatasetEditors([])
+            setUsers([])
+        }
+    }, [projectList]);
 
 
     function readScanReport() {
@@ -100,10 +157,11 @@ const UploadScanReport = ({ setTitle }) => {
                 data_partner: data_partner.id,
                 name: newDatasetName,
                 visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
-                admins: users.map(item => item.id),
+                admins: datasetAdmins.map(item => item.id)//users.map(item => item.id), Not sure what this was doing. Seemingly mapping the list of viewers to admins
             }
             if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
+                data.editors = datasetEditors.map(item => item.id)
             }
             const newDataset = await usePost(`/datasets/create/`, data)
             await mapDatasetToProjects(newDataset, projects)
@@ -177,6 +235,8 @@ const UploadScanReport = ({ setTitle }) => {
             await formData.append('dataset', scanReportName.current.value)
             await formData.append('scan_report_file', whiteRabbitScanReport)
             await formData.append('data_dictionary_file', dataDictionary)
+            await formData.append('viewers', scanreportViewers.map(item => item.id))
+            await formData.append('editors', scanreportEditors.map(item => item.id))
             setUploadLoading(true)
 
             const response = await postForm(window.location.href, formData)
@@ -202,6 +262,18 @@ const UploadScanReport = ({ setTitle }) => {
     const removeUser = (id) => {
         setUsers(pj => pj.filter(user => user.id != id))
     }
+    const removeScanreportViewer = (id) => {
+        setScanreportViewers(pj => pj.filter(user => user.id != id))
+    }
+    const removeScanreportEditor = (id) => {
+        setScanreportEditors(pj => pj.filter(user => user.id != id))
+    }
+    const removeDatasetAdmin = (id) => {
+        setDatasetAdmins(pj => pj.filter(user => user.id != id))
+    }
+    const removeDatasetEditor = (id) => {
+        setDatasetEditors(pj => pj.filter(user => user.id != id))
+    }
     async function mapDatasetToProjects(dataset, projects) {
         const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
         const promises = []
@@ -221,7 +293,14 @@ const UploadScanReport = ({ setTitle }) => {
         setAddDatasetMessage(null)
         setProjects([])
         setUsers([])
+        setDatasetAdmins([])
+        setDatasetEditors([])
         setDatasetVisibleToPublic(true)
+    }
+    const filterProjectUsers = ()=>{
+        return (activeUsersList
+        .filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+            .includes(item.id)))
     }
 
     if (loadingMessage) {
@@ -333,15 +412,63 @@ const UploadScanReport = ({ setTitle }) => {
                                                                 )
                                                             })}
                                                         </div>
-                                                        {usersList == undefined ?
+                                                        {activeUsersList == undefined ?
                                                             <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
                                                             :
                                                             <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
                                                                 <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
                                                                 <>
-                                                                    {usersList.map((item, index) =>
+                                                                    {filterProjectUsers().map((item, index) =>
                                                                         <option key={index} value={JSON.stringify(item)}>{item.username}</option>
                                                                     )}
+                                                                </>
+                                                            </Select>
+                                                        }
+                                                    </Box>
+                                                    <Box>
+                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
+                                                            {datasetEditors.map((user, index) => {
+                                                                return (
+                                                                    <div key={index} style={{ marginTop: "0px" }}>
+                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeDatasetEditor} />
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                        {activeUsersList == undefined ?
+                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                                            :
+                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Editor" readOnly onChange={(option) => setDatasetEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                                                <option style={{ fontWeight: "bold" }} disabled>Add Editor</option>
+                                                                <>
+                                                                    {filterProjectUsers().map((item, index) =>
+                                                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                                                    )}
+                                                                </>
+                                                            </Select>
+                                                        }
+                                                    </Box>
+                                                    <Box>
+                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
+                                                            {datasetAdmins.map((user, index) => {
+                                                                return (
+                                                                    <div key={index} style={{ marginTop: "0px" }}>
+                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeDatasetAdmin} />
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                        {activeUsersList == undefined ?
+                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                                            :
+                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Admin" readOnly onChange={(option) => setDatasetAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                                                                <option style={{ fontWeight: "bold" }} disabled>Add Admin</option>
+                                                                <>
+                                                                    {filterProjectUsers().map((item, index) =>
+                                                                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                                                            )}
                                                                 </>
                                                             </Select>
                                                         }
@@ -380,6 +507,56 @@ const UploadScanReport = ({ setTitle }) => {
                             </Box>
                         }
                     </Box>
+                }
+            </Box>
+
+            <Box>
+                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
+                    {scanreportViewers.map((user, index) => {
+                        return (
+                            <div key={index} style={{ marginTop: "0px" }}>
+                                <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeScanreportViewer} />
+                            </div>
+                        )
+                    })}
+                </div>
+                {loadingDatasetProjects === true ?
+                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                    :
+                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setScanreportViewers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                        <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
+                        <>
+                            {activeUsersList && activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map((item, index) =>
+                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                            )}
+                        </>
+                    </Select>
+                }
+            </Box>
+
+            <Box>
+                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
+                    {scanreportEditors.map((user, index) => {
+                        return (
+                            <div key={index} style={{ marginTop: "0px" }}>
+                                <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeScanreportEditor} />
+                            </div>
+                        )
+                    })}
+                </div>
+                {loadingDatasetProjects === true ?
+                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Editors' />
+                    :
+                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Editor" readOnly onChange={(option) => setScanreportEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
+                        <option style={{ fontWeight: "bold" }} disabled>Add Editor</option>
+                        <>
+                            {activeUsersList && activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map((item, index) =>
+                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                            )}
+                        </>
+                    </Select>
                 }
             </Box>
 
