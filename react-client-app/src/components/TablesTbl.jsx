@@ -24,7 +24,7 @@ import { downloadXLSXFile } from '../api/download'
 
 const TablesTbl = () => {
     // get the value to use to query the fields endpoint from the page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    const value = window.pk?window.pk:parseInt(new URLSearchParams(window.location.search).get("search"))
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);

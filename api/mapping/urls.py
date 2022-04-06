@@ -297,6 +297,11 @@ urlpatterns = [
         views.ProjectUpdateView.as_view(),
         name="projects_update",
     ),
+    path(
+        "scanreports/<int:pk>",
+        views.scanreport_table_page,
+        name="scanreport_table",
+    ),
 ]
 # if settings.DEBUG: # new
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

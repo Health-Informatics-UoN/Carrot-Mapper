@@ -1888,5 +1888,31 @@ def scanreport_admin_page(request, pk):
         args["sr_dataset"] = sr.dataset
     else:
         args["is_admin"] = False
+    
+        return render(request, "mapping/admin_scanreport_form.html", args)
 
-    return render(request, "mapping/admin_scanreport_form.html", args)
+@login_required
+def scanreport_table_page(self,request, pk):
+    args = {}
+    scan_report = None
+    scan_report_name = None
+    scan_report_table = None
+    data_dictionary = None
+    
+    if len(self.get_queryset()) > 0:
+        scan_report = self.get_queryset()[0].scan_report
+        scan_report_name = scan_report.name
+        scan_report_table = self.get_queryset()[0]
+        try:
+            data_dictionary = scan_report.data_dictionary
+        except:
+            data_dictionary = None
+    
+
+    args["pk"] = pk
+    args["scan_report"] = scan_report
+    args["scan_report_name"] = scan_report_name
+    args["scan_report_table"] = scan_report_table
+    args["data_dictionary"] = data_dictionary
+    
+    return render(request, "mapping/scanreporttable_list.html", args)
