@@ -1916,3 +1916,21 @@ def scanreport_table_page(request, pk):
     args["data_dictionary"] = data_dictionary
     
     return render(request, "mapping/scanreporttable_list.html", args)
+
+@login_required
+def scanreport_fields_page(request, sr,pk):
+    args = {}
+    scan_report = None
+    scan_report_field = None
+    scan_report_table = None
+
+    scan_report = ScanReport.objects.get(id=sr)
+    scan_report_field = ScanReportField.objects.get(id=pk)
+    scan_report_table = scan_report_field.scan_report_table
+
+    args["pk"] = pk
+    args["scan_report"] = scan_report
+    args["scan_report_field"] = scan_report_field
+    args["scan_report_table"] = scan_report_table
+    
+    return render(request, "mapping/scanreportfield_list.html", args)

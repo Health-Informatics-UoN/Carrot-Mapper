@@ -27,7 +27,7 @@ import ToastAlert from './ToastAlert'
 
 const FieldsTbl = (props) => {
     // get the value to use to query the fields endpoint from the page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    const value = window.pk?window.pk:parseInt(new URLSearchParams(window.location.search).get("search"))
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [values, setValues] = useState([]);
