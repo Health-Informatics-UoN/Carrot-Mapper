@@ -26,7 +26,7 @@ import ToastAlert from './ToastAlert'
 
 const ValuesTbl = (props) => {
     // get value to use in query from page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    const value = window.pk?window.pk:parseInt(new URLSearchParams(window.location.search).get("search"))
     // set page state variables
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()

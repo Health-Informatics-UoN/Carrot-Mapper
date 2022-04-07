@@ -20,9 +20,19 @@
 <div>
     <!-- Loads in React Components from index.js -->
     <div id='root'></div>
-    <script type="module" src="../../../static/javascript/react/src/index.js"></script>
-
-    
+    <script type="text/javascript" >
+        var pk = "{{pk}}";
+        var s = document.createElement("script");
+        s.type = "module";
+		s.innerHTML = null;
+		if(pk){
+            s.src = "../../../../../static/javascript/react/src/index.js";
+		}
+		else{
+            s.src = "../../../static/javascript/react/src/index.js";
+		}
+		document.getElementsByTagName('head')[0].appendChild(s)
+    </script>
     
 </div>
 {% endblock %}
