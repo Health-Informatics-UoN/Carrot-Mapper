@@ -312,6 +312,11 @@ urlpatterns = [
         views.scanreport_values_page,
         name="scanreport_values",
     ),
+    path(
+        "scanreports/<int:sr>/tables/<int:pk>/update",
+        views.update_scanreport_table_page2,
+        name="scan-report-table-update",
+    ),
 ]
 # if settings.DEBUG: # new
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

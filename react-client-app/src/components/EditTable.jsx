@@ -6,7 +6,7 @@ import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
-    const value = window.location.href.split("tables/")[1].split("/")[0]
+    const value = window.pk?window.pk:window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
     const [table, setTable] = useState(null);
     const [selectedPerson, setPerson] = useState("------");

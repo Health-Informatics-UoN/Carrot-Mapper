@@ -975,6 +975,27 @@ def update_scanreport_table_page(request, pk):
     context = {"object": sr_table, "can_edit": can_edit}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
+@login_required
+def update_scanreport_table_page2(request,sr, pk):
+    # Get the SR table
+    sr_table = ScanReportTable.objects.get(id=pk)
+    # Determine if the user can edit the form
+    can_edit = False
+    if (
+        sr_table.scan_report.author.id == request.user.id
+        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+        or sr_table.scan_report.parent_dataset.editors.filter(
+            id=request.user.id
+        ).exists()
+        or sr_table.scan_report.parent_dataset.admins.filter(
+            id=request.user.id
+        ).exists()
+    ):
+        can_edit = True
+    # Set the page context
+    context = {"object": sr_table, "can_edit": can_edit, "pk":pk}
+    return render(request, "mapping/scanreporttable_form.html", context=context)
+
 
 @method_decorator(login_required, name="dispatch")
 class ScanReportFieldListView(ListView):
@@ -1956,3 +1977,4 @@ def scanreport_values_page(request, sr,tbl,pk):
     args["scan_report_value"] = scan_report_value
     
     return render(request, "mapping/scanreportvalue_list.html", args)
+
