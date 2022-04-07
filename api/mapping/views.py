@@ -1978,3 +1978,24 @@ def scanreport_values_page(request, sr,tbl,pk):
     
     return render(request, "mapping/scanreportvalue_list.html", args)
 
+@login_required
+def update_scanreport_field_page(request, sr,tbl,pk):
+    args = {}
+    scan_report = None
+    scan_report_field = None
+    scan_report_table = None
+    scan_report_value = None
+
+    scan_report_value = ScanReportValue.objects.get(id=pk)
+    scan_report_field = scan_report_value.scan_report_field
+    scan_report_table = scan_report_field.scan_report_table
+    scan_report = ScanReport.objects.get(id=sr)
+    
+    args["pk"] = pk
+    args["scan_report"] = scan_report
+    args["scan_report_field"] = scan_report_field
+    args["scan_report_table"] = scan_report_table
+    args["scan_report_value"] = scan_report_value
+    
+    return render(request, "mapping/scanreportfield_form.html", args)
+
