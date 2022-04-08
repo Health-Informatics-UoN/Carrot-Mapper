@@ -975,8 +975,9 @@ def update_scanreport_table_page(request, pk):
     context = {"object": sr_table, "can_edit": can_edit}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
+
 @login_required
-def update_scanreport_table_page2(request,sr, pk):
+def update_scanreport_table_page2(request, sr, pk):
     # Get the SR table
     sr_table = ScanReportTable.objects.get(id=pk)
     # Determine if the user can edit the form
@@ -993,7 +994,7 @@ def update_scanreport_table_page2(request,sr, pk):
     ):
         can_edit = True
     # Set the page context
-    context = {"object": sr_table, "can_edit": can_edit, "pk":pk}
+    context = {"object": sr_table, "can_edit": can_edit, "pk": pk}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
 
@@ -1909,8 +1910,9 @@ def scanreport_admin_page(request, pk):
         args["sr_dataset"] = sr.dataset
     else:
         args["is_admin"] = False
-    
+
     return render(request, "mapping/admin_scanreport_form.html", args)
+
 
 @login_required
 def scanreport_table_page(request, pk):
@@ -1923,7 +1925,7 @@ def scanreport_table_page(request, pk):
     scan_report = ScanReport.objects.get(id=pk)
     scan_report_name = scan_report.name
     # not sure how to do this or if the variable is even used
-    #scan_report_table = self.get_queryset()[0]
+    # scan_report_table = self.get_queryset()[0]
 
     try:
         data_dictionary = scan_report.data_dictionary
@@ -1935,11 +1937,12 @@ def scanreport_table_page(request, pk):
     args["scan_report_name"] = scan_report_name
     args["scan_report_table"] = scan_report_table
     args["data_dictionary"] = data_dictionary
-    
+
     return render(request, "mapping/scanreporttable_list.html", args)
 
+
 @login_required
-def scanreport_fields_page(request, sr,pk):
+def scanreport_fields_page(request, sr, pk):
     args = {}
     scan_report = None
     scan_report_field = None
@@ -1953,12 +1956,12 @@ def scanreport_fields_page(request, sr,pk):
     args["scan_report"] = scan_report
     args["scan_report_field"] = scan_report_field
     args["scan_report_table"] = scan_report_table
-    
+
     return render(request, "mapping/scanreportfield_list.html", args)
 
 
 @login_required
-def scanreport_values_page(request, sr,tbl,pk):
+def scanreport_values_page(request, sr, tbl, pk):
     args = {}
     scan_report = None
     scan_report_field = None
@@ -1969,17 +1972,18 @@ def scanreport_values_page(request, sr,tbl,pk):
     scan_report_field = scan_report_value.scan_report_field
     scan_report_table = scan_report_field.scan_report_table
     scan_report = ScanReport.objects.get(id=sr)
-    
+
     args["pk"] = pk
     args["scan_report"] = scan_report
     args["scan_report_field"] = scan_report_field
     args["scan_report_table"] = scan_report_table
     args["scan_report_value"] = scan_report_value
-    
+
     return render(request, "mapping/scanreportvalue_list.html", args)
 
+
 @login_required
-def update_scanreport_field_page(request, sr,tbl,pk):
+def update_scanreport_field_page(request, sr, tbl, pk):
     args = {}
     scan_report = None
     scan_report_field = None
@@ -1990,12 +1994,11 @@ def update_scanreport_field_page(request, sr,tbl,pk):
     scan_report_field = scan_report_value.scan_report_field
     scan_report_table = scan_report_field.scan_report_table
     scan_report = ScanReport.objects.get(id=sr)
-    
+
     args["pk"] = pk
     args["scan_report"] = scan_report
     args["scan_report_field"] = scan_report_field
     args["scan_report_table"] = scan_report_table
     args["scan_report_value"] = scan_report_value
-    
-    return render(request, "mapping/scanreportfield_form.html", args)
 
+    return render(request, "mapping/scanreportfield_form.html", args)
