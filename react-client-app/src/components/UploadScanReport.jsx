@@ -7,6 +7,7 @@ import {
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
+import CCMultiSelectUserInput from './CCMultiSelectUserInput'
 
 const UploadScanReport = ({ setTitle }) => {
 
@@ -105,7 +106,7 @@ const UploadScanReport = ({ setTitle }) => {
     useEffect(async () => {
         setFormErrors({ ...formErrors, scan_report_file: undefined })
     }, [whiteRabbitScanReport]);
-    
+
     useEffect(async () => {
         setFormErrors({ ...formErrors, data_dictionary_file: undefined })
     }, [dataDictionary]);
@@ -119,17 +120,17 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingProjectUsers(false)
     }, [projects]);
 
-    useEffect(async () => {  
+    useEffect(async () => {
         if (projectList && activeUsersList) {
             // remove any viewers, admins and editors that are no longer valid
-            setDatasetAdmins(currentAdminList=>currentAdminList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
-            .includes(item.id)))
-            setDatasetEditors(currentEditorList=>currentEditorList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
-            .includes(item.id)))
-            setUsers(currentViewerList=>currentViewerList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
-            .includes(item.id)))   
+            setDatasetAdmins(currentAdminList => currentAdminList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+            setDatasetEditors(currentEditorList => currentEditorList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+            setUsers(currentViewerList => currentViewerList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
         }
-        else{
+        else {
             setDatasetAdmins([])
             setDatasetEditors([])
             setUsers([])
@@ -297,10 +298,10 @@ const UploadScanReport = ({ setTitle }) => {
         setDatasetEditors([])
         setDatasetVisibleToPublic(true)
     }
-    const filterProjectUsers = ()=>{
+    const filterProjectUsers = () => {
         return (activeUsersList
-        .filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
-            .includes(item.id)))
+            .filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
     }
 
     if (loadingMessage) {
@@ -401,78 +402,20 @@ const UploadScanReport = ({ setTitle }) => {
                                             </Flex>
                                             {!datasetVisibleToPublic &&
                                                 <>
-                                                    <Box>
-                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
-                                                            {users.map((user, index) => {
-                                                                return (
-                                                                    <div key={index} style={{ marginTop: "0px" }}>
-                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeUser} />
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                        {activeUsersList == undefined ?
-                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                                                            :
-                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                                                <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
-                                                                <>
-                                                                    {filterProjectUsers().map((item, index) =>
-                                                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                                                    )}
-                                                                </>
-                                                            </Select>
-                                                        }
-                                                    </Box>
-                                                    <Box>
-                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
-                                                            {datasetEditors.map((user, index) => {
-                                                                return (
-                                                                    <div key={index} style={{ marginTop: "0px" }}>
-                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeDatasetEditor} />
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                        {activeUsersList == undefined ?
-                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                                                            :
-                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Editor" readOnly onChange={(option) => setDatasetEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                                                <option style={{ fontWeight: "bold" }} disabled>Add Editor</option>
-                                                                <>
-                                                                    {filterProjectUsers().map((item, index) =>
-                                                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                                                    )}
-                                                                </>
-                                                            </Select>
-                                                        }
-                                                    </Box>
-                                                    <Box>
-                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Admins: </div>
-                                                            {datasetAdmins.map((user, index) => {
-                                                                return (
-                                                                    <div key={index} style={{ marginTop: "0px" }}>
-                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeDatasetAdmin} />
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                        {activeUsersList == undefined ?
-                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                                                            :
-                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Admin" readOnly onChange={(option) => setDatasetAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                                                <option style={{ fontWeight: "bold" }} disabled>Add Admin</option>
-                                                                <>
-                                                                    {filterProjectUsers().map((item, index) =>
-                                                                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                                                            )}
-                                                                </>
-                                                            </Select>
-                                                        }
-                                                    </Box>
+                                                    <CCMultiSelectUserInput id="Viewers" label={"Viewers:"} handleDelete={removeUser} currentSelections={users}
+                                                        isLoading={activeUsersList == undefined}
+                                                        handleInput={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
+                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
+
+                                                    <CCMultiSelectUserInput id="Editors" label={"Editors:"} handleDelete={removeDatasetEditor} currentSelections={datasetEditors}
+                                                        isLoading={activeUsersList == undefined}
+                                                        handleInput={(option) => setDatasetEditors(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
+                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
+
+                                                    <CCMultiSelectUserInput id="Admins" label={"Admins:"} handleDelete={removeDatasetAdmin} currentSelections={datasetAdmins}
+                                                        isLoading={activeUsersList == undefined}
+                                                        handleInput={(option) => setDatasetAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
+                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
                                                 </>
                                             }
                                         </Box>
@@ -510,55 +453,16 @@ const UploadScanReport = ({ setTitle }) => {
                 }
             </Box>
 
-            <Box>
-                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
-                    {scanreportViewers.map((user, index) => {
-                        return (
-                            <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeScanreportViewer} />
-                            </div>
-                        )
-                    })}
-                </div>
-                {loadingDatasetProjects === true ?
-                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                    :
-                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setScanreportViewers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                        <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
-                        <>
-                            {activeUsersList && activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map((item, index) =>
-                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                            )}
-                        </>
-                    </Select>
-                }
-            </Box>
+            <CCMultiSelectUserInput id="Viewers" label={"Viewers:"} handleDelete={removeScanreportViewer} currentSelections={scanreportViewers}
+                isLoading={loadingDatasetProjects}
+                handleInput={(option) => setScanreportViewers(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)) : []} />
 
-            <Box>
-                <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                    <div style={{ fontWeight: "bold", marginRight: "10px" }} >Editors: </div>
-                    {scanreportEditors.map((user, index) => {
-                        return (
-                            <div key={index} style={{ marginTop: "0px" }}>
-                                <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeScanreportEditor} />
-                            </div>
-                        )
-                    })}
-                </div>
-                {loadingDatasetProjects === true ?
-                    <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Editors' />
-                    :
-                    <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Editor" readOnly onChange={(option) => setScanreportEditors(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                        <option style={{ fontWeight: "bold" }} disabled>Add Editor</option>
-                        <>
-                            {activeUsersList && activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map((item, index) =>
-                                <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                            )}
-                        </>
-                    </Select>
-                }
-            </Box>
+            <CCMultiSelectUserInput id="Editors" label={"Editors:"} handleDelete={removeScanreportEditor} currentSelections={scanreportEditors}
+                isLoading={loadingDatasetProjects}
+                handleInput={(option) => setScanreportEditors(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)) : []} />
+
 
 
             <FormControl isInvalid={formErrors.dataset && formErrors.dataset.length > 0} mt={4}>
