@@ -8,7 +8,7 @@ import datetime
 from azure.storage.queue import QueueClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
-from rest_framework import status, viewsets, generics
+from rest_framework import status, viewsets, generics, mixins
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (
@@ -459,13 +459,16 @@ class DatasetCreateView(generics.CreateAPIView):
         serializer.save(admins=[self.request.user])
 
 
-class DatasetRetrieveView(generics.RetrieveAPIView):
+class DatasetRetrieveView(generics.RetrieveAPIView, mixins.UpdateModelMixin):
     """
     This view should return a single dataset from an id
     """
 
     serializer_class = DatasetViewSerializer
     permission_classes = [CanView | CanAdmin | CanEdit]
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
