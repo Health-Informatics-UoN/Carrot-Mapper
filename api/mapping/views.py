@@ -1930,19 +1930,15 @@ def scanreport_table_list_page(request, pk):
 
 
 @login_required
-def scanreport_fields_page(request, sr, pk):
+def scanreport_fields_list_page(request, sr, pk):
     args = {}
-    scan_report = None
-    scan_report_field = None
-    scan_report_table = None
 
-    scan_report = ScanReport.objects.get(id=sr)
-    scan_report_field = ScanReportField.objects.get(id=pk)
-    scan_report_table = scan_report_field.scan_report_table
+    scan_report_table = ScanReportTable.objects.select_related("scan_report").get(
+        id=pk, scan_report__id=sr
+    )
 
     args["pk"] = pk
-    args["scan_report"] = scan_report
-    args["scan_report_field"] = scan_report_field
+    args["scan_report"] = scan_report_table.scan_report
     args["scan_report_table"] = scan_report_table
 
     return render(request, "mapping/scanreportfield_list.html", args)
