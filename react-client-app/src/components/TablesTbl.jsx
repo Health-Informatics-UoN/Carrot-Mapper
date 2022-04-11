@@ -24,22 +24,23 @@ import { downloadXLSXFile } from '../api/download'
 
 const TablesTbl = () => {
     // get the value to use to query the fields endpoint from the page url
-    const value = window.pk?window.pk:parseInt(new URLSearchParams(window.location.search).get("search"))
-    const [values, setValues] = useState([]);
+    const pathArray = window.location.pathname.split("/")
+    const scanReportId = pathArray[pathArray.length - 1]
+    const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
         // get table on initial render
-        getScanReportTableRows(value).then(table => {
-            setValues(table)
+        getScanReportTableRows(scanReportId).then(table => {
+            setScanReportTables(table)
             setLoading(false)
         })
     }, []);
 
     const download_scan_report = () => {
-        downloadXLSXFile()
+        downloadXLSXFile(scanReportId, window.scan_report_name)
 
     };
 
@@ -99,10 +100,10 @@ const TablesTbl = () => {
         <div >
             <Flex my="10px">
                 <HStack>
-                    <Link href={"/scanreports/" + value + "/details"}>
+                    <Link href={"/scanreports/" + scanReportId + "/details"}>
                         <Button variant="blue" my="10px">Scan Report Details</Button>
                     </Link>
-                    <Link href={"/scanreports/" + value + "/mapping_rules/"}>
+                    <Link href={"/scanreports/" + scanReportId + "/mapping_rules/"}>
                         <Button variant="blue" my="10px">Go to Rules</Button>
                     </Link>
                 </HStack>
@@ -124,8 +125,8 @@ const TablesTbl = () => {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {values.length > 0 ?
-                        values.map((item, index) =>
+                    {scanReportTables.length > 0 ?
+                        scanReportTables.map((item, index) =>
                             <Tr key={index}>
                                 <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/fields/?search=" + item.id}>{item.name}</Link></Td>
                                 <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
