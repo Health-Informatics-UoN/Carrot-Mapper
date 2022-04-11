@@ -309,7 +309,7 @@ urlpatterns = [
     ),
     path(
         "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>",
-        views.scanreport_values_page,
+        views.scanreport_values_list_page,
         name="scanreport_values",
     ),
     path(
