@@ -44,6 +44,7 @@ const TablesTbl = () => {
 
     };
 
+    // This is broken now.
     const download_data_dictionary = async () => {
         const response = await usePost(window.location.href, { "download-dd": true }, false);
         var type = response.headers['content-type'];
