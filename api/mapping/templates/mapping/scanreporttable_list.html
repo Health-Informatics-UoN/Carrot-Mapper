@@ -7,7 +7,7 @@
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
             reports</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
+        <li class="breadcrumb-item"><a href="{% url 'scanreport_table' pk=scan_report.id %}">
             {{ scan_report.parent_dataset.data_partner.name }} - {{ scan_report.dataset }}</a></li>
     </ol>
 </nav>
