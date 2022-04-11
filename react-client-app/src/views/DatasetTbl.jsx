@@ -55,9 +55,6 @@ const DatasetTbl = (props) => {
         active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
         active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
         setLoadingMessage(null)
-        // activeDatasets.current = data.current.filter((dataset) => dataset.hidden == false);
-        // archivedDatasets.current = data.current.filter((dataset) => dataset.hidden == true);
-        // active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
     }, []);
 
     const activateOrArchiveDataset = (id, theIndicator) => {
