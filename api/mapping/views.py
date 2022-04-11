@@ -1845,7 +1845,9 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         # scan_report = ScanReportSerializer(scan_reports, many=False).data
         # Set Storage Account connection string
         print(scan_report)
+        # TODO: `name` is not always defined, it seems
         blob_name = scan_report.name
+        print(blob_name)
         container = "scan-reports"
         blob_service_client = BlobServiceClient.from_connection_string(
             os.environ.get("STORAGE_CONN_STRING")
