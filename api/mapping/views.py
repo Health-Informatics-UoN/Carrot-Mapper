@@ -1915,28 +1915,14 @@ def scanreport_admin_page(request, pk):
 
 
 @login_required
-def scanreport_table_page(request, pk):
+def scanreport_table_list_page(request, pk):
     args = {}
-    scan_report = None
-    scan_report_name = None
-    scan_report_table = None
-    data_dictionary = None
 
     scan_report = ScanReport.objects.get(id=pk)
-    scan_report_name = scan_report.name
-    # not sure how to do this or if the variable is even used
-    # scan_report_table = self.get_queryset()[0]
+    scan_report_name = scan_report.dataset
 
-    try:
-        data_dictionary = scan_report.data_dictionary
-    except:
-        data_dictionary = None
-
-    args["pk"] = pk
     args["scan_report"] = scan_report
     args["scan_report_name"] = scan_report_name
-    args["scan_report_table"] = scan_report_table
-    args["data_dictionary"] = data_dictionary
 
     return render(request, "mapping/scanreporttable_list.html", args)
 

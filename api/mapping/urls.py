@@ -299,7 +299,7 @@ urlpatterns = [
     ),
     path(
         "scanreports/<int:pk>",
-        views.scanreport_table_page,
+        views.scanreport_table_list_page,
         name="scanreport_table",
     ),
     path(
