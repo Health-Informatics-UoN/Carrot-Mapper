@@ -10,11 +10,15 @@ const Error404 = ({ setTitle }) => {
         setTitle(null)
     }, [])
 
+    function goBack() {
+        history.back()
+    }
+
     return (
         <Container maxW='container.xl'>
             <PageHeading text={"Resource not found."} />
             <Text>The resource your are looking for does not exist.</Text>
-            <Button onClick={history.back()}>Go Back</Button>
+            <Button onClick={goBack}>Go Back</Button>
         </Container>
     )
 }
