@@ -78,6 +78,11 @@ to change the author of a Scan Report.
 * Users who are not admins/editors of a scan report table cannot edit the form data.
 * User is now automatically added as admin to Datasets they create.
 * Fixed failing unittests.
+* Updated endpoints for listing Scan Report tables/fields/values:
+  - List for Scan Report tables at: `/scanreports/XXX`.
+  - List for Scan Report table fields at: `/scanreports/XXX/tables/YYY`.
+  - List for Scan Report table field values at: `/scanreports/XXX/tables/YYY/fields/ZZZ`.
+* Created Error 404 page.
 
 ## v1.4.0 was released 02/02/22
 
