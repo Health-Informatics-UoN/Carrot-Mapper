@@ -75,6 +75,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -1920,46 +1921,54 @@ def scanreport_admin_page(request, pk):
 def scanreport_table_list_page(request, pk):
     args = {}
 
-    scan_report = ScanReport.objects.get(id=pk)
-    scan_report_name = scan_report.dataset
+    try:
+        scan_report = ScanReport.objects.get(id=pk)
+        scan_report_name = scan_report.dataset
 
-    args["scan_report"] = scan_report
-    args["scan_report_name"] = scan_report_name
+        args["scan_report"] = scan_report
+        args["scan_report_name"] = scan_report_name
 
-    return render(request, "mapping/scanreporttable_list.html", args)
+        return render(request, "mapping/scanreporttable_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
 def scanreport_fields_list_page(request, sr, pk):
     args = {}
+    try:
+        scan_report_table = ScanReportTable.objects.select_related("scan_report").get(
+            id=pk, scan_report__id=sr
+        )
 
-    scan_report_table = ScanReportTable.objects.select_related("scan_report").get(
-        id=pk, scan_report__id=sr
-    )
+        args["pk"] = pk
+        args["scan_report"] = scan_report_table.scan_report
+        args["scan_report_table"] = scan_report_table
 
-    args["pk"] = pk
-    args["scan_report"] = scan_report_table.scan_report
-    args["scan_report_table"] = scan_report_table
-
-    return render(request, "mapping/scanreportfield_list.html", args)
+        return render(request, "mapping/scanreportfield_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
 def scanreport_values_list_page(request, sr, tbl, pk):
     args = {}
 
-    scan_report_field = ScanReportField.objects.select_related(
-        "scan_report_table", "scan_report_table__scan_report"
-    ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
-    scan_report_table = scan_report_field.scan_report_table
-    scan_report = scan_report_field.scan_report_table.scan_report
+    try:
+        scan_report_field = ScanReportField.objects.select_related(
+            "scan_report_table", "scan_report_table__scan_report"
+        ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
+        scan_report_table = scan_report_field.scan_report_table
+        scan_report = scan_report_field.scan_report_table.scan_report
 
-    args["pk"] = pk
-    args["scan_report"] = scan_report
-    args["scan_report_field"] = scan_report_field
-    args["scan_report_table"] = scan_report_table
+        args["pk"] = pk
+        args["scan_report"] = scan_report
+        args["scan_report_field"] = scan_report_field
+        args["scan_report_table"] = scan_report_table
 
-    return render(request, "mapping/scanreportvalue_list.html", args)
+        return render(request, "mapping/scanreportvalue_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
