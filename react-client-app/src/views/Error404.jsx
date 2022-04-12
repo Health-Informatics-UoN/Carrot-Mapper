@@ -1,17 +1,20 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
-    Button, Container, HStack
+    Button, Container, Text, VStack
 } from "@chakra-ui/react"
 import PageHeading from '../components/PageHeading'
 
-const Error404 = () => {
+const Error404 = ({ setTitle }) => {
+
+    useEffect(() => {
+        setTitle(null)
+    }, [])
+
     return (
         <Container maxW='container.xl'>
-            <HStack>
-                <PageHeading text={"Resource not found."} />
-                <Text>The resource your are looking for does not exist.</Text>
-                <Button>Go Back</Button>
-            </HStack>
+            <PageHeading text={"Resource not found."} />
+            <Text>The resource your are looking for does not exist.</Text>
+            <Button onClick={history.back()}>Go Back</Button>
         </Container>
     )
 }

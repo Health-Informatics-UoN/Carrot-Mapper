@@ -278,7 +278,7 @@ const App = ({ page }) => {
             case "Dataset List":
                 return <DatasetTbl setTitle={setTitle} />
             case "404":
-                return <Error404 />
+                return <Error404 setTitle={setTitle} />
             default:
                 return <ScanReportTbl setTitle={setTitle} />
         }
