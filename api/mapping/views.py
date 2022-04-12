@@ -421,6 +421,7 @@ class DatasetListView(generics.ListAPIView):
     filterset_fields = {
         "id": ["in"],
         "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
     }
 
     def get_queryset(self):
@@ -464,11 +465,21 @@ class DatasetRetrieveView(generics.RetrieveAPIView, mixins.UpdateModelMixin):
     This view should return a single dataset from an id
     """
 
-    serializer_class = DatasetViewSerializer
-    permission_classes = [CanView | CanAdmin | CanEdit]
-
     def patch(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
+        if self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a dataset
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            return self.partial_update(request, *args, **kwargs)
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET"]:
+            # use the view serialiser if on GET requests
+            return DatasetViewSerializer
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the dataset
+            return DatasetEditSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))
