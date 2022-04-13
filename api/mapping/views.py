@@ -467,10 +467,17 @@ class DatasetRetrieveView(generics.RetrieveAPIView, mixins.UpdateModelMixin):
 
     def patch(self, request, *args, **kwargs):
         if self.request.method in ["PUT", "PATCH"]:
+            return self.partial_update(request, *args, **kwargs)
+
+    def get_permissions(self):
+        if self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a dataset
             self.permission_classes = [CanView & (CanEdit | CanAdmin)]
-            return self.partial_update(request, *args, **kwargs)
+        else:
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method in ["GET"]:
