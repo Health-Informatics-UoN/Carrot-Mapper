@@ -53,11 +53,11 @@ routers.register(
 routers.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
 )
-routers.register(
-    r"scanreportfieldsfilter",
-    views.ScanReportFieldFilterViewSet,
-    basename="scanreportfieldsfilter",
-)
+# routers.register(
+#     r"scanreportfieldsfilter",
+#     views.ScanReportFieldFilterViewSet,
+#     basename="scanreportfieldsfilter",
+# )
 
 routers.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"

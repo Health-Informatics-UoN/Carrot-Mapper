@@ -541,6 +541,12 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "scan_report_table": ["in", "exact"],
+        "name": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -566,15 +572,15 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportField.objects.all()
-    serializer_class = ScanReportFieldSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "scan_report_table": ["in", "exact"],
-        "name": ["in", "exact"],
-        "id": ["in", "exact"],
-    }
+# class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
+#     queryset = ScanReportField.objects.all()
+#     serializer_class = ScanReportFieldSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = {
+#         "scan_report_table": ["in", "exact"],
+#         "name": ["in", "exact"],
+#         "id": ["in", "exact"],
+#     }
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):

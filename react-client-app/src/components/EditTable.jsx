@@ -20,7 +20,7 @@ const EditTable = () => {
         // get scan report tables for the scan report the table belongs to
         const tablesFilter = useGet(`/scanreporttables/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
-        const fieldsFilter = useGet(`/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
+        const fieldsFilter = useGet(`/scanreportfields/?scan_report_table=${value}&fields=name,id`)
         const promises = await Promise.all([tablesFilter, fieldsFilter])
         let options = promises[1]
         let tables = promises[0]

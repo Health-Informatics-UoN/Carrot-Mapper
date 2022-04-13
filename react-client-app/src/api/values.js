@@ -313,7 +313,7 @@ const chunkIds = (list) => {
 }
 // get field values for a given table id and map any scanreport concepts that are associated
 const getScanReportFieldValues = async (valueId, valuesRef) => {
-    let response = await useGet(`/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    let response = await useGet(`/scanreportfields/?scan_report_table=${valueId}`)
     response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
@@ -349,7 +349,7 @@ const getScanReportTableRows = async (id) =>{
     const promises = []
     // send API request for every sublist
     for (let i = 0; i < fieldIds.length; i++) {
-        promises.push(useGet(`/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
+        promises.push(useGet(`/scanreportfields/?id__in=${fieldIds[i].join()}&fields=id,name`))
     }
     const promiseResult = await Promise.all(promises)
     const fields = [].concat.apply([], promiseResult)
