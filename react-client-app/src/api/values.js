@@ -158,7 +158,7 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
 // get scan report values for a specific field id
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
     // query endpoint for field values
-    let values = await useGet(`/scanreportvaluesfilter/?scan_report_field=${valueId}`)
+    let values = await useGet(`/scanreportvalues/?scan_report_field=${valueId}`)
     if (!Array.isArray(values)) {
         setError(true)
         return

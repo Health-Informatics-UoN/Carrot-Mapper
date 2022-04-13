@@ -62,11 +62,11 @@ routers.register(
 routers.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
 )
-routers.register(
-    r"scanreportvaluesfilter",
-    views.ScanReportValueFilterViewSet,
-    basename="scanreportvaluesfilter",
-)
+# routers.register(
+#     r"scanreportvaluesfilter",
+#     views.ScanReportValueFilterViewSet,
+#     basename="scanreportvaluesfilter",
+# )
 
 routers.register(
     r"scanreportvaluesfilterscanreport",
