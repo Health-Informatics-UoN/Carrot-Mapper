@@ -8,7 +8,7 @@ import datetime
 from azure.storage.queue import QueueClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
 
-from rest_framework import status, viewsets, generics, mixins
+from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import (
@@ -460,33 +460,13 @@ class DatasetCreateView(generics.CreateAPIView):
         serializer.save(admins=[self.request.user])
 
 
-class DatasetRetrieveView(generics.RetrieveAPIView, mixins.UpdateModelMixin):
+class DatasetRetrieveView(generics.RetrieveAPIView):
     """
     This view should return a single dataset from an id
     """
 
-    def patch(self, request, *args, **kwargs):
-        if self.request.method in ["PUT", "PATCH"]:
-            return self.partial_update(request, *args, **kwargs)
-
-    def get_permissions(self):
-        if self.request.method in ["PUT", "PATCH"]:
-            # user must be able to view and be either an editor or and admin
-            # to edit a dataset
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
-        else:
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
-
-        return [permission() for permission in self.permission_classes]
-
-    def get_serializer_class(self):
-        if self.request.method in ["GET"]:
-            # use the view serialiser if on GET requests
-            return DatasetViewSerializer
-        if self.request.method in ["PUT", "PATCH", "DELETE"]:
-            # use the edit serialiser when the user tries to alter the dataset
-            return DatasetEditSerializer
-        return super().get_serializer_class()
+    serializer_class = DatasetViewSerializer
+    permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
         qs = Dataset.objects.filter(id=self.kwargs.get("pk"))

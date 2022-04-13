@@ -61,7 +61,7 @@ const DatasetTbl = (props) => {
         setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
         data.current = data.current.map(dataset => dataset.id == id ? { ...dataset, hidden: theIndicator } : dataset)
         const patchData = { hidden: theIndicator }
-        usePatch(`/datasets/${id}`, patchData).then(res => {
+        usePatch(`/datasets/update/${id}`, patchData).then(res => {
             activeDatasets.current = data.current.filter(dataset => dataset.hidden == false)
             archivedDatasets.current = data.current.filter(dataset => dataset.hidden == true)
             active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current)
