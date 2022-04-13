@@ -6,7 +6,7 @@ import { useGet, usePatch } from '../api/values'
 const EditTable = () => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
-    const value = window.pk?window.pk:window.location.href.split("tables/")[1].split("/")[0]
+    const value = window.pk ? window.pk : window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
     const [table, setTable] = useState(null);
     const [selectedPerson, setPerson] = useState("------");
@@ -18,7 +18,7 @@ const EditTable = () => {
         // get scan report table to use to get tables 
         const scanreporttable = await useGet(`/scanreporttables/${value}/`)
         // get scan report tables for the scan report the table belongs to
-        const tablesFilter = useGet(`/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
+        const tablesFilter = useGet(`/scanreporttables/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
         const fieldsFilter = useGet(`/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
         const promises = await Promise.all([tablesFilter, fieldsFilter])

@@ -324,7 +324,7 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 
 const getScanReportTableRows = async (id) =>{
     // get table rows
-    let table = await useGet(`/scanreporttablesfilter/?scan_report=${id}`)
+    let table = await useGet(`/scanreporttables/?scan_report=${id}`)
     // if table is empty then return
     if(table.length==0){
         return []

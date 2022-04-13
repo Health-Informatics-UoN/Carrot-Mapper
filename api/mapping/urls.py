@@ -44,11 +44,11 @@ routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanrepo
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
-routers.register(
-    r"scanreporttablesfilter",
-    views.ScanReportTableFilterViewSet,
-    basename="scanreporttablesfilter",
-)
+# routers.register(
+#     r"scanreporttablesfilter",
+#     views.ScanReportTableFilterViewSet,
+#     basename="scanreporttablesfilter",
+# )
 
 routers.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"

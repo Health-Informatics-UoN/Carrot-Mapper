@@ -496,6 +496,12 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "scan_report": ["in", "exact"],
+        "name": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -521,15 +527,15 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportTable.objects.all()
-    serializer_class = ScanReportTableSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "name": ["in", "exact"],
-        "id": ["in", "exact"],
-    }
+# class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
+#     queryset = ScanReportTable.objects.all()
+#     serializer_class = ScanReportTableSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = {
+#         "scan_report": ["in", "exact"],
+#         "name": ["in", "exact"],
+#         "id": ["in", "exact"],
+#     }
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):

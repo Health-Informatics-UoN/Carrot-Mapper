@@ -392,7 +392,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}&fields=id,"
+            url=f"{api_url}scanreporttables/?id__in={ids_to_get}&fields=id,"
             f"scan_report",
             headers=headers,
         )
@@ -679,7 +679,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_field_tables = requests.get(
-            url=f"{api_url}scanreporttablesfilter/?id__in={ids_to_get}&fields=id,"
+            url=f"{api_url}scanreporttables/?id__in={ids_to_get}&fields=id,"
             f"scan_report",
             headers=headers,
         )
