@@ -1979,6 +1979,7 @@ def scanreport_values_list_page(request, sr, tbl, pk):
         scan_report_table = scan_report_field.scan_report_table
         scan_report = scan_report_field.scan_report_table.scan_report
 
+        args["pk"] = pk
         args["scan_report"] = scan_report
         args["scan_report_field"] = scan_report_field
         args["scan_report_table"] = scan_report_table
