@@ -32,8 +32,9 @@ const TablesTbl = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
-        // get table on initial render
+        // Check user can see the scan report
         useGet(`/scanreports/${scanReportId}`).then(res => {
+            // If user can see scan report, get the tables
             getScanReportTableRows(scanReportId).then(table => {
                 setScanReportTables(table)
                 setLoading(false)
@@ -41,6 +42,7 @@ const TablesTbl = () => {
         }
         ).catch(
             err => {
+                // If user can't see scan report, show an error message
                 setError("Could not access the resource you requested. "
                     + "Check that it exists and that you have permission to view it."
                 )

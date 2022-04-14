@@ -21,7 +21,7 @@ import {
 } from "@chakra-ui/react"
 
 import { Formik, Form, } from 'formik'
-import { getScanReportTable, getScanReportFieldValues } from '../api/values'
+import { getScanReportTable, getScanReportFieldValues, useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
@@ -43,16 +43,29 @@ const FieldsTbl = (props) => {
 
     useEffect(() => {
         // run on initial render
-        // get field table values for specified id
-        getScanReportFieldValues(scanReportTableId, valuesRef).then(val => {
-            setValues(val)
-            setLoading(false)
-        })
-        // get scan report table data to use for checking person id and date event
-        getScanReportTable(scanReportTableId).then(table => {
-            scanReportTable.current = table
-            setMappingButtonDisabled(false)
-        })
+        // Check if user can see SR table
+        useGet(`/scanreporttables/${scanReportTableId}`).then(
+            res => {
+                // get field table values for specified id
+                getScanReportFieldValues(scanReportTableId, valuesRef).then(val => {
+                    setValues(val)
+                    setLoading(false)
+                })
+                // get scan report table data to use for checking person id and date event
+                getScanReportTable(scanReportTableId).then(table => {
+                    scanReportTable.current = table
+                    setMappingButtonDisabled(false)
+                })
+            }
+        ).catch(
+            err => {
+                // If user can't see SR table, show an error message
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoading(false)
+            }
+        )
     }, []);
 
     // called to submit a concept to be added. Calls handle submit function from app.js
@@ -69,7 +82,7 @@ const FieldsTbl = (props) => {
         //Render Error State
         return (
             <Flex padding="30px">
-                <Flex marginLeft="10px">An Error has occured while fetching values</Flex>
+                <Flex marginLeft="10px">{error}</Flex>
             </Flex>
         )
     }
