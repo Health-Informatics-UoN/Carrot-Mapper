@@ -407,20 +407,13 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         url=f"{api_url}scanreports/",
         headers=headers,
     )
-    get_datasets = requests.get(
-        url=f"{api_url}datasets/",
-        headers=headers,
-    )
     # get active scanreports and map them to fields. Remove any fields in archived
     # reports or not marked as 'Mapping Complete'
-    active_srs = []
-    for item in json.loads(get_scan_reports.content.decode("utf-8")):
-        if item["hidden"] is False and item["status"] == "COMPLET":
-            for ds in json.loads(get_datasets.content.decode("utf-8")):
-                # Exclude scan reports if their parent_dataset is archived
-                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
-                    active_srs.append(str(item["id"]))
-
+    active_srs = [
+        str(item["id"])
+        for item in json.loads(get_scan_reports.content.decode("utf-8"))
+        if item["hidden"] is False and item["status"] == "COMPLET"
+    ]
     # active reports is list of report ids that are not archived and have the status
     # 'Mapping Complete'
 
@@ -701,21 +694,13 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         url=f"{api_url}scanreports/",
         headers=headers,
     )
-    # get all datasets to be used to only keep scanreports that come from active datasets
-    get_datasets = requests.get(
-        url=f"{api_url}datasets/",
-        headers=headers,
-    )
     # get active scanreports and map them to fields. Remove any fields in archived
     # reports or not marked as 'Mapping Complete'
-    active_srs = []
-    for item in json.loads(get_scan_reports.content.decode("utf-8")):
-        if item["hidden"] is False and item["status"] == "COMPLET":
-            for ds in json.loads(get_datasets.content.decode("utf-8")):
-                # Exclude scan reports if their parent_dataset is archived
-                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
-                    active_srs.append(str(item["id"]))
-
+    active_srs = [
+        str(item["id"])
+        for item in json.loads(get_scan_reports.content.decode("utf-8"))
+        if item["hidden"] is False and item["status"] == "COMPLET"
+    ]
     # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
     # 'Mapping Complete'
 
