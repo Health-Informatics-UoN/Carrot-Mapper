@@ -80,6 +80,7 @@ Please append a line to the changelog for each change made.
 * Fixed failing unittests.
 * Added Archive/Active functionality to Dataset page
   - Created new field 'hidden' in Dataset table
+* Don't allow reuse of mappings when scan reports are in archived datasets.
 
 ## v1.4.0 was released 02/02/22
 
