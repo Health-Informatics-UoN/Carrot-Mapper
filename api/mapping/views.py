@@ -518,7 +518,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         """
         If the User is the `AZ_FUNCTION_USER`, return all ScanReportTables.
 
-        Else, return only the ScanReportTbales which the User has permission to see.
+        Else, return only the ScanReportTables which the User has permission to see.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReportTable.objects.all().distinct()
@@ -673,9 +673,9 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        If the User is the `AZ_FUNCTION_USER`, return all ScanReportTables.
+        If the User is the `AZ_FUNCTION_USER`, return all ScanReportFields.
 
-        Else, return only the ScanReportTbales which the User has permission to see.
+        Else, return only the ScanReportFields which the User has permission to see.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReportField.objects.all().distinct()
