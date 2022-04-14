@@ -61,7 +61,7 @@ Please append a line to the changelog for each change made.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
 * Public Scan Reports under restricted Datasets are only visible to those
-with visibility of the Dataset.
+  with visibility of the Dataset.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
 * Created Dataset List page
@@ -72,12 +72,14 @@ with visibility of the Dataset.
 * Remove unused ajax POST function.
 * Remove unused JS variables.
 * Users must now be the author of a Scan Report or an admin of the parent Dataset
-to change the author of a Scan Report.
+  to change the author of a Scan Report.
 * Can now include a datasets query in the projects list endpoint to include datasets in the result
 * Improved django admin pages' responsiveness and informativeness
 * Users who are not admins/editors of a scan report table cannot edit the form data.
 * User is now automatically added as admin to Datasets they create.
 * Fixed failing unittests.
+* Added Archive/Active functionality to Dataset page
+  - Created new field 'hidden' in Dataset table
 
 ## v1.4.0 was released 02/02/22
 

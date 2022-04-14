@@ -429,6 +429,7 @@ class Dataset(BaseModel):
         related_query_name="dataset_editor",
         blank=True,
     )
+    hidden = models.BooleanField(default=False)
     # `projects` field added by M2M field in `Project`
     # `scan_reports` field added by FK field in `ScanReport`
 

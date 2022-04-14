@@ -701,7 +701,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         for item in json.loads(get_scan_reports.content.decode("utf-8"))
         if item["hidden"] is False and item["status"] == "COMPLET"
     ]
-    # active reports is list of report ids that are not archived and have the status
+    # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
     # 'Mapping Complete'
 
     # map value id to active scan report
