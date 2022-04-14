@@ -13,6 +13,10 @@ const useGet = async (url) =>{
         }
     }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const data = await response.json();
     return data;
 }

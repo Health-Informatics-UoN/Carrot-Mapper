@@ -16,7 +16,7 @@ import {
 
 } from "@chakra-ui/react"
 
-import { getScanReportTableRows, usePost } from '../api/values'
+import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
 
 
@@ -33,10 +33,20 @@ const TablesTbl = () => {
 
     useEffect(() => {
         // get table on initial render
-        getScanReportTableRows(scanReportId).then(table => {
-            setScanReportTables(table)
-            setLoading(false)
-        })
+        useGet(`/scanreports/${scanReportId}`).then(res => {
+            getScanReportTableRows(scanReportId).then(table => {
+                setScanReportTables(table)
+                setLoading(false)
+            })
+        }
+        ).catch(
+            err => {
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoading(false)
+            }
+        )
     }, []);
 
     const download_scan_report = () => {
@@ -85,6 +95,15 @@ const TablesTbl = () => {
         }
 
     };
+
+    if (error) {
+        //Render Error State
+        return (
+            <Flex padding="30px">
+                <Flex marginLeft="10px">{error}</Flex>
+            </Flex>
+        )
+    }
 
     if (loading) {
         //Render Loading State
