@@ -62,10 +62,6 @@ def has_viewership(obj: Any, request: Request) -> bool:
         ScanReport: lambda x: ScanReport.objects.filter(
             Q(visibility=VisibilityChoices.PUBLIC)
             | Q(
-                parent_dataset__viewers__id=request.user.id,
-                visibility=VisibilityChoices.RESTRICTED,
-            )
-            | Q(
                 parent_dataset__editors__id=request.user.id,
                 visibility=VisibilityChoices.RESTRICTED,
             )

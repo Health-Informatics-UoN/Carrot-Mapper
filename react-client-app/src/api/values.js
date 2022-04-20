@@ -13,6 +13,10 @@ const useGet = async (url) =>{
         }
     }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const data = await response.json();
     return data;
 }
@@ -158,7 +162,7 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
 // get scan report values for a specific field id
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
     // query endpoint for field values
-    let values = await useGet(`/scanreportvaluesfilter/?scan_report_field=${valueId}`)
+    let values = await useGet(`/scanreportvalues/?scan_report_field=${valueId}`)
     if (!Array.isArray(values)) {
         setError(true)
         return
@@ -313,7 +317,7 @@ const chunkIds = (list) => {
 }
 // get field values for a given table id and map any scanreport concepts that are associated
 const getScanReportFieldValues = async (valueId, valuesRef) => {
-    let response = await useGet(`/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    let response = await useGet(`/scanreportfields/?scan_report_table=${valueId}`)
     response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
@@ -324,7 +328,7 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 
 const getScanReportTableRows = async (id) =>{
     // get table rows
-    let table = await useGet(`/scanreporttablesfilter/?scan_report=${id}`)
+    let table = await useGet(`/scanreporttables/?scan_report=${id}`)
     // if table is empty then return
     if(table.length==0){
         return []
@@ -349,7 +353,7 @@ const getScanReportTableRows = async (id) =>{
     const promises = []
     // send API request for every sublist
     for (let i = 0; i < fieldIds.length; i++) {
-        promises.push(useGet(`/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
+        promises.push(useGet(`/scanreportfields/?id__in=${fieldIds[i].join()}&fields=id,name`))
     }
     const promiseResult = await Promise.all(promises)
     const fields = [].concat.apply([], promiseResult)

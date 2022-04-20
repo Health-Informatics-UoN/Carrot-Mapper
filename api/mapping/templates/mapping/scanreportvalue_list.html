@@ -6,23 +6,36 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
         <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-                reports</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
-                {{ scan_report.parent_dataset.data_partner.name }} - {{ scan_report.dataset }}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
-                {{ scan_report_table.name }}</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'values' %}?search={{ scan_report_field.id }}">
-                {{ scan_report_field.name }}</a></li>
-
+            reports</a>
+        </li>
+        <li class="breadcrumb-item"><a href="{% url 'scanreport_table' pk=scan_report.id %}">
+            {{ scan_report.parent_dataset.data_partner.name }} - {{ scan_report.dataset }}</a>
+        </li>
+        <li class="breadcrumb-item"><a href="{% url 'scanreport_fields' sr=scan_report.id pk=scan_report_table.id %}">
+            {{ scan_report_table.name }}</a>
+        </li>
+        <li class="breadcrumb-item"><a href="{% url 'scanreport_values' sr=scan_report.id tbl=scan_report_table.id pk=scan_report_field.id %}">
+            {{ scan_report_field.name }}</a>
+        </li>
     </ol>
 </nav>
 
 <div>
     <!-- Loads in React Components from index.js -->
     <div id='root'></div>
-    <script type="module" src="../../../static/javascript/react/src/index.js"></script>
-
-    
+    <script type="text/javascript" >
+        var pk ="{{pk}}"
+        var s = document.createElement("script");
+        s.type = "module";
+		s.innerHTML = null;
+		if(pk){
+            s.src = "../../../../../static/javascript/react/src/index.js";
+		}
+		else{
+            s.src = "../../../static/javascript/react/src/index.js";
+		}
+		document.getElementsByTagName('head')[0].appendChild(s)
+    </script>
     
 </div>
 {% endblock %}

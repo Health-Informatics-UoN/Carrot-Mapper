@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-export const downloadXLSXFile = async () => {
+export const downloadXLSXFile = async (scanReportId, scanReportName) => {
     
-    const url= '/api/scanreports/'+window.scan_report+'/download/';
+    const url= '/api/scanreports/'+scanReportId+'/download/';
     const headers = {'Content-Type': 'blob'};
     const config = {method: 'GET', url: url, responseType: 'blob', headers};
 
     try {
         const response = await axios(config);
         console.log(response.data);
-        const outputFilename = window.scan_report_name;
+        const outputFilename = scanReportName;
         // If you want to download file automatically using link attribute.
         const url = URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement('a');

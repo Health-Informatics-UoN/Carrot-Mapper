@@ -78,6 +78,11 @@ Please append a line to the changelog for each change made.
 * Users who are not admins/editors of a scan report table cannot edit the form data.
 * User is now automatically added as admin to Datasets they create.
 * Fixed failing unittests.
+* Updated endpoints for listing Scan Report tables/fields/values:
+  - List for Scan Report tables at: `/scanreports/XXX`.
+  - List for Scan Report table fields at: `/scanreports/XXX/tables/YYY`.
+  - List for Scan Report table field values at: `/scanreports/XXX/tables/YYY/fields/ZZZ`.
+* Created Error 404 page.
 * Added Archive/Active functionality to Dataset page
   - Created new field 'hidden' in Dataset table
 
