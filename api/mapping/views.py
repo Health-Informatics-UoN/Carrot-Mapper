@@ -1989,6 +1989,9 @@ def scanreport_values_list_page(request, sr, tbl, pk):
         args["scan_report"] = scan_report
         args["scan_report_field"] = scan_report_field
         args["scan_report_table"] = scan_report_table
+        args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
+            scan_report_field, request
+        )
 
         return render(request, "mapping/scanreportvalue_list.html", args)
     except ObjectDoesNotExist:
