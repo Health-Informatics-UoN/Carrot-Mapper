@@ -338,10 +338,10 @@ const ScanReportTbl = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.data_partner.name}</Link></Td>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id}>{item.parent_dataset.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
