@@ -134,8 +134,15 @@ const ValuesTbl = (props) => {
                                             item.concepts.length > 0 &&
                                             <VStack alignItems='flex-start' >
                                                 {item.concepts.map((concept) => (
-                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete}
-                                                        creation_type={concept.creation_type ? concept.creation_type : undefined} />
+                                                    <ConceptTag
+                                                        key={concept.concept.concept_id}
+                                                        conceptName={concept.concept.concept_name}
+                                                        conceptId={concept.concept.concept_id.toString()}
+                                                        conceptIdentifier={concept.id.toString()}
+                                                        itemId={item.id} handleDelete={handleDelete}
+                                                        creation_type={concept.creation_type ? concept.creation_type : undefined}
+                                                        readOnly={!window.canEdit}
+                                                    />
                                                 ))}
                                             </VStack>
                                             :
@@ -163,9 +170,11 @@ const ValuesTbl = (props) => {
                                                             name='concept'
                                                             value={values.concept}
                                                             onChange={handleChange}
-                                                            onBlur={handleBlur} />
+                                                            onBlur={handleBlur}
+                                                            isDisabled={!window.canEdit}
+                                                        />
                                                         <div>
-                                                            <Button type='submit' disabled={!item.conceptsToLoad == 0} backgroundColor='#3C579E' color='white'>Add</Button>
+                                                            <Button type='submit' isDisabled={!((item.conceptsToLoad == 0) || window.canEdit)} backgroundColor='#3C579E' color='white'>Add</Button>
                                                         </div>
                                                     </HStack>
                                                 </Form>
