@@ -86,6 +86,7 @@ Please append a line to the changelog for each change made.
 * Added Archive/Active functionality to Dataset page
   - Created new field 'hidden' in Dataset table
 * Users without editor or admin permissions on a scan report will not longer see an option to edit the tables, fields, values or concepts.
+* Users without editor or admin permissions on an uploaded scan report's selected parent dataset cannot upload the scan report to that dataset.
 
 ## v1.4.0 was released 02/02/22
 
