@@ -7,7 +7,7 @@ import {
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
-import CCMultiSelectUserInput from './CCMultiSelectUserInput'
+import CCMultiSelectInput from './CCMultiSelectInput'
 
 const UploadScanReport = ({ setTitle }) => {
 
@@ -172,13 +172,13 @@ const UploadScanReport = ({ setTitle }) => {
             const datasets_query = await useGet(`/datasets/?data_partner=${data_partner.id}`)
             const projectsQuery = await useGet("/projects/?datasets=true")
             setProjectList(projectsQuery)
-            
+
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
                 setselectedDataset({ name: "------" })
             }
-            else{
+            else {
                 setselectedDataset(newDataset)
             }
             setselectedDataset(newDataset)
@@ -255,20 +255,20 @@ const UploadScanReport = ({ setTitle }) => {
     const removeProject = (name) => {
         setProjects(pj => pj.filter(proj => proj.name != name))
     }
-    const removeUser = (id) => {
-        setUsers(pj => pj.filter(user => user.id != id))
+    const removeUser = (username) => {
+        setUsers(pj => pj.filter(user => user.username != username))
     }
-    const removeScanreportViewer = (id) => {
-        setScanreportViewers(pj => pj.filter(user => user.id != id))
+    const removeScanreportViewer = (username) => {
+        setScanreportViewers(pj => pj.filter(user => user.username != username))
     }
-    const removeScanreportEditor = (id) => {
-        setScanreportEditors(pj => pj.filter(user => user.id != id))
+    const removeScanreportEditor = (username) => {
+        setScanreportEditors(pj => pj.filter(user => user.username != username))
     }
-    const removeDatasetAdmin = (id) => {
-        setDatasetAdmins(pj => pj.filter(user => user.id != id))
+    const removeDatasetAdmin = (username) => {
+        setDatasetAdmins(pj => pj.filter(user => user.username != username))
     }
-    const removeDatasetEditor = (id) => {
-        setDatasetEditors(pj => pj.filter(user => user.id != id))
+    const removeDatasetEditor = (username) => {
+        setDatasetEditors(pj => pj.filter(user => user.username != username))
     }
     async function mapDatasetToProjects(dataset, projects) {
         const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
@@ -298,6 +298,32 @@ const UploadScanReport = ({ setTitle }) => {
             .filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
                 .includes(item.id)))
     }
+
+    function addDatasetViewer(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setUsers(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    function addDatasetEditor(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setDatasetEditors(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    function addDatasetAdmin(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setDatasetAdmins(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    const addScanreportViewer = (newViewer) => {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setScanreportViewers(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+
+    }
+    const addScanreportEditor = (newViewer) => {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setScanreportEditors(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
 
     if (loadingMessage) {
         //Render Loading State
@@ -397,20 +423,36 @@ const UploadScanReport = ({ setTitle }) => {
                                             </Flex>
                                             {!datasetVisibleToPublic &&
                                                 <>
-                                                    <CCMultiSelectUserInput id="Viewers" label={"Viewers:"} handleDelete={removeUser} currentSelections={users}
-                                                        isLoading={activeUsersList == undefined}
-                                                        handleInput={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
-                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
 
-                                                    <CCMultiSelectUserInput id="Editors" label={"Editors:"} handleDelete={removeDatasetEditor} currentSelections={datasetEditors}
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-viewers"}
+                                                        label={"Viewers"}
                                                         isLoading={activeUsersList == undefined}
-                                                        handleInput={(option) => setDatasetEditors(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
-                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={users.map(item => item.username)}
+                                                        handleInput={addDatasetViewer}
+                                                        handleDelete={removeUser}
+                                                    />
 
-                                                    <CCMultiSelectUserInput id="Admins" label={"Admins:"} handleDelete={removeDatasetAdmin} currentSelections={datasetAdmins}
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-editors"}
+                                                        label={"Editors"}
                                                         isLoading={activeUsersList == undefined}
-                                                        handleInput={(option) => setDatasetAdmins(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
-                                                        selectOptions={activeUsersList ? filterProjectUsers() : []} />
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={datasetEditors.map(item => item.username)}
+                                                        handleInput={addDatasetEditor}
+                                                        handleDelete={removeDatasetEditor}
+                                                    />
+
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-admins"}
+                                                        label={"Admins"}
+                                                        isLoading={activeUsersList == undefined}
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={datasetAdmins.map(item => item.username)}
+                                                        handleInput={addDatasetAdmin}
+                                                        handleDelete={removeDatasetAdmin}
+                                                    />
                                                 </>
                                             }
                                         </Box>
@@ -448,16 +490,25 @@ const UploadScanReport = ({ setTitle }) => {
                 }
             </Box>
 
-            <CCMultiSelectUserInput id="Viewers" label={"Viewers:"} handleDelete={removeScanreportViewer} currentSelections={scanreportViewers}
+            <CCMultiSelectInput
+                id={"scanreport-viewers"}
+                label={"Viewers"}
                 isLoading={loadingDatasetProjects}
-                handleInput={(option) => setScanreportViewers(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
-                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)) : []} />
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
+                currentSelections={scanreportViewers.map(item => item.username)}
+                handleInput={addScanreportViewer}
+                handleDelete={removeScanreportViewer}
+            />
 
-            <CCMultiSelectUserInput id="Editors" label={"Editors:"} handleDelete={removeScanreportEditor} currentSelections={scanreportEditors}
+            <CCMultiSelectInput
+                id={"scanreport-editors"}
+                label={"Editors"}
                 isLoading={loadingDatasetProjects}
-                handleInput={(option) => setScanreportEditors(pj => [...pj.filter(user => user.id != JSON.parse(option).id), JSON.parse(option)])}
-                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)) : []} />
-
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
+                currentSelections={scanreportEditors.map(item => item.username)}
+                handleInput={addScanreportEditor}
+                handleDelete={removeScanreportEditor}
+            />
 
 
             <FormControl isInvalid={formErrors.dataset && formErrors.dataset.length > 0} mt={4}>
