@@ -1310,6 +1310,13 @@ class ScanReportFormView(FormView):
         return response
 
     def form_valid(self, form):
+        # Check user has admin/editor rights on Scan Report parent dataset
+        parent_dataset = form.cleaned_data["parent_dataset"]
+        if not (
+            has_editorship(parent_dataset, self.request)
+            or is_admin(parent_dataset, self.request)
+        ):
+            return self.form_invalid(form)
 
         # Create random alphanumeric to link scan report to data dictionary
         # Create datetime stamp for scan report and data dictionary upload time
@@ -1319,7 +1326,7 @@ class ScanReportFormView(FormView):
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             dataset=form.cleaned_data["dataset"],
-            parent_dataset=form.cleaned_data["parent_dataset"],
+            parent_dataset=parent_dataset,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
