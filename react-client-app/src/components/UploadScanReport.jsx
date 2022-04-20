@@ -53,7 +53,8 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingDataset(true)
         const dataPartnerId = selectedDataPartner.id
         if (dataPartnerId != undefined) {
-            const datasets_query = await useGet(`/datasets/?data_partner=${dataPartnerId}`)
+            // Show only Datasets that have this Data Partner and are not archived
+            const datasets_query = await useGet(`/datasets/?data_partner=${dataPartnerId}&hidden=false`)
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {

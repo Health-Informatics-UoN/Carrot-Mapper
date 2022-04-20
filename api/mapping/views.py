@@ -422,6 +422,7 @@ class DatasetListView(generics.ListAPIView):
     filterset_fields = {
         "id": ["in"],
         "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
     }
 
     def get_queryset(self):
