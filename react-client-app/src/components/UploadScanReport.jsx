@@ -170,26 +170,20 @@ const UploadScanReport = ({ setTitle }) => {
             setLoadingDataset(true)
             // revalidate
             const datasets_query = await useGet(`/datasets/?data_partner=${data_partner.id}`)
+            const projectsQuery = await useGet("/projects/?datasets=true")
+            setProjectList(projectsQuery)
+            
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
-            // could as a default behaviour set the selected dataset to the newly created dataset using code below
-            // if(datasets_query.find(ds => ds.id == newDataset.id)){
-            //     setselectedDataset(newDataset)
-            // }
-            // else
-
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
                 setselectedDataset({ name: "------" })
             }
+            else{
+                setselectedDataset(newDataset)
+            }
+            setselectedDataset(newDataset)
             setLoadingDataset(false)
             closeAddingInterface()
-
-            // Could add newly created dataset to dataset list manually like this rather than revalidating
-            // setDatasets(
-            //     ds => [{ name: "------" }, ...[newDataset, ...ds.filter(ds2 => ds2.id != undefined)].sort((a, b) => a.name.localeCompare(b.name))]
-            // )
-
-
 
             setAlert({
                 hidden: false,
