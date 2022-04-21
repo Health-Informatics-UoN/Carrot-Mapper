@@ -31,6 +31,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
     const [viewers, setViewers] = useState([])
     const [editors, setEditors] = useState([])
     const [usersList, setUsersList] = useState(undefined)
+    const [error, setError] = useState(undefined)
 
     function getUsersFromIds(userIds, userObjects) {
         /**
@@ -55,42 +56,50 @@ const ScanReportAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             setTitle(null)
-            const queries = [
-                useGet(`/scanreports/${scanReportId}`),
-                useGet("/datasets/"),
-                useGet("/usersfilter/?is_active=true"),
-            ]
-            // Get dataset, data partners and users
-            const [scanReportQuery, datasetsQuery, usersQuery] = await Promise.all(queries)
-            // Get project members
-            const projectsQuery = await useGet(
-                `/projects/?dataset=${scanReportQuery.parent_dataset}`
-            )
-            const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
-            // Set up state from the results of the queries
-            setScanReport(scanReportQuery)
-            setDatasets(datasetsQuery)
-            setSelectedDataset(
-                datasetsQuery.find(element => element.id === scanReportQuery.parent_dataset)
-            )
-            setAuthor(
-                usersQuery.find(element => element.id == scanReportQuery.author)
-            )
-            setIsPublic(scanReportQuery.visibility === "PUBLIC")
-            setUsersList(usersQuery.filter(user => validUsers.includes(user.id)))
-            setViewers(
-                prevViewers => [
-                    ...prevViewers,
-                    ...getUsersFromIds(scanReportQuery.viewers, usersQuery),
+            try {
+                const scanReportQuery = await useGet(`/scanreports/${scanReportId}`)
+                const queries = [
+                    useGet("/datasets/"),
+                    useGet("/usersfilter/?is_active=true"),
                 ]
-            )
-            setEditors(
-                prevEditors => [
-                    ...prevEditors,
-                    ...getUsersFromIds(scanReportQuery.editors, usersQuery),
-                ]
-            )
-            setLoadingMessage(null)  // stop loading when finished
+                // Get dataset, data partners and users
+                const [datasetsQuery, usersQuery] = await Promise.all(queries)
+                // Get project members
+                const projectsQuery = await useGet(
+                    `/projects/?dataset=${scanReportQuery.parent_dataset}`
+                )
+                const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
+                // Set up state from the results of the queries
+                setScanReport(scanReportQuery)
+                setDatasets(datasetsQuery)
+                setSelectedDataset(
+                    datasetsQuery.find(element => element.id === scanReportQuery.parent_dataset)
+                )
+                setAuthor(
+                    usersQuery.find(element => element.id == scanReportQuery.author)
+                )
+                setIsPublic(scanReportQuery.visibility === "PUBLIC")
+                setUsersList(usersQuery.filter(user => validUsers.includes(user.id)))
+                setViewers(
+                    prevViewers => [
+                        ...prevViewers,
+                        ...getUsersFromIds(scanReportQuery.viewers, usersQuery),
+                    ]
+                )
+                setEditors(
+                    prevEditors => [
+                        ...prevEditors,
+                        ...getUsersFromIds(scanReportQuery.editors, usersQuery),
+                    ]
+                )
+                setLoadingMessage(null)  // stop loading when finished
+            } catch (error) {
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoadingMessage(null)
+            }
+
         },
         [], // Required to stop this effect sending infinite requests
     )
@@ -232,6 +241,15 @@ const ScanReportAdminForm = ({ setTitle }) => {
             })
             onOpen()
         }
+    }
+
+    if (error) {
+        //Render Error State
+        return (
+            <Flex padding="30px">
+                <Flex marginLeft="10px">{error}</Flex>
+            </Flex>
+        )
     }
 
     if (loadingMessage) {
