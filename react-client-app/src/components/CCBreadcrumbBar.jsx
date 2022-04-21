@@ -1,27 +1,32 @@
 import React from 'react'
-import {
-    ArrowForwardIcon, Flex, Link
-} from "@chakra-ui/react"
+import { Flex, Link, Text } from "@chakra-ui/react"
 
 const CCBreadcrumbBar = ({ pathArray }) => {
+    /**
+     * Breadcrumb bar to assist navigation.
+     * 
+     * Required args:
+     *  pathArray (Array[Any]): an Array forming the path to the current page.
+     */
+
     const breadcrumbs = ["Home", ...pathArray]
-    const lastBreadcrumb = breadcrumbs.length > 1 ? breadcrumbs.pop() : null
 
     return (
         <Flex>
             {
                 breadcrumbs.map(
-                    (breadcrum, index) => {
+                    (breadcrumb, index) => {
                         return (
                             <>
-                                <Link href={`/${pathArray.slice(0, index).join("/")}`}>{breadcrum}</Link>
-                                {/* <ArrowForwardIcon /> */}
+                                <Link href={`/${pathArray.slice(0, index).join("/")}`}>{breadcrumb}</Link>
+                                {index !== breadcrumbs.length - 1 &&
+                                    <Text>&nbsp;/&nbsp;</Text>
+                                }
                             </>
                         )
                     }
                 )
             }
-            <Link href={`/${pathArray.join("/")}`}>{lastBreadcrumb}</Link>
         </Flex>
     )
 

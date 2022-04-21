@@ -17,3 +17,6 @@ OneCrumb.args = {pathArray : ["Datasets"]}
 
 export const TwoCrumbs = Template.bind()
 TwoCrumbs.args = {pathArray : ["Datasets", 1234]}
+
+export const ThreeCrumbs = Template.bind()
+ThreeCrumbs.args = {pathArray : ["Datasets", 1234, "Details"]}
