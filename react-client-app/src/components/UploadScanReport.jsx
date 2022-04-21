@@ -7,6 +7,7 @@ import {
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
+import CCMultiSelectInput from './CCMultiSelectInput'
 
 const UploadScanReport = ({ setTitle }) => {
 
@@ -21,14 +22,22 @@ const UploadScanReport = ({ setTitle }) => {
     const [datasetVisibleToPublic, setDatasetVisibleToPublic] = useState(true);
     const [projects, setProjects] = useState([]);
     const [projectList, setProjectList] = useState(undefined);
+    const [loadingProjectUsers, setLoadingProjectUsers] = useState(true);
 
     const [users, setUsers] = useState([]);
-    const [usersList, setUsersList] = useState(undefined);
+    const [activeUsersList, setActiveUsersList] = useState(undefined);
+    const [scanreportViewers, setScanreportViewers] = useState([]);
+    const [scanreportEditors, setScanreportEditors] = useState([]);
+    const [datasetEditors, setDatasetEditors] = useState([]);
+    const [datasetAdmins, setDatasetAdmins] = useState([]);
 
     const [addDatasetMessage, setAddDatasetMessage] = useState(null);
     const [formErrors, setFormErrors] = useState({});
 
     const [selectedDataset, setselectedDataset] = useState({ name: "------" });
+
+    const [selectedDatasetProjectMembers, setSelectedDatasetProjectMembers] = useState([]);
+    const [loadingDatasetProjects, setLoadingDatasetProjects] = useState(true);
 
     const scanReportName = useRef();
     const createDatasetRef = useRef();
@@ -36,6 +45,9 @@ const UploadScanReport = ({ setTitle }) => {
     const [dataDictionary, setDataDictionary] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
     const [uploadLoading, setUploadLoading] = useState(false)
+
+
+
     useEffect(async () => {
         setTitle(null)
         const dataPartnerQuery = await useGet("/datapartners/")
@@ -43,10 +55,10 @@ const UploadScanReport = ({ setTitle }) => {
         setLoadingMessage(null)
         const projectsQuery = await useGet("/projects/?datasets=true")
         setProjectList(projectsQuery)
-        const usersQuery = await useGet("/users/")
-        setUsersList(usersQuery)
+        const usersQuery = await useGet("/users/?is_active=true")
+        setActiveUsersList(usersQuery)
+        setLoadingDatasetProjects(false)
     }, []);
-
     useEffect(async () => {
         setFormErrors({ ...formErrors, datapartner: undefined })
         // change the dataset list
@@ -66,19 +78,65 @@ const UploadScanReport = ({ setTitle }) => {
             setselectedDataset({ name: "------" })
         }
         setLoadingDataset(false)
-
+        setScanreportViewers([]);
+        setScanreportEditors([]);
 
     }, [selectedDataPartner]);
 
     useEffect(async () => {
         setFormErrors({ ...formErrors, parent_dataset: undefined })
+        setSelectedDatasetProjectMembers([])
+        setLoadingDatasetProjects(true)
+        if (selectedDataset.id) {
+            // set projects to only those for the selected dataset
+            const datasetProjects = await useGet(`/projects/?dataset=${selectedDataset.id}`)
+            let datasetProjectMembers = [...(new Set(datasetProjects.map(project => project.members).flat()))]
+            if (selectedDataset.visibility === "RESTRICTED") {
+                // filter datasetProjectMembers down to just viewers editors or admins of the dataset
+                const validDatasetMembers = [...(new Set([...selectedDataset.viewers, ...selectedDataset.editors, ...selectedDataset.admins]))]
+                datasetProjectMembers = datasetProjectMembers.filter(item => validDatasetMembers.includes(item))
+            }
+            setSelectedDatasetProjectMembers(datasetProjectMembers)
+            // remove already selected users that aren't in project members
+            setScanreportViewers(viewers => viewers.filter(viewer => datasetProjectMembers.includes(viewer.id)))
+            setScanreportEditors(viewers => viewers.filter(viewer => datasetProjectMembers.includes(viewer.id)))
+        }
+        setLoadingDatasetProjects(false)
     }, [selectedDataset]);
+
     useEffect(async () => {
         setFormErrors({ ...formErrors, scan_report_file: undefined })
     }, [whiteRabbitScanReport]);
+
     useEffect(async () => {
         setFormErrors({ ...formErrors, data_dictionary_file: undefined })
     }, [dataDictionary]);
+
+    useEffect(async () => {
+        setLoadingProjectUsers(true)
+        if (projectList) {
+            const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
+            setProjectList(projectList => projectList.map(project => full_projects.find(el => el.id === project.id) ? full_projects.find(el => el.id === project.id) : project))
+        }
+        setLoadingProjectUsers(false)
+    }, [projects]);
+
+    useEffect(async () => {
+        if (projectList && activeUsersList) {
+            // remove any viewers, admins and editors that are no longer valid
+            setDatasetAdmins(currentAdminList => currentAdminList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+            setDatasetEditors(currentEditorList => currentEditorList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+            setUsers(currentViewerList => currentViewerList.filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+        }
+        else {
+            setDatasetAdmins([])
+            setDatasetEditors([])
+            setUsers([])
+        }
+    }, [projectList]);
 
 
     function readScanReport() {
@@ -101,36 +159,31 @@ const UploadScanReport = ({ setTitle }) => {
                 data_partner: data_partner.id,
                 name: newDatasetName,
                 visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
-                admins: users.map(item => item.id),
+                admins: datasetAdmins.map(item => item.id)//users.map(item => item.id), Not sure what this was doing. Seemingly mapping the list of viewers to admins
             }
             if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
+                data.editors = datasetEditors.map(item => item.id)
             }
             const newDataset = await usePost(`/datasets/create/`, data)
             await mapDatasetToProjects(newDataset, projects)
             setLoadingDataset(true)
             // revalidate
             const datasets_query = await useGet(`/datasets/?data_partner=${data_partner.id}`)
+            const projectsQuery = await useGet("/projects/?datasets=true")
+            setProjectList(projectsQuery)
+
             // if currently selected dataset is in the list of new datasets then leave selected datasets the same, otherwise, make dataset equal to null 
             setDatasets([{ name: "------" }, ...datasets_query.sort((a, b) => a.name.localeCompare(b.name))])
-            // could as a default behaviour set the selected dataset to the newly created dataset using code below
-            // if(datasets_query.find(ds => ds.id == newDataset.id)){
-            //     setselectedDataset(newDataset)
-            // }
-            // else
-
             if (!datasets_query.find(ds => ds.id == selectedDataset.id)) {
                 setselectedDataset({ name: "------" })
             }
+            else {
+                setselectedDataset(newDataset)
+            }
+            setselectedDataset(newDataset)
             setLoadingDataset(false)
             closeAddingInterface()
-
-            // Could add newly created dataset to dataset list manually like this rather than revalidating
-            // setDatasets(
-            //     ds => [{ name: "------" }, ...[newDataset, ...ds.filter(ds2 => ds2.id != undefined)].sort((a, b) => a.name.localeCompare(b.name))]
-            // )
-
-
 
             setAlert({
                 hidden: false,
@@ -178,6 +231,8 @@ const UploadScanReport = ({ setTitle }) => {
             await formData.append('dataset', scanReportName.current.value)
             await formData.append('scan_report_file', whiteRabbitScanReport)
             await formData.append('data_dictionary_file', dataDictionary)
+            await formData.append('viewers', scanreportViewers.map(item => item.id))
+            await formData.append('editors', scanreportEditors.map(item => item.id))
             setUploadLoading(true)
 
             const response = await postForm(window.location.href, formData)
@@ -200,8 +255,20 @@ const UploadScanReport = ({ setTitle }) => {
     const removeProject = (name) => {
         setProjects(pj => pj.filter(proj => proj.name != name))
     }
-    const removeUser = (id) => {
-        setUsers(pj => pj.filter(user => user.id != id))
+    const removeUser = (username) => {
+        setUsers(pj => pj.filter(user => user.username != username))
+    }
+    const removeScanreportViewer = (username) => {
+        setScanreportViewers(pj => pj.filter(user => user.username != username))
+    }
+    const removeScanreportEditor = (username) => {
+        setScanreportEditors(pj => pj.filter(user => user.username != username))
+    }
+    const removeDatasetAdmin = (username) => {
+        setDatasetAdmins(pj => pj.filter(user => user.username != username))
+    }
+    const removeDatasetEditor = (username) => {
+        setDatasetEditors(pj => pj.filter(user => user.username != username))
     }
     async function mapDatasetToProjects(dataset, projects) {
         const full_projects = await useGet(`/projects/?name__in=${projects.map(project => project.name).join()}`)
@@ -222,8 +289,41 @@ const UploadScanReport = ({ setTitle }) => {
         setAddDatasetMessage(null)
         setProjects([])
         setUsers([])
+        setDatasetAdmins([])
+        setDatasetEditors([])
         setDatasetVisibleToPublic(true)
     }
+    const filterProjectUsers = () => {
+        return (activeUsersList
+            .filter(item => projects.map(proj => projectList.find(project => project.name === proj.name).members).flat()
+                .includes(item.id)))
+    }
+
+    function addDatasetViewer(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setUsers(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    function addDatasetEditor(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setDatasetEditors(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    function addDatasetAdmin(newViewer) {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setDatasetAdmins(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
+    const addScanreportViewer = (newViewer) => {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setScanreportViewers(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+
+    }
+    const addScanreportEditor = (newViewer) => {
+        newViewer = activeUsersList.find(el => el.username === newViewer)
+        setScanreportEditors(previous => [...previous.filter(user => user.id !== newViewer.id), newViewer])
+    }
+
 
     if (loadingMessage) {
         //Render Loading State
@@ -323,30 +423,36 @@ const UploadScanReport = ({ setTitle }) => {
                                             </Flex>
                                             {!datasetVisibleToPublic &&
                                                 <>
-                                                    <Box>
-                                                        <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
-                                                            <div style={{ fontWeight: "bold", marginRight: "10px" }} >Viewers: </div>
-                                                            {users.map((user, index) => {
-                                                                return (
-                                                                    <div key={index} style={{ marginTop: "0px" }}>
-                                                                        <ConceptTag conceptName={user.username} conceptId={""} conceptIdentifier={user.id} itemId={user.id} handleDelete={removeUser} />
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                        {usersList == undefined ?
-                                                            <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
-                                                            :
-                                                            <Select bg="white" mt={4} style={{ fontWeight: "bold" }} value="Add Viewer" readOnly onChange={(option) => setUsers(pj => [...pj.filter(user => user.id != JSON.parse(option.target.value).id), JSON.parse(option.target.value)])}>
-                                                                <option style={{ fontWeight: "bold" }} disabled>Add Viewer</option>
-                                                                <>
-                                                                    {usersList.map((item, index) =>
-                                                                        <option key={index} value={JSON.stringify(item)}>{item.username}</option>
-                                                                    )}
-                                                                </>
-                                                            </Select>
-                                                        }
-                                                    </Box>
+
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-viewers"}
+                                                        label={"Viewers"}
+                                                        isLoading={activeUsersList == undefined}
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={users.map(item => item.username)}
+                                                        handleInput={addDatasetViewer}
+                                                        handleDelete={removeUser}
+                                                    />
+
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-editors"}
+                                                        label={"Editors"}
+                                                        isLoading={activeUsersList == undefined}
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={datasetEditors.map(item => item.username)}
+                                                        handleInput={addDatasetEditor}
+                                                        handleDelete={removeDatasetEditor}
+                                                    />
+
+                                                    <CCMultiSelectInput
+                                                        id={"dataset-admins"}
+                                                        label={"Admins"}
+                                                        isLoading={activeUsersList == undefined}
+                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                        currentSelections={datasetAdmins.map(item => item.username)}
+                                                        handleInput={addDatasetAdmin}
+                                                        handleDelete={removeDatasetAdmin}
+                                                    />
                                                 </>
                                             }
                                         </Box>
@@ -383,6 +489,26 @@ const UploadScanReport = ({ setTitle }) => {
                     </Box>
                 }
             </Box>
+
+            <CCMultiSelectInput
+                id={"scanreport-viewers"}
+                label={"Viewers"}
+                isLoading={loadingDatasetProjects}
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
+                currentSelections={scanreportViewers.map(item => item.username)}
+                handleInput={addScanreportViewer}
+                handleDelete={removeScanreportViewer}
+            />
+
+            <CCMultiSelectInput
+                id={"scanreport-editors"}
+                label={"Editors"}
+                isLoading={loadingDatasetProjects}
+                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
+                currentSelections={scanreportEditors.map(item => item.username)}
+                handleInput={addScanreportEditor}
+                handleDelete={removeScanreportEditor}
+            />
 
 
             <FormControl isInvalid={formErrors.dataset && formErrors.dataset.length > 0} mt={4}>

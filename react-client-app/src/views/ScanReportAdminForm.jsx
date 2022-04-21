@@ -58,10 +58,15 @@ const ScanReportAdminForm = ({ setTitle }) => {
             const queries = [
                 useGet(`/scanreports/${scanReportId}`),
                 useGet("/datasets/"),
-                useGet("/users/"),
+                useGet("/usersfilter/?is_active=true"),
             ]
             // Get dataset, data partners and users
             const [scanReportQuery, datasetsQuery, usersQuery] = await Promise.all(queries)
+            // Get project members
+            const projectsQuery = await useGet(
+                `/projects/?dataset=${scanReportQuery.parent_dataset}`
+            )
+            const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
             // Set up state from the results of the queries
             setScanReport(scanReportQuery)
             setDatasets(datasetsQuery)
@@ -72,7 +77,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 usersQuery.find(element => element.id == scanReportQuery.author)
             )
             setIsPublic(scanReportQuery.visibility === "PUBLIC")
-            setUsersList(usersQuery)
+            setUsersList(usersQuery.filter(user => validUsers.includes(user.id)))
             setViewers(
                 prevViewers => [
                     ...prevViewers,
