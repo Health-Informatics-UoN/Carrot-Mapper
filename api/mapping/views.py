@@ -1907,11 +1907,10 @@ def dataset_list_page(request):
 @login_required
 def dataset_admin_page(request, pk):
     args = {}
-    if ds := Dataset.objects.get(id=pk):
+    try:
+        ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-        args["dataset_name"] = ds.name
-        args["dataset_id"] = pk
-    else:
+    except ObjectDoesNotExist:
         args["is_admin"] = False
 
     return render(request, "mapping/admin_dataset_form.html", args)
