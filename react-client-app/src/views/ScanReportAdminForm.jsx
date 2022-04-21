@@ -267,7 +267,10 @@ const ScanReportAdminForm = ({ setTitle }) => {
 
     return (
         <Container maxW='container.xl'>
-            <CCBreadcrumbBar pathArray={window.location.pathname.split("/").slice(1)} />
+            <CCBreadcrumbBar
+                pathArray={window.location.pathname.split("/").slice(1)}
+                altNames={["Scan Reports", scanReport.dataset, "Details"]}
+            />
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
