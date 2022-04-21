@@ -1930,15 +1930,14 @@ def dataset_content_page(request, pk):
 @login_required
 def scanreport_admin_page(request, pk):
     args = {}
-    if sr := ScanReport.objects.get(id=pk):
+    try:
+        sr = ScanReport.objects.get(id=pk)
         is_admin = (
             sr.author.id == request.user.id
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
-        args["sr_id"] = pk
-        args["sr_dataset"] = sr.dataset
-    else:
+    except ObjectDoesNotExist:
         args["is_admin"] = False
 
     return render(request, "mapping/admin_scanreport_form.html", args)
