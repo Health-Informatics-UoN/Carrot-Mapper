@@ -9,6 +9,11 @@ const CCBreadcrumbBar = ({ pathArray }) => {
      *  pathArray (Array[Any]): an Array forming the path to the current page.
      */
 
+    // Check for required arguments
+    if (!pathArray || !Array.isArray(pathArray)) {
+        throw TypeError("`pathArray` must be an array. It can be empty (`[]`).")
+    }
+
     const breadcrumbs = ["Home", ...pathArray]
 
     return (
