@@ -201,7 +201,7 @@ urlpatterns = [
         name="scan-report-field-update",
     ),
     path("values/", views.ScanReportValueListView.as_view(), name="values"),
-    path("scanreports/", views.ScanReportListView.as_view(), name="scan-report-list"),
+    path("scanreports", views.ScanReportListView.as_view(), name="scan-report-list"),
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableListView.as_view(),
