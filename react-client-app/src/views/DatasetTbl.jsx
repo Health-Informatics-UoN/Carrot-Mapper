@@ -5,7 +5,7 @@ import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
-import ToastAlert from './ToastAlert'
+import ToastAlert from '../components/ToastAlert'
 
 const DatasetTbl = (props) => {
     const data = useRef(null);
