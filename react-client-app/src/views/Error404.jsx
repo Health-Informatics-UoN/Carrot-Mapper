@@ -17,7 +17,7 @@ const Error404 = ({ setTitle }) => {
     return (
         <Container maxW='container.xl'>
             <PageHeading text={"Resource not found."} />
-            <Text>The resource your are looking for does not exist.</Text>
+            <Text>The resource you are looking for does not exist.</Text>
             <Button onClick={goBack}>Go Back</Button>
         </Container>
     )
