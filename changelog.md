@@ -85,6 +85,7 @@ Please append a line to the changelog for each change made.
 * Created Error 404 page.
 * Added Archive/Active functionality to Dataset page
   - Created new field 'hidden' in Dataset table
+* Don't allow reuse of mappings when scan reports are in archived datasets.
 * Users without editor or admin permissions on a scan report will not longer see an option to edit the tables, fields, values or concepts.
 * Users without editor or admin permissions on an uploaded scan report's selected parent dataset cannot upload the scan report to that dataset.
 * User will see a generic error message when they navigate to a dataset or scan report detail/admin page which they do not have permission to view (or it does not exist).
