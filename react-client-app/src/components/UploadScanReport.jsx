@@ -491,6 +491,7 @@ const UploadScanReport = ({ setTitle }) => {
             </Box>
 
             <CCMultiSelectInput
+                info="Info about this goes here"
                 id={"scanreport-viewers"}
                 label={"Viewers"}
                 isLoading={loadingDatasetProjects}
@@ -501,6 +502,7 @@ const UploadScanReport = ({ setTitle }) => {
             />
 
             <CCMultiSelectInput
+                info="Info about this goes here"
                 id={"scanreport-editors"}
                 label={"Editors"}
                 isLoading={loadingDatasetProjects}
