@@ -3,6 +3,7 @@ import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, L
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
+import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
@@ -22,12 +23,16 @@ const DatasetsContent = (props) => {
     const [statusFilter, setStatusFilter] = useState("All");
     const [title, setTitle] = useState(`Scanreports in Dataset #${datasetId}`);
     const [expanded, setExpanded] = useState(false);
+    const [datasetName, setDatasetName] = useState();
     const statuses = JSON.parse(window.status).map(status => status.id);
 
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
+        // get dataset name
+        let datasetNameQuery = await useGet(`/datasets/${datasetId}`)
+        setDatasetName(datasetNameQuery.name)
         // get scan reports and sort by id
         let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
@@ -243,6 +248,10 @@ const DatasetsContent = (props) => {
     }
     return (
         <div>
+            <CCBreadcrumbBar
+                pathArray={window.location.pathname.split("/").slice(1)}
+                altNames={["Datasets", datasetName]}
+            />
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
