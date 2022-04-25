@@ -39,6 +39,7 @@ const ValuesTbl = (props) => {
     const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
+        // props.setTitle(null)
         // Check user can see SR field
         useGet(`/scanreportfields/${scanReportFieldId}`).then(
             res => {
