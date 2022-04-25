@@ -218,7 +218,7 @@ urlpatterns = [
         name="tables-structural-mapping-filter-lvl2",
     ),
     path(
-        "scanreports/create/",
+        "scanreports/create",
         views.ScanReportFormView.as_view(),
         name="scan-report-form",
     ),
