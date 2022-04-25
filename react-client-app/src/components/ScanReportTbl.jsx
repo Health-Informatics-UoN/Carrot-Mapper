@@ -3,7 +3,7 @@ import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, L
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
-// import CCBreadcrumbBar from './CCBreadcrumbBar'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
@@ -242,10 +242,10 @@ const ScanReportTbl = (props) => {
     }
     return (
         <div>
-            {/* <CCBreadcrumbBar
+            <CCBreadcrumbBar
                 pathArray={window.location.pathname.split("/").slice(1)}
                 altNames={["Scan Reports"]}
-            /> */}
+            />
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />

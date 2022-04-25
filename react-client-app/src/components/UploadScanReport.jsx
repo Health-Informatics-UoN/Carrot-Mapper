@@ -7,7 +7,7 @@ import {
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
-// import CCBreadcrumbBar from './CCBreadcrumbBar'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import CCMultiSelectInput from './CCMultiSelectInput'
 
 const UploadScanReport = ({ setTitle }) => {
@@ -339,10 +339,10 @@ const UploadScanReport = ({ setTitle }) => {
     }
     return (
         <Container maxW='container.xl'>
-            {/* <CCBreadcrumbBar
+            <CCBreadcrumbBar
                 pathArray={window.location.pathname.split("/").slice(1)}
                 altNames={["Scan reports", "Create"]}
-            /> */}
+            />
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

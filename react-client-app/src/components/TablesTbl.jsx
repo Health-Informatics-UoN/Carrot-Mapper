@@ -15,7 +15,7 @@ import {
     HStack
 
 } from "@chakra-ui/react"
-// import CCBreadcrumbBar from './CCBreadcrumbBar'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import PageHeading from './PageHeading'
 import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
@@ -124,10 +124,10 @@ const TablesTbl = ({ setTitle }) => {
     }
     return (
         <div >
-            {/* <CCBreadcrumbBar
+            <CCBreadcrumbBar
                 pathArray={window.location.pathname.split("/").slice(1)}
                 altNames={["Scan reports", scanReportName]}
-            /> */}
+            />
             <PageHeading text={"Tables"} />
             <Flex my="10px">
                 <HStack>

@@ -3,7 +3,7 @@ import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, L
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
-// import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
+import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
@@ -248,10 +248,10 @@ const DatasetsContent = (props) => {
     }
     return (
         <div>
-            {/* <CCBreadcrumbBar
+            <CCBreadcrumbBar
                 pathArray={window.location.pathname.split("/").slice(1)}
                 altNames={["Datasets", datasetName]}
-            /> */}
+            />
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
