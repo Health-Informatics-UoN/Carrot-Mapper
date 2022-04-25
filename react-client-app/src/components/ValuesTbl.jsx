@@ -20,13 +20,14 @@ import {
 } from "@chakra-ui/react"
 
 import { Formik, Form } from 'formik'
-import { getScanReports, getScanReportField, getScanReportTable } from '../api/values'
+import { getScanReports, getScanReportField, getScanReportTable, useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 
 const ValuesTbl = (props) => {
     // get value to use in query from page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
+    const pathArray = window.location.pathname.split("/")
+    const scanReportFieldId = pathArray[pathArray.length - 1]
     // set page state variables
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -38,15 +39,28 @@ const ValuesTbl = (props) => {
     const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
-        // get and store scan report table object to use to check person_id and date_event
-        getScanReportField(value).then(data => {
-            getScanReportTable(data.scan_report_table).then(table => {
-                scanReportTable.current = table
-                setMappingButtonDisabled(false)
-            })
-        })
-        // get scan report values
-        getScanReports(value, setScanReports, scanReportsRef, setLoadingMessage, setError)
+        // Check user can see SR field
+        useGet(`/scanreportfields/${scanReportFieldId}`).then(
+            res => {
+                // get and store scan report table object to use to check person_id and date_event
+                getScanReportField(scanReportFieldId).then(data => {
+                    getScanReportTable(data.scan_report_table).then(table => {
+                        scanReportTable.current = table
+                        setMappingButtonDisabled(false)
+                    })
+                })
+                // get scan report values
+                getScanReports(scanReportFieldId, setScanReports, scanReportsRef, setLoadingMessage, setError)
+            }
+        ).catch(
+            err => {
+                // If user can't see SR field, show an error message
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoading(false)
+            }
+        )
     }, []);
 
     // called to submit a concept to be added. Calls handle submit function from app.js
@@ -63,7 +77,7 @@ const ValuesTbl = (props) => {
         //Render Loading State
         return (
             <Flex padding="30px">
-                <Flex marginLeft="10px">An Error has occured while fetching values</Flex>
+                <Flex marginLeft="10px">{error}</Flex>
             </Flex>
         )
     }
@@ -120,8 +134,15 @@ const ValuesTbl = (props) => {
                                             item.concepts.length > 0 &&
                                             <VStack alignItems='flex-start' >
                                                 {item.concepts.map((concept) => (
-                                                    <ConceptTag key={concept.concept.concept_id} conceptName={concept.concept.concept_name} conceptId={concept.concept.concept_id.toString()} conceptIdentifier={concept.id.toString()} itemId={item.id} handleDelete={handleDelete}
-                                                        creation_type={concept.creation_type ? concept.creation_type : undefined} />
+                                                    <ConceptTag
+                                                        key={concept.concept.concept_id}
+                                                        conceptName={concept.concept.concept_name}
+                                                        conceptId={concept.concept.concept_id.toString()}
+                                                        conceptIdentifier={concept.id.toString()}
+                                                        itemId={item.id} handleDelete={handleDelete}
+                                                        creation_type={concept.creation_type ? concept.creation_type : undefined}
+                                                        readOnly={!window.canEdit}
+                                                    />
                                                 ))}
                                             </VStack>
                                             :
@@ -149,9 +170,11 @@ const ValuesTbl = (props) => {
                                                             name='concept'
                                                             value={values.concept}
                                                             onChange={handleChange}
-                                                            onBlur={handleBlur} />
+                                                            onBlur={handleBlur}
+                                                            isDisabled={!window.canEdit}
+                                                        />
                                                         <div>
-                                                            <Button type='submit' disabled={!item.conceptsToLoad == 0} backgroundColor='#3C579E' color='white'>Add</Button>
+                                                            <Button type='submit' isDisabled={!((item.conceptsToLoad == 0) || window.canEdit)} backgroundColor='#3C579E' color='white'>Add</Button>
                                                         </div>
                                                     </HStack>
                                                 </Form>

@@ -1,10 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
+import {
+    Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td,
+    Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade,
+} from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import ToastAlert from './ToastAlert'
 
 const ScanReportTbl = (props) => {
     const active = useRef(true)
@@ -21,6 +25,8 @@ const ScanReportTbl = (props) => {
     const [title, setTitle] = useState("Scan Reports Active");
     const [expanded, setExpanded] = useState(false);
     const statuses = JSON.parse(window.status).map(status => status.id);
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
     useEffect(async () => {
         // run on initial page load
@@ -98,15 +104,28 @@ const ScanReportTbl = (props) => {
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
-    const activateOrArchiveReport = (id, theIndicator) => {
+    const activateOrArchiveReport = async (id, theIndicator) => {
         setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
-        data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
-        const patchData = { hidden: theIndicator }
-        usePatch(`/scanreports/${id}/`, patchData).then(res => {
+        try {
+            const patchData = { hidden: theIndicator }
+            const res = await usePatch(`/scanreports/${id}/`, patchData)
+            // only change the status after the patch has completed
+            data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
+
             activeReports.current = data.current.filter(scanreport => scanreport.hidden == false)
             archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
-        })
+        }
+        catch (err) {
+            setAlert({
+                status: 'error',
+                title: 'Unable to archive scanreport ' + id,
+                description: ""
+            })
+            onOpen()
+            setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
+        }
+
     }
     // show active scan reports and change url when 'Active Reports' button is pressed
     const goToActive = () => {
@@ -241,6 +260,11 @@ const ScanReportTbl = (props) => {
     }
     return (
         <div>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
@@ -338,10 +362,10 @@ const ScanReportTbl = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.data_partner.name}</Link></Td>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id}>{item.parent_dataset.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >

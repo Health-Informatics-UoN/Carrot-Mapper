@@ -11,7 +11,7 @@ import { arraysEqual } from '../utils/arrayFuncs'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length-2]
+    let datasetId = pathArray[pathArray.length - 2]
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     // Set up component state
@@ -27,6 +27,7 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [admins, setAdmins] = useState([])
     const [editors, setEditors] = useState([])
     const [usersList, setUsersList] = useState(undefined)
+    const [error, setError] = useState(undefined)
 
     function getUsersFromIds(userIds, userObjects) {
         /**
@@ -51,43 +52,51 @@ const DatasetAdminForm = ({ setTitle }) => {
     useEffect(
         async () => {
             setTitle(null)
-            const queries = [
-                useGet(`/datasets/${datasetId}`),
-                useGet("/datapartners/"),
-                useGet("/usersfilter/?is_active=true"),
-                useGet(`/projects/?dataset=${datasetId}`)
-            ]
-            // Get dataset, data partners and users
-            const [datasetQuery, dataPartnerQuery, usersQuery,projectsQuery] = await Promise.all(queries)
-            const validUsers = [...(new Set(projectsQuery.map(project=>project.members).flat()))]
-            // Set up state from the results of the queries
-            setDataset(datasetQuery)
-            setIsPublic(datasetQuery.visibility === "PUBLIC")
-            setDataPartners([...dataPartnerQuery])
-            setSelectedDataPartner(
-                dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
-            )
-            setLoadingMessage(null)
-            setUsersList(usersQuery.filter(user=>validUsers.includes(user.id)))
-            setViewers(
-                prevViewers => [
-                    ...prevViewers,
-                    ...getUsersFromIds(datasetQuery.viewers, usersQuery),
+            try {
+                const datasetQuery = await useGet(`/datasets/${datasetId}`)
+                const queries = [
+                    useGet("/datapartners/"),
+                    useGet("/usersfilter/?is_active=true"),
+                    useGet(`/projects/?dataset=${datasetId}`)
                 ]
-            )
-            setAdmins(
-                prevAdmins => [
-                    ...prevAdmins,
-                    ...getUsersFromIds(datasetQuery.admins, usersQuery),
-                ]
-            )
-            setEditors(
-                prevEditors => [
-                    ...prevEditors,
-                    ...getUsersFromIds(datasetQuery.editors, usersQuery),
-                ]
-            )
-            setLoadingMessage(null)  // stop loading when finished
+                // Get dataset, data partners and users
+                const [dataPartnerQuery, usersQuery, projectsQuery] = await Promise.all(queries)
+                const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
+                // Set up state from the results of the queries
+                setDataset(datasetQuery)
+                setIsPublic(datasetQuery.visibility === "PUBLIC")
+                setDataPartners([...dataPartnerQuery])
+                setSelectedDataPartner(
+                    dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
+                )
+                setLoadingMessage(null)
+                setUsersList(usersQuery.filter(user => validUsers.includes(user.id)))
+                setViewers(
+                    prevViewers => [
+                        ...prevViewers,
+                        ...getUsersFromIds(datasetQuery.viewers, usersQuery),
+                    ]
+                )
+                setAdmins(
+                    prevAdmins => [
+                        ...prevAdmins,
+                        ...getUsersFromIds(datasetQuery.admins, usersQuery),
+                    ]
+                )
+                setEditors(
+                    prevEditors => [
+                        ...prevEditors,
+                        ...getUsersFromIds(datasetQuery.editors, usersQuery),
+                    ]
+                )
+                setLoadingMessage(null)  // stop loading when finished
+            } catch (error) {
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoadingMessage(null)
+            }
+
         },
         [], // Required to stop this effect sending infinite requests
     )
@@ -217,6 +226,14 @@ const DatasetAdminForm = ({ setTitle }) => {
         }
     }
 
+    if (error) {
+        //Render Error State
+        return (
+            <Flex padding="30px">
+                <Flex marginLeft="10px">{error}</Flex>
+            </Flex>
+        )
+    }
 
     if (loadingMessage) {
         //Render Loading State
@@ -327,8 +344,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {editors.map((viewer, index) => {
                             return (
                                 <div key={index} style={{ marginTop: "0px" }}>
-                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor} 
-                                    readOnly={!isAdmin}/>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeEditor}
+                                        readOnly={!isAdmin} />
                                 </div>
                             )
                         })}
@@ -361,8 +378,8 @@ const DatasetAdminForm = ({ setTitle }) => {
                         {admins.map((viewer, index) => {
                             return (
                                 <div key={index} style={{ marginTop: "0px" }}>
-                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin} 
-                                    readOnly={!isAdmin}/>
+                                    <ConceptTag conceptName={viewer.username} conceptId={""} conceptIdentifier={viewer.id} itemId={viewer.id} handleDelete={removeAdmin}
+                                        readOnly={!isAdmin} />
                                 </div>
                             )
                         })}

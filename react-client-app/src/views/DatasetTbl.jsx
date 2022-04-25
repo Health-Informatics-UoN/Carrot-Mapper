@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
+import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
-
+import ToastAlert from '../components/ToastAlert'
 
 const DatasetTbl = (props) => {
     const data = useRef(null);
@@ -16,7 +16,8 @@ const DatasetTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("Loading Datasets")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [title, setTitle] = useState("Datasets");
-
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
+    const { isOpen, onOpen, onClose } = useDisclosure()
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null);
@@ -57,15 +58,27 @@ const DatasetTbl = (props) => {
         setLoadingMessage(null)
     }, []);
 
-    const activateOrArchiveDataset = (id, theIndicator) => {
-        setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
-        data.current = data.current.map(dataset => dataset.id == id ? { ...dataset, hidden: theIndicator } : dataset)
-        const patchData = { hidden: theIndicator }
-        usePatch(`/datasets/update/${id}`, patchData).then(res => {
+    const activateOrArchiveDataset = async (id, theIndicator) => {
+        try{
+            setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
+            const patchData = { hidden: theIndicator }
+            const res = await usePatch(`/datasets/update/${id}`, patchData)
+            data.current = data.current.map(dataset => dataset.id == id ? { ...dataset, hidden: theIndicator } : dataset)
             activeDatasets.current = data.current.filter(dataset => dataset.hidden == false)
             archivedDatasets.current = data.current.filter(dataset => dataset.hidden == true)
             active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current)
-        })
+        }
+        catch(err){
+            setAlert({
+                status: 'error',
+                title: 'Unable to archive dataset ' + id,
+                description: ""
+            })
+            onOpen()
+            setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
+        }
+        
+    
     }
     // show active datasets and change url when 'Active Datasets' button is pressed
     const goToActive = () => {
@@ -116,6 +129,11 @@ const DatasetTbl = (props) => {
 
     return (
         <div>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
