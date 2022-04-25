@@ -1,33 +1,33 @@
 import React from "react";
+import { Link } from "@chakra-ui/react";
 import CCBreadcrumbBar from "../components/CCBreadcrumbBar";
-import CCBreadcrumb from "../components/CCBreadcrumb";
 
 export default {
     title: "Components/CCBreadcrumbBar",
     component: CCBreadcrumbBar,
-    subcomponents: {CCBreadcrumb}
+    subcomponents: {Link}
 }
 
 // Home
 export const OneCrumb = () => (
     <CCBreadcrumbBar>
-        <CCBreadcrumb name={"Home"} link={"/"} />
+        <Link href={"/"}>Home</Link>
     </CCBreadcrumbBar>
 )
 
 // Home / Datasets
 export const TwoCrumbs = (args) => (
     <CCBreadcrumbBar {...args}>
-        <CCBreadcrumb name={"Home"} link={"/"} />
-        <CCBreadcrumb name={"Datasets"} link={"/datasets"} />
+        <Link href={"/"}>Home</Link>
+        <Link href={"/datasets"}>Datasets</Link>
     </CCBreadcrumbBar>
 )
 
 // Home / Datasets / 1234 
 export const ThreeCrumbs = (args) => (
     <CCBreadcrumbBar {...args}>
-        <CCBreadcrumb name={"Home"} link={"/"} />
-        <CCBreadcrumb name={"Datasets"} link={"/datasets"} />
-        <CCBreadcrumb name={1234} link={"/datasets/1234"} />
+        <Link href={"/"}>Home</Link>
+        <Link href={"/datasets"}>Datasets</Link>
+        <Link href={"/datasets/1234"}>1234</Link>
     </CCBreadcrumbBar>
 )
