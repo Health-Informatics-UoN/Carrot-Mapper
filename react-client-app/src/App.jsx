@@ -256,7 +256,7 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Mapping Rules":
                 return <MappingTbl />
             case "Fields":
