@@ -1,55 +1,33 @@
 import React from "react";
 import CCBreadcrumbBar from "../components/CCBreadcrumbBar";
+import CCBreadcrumb from "../components/CCBreadcrumb";
 
 export default {
     title: "Components/CCBreadcrumbBar",
     component: CCBreadcrumbBar,
+    subcomponents: {CCBreadcrumb}
 }
-
-
-const Template = (args) => <CCBreadcrumbBar {...args} />;
 
 // Home
-export const CrumbsAtRoot = Template.bind()
-CrumbsAtRoot.args = {pathArray : []}
+export const OneCrumb = () => (
+    <CCBreadcrumbBar>
+        <CCBreadcrumb name={"Home"} link={"/"} />
+    </CCBreadcrumbBar>
+)
 
 // Home / Datasets
-export const OneCrumb = Template.bind()
-OneCrumb.args = {pathArray : ["Datasets"]}
+export const TwoCrumbs = (args) => (
+    <CCBreadcrumbBar {...args}>
+        <CCBreadcrumb name={"Home"} link={"/"} />
+        <CCBreadcrumb name={"Datasets"} link={"/datasets"} />
+    </CCBreadcrumbBar>
+)
 
-// Home / Datasets / 1234
-export const TwoCrumbs = Template.bind()
-TwoCrumbs.args = {pathArray : ["Datasets", 1234]}
-
-// Home / Datasets / 1234 / Details
-export const ThreeCrumbs = Template.bind()
-ThreeCrumbs.args = {pathArray : ["Datasets", 1234, "Details"]}
-
-// Throws TypeError
-export const UndefindedCrumbs = Template.bind()
-UndefindedCrumbs.args = {pathArray : undefined}
-
-// Throws TypeError
-export const NonArrayCrumbs = Template.bind()
-NonArrayCrumbs.args = {pathArray : "abc"}
-
-// Home / Datasets / The Fellowship of The Ring / Details
-export const AltNames = Template.bind()
-AltNames.args = {
-    pathArray : ["Datasets", 1234, "Details"],
-    altNames : ["Datasets", "The Fellowship of The Ring", "Details"]
-}
-
-// Throws TypeError
-export const AltNamesNotEqualLength = Template.bind()
-AltNamesNotEqualLength.args = {
-    pathArray : ["Datasets", 1234, "Details"],
-    altNames : ["Datasets", "The Fellowship of The Ring"]
-}
-
-// Throws TypeError
-export const AltNamesNotArray = Template.bind()
-AltNamesNotArray.args = {
-    pathArray : ["Datasets", 1234, "Details"],
-    altNames : "Not an Array"
-}
+// Home / Datasets / 1234 
+export const ThreeCrumbs = (args) => (
+    <CCBreadcrumbBar {...args}>
+        <CCBreadcrumb name={"Home"} link={"/"} />
+        <CCBreadcrumb name={"Datasets"} link={"/datasets"} />
+        <CCBreadcrumb name={1234} link={"/datasets/1234"} />
+    </CCBreadcrumbBar>
+)
