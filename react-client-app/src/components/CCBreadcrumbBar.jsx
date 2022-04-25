@@ -9,8 +9,7 @@ const CCBreadcrumbBar = (props) => {
     return (
         <Flex>
             {
-                React.Children.map(
-                    props.children,
+                props.children.length ? props.children.map(
                     (breadcrumb, index) => {
                         return (
                             <>
@@ -22,6 +21,8 @@ const CCBreadcrumbBar = (props) => {
                         )
                     }
                 )
+                    :
+                    props.children
             }
         </Flex>
     )
