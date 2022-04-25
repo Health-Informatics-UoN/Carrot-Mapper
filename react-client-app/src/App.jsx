@@ -262,7 +262,7 @@ const App = ({ page }) => {
             case "Fields":
                 return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
             case "Tables":
-                return <TablesTbl />
+                return <TablesTbl setTitle={setTitle} />
             case "Update Table":
                 return <EditTable />
             case "Update Field":

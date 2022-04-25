@@ -1949,10 +1949,7 @@ def scanreport_table_list_page(request, pk):
 
     try:
         scan_report = ScanReport.objects.get(id=pk)
-        scan_report_name = scan_report.dataset
 
-        args["scan_report"] = scan_report
-        args["scan_report_name"] = scan_report_name
         args["can_edit"] = has_editorship(scan_report, request) or is_admin(
             scan_report, request
         )

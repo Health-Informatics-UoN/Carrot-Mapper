@@ -15,25 +15,29 @@ import {
     HStack
 
 } from "@chakra-ui/react"
-
+import CCBreadcrumbBar from './CCBreadcrumbBar'
+import PageHeading from './PageHeading'
 import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
 
 
 
 
-const TablesTbl = () => {
+const TablesTbl = ({ setTitle }) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
     const scanReportId = pathArray[pathArray.length - 1]
+    const [scanReportName, setScanReportName] = useState();
     const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
+        setTitle(null)
         // Check user can see the scan report
         useGet(`/scanreports/${scanReportId}`).then(res => {
+            setScanReportName(res.dataset)
             // If user can see scan report, get the tables
             getScanReportTableRows(scanReportId).then(table => {
                 setScanReportTables(table)
@@ -120,6 +124,11 @@ const TablesTbl = () => {
     }
     return (
         <div >
+            <CCBreadcrumbBar
+                pathArray={window.location.pathname.split("/").slice(1)}
+                altNames={["Scan reports", scanReportName]}
+            />
+            <PageHeading text={"Tables"} />
             <Flex my="10px">
                 <HStack>
                     <Link href={"/scanreports/" + scanReportId + "/details"}>
