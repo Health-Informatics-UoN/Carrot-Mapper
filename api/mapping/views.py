@@ -599,7 +599,18 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
         )
         if concept.count() > 0:
             print("Can't add multiple concepts of the same id to the same object")
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            response = JsonResponse(
+                {
+                    "status_code": 400,
+                    "ok": False,
+                    "statusText": "Can't add multiple concepts of the same id to the same object",
+                }
+            )
+            response.status_code = 400
+            response.statusText = (
+                "Can't add multiple concepts of the same id to the same object"
+            )
+            return response
 
         serializer = self.get_serializer(
             data=request.data, many=isinstance(request.data, list)
