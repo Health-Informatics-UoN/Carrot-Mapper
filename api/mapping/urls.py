@@ -189,11 +189,6 @@ urlpatterns = [
     path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("", views.home, name="home"),
     path("tables/", views.ScanReportTableListView.as_view(), name="tables"),
-    path(
-        "tables/<int:pk>/update/",
-        views.update_scanreport_table_page,
-        name="scan-report-table-update",
-    ),
     path("fields/", views.ScanReportFieldListView.as_view(), name="fields"),
     path(
         "fields/<int:pk>/update/",
@@ -314,7 +309,7 @@ urlpatterns = [
     ),
     path(
         "scanreports/<int:sr>/tables/<int:pk>/update",
-        views.update_scanreport_table_page2,
+        views.update_scanreport_table_page,
         name="scan-report-table-update",
     ),
     path(
