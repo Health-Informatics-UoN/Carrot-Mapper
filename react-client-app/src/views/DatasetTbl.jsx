@@ -117,10 +117,10 @@ const DatasetTbl = (props) => {
 
     return (
         <div>
-            <CCBreadcrumbBar
-                pathArray={window.location.pathname.split("/").slice(1)}
-                altNames={["Datasets"]}
-            />
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/datasets"}>Datasets</Link>
+            </CCBreadcrumbBar>
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
