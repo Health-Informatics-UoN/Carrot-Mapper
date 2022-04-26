@@ -1968,8 +1968,6 @@ def scanreport_fields_list_page(request, sr, pk):
         )
 
         args["pk"] = pk
-        args["scan_report"] = scan_report_table.scan_report
-        args["scan_report_table"] = scan_report_table
         args["can_edit"] = has_editorship(scan_report_table, request) or is_admin(
             scan_report_table, request
         )
