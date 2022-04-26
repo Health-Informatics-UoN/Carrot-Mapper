@@ -250,10 +250,12 @@ const DatasetAdminForm = ({ setTitle }) => {
 
     return (
         <Container maxW='container.xl'>
-            <CCBreadcrumbBar
-                pathArray={window.location.pathname.split("/").slice(1)}
-                altNames={["Datasets", dataset.name, "Details"]}
-            />
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/datasets"}>Datasets</Link>
+                <Link href={`/datasets/${datasetId}`}>{dataset.name}</Link>
+                <Link href={`/datasets/${datasetId}/details`}>Details</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
