@@ -88,6 +88,7 @@ Please append a line to the changelog for each change made.
 * Users without editor or admin permissions on a scan report will not longer see an option to edit the tables, fields, values or concepts.
 * Users without editor or admin permissions on an uploaded scan report's selected parent dataset cannot upload the scan report to that dataset.
 * User will see a generic error message when they navigate to a dataset or scan report detail/admin page which they do not have permission to view (or it does not exist).
+* New breadcrumb mechanic.
 
 ## v1.4.0 was released 02/02/22
 
