@@ -42,7 +42,7 @@ const CCMultiSelectInput = (props) => {
 
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
-                <Wrap >
+                <Wrap mb={"5px"}>
                     <FormLabel htmlFor={props.id} mr={4} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
                     {props.info &&
                         <Tooltip label={props.info}>
