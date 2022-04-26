@@ -591,6 +591,24 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
     serializer_class = ScanReportConceptSerializer
 
     def create(self, request, *args, **kwargs):
+        body = request.data
+        concept = ScanReportConcept.objects.filter(
+            concept=body["concept"],
+            object_id=body["object_id"],
+            content_type=body["content_type"],
+        )
+        if concept.count() > 0:
+            print("Can't add multiple concepts of the same id to the same object")
+            response = JsonResponse(
+                {
+                    "status_code": 400,
+                    "ok": False,
+                    "statusText": "Can't add multiple concepts of the same id to the same object",
+                }
+            )
+            response.status_code = 400
+            return response
+
         serializer = self.get_serializer(
             data=request.data, many=isinstance(request.data, list)
         )
