@@ -56,7 +56,7 @@ const EditTable = () => {
         }
         usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = `/tables/?search=${table.scan_report}`
+            window.location.href = `/scanreports/${table.scan_report}`
         })
             .catch(err => {
                 setAlert({

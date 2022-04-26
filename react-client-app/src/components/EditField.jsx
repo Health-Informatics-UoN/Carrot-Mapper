@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Checkbox, HStack, Text, Button, Flex, Spinner, VStack, Textarea } from "@chakra-ui/react"
 import { useGet, usePatch } from '../api/values'
 const EditField = ({ setTitle }) => {
-    const value = window.pk?window.pk:window.location.href.split("fields/")[1].split("/")[0]
+    const value = window.pk ? window.pk : window.location.href.split("fields/")[1].split("/")[0]
     const [field, setField] = useState(null);
     const [isIgnore, setIsIgnore] = useState(false);
     const [passFromSource, setPassFromSource] = useState(false);
@@ -33,7 +33,7 @@ const EditField = ({ setTitle }) => {
         // use endpoint to change scan report field value
         usePatch(`/scanreportfields/${value}/`, data).then((res) => {
             // redirect
-            window.location.href= `/fields/?search=${field.scan_report_table}`
+            window.location.href = "/scanreports/" + window.location.href.split("scanreports/")[1].split("/")[0] + `/tables/${field.scan_report_table}`
         })
             .catch(err => {
                 console.log(err)

@@ -186,7 +186,7 @@ const FieldsTbl = (props) => {
                                             )}
                                         </Formik>
                                     </Td>
-                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={"/fields/" + item.id + "/update/"}>Edit Field</Link></Td>}
+                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={window.location.href + "/fields/" + item.id + "/update"}>Edit Field</Link></Td>}
                                 </Tr>
                             )
                         }

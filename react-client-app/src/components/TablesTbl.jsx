@@ -153,7 +153,7 @@ const TablesTbl = () => {
                                 <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}`}>{item.name}</Link></Td>
                                 <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
                                 <Td maxW={"200px"}>{item.date_event ? item.date_event.name : null}</Td>
-                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/tables/" + item.id + "/update/"}>Edit Table</Link></Td>}
+                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + item.scan_report + "/tables/" + item.id + "/update"}>Edit Table</Link></Td>}
                             </Tr>
 
                         )
