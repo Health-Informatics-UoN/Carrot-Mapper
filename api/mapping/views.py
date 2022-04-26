@@ -607,9 +607,6 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
                 }
             )
             response.status_code = 400
-            response.statusText = (
-                "Can't add multiple concepts of the same id to the same object"
-            )
             return response
 
         serializer = self.get_serializer(
