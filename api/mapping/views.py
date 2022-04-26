@@ -1987,13 +1987,8 @@ def scanreport_values_list_page(request, sr, tbl, pk):
         scan_report_field = ScanReportField.objects.select_related(
             "scan_report_table", "scan_report_table__scan_report"
         ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
-        scan_report_table = scan_report_field.scan_report_table
-        scan_report = scan_report_field.scan_report_table.scan_report
 
         args["pk"] = pk
-        args["scan_report"] = scan_report
-        args["scan_report_field"] = scan_report_field
-        args["scan_report_table"] = scan_report_table
         args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
             scan_report_field, request
         )
