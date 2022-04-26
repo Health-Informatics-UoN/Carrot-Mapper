@@ -1,8 +1,9 @@
 import React from 'react'
 import ConceptTag from './ConceptTag'
 import {
-    Flex, FormControl, FormLabel, FormErrorMessage, Select
+    Flex, FormControl, FormLabel, FormErrorMessage, Select, Tooltip, Box, Wrap, WrapItem
 } from "@chakra-ui/react"
+import { InfoIcon } from '@chakra-ui/icons'
 
 const CCMultiSelectInput = (props) => {
     /**
@@ -41,23 +42,30 @@ const CCMultiSelectInput = (props) => {
 
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
-            <Flex flexWrap={true}>
-                <FormLabel htmlFor={props.id} mr={4} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
-                {props.currentSelections.map((item, index) => {
-                    return (
-                        <div key={index} style={{ marginTop: "0px", marginBottom: "10px" }}>
-                            <ConceptTag
-                                conceptName={item}
-                                conceptId={""}
-                                conceptIdentifier={item}
-                                itemId={item}
-                                handleDelete={() => props.handleDelete(item)}
-                                readOnly={props.isDisabled}
-                            />
-                        </div>
-                    )
-                })}
-            </Flex>
+                <Wrap mb={"5px"}>
+                    <FormLabel htmlFor={props.id} mr={4} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
+                    {props.info &&
+                        <Tooltip label={props.info}>
+                            <InfoIcon ml="auto" mt="auto" mb="2px" />
+                        </Tooltip>
+                    }
+                    {props.currentSelections.map((item, index) => {
+                        return (
+                            <WrapItem key={index} marginBottom="10px">
+                                <ConceptTag
+                                    conceptName={item}
+                                    conceptId={""}
+                                    conceptIdentifier={item}
+                                    itemId={item}
+                                    handleDelete={() => props.handleDelete(item)}
+                                    readOnly={props.isDisabled}
+                                />
+                            </WrapItem>
+                        )
+                    })}
+                </Wrap>
+
+            
             {!props.isDisabled &&
                 <Select
                     value={"---Select---"}
