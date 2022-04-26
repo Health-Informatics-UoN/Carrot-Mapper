@@ -124,10 +124,11 @@ const TablesTbl = ({ setTitle }) => {
     }
     return (
         <div >
-            <CCBreadcrumbBar
-                pathArray={window.location.pathname.split("/").slice(1)}
-                altNames={["Scan reports", scanReportName]}
-            />
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}`}>{scanReportName}</Link>
+            </CCBreadcrumbBar>
             <PageHeading text={"Tables"} />
             <Flex my="10px">
                 <HStack>
