@@ -25,11 +25,15 @@ import AnalysisModal from './AnalysisModal'
 import SummaryTbl from './SummaryTbl'
 import RulesTbl from './RulesTbl'
 import ConceptAnalysis from './ConceptAnalysis'
+import PageHeading from './PageHeading'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 
 
 
-const MappingTbl = () => {
-    const scan_report_id = window.location.href.split("scanreports/")[1].split("/")[0]
+const MappingTbl = (props) => {
+    const pathArray = window.location.pathname.split("/")
+    const scan_report_id = pathArray[pathArray.length - 3]
+    const scanReportName = useRef(null);
     const [values, setValues] = useState([]);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -49,6 +53,9 @@ const MappingTbl = () => {
 
 
     useEffect(() => {
+        props.setTitle(null)
+        // get scan report
+        useGet(`/scanreports/${scan_report_id}`).then(sr => scanReportName.current = sr.dataset)
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
         useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
@@ -331,6 +338,13 @@ const MappingTbl = () => {
             <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
                 <ConceptAnalysis data={data} />
             </AnalysisModal>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scan_report_id}`}>{scanReportName.current}</Link>
+                <Link href={`/scanreports/${scan_report_id}/mapping_rules/`}>Mapping Rules</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Mapping Rules"} />
             <HStack my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={downloadRules}>Download Mapping JSON</Button>
