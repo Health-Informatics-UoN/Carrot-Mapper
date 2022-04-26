@@ -1998,21 +1998,7 @@ def scanreport_values_list_page(request, sr, tbl, pk):
 
 @login_required
 def update_scanreport_field_page(request, sr, tbl, pk):
-    args = {}
-    scan_report = None
-    scan_report_field = None
-    scan_report_table = None
-    scan_report_value = None
 
-    scan_report_value = ScanReportValue.objects.get(id=pk)
-    scan_report_field = scan_report_value.scan_report_field
-    scan_report_table = scan_report_field.scan_report_table
-    scan_report = ScanReport.objects.get(id=sr)
+    # TODO: add permission check on field. Return error page if denied.
 
-    args["pk"] = pk
-    args["scan_report"] = scan_report
-    args["scan_report_field"] = scan_report_field
-    args["scan_report_table"] = scan_report_table
-    args["scan_report_value"] = scan_report_value
-
-    return render(request, "mapping/scanreportfield_form.html", args)
+    return render(request, "mapping/scanreportfield_form.html", {"pk": pk})
