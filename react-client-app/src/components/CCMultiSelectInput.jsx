@@ -1,7 +1,7 @@
 import React from 'react'
 import ConceptTag from './ConceptTag'
 import {
-    Flex, FormControl, FormLabel, FormErrorMessage, Select, Tooltip,Box, Wrap, WrapItem
+    Flex, FormControl, FormLabel, FormErrorMessage, Select, Tooltip, Box, Wrap, WrapItem
 } from "@chakra-ui/react"
 import { InfoIcon } from '@chakra-ui/icons'
 
@@ -42,9 +42,13 @@ const CCMultiSelectInput = (props) => {
 
     return (
         <FormControl isInvalid={props.formErrors && props.formErrors.length > 0} mt={4}>
-            <Box display="grid"  >  
                 <Wrap >
                     <FormLabel htmlFor={props.id} mr={4} style={{ fontWeight: "bold" }}>{props.label}</FormLabel>
+                    {props.info &&
+                        <Tooltip label={props.info}>
+                            <InfoIcon ml="auto" mt="auto" mb="2px" />
+                        </Tooltip>
+                    }
                     {props.currentSelections.map((item, index) => {
                         return (
                             <WrapItem key={index} marginBottom="10px">
@@ -60,12 +64,8 @@ const CCMultiSelectInput = (props) => {
                         )
                     })}
                 </Wrap>
-                {props.info &&
-                    <Tooltip label={props.info}>
-                        <InfoIcon ml="auto" mt="auto" mb="2px"/>
-                    </Tooltip>
-                }
-            </Box>
+
+            
             {!props.isDisabled &&
                 <Select
                     value={"---Select---"}
