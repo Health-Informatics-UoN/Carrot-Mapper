@@ -1011,22 +1011,6 @@ class ScanReportFieldListView(ListView):
 
 
 @method_decorator(login_required, name="dispatch")
-class ScanReportFieldUpdateView(UpdateView):
-    model = ScanReportField
-    form_class = ScanReportFieldForm
-    template_name = "mapping/scanreportfield_form.html"
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("fields"), self.object.scan_report_table.id
-        )
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
 class ScanReportStructuralMappingUpdateView(UpdateView):
     model = ScanReportField
     fields = ["mapping"]
