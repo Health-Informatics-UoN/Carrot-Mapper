@@ -994,7 +994,7 @@ def update_scanreport_table_page(request, pk):
     ):
         can_edit = True
     # Set the page context
-    context = {"object": sr_table, "can_edit": can_edit}
+    context = {"can_edit": can_edit}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
 
@@ -1016,7 +1016,7 @@ def update_scanreport_table_page2(request, sr, pk):
     ):
         can_edit = True
     # Set the page context
-    context = {"object": sr_table, "can_edit": can_edit, "pk": pk}
+    context = {"can_edit": can_edit, "pk": pk}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
 

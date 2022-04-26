@@ -264,7 +264,7 @@ const App = ({ page }) => {
             case "Tables":
                 return <TablesTbl setTitle={setTitle} />
             case "Update Table":
-                return <EditTable />
+                return <EditTable setTitle={setTitle} />
             case "Update Field":
                 return <EditField setTitle={setTitle} />
             case "New Scan Report":
