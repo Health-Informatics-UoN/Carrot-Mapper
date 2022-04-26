@@ -61,7 +61,7 @@ Please append a line to the changelog for each change made.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
 * Public Scan Reports under restricted Datasets are only visible to those
-with visibility of the Dataset.
+  with visibility of the Dataset.
 * Added Datasets content page which displays all the scanreports in a given dataset
 * Change the dataset link to go to the dataset content page
 * Created Dataset List page
@@ -72,12 +72,24 @@ with visibility of the Dataset.
 * Remove unused ajax POST function.
 * Remove unused JS variables.
 * Users must now be the author of a Scan Report or an admin of the parent Dataset
-to change the author of a Scan Report.
+  to change the author of a Scan Report.
 * Can now include a datasets query in the projects list endpoint to include datasets in the result
 * Improved django admin pages' responsiveness and informativeness
 * Users who are not admins/editors of a scan report table cannot edit the form data.
 * User is now automatically added as admin to Datasets they create.
 * Fixed failing unittests.
+* Updated endpoints for listing Scan Report tables/fields/values:
+  - List for Scan Report tables at: `/scanreports/XXX`.
+  - List for Scan Report table fields at: `/scanreports/XXX/tables/YYY`.
+  - List for Scan Report table field values at: `/scanreports/XXX/tables/YYY/fields/ZZZ`.
+* Created Error 404 page.
+* Added Archive/Active functionality to Dataset page
+  - Created new field 'hidden' in Dataset table
+* Don't allow reuse of mappings when scan reports are in archived datasets.
+* Users without editor or admin permissions on a scan report will not longer see an option to edit the tables, fields, values or concepts.
+* Users without editor or admin permissions on an uploaded scan report's selected parent dataset cannot upload the scan report to that dataset.
+* User will see a generic error message when they navigate to a dataset or scan report detail/admin page which they do not have permission to view (or it does not exist).
+* User will now be shown an alert dialogue when they try to archive a dataset that they don't have editor permissions to and the dataset will not be archived
 
 ## v1.4.0 was released 02/02/22
 

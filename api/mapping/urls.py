@@ -44,29 +44,29 @@ routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanrepo
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
-routers.register(
-    r"scanreporttablesfilter",
-    views.ScanReportTableFilterViewSet,
-    basename="scanreporttablesfilter",
-)
+# routers.register(
+#     r"scanreporttablesfilter",
+#     views.ScanReportTableFilterViewSet,
+#     basename="scanreporttablesfilter",
+# )
 
 routers.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
 )
-routers.register(
-    r"scanreportfieldsfilter",
-    views.ScanReportFieldFilterViewSet,
-    basename="scanreportfieldsfilter",
-)
+# routers.register(
+#     r"scanreportfieldsfilter",
+#     views.ScanReportFieldFilterViewSet,
+#     basename="scanreportfieldsfilter",
+# )
 
 routers.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
 )
-routers.register(
-    r"scanreportvaluesfilter",
-    views.ScanReportValueFilterViewSet,
-    basename="scanreportvaluesfilter",
-)
+# routers.register(
+#     r"scanreportvaluesfilter",
+#     views.ScanReportValueFilterViewSet,
+#     basename="scanreportvaluesfilter",
+# )
 
 routers.register(
     r"scanreportvaluesfilterscanreport",
@@ -296,6 +296,31 @@ urlpatterns = [
         r"api/projects/update/<int:pk>/",
         views.ProjectUpdateView.as_view(),
         name="projects_update",
+    ),
+    path(
+        "scanreports/<int:pk>",
+        views.scanreport_table_list_page,
+        name="scanreport_table",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:pk>",
+        views.scanreport_fields_list_page,
+        name="scanreport_fields",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>",
+        views.scanreport_values_list_page,
+        name="scanreport_values",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:pk>/update",
+        views.update_scanreport_table_page2,
+        name="scan-report-table-update",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>/update",
+        views.update_scanreport_field_page,
+        name="scan-report-field-update",
     ),
 ]
 # if settings.DEBUG: # new

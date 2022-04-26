@@ -75,6 +75,7 @@ from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -119,6 +120,8 @@ from .permissions import (
     CanView,
     CanAdmin,
     CanEdit,
+    has_editorship,
+    is_admin,
 )
 from .services import download_data_dictionary_blob
 
@@ -421,6 +424,7 @@ class DatasetListView(generics.ListAPIView):
     filterset_fields = {
         "id": ["in"],
         "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
     }
 
     def get_queryset(self):
@@ -495,34 +499,6 @@ class DatasetDeleteView(generics.DestroyAPIView):
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableSerializer
-
-    def get_permissions(self):
-        if self.request.method == "DELETE":
-            # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
-        elif self.request.method in ["PUT", "PATCH"]:
-            # user must be able to view and be either an editor or and admin
-            # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
-        else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
-        return [permission() for permission in self.permission_classes]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data, many=isinstance(request.data, list)
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-
-class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportTable.objects.all()
-    serializer_class = ScanReportTableSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -530,11 +506,6 @@ class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
         "id": ["in", "exact"],
     }
 
-
-class ScanReportFieldViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportField.objects.all()
-    serializer_class = ScanReportFieldSerializer
-
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
@@ -559,7 +530,18 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
+# class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
+#     queryset = ScanReportTable.objects.all()
+#     serializer_class = ScanReportTableSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = {
+#         "scan_report": ["in", "exact"],
+#         "name": ["in", "exact"],
+#         "id": ["in", "exact"],
+#     }
+
+
+class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldSerializer
     filter_backends = [DjangoFilterBackend]
@@ -568,6 +550,40 @@ class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
         "name": ["in", "exact"],
         "id": ["in", "exact"],
     }
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+# class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
+#     queryset = ScanReportField.objects.all()
+#     serializer_class = ScanReportFieldSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = {
+#         "scan_report_table": ["in", "exact"],
+#         "name": ["in", "exact"],
+#         "id": ["in", "exact"],
+#     }
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
@@ -691,6 +707,12 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
     serializer_class = ScanReportValueSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "scan_report_field": ["in", "exact"],
+        "value": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -716,15 +738,15 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportValue.objects.all()
-    serializer_class = ScanReportValueSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "scan_report_field": ["in", "exact"],
-        "value": ["in", "exact"],
-        "id": ["in", "exact"],
-    }
+# class ScanReportValueFilterViewSet(viewsets.ModelViewSet):
+#     queryset = ScanReportValue.objects.all()
+#     serializer_class = ScanReportValueSerializer
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = {
+#         "scan_report_field": ["in", "exact"],
+#         "value": ["in", "exact"],
+#         "id": ["in", "exact"],
+#     }
 
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
@@ -973,6 +995,28 @@ def update_scanreport_table_page(request, pk):
         can_edit = True
     # Set the page context
     context = {"object": sr_table, "can_edit": can_edit}
+    return render(request, "mapping/scanreporttable_form.html", context=context)
+
+
+@login_required
+def update_scanreport_table_page2(request, sr, pk):
+    # Get the SR table
+    sr_table = ScanReportTable.objects.get(id=pk)
+    # Determine if the user can edit the form
+    can_edit = False
+    if (
+        sr_table.scan_report.author.id == request.user.id
+        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+        or sr_table.scan_report.parent_dataset.editors.filter(
+            id=request.user.id
+        ).exists()
+        or sr_table.scan_report.parent_dataset.admins.filter(
+            id=request.user.id
+        ).exists()
+    ):
+        can_edit = True
+    # Set the page context
+    context = {"object": sr_table, "can_edit": can_edit, "pk": pk}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
 
@@ -1266,6 +1310,13 @@ class ScanReportFormView(FormView):
         return response
 
     def form_valid(self, form):
+        # Check user has admin/editor rights on Scan Report parent dataset
+        parent_dataset = form.cleaned_data["parent_dataset"]
+        if not (
+            has_editorship(parent_dataset, self.request)
+            or is_admin(parent_dataset, self.request)
+        ):
+            return self.form_invalid(form)
 
         # Create random alphanumeric to link scan report to data dictionary
         # Create datetime stamp for scan report and data dictionary upload time
@@ -1275,7 +1326,7 @@ class ScanReportFormView(FormView):
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             dataset=form.cleaned_data["dataset"],
-            parent_dataset=form.cleaned_data["parent_dataset"],
+            parent_dataset=parent_dataset,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
         )
 
@@ -1823,7 +1874,9 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         # scan_report = ScanReportSerializer(scan_reports, many=False).data
         # Set Storage Account connection string
         print(scan_report)
+        # TODO: `name` is not always defined, it seems
         blob_name = scan_report.name
+        print(blob_name)
         container = "scan-reports"
         blob_service_client = BlobServiceClient.from_connection_string(
             os.environ.get("STORAGE_CONN_STRING")
@@ -1890,3 +1943,88 @@ def scanreport_admin_page(request, pk):
         args["is_admin"] = False
 
     return render(request, "mapping/admin_scanreport_form.html", args)
+
+
+@login_required
+def scanreport_table_list_page(request, pk):
+    args = {}
+
+    try:
+        scan_report = ScanReport.objects.get(id=pk)
+        scan_report_name = scan_report.dataset
+
+        args["scan_report"] = scan_report
+        args["scan_report_name"] = scan_report_name
+        args["can_edit"] = has_editorship(scan_report, request) or is_admin(
+            scan_report, request
+        )
+
+        return render(request, "mapping/scanreporttable_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
+
+
+@login_required
+def scanreport_fields_list_page(request, sr, pk):
+    args = {}
+    try:
+        scan_report_table = ScanReportTable.objects.select_related("scan_report").get(
+            id=pk, scan_report__id=sr
+        )
+
+        args["pk"] = pk
+        args["scan_report"] = scan_report_table.scan_report
+        args["scan_report_table"] = scan_report_table
+        args["can_edit"] = has_editorship(scan_report_table, request) or is_admin(
+            scan_report_table, request
+        )
+
+        return render(request, "mapping/scanreportfield_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
+
+
+@login_required
+def scanreport_values_list_page(request, sr, tbl, pk):
+    args = {}
+
+    try:
+        scan_report_field = ScanReportField.objects.select_related(
+            "scan_report_table", "scan_report_table__scan_report"
+        ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
+        scan_report_table = scan_report_field.scan_report_table
+        scan_report = scan_report_field.scan_report_table.scan_report
+
+        args["pk"] = pk
+        args["scan_report"] = scan_report
+        args["scan_report_field"] = scan_report_field
+        args["scan_report_table"] = scan_report_table
+        args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
+            scan_report_field, request
+        )
+
+        return render(request, "mapping/scanreportvalue_list.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
+
+
+@login_required
+def update_scanreport_field_page(request, sr, tbl, pk):
+    args = {}
+    scan_report = None
+    scan_report_field = None
+    scan_report_table = None
+    scan_report_value = None
+
+    scan_report_value = ScanReportValue.objects.get(id=pk)
+    scan_report_field = scan_report_value.scan_report_field
+    scan_report_table = scan_report_field.scan_report_table
+    scan_report = ScanReport.objects.get(id=sr)
+
+    args["pk"] = pk
+    args["scan_report"] = scan_report
+    args["scan_report_field"] = scan_report_field
+    args["scan_report_table"] = scan_report_table
+    args["scan_report_value"] = scan_report_value
+
+    return render(request, "mapping/scanreportfield_form.html", args)

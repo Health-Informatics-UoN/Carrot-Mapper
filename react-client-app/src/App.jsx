@@ -9,6 +9,7 @@ import FieldsTbl from './components/FieldsTbl';
 import TablesTbl from './components/TablesTbl';
 import EditTable from './components/EditTable';
 import EditField from './components/EditField';
+import Error404 from './views/Error404'
 import ScanReportTbl from './components/ScanReportTbl';
 import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
@@ -276,6 +277,8 @@ const App = ({ page }) => {
                 return <ScanReportAdminForm setTitle={setTitle} />
             case "Dataset List":
                 return <DatasetTbl setTitle={setTitle} />
+            case "404":
+                return <Error404 setTitle={setTitle} />
             default:
                 return <ScanReportTbl setTitle={setTitle} />
         }

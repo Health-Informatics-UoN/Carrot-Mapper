@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
+import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import moment from 'moment';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import ToastAlert from '../components/ToastAlert'
 
 const DatasetTbl = (props) => {
-    const [datasets, setDatasets] = useState({})
+    const data = useRef(null);
+    const [displayedData, setDisplayedData] = useState(null);
+    const activeDatasets = useRef(null);
+    const active = useRef(true)
+    const archivedDatasets = useRef(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Datasets")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [title, setTitle] = useState("Datasets");
-
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
+    const { isOpen, onOpen, onClose } = useDisclosure()
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null);
+        window.location.search === '?filter=archived' ? active.current = false : active.current = true
         // get datasets and sort by id
         let datasets = await useGet(`/datasets/`);
         datasets = datasets.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
-        setDatasets(datasets);
         // for each dataset use the data partner and admin ids to get name to display
         // get list of unique data partner and admin ids
         const adminObject = {};
@@ -43,10 +50,55 @@ const DatasetTbl = (props) => {
         dataPartners.forEach((element) => {
             datasets = datasets.map((dataset) => dataset.data_partner == element.id ? { ...dataset, data_partner: element } : dataset);
         });
-        setDatasets(datasets);
-        setLoadingMessage(null);
-
+        data.current = datasets
+        activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
+        archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
+        active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
+        active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
+        setLoadingMessage(null)
     }, []);
+
+    const activateOrArchiveDataset = async (id, theIndicator) => {
+        try{
+            setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
+            const patchData = { hidden: theIndicator }
+            const res = await usePatch(`/datasets/update/${id}`, patchData)
+            data.current = data.current.map(dataset => dataset.id == id ? { ...dataset, hidden: theIndicator } : dataset)
+            activeDatasets.current = data.current.filter(dataset => dataset.hidden == false)
+            archivedDatasets.current = data.current.filter(dataset => dataset.hidden == true)
+            active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current)
+        }
+        catch(err){
+            setAlert({
+                status: 'error',
+                title: 'Unable to archive dataset ' + id,
+                description: ""
+            })
+            onOpen()
+            setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
+        }
+        
+    
+    }
+    // show active datasets and change url when 'Active Datasets' button is pressed
+    const goToActive = () => {
+        if (active.current == false) {
+            active.current = true
+            setDisplayedData(activeDatasets.current)
+            window.history.pushState({}, '', '/datasets/')
+            setTitle("Active Datasets")
+        }
+    }
+    // show archived datasets and change url when 'Archived Datasets' button is pressed
+    const goToArchived = () => {
+        if (active.current == true) {
+            active.current = false
+            setDisplayedData(archivedDatasets.current)
+            window.history.pushState({}, '', '/datasets/?filter=archived')
+            setTitle("Archived Datasets");
+        }
+
+    }
 
     const applyFilters = (variable) => {
         let newData = variable.map(dataset => dataset)
@@ -77,9 +129,16 @@ const DatasetTbl = (props) => {
 
     return (
         <div>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
+                <Button variant="blue" mr="10px" onClick={goToActive}>Active Datasets</Button>
+                <Button variant="blue" onClick={goToArchived}>Archived Datasets</Button>
             </Flex>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
@@ -103,7 +162,7 @@ const DatasetTbl = (props) => {
                         <Select minW="130px" style={{ fontWeight: "bold" }} variant="unstyled" value="Data Partner" readOnly onChange={(option) => setDataPartnerFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Data Partner</option>
                             <>
-                                {[...[...new Set(datasets.map(data => data.data_partner.name))]].sort((a, b) => a.localeCompare(b))
+                                {[...[...new Set(displayedData.map(data => data.data_partner.name))]].sort((a, b) => a.localeCompare(b))
                                     .map((item, index) =>
                                         <option key={index} value={item}>{item}</option>
                                     )}
@@ -111,11 +170,14 @@ const DatasetTbl = (props) => {
                         </Select>
                         <Th>Visibility</Th>
                         <Th>Creation Date</Th>
+                        <Th></Th>
+                        <Th>Archive</Th>
+
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {applyFilters(datasets).length > 0 &&
-                        applyFilters(datasets).map((item, index) =>
+                    {applyFilters(displayedData).length > 0 &&
+                        applyFilters(displayedData).map((item, index) =>
 
                             <Tr className={"mediumTbl"} key={index}>
                                 <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.id}>{item.id}</Link></Td>
@@ -123,7 +185,25 @@ const DatasetTbl = (props) => {
                                 <Td maxW={"100px"}> {item.data_partner.name} </Td>
                                 <Td maxW={"100px"}> {item.visibility} </Td>
                                 <Td maxW={"200px"} minW={"180px"}>{item.created_at.displayString}</Td>
-                                <Td maxW={"100px"}><Link href={"/datasets/" + item.id + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
+                                <Td maxW={"100px"}><Link href={"/datasets/" + item.id + "/details"}><Button variant="blue" my="10px">Details</Button></Link></Td>
+                                <Td textAlign="center">
+                                    {item.hidden ?
+                                        <>
+                                            {item.loading ?
+                                                <Spinner />
+                                                :
+                                                <ViewOffIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveDataset(item.id, false)} />
+                                            }
+                                        </>
+                                        :
+                                        <>
+                                            {item.loading ?
+                                                <Spinner />
+                                                :
+                                                <ViewIcon _hover={{ color: "blue" }} onClick={() => activateOrArchiveDataset(item.id, true)} />
+                                            }
+                                        </>
+                                    }
                                 </Td>
                             </Tr>
 
@@ -131,6 +211,9 @@ const DatasetTbl = (props) => {
                     }
                 </Tbody>
             </Table>
+            {applyFilters(displayedData).length == 0 &&
+                <Flex marginLeft="10px">No Datasets available</Flex>
+            }
         </div>
     );
 }

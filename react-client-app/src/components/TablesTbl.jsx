@@ -16,7 +16,7 @@ import {
 
 } from "@chakra-ui/react"
 
-import { getScanReportTableRows, usePost } from '../api/values'
+import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
 
 
@@ -24,25 +24,39 @@ import { downloadXLSXFile } from '../api/download'
 
 const TablesTbl = () => {
     // get the value to use to query the fields endpoint from the page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
-    const [values, setValues] = useState([]);
+    const pathArray = window.location.pathname.split("/")
+    const scanReportId = pathArray[pathArray.length - 1]
+    const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
-        // get table on initial render
-        getScanReportTableRows(value).then(table => {
-            setValues(table)
-            setLoading(false)
-        })
+        // Check user can see the scan report
+        useGet(`/scanreports/${scanReportId}`).then(res => {
+            // If user can see scan report, get the tables
+            getScanReportTableRows(scanReportId).then(table => {
+                setScanReportTables(table)
+                setLoading(false)
+            })
+        }
+        ).catch(
+            err => {
+                // If user can't see scan report, show an error message
+                setError("Could not access the resource you requested. "
+                    + "Check that it exists and that you have permission to view it."
+                )
+                setLoading(false)
+            }
+        )
     }, []);
 
     const download_scan_report = () => {
-        downloadXLSXFile()
+        downloadXLSXFile(scanReportId, window.scan_report_name)
 
     };
 
+    // This is broken now.
     const download_data_dictionary = async () => {
         const response = await usePost(window.location.href, { "download-dd": true }, false);
         var type = response.headers['content-type'];
@@ -84,6 +98,15 @@ const TablesTbl = () => {
 
     };
 
+    if (error) {
+        //Render Error State
+        return (
+            <Flex padding="30px">
+                <Flex marginLeft="10px">{error}</Flex>
+            </Flex>
+        )
+    }
+
     if (loading) {
         //Render Loading State
         return (
@@ -99,10 +122,10 @@ const TablesTbl = () => {
         <div >
             <Flex my="10px">
                 <HStack>
-                    <Link href={"/scanreports/" + value + "/details"}>
+                    <Link href={"/scanreports/" + scanReportId + "/details"}>
                         <Button variant="blue" my="10px">Scan Report Details</Button>
                     </Link>
-                    <Link href={"/scanreports/" + value + "/mapping_rules/"}>
+                    <Link href={"/scanreports/" + scanReportId + "/mapping_rules/"}>
                         <Button variant="blue" my="10px">Go to Rules</Button>
                     </Link>
                 </HStack>
@@ -120,17 +143,17 @@ const TablesTbl = () => {
                         <Th>Name</Th>
                         <Th>Person ID</Th>
                         <Th>Event Date</Th>
-                        <Th>Edit</Th>
+                        {window.canEdit && <Th>Edit</Th>}
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {values.length > 0 ?
-                        values.map((item, index) =>
+                    {scanReportTables.length > 0 ?
+                        scanReportTables.map((item, index) =>
                             <Tr key={index}>
-                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/fields/?search=" + item.id}>{item.name}</Link></Td>
+                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}`}>{item.name}</Link></Td>
                                 <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
                                 <Td maxW={"200px"}>{item.date_event ? item.date_event.name : null}</Td>
-                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/tables/" + item.id + "/update/"}>Edit Table</Link></Td>
+                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/tables/" + item.id + "/update/"}>Edit Table</Link></Td>}
                             </Tr>
 
                         )
