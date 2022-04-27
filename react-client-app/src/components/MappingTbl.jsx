@@ -52,7 +52,34 @@ const MappingTbl = () => {
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
         useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
-            setValues(res[0].sort((a, b) => (a.rule_id > b.rule_id) ? 1 : ((b.rule_id > a.rule_id) ? -1 : 0)))
+            // sort results and add an index to be able to find them later
+            let tempRules = res[0].sort((a, b) => a.rule_id > b.rule_id ? 1 : b.rule_id > a.rule_id ? -1 : 0).map((item, index) => ({ ...item, startIndex: index }));
+            // find any rows with matching concepts
+            let newData = tempRules.map((scanreport) => scanreport);
+            newData = newData.filter((rule) => !rule.destination_field.name.includes('_source_concept_id') && rule.term_mapping != null);
+
+            newData = newData.filter(item => {
+                const matches = newData
+                    .filter((row) =>
+                        row.source_table.id === item.source_table.id &&
+                        row.source_field.id === item.source_field.id &&
+                        Object.keys(row.term_mapping)[0] === Object.keys(item.term_mapping)[0]
+                    );
+                if (matches.length > 1) {
+                    return true
+                }
+                return false
+            })
+
+            // set any found rows with matching concepts to have flag=true
+            tempRules = tempRules.map(item => {
+                if (newData.find(data => data.startIndex == item.startIndex)) {
+                    item.flag = true
+                }
+                return item
+            })
+            setValues(tempRules)
+
             setLoading(false);
             setLoadingMessage("");
         })
