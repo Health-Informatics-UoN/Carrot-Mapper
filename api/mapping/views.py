@@ -1718,7 +1718,15 @@ def dataset_admin_page(request, pk):
     try:
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-        return render(request, "mapping/admin_dataset_form.html", args)
+
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/admin_dataset_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1730,7 +1738,14 @@ def dataset_content_page(request, pk):
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
 
-        return render(request, "mapping/datasets_content.html", args)
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/datasets_content.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1745,7 +1760,15 @@ def scanreport_admin_page(request, pk):
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
-        return render(request, "mapping/admin_scanreport_form.html", args)
+
+        if (
+            has_viewership(sr, request)
+            or has_editorship(sr, request)
+            or is_admin(sr, request)
+        ):
+            return render(request, "mapping/admin_scanreport_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
