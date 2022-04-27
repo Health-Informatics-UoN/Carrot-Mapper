@@ -74,14 +74,14 @@ const EditField = ({ setTitle }) => {
             </CCBreadcrumbBar>
             <PageHeading text={"Update Field - " + field.current.name} />
             <VStack mt="20px" align="start">
-                <Checkbox isChecked={isIgnore} onChange={(e) => setIsIgnore(e.target.checked)}>Is ignore</Checkbox>
-                <Checkbox isChecked={passFromSource} onChange={(e) => setPassFromSource(e.target.checked)}>Pass from source</Checkbox>
+                <Checkbox isChecked={isIgnore} onChange={(e) => setIsIgnore(e.target.checked)} isDisabled={!window.canEdit}>Is ignore</Checkbox>
+                <Checkbox isChecked={passFromSource} onChange={(e) => setPassFromSource(e.target.checked)} isDisabled={!window.canEdit}>Pass from source</Checkbox>
             </VStack>
             <VStack mt="20px" align="start">
                 <Text w="200px">Description Column</Text>
-                <Textarea value={descriptionColumn} onChange={(e) => setDescriptionColumn(e.target.value)} />
+                <Textarea value={descriptionColumn} onChange={(e) => setDescriptionColumn(e.target.value)} isDisabled={!window.canEdit} />
             </VStack>
-            <Button bgColor="#3db28c" mt="10px" onClick={updateField}>Update</Button>
+            <Button bgColor="#3db28c" mt="10px" onClick={updateField} isDisabled={!window.canEdit}>Update</Button>
         </div>
     );
 }
