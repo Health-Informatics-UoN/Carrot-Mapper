@@ -1512,11 +1512,11 @@ def scanreport_admin_page(request, pk):
     args = {}
     try:
         sr = ScanReport.objects.get(id=pk)
-        is_admin = (
+        _is_admin = (
             sr.author.id == request.user.id
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
-        args["is_admin"] = is_admin
+        args["is_admin"] = _is_admin
 
         if (
             has_viewership(sr, request)
