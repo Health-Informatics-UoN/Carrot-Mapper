@@ -188,9 +188,6 @@ urlpatterns = [
     path("api/", include(routers.urls)),
     path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("", views.home, name="home"),
-    path("tables/", views.ScanReportTableListView.as_view(), name="tables"),
-    path("fields/", views.ScanReportFieldListView.as_view(), name="fields"),
-    path("values/", views.ScanReportValueListView.as_view(), name="values"),
     path("scanreports", views.ScanReportListView.as_view(), name="scan-report-list"),
     path(
         "scanreports/<int:pk>/mapping_rules/",
