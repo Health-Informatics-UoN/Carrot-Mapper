@@ -912,62 +912,6 @@ def home(request):
     return render(request, "mapping/home.html", {})
 
 
-@method_decorator(login_required, name="dispatch")
-class ScanReportTableListView(ListView):
-    model = ScanReportTable
-
-    def post(self, request, *args, **kwargs):
-        try:
-            body = json.loads(request.body.decode("utf-8"))
-        except ValueError as e:
-            body = {}
-        if (
-            request.POST.get("download-dd") is not None
-            or body.get("download-dd", None) is not None
-        ):
-            qs = self.get_queryset()
-            scan_report = self.get_queryset()[0].scan_report
-            return download_data_dictionary_blob(
-                scan_report.data_dictionary.name, container="data-dictionaries"
-            )
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None and search_term != "":
-            qs = qs.filter(scan_report__id=search_term).order_by("name")
-
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report
-            scan_report_name = scan_report.name
-            scan_report_table = self.get_queryset()[0]
-            try:
-                data_dictionary = scan_report.data_dictionary
-            except:
-                data_dictionary = None
-        else:
-            scan_report = None
-            scan_report_name = None
-            scan_report_table = None
-            data_dictionary = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_name": scan_report_name,
-                "scan_report_table": scan_report_table,
-                "data_dictionary": data_dictionary,
-            }
-        )
-
-        return context
-
-
 @login_required
 def update_scanreport_table_page(request, sr, pk):
     # Get the SR table
@@ -988,44 +932,6 @@ def update_scanreport_table_page(request, sr, pk):
     # Set the page context
     context = {"can_edit": can_edit, "pk": pk}
     return render(request, "mapping/scanreporttable_form.html", context=context)
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportFieldListView(ListView):
-    model = ScanReportField
-    fields = ["concept_id"]
-    template_name = "mapping/scanreportfield_list.html"
-    factory_kwargs = {"can_delete": False, "extra": False}
-
-    def get_queryset(self):
-        qs = super().get_queryset().order_by("id")
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-            qs = qs.filter(scan_report_table__id=search_term)
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report_field = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-            }
-        )
-
-        return context
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1080,59 +986,6 @@ class ScanReportListView(ListView):
             qs = qs.filter(hidden=False)
             self.filterset = "Active"
         return qs
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportValueListView(ListView):
-    model = ScanReportValue
-    template_name = "mapping/scanreportvalue_list.html"
-    fields = ["conceptID"]
-    factory_kwargs = {"can_delete": False, "extra": False}
-
-    def get_queryset(self):
-        search_term = self.request.GET.get("search", None)
-
-        if search_term is not None:
-            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by(
-                "value"
-            )
-        else:
-            qs = ScanReportValue.objects.all()
-
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            # scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            # scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table
-            scan_report_field = self.get_queryset()[0].scan_report_field
-            scan_report_value = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-            scan_report_value = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-                "scan_report_value": scan_report_value,
-            }
-        )
-
-        return context
 
 
 @method_decorator(login_required, name="dispatch")
