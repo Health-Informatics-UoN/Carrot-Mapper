@@ -1015,7 +1015,7 @@ class StructuralMappingTableListView(ListView):
             # this should be an API endpoint that returns all ScanReportConcept IDs given a scanreport ID
             # i.e. this is a hack for now...
             data = [str(x) for x in all_associated_concepts]
-            return HttpResponse(json.dumps(data), content_type='application/json')
+            return HttpResponse(json.dumps(data), content_type="application/json")
         elif (
             request.POST.get("get_svg") is not None
             or body.get("get_svg", None) is not None
