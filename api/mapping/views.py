@@ -1864,21 +1864,21 @@ def dataset_admin_page(request, pk):
     try:
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+        return render(request, "mapping/admin_dataset_form.html", args)
     except ObjectDoesNotExist:
-        args["is_admin"] = False
-
-    return render(request, "mapping/admin_dataset_form.html", args)
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
 def dataset_content_page(request, pk):
     args = {}
-    if ds := Dataset.objects.get(id=pk):
+    try:
+        ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-    else:
-        args["is_admin"] = False
 
-    return render(request, "mapping/datasets_content.html", args)
+        return render(request, "mapping/datasets_content.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
@@ -1891,10 +1891,9 @@ def scanreport_admin_page(request, pk):
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
+        return render(request, "mapping/admin_scanreport_form.html", args)
     except ObjectDoesNotExist:
-        args["is_admin"] = False
-
-    return render(request, "mapping/admin_scanreport_form.html", args)
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
