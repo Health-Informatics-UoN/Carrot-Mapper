@@ -936,17 +936,6 @@ def update_scanreport_table_page(request, sr, pk):
 
 
 @method_decorator(login_required, name="dispatch")
-class ScanReportStructuralMappingUpdateView(UpdateView):
-    model = ScanReportField
-    fields = ["mapping"]
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("fields"), self.object.scan_report_table.id
-        )
-
-
-@method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
     # order the scanreports now so the latest is first in the table
@@ -1266,117 +1255,6 @@ class ScanReportAssertionsUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class DataDictionaryListView(ListView):
-    model = DataDictionary
-    ordering = ["-source_value"]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        # Create a concat field for NLP to work from
-        # V is imported from models, used to comma separate other fields
-        qs = qs.annotate(
-            nlp_string=Concat(
-                "source_value__scan_report_field__name",
-                V(", "),
-                "source_value__value",
-                V(", "),
-                "dictionary_field_description",
-                V(", "),
-                "dictionary_value_description",
-                output_field=CharField(),
-            )
-        )
-
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-
-            assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
-            neg_assertions = assertions.values_list("negative_assertion")
-
-            # Grabs ScanReportFields where pass_from_source=True, makes list distinct
-            qs_1 = (
-                qs.filter(
-                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
-                )
-                .filter(source_value__scan_report_field__pass_from_source=True)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .distinct("source_value__scan_report_field")
-                .order_by("source_value__scan_report_field")
-            )
-
-            # Grabs everything but removes all where pass_from_source=False
-            # Filters out negative assertions and 'List truncated...'
-            qs_2 = (
-                qs.filter(
-                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
-                )
-                .filter(source_value__scan_report_field__pass_from_source=False)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .exclude(source_value__value__in=neg_assertions)
-            )
-
-            # Stick qs_1 and qs_2 together
-            qs_total = qs_1.union(qs_2)
-
-            # Create object to convert to JSON
-            for_json = qs_total.values(
-                "id",
-                "source_value__value",
-                "source_value__scan_report_field__name",
-                "nlp_string",
-            )
-
-            serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
-
-            # with open("/data/data.json", "w") as json_file:
-            #    json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
-
-        return qs_total
-
-    def get_context_data(self, **kwargs):
-
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[
-                0
-            ].source_value.scan_report_field.scan_report_table.scan_report
-        else:
-            scan_report = None
-
-        context.update({"scan_report": scan_report})
-
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
-class DataDictionaryUpdateView(UpdateView):
-    model = DataDictionary
-    fields = [
-        "dictionary_table",
-        "dictionary_field",
-        "dictionary_field_description",
-        "dictionary_value",
-        "dictionary_value_description",
-        "definition_fixed",
-    ]
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("data-dictionary"),
-            self.object.source_value.scan_report_field.scan_report_table.scan_report.id,
-        )
-
-
-@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy("password_change_done")
@@ -1454,6 +1332,7 @@ def load_omop_fields(request):
     )
 
 
+# To be removed
 # Run NLP at the field level
 def run_nlp_field_level(request):
 
@@ -1464,6 +1343,7 @@ def run_nlp_field_level(request):
     return redirect("/fields/?search={}".format(field.scan_report_table.id))
 
 
+# To be removed
 # Run NLP for all fields/values within a table
 def run_nlp_table_level(request):
 
@@ -1541,139 +1421,6 @@ def pass_content_object_validation(request, scan_report_table):
         return False
 
     return True
-
-
-def save_scan_report_value_concept(request):
-    if request.method == "POST":
-        form = ScanReportValueConceptForm(request.POST)
-        if form.is_valid():
-
-            scan_report_value = ScanReportValue.objects.get(
-                pk=form.cleaned_data["scan_report_value_id"]
-            )
-
-            if not pass_content_object_validation(
-                request, scan_report_value.scan_report_field.scan_report_table
-            ):
-                return redirect(
-                    "/values/?search={}".format(scan_report_value.scan_report_field.id)
-                )
-
-            try:
-                concept = Concept.objects.get(
-                    concept_id=form.cleaned_data["concept_id"]
-                )
-            except Concept.DoesNotExist:
-                messages.error(
-                    request,
-                    "Concept id {} does not exist in our database.".format(
-                        form.cleaned_data["concept_id"]
-                    ),
-                )
-                return redirect(
-                    "/values/?search={}".format(scan_report_value.scan_report_field.id)
-                )
-
-            # perform a standard check on the concept
-            pass_concept_check = validate_concept(request, concept)
-            if pass_concept_check:
-                scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_value,
-                )
-
-                save_mapping_rules(request, scan_report_concept)
-
-            return redirect(
-                "/values/?search={}".format(scan_report_value.scan_report_field.id)
-            )
-
-
-def delete_scan_report_value_concept(request):
-    scan_report_field_id = request.GET.get("scan_report_field_id")
-    scan_report_concept_id = request.GET.get("scan_report_concept_id")
-
-    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
-
-    # scan_report_concept.mappingrule.delete()
-
-    concept_id = scan_report_concept.concept.concept_id
-    concept_name = scan_report_concept.concept.concept_name
-
-    scan_report_concept.delete()
-
-    messages.success(
-        request,
-        "Concept {} - {} removed successfully.".format(concept_id, concept_name),
-    )
-
-    return redirect("/values/?search={}".format(scan_report_field_id))
-
-
-def save_scan_report_field_concept(request):
-    if request.method == "POST":
-        form = ScanReportFieldConceptForm(request.POST)
-        if form.is_valid():
-
-            scan_report_field = ScanReportField.objects.get(
-                pk=form.cleaned_data["scan_report_field_id"]
-            )
-
-            if not pass_content_object_validation(
-                request, scan_report_field.scan_report_table
-            ):
-                return redirect(
-                    "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-                )
-
-            try:
-                concept = Concept.objects.get(
-                    concept_id=form.cleaned_data["concept_id"]
-                )
-            except Concept.DoesNotExist:
-                messages.error(
-                    request,
-                    "Concept id {} does not exist in our database.".format(
-                        form.cleaned_data["concept_id"]
-                    ),
-                )
-                return redirect(
-                    "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-                )
-
-            # perform a standard check on the concept
-            pass_concept_check = validate_concept(request, concept)
-            if pass_concept_check:
-                scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_field,
-                )
-
-                save_mapping_rules(request, scan_report_concept)
-
-            return redirect(
-                "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-            )
-
-
-def delete_scan_report_field_concept(request):
-
-    scan_report_table_id = request.GET.get("scan_report_table_id")
-    scan_report_concept_id = request.GET.get("scan_report_concept_id")
-
-    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
-
-    concept_id = scan_report_concept.concept.concept_id
-    concept_name = scan_report_concept.concept.concept_name
-
-    scan_report_concept.delete()
-
-    messages.success(
-        request,
-        "Concept {} - {} removed successfully.".format(concept_id, concept_name),
-    )
-
-    return redirect("/fields/?search={}".format(scan_report_table_id))
 
 
 class DownloadScanReportViewSet(viewsets.ViewSet):

@@ -229,36 +229,6 @@ urlpatterns = [
         views.ScanReportAssertionsUpdateView.as_view(),
         name="scan-report-assertion-update",
     ),
-    path(
-        "scanreports/field-concepts/",
-        views.save_scan_report_field_concept,
-        name="scan_report_field_concept",
-    ),
-    path(
-        "scanreports/field-concepts/delete/",
-        views.delete_scan_report_field_concept,
-        name="scan_report_field_concept-delete",
-    ),
-    path(
-        "scanreports/value-concepts/",
-        views.save_scan_report_value_concept,
-        name="scan_report_value_concept",
-    ),
-    path(
-        "scanreports/value-concepts/delete/",
-        views.delete_scan_report_value_concept,
-        name="scan_report_value_concept-delete",
-    ),
-    path(
-        "datadictionary/",
-        views.DataDictionaryListView.as_view(),
-        name="data-dictionary",
-    ),
-    path(
-        "datadictionary/<int:pk>/update",
-        views.DataDictionaryUpdateView.as_view(),
-        name="update-data-dictionary",
-    ),
     path("nlp/run", views.run_nlp_field_level, name="run-nlp"),
     path("nlp/table/run", views.run_nlp_table_level, name="run-nlp-table"),
     path(
