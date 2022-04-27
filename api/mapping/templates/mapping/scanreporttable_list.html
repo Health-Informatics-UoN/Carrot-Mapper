@@ -2,29 +2,12 @@
 
 {% block body %}
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-            reports</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'scanreport_table' pk=scan_report.id %}">
-            {{ scan_report.parent_dataset.data_partner.name }} - {{ scan_report.dataset }}</a></li>
-    </ol>
-</nav>
-
 <div>
     <!-- Loads in React Components from index.js -->
     <div id='root'></div>
 
     <script type="text/javascript" >
-        var scan_report="{{scan_report}}";
-        var scan_report_name="{{scan_report_name}}";
-        var data_dictionary="{{data_dictionary}}";
         var canEdit = "{{can_edit}}" === "True" ? true : false;
-        var hide_button=false;
-        if (!data_dictionary){
-            hide_button=true;
-        }
     </script>
     <script type="module" src="../../../static/javascript/react/src/tablesTable.js"></script>
     

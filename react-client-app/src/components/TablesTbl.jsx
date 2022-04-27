@@ -15,25 +15,29 @@ import {
     HStack
 
 } from "@chakra-ui/react"
-
+import CCBreadcrumbBar from './CCBreadcrumbBar'
+import PageHeading from './PageHeading'
 import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
+import Error404 from '../views/Error404'
 
 
 
-
-const TablesTbl = () => {
+const TablesTbl = ({ setTitle }) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
     const scanReportId = pathArray[pathArray.length - 1]
+    const [scanReportName, setScanReportName] = useState();
     const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
+        setTitle(null)
         // Check user can see the scan report
         useGet(`/scanreports/${scanReportId}`).then(res => {
+            setScanReportName(res.dataset)
             // If user can see scan report, get the tables
             getScanReportTableRows(scanReportId).then(table => {
                 setScanReportTables(table)
@@ -43,9 +47,7 @@ const TablesTbl = () => {
         ).catch(
             err => {
                 // If user can't see scan report, show an error message
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoading(false)
             }
         )
@@ -100,11 +102,7 @@ const TablesTbl = () => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={setTitle} />
     }
 
     if (loading) {
@@ -120,6 +118,12 @@ const TablesTbl = () => {
     }
     return (
         <div >
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}`}>{scanReportName}</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Tables"} />
             <Flex my="10px">
                 <HStack>
                     <Link href={"/scanreports/" + scanReportId + "/details"}>
@@ -153,7 +157,7 @@ const TablesTbl = () => {
                                 <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}`}>{item.name}</Link></Td>
                                 <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
                                 <Td maxW={"200px"}>{item.date_event ? item.date_event.name : null}</Td>
-                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/tables/" + item.id + "/update/"}>Edit Table</Link></Td>}
+                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + item.scan_report + "/tables/" + item.id + "/update"}>Edit Table</Link></Td>}
                             </Tr>
 
                         )

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
-    FormControl, FormLabel, FormErrorMessage
+    FormControl, FormLabel, FormErrorMessage, Link
 } from "@chakra-ui/react"
 import PageHeading from './PageHeading'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import { useGet, usePatch, useDelete } from '../api/values'
 import { arraysEqual } from '../utils/arrayFuncs'
+import Error404 from '../views/Error404'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let pathArray = window.location.pathname.split("/")
@@ -91,9 +93,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 )
                 setLoadingMessage(null)  // stop loading when finished
             } catch (error) {
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoadingMessage(null)
             }
 
@@ -228,11 +228,7 @@ const DatasetAdminForm = ({ setTitle }) => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={setTitle} />
     }
 
     if (loadingMessage) {
@@ -249,6 +245,12 @@ const DatasetAdminForm = ({ setTitle }) => {
 
     return (
         <Container maxW='container.xl'>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/datasets"}>Datasets</Link>
+                <Link href={`/datasets/${datasetId}`}>{dataset.name}</Link>
+                <Link href={`/datasets/${datasetId}/details`}>Details</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

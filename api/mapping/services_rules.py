@@ -869,6 +869,7 @@ def get_concept_details(h_concept_id):
             "source_field__name",
             "source_field__scan_report_table__id",
             "source_field__scan_report_table__name",
+            "source_field__scan_report_table__scan_report",
             "concept__content_type",
         )
     ).distinct()

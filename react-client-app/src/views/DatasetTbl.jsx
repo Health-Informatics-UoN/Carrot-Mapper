@@ -3,6 +3,7 @@ import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, L
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
+import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import ToastAlert from '../components/ToastAlert'
@@ -59,7 +60,7 @@ const DatasetTbl = (props) => {
     }, []);
 
     const activateOrArchiveDataset = async (id, theIndicator) => {
-        try{
+        try {
             setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
             const patchData = { hidden: theIndicator }
             const res = await usePatch(`/datasets/update/${id}`, patchData)
@@ -68,7 +69,7 @@ const DatasetTbl = (props) => {
             archivedDatasets.current = data.current.filter(dataset => dataset.hidden == true)
             active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current)
         }
-        catch(err){
+        catch (err) {
             setAlert({
                 status: 'error',
                 title: 'Unable to archive dataset ' + id,
@@ -77,8 +78,8 @@ const DatasetTbl = (props) => {
             onOpen()
             setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
         }
-        
-    
+
+
     }
     // show active datasets and change url when 'Active Datasets' button is pressed
     const goToActive = () => {
@@ -129,6 +130,10 @@ const DatasetTbl = (props) => {
 
     return (
         <div>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/datasets"}>Datasets</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

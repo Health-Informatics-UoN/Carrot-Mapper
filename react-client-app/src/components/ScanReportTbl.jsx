@@ -6,6 +6,7 @@ import {
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import ToastAlert from './ToastAlert'
@@ -260,6 +261,10 @@ const ScanReportTbl = (props) => {
     }
     return (
         <div>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
@@ -271,7 +276,7 @@ const ScanReportTbl = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
+            <Link href="/scanreports/create"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Author -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {

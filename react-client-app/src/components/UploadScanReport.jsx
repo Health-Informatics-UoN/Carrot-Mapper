@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import PageHeading from './PageHeading'
 import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
-    FormControl, FormLabel, FormErrorMessage
+    FormControl, FormLabel, FormErrorMessage, Link
 } from "@chakra-ui/react"
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import CCMultiSelectInput from './CCMultiSelectInput'
 
 const UploadScanReport = ({ setTitle }) => {
@@ -237,7 +238,7 @@ const UploadScanReport = ({ setTitle }) => {
 
             const response = await postForm(window.location.href, formData)
             // redirect if the upload was successful, otherwise show the error message
-            window.location.pathname = `/scanreports/`
+            window.location.pathname = `/scanreports`
         }
         catch (err) {
             console.log(err)
@@ -338,6 +339,11 @@ const UploadScanReport = ({ setTitle }) => {
     }
     return (
         <Container maxW='container.xl'>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/create`}>Create</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
@@ -427,6 +433,7 @@ const UploadScanReport = ({ setTitle }) => {
                                                     <CCMultiSelectInput
                                                         id={"dataset-viewers"}
                                                         label={"Viewers"}
+                                                        info={"All Dataset admins and editors also have Dataset viewer permissions. If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset will have Dataset viewer permissions."}
                                                         isLoading={activeUsersList == undefined}
                                                         selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
                                                         currentSelections={users.map(item => item.username)}
@@ -437,6 +444,7 @@ const UploadScanReport = ({ setTitle }) => {
                                                     <CCMultiSelectInput
                                                         id={"dataset-editors"}
                                                         label={"Editors"}
+                                                        info={"All Dataset admins also have Dataset editor permissions."}
                                                         isLoading={activeUsersList == undefined}
                                                         selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
                                                         currentSelections={datasetEditors.map(item => item.username)}
@@ -493,6 +501,7 @@ const UploadScanReport = ({ setTitle }) => {
             <CCMultiSelectInput
                 id={"scanreport-viewers"}
                 label={"Viewers"}
+                info={"If the Scan Report is PUBLIC, then all users with access to the Dataset have viewer access to the Scan Report. Additionally, Dataset admins and editors have viewer access to the Scan Report in all cases."}
                 isLoading={loadingDatasetProjects}
                 selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
                 currentSelections={scanreportViewers.map(item => item.username)}
@@ -503,6 +512,7 @@ const UploadScanReport = ({ setTitle }) => {
             <CCMultiSelectInput
                 id={"scanreport-editors"}
                 label={"Editors"}
+                info={"Dataset admins and editors also have Scan Report editor permissions."}
                 isLoading={loadingDatasetProjects}
                 selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
                 currentSelections={scanreportEditors.map(item => item.username)}

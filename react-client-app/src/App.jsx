@@ -220,15 +220,18 @@ const App = ({ page }) => {
                             // if an error occurs while trying to add the concept, return to original state
                             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                             setValues(valuesRef.current)
-
-                            if (typeof (error) !== 'undefined' && error.response != null) {
-                                setAlert({
-                                    status: 'error',
-                                    title: 'Unable to link Concept id to value',
-                                    description: 'Response: ' + error.response.status + ' ' + error.response.statusText
-                                })
-                                onOpen()
-
+                            let description = "Response: " + error.response.status + " " + error.response.statusText
+                            if(error.response&& error.response.data){
+                              const body = error.response.data
+                              description = "Response: " + body.status_code + " " + body.statusText
+                            }
+                            if (typeof error !== "undefined" && error.response != null) {
+                              setAlert({
+                                status: "error",
+                                title: "Unable to link Concept id to value",
+                                description: description
+                              });
+                              onOpen();
                             }
                         })
 
@@ -256,15 +259,15 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Mapping Rules":
-                return <MappingTbl />
+                return <MappingTbl setTitle={setTitle} />
             case "Fields":
-                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Tables":
-                return <TablesTbl />
+                return <TablesTbl setTitle={setTitle} />
             case "Update Table":
-                return <EditTable />
+                return <EditTable setTitle={setTitle} />
             case "Update Field":
                 return <EditField setTitle={setTitle} />
             case "New Scan Report":

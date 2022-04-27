@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react'
-import { Button, Flex, Spinner, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import React, { useState, useEffect, useRef } from 'react'
+import { Button, Flex, Link, Spinner, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import CCSelectInput from './CCSelectInput'
 import ToastAlert from '../components/ToastAlert'
+import PageHeading from './PageHeading'
 import { useGet, usePatch } from '../api/values'
-const EditTable = () => {
+const EditTable = (props) => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
     const value = window.pk ? window.pk : window.location.href.split("tables/")[1].split("/")[0]
@@ -13,10 +15,14 @@ const EditTable = () => {
     const [selectedDate, setDate] = useState("------");
     const [loadingMessage, setLoadingMessage] = useState(null)
     const canEdit = window.canEdit
+    const scanReport = useRef([]);
 
     useEffect(async () => {
+        props.setTitle(null)
         // get scan report table to use to get tables 
         const scanreporttable = await useGet(`/scanreporttables/${value}/`)
+        // get scan report for name and id for breadcrumbs
+        scanReport.current = await useGet(`/scanreports/${scanreporttable.scan_report}`)
         // get scan report tables for the scan report the table belongs to
         const tablesFilter = useGet(`/scanreporttables/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
@@ -56,7 +62,7 @@ const EditTable = () => {
         }
         usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = `/tables/?search=${table.scan_report}`
+            window.location.href = `/scanreports/${table.scan_report}`
         })
             .catch(err => {
                 setAlert({
@@ -81,6 +87,14 @@ const EditTable = () => {
     }
     return (
         <div>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReport.current.id}`}>{scanReport.current.dataset}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}`}>{table.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}/update`}>Update</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Update Table"} />
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
