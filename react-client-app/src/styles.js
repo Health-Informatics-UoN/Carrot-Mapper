@@ -34,7 +34,8 @@ const theme = extendTheme({
     green: { pastel: "#C1E1C1", bright: "#66FF00" },
     red: { pastel: "#FF6961", bright: "#EE4B2B" },
     yellow: { pastel: "#FDFD96", bright: "#FFFF00" },
-    
+    lightyellow: "#FFFF8A",
+    lightred: "#F7BEC0",
     brown: { light: "#C89D7C", bright: "#DCB190" },
     upload:"#ececec",
     prog25: "#fef0d5",
