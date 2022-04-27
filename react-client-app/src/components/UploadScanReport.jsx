@@ -238,7 +238,7 @@ const UploadScanReport = ({ setTitle }) => {
 
             const response = await postForm(window.location.href, formData)
             // redirect if the upload was successful, otherwise show the error message
-            window.location.pathname = `/scanreports/`
+            window.location.pathname = `/scanreports`
         }
         catch (err) {
             console.log(err)
