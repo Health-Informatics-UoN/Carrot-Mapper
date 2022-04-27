@@ -26,6 +26,7 @@ import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import PageHeading from './PageHeading'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
+import Error404 from '../views/Error404'
 
 const FieldsTbl = (props) => {
     // get the value to use to query the fields endpoint from the page url
@@ -67,9 +68,7 @@ const FieldsTbl = (props) => {
         ).catch(
             err => {
                 // If user can't see SR table, show an error message
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoading(false)
             }
         )
@@ -87,11 +86,7 @@ const FieldsTbl = (props) => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={props.setTitle} />
     }
 
     if (loading) {

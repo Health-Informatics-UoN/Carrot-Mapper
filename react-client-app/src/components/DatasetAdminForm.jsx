@@ -9,6 +9,7 @@ import ConceptTag from './ConceptTag'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
 import { useGet, usePatch, useDelete } from '../api/values'
 import { arraysEqual } from '../utils/arrayFuncs'
+import Error404 from '../views/Error404'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let pathArray = window.location.pathname.split("/")
@@ -92,9 +93,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 )
                 setLoadingMessage(null)  // stop loading when finished
             } catch (error) {
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoadingMessage(null)
             }
 
@@ -229,11 +228,7 @@ const DatasetAdminForm = ({ setTitle }) => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={setTitle} />
     }
 
     if (loadingMessage) {
