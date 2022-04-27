@@ -1864,10 +1864,9 @@ def dataset_admin_page(request, pk):
     try:
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
+        return render(request, "mapping/admin_dataset_form.html", args)
     except ObjectDoesNotExist:
-        args["is_admin"] = False
-
-    return render(request, "mapping/admin_dataset_form.html", args)
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
