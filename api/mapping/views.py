@@ -1873,12 +1873,13 @@ def dataset_admin_page(request, pk):
 @login_required
 def dataset_content_page(request, pk):
     args = {}
-    if ds := Dataset.objects.get(id=pk):
+    try:
+        ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-    else:
-        args["is_admin"] = False
 
-    return render(request, "mapping/datasets_content.html", args)
+        return render(request, "mapping/datasets_content.html", args)
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
