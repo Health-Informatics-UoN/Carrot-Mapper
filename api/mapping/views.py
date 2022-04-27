@@ -1892,10 +1892,9 @@ def scanreport_admin_page(request, pk):
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
+        return render(request, "mapping/admin_scanreport_form.html", args)
     except ObjectDoesNotExist:
-        args["is_admin"] = False
-
-    return render(request, "mapping/admin_scanreport_form.html", args)
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
