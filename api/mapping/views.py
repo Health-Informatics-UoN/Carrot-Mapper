@@ -121,6 +121,7 @@ from .permissions import (
     CanAdmin,
     CanEdit,
     has_editorship,
+    has_viewership,
     is_admin,
 )
 from .services import download_data_dictionary_blob
@@ -1760,7 +1761,14 @@ def scanreport_table_list_page(request, pk):
             scan_report, request
         )
 
-        return render(request, "mapping/scanreporttable_list.html", args)
+        if (
+            has_viewership(scan_report, request)
+            or has_editorship(scan_report, request)
+            or is_admin(scan_report, request)
+        ):
+            return render(request, "mapping/scanreporttable_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1777,8 +1785,14 @@ def scanreport_fields_list_page(request, sr, pk):
         args["can_edit"] = has_editorship(scan_report_table, request) or is_admin(
             scan_report_table, request
         )
-
-        return render(request, "mapping/scanreportfield_list.html", args)
+        if (
+            has_viewership(scan_report_table, request)
+            or has_editorship(scan_report_table, request)
+            or is_admin(scan_report_table, request)
+        ):
+            return render(request, "mapping/scanreportfield_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1797,7 +1811,14 @@ def scanreport_values_list_page(request, sr, tbl, pk):
             scan_report_field, request
         )
 
-        return render(request, "mapping/scanreportvalue_list.html", args)
+        if (
+            has_viewership(scan_report_field, request)
+            or has_editorship(scan_report_field, request)
+            or is_admin(scan_report_field, request)
+        ):
+            return render(request, "mapping/scanreportvalue_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
