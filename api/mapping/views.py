@@ -591,6 +591,24 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
     serializer_class = ScanReportConceptSerializer
 
     def create(self, request, *args, **kwargs):
+        body = request.data
+        concept = ScanReportConcept.objects.filter(
+            concept=body["concept"],
+            object_id=body["object_id"],
+            content_type=body["content_type"],
+        )
+        if concept.count() > 0:
+            print("Can't add multiple concepts of the same id to the same object")
+            response = JsonResponse(
+                {
+                    "status_code": 400,
+                    "ok": False,
+                    "statusText": "Can't add multiple concepts of the same id to the same object",
+                }
+            )
+            response.status_code = 400
+            return response
+
         serializer = self.get_serializer(
             data=request.data, many=isinstance(request.data, list)
         )
@@ -950,56 +968,8 @@ class ScanReportTableListView(ListView):
         return context
 
 
-@method_decorator(login_required, name="dispatch")
-class ScanReportTableUpdateView(UpdateView):
-    model = ScanReportTable
-    fields = ["person_id", "date_event"]
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # filter so the objects can only be associated to the current scanreport table
-        scan_report_table = context["scanreporttable"]
-        qs = ScanReportField.objects.filter(
-            scan_report_table=scan_report_table
-        ).order_by("name")
-
-        for key in context["form"].fields.keys():
-            context["form"].fields[key].queryset = qs
-
-            def label_from_instance(obj):
-                return obj.name
-
-            context["form"].fields[key].label_from_instance = label_from_instance
-        return context
-
-    def get_success_url(self):
-        return "{}?search={}".format(reverse("tables"), self.object.scan_report.id)
-
-
 @login_required
-def update_scanreport_table_page(request, pk):
-    # Get the SR table
-    sr_table = ScanReportTable.objects.get(id=pk)
-    # Determine if the user can edit the form
-    can_edit = False
-    if (
-        sr_table.scan_report.author.id == request.user.id
-        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
-        or sr_table.scan_report.parent_dataset.editors.filter(
-            id=request.user.id
-        ).exists()
-        or sr_table.scan_report.parent_dataset.admins.filter(
-            id=request.user.id
-        ).exists()
-    ):
-        can_edit = True
-    # Set the page context
-    context = {"can_edit": can_edit}
-    return render(request, "mapping/scanreporttable_form.html", context=context)
-
-
-@login_required
-def update_scanreport_table_page2(request, sr, pk):
+def update_scanreport_table_page(request, sr, pk):
     # Get the SR table
     sr_table = ScanReportTable.objects.get(id=pk)
     # Determine if the user can edit the form
@@ -1055,22 +1025,6 @@ class ScanReportFieldListView(ListView):
             }
         )
 
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportFieldUpdateView(UpdateView):
-    model = ScanReportField
-    form_class = ScanReportFieldForm
-    template_name = "mapping/scanreportfield_form.html"
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("fields"), self.object.scan_report_table.id
-        )
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
         return context
 
 

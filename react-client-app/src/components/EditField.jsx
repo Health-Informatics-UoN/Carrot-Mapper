@@ -45,7 +45,7 @@ const EditField = ({ setTitle }) => {
         // use endpoint to change scan report field value
         usePatch(`/scanreportfields/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = `/fields/?search=${field.current.scan_report_table}`
+            window.location.href = "/scanreports/" + window.location.href.split("scanreports/")[1].split("/")[0] + `/tables/${field.scan_report_table}`
         })
             .catch(err => {
                 console.log(err)

@@ -79,9 +79,11 @@ const DatasetsContent = (props) => {
         }
         let dataPartners = await Promise.all(dataPartnerPromises)
         dataPartners = dataPartners[0]
-        dataPartners.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner === element.id ? { ...scanreport, data_partner: element } : scanreport);
-        });
+        if(dataPartners){
+            dataPartners.forEach((element) => {
+                scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner === element.id ? { ...scanreport, data_partner: element } : scanreport);
+            });
+        }
         // split data into active reports and archived report
         data.current = scanreports
         activeReports.current = scanreports.filter(scanreport => scanreport.hidden === false)

@@ -333,7 +333,7 @@ const MappingTbl = (props) => {
             <MappingModal isOpen={isOpen} onOpen={onOpen} onClose={onClose}>
                 <SummaryTbl values={values}
                     filters={filters} removeFilter={removeFilter} setDestinationFilter={setDestinationFilter} setSourceFilter={setSourceFilter}
-                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} />
+                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} scanReportId={scan_report_id} />
             </MappingModal>
             <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
                 <ConceptAnalysis data={data} />
@@ -381,7 +381,7 @@ const MappingTbl = (props) => {
                 :
                 <RulesTbl values={values}
                     filters={filters} removeFilter={removeFilter} setDestinationFilter={setDestinationFilter} setSourceFilter={setSourceFilter}
-                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} applyFilters={applyFilters} />
+                    destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} applyFilters={applyFilters} scanReportId={scan_report_id} />
 
             }
         </div>
