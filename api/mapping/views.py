@@ -915,24 +915,34 @@ def home(request):
 
 @login_required
 def update_scanreport_table_page(request, sr, pk):
-    # Get the SR table
-    sr_table = ScanReportTable.objects.get(id=pk)
-    # Determine if the user can edit the form
-    can_edit = False
-    if (
-        sr_table.scan_report.author.id == request.user.id
-        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
-        or sr_table.scan_report.parent_dataset.editors.filter(
-            id=request.user.id
-        ).exists()
-        or sr_table.scan_report.parent_dataset.admins.filter(
-            id=request.user.id
-        ).exists()
-    ):
-        can_edit = True
-    # Set the page context
-    context = {"can_edit": can_edit, "pk": pk}
-    return render(request, "mapping/scanreporttable_form.html", context=context)
+    try:
+        # Get the SR table
+        sr_table = ScanReportTable.objects.get(id=pk)
+        # Determine if the user can edit the form
+        can_edit = False
+        if (
+            sr_table.scan_report.author.id == request.user.id
+            or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+            or sr_table.scan_report.parent_dataset.editors.filter(
+                id=request.user.id
+            ).exists()
+            or sr_table.scan_report.parent_dataset.admins.filter(
+                id=request.user.id
+            ).exists()
+        ):
+            can_edit = True
+        # Set the page context
+        context = {"can_edit": can_edit, "pk": pk}
+        if (
+            has_viewership(sr_table, request)
+            or has_editorship(sr_table, request)
+            or is_admin(sr_table, request)
+        ):
+            return render(request, "mapping/scanreporttable_form.html", context=context)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1465,7 +1475,15 @@ def dataset_admin_page(request, pk):
     try:
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-        return render(request, "mapping/admin_dataset_form.html", args)
+
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/admin_dataset_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1477,7 +1495,14 @@ def dataset_content_page(request, pk):
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
 
-        return render(request, "mapping/datasets_content.html", args)
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/datasets_content.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1492,7 +1517,15 @@ def scanreport_admin_page(request, pk):
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
-        return render(request, "mapping/admin_scanreport_form.html", args)
+
+        if (
+            has_viewership(sr, request)
+            or has_editorship(sr, request)
+            or is_admin(sr, request)
+        ):
+            return render(request, "mapping/admin_scanreport_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1572,7 +1605,23 @@ def scanreport_values_list_page(request, sr, tbl, pk):
 
 @login_required
 def update_scanreport_field_page(request, sr, tbl, pk):
+    args = {"pk": pk}
+    try:
+        scan_report_field = ScanReportField.objects.select_related(
+            "scan_report_table", "scan_report_table__scan_report"
+        ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
 
-    # TODO: add permission check on field. Return error page if denied.
+        args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
+            scan_report_field, request
+        )
 
-    return render(request, "mapping/scanreportfield_form.html", {"pk": pk})
+        if (
+            has_viewership(scan_report_field, request)
+            or has_editorship(scan_report_field, request)
+            or is_admin(scan_report_field, request)
+        ):
+            return render(request, "mapping/scanreportfield_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
