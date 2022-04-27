@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react'
-import { Checkbox, HStack, Text, Button, Flex, Spinner, VStack, Textarea } from "@chakra-ui/react"
+import React, { useState, useEffect, useRef } from 'react'
+import { Checkbox, HStack, Link, Text, Button, Flex, Spinner, VStack, Textarea } from "@chakra-ui/react"
 import { useGet, usePatch } from '../api/values'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
+import PageHeading from './PageHeading'
 const EditField = ({ setTitle }) => {
+    const pathArray = window.location.pathname.split("/")
+    const scanReportId = pathArray[pathArray.length - 6]
+    const tableId = pathArray[pathArray.length - 4]
     const value = window.pk ? window.pk : window.location.href.split("fields/")[1].split("/")[0]
-    const [field, setField] = useState(null);
+    const field = useRef([]);
     const [isIgnore, setIsIgnore] = useState(false);
     const [passFromSource, setPassFromSource] = useState(false);
     const [descriptionColumn, setDescriptionColumn] = useState("")
     const [loadingMessage, setLoadingMessage] = useState("Loading Page")
+    const table = useRef([])
+    const scanReport = useRef([])
 
     useEffect(async () => {
+        // get scan report
+        scanReport.current = await useGet(`/scanreports/${scanReportId}/`)
+        // get scan report table
+        table.current = await useGet(`/scanreporttables/${tableId}/`)
         // get scan report field to use to set initial values
         const scanreportfield = await useGet(`/scanreportfields/${value}/`)
+        console.log(scanreportfield)
         // set initial values
         setLoadingMessage(null)
-        setTitle("Update Field - " + scanreportfield.name)
-        setField(scanreportfield)
+        setTitle(null)
+        field.current = scanreportfield
         setIsIgnore(scanreportfield.is_ignore)
         setPassFromSource(scanreportfield.pass_from_source)
         setDescriptionColumn(scanreportfield.description_column)
@@ -52,6 +64,15 @@ const EditField = ({ setTitle }) => {
     }
     return (
         <div>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReport.current.id}`}>{scanReport.current.dataset}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}`}>{table.current.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}`}>{field.current.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}/update`}>Update</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Update Field - " + field.current.name} />
             <VStack mt="20px" align="start">
                 <Checkbox isChecked={isIgnore} onChange={(e) => setIsIgnore(e.target.checked)}>Is ignore</Checkbox>
                 <Checkbox isChecked={passFromSource} onChange={(e) => setPassFromSource(e.target.checked)}>Pass from source</Checkbox>

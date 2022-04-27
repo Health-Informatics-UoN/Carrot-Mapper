@@ -259,15 +259,15 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Mapping Rules":
-                return <MappingTbl />
+                return <MappingTbl setTitle={setTitle} />
             case "Fields":
-                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} />
+                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Tables":
-                return <TablesTbl />
+                return <TablesTbl setTitle={setTitle} />
             case "Update Table":
-                return <EditTable />
+                return <EditTable setTitle={setTitle} />
             case "Update Field":
                 return <EditField setTitle={setTitle} />
             case "New Scan Report":

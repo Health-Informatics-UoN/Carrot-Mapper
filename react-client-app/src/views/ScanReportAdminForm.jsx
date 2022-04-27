@@ -8,6 +8,7 @@ import CCMultiSelectInput from '../components/CCMultiSelectInput'
 import CCSelectInput from '../components/CCSelectInput'
 import CCSwitchInput from '../components/CCSwitchInput'
 import CCTextInput from '../components/CCTextInput'
+import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import { useGet, usePatch, useDelete } from '../api/values'
 import { arraysEqual } from '../utils/arrayFuncs'
 
@@ -266,6 +267,12 @@ const ScanReportAdminForm = ({ setTitle }) => {
 
     return (
         <Container maxW='container.xl'>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}`}>{scanReport.dataset}</Link>
+                <Link href={`/scanreports/${scanReportId}/details`}>Details</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

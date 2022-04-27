@@ -142,7 +142,7 @@ urlpatterns = [
     ),
     # Dataset views
     path(
-        "datasets/",
+        "datasets",
         views.dataset_list_page,
         name="datasets",
     ),
@@ -191,7 +191,7 @@ urlpatterns = [
     path("tables/", views.ScanReportTableListView.as_view(), name="tables"),
     path("fields/", views.ScanReportFieldListView.as_view(), name="fields"),
     path("values/", views.ScanReportValueListView.as_view(), name="values"),
-    path("scanreports/", views.ScanReportListView.as_view(), name="scan-report-list"),
+    path("scanreports", views.ScanReportListView.as_view(), name="scan-report-list"),
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableListView.as_view(),
@@ -208,7 +208,7 @@ urlpatterns = [
         name="tables-structural-mapping-filter-lvl2",
     ),
     path(
-        "scanreports/create/",
+        "scanreports/create",
         views.ScanReportFormView.as_view(),
         name="scan-report-form",
     ),

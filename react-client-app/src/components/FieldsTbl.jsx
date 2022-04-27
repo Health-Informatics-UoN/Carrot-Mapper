@@ -24,13 +24,17 @@ import { Formik, Form, } from 'formik'
 import { getScanReportTable, getScanReportFieldValues, useGet } from '../api/values'
 import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
+import PageHeading from './PageHeading'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 
 const FieldsTbl = (props) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
     const scanReportId = pathArray[pathArray.length - 3]
     // const scanReportTableId = pathArray[pathArray.length - 1]
-    const scanReportTableId = window.pk ? window.pk : parseInt(new URLSearchParams(window.location.search).get("search"))
+    // const scanReportTableId = window.pk ? window.pk : parseInt(new URLSearchParams(window.location.search).get("search"))
+    const scanReportTableId = parseInt(new URLSearchParams(window.location.search).get("search")) ?
+        parseInt(new URLSearchParams(window.location.search).get("search")) : pathArray[pathArray.length - 1]
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [values, setValues] = useState([]);
@@ -39,9 +43,11 @@ const FieldsTbl = (props) => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const valuesRef = useRef([]);
     const scanReportTable = useRef([]);
+    const scanReportName = useRef([]);
     const [mappingButtonDisabled, setMappingButtonDisabled] = useState(true);
 
     useEffect(() => {
+        props.setTitle(null)
         // run on initial render
         // Check if user can see SR table
         useGet(`/scanreporttables/${scanReportTableId}`).then(
@@ -56,6 +62,7 @@ const FieldsTbl = (props) => {
                     scanReportTable.current = table
                     setMappingButtonDisabled(false)
                 })
+                useGet(`/scanreports/${scanReportId}`).then(sr => scanReportName.current = sr.dataset)
             }
         ).catch(
             err => {
@@ -107,6 +114,13 @@ const FieldsTbl = (props) => {
     else {
         return (
             <div>
+                <CCBreadcrumbBar>
+                    <Link href={"/"}>Home</Link>
+                    <Link href={"/scanreports"}>Scan Reports</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}`}>{scanReportName.current}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}`}>{scanReportTable.current.name}</Link>
+                </CCBreadcrumbBar>
+                <PageHeading text={"Fields"} />
                 {isOpen &&
                     <ScaleFade initialScale={0.9} in={isOpen}>
                         <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

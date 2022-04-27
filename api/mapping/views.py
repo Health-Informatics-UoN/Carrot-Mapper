@@ -986,7 +986,7 @@ def update_scanreport_table_page(request, sr, pk):
     ):
         can_edit = True
     # Set the page context
-    context = {"object": sr_table, "can_edit": can_edit, "pk": pk}
+    context = {"can_edit": can_edit, "pk": pk}
     return render(request, "mapping/scanreporttable_form.html", context=context)
 
 
@@ -1861,11 +1861,10 @@ def dataset_list_page(request):
 @login_required
 def dataset_admin_page(request, pk):
     args = {}
-    if ds := Dataset.objects.get(id=pk):
+    try:
+        ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-        args["dataset_name"] = ds.name
-        args["dataset_id"] = pk
-    else:
+    except ObjectDoesNotExist:
         args["is_admin"] = False
 
     return render(request, "mapping/admin_dataset_form.html", args)
@@ -1885,15 +1884,14 @@ def dataset_content_page(request, pk):
 @login_required
 def scanreport_admin_page(request, pk):
     args = {}
-    if sr := ScanReport.objects.get(id=pk):
+    try:
+        sr = ScanReport.objects.get(id=pk)
         is_admin = (
             sr.author.id == request.user.id
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
         args["is_admin"] = is_admin
-        args["sr_id"] = pk
-        args["sr_dataset"] = sr.dataset
-    else:
+    except ObjectDoesNotExist:
         args["is_admin"] = False
 
     return render(request, "mapping/admin_scanreport_form.html", args)
@@ -1905,10 +1903,7 @@ def scanreport_table_list_page(request, pk):
 
     try:
         scan_report = ScanReport.objects.get(id=pk)
-        scan_report_name = scan_report.dataset
 
-        args["scan_report"] = scan_report
-        args["scan_report_name"] = scan_report_name
         args["can_edit"] = has_editorship(scan_report, request) or is_admin(
             scan_report, request
         )
@@ -1927,8 +1922,6 @@ def scanreport_fields_list_page(request, sr, pk):
         )
 
         args["pk"] = pk
-        args["scan_report"] = scan_report_table.scan_report
-        args["scan_report_table"] = scan_report_table
         args["can_edit"] = has_editorship(scan_report_table, request) or is_admin(
             scan_report_table, request
         )
@@ -1946,13 +1939,8 @@ def scanreport_values_list_page(request, sr, tbl, pk):
         scan_report_field = ScanReportField.objects.select_related(
             "scan_report_table", "scan_report_table__scan_report"
         ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
-        scan_report_table = scan_report_field.scan_report_table
-        scan_report = scan_report_field.scan_report_table.scan_report
 
         args["pk"] = pk
-        args["scan_report"] = scan_report
-        args["scan_report_field"] = scan_report_field
-        args["scan_report_table"] = scan_report_table
         args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
             scan_report_field, request
         )
@@ -1964,21 +1952,7 @@ def scanreport_values_list_page(request, sr, tbl, pk):
 
 @login_required
 def update_scanreport_field_page(request, sr, tbl, pk):
-    args = {}
-    scan_report = None
-    scan_report_field = None
-    scan_report_table = None
-    scan_report_value = None
 
-    scan_report_value = ScanReportValue.objects.get(id=pk)
-    scan_report_field = scan_report_value.scan_report_field
-    scan_report_table = scan_report_field.scan_report_table
-    scan_report = ScanReport.objects.get(id=sr)
+    # TODO: add permission check on field. Return error page if denied.
 
-    args["pk"] = pk
-    args["scan_report"] = scan_report
-    args["scan_report_field"] = scan_report_field
-    args["scan_report_table"] = scan_report_table
-    args["scan_report_value"] = scan_report_value
-
-    return render(request, "mapping/scanreportfield_form.html", args)
+    return render(request, "mapping/scanreportfield_form.html", {"pk": pk})

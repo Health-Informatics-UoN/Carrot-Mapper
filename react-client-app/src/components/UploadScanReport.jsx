@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import PageHeading from './PageHeading'
 import {
     Select, Box, Text, Button, Flex, Spinner, Container, Input, Tooltip, CloseButton, ScaleFade, useDisclosure, Switch,
-    FormControl, FormLabel, FormErrorMessage
+    FormControl, FormLabel, FormErrorMessage, Link
 } from "@chakra-ui/react"
 import { useGet, usePost, postForm, usePatch } from '../api/values'
 import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import CCMultiSelectInput from './CCMultiSelectInput'
 
 const UploadScanReport = ({ setTitle }) => {
@@ -338,6 +339,11 @@ const UploadScanReport = ({ setTitle }) => {
     }
     return (
         <Container maxW='container.xl'>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/create`}>Create</Link>
+            </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
                     <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />

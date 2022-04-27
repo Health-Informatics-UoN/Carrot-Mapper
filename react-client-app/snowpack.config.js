@@ -27,4 +27,9 @@ module.exports = {
     out: '/api/static/javascript/react' ,
     //watch: true
   },
+  exclude: [
+    "**/node_modules/**/*", // from the default at https://www.snowpack.dev/reference/configuration
+    "**/.stories.js",
+    "**/stories/**/*"
+  ]
 };
