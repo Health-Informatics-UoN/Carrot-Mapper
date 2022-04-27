@@ -1214,25 +1214,29 @@ class StructuralMappingTableListView(ListView):
             all_associated_concepts = find_existing_scan_report_concepts(
                 request, self.kwargs.get("pk")
             )
-            # save all of them
-            nconcepts = 0
-            nbadconcepts = 0
-            for concept in all_associated_concepts:
-                if save_mapping_rules(request, concept):
-                    nconcepts += 1
-                else:
-                    nbadconcepts += 1
+            print (all_associated_concepts)
+            data = [str(x) for x in all_associated_concepts]
+            print (data)
+            return HttpResponse(json.dumps(data), content_type='application/json')
+            # # save all of them
+            # nconcepts = 0
+            # nbadconcepts = 0
+            # for concept in all_associated_concepts:
+            #     if save_mapping_rules(request, concept):
+            #         nconcepts += 1
+            #     else:
+            #         nbadconcepts += 1
 
-            if nbadconcepts == 0:
-                messages.success(
-                    request, f"Found and added rules for {nconcepts} existing concepts"
-                )
-            else:
-                messages.success(
-                    request,
-                    f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
-                )
-            return redirect(request.path)
+            # if nbadconcepts == 0:
+            #     messages.success(
+            #         request, f"Found and added rules for {nconcepts} existing concepts"
+            #     )
+            # else:
+            #     messages.success(
+            #         request,
+            #         f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
+            #     )
+            # return redirect(request.path)
 
         elif (
             request.POST.get("get_svg") is not None

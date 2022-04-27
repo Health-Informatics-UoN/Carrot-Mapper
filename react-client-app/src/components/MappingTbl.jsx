@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react"
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
-import { useGet, usePost } from '../api/values'
+import { useGet, usePost, saveMappingRules } from '../api/values'
 import ConceptTag from './ConceptTag'
 import MappingModal from './MappingModal'
 import AnalysisModal from './AnalysisModal'
@@ -100,20 +100,88 @@ const MappingTbl = () => {
     }, [mapDiagram]);
 
 
-    // call refresh rules function from django then get new data
-    const refreshRules = async () => {
-        setLoading(true)
-        setLoadingMessage("Refreshing rules")
-        try {
-            await usePost(window.location.href, { 'refresh_rules': true }, false)
-            setLoadingMessage("Rules Refreshed. Getting Mapping Rules")
-            window.location.reload(true)
-        }
-        catch (err) {
-            console.log(err)
-        }
+      const refreshRules = async () => {
+	    setLoading(true);
+	    setLoadingMessage("Refreshing rules");
+	    
+	    //use the post to trigger:
+	    // - deleteing existing rules
+	    // - returning a list of the scanreportconcepts IDs for this scan report
+	    //(see views.py and  request.POST.get("refresh_rules") )
+	    usePost(window.location.href, {refresh_rules: true}, false)
+		  .then( async (res) =>
+			 {
+			       setLoadingMessage("Rules Refreshed. Getting Mapping Rules");
+			       const scan_report_concept_ids = res.data;
+			       //loop over all the scan_report_concepts that have been found
+			       //potential javascript n00b with async/promises
+			       const promises = scan_report_concept_ids.map(async (x,i) =>  {
+		          	     //get the actual scan_report concept from the ID
+				     //this is hacky and could be more efficient
+				     //get the actualy concept
+				     const scan_report_concept = await useGet(`/scanreportconcepts/${x}`);
+				     //get the object_id
+				     const object_id = scan_report_concept.object_id;
+				     //get the content_type
+				     const content_type = scan_report_concept.content_type;
+				     
+				     let scan_report_value = null;
+				     let scan_report_field = null;
+				     if(content_type==17){ //is a value
+					   scan_report_value = await useGet(`/scanreportvalues/${object_id}`);
+					   scan_report_field = await useGet(`/scanreportfields/${scan_report_value.scan_report_field}`);
+				     }
+				     else{ // (15) - is a field
+					   scan_report_field = await useGet(`/scanreportfields/${object_id}`);
+					   //scan_report_value can be null for the saveMappingRules() function
+				     }
+				     //now need to get the table for saveMappingRules()
+				     const scan_report_table = await useGet(`/scanreporttables/${scan_report_field.scan_report_table}`);
+				     
+				     //saveMappingRules() needs to have the concept attached to the scan_report_concept object
+				     //i.e. needs the details of the concept, not just the ID
+				     const conceptId = scan_report_concept.concept;
+				     const concept = await useGet(`/omop/concepts/${conceptId}`);
+				     //add the retrieved concept
+				     scan_report_concept.concept = concept;
 
-    }
+				     //!!warning!!
+				     // - this isnt handled well in the react code
+				     // need to alert or error report about this!
+				     // this happens if a concept has been created,
+				     // and since that creation, the person_id and date event have been removed (or changed)
+				     if (!scan_report_table.person_id || !scan_report_table.date_event) {
+					   let message;
+					   if (!scan_report_table.person_id && !scan_report_table.date_event) {
+						 message = "Please set the person_id and a date_event on the table ";
+					   } else if (!scan_report_table.person_id) {
+						 message = "Please set the person_id on the table ";
+					   } else {
+						 message = "Please set the date_event on the table ";
+					   }
+					   console.log(message);
+					   setLoadingMessage(message);
+					   /*setAlert({
+					     hidden: false,
+					     status: "error",
+					     title: message + scan_report_table.name + " before you add a concept.",
+					     description: "Unsuccessful"
+					     });*/
+				     }
+				     else{
+					   //otherwise we should be good to create the rules
+					   await saveMappingRules(scan_report_concept,scan_report_value,scan_report_table);
+				     }
+				     //console.log(`done with loop ${i}`)
+			       });//end of promises
+			       await Promise.all(promises);
+			       //refresh when done
+			       window.location.reload(true);
+			 })
+		  .catch( (err) =>  console.log(err));
+      }
+
+      
     // download map diagram
     const downloadImage = (img) => {
         setDownloadingImg(true);
