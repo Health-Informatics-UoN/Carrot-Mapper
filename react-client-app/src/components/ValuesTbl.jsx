@@ -25,6 +25,7 @@ import ConceptTag from './ConceptTag'
 import ToastAlert from './ToastAlert'
 import PageHeading from './PageHeading'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
+import Error404 from '../views/Error404'
 
 const ValuesTbl = (props) => {
     // get value to use in query from page url
@@ -63,9 +64,7 @@ const ValuesTbl = (props) => {
         ).catch(
             err => {
                 // If user can't see SR field, show an error message
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoading(false)
             }
         )
@@ -83,11 +82,7 @@ const ValuesTbl = (props) => {
 
     if (error) {
         //Render Loading State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={props.setTitle} />
     }
 
     if (scanReports.length < 1) {

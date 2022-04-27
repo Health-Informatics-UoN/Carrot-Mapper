@@ -11,6 +11,7 @@ import CCTextInput from '../components/CCTextInput'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import { useGet, usePatch, useDelete } from '../api/values'
 import { arraysEqual } from '../utils/arrayFuncs'
+import Error404 from './Error404'
 
 
 const ScanReportAdminForm = ({ setTitle }) => {
@@ -95,9 +96,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 )
                 setLoadingMessage(null)  // stop loading when finished
             } catch (error) {
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoadingMessage(null)
             }
 
@@ -246,11 +245,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={setTitle} />
     }
 
     if (loadingMessage) {
