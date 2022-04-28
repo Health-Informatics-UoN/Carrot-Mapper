@@ -1,28 +1,34 @@
 import React, { useState } from 'react'
 import { ChakraProvider } from "@chakra-ui/react"
 import styles from './styles'
-import DataTbl from './components/DataTbl'
+import DatasetAdminForm from './components/DatasetAdminForm'
+import ValuesTbl from './components/ValuesTbl'
 import PageHeading from './components/PageHeading'
 import MappingTbl from './components/MappingTbl';
 import FieldsTbl from './components/FieldsTbl';
 import TablesTbl from './components/TablesTbl';
 import EditTable from './components/EditTable';
 import EditField from './components/EditField';
+import Error404 from './views/Error404'
 import ScanReportTbl from './components/ScanReportTbl';
+import ScanReportAdminForm from './views/ScanReportAdminForm'
 import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
+import UploadScanReport from './components/UploadScanReport'
+import DatasetTbl from './views/DatasetTbl'
+import DatasetsContent from './views/DatasetsContent'
 const App = ({ page }) => {
 
-    const handleDeleteConcept = (id, conceptId,valuesRef,setValues,setAlert,onOpen)=>{
+    const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {
         valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: false } : value)
         setValues(valuesRef.current)
         //DEETE Request to API
-        useDelete(`scanreportconcepts/${conceptId}`)
+        useDelete(`/scanreportconcepts/${conceptId}`)
             .then(function (response) {
                 //Re-fetch the concepts for that particular field
                 getScanReportConcepts(id).then(async scanreportconcepts => {
                     if (scanreportconcepts.length > 0) {
-                        
+
 
                         const conceptIds = scanreportconcepts.map(value => value.concept)
                         useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds.join()}`)
@@ -140,7 +146,7 @@ const App = ({ page }) => {
                             hidden: false,
                             status: 'error',
                             title: "Have not yet implemented concept",
-                            description: `Concept ${response.concept_id} (${response.concept_name}) is from table '${destination_field.table}' which is not implemented yet.`
+                            description: `Concept ${response.concept_id} (${response.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`
                         })
                         onOpen()
                         return
@@ -151,7 +157,7 @@ const App = ({ page }) => {
                         concept: concept,
                         object_id: id,
                         content_type: content_type,
-                        creation_type:"M",
+                        creation_type: "M",
                     }
                     usePost(`/scanreportconcepts/`, data)
                         .then(function (response) {
@@ -214,15 +220,18 @@ const App = ({ page }) => {
                             // if an error occurs while trying to add the concept, return to original state
                             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                             setValues(valuesRef.current)
-
-                            if (typeof (error) !== 'undefined' && error.response != null) {
-                                setAlert({
-                                    status: 'error',
-                                    title: 'Unable to link Concept id to value',
-                                    description: 'Response: ' + error.response.status + ' ' + error.response.statusText
-                                })
-                                onOpen()
-
+                            let description = "Response: " + error.response.status + " " + error.response.statusText
+                            if(error.response&& error.response.data){
+                              const body = error.response.data
+                              description = "Response: " + body.status_code + " " + body.statusText
+                            }
+                            if (typeof error !== "undefined" && error.response != null) {
+                              setAlert({
+                                status: "error",
+                                title: "Unable to link Concept id to value",
+                                description: description
+                              });
+                              onOpen();
                             }
                         })
 
@@ -250,19 +259,31 @@ const App = ({ page }) => {
             case "Home":
                 return <Home />
             case "Values":
-                return <DataTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept}/>
+                return <ValuesTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Mapping Rules":
-                return <MappingTbl />
+                return <MappingTbl setTitle={setTitle} />
             case "Fields":
-                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept}/>
+                return <FieldsTbl handleDelete={handleDeleteConcept} handleSubmit={handleAddConcept} setTitle={setTitle} />
             case "Tables":
-                return <TablesTbl />
+                return <TablesTbl setTitle={setTitle} />
             case "Update Table":
-                return <EditTable />
+                return <EditTable setTitle={setTitle} />
             case "Update Field":
-                return <EditField setTitle={setTitle}/>
+                return <EditField setTitle={setTitle} />
+            case "New Scan Report":
+                return <UploadScanReport setTitle={setTitle} />
+            case "Dataset Admin":
+                return <DatasetAdminForm setTitle={setTitle} />
+            case "Dataset Content":
+                return <DatasetsContent setTitle={setTitle} />
+            case "Scan Report Admin":
+                return <ScanReportAdminForm setTitle={setTitle} />
+            case "Dataset List":
+                return <DatasetTbl setTitle={setTitle} />
+            case "404":
+                return <Error404 setTitle={setTitle} />
             default:
-                return <ScanReportTbl setTitle={setTitle}/>
+                return <ScanReportTbl setTitle={setTitle} />
         }
     }
     return (

@@ -4,26 +4,23 @@
 
 
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-            reports</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ object.scan_report.id }}">
-            {{ object.scan_report.data_partner.name }} - {{ object.scan_report.dataset }}</a></li>
-        <li class="breadcrumb-item">{{ object.name }}</li>
-    </ol>
-</nav>
-
 <div>
     <!-- Loads in React Components from index.js -->
     <div id='root'></div>
-    <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
+    <script>
+        var canEdit = "{{can_edit}}" === "True" ? true : false
+        var pk = "{{pk}}";
+        var s = document.createElement("script");
+        s.type = "module";
+		s.innerHTML = null;
+		if(pk){
+            s.src = "../../../../../static/javascript/react/src/editTable.js";
+		}
+		else{
+            s.src = "../../../static/javascript/react/src/editTable.js";
+		}
+		document.getElementsByTagName('head')[0].appendChild(s)
     </script>
-    <script type="module" src="../../../static/javascript/react/src/editTable.js"></script>
-    
 </div>
 
 {% endblock %}

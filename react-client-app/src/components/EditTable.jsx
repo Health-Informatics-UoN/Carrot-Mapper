@@ -1,21 +1,32 @@
-import React, { useState, useEffect } from 'react'
-import { Select, HStack, Text, Button, Flex, Spinner } from "@chakra-ui/react"
-import { useGet, usePatch, api } from '../api/values'
-const EditTable = () => {
-    const value = window.location.href.split("tables/")[1].split("/")[0]
+import React, { useState, useEffect, useRef } from 'react'
+import { Button, Flex, Link, Spinner, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import CCBreadcrumbBar from './CCBreadcrumbBar'
+import CCSelectInput from './CCSelectInput'
+import ToastAlert from '../components/ToastAlert'
+import PageHeading from './PageHeading'
+import { useGet, usePatch } from '../api/values'
+const EditTable = (props) => {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
+    const value = window.pk ? window.pk : window.location.href.split("tables/")[1].split("/")[0]
     const [fields, setFields] = useState(null);
     const [table, setTable] = useState(null);
     const [selectedPerson, setPerson] = useState("------");
     const [selectedDate, setDate] = useState("------");
     const [loadingMessage, setLoadingMessage] = useState(null)
+    const canEdit = window.canEdit
+    const scanReport = useRef([]);
 
     useEffect(async () => {
+        props.setTitle(null)
         // get scan report table to use to get tables 
         const scanreporttable = await useGet(`/scanreporttables/${value}/`)
+        // get scan report for name and id for breadcrumbs
+        scanReport.current = await useGet(`/scanreports/${scanreporttable.scan_report}`)
         // get scan report tables for the scan report the table belongs to
-        const tablesFilter = useGet(`/scanreporttablesfilter/?scan_report=${scanreporttable.scan_report}`)
+        const tablesFilter = useGet(`/scanreporttables/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
-        const fieldsFilter = useGet(`/scanreportfieldsfilter/?scan_report_table=${value}&fields=name,id`)
+        const fieldsFilter = useGet(`/scanreportfields/?scan_report_table=${value}&fields=name,id`)
         const promises = await Promise.all([tablesFilter, fieldsFilter])
         let options = promises[1]
         let tables = promises[0]
@@ -49,12 +60,18 @@ const EditTable = () => {
             person_id: person_id.id,
             date_event: date_event.id
         }
-        usePatch(`scanreporttables/${value}/`, data).then((res) => {
+        usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = `${window.u}tables/?search=${table.scan_report}`
+            window.location.href = `/scanreports/${table.scan_report}`
         })
             .catch(err => {
-                console.log(err)
+                setAlert({
+                    hidden: false,
+                    status: 'error',
+                    title: 'Could not update scan report table',
+                    description: err.statusText ? err.statusText : ""
+                })
+                onOpen()
             })
     }
     if (!table || !fields || loadingMessage) {
@@ -70,24 +87,42 @@ const EditTable = () => {
     }
     return (
         <div>
-            <HStack>
-                <Text w="200px">person_id:</Text>
-                <Select value={selectedPerson} onChange={(option) => setPerson(option.target.value)
-                } >
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
-            <HStack>
-                <Text w="200px">date_event:</Text>
-                <Select value={selectedDate} onChange={(option) => setDate(option.target.value)}>
-                    {fields.map((item, index) =>
-                        <option key={index} value={item.name}>{item.name}</option>
-                    )}
-                </Select>
-            </HStack>
-            <Button bgColor="#3db28c" mt="10px" onClick={updateTable}>Update {table.name} </Button>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReport.current.id}`}>{scanReport.current.dataset}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}`}>{table.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}/update`}>Update</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Update Table"} />
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
+            <CCSelectInput
+                id={"table-person-id"}
+                label={"Person ID"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setPerson}
+                isDisabled={!canEdit}
+            />
+            <CCSelectInput
+                id={"table-date-event"}
+                label={"Date Event"}
+                selectOptions={fields.map((item) => item.name)}
+                handleInput={setDate}
+                isDisabled={!canEdit}
+            />
+            {canEdit &&
+                <Button
+                    bgColor="#3db28c"
+                    mt="10px"
+                    onClick={updateTable}
+                >
+                    Update {table.name}
+                </Button>
+            }
         </div>
     );
 }

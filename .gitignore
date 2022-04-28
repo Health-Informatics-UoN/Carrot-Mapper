@@ -10,3 +10,5 @@ api/static/javascript/react
 **/migrations
 */__pycache__/*
 **/pgdata/**
+.vscode
+api/staticfiles

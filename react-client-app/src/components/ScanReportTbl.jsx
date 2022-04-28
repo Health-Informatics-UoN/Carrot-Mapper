@@ -1,68 +1,87 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text } from "@chakra-ui/react"
+import {
+    Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td,
+    Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade,
+} from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from './PageHeading'
 import ConceptTag from './ConceptTag'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import ToastAlert from './ToastAlert'
 
 const ScanReportTbl = (props) => {
     const active = useRef(true)
     const data = useRef(null);
     const activeReports = useRef(null);
     const archivedReports = useRef(null);
-    const [currentUser, setCurrentUser] = useState(null);
     const [displayedData, setDisplayedData] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Scan Reports")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [datasetFilter, setDatasetFilter] = useState("All");
+    const [nameFilter, setNameFilter] = useState("All");
     const [authorFilter, setAuthorFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
     const [title, setTitle] = useState("Scan Reports Active");
     const [expanded, setExpanded] = useState(false);
     const statuses = JSON.parse(window.status).map(status => status.id);
+    const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
+    const { isOpen, onOpen, onClose } = useDisclosure()
 
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
-        setCurrentUser(window.currentUser)
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         // get scan reports and sort by id
         let scanreports = await useGet(`/scanreports/`)
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // for each scan report use the data partner and author ids to get name to display
         // get list of unique data partner and auther ids
-        const dataPartnerObject = {}
-        const authorObject = {}
-        scanreports.map(scanreport => {
-            dataPartnerObject[scanreport.data_partner] = true
-            authorObject[scanreport.author] = true
-            const created_at = {}
-            created_at.created_at = scanreport.created_at
-            created_at.displayString = moment(scanreport.created_at.toString()).format('MMM. DD, YYYY, h:mm a')
-            scanreport.created_at = created_at
-        })
-        // make batch queries with author ids and data partner ids
-        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject))
+        const authorObject = {};
+        const datasetObject = {};
+        scanreports.map((scanreport) => {
+            authorObject[scanreport.author] = true;
+            datasetObject[scanreport.parent_dataset] = true;
+            const created_at = {};
+            created_at.created_at = scanreport.created_at;
+            created_at.displayString = moment(scanreport.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
+            scanreport.created_at = created_at;
+        });
+
         const authorIds = chunkIds(Object.keys(authorObject))
-        const dataPartnerPromises = []
-        const authorPromises = []
-        for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`))
-        }
+        const datasetIds = chunkIds(Object.keys(datasetObject))
+        const authorPromises = [];
+        const datasetPromises = [];
         for (let i = 0; i < authorIds.length; i++) {
-            authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`))
+            authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
         }
-        const promises = await Promise.all([Promise.all(dataPartnerPromises), Promise.all(authorPromises)])
-        const dataPartners = [].concat.apply([], promises[0])
-        const authors = [].concat.apply([], promises[1])
-        // map data partners and authors to their scan reports
-        dataPartners.forEach(element => {
-            scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
-        })
-        authors.forEach(element => {
-            scanreports = scanreports.map(scanreport => scanreport.author == element.id ? { ...scanreport, author: element } : scanreport)
-        })
+        for (let i = 0; i < datasetIds.length; i++) {
+            datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
+        }
+        const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
+        const authors = [].concat.apply([], promises[0]);
+        const datasets = [].concat.apply([], promises[1]);
+        authors.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.author == element.id ? { ...scanreport, author: element } : scanreport);
+        });
+        datasets.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset == element.id ? { ...scanreport, parent_dataset: element } : scanreport);
+        });
+        const dataPartnerObject = {};
+        datasets.map((dataset) => {
+            dataPartnerObject[dataset.data_partner] = true;
+        });
+        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
+        const dataPartnerPromises = [];
+        for (let i = 0; i < dataPartnerIds.length; i++) {
+            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
+        }
+        let dataPartners = await Promise.all(dataPartnerPromises)
+        dataPartners = dataPartners[0]
+        dataPartners.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport);
+        });
         // split data into active reports and archived report
         data.current = scanreports
         activeReports.current = scanreports.filter(scanreport => scanreport.hidden == false)
@@ -86,15 +105,28 @@ const ScanReportTbl = (props) => {
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
-    const activateOrArchiveReport = (id, theIndicator) => {
+    const activateOrArchiveReport = async (id, theIndicator) => {
         setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: true } : scanreport))
-        data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
-        const patchData = { hidden: theIndicator }
-        usePatch(`scanreports/${id}/`, patchData).then(res => {
+        try {
+            const patchData = { hidden: theIndicator }
+            const res = await usePatch(`/scanreports/${id}/`, patchData)
+            // only change the status after the patch has completed
+            data.current = data.current.map(scanreport => scanreport.id == id ? { ...scanreport, hidden: theIndicator } : scanreport)
+
             activeReports.current = data.current.filter(scanreport => scanreport.hidden == false)
             archivedReports.current = data.current.filter(scanreport => scanreport.hidden == true)
             active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current)
-        })
+        }
+        catch (err) {
+            setAlert({
+                status: 'error',
+                title: 'Unable to archive scanreport ' + id,
+                description: ""
+            })
+            onOpen()
+            setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
+        }
+
     }
     // show active scan reports and change url when 'Active Reports' button is pressed
     const goToActive = () => {
@@ -125,7 +157,10 @@ const ScanReportTbl = (props) => {
             newData = newData.filter(scanreport => scanreport.data_partner.name == datapartnerFilter)
         }
         if (datasetFilter != "All") {
-            newData = newData.filter(scanreport => scanreport.dataset == datasetFilter)
+            newData = newData.filter(scanreport => scanreport.parent_dataset.name == datasetFilter)
+        }
+        if (nameFilter != "All") {
+            newData = newData.filter(scanreport => scanreport.dataset == nameFilter)
         }
         if (statusFilter != "All") {
             newData = newData.filter(scanreport => scanreport.status == statusFilter)
@@ -135,11 +170,14 @@ const ScanReportTbl = (props) => {
 
     // remove a filter on s certain column by checking the tags column name. called inside concept tag
     const removeFilter = (a, b) => {
-        if (a.includes("Added By")) {
+        if (a.includes("Author")) {
             setAuthorFilter("All")
         }
         if (a.includes("Dataset")) {
             setDatasetFilter("All")
+        }
+        if (a.includes("Name")) {
+            setNameFilter("All")
         }
         if (a.includes("Data Partner")) {
             setDataPartnerFilter("All")
@@ -161,7 +199,7 @@ const ScanReportTbl = (props) => {
         activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
         archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
         active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        usePatch(`scanreports/${id}/`, patchData).then((res) => {
+        usePatch(`/scanreports/${id}/`, patchData).then((res) => {
             data.current = data.current.map((item) => item.id == id ? { ...item, status, statusLoading: false } : item);
             activeReports.current = data.current.filter((scanreport) => scanreport.hidden == false);
             archivedReports.current = data.current.filter((scanreport) => scanreport.hidden == true);
@@ -223,16 +261,25 @@ const ScanReportTbl = (props) => {
     }
     return (
         <div>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+            </CCBreadcrumbBar>
+            {isOpen &&
+                <ScaleFade initialScale={0.9} in={isOpen}>
+                    <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
+                </ScaleFade>
+            }
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
+            <Link href="/scanreports/create"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
-                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Added By -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
+                {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Author -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
                     if (filter.filter == "All") {
                         return null
                     }
@@ -261,14 +308,23 @@ const ScanReportTbl = (props) => {
                         </Th>
                         <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Dataset" readOnly onChange={(option) => setDatasetFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Dataset</option>
+                            {[...[...new Set(displayedData.map(data => data.parent_dataset.name))]].sort((a, b) => a.localeCompare(b))
+                                .map((item, index) =>
+                                    <option key={index} value={item}>{item}</option>
+                                )}
+                        </Select></Th>
+
+                        <Th><Select minW="90px" style={{ fontWeight: "bold" }} variant="unstyled" value="Name" readOnly onChange={(option) => setNameFilter(option.target.value)}>
+                            <option style={{ fontWeight: "bold" }} disabled>Name</option>
                             {[...[...new Set(displayedData.map(data => data.dataset))]].sort((a, b) => a.localeCompare(b))
                                 .map((item, index) =>
                                     <option key={index} value={item}>{item}</option>
                                 )}
                         </Select></Th>
+
                         <Th >
-                            <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Added by" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
-                                <option style={{ fontWeight: "bold" }} disabled>Added by</option>
+                            <Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Author" readOnly onChange={(option) => setAuthorFilter(option.target.value)}>
+                                <option style={{ fontWeight: "bold" }} disabled>Author</option>
                                 {[...[...new Set(displayedData.map(data => data.author.username))]].sort((a, b) => a.localeCompare(b))
                                     .map((item, index) =>
                                         <option key={index} value={item}>{item}</option>
@@ -276,6 +332,7 @@ const ScanReportTbl = (props) => {
                             </Select>
                         </Th>
                         <Th style={{ fontSize: "16px", textTransform: "none" }}>Date</Th>
+                        <Th></Th>
                         <Th></Th>
                         <Th><Select minW="110px" style={{ fontWeight: "bold" }} variant="unstyled" value="Status" readOnly onChange={(option) => setStatusFilter(option.target.value)}>
                             <option style={{ fontWeight: "bold" }} disabled>Status</option>
@@ -310,15 +367,19 @@ const ScanReportTbl = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.id}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.data_partner.name}</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + item.id}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id}>{item.parent_dataset.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
-                                <Td minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
-                                <Td>
+                                <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
+                                <Td >
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
                                 </Td>
-                                <Td>
+                                <Td >
+                                    <Link href={"/scanreports/" + item.id + "/details"}><Button variant="blue">Details</Button></Link>
+                                </Td>
+                                <Td >
                                     {item.statusLoading == true ?
                                         <Flex padding="30px">
                                             <Spinner />
@@ -332,7 +393,7 @@ const ScanReportTbl = (props) => {
                                         </Select>
                                     }
                                 </Td>
-                                <Td>
+                                <Td >
                                     <Link href={"/scanreports/" + item.id + "/assertions/"}><Button variant="green">Assertions</Button></Link>
                                 </Td>
                                 <Td textAlign="center">
@@ -356,9 +417,9 @@ const ScanReportTbl = (props) => {
                                 </Td>
                                 {expanded &&
                                     <>
-                                        <Td>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
-                                        <Td>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
-                                        <Td>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreporttable_count != undefined ? item.scanreporttable_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportfield_count != undefined ? item.scanreportfield_count : "counting"}</Td>
+                                        <Td maxW={"100px"}>{item.scanreportmappingrule_count != undefined ? item.scanreportmappingrule_count : "counting"}</Td>
                                     </>
                                 }
                             </Tr>

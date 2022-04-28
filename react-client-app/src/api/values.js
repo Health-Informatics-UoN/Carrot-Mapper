@@ -1,56 +1,88 @@
-
-const authToken = window.a
-const api = window.u+'api'
-const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure']
+import Cookies from 'js-cookie';
+import axios from 'axios';
+const m_allowed_tables = ['person','measurement','condition_occurrence','observation','drug_exposure','procedure_occurrence','specimen']
 
 // function to fetch from api with authorization token
 const useGet = async (url) =>{
-    const response = await fetch(`${api}${url}`,
+    const response = await fetch(`/api${url}`, 
     {
         method: "GET",
-        headers: {Authorization: "Token "+authToken},    
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        }
     }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const data = await response.json();
     return data;
 }
 // function for post requests to api with authorization token
-const usePost = async (url,data) =>{
-    const response = await fetch(`${api}${url}`,
+const usePost = async (url,data,withApi=true) =>{
+    const response = await axios.post(withApi?`/api${url}`:url,
+    data,
+    {    
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },  
+    }
+    );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
+    const res = withApi? await response.data:response;
+    return res;
+}
+const postForm = async (url,data) =>{
+    const response = await fetch(url,
     {
         method: "POST",
         headers: {
-            Authorization: "Token "+authToken,
-        'Content-Type': 'application/json; charset=utf-8'},
-        body: JSON.stringify(data)    
+            'X-CSRFToken': Cookies.get('csrftoken'),
+        },
+        body: data
     }
     );
-    const res = await response.json();
-    return res;
+    
+    if (response.status < 200 || response.status > 300) {
+        const json = await response.json()
+        throw json
+    }
+    return response;
 }
 // function for patch requests to api with authorization token
 const usePatch = async (url, body) => {
-    const response = await fetch(`${api}/${url}`,
+    const response = await fetch(`/api${url}`,
         {
             method: "PATCH",
             headers: {
-                Authorization: "Token " + authToken,
-                'Content-Type': 'application/json; charset=utf-8'
+                'Content-Type': 'application/json; charset=utf-8',
+                'X-CSRFToken': Cookies.get('csrftoken'),
             },
             body: JSON.stringify(body)
         }
     );
+    if (response.status < 200 || response.status > 300) {
+        console.log(response)
+        throw response
+    }
     const res = await response.json();
     return res;
 }
 // function for delete requests to api with authorization token
 const useDelete = async (url) => {
-    const response = await fetch(`${api}/${url}`,
-        {
-            method: "DELETE",
-            headers: { Authorization: "Token " + authToken },
-        }
-    );
+    const response = await fetch(`/api${url}`, {
+        method: "DELETE", 
+        headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'X-CSRFToken': Cookies.get('csrftoken'),
+    }
+});
     return response;
 }
 // get scan report field with given id
@@ -130,7 +162,7 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
 // get scan report values for a specific field id
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
     // query endpoint for field values
-    let values = await useGet(`/scanreportvaluesfilter/?scan_report_field=${valueId}`)
+    let values = await useGet(`/scanreportvalues/?scan_report_field=${valueId}`)
     if (!Array.isArray(values)) {
         setError(true)
         return
@@ -162,7 +194,9 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         'condition_occurrence': ['condition_start_datetime','condition_end_datetime'],
         'measurement':['measurement_datetime'],
         'observation':['observation_datetime'],
-        'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime']
+        'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
+	'procedure_occurrence':['procedure_datetime'],
+	'specimen':['specimen_datetime']
         }
     const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
     // if a destination field can't be found for concept domain, return error
@@ -283,7 +317,7 @@ const chunkIds = (list) => {
 }
 // get field values for a given table id and map any scanreport concepts that are associated
 const getScanReportFieldValues = async (valueId, valuesRef) => {
-    let response = await useGet(`/scanreportfieldsfilter/?scan_report_table=${valueId}`)
+    let response = await useGet(`/scanreportfields/?scan_report_table=${valueId}`)
     response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
@@ -294,7 +328,7 @@ const getScanReportFieldValues = async (valueId, valuesRef) => {
 
 const getScanReportTableRows = async (id) =>{
     // get table rows
-    let table = await useGet(`/scanreporttablesfilter/?scan_report=${id}`)
+    let table = await useGet(`/scanreporttables/?scan_report=${id}`)
     // if table is empty then return
     if(table.length==0){
         return []
@@ -319,7 +353,7 @@ const getScanReportTableRows = async (id) =>{
     const promises = []
     // send API request for every sublist
     for (let i = 0; i < fieldIds.length; i++) {
-        promises.push(useGet(`/scanreportfieldsfilter/?id__in=${fieldIds[i].join()}&fields=id,name`))
+        promises.push(useGet(`/scanreportfields/?id__in=${fieldIds[i].join()}&fields=id,name`))
     }
     const promiseResult = await Promise.all(promises)
     const fields = [].concat.apply([], promiseResult)
@@ -331,5 +365,5 @@ const getScanReportTableRows = async (id) =>{
 
 export { saveMappingRules,useGet,usePost,useDelete,getScanReportFieldValues,chunkIds,
      getScanReportField,getScanReportTable,mapConceptToOmopField,m_allowed_tables,
-     getScanReportConcepts,getScanReports,authToken,api,getScanReportTableRows,usePatch,
+     getScanReportConcepts,getScanReports,getScanReportTableRows,usePatch,postForm
      }
