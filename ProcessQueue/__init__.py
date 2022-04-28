@@ -421,6 +421,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
                 if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
                     active_srs.append(str(item["id"]))
     # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
+
     # 'Mapping Complete'
 
     # map value id to active scan report
@@ -548,6 +549,12 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         str(element.get("object_id", None)): str(element.get("concept", None))
         for element in existing_value_concept_ids
     }
+    print(
+        datetime.utcnow().strftime("%H:%M:%S.%fZ"),
+        "value_id:concept_id for all existing values with concepts:",
+        existing_value_id_to_concept_map,
+        flush=True,
+    )
 
     new_paginated_field_ids = paginate(
         [value["scan_report_field"] for value in new_values_map], max_chars_for_get
