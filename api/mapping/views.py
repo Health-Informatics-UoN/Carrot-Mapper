@@ -23,7 +23,8 @@ from .serializers import (
     ScanReportViewSerializer,
     ScanReportTableSerializer,
     ScanReportFieldSerializer,
-    ScanReportValueSerializer,
+    ScanReportValueEditSerializer,
+    ScanReportValueViewSerializer,
     ScanReportConceptSerializer,
     ClassificationSystemSerializer,
     DataDictionarySerializer,
@@ -725,7 +726,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
-    serializer_class = ScanReportValueSerializer
+    serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
@@ -744,6 +745,15 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportValueViewSerializer
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportValueEditSerializer
+        return super().get_serializer_class()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -769,7 +779,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueSerializer
+    serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["scan_report_field__scan_report_table__scan_report"]
 
@@ -783,7 +793,7 @@ class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
 
 
 class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueSerializer
+    serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["scan_report_field__scan_report_table"]
 
@@ -895,7 +905,7 @@ class CountStatsScanReportTableField(APIView):
 # It also removes all conceptIDs which == -1, leaving only those SRVs with a
 # concept_id which has been looked up with omop_helpers
 class ScanReportValuePKViewSet(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueSerializer
+    serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["scan_report_field__scan_report_table__scan_report"]
 

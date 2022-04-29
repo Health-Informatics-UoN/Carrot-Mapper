@@ -258,7 +258,7 @@ class ScanReportFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
         fields = "__all__"
 
 
-class ScanReportValueSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     value = serializers.CharField(
         max_length=128, allow_blank=True, trim_whitespace=False
     )
@@ -281,6 +281,16 @@ class ScanReportValueSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
                 "Missing request context. Unable to validate scan report value."
             )
         return super().validate(data)
+
+    class Meta:
+        model = ScanReportValue
+        fields = "__all__"
+
+
+class ScanReportValueEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    value = serializers.CharField(
+        max_length=128, allow_blank=True, trim_whitespace=False
+    )
 
     class Meta:
         model = ScanReportValue
