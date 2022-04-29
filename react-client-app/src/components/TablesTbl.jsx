@@ -19,7 +19,7 @@ import CCBreadcrumbBar from './CCBreadcrumbBar'
 import PageHeading from './PageHeading'
 import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
-
+import Error404 from '../views/Error404'
 
 
 
@@ -47,9 +47,7 @@ const TablesTbl = ({ setTitle }) => {
         ).catch(
             err => {
                 // If user can't see scan report, show an error message
-                setError("Could not access the resource you requested. "
-                    + "Check that it exists and that you have permission to view it."
-                )
+                setError(true)
                 setLoading(false)
             }
         )
@@ -104,11 +102,7 @@ const TablesTbl = ({ setTitle }) => {
 
     if (error) {
         //Render Error State
-        return (
-            <Flex padding="30px">
-                <Flex marginLeft="10px">{error}</Flex>
-            </Flex>
-        )
+        return <Error404 setTitle={setTitle} />
     }
 
     if (loading) {

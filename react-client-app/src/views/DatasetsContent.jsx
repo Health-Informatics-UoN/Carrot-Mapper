@@ -4,6 +4,7 @@ import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
+import Error404 from '../views/Error404'
 import moment from 'moment';
 import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 
@@ -24,86 +25,93 @@ const DatasetsContent = (props) => {
     const [title, setTitle] = useState(`Scanreports in Dataset #${datasetId}`);
     const [expanded, setExpanded] = useState(false);
     const [datasetName, setDatasetName] = useState();
+    const [error, setError] = useState(undefined);
     const statuses = JSON.parse(window.status).map(status => status.id);
 
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null)
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
-        // get dataset name
-        let datasetNameQuery = await useGet(`/datasets/${datasetId}`)
-        setDatasetName(datasetNameQuery.name)
-        // get scan reports and sort by id
-        let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
-        scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
-        // for each scan report use the data partner and author ids to get name to display
-        // get list of unique data partner and auther ids
-        const authorObject = {};
-        const datasetObject = {};
-        scanreports.map((scanreport) => {
-            authorObject[scanreport.author] = true;
-            datasetObject[scanreport.parent_dataset] = true;
-            const created_at = {};
-            created_at.created_at = scanreport.created_at;
-            created_at.displayString = moment(scanreport.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
-            scanreport.created_at = created_at;
-        });
-
-        const authorIds = chunkIds(Object.keys(authorObject))
-        const datasetIds = chunkIds(Object.keys(datasetObject))
-        const authorPromises = [];
-        const datasetPromises = [];
-        for (let i = 0; i < authorIds.length; i++) {
-            authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
-        }
-        for (let i = 0; i < datasetIds.length; i++) {
-            datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
-        }
-        const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
-        const authors = [].concat.apply([], promises[0]);
-        const datasets = [].concat.apply([], promises[1]);
-        authors.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.author === element.id ? { ...scanreport, author: element } : scanreport);
-        });
-        datasets.forEach((element) => {
-            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset === element.id ? { ...scanreport, parent_dataset: element } : scanreport);
-        });
-        const dataPartnerObject = {};
-        datasets.map((dataset) => {
-            dataPartnerObject[dataset.data_partner] = true;
-        });
-        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
-        const dataPartnerPromises = [];
-        for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
-        }
-        let dataPartners = await Promise.all(dataPartnerPromises)
-        dataPartners = dataPartners[0]
-        if(dataPartners){
-            dataPartners.forEach((element) => {
-                scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner === element.id ? { ...scanreport, data_partner: element } : scanreport);
+        try {
+            // get dataset name
+            let datasetNameQuery = await useGet(`/datasets/${datasetId}`)
+            setDatasetName(datasetNameQuery.name)
+            // get scan reports and sort by id
+            let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
+            scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+            // for each scan report use the data partner and author ids to get name to display
+            // get list of unique data partner and auther ids
+            const authorObject = {};
+            const datasetObject = {};
+            scanreports.map((scanreport) => {
+                authorObject[scanreport.author] = true;
+                datasetObject[scanreport.parent_dataset] = true;
+                const created_at = {};
+                created_at.created_at = scanreport.created_at;
+                created_at.displayString = moment(scanreport.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
+                scanreport.created_at = created_at;
             });
-        }
-        // split data into active reports and archived report
-        data.current = scanreports
-        activeReports.current = scanreports.filter(scanreport => scanreport.hidden === false)
-        archivedReports.current = scanreports.filter(scanreport => scanreport.hidden === true)
-        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
-        active.current ? setTitle(`Scanreports in Dataset #${datasetId}`) : setTitle(`Scanreports in Dataset #${datasetId}`);
-        setLoadingMessage(null)
 
-        // get table and field count
-        const scanreportIds = chunkIds(data.current.map(scanreport => scanreport.id))
-        const countPromises = [];
-        for (let i = 0; i < scanreportIds.length; i++) {
-            countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
-        }
-        const countStats = [].concat.apply([], await Promise.all(countPromises))
-        data.current = data.current.map(report => ({ ...report, ...countStats.find(item => item.scanreport === report.id) }))
+            const authorIds = chunkIds(Object.keys(authorObject))
+            const datasetIds = chunkIds(Object.keys(datasetObject))
+            const authorPromises = [];
+            const datasetPromises = [];
+            for (let i = 0; i < authorIds.length; i++) {
+                authorPromises.push(useGet(`/usersfilter/?id__in=${authorIds[i].join()}`));
+            }
+            for (let i = 0; i < datasetIds.length; i++) {
+                datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
+            }
+            const promises = await Promise.all([Promise.all(authorPromises), Promise.all(datasetPromises)]);
+            const authors = [].concat.apply([], promises[0]);
+            const datasets = [].concat.apply([], promises[1]);
+            authors.forEach((element) => {
+                scanreports = scanreports.map((scanreport) => scanreport.author === element.id ? { ...scanreport, author: element } : scanreport);
+            });
+            datasets.forEach((element) => {
+                scanreports = scanreports.map((scanreport) => scanreport.parent_dataset === element.id ? { ...scanreport, parent_dataset: element } : scanreport);
+            });
+            const dataPartnerObject = {};
+            datasets.map((dataset) => {
+                dataPartnerObject[dataset.data_partner] = true;
+            });
+            const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
+            const dataPartnerPromises = [];
+            for (let i = 0; i < dataPartnerIds.length; i++) {
+                dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
+            }
+            let dataPartners = await Promise.all(dataPartnerPromises)
+            dataPartners = dataPartners[0]
+            if (dataPartners) {
+                dataPartners.forEach((element) => {
+                    scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner === element.id ? { ...scanreport, data_partner: element } : scanreport);
+                });
+            }
+            // split data into active reports and archived report
+            data.current = scanreports
+            activeReports.current = scanreports.filter(scanreport => scanreport.hidden === false)
+            archivedReports.current = scanreports.filter(scanreport => scanreport.hidden === true)
+            active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+            active.current ? setTitle(`Scanreports in Dataset #${datasetId}`) : setTitle(`Scanreports in Dataset #${datasetId}`);
+            setLoadingMessage(null)
 
-        activeReports.current = data.current.filter((scanreport) => scanreport.hidden === false);
-        archivedReports.current = data.current.filter((scanreport) => scanreport.hidden === true);
-        active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+            // get table and field count
+            const scanreportIds = chunkIds(data.current.map(scanreport => scanreport.id))
+            const countPromises = [];
+            for (let i = 0; i < scanreportIds.length; i++) {
+                countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
+            }
+            const countStats = [].concat.apply([], await Promise.all(countPromises))
+            data.current = data.current.map(report => ({ ...report, ...countStats.find(item => item.scanreport === report.id) }))
+
+            activeReports.current = data.current.filter((scanreport) => scanreport.hidden === false);
+            archivedReports.current = data.current.filter((scanreport) => scanreport.hidden === true);
+            active.current ? setDisplayedData(activeReports.current) : setDisplayedData(archivedReports.current);
+        } catch (error) {
+            setLoadingMessage(null)
+            setError(true)
+        }
+
     }, []);
 
     // archive or unarchive a scanreport by sending patch request to change 'hidden' variable
@@ -237,6 +245,11 @@ const DatasetsContent = (props) => {
                 return "#000000"
         }
     }
+    if (error) {
+        //Render Error State
+        return <Error404 setTitle={props.setTitle} />
+    }
+
     if (loadingMessage) {
         //Render Loading State
         return (

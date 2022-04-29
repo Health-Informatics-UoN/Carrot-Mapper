@@ -121,6 +121,7 @@ from .permissions import (
     CanAdmin,
     CanEdit,
     has_editorship,
+    has_viewership,
     is_admin,
 )
 from .services import download_data_dictionary_blob
@@ -912,131 +913,36 @@ def home(request):
     return render(request, "mapping/home.html", {})
 
 
-@method_decorator(login_required, name="dispatch")
-class ScanReportTableListView(ListView):
-    model = ScanReportTable
-
-    def post(self, request, *args, **kwargs):
-        try:
-            body = json.loads(request.body.decode("utf-8"))
-        except ValueError as e:
-            body = {}
-        if (
-            request.POST.get("download-dd") is not None
-            or body.get("download-dd", None) is not None
-        ):
-            qs = self.get_queryset()
-            scan_report = self.get_queryset()[0].scan_report
-            return download_data_dictionary_blob(
-                scan_report.data_dictionary.name, container="data-dictionaries"
-            )
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None and search_term != "":
-            qs = qs.filter(scan_report__id=search_term).order_by("name")
-
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report
-            scan_report_name = scan_report.name
-            scan_report_table = self.get_queryset()[0]
-            try:
-                data_dictionary = scan_report.data_dictionary
-            except:
-                data_dictionary = None
-        else:
-            scan_report = None
-            scan_report_name = None
-            scan_report_table = None
-            data_dictionary = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_name": scan_report_name,
-                "scan_report_table": scan_report_table,
-                "data_dictionary": data_dictionary,
-            }
-        )
-
-        return context
-
-
 @login_required
 def update_scanreport_table_page(request, sr, pk):
-    # Get the SR table
-    sr_table = ScanReportTable.objects.get(id=pk)
-    # Determine if the user can edit the form
-    can_edit = False
-    if (
-        sr_table.scan_report.author.id == request.user.id
-        or sr_table.scan_report.editors.filter(id=request.user.id).exists()
-        or sr_table.scan_report.parent_dataset.editors.filter(
-            id=request.user.id
-        ).exists()
-        or sr_table.scan_report.parent_dataset.admins.filter(
-            id=request.user.id
-        ).exists()
-    ):
-        can_edit = True
-    # Set the page context
-    context = {"can_edit": can_edit, "pk": pk}
-    return render(request, "mapping/scanreporttable_form.html", context=context)
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportFieldListView(ListView):
-    model = ScanReportField
-    fields = ["concept_id"]
-    template_name = "mapping/scanreportfield_list.html"
-    factory_kwargs = {"can_delete": False, "extra": False}
-
-    def get_queryset(self):
-        qs = super().get_queryset().order_by("id")
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-            qs = qs.filter(scan_report_table__id=search_term)
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report_field = self.get_queryset()[0]
+    try:
+        # Get the SR table
+        sr_table = ScanReportTable.objects.get(id=pk)
+        # Determine if the user can edit the form
+        can_edit = False
+        if (
+            sr_table.scan_report.author.id == request.user.id
+            or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+            or sr_table.scan_report.parent_dataset.editors.filter(
+                id=request.user.id
+            ).exists()
+            or sr_table.scan_report.parent_dataset.admins.filter(
+                id=request.user.id
+            ).exists()
+        ):
+            can_edit = True
+        # Set the page context
+        context = {"can_edit": can_edit, "pk": pk}
+        if (
+            has_viewership(sr_table, request)
+            or has_editorship(sr_table, request)
+            or is_admin(sr_table, request)
+        ):
+            return render(request, "mapping/scanreporttable_form.html", context=context)
         else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-            }
-        )
-
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportStructuralMappingUpdateView(UpdateView):
-    model = ScanReportField
-    fields = ["mapping"]
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("fields"), self.object.scan_report_table.id
-        )
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1080,59 +986,6 @@ class ScanReportListView(ListView):
             qs = qs.filter(hidden=False)
             self.filterset = "Active"
         return qs
-
-
-@method_decorator(login_required, name="dispatch")
-class ScanReportValueListView(ListView):
-    model = ScanReportValue
-    template_name = "mapping/scanreportvalue_list.html"
-    fields = ["conceptID"]
-    factory_kwargs = {"can_delete": False, "extra": False}
-
-    def get_queryset(self):
-        search_term = self.request.GET.get("search", None)
-
-        if search_term is not None:
-            # qs = ScanReportValue.objects.select_related('concepts').filter(scan_report_field=search_term)
-            qs = ScanReportValue.objects.filter(scan_report_field=search_term).order_by(
-                "value"
-            )
-        else:
-            qs = ScanReportValue.objects.all()
-
-        return qs
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            # scan_report = self.get_queryset()[0].scan_report_table.scan_report
-            # scan_report_table = self.get_queryset()[0].scan_report_table
-            scan_report = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table.scan_report
-            scan_report_table = self.get_queryset()[
-                0
-            ].scan_report_field.scan_report_table
-            scan_report_field = self.get_queryset()[0].scan_report_field
-            scan_report_value = self.get_queryset()[0]
-        else:
-            scan_report = None
-            scan_report_table = None
-            scan_report_field = None
-            scan_report_value = None
-
-        context.update(
-            {
-                "scan_report": scan_report,
-                "scan_report_table": scan_report_table,
-                "scan_report_field": scan_report_field,
-                "scan_report_value": scan_report_value,
-            }
-        )
-
-        return context
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1412,117 +1265,6 @@ class ScanReportAssertionsUpdateView(UpdateView):
 
 
 @method_decorator(login_required, name="dispatch")
-class DataDictionaryListView(ListView):
-    model = DataDictionary
-    ordering = ["-source_value"]
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        # Create a concat field for NLP to work from
-        # V is imported from models, used to comma separate other fields
-        qs = qs.annotate(
-            nlp_string=Concat(
-                "source_value__scan_report_field__name",
-                V(", "),
-                "source_value__value",
-                V(", "),
-                "dictionary_field_description",
-                V(", "),
-                "dictionary_value_description",
-                output_field=CharField(),
-            )
-        )
-
-        search_term = self.request.GET.get("search", None)
-        if search_term is not None:
-
-            assertions = ScanReportAssertion.objects.filter(scan_report__id=search_term)
-            neg_assertions = assertions.values_list("negative_assertion")
-
-            # Grabs ScanReportFields where pass_from_source=True, makes list distinct
-            qs_1 = (
-                qs.filter(
-                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
-                )
-                .filter(source_value__scan_report_field__pass_from_source=True)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .distinct("source_value__scan_report_field")
-                .order_by("source_value__scan_report_field")
-            )
-
-            # Grabs everything but removes all where pass_from_source=False
-            # Filters out negative assertions and 'List truncated...'
-            qs_2 = (
-                qs.filter(
-                    source_value__scan_report_field__scan_report_table__scan_report__id=search_term
-                )
-                .filter(source_value__scan_report_field__pass_from_source=False)
-                .filter(source_value__scan_report_field__is_patient_id=False)
-                .filter(source_value__scan_report_field__is_date_event=False)
-                .filter(source_value__scan_report_field__is_ignore=False)
-                .exclude(source_value__value="List truncated...")
-                .exclude(source_value__value__in=neg_assertions)
-            )
-
-            # Stick qs_1 and qs_2 together
-            qs_total = qs_1.union(qs_2)
-
-            # Create object to convert to JSON
-            for_json = qs_total.values(
-                "id",
-                "source_value__value",
-                "source_value__scan_report_field__name",
-                "nlp_string",
-            )
-
-            serialized_q = json.dumps(list(for_json), cls=DjangoJSONEncoder, indent=6)
-
-            # with open("/data/data.json", "w") as json_file:
-            #    json.dump(list(for_json), json_file, cls=DjangoJSONEncoder, indent=6)
-
-        return qs_total
-
-    def get_context_data(self, **kwargs):
-
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-
-        if len(self.get_queryset()) > 0:
-            scan_report = self.get_queryset()[
-                0
-            ].source_value.scan_report_field.scan_report_table.scan_report
-        else:
-            scan_report = None
-
-        context.update({"scan_report": scan_report})
-
-        return context
-
-
-@method_decorator(login_required, name="dispatch")
-class DataDictionaryUpdateView(UpdateView):
-    model = DataDictionary
-    fields = [
-        "dictionary_table",
-        "dictionary_field",
-        "dictionary_field_description",
-        "dictionary_value",
-        "dictionary_value_description",
-        "definition_fixed",
-    ]
-
-    def get_success_url(self):
-        return "{}?search={}".format(
-            reverse("data-dictionary"),
-            self.object.source_value.scan_report_field.scan_report_table.scan_report.id,
-        )
-
-
-@method_decorator(login_required, name="dispatch")
 class CCPasswordChangeView(FormView):
     form_class = PasswordChangeForm
     success_url = reverse_lazy("password_change_done")
@@ -1600,6 +1342,7 @@ def load_omop_fields(request):
     )
 
 
+# To be removed
 # Run NLP at the field level
 def run_nlp_field_level(request):
 
@@ -1610,6 +1353,7 @@ def run_nlp_field_level(request):
     return redirect("/fields/?search={}".format(field.scan_report_table.id))
 
 
+# To be removed
 # Run NLP for all fields/values within a table
 def run_nlp_table_level(request):
 
@@ -1689,139 +1433,6 @@ def pass_content_object_validation(request, scan_report_table):
     return True
 
 
-def save_scan_report_value_concept(request):
-    if request.method == "POST":
-        form = ScanReportValueConceptForm(request.POST)
-        if form.is_valid():
-
-            scan_report_value = ScanReportValue.objects.get(
-                pk=form.cleaned_data["scan_report_value_id"]
-            )
-
-            if not pass_content_object_validation(
-                request, scan_report_value.scan_report_field.scan_report_table
-            ):
-                return redirect(
-                    "/values/?search={}".format(scan_report_value.scan_report_field.id)
-                )
-
-            try:
-                concept = Concept.objects.get(
-                    concept_id=form.cleaned_data["concept_id"]
-                )
-            except Concept.DoesNotExist:
-                messages.error(
-                    request,
-                    "Concept id {} does not exist in our database.".format(
-                        form.cleaned_data["concept_id"]
-                    ),
-                )
-                return redirect(
-                    "/values/?search={}".format(scan_report_value.scan_report_field.id)
-                )
-
-            # perform a standard check on the concept
-            pass_concept_check = validate_concept(request, concept)
-            if pass_concept_check:
-                scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_value,
-                )
-
-                save_mapping_rules(request, scan_report_concept)
-
-            return redirect(
-                "/values/?search={}".format(scan_report_value.scan_report_field.id)
-            )
-
-
-def delete_scan_report_value_concept(request):
-    scan_report_field_id = request.GET.get("scan_report_field_id")
-    scan_report_concept_id = request.GET.get("scan_report_concept_id")
-
-    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
-
-    # scan_report_concept.mappingrule.delete()
-
-    concept_id = scan_report_concept.concept.concept_id
-    concept_name = scan_report_concept.concept.concept_name
-
-    scan_report_concept.delete()
-
-    messages.success(
-        request,
-        "Concept {} - {} removed successfully.".format(concept_id, concept_name),
-    )
-
-    return redirect("/values/?search={}".format(scan_report_field_id))
-
-
-def save_scan_report_field_concept(request):
-    if request.method == "POST":
-        form = ScanReportFieldConceptForm(request.POST)
-        if form.is_valid():
-
-            scan_report_field = ScanReportField.objects.get(
-                pk=form.cleaned_data["scan_report_field_id"]
-            )
-
-            if not pass_content_object_validation(
-                request, scan_report_field.scan_report_table
-            ):
-                return redirect(
-                    "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-                )
-
-            try:
-                concept = Concept.objects.get(
-                    concept_id=form.cleaned_data["concept_id"]
-                )
-            except Concept.DoesNotExist:
-                messages.error(
-                    request,
-                    "Concept id {} does not exist in our database.".format(
-                        form.cleaned_data["concept_id"]
-                    ),
-                )
-                return redirect(
-                    "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-                )
-
-            # perform a standard check on the concept
-            pass_concept_check = validate_concept(request, concept)
-            if pass_concept_check:
-                scan_report_concept = ScanReportConcept.objects.create(
-                    concept=concept,
-                    content_object=scan_report_field,
-                )
-
-                save_mapping_rules(request, scan_report_concept)
-
-            return redirect(
-                "/fields/?search={}".format(scan_report_field.scan_report_table.id)
-            )
-
-
-def delete_scan_report_field_concept(request):
-
-    scan_report_table_id = request.GET.get("scan_report_table_id")
-    scan_report_concept_id = request.GET.get("scan_report_concept_id")
-
-    scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
-
-    concept_id = scan_report_concept.concept.concept_id
-    concept_name = scan_report_concept.concept.concept_name
-
-    scan_report_concept.delete()
-
-    messages.success(
-        request,
-        "Concept {} - {} removed successfully.".format(concept_id, concept_name),
-    )
-
-    return redirect("/fields/?search={}".format(scan_report_table_id))
-
-
 class DownloadScanReportViewSet(viewsets.ViewSet):
     def list(self, request, pk):
         scan_report = ScanReport.objects.get(id=pk)
@@ -1864,21 +1475,36 @@ def dataset_admin_page(request, pk):
     try:
         ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-    except ObjectDoesNotExist:
-        args["is_admin"] = False
 
-    return render(request, "mapping/admin_dataset_form.html", args)
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/admin_dataset_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
 def dataset_content_page(request, pk):
     args = {}
-    if ds := Dataset.objects.get(id=pk):
+    try:
+        ds = Dataset.objects.get(id=pk)
         args["is_admin"] = ds.admins.filter(id=request.user.id).exists()
-    else:
-        args["is_admin"] = False
 
-    return render(request, "mapping/datasets_content.html", args)
+        if (
+            has_viewership(ds, request)
+            or has_editorship(ds, request)
+            or is_admin(ds, request)
+        ):
+            return render(request, "mapping/datasets_content.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
@@ -1886,15 +1512,22 @@ def scanreport_admin_page(request, pk):
     args = {}
     try:
         sr = ScanReport.objects.get(id=pk)
-        is_admin = (
+        _is_admin = (
             sr.author.id == request.user.id
             or sr.parent_dataset.admins.filter(id=request.user.id).exists()
         )
-        args["is_admin"] = is_admin
-    except ObjectDoesNotExist:
-        args["is_admin"] = False
+        args["is_admin"] = _is_admin
 
-    return render(request, "mapping/admin_scanreport_form.html", args)
+        if (
+            has_viewership(sr, request)
+            or has_editorship(sr, request)
+            or is_admin(sr, request)
+        ):
+            return render(request, "mapping/admin_scanreport_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")
 
 
 @login_required
@@ -1908,7 +1541,14 @@ def scanreport_table_list_page(request, pk):
             scan_report, request
         )
 
-        return render(request, "mapping/scanreporttable_list.html", args)
+        if (
+            has_viewership(scan_report, request)
+            or has_editorship(scan_report, request)
+            or is_admin(scan_report, request)
+        ):
+            return render(request, "mapping/scanreporttable_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1925,8 +1565,14 @@ def scanreport_fields_list_page(request, sr, pk):
         args["can_edit"] = has_editorship(scan_report_table, request) or is_admin(
             scan_report_table, request
         )
-
-        return render(request, "mapping/scanreportfield_list.html", args)
+        if (
+            has_viewership(scan_report_table, request)
+            or has_editorship(scan_report_table, request)
+            or is_admin(scan_report_table, request)
+        ):
+            return render(request, "mapping/scanreportfield_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
@@ -1945,14 +1591,37 @@ def scanreport_values_list_page(request, sr, tbl, pk):
             scan_report_field, request
         )
 
-        return render(request, "mapping/scanreportvalue_list.html", args)
+        if (
+            has_viewership(scan_report_field, request)
+            or has_editorship(scan_report_field, request)
+            or is_admin(scan_report_field, request)
+        ):
+            return render(request, "mapping/scanreportvalue_list.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
     except ObjectDoesNotExist:
         return render(request, "mapping/error_404.html")
 
 
 @login_required
 def update_scanreport_field_page(request, sr, tbl, pk):
+    args = {"pk": pk}
+    try:
+        scan_report_field = ScanReportField.objects.select_related(
+            "scan_report_table", "scan_report_table__scan_report"
+        ).get(id=pk, scan_report_table=tbl, scan_report_table__scan_report=sr)
 
-    # TODO: add permission check on field. Return error page if denied.
+        args["can_edit"] = has_editorship(scan_report_field, request) or is_admin(
+            scan_report_field, request
+        )
 
-    return render(request, "mapping/scanreportfield_form.html", {"pk": pk})
+        if (
+            has_viewership(scan_report_field, request)
+            or has_editorship(scan_report_field, request)
+            or is_admin(scan_report_field, request)
+        ):
+            return render(request, "mapping/scanreportfield_form.html", args)
+        else:
+            return render(request, "mapping/error_404.html")
+    except ObjectDoesNotExist:
+        return render(request, "mapping/error_404.html")

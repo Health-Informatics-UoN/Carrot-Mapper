@@ -8,6 +8,7 @@
     <script>
         var pk = "{{pk}}";
         var s = document.createElement("script");
+        var canEdit = "{{can_edit}}" === "True" ? true : false
         s.type = "module";
 		s.innerHTML = null;
 		if(pk){

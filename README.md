@@ -49,7 +49,7 @@ Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access 
 
 ## ScanReports
 To access the scanreports route, go to:
-[http://127.0.0.1:8080/scanreports/](http://127.0.0.1:8080/scanreports/)
+[http://127.0.0.1:8080/scanreports](http://127.0.0.1:8080/scanreports)
 
 # Custom Styling <a name="custom-styling"></a>
 
