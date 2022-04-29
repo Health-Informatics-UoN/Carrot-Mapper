@@ -22,7 +22,8 @@ from .serializers import (
     ScanReportEditSerializer,
     ScanReportViewSerializer,
     ScanReportTableSerializer,
-    ScanReportFieldSerializer,
+    ScanReportFieldEditSerializer,
+    ScanReportFieldListSerializer,
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportConceptSerializer,
@@ -545,7 +546,6 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
-    serializer_class = ScanReportFieldSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
@@ -564,6 +564,15 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportFieldListSerializer
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportFieldEditSerializer
+        return super().get_serializer_class()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -726,7 +735,6 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
-    serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
