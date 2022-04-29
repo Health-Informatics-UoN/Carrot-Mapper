@@ -34,9 +34,8 @@ from .services_rules import (
 )
 
 from .permissions import (
-    has_editorship,
-    has_viewership,
     is_admin,
+    is_az_function_user,
 )
 
 
@@ -103,7 +102,9 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_author(self, author):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
@@ -112,7 +113,9 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
@@ -121,7 +124,9 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_editors(self, editors):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
@@ -142,7 +147,9 @@ class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
@@ -150,7 +157,9 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_editors(self, editors):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
@@ -158,7 +167,9 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_admins(self, admins):
         if request := self.context.get("request"):
-            if not is_admin(self.instance, request):
+            if not (
+                is_admin(self.instance, request) or is_az_function_user(request.user)
+            ):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
