@@ -389,9 +389,9 @@ const Home = () => {
                                             <Tbody>
                                                 {item.data.map((value, i) =>
                                                     <Tr key={i}>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.id}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.dataset}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.data_partner.name}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.id}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.dataset}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.data_partner.name}</Link></Td>
                                                     </Tr>
                                                 )}
                                             </Tbody>
