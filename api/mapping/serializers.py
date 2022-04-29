@@ -202,6 +202,25 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
 
 class ScanReportTableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    def validate(self, data):
+        if request := self.context.get("request"):
+            if sr := data.get("scan_report"):
+                if not (
+                    is_az_function_user(request.user)
+                    or is_admin(sr, request)
+                    or has_editorship(sr, request)
+                ):
+                    raise PermissionDenied(
+                        "You must have editor or admin privileges on the scan report to edit its tables.",
+                    )
+            else:
+                raise NotFound("Could not find the scan report for this table.")
+        else:
+            raise serializers.ValidationError(
+                "Missing request context. Unable to validate scan report table."
+            )
+        return super().validate(data)
+
     class Meta:
         model = ScanReportTable
         fields = "__all__"
@@ -230,7 +249,7 @@ class ScanReportFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
                 raise NotFound("Could not find the scan report table for this field.")
         else:
             raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report value."
+                "Missing request context. Unable to validate scan report field."
             )
         return super().validate(data)
 
