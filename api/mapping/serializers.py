@@ -142,8 +142,7 @@ class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
-            user = request.user
-            if not self.instance.admins.filter(id=user.id).exists():
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
@@ -151,8 +150,7 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_editors(self, editors):
         if request := self.context.get("request"):
-            user = request.user
-            if not self.instance.admins.filter(id=user.id).exists():
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
@@ -160,8 +158,7 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_admins(self, admins):
         if request := self.context.get("request"):
-            user = request.user
-            if not self.instance.admins.filter(id=user.id).exists():
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     "You must be an admin to change this field."
                 )
