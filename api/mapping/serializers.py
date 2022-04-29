@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.status import HTTP_403_FORBIDDEN
+from rest_framework.exceptions import PermissionDenied, NotFound
 from drf_dynamic_fields import DynamicFieldsMixin
 from django.contrib.auth.models import User
 from data.models import (
@@ -107,8 +106,9 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                 ):
                     raise PermissionDenied(
                         "You must be an admin of the parent dataset to add a new scan report to it.",
-                        code=HTTP_403_FORBIDDEN,
                     )
+            else:
+                raise NotFound("Could not find parent dataset.")
         else:
             raise serializers.ValidationError(
                 "Missing request context. Unable to validate scan report"
