@@ -33,6 +33,12 @@ from .services_rules import (
     get_mapping_rules_list,
 )
 
+from .permissions import (
+    has_editorship,
+    has_viewership,
+    is_admin,
+)
+
 
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
@@ -97,11 +103,7 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_author(self, author):
         if request := self.context.get("request"):
-            user = request.user
-            if not (
-                self.instance.author.id == user.id
-                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
-            ):
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
@@ -110,11 +112,7 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
-            user = request.user
-            if not (
-                self.instance.author.id == user.id
-                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
-            ):
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""
@@ -123,11 +121,7 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def validate_editors(self, editors):
         if request := self.context.get("request"):
-            user = request.user
-            if not (
-                self.instance.author.id == user.id
-                or self.instance.parent_dataset.admins.filter(id=user.id).exists()
-            ):
+            if not is_admin(self.instance, request):
                 raise serializers.ValidationError(
                     """You must be the author of the scan report or an admin of the parent dataset 
                     to change this field."""

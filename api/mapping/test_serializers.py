@@ -25,6 +25,13 @@ class TestScanReportEditSerializer(TestCase):
         )
         self.editor_user = User.objects.create(username="sauron", password="oijfowfjef")
         self.project = Project.objects.create(name="The Fellowship of The Ring")
+        self.project.members.add(
+            self.admin_user,
+            self.author_user,
+            self.non_viewer_user,
+            self.viewer_user,
+            self.editor_user,
+        )
         self.data_partner = DataPartner.objects.create(name="Silvan Elves")
         self.public_dataset = Dataset.objects.create(
             name="Places in Middle Earth",
