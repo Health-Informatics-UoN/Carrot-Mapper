@@ -21,7 +21,8 @@ from .serializers import (
     GetRulesAnalysis,
     ScanReportEditSerializer,
     ScanReportViewSerializer,
-    ScanReportTableSerializer,
+    ScanReportTableEditSerializer,
+    ScanReportTableListSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
     ScanReportValueEditSerializer,
@@ -501,7 +502,6 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    serializer_class = ScanReportTableSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -520,6 +520,15 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportTableListSerializer
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportTableEditSerializer
+        return super().get_serializer_class()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(

@@ -201,7 +201,7 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ScanReportTableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate(self, data):
         if request := self.context.get("request"):
             if sr := data.get("scan_report"):
@@ -221,6 +221,12 @@ class ScanReportTableSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
             )
         return super().validate(data)
 
+    class Meta:
+        model = ScanReportTable
+        fields = "__all__"
+
+
+class ScanReportTableEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportTable
         fields = "__all__"
