@@ -215,6 +215,25 @@ class ScanReportFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
         max_length=512, allow_blank=True, trim_whitespace=False
     )
 
+    def validate(self, data):
+        if request := self.context.get("request"):
+            if srt := data.get("scan_report_table"):
+                if not (
+                    is_az_function_user(request.user)
+                    or is_admin(srt, request)
+                    or has_editorship(srt, request)
+                ):
+                    raise PermissionDenied(
+                        "You must have editor or admin privileges on the scan report to edit its fields.",
+                    )
+            else:
+                raise NotFound("Could not find the scan report table for this field.")
+        else:
+            raise serializers.ValidationError(
+                "Missing request context. Unable to validate scan report value."
+            )
+        return super().validate(data)
+
     class Meta:
         model = ScanReportField
         fields = "__all__"
