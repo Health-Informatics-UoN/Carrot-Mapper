@@ -28,6 +28,8 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [viewers, setViewers] = useState([])
     const [admins, setAdmins] = useState([])
     const [editors, setEditors] = useState([])
+    const [projects, setProjects] = useState([])
+    const [projectsList, setProjectsList] = useState(undefined)
     const [usersList, setUsersList] = useState(undefined)
     const [error, setError] = useState(undefined)
 
@@ -59,15 +61,18 @@ const DatasetAdminForm = ({ setTitle }) => {
                 const queries = [
                     useGet("/datapartners/"),
                     useGet("/usersfilter/?is_active=true"),
-                    useGet(`/projects/?dataset=${datasetId}`)
+                    useGet(`/projects/?dataset=${datasetId}`),
+                    useGet(`/projects`) 
                 ]
                 // Get dataset, data partners and users
-                const [dataPartnerQuery, usersQuery, projectsQuery] = await Promise.all(queries)
+                const [dataPartnerQuery, usersQuery, projectsQuery,allProjectsQuery] = await Promise.all(queries)
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
                 // Set up state from the results of the queries
                 setDataset(datasetQuery)
                 setIsPublic(datasetQuery.visibility === "PUBLIC")
                 setDataPartners([...dataPartnerQuery])
+                setProjectsList(allProjectsQuery)
+                setProjects(projectsQuery)
                 setSelectedDataPartner(
                     dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
                 )
@@ -168,12 +173,41 @@ const DatasetAdminForm = ({ setTitle }) => {
         setAdmins(pj => pj.filter(user => user.id != id))
     }
 
+    // Remove user chip from projects
+    const removeProject = (name) => {
+        setProjects(pj => pj.filter(project => project.name != name))
+    }
+
+    const mapDatasetToProjects = async (newProjects, discardedProjects) =>{
+        const promises = [] 
+        const full_projects = await useGet(`/projects/?name__in=${newProjects.map(project => project.name).join()}`)
+        full_projects.map(project => {
+            const data = {
+                id: project.id,
+                datasets: [datasetId, ...project.datasets.filter(item=>item.id!=datasetId)]
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+
+        const full_discarded_projects = await useGet(`/projects/?name__in=${discardedProjects.map(project => project.name).join()}`)
+        full_discarded_projects.map(project => {
+            const data = {
+                id: project.id,
+                datasets: project.datasets.filter(item=>item.id!=datasetId)
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+        await Promise.all(promises)
+        return
+    }
+    
     // Send updated dataset to the DB
     async function upload() {
         /**
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
+        
         const patchData = {
             name: dataset.name,
             data_partner: selectedDataPartner.id,
@@ -194,12 +228,19 @@ const DatasetAdminForm = ({ setTitle }) => {
         if (!arraysEqual(newAdmins, dataset.admins)) {
             patchData.admins = newAdmins
         }
+        
         try {
             setUploadLoading(true)
             const response = await usePatch(
                 `/datasets/update/${datasetId}`,
                 patchData,
             )
+            const currentProjects = await useGet(`/projects/?dataset=${datasetId}`)
+            if(!arraysEqual(currentProjects.map(item=>item.name), projects.map(item=>item.name))){
+                const discardedProjects = currentProjects.filter(item=>!projects.map(project=>project.name).includes(item.name))
+                await mapDatasetToProjects(projects,discardedProjects)
+            }
+            
             setUploadLoading(false)
             setDataset(response)
             setAlert({
@@ -396,6 +437,41 @@ const DatasetAdminForm = ({ setTitle }) => {
                                     <>
                                         {usersList.map((item, index) =>
                                             <option key={index} value={JSON.stringify(item)}>{item.username}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.admins && formErrors.admins.length > 0 &&
+                                <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
+                            }
+                        </>
+                    }
+
+                </Box>
+            </FormControl>
+            <FormControl isInvalid={formErrors.admins && formErrors.admins.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Projects: </div>
+                        {projects.map((project, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={project.name} conceptId={""} conceptIdentifier={project.name} itemId={project.name} handleDelete={removeProject}
+                                        readOnly={!isAdmin} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {isAdmin &&
+                        <>
+                            {projectsList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(project => project.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Project</option>
+                                    <>
+                                        {projectsList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.name}</option>
                                         )}
                                     </>
                                 </Select>
