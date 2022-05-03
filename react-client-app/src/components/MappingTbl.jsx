@@ -1,18 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
-    Table,
-    Thead,
-    Tbody,
-    Tr,
-    Th,
-    Td,
-    TableCaption,
-    HStack,
-    VStack,
     Flex,
     Spinner,
     Link,
-    Select,
+    Wrap,
     Button,
     useDisclosure,
 } from "@chakra-ui/react"
@@ -372,7 +363,7 @@ const MappingTbl = (props) => {
                 <Link href={`/scanreports/${scan_report_id}/mapping_rules/`}>Mapping Rules</Link>
             </CCBreadcrumbBar>
             <PageHeading text={"Mapping Rules"} />
-            <HStack my="10px">
+            <Wrap my="10px">
                 <Button variant="green" onClick={() => { refreshRules() }}>Refresh Rules</Button>
                 <Button variant="blue" isLoading={isDownloading} loadingText="Downloading" spinnerPlacement="start" onClick={downloadRules}>Download Mapping JSON</Button>
                 <Button variant="yellow" onClick={() => { setMapDiagram(mapDiagram => ({ ...mapDiagram, showing: !mapDiagram.showing })) }}>{mapDiagram.showing ? "Hide " : "View "}Map Diagram</Button>
@@ -380,7 +371,7 @@ const MappingTbl = (props) => {
                 <Button variant="blue" isLoading={isDownloadingCSV} loadingText="Downloading" spinnerPlacement="start" onClick={downloadCSV}>Download Mapping CSV</Button>
                 <Button variant="blue" onClick={onOpen}>Show Summary view</Button>
                 <Button variant="blue" onClick={onOpenAnalyse}>Analyse Rules</Button>
-            </HStack>
+            </Wrap>
 
             <div>
                 {mapDiagram.showing &&

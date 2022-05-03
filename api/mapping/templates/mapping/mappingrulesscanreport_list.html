@@ -10,17 +10,11 @@
         var csrfmiddlewaretoken = "{{csrf_token}}"
 		var a = "{{a}}"
         var u = "{{u}}"
-
-
-		var s = document.createElement("script");
+        var s = document.createElement("script");
         s.type = "module";
-		s.innerHTML = null;
-		if(window.location.href.split("mapping_rules/")[1].split("/").length>1){
-            s.src = "../../../../static/javascript/react/src/mappingRules.js";
-		}
-		else{
-            s.src = "../../../static/javascript/react/src/mappingRules.js";
-		}
+	s.innerHTML = null;
+        s.src = "/static/javascript/react/src/mappingRules.js"; 
+		
 		document.getElementsByTagName('head')[0].appendChild(s)
 	
     </script>
