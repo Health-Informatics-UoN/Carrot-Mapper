@@ -37,10 +37,22 @@ class ScanReportForm(forms.Form):
         queryset=Dataset.objects.order_by("name"),
         widget=forms.Select(attrs={"class": "form-control"}),
     )
+    viewers = forms.ModelMultipleChoiceField(
+        label="Viewers",
+        queryset=User.objects.order_by("username"),
+        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+        required=False,
+    )
+    editors = forms.ModelMultipleChoiceField(
+        label="Editors",
+        queryset=User.objects.order_by("username"),
+        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+        required=False,
+    )
 
     class Meta:
         model = ScanReport
-        fields = ("dataset", "scan_report_file", "parent_dataset")
+        fields = ("dataset", "scan_report_file", "parent_dataset", "editors", "viewers")
 
     def clean_data_dictionary_file(self):
 
