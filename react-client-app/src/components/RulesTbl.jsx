@@ -27,7 +27,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                     )
                 })}
             </div>
-            <Table variant="striped" colorScheme="greyBasic">
+            <Table colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr>
@@ -64,7 +64,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                     {applyFilters(values).length > 0 ?
                         // Create new row for every value object
                         applyFilters(values).map((item, index) =>
-                            <Tr key={index}>
+                            <Tr key={index} bg={item.flag ? "lightred" : ""}>
                                 <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
