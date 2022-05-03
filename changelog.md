@@ -91,6 +91,10 @@ Please append a line to the changelog for each change made.
 * User will see a generic error message when they navigate to a dataset or scan report detail/admin page which they do not have permission to view (or it does not exist).
 * New breadcrumb mechanic.
 * User will now be shown an alert dialogue when they try to archive a dataset that they don't have editor permissions to and the dataset will not be archived
+* `visibility` set on SR when uploaded.
+* `viewers` and `editors` set on SR when uploaded.
+* `editors` set on creation of new dataset on SR upload page.
+* `editors` and `admins` field for dataset shown for PUBLIC dataset as well as RESTRICTED.
 
 ## v1.4.0 was released 02/02/22
 
