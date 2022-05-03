@@ -1152,6 +1152,13 @@ class ScanReportFormView(FormView):
         ):
             return self.form_invalid(form)
 
+        # Form is invalid if visibility is restricted and no viewers are set
+        if (
+            form.cleaned_data["visibility"] == VisibilityChoices.RESTRICTED
+            and not form.cleaned_data["viewers"]
+        ):
+            return self.form_invalid(form)
+
         # Create random alphanumeric to link scan report to data dictionary
         # Create datetime stamp for scan report and data dictionary upload time
         rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
@@ -1162,6 +1169,7 @@ class ScanReportFormView(FormView):
             dataset=form.cleaned_data["dataset"],
             parent_dataset=parent_dataset,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
+            visibility=form.cleaned_data["visibility"],
         )
 
         scan_report.author = self.request.user
