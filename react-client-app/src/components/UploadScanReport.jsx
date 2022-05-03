@@ -509,7 +509,7 @@ const UploadScanReport = ({ setTitle }) => {
                 checkedMessage={"PUBLIC"}
                 notCheckedMessage={"RESTRICTED"}
             />
-            {scanReportIsPublic &&
+            {!scanReportIsPublic &&
                 <CCMultiSelectInput
                     id={"scanreport-viewers"}
                     label={"Viewers"}
