@@ -629,19 +629,19 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
                 )
                 response.status_code = 403
                 return response
-            else:
-                # for each item in the list, identify any existing SRConcepts that clash, and block their creation
-                # this method may be quite slow as it has to wait for each query
-                filtered = []
-                for item in body:
-                    concept = ScanReportConcept.objects.filter(
-                        concept=item["concept"],
-                        object_id=item["object_id"],
-                        content_type=item["content_type"],
-                    )
-                    if concept.count() == 0:
-                        filtered.append(item)
-                body = filtered
+        else:
+            # for each item in the list, identify any existing SRConcepts that clash, and block their creation
+            # this method may be quite slow as it has to wait for each query
+            filtered = []
+            for item in body:
+                concept = ScanReportConcept.objects.filter(
+                    concept=item["concept"],
+                    object_id=item["object_id"],
+                    content_type=item["content_type"],
+                )
+                if concept.count() == 0:
+                    filtered.append(item)
+            body = filtered
 
         serializer = self.get_serializer(data=body, many=isinstance(body, list))
         serializer.is_valid(raise_exception=True)
