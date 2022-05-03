@@ -239,8 +239,40 @@ const Home = () => {
         // if it is a known string we can specify what colour we want it to return
         // otherwise we can just return the generated colour
         switch (str) {
+            case "University of Liverpool":
+                return '#30bb87'
+            case "University of Edinburgh":
+                return '#e07a5f'
+            case "University of Dundee":
+                return '#6079D3'
+            case "University of Swansea":
+                return '#fab765'
+            case "University of Cambridge":
+                return '#F7A399'
+            case "University of Bristol":
+                return '#04724d'
+            case "University College London":
+                return '#D67197'
             case "University of Nottingham":
-                return '#ffff00'
+                return '#005597'
+            case "Public Health Agency (NI)":
+                return '#CE4257'
+            case "Public Health Scotland":
+                return '#ffec75'
+            case "Public Health England":
+                return '#e8615a'
+            case "Oxford University Hospitals":
+                return '#720026'
+            case "Office National Statistics":
+                return '#FFBF69'
+            case "NHS Digital":
+                return '#f2cc8f'
+            case "Imperial":
+                return '#D4EFFC'
+            case "NHS England":
+                return '#7fadce'
+            case "NHS GOSH":
+                return '#62bcb1'
             default:
                 var hash = 0;
                 for (var i = 0; i < str.length; i++) {
@@ -389,9 +421,9 @@ const Home = () => {
                                             <Tbody>
                                                 {item.data.map((value, i) =>
                                                     <Tr key={i}>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.id}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.dataset}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.data_partner.name}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.id}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.dataset}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.data_partner.name}</Link></Td>
                                                     </Tr>
                                                 )}
                                             </Tbody>

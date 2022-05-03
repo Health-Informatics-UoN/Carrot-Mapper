@@ -348,7 +348,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
 
         get_field_tables = requests.get(
             url=f"{api_url}scanreportfields/?id__in={ids_to_get}&fields=id,"
-            f"scan_report_table",
+            f"scan_report_table,name",
             headers=headers,
         )
         existing_fields_filtered_by_id.append(
@@ -477,12 +477,14 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     logger.debug(f"{existing_field_name_to_id_map=}")
     concepts_to_post = []
     concept_response_content = []
+    logger.debug(f"{new_fields_map=}")
+    logger.debug(f"{existing_field_id_to_concept_map=}")
     # print("NAME IDS", new_fields_map.keys())
 
     for name, new_field_id in new_fields_map.items():
         try:
             existing_field_id = existing_field_name_to_id_map[name]
-            concept_id = existing_field_id_to_concept_map[int(existing_field_id)]
+            concept_id = existing_field_id_to_concept_map[str(existing_field_id)]
 
             logger.info(
                 f"Found existing field with id: {existing_field_id} with existing "
