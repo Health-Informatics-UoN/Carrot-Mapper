@@ -11,12 +11,8 @@
         var canEdit = "{{can_edit}}" === "True" ? true : false
         s.type = "module";
 		s.innerHTML = null;
-		if(pk){
-            s.src = "../../../../../../static/javascript/react/src/editField.js";
-		}
-		else{
-            s.src = "../../../static/javascript/react/src/editField.js";
-		}
+        s.src = "/static/javascript/react/src/editField.js";
+		
 		document.getElementsByTagName('head')[0].appendChild(s)
     </script>
     
