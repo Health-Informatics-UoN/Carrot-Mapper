@@ -10,7 +10,10 @@
         var csrfmiddlewaretoken = "{{csrf_token}}"
 		var a = "{{a}}"
         var u = "{{u}}"
-        s.src = "/static/javascript/react/src/mappingRules.js";
+        var s = document.createElement("script");
+        s.type = "module";
+		s.innerHTML = null;
+        s.src = "/static/javascript/react/src/mappingRules.js"; 
 		
 		document.getElementsByTagName('head')[0].appendChild(s)
 	
