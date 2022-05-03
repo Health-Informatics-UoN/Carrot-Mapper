@@ -603,12 +603,12 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
                 print("Can't add multiple concepts of the same id to the same object")
                 response = JsonResponse(
                     {
-                        "status_code": 400,
+                        "status_code": 403,
                         "ok": False,
                         "statusText": "Can't add multiple concepts of the same id to the same object",
                     }
                 )
-                response.status_code = 400
+                response.status_code = 403
                 return response
             else:
                 # for each item in the list, identify any existing SRConcepts that clash, and block their creation
