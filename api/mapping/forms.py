@@ -5,7 +5,12 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField
 
-from mapping.models import DataPartner, Dataset, ScanReportField, ScanReport
+from mapping.models import (
+    Dataset,
+    ScanReportField,
+    ScanReport,
+    VisibilityChoices,
+)
 import openpyxl
 import csv
 from io import BytesIO, StringIO
@@ -49,10 +54,22 @@ class ScanReportForm(forms.Form):
         widget=forms.SelectMultiple(attrs={"class": "form-control"}),
         required=False,
     )
+    visibility = forms.ChoiceField(
+        label="Visibility",
+        choices=VisibilityChoices.choices,
+        widget=forms.Select(attrs={"class": "form-control"}),
+    )
 
     class Meta:
         model = ScanReport
-        fields = ("dataset", "scan_report_file", "parent_dataset", "editors", "viewers")
+        fields = (
+            "dataset",
+            "scan_report_file",
+            "parent_dataset",
+            "editors",
+            "viewers",
+            "visibility",
+        )
 
     def clean_data_dictionary_file(self):
 
