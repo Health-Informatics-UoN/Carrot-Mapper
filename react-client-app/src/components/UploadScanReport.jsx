@@ -228,12 +228,13 @@ const UploadScanReport = ({ setTitle }) => {
             // The tests on the backend will also trigger an error
 
             let formData = new FormData()
-            await formData.append('parent_dataset', selectedDataset.id)
-            await formData.append('dataset', scanReportName.current.value)
-            await formData.append('scan_report_file', whiteRabbitScanReport)
-            await formData.append('data_dictionary_file', dataDictionary)
-            await formData.append('viewers', scanreportViewers.map(item => item.id))
-            await formData.append('editors', scanreportEditors.map(item => item.id))
+            formData.append('parent_dataset', selectedDataset.id)
+            formData.append('dataset', scanReportName.current.value)
+            formData.append('scan_report_file', whiteRabbitScanReport)
+            formData.append('data_dictionary_file', dataDictionary)
+            scanreportViewers.forEach(viewer => formData.append("viewers", viewer.id))
+            scanreportEditors.forEach(editor => formData.append("editors", editor.id))
+            console.log([...formData.entries()])
             setUploadLoading(true)
 
             const response = await postForm(window.location.href, formData)
