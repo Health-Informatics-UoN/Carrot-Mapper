@@ -162,11 +162,11 @@ const UploadScanReport = ({ setTitle }) => {
                 data_partner: data_partner.id,
                 name: newDatasetName,
                 visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
+                editors: datasetEditors.map(item => item.id),
                 admins: datasetAdmins.map(item => item.id)//users.map(item => item.id), Not sure what this was doing. Seemingly mapping the list of viewers to admins
             }
             if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
-                data.editors = datasetEditors.map(item => item.id)
             }
             const newDataset = await usePost(`/datasets/create/`, data)
             await mapDatasetToProjects(newDataset, projects)
@@ -227,6 +227,9 @@ const UploadScanReport = ({ setTitle }) => {
             if (dataDictionary && dataDictionary.name.split('.').pop() != "csv") {
                 throw { statusText: "You have attempted to upload a data dictionary which is not in csv format. Please upload a .csv file" }
             }
+            if (!scanReportIsPublic && scanreportViewers.length == 0) {
+                throw { statusText: "RESTRICTED scan reports must have at least one Viewer." }
+            }
             // The tests on the backend will also trigger an error
 
             let formData = new FormData()
@@ -235,9 +238,11 @@ const UploadScanReport = ({ setTitle }) => {
             formData.append('scan_report_file', whiteRabbitScanReport)
             formData.append('data_dictionary_file', dataDictionary)
             formData.append('visibility', scanReportIsPublic ? "PUBLIC" : "RESTRICTED")
-            scanreportViewers.forEach(viewer => formData.append("viewers", viewer.id))
+            if (!scanReportIsPublic) {
+                // Only add viewers if scan report is RESTRICTED
+                scanreportViewers.forEach(viewer => formData.append("viewers", viewer.id))
+            }
             scanreportEditors.forEach(editor => formData.append("editors", editor.id))
-            console.log([...formData.entries()])
             setUploadLoading(true)
 
             const response = await postForm(window.location.href, formData)
@@ -432,41 +437,37 @@ const UploadScanReport = ({ setTitle }) => {
                                                 <Text fontWeight={"bold"} ml={2}>{datasetVisibleToPublic ? "Public" : "Restricted"}</Text>
                                             </Flex>
                                             {!datasetVisibleToPublic &&
-                                                <>
-
-                                                    <CCMultiSelectInput
-                                                        id={"dataset-viewers"}
-                                                        label={"Viewers"}
-                                                        info={"All Dataset admins and editors also have Dataset viewer permissions. If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset will have Dataset viewer permissions."}
-                                                        isLoading={activeUsersList == undefined}
-                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
-                                                        currentSelections={users.map(item => item.username)}
-                                                        handleInput={addDatasetViewer}
-                                                        handleDelete={removeUser}
-                                                    />
-
-                                                    <CCMultiSelectInput
-                                                        id={"dataset-editors"}
-                                                        label={"Editors"}
-                                                        info={"All Dataset admins also have Dataset editor permissions."}
-                                                        isLoading={activeUsersList == undefined}
-                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
-                                                        currentSelections={datasetEditors.map(item => item.username)}
-                                                        handleInput={addDatasetEditor}
-                                                        handleDelete={removeDatasetEditor}
-                                                    />
-
-                                                    <CCMultiSelectInput
-                                                        id={"dataset-admins"}
-                                                        label={"Admins"}
-                                                        isLoading={activeUsersList == undefined}
-                                                        selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
-                                                        currentSelections={datasetAdmins.map(item => item.username)}
-                                                        handleInput={addDatasetAdmin}
-                                                        handleDelete={removeDatasetAdmin}
-                                                    />
-                                                </>
+                                                <CCMultiSelectInput
+                                                    id={"dataset-viewers"}
+                                                    label={"Viewers"}
+                                                    info={"All Dataset admins and editors also have Dataset viewer permissions. If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset will have Dataset viewer permissions."}
+                                                    isLoading={activeUsersList == undefined}
+                                                    selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                    currentSelections={users.map(item => item.username)}
+                                                    handleInput={addDatasetViewer}
+                                                    handleDelete={removeUser}
+                                                />
                                             }
+                                            <CCMultiSelectInput
+                                                id={"dataset-editors"}
+                                                label={"Editors"}
+                                                info={"All Dataset admins also have Dataset editor permissions."}
+                                                isLoading={activeUsersList == undefined}
+                                                selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                currentSelections={datasetEditors.map(item => item.username)}
+                                                handleInput={addDatasetEditor}
+                                                handleDelete={removeDatasetEditor}
+                                            />
+
+                                            <CCMultiSelectInput
+                                                id={"dataset-admins"}
+                                                label={"Admins"}
+                                                isLoading={activeUsersList == undefined}
+                                                selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
+                                                currentSelections={datasetAdmins.map(item => item.username)}
+                                                handleInput={addDatasetAdmin}
+                                                handleDelete={removeDatasetAdmin}
+                                            />
                                         </Box>
                                         <Box>
                                             <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
