@@ -1167,6 +1167,14 @@ class ScanReportFormView(FormView):
         scan_report.author = self.request.user
         scan_report.save()
 
+        # Add viewers to the scan report if specified
+        if sr_viewers := form.cleaned_data.get("viewers"):
+            scan_report.viewers.add(*sr_viewers)
+
+        # Add editors to the scan report if specified
+        if sr_editors := form.cleaned_data.get("editors"):
+            scan_report.editors.add(*sr_editors)
+
         # Grab Azure storage credentials
         blob_service_client = BlobServiceClient.from_connection_string(
             os.getenv("STORAGE_CONN_STRING")
