@@ -9,6 +9,7 @@ import ToastAlert from './ToastAlert'
 import ConceptTag from './ConceptTag'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
 import CCMultiSelectInput from './CCMultiSelectInput'
+import CCSwitchInput from './CCSwitchInput'
 
 const UploadScanReport = ({ setTitle }) => {
 
@@ -42,6 +43,7 @@ const UploadScanReport = ({ setTitle }) => {
 
     const scanReportName = useRef();
     const createDatasetRef = useRef();
+    const [scanReportIsPublic, setScanReportIsPublic] = useState(true);
     const [whiteRabbitScanReport, setWhiteRabbitScanReport] = useState(null);
     const [dataDictionary, setDataDictionary] = useState(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading page")
@@ -232,6 +234,7 @@ const UploadScanReport = ({ setTitle }) => {
             formData.append('dataset', scanReportName.current.value)
             formData.append('scan_report_file', whiteRabbitScanReport)
             formData.append('data_dictionary_file', dataDictionary)
+            formData.append('visibility', scanReportIsPublic ? "PUBLIC" : "RESTRICTED")
             scanreportViewers.forEach(viewer => formData.append("viewers", viewer.id))
             scanreportEditors.forEach(editor => formData.append("editors", editor.id))
             console.log([...formData.entries()])
@@ -498,17 +501,26 @@ const UploadScanReport = ({ setTitle }) => {
                     </Box>
                 }
             </Box>
-
-            <CCMultiSelectInput
-                id={"scanreport-viewers"}
-                label={"Viewers"}
-                info={"If the Scan Report is PUBLIC, then all users with access to the Dataset have viewer access to the Scan Report. Additionally, Dataset admins and editors have viewer access to the Scan Report in all cases."}
-                isLoading={loadingDatasetProjects}
-                selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
-                currentSelections={scanreportViewers.map(item => item.username)}
-                handleInput={addScanreportViewer}
-                handleDelete={removeScanreportViewer}
+            <CCSwitchInput
+                id={"scanreport-visibility"}
+                label={"Visibility"}
+                isChecked={scanReportIsPublic}
+                handleInput={setScanReportIsPublic}
+                checkedMessage={"PUBLIC"}
+                notCheckedMessage={"RESTRICTED"}
             />
+            {scanReportIsPublic &&
+                <CCMultiSelectInput
+                    id={"scanreport-viewers"}
+                    label={"Viewers"}
+                    info={"If the Scan Report is PUBLIC, then all users with access to the Dataset have viewer access to the Scan Report. Additionally, Dataset admins and editors have viewer access to the Scan Report in all cases."}
+                    isLoading={loadingDatasetProjects}
+                    selectOptions={activeUsersList ? activeUsersList.filter(item => selectedDatasetProjectMembers.includes(item.id)).map(item => item.username) : []}
+                    currentSelections={scanreportViewers.map(item => item.username)}
+                    handleInput={addScanreportViewer}
+                    handleDelete={removeScanreportViewer}
+                />
+            }
 
             <CCMultiSelectInput
                 id={"scanreport-editors"}
