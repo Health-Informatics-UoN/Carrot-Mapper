@@ -62,10 +62,10 @@ const DatasetAdminForm = ({ setTitle }) => {
                     useGet("/datapartners/"),
                     useGet("/usersfilter/?is_active=true"),
                     useGet(`/projects/?dataset=${datasetId}`),
-                    useGet(`/projects`) 
+                    useGet(`/projects`)
                 ]
                 // Get dataset, data partners and users
-                const [dataPartnerQuery, usersQuery, projectsQuery,allProjectsQuery] = await Promise.all(queries)
+                const [dataPartnerQuery, usersQuery, projectsQuery, allProjectsQuery] = await Promise.all(queries)
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
                 // Set up state from the results of the queries
                 setDataset(datasetQuery)
@@ -178,36 +178,38 @@ const DatasetAdminForm = ({ setTitle }) => {
         setProjects(pj => pj.filter(project => project.name != name))
     }
 
-    const mapDatasetToProjects = async (newProjects, discardedProjects) =>{
-        const promises = [] 
+    const mapDatasetToProjects = async (newProjects, discardedProjects) => {
+        const projectsQuery = await useGet("/projects/?datasets=true")
+        const promises = []
         const full_projects = await useGet(`/projects/?name__in=${newProjects.map(project => project.name).join()}`)
         full_projects.map(project => {
             const data = {
                 id: project.id,
-                datasets: [datasetId, ...project.datasets.filter(item=>item!=datasetId)]
+                datasets: [datasetId, ...projectsQuery.find(item => item.name == project.name).datasets.filter(item => item != datasetId)]
             }
             promises.push(usePatch(`/projects/update/${project.id}/`, data))
         })
-
-        const full_discarded_projects = await useGet(`/projects/?name__in=${discardedProjects.map(project => project.name).join()}`)
-        full_discarded_projects.map(project => {
-            const data = {
-                id: project.id,
-                datasets: project.datasets.filter(item=>item!=datasetId)
-            }
-            promises.push(usePatch(`/projects/update/${project.id}/`, data))
-        })
+        if (discardedProjects.length > 0) {
+            const full_discarded_projects = await useGet(`/projects/?name__in=${discardedProjects.map(project => project.name).join()}`)
+            full_discarded_projects.map(project => {
+                const data = {
+                    id: project.id,
+                    datasets: projectsQuery.find(item => item.name == project.name).datasets.filter(item => item != datasetId)
+                }
+                promises.push(usePatch(`/projects/update/${project.id}/`, data))
+            })
+        }
         await Promise.all(promises)
         return
     }
-    
+
     // Send updated dataset to the DB
     async function upload() {
         /**
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
-        
+
         const patchData = {
             name: dataset.name,
             data_partner: selectedDataPartner.id,
@@ -228,7 +230,7 @@ const DatasetAdminForm = ({ setTitle }) => {
         if (!arraysEqual(newAdmins, dataset.admins)) {
             patchData.admins = newAdmins
         }
-        
+
         try {
             setUploadLoading(true)
             const response = await usePatch(
@@ -236,11 +238,11 @@ const DatasetAdminForm = ({ setTitle }) => {
                 patchData,
             )
             const currentProjects = await useGet(`/projects/?dataset=${datasetId}`)
-            if(!arraysEqual(currentProjects.map(item=>item.name), projects.map(item=>item.name))){
-                const discardedProjects = currentProjects.filter(item=>!projects.map(project=>project.name).includes(item.name))
-                await mapDatasetToProjects(projects,discardedProjects)
+            if (!arraysEqual(currentProjects.map(item => item.name), projects.map(item => item.name))) {
+                const discardedProjects = currentProjects.filter(item => !projects.map(project => project.name).includes(item.name))
+                await mapDatasetToProjects(projects, discardedProjects)
             }
-            
+
             setUploadLoading(false)
             setDataset(response)
             setAlert({
