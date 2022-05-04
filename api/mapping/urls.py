@@ -124,6 +124,7 @@ routers.register(
 routers.register(r"analyse", views.AnalyseRules, basename="getanalysis")
 
 urlpatterns = [
+    path(r"api/countprojects/<int:dataset>", views.CountProjects.as_view(), name="countprojects"),
     path(r"api/countstats/", views.CountStats.as_view(), name="countstats"),
     path(
         r"api/countstatsscanreport/",
