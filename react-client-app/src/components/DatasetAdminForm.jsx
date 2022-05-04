@@ -184,7 +184,7 @@ const DatasetAdminForm = ({ setTitle }) => {
         full_projects.map(project => {
             const data = {
                 id: project.id,
-                datasets: [datasetId, ...project.datasets.filter(item=>item.id!=datasetId)]
+                datasets: [datasetId, ...project.datasets.filter(item=>item!=datasetId)]
             }
             promises.push(usePatch(`/projects/update/${project.id}/`, data))
         })
@@ -193,7 +193,7 @@ const DatasetAdminForm = ({ setTitle }) => {
         full_discarded_projects.map(project => {
             const data = {
                 id: project.id,
-                datasets: project.datasets.filter(item=>item.id!=datasetId)
+                datasets: project.datasets.filter(item=>item!=datasetId)
             }
             promises.push(usePatch(`/projects/update/${project.id}/`, data))
         })
