@@ -214,13 +214,17 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CountProjects(APIView):
     renderer_classes = (JSONRenderer,)
-    def get(self, request, dataset):   
-        project_count =  Project.objects.filter(datasets__exact=dataset).distinct().count() 
+
+    def get(self, request, dataset):
+        project_count = (
+            Project.objects.filter(datasets__exact=dataset).distinct().count()
+        )
         content = {
             "project_count": project_count,
         }
         return Response(content)
-        
+
+
 class ProjectListView(ListAPIView):
     """
     API view to show all projects' names.
