@@ -32,6 +32,8 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [projectsList, setProjectsList] = useState(undefined)
     const [usersList, setUsersList] = useState(undefined)
     const [error, setError] = useState(undefined)
+    const [projectDifference, setProjectDifference] = useState(0)
+
 
     function getUsersFromIds(userIds, userObjects) {
         /**
@@ -62,10 +64,11 @@ const DatasetAdminForm = ({ setTitle }) => {
                     useGet("/datapartners/"),
                     useGet("/usersfilter/?is_active=true"),
                     useGet(`/projects/?dataset=${datasetId}`),
-                    useGet(`/projects`)
+                    useGet(`/projects`),
+                    useGet(`/countprojects/${datasetId}`),
                 ]
                 // Get dataset, data partners and users
-                const [dataPartnerQuery, usersQuery, projectsQuery, allProjectsQuery] = await Promise.all(queries)
+                const [dataPartnerQuery, usersQuery, projectsQuery, allProjectsQuery, projectCount] = await Promise.all(queries)
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
                 // Set up state from the results of the queries
                 setDataset(datasetQuery)
@@ -73,6 +76,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 setDataPartners([...dataPartnerQuery])
                 setProjectsList(allProjectsQuery)
                 setProjects(projectsQuery)
+                setProjectDifference(projectCount.project_count - projectsQuery.length)
                 setSelectedDataPartner(
                     dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
                 )
@@ -266,6 +270,12 @@ const DatasetAdminForm = ({ setTitle }) => {
                 description: error.statusText ? error.statusText : ""
             })
             onOpen()
+        }
+    }
+
+    const warnUpload = () => {
+        if (confirm(`This Dataset is in ${projectDifference} further Projects that you cannot see. Do you want to continue with this edit?`) == true) {
+            upload()
         }
     }
 
@@ -487,7 +497,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </Box>
             </FormControl>
             {isAdmin &&
-                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
+                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={projectDifference===0?upload:warnUpload}>Submit</Button>
             }
 
         </Container>
