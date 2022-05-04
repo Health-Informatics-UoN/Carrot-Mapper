@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react"
 import { ArrowForwardIcon } from '@chakra-ui/icons'
 import ConceptTag from './ConceptTag'
-function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSourceFilter, destinationTableFilter, sourceTableFilter, applyFilters }) {
+function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSourceFilter, destinationTableFilter, sourceTableFilter, applyFilters, scanReportId }) {
     return (
         <div>
             <div style={{ display: "flex", flexWrap: "wrap" }}>
@@ -27,7 +27,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                     )
                 })}
             </div>
-            <Table variant="striped" colorScheme="greyBasic">
+            <Table colorScheme="greyBasic">
                 <TableCaption></TableCaption>
                 <Thead>
                     <Tr>
@@ -64,12 +64,12 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                     {applyFilters(values).length > 0 ?
                         // Create new row for every value object
                         applyFilters(values).map((item, index) =>
-                            <Tr key={index}>
+                            <Tr key={index} bg={item.flag ? "lightred" : ""}>
                                 <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.source_table.id}>{item.source_table.name}</Link></Td>
-                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={window.u + "values/?search=" + item.source_field.id}>{item.source_field.name}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={"/scanreports/" + scanReportId + "/tables/" + item.source_table.id}>{item.source_table.name}</Link></Td>
+                                <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={"/scanreports/" + scanReportId + "/tables/" + item.source_table.id + "/fields/" + item.source_field.id}>{item.source_field.name}</Link></Td>
                                 <Td maxW={[50, 100, 200]} >
                                     {item.term_mapping != null &&
                                         <>

@@ -2,26 +2,14 @@
 
 {% block body %}
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'scan-report-list' %}">Scan
-            reports</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'tables' %}?search={{ scan_report.id }}">
-            {{ scan_report.data_partner.name }} - {{ scan_report.dataset }}</a></li>
-        <li class="breadcrumb-item"><a href="{% url 'fields' %}?search={{ scan_report_table.id }}">
-            {{ scan_report_table.name }}</a></li>
-    </ol>
-</nav>
-
 <div>
     <!-- Loads in React Components from index.js -->
     <div id='root'></div>
     <script type="text/javascript" >
-        var a = "{{a}}"
-        var u = "{{u}}"
+        var pk = "{{pk}}";
+        var canEdit = "{{can_edit}}" === "True" ? true : false;
     </script>
-    <script type="module" src="../../../static/javascript/react/src/fieldsTable.js"></script>
+    <script type="module" src="/static/javascript/react/src/fieldsTable.js"></script>
     
 </div>
 

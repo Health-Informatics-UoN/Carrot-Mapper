@@ -40,34 +40,33 @@ routers.register(
 routers.register(r"users", views.UserViewSet, basename="users")
 routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
 
-routers.register(r"scanreports", views.ScanReportViewSet, basename="scanreports")
-
+routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
 routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
-routers.register(
-    r"scanreporttablesfilter",
-    views.ScanReportTableFilterViewSet,
-    basename="scanreporttablesfilter",
-)
+# routers.register(
+#     r"scanreporttablesfilter",
+#     views.ScanReportTableFilterViewSet,
+#     basename="scanreporttablesfilter",
+# )
 
 routers.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
 )
-routers.register(
-    r"scanreportfieldsfilter",
-    views.ScanReportFieldFilterViewSet,
-    basename="scanreportfieldsfilter",
-)
+# routers.register(
+#     r"scanreportfieldsfilter",
+#     views.ScanReportFieldFilterViewSet,
+#     basename="scanreportfieldsfilter",
+# )
 
 routers.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
 )
-routers.register(
-    r"scanreportvaluesfilter",
-    views.ScanReportValueFilterViewSet,
-    basename="scanreportvaluesfilter",
-)
+# routers.register(
+#     r"scanreportvaluesfilter",
+#     views.ScanReportValueFilterViewSet,
+#     basename="scanreportvaluesfilter",
+# )
 
 routers.register(
     r"scanreportvaluesfilterscanreport",
@@ -122,6 +121,7 @@ routers.register(r"mappingruleslist", views.RulesList, basename="getlist")
 routers.register(
     r"mappingrulesfilter", views.MappingRuleFilterViewSet, basename="mappingrulefilter"
 )
+routers.register(r"analyse", views.AnalyseRules, basename="getanalysis")
 
 urlpatterns = [
     path(r"api/countstats/", views.CountStats.as_view(), name="countstats"),
@@ -140,6 +140,47 @@ urlpatterns = [
         views.CountStatsScanReportTableField.as_view(),
         name="countstatsscanreporttablefield",
     ),
+    # Dataset views
+    path(
+        "datasets",
+        views.dataset_list_page,
+        name="datasets",
+    ),
+    path(
+        "datasets/<int:pk>/details",
+        views.dataset_admin_page,
+        name="dataset_admin",
+    ),
+    path(
+        "datasets/<int:pk>",
+        views.dataset_content_page,
+        name="dataset_content",
+    ),
+    path(
+        r"api/datasets/",
+        views.DatasetListView.as_view(),
+        name="dataset_list",
+    ),
+    path(
+        r"api/datasets/<int:pk>",
+        views.DatasetRetrieveView.as_view(),
+        name="dataset_retrieve",
+    ),
+    path(
+        r"api/datasets/update/<int:pk>",
+        views.DatasetUpdateView.as_view(),
+        name="dataset_update",
+    ),
+    path(
+        r"api/datasets/delete/<int:pk>",
+        views.DatasetDeleteView.as_view(),
+        name="dataset_delete",
+    ),
+    path(
+        r"api/datasets/create/",
+        views.DatasetCreateView.as_view(),
+        name="dataset_create",
+    ),
     path(
         r"api/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
@@ -147,20 +188,7 @@ urlpatterns = [
     path("api/", include(routers.urls)),
     path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("", views.home, name="home"),
-    path("tables/", views.ScanReportTableListView.as_view(), name="tables"),
-    path(
-        "tables/<int:pk>/update/",
-        views.ScanReportTableUpdateView.as_view(),
-        name="scan-report-table-update",
-    ),
-    path("fields/", views.ScanReportFieldListView.as_view(), name="fields"),
-    path(
-        "fields/<int:pk>/update/",
-        views.ScanReportFieldUpdateView.as_view(),
-        name="scan-report-field-update",
-    ),
-    path("values/", views.ScanReportValueListView.as_view(), name="values"),
-    path("scanreports/", views.ScanReportListView.as_view(), name="scan-report-list"),
+    path("scanreports", views.ScanReportListView.as_view(), name="scan-report-list"),
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableListView.as_view(),
@@ -177,9 +205,14 @@ urlpatterns = [
         name="tables-structural-mapping-filter-lvl2",
     ),
     path(
-        "scanreports/create/",
+        "scanreports/create",
         views.ScanReportFormView.as_view(),
         name="scan-report-form",
+    ),
+    path(
+        "scanreports/<int:pk>/details",
+        views.scanreport_admin_page,
+        name="scan-report-details-form",
     ),
     path(
         "scanreports/<int:pk>/assertions/",
@@ -196,36 +229,6 @@ urlpatterns = [
         views.ScanReportAssertionsUpdateView.as_view(),
         name="scan-report-assertion-update",
     ),
-    path(
-        "scanreports/field-concepts/",
-        views.save_scan_report_field_concept,
-        name="scan_report_field_concept",
-    ),
-    path(
-        "scanreports/field-concepts/delete/",
-        views.delete_scan_report_field_concept,
-        name="scan_report_field_concept-delete",
-    ),
-    path(
-        "scanreports/value-concepts/",
-        views.save_scan_report_value_concept,
-        name="scan_report_value_concept",
-    ),
-    path(
-        "scanreports/value-concepts/delete/",
-        views.delete_scan_report_value_concept,
-        name="scan_report_value_concept-delete",
-    ),
-    path(
-        "datadictionary/",
-        views.DataDictionaryListView.as_view(),
-        name="data-dictionary",
-    ),
-    path(
-        "datadictionary/<int:pk>/update",
-        views.DataDictionaryUpdateView.as_view(),
-        name="update-data-dictionary",
-    ),
     path("nlp/run", views.run_nlp_field_level, name="run-nlp"),
     path("nlp/table/run", views.run_nlp_table_level, name="run-nlp-table"),
     path(
@@ -238,6 +241,43 @@ urlpatterns = [
         "password-success/",
         views.CCPasswordChangeDoneView.as_view(),
         name="password_change_done",
+    ),
+    # Project URLs
+    path("api/projects/", views.ProjectListView.as_view(), name="project_list"),
+    path(
+        "api/projects/<int:pk>/",
+        views.ProjectRetrieveView.as_view(),
+        name="project_retrieve",
+    ),
+    path(
+        r"api/projects/update/<int:pk>/",
+        views.ProjectUpdateView.as_view(),
+        name="projects_update",
+    ),
+    path(
+        "scanreports/<int:pk>",
+        views.scanreport_table_list_page,
+        name="scanreport_table",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:pk>",
+        views.scanreport_fields_list_page,
+        name="scanreport_fields",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>",
+        views.scanreport_values_list_page,
+        name="scanreport_values",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:pk>/update",
+        views.update_scanreport_table_page,
+        name="scan-report-table-update",
+    ),
+    path(
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>/update",
+        views.update_scanreport_field_page,
+        name="scan-report-field-update",
     ),
 ]
 # if settings.DEBUG: # new

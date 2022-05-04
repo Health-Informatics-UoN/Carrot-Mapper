@@ -92,7 +92,7 @@ const Home = () => {
             setCountStats(generatedCountStats)
             setTimeline(timeline)
         }
-    }, [filter]);
+    }, [filter])
 
     useEffect(async () => {
         // called on initial page load
@@ -101,9 +101,23 @@ const Home = () => {
         // sort scan reports
         scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // create a list of unique datapartners and make a batch query to get their data
-        const dataPartnerObject = {}
+        const datasetObject = {}
         scanreports.map(scanreport => {
-            dataPartnerObject[scanreport.data_partner] = true
+            datasetObject[scanreport.parent_dataset] = true
+        })
+        const datasetIds = chunkIds(Object.keys(datasetObject))
+        const datasetPromises = []
+        for (let i = 0; i < datasetIds.length; i++) {
+            datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`))
+        }
+        let datasets = await Promise.all(datasetPromises)
+        datasets = [].concat.apply([], datasets)
+        datasets.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset == element.id ? { ...scanreport, parent_dataset: element } : scanreport)
+        })
+        const dataPartnerObject = {}
+        datasets.map((dataset) => {
+            dataPartnerObject[dataset.data_partner] = true
         })
         const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject))
         const dataPartnerPromises = []
@@ -111,15 +125,15 @@ const Home = () => {
             dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`))
         }
         let dataPartners = await Promise.all(dataPartnerPromises)
-        dataPartners = [].concat.apply([], dataPartners)
-        dataPartners.forEach(element => {
-            scanreports = scanreports.map(scanreport => scanreport.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
+        dataPartners = dataPartners[0]
+        dataPartners.forEach((element) => {
+            scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport)
         })
         // create a list of scan report id's and batch query their count stats
         const scanreportIds = chunkIds(scanreports.map(scanreport => scanreport.id))
-        const countPromises = [];
+        const countPromises = []
         for (let i = 0; i < scanreportIds.length; i++) {
-            countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`));
+            countPromises.push(useGet(`/countstatsscanreport/?scan_report=${scanreportIds[i].join()}`))
         }
         const countStats = [].concat.apply([], await Promise.all(countPromises))
         scanreports = scanreports.map(report => ({ ...report, ...countStats.find(item => item.scanreport == report.id) }))
@@ -225,8 +239,40 @@ const Home = () => {
         // if it is a known string we can specify what colour we want it to return
         // otherwise we can just return the generated colour
         switch (str) {
+            case "University of Liverpool":
+                return '#30bb87'
+            case "University of Edinburgh":
+                return '#e07a5f'
+            case "University of Dundee":
+                return '#6079D3'
+            case "University of Swansea":
+                return '#fab765'
+            case "University of Cambridge":
+                return '#F7A399'
+            case "University of Bristol":
+                return '#04724d'
+            case "University College London":
+                return '#D67197'
             case "University of Nottingham":
-                return '#ffff00'
+                return '#005597'
+            case "Public Health Agency (NI)":
+                return '#CE4257'
+            case "Public Health Scotland":
+                return '#ffec75'
+            case "Public Health England":
+                return '#e8615a'
+            case "Oxford University Hospitals":
+                return '#720026'
+            case "Office National Statistics":
+                return '#FFBF69'
+            case "NHS Digital":
+                return '#f2cc8f'
+            case "Imperial":
+                return '#D4EFFC'
+            case "NHS England":
+                return '#7fadce'
+            case "NHS GOSH":
+                return '#62bcb1'
             default:
                 var hash = 0;
                 for (var i = 0; i < str.length; i++) {
@@ -375,9 +421,9 @@ const Home = () => {
                                             <Tbody>
                                                 {item.data.map((value, i) =>
                                                     <Tr key={i}>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.id}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.dataset}</Link></Td>
-                                                        <Td><Link style={{ color: "#0000FF", }} href={"/tables/?search=" + value.id}>{value.data_partner.name}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.id}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.dataset}</Link></Td>
+                                                        <Td><Link style={{ color: "#0000FF", }} href={"/scanreports/" + value.id}>{value.data_partner.name}</Link></Td>
                                                     </Tr>
                                                 )}
                                             </Tbody>

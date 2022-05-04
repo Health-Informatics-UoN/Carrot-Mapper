@@ -37,18 +37,19 @@ class CreationType(models.TextChoices):
     Reuse = "R", "Reuse"
 
 
+class VisibilityChoices(models.TextChoices):
+    PUBLIC = "PUBLIC", "Public"
+    RESTRICTED = "RESTRICTED", "Restricted"
+
+
 class BaseModel(models.Model):
     """
     To come
     """
 
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    updated_at = models.DateTimeField(
-        auto_now=True,
-    )
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         abstract = True
@@ -59,9 +60,7 @@ class ClassificationSystem(BaseModel):
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
     """
 
-    name = models.CharField(
-        max_length=64,
-    )
+    name = models.CharField(max_length=64)
 
     def __str__(self):
         return str(self.id)
@@ -72,18 +71,14 @@ class DataPartner(BaseModel):
     To come
     """
 
-    name = models.CharField(
-        max_length=64,
-    )
+    name = models.CharField(max_length=64)
+    # `datasets` field added by FK field in `Dataset`
 
     class Meta:
         verbose_name = "Data Partner"
         verbose_name_plural = "Data Partners"
         constraints = [
-            UniqueConstraint(
-                fields=["name"],
-                name="datapartner_name_unique",
-            )
+            UniqueConstraint(fields=["name"], name="datapartner_name_unique")
         ]
 
     def __str__(self):
@@ -95,9 +90,7 @@ class OmopTable(BaseModel):
     To come
     """
 
-    table = models.CharField(
-        max_length=64,
-    )
+    table = models.CharField(max_length=64)
 
     def __str__(self):
         return str(self.id)
@@ -108,14 +101,9 @@ class OmopField(BaseModel):
     To come
     """
 
-    table = models.ForeignKey(
-        OmopTable,
-        on_delete=models.CASCADE,
-    )
+    table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
 
-    field = models.CharField(
-        max_length=64,
-    )
+    field = models.CharField(max_length=64)
 
     def __str__(self):
         return str(self.id)
@@ -127,17 +115,9 @@ class ScanReportConcept(BaseModel):
     and users a generic relation to connect it to a ScanReportValue or ScanReportValue
     """
 
-    nlp_entity = models.CharField(
-        max_length=64,
-        null=True,
-        blank=True,
-    )
+    nlp_entity = models.CharField(max_length=64, null=True, blank=True)
 
-    nlp_entity_type = models.CharField(
-        max_length=64,
-        null=True,
-        blank=True,
-    )
+    nlp_entity_type = models.CharField(max_length=64, null=True, blank=True)
 
     nlp_confidence = models.DecimalField(
         max_digits=3,
@@ -146,33 +126,15 @@ class ScanReportConcept(BaseModel):
         blank=True,
     )
 
-    nlp_vocabulary = models.CharField(
-        max_length=64,
-        null=True,
-        blank=True,
-    )
+    nlp_vocabulary = models.CharField(max_length=64, null=True, blank=True)
 
-    nlp_concept_code = models.CharField(
-        max_length=64,
-        null=True,
-        blank=True,
-    )
+    nlp_concept_code = models.CharField(max_length=64, null=True, blank=True)
 
-    nlp_processed_string = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-    )
+    nlp_processed_string = models.CharField(max_length=256, null=True, blank=True)
 
-    concept = models.ForeignKey(
-        Concept,
-        on_delete=models.DO_NOTHING,
-    )
+    concept = models.ForeignKey(Concept, on_delete=models.DO_NOTHING)
 
-    content_type = models.ForeignKey(
-        ContentType,
-        on_delete=models.CASCADE,
-    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
 
     object_id = models.PositiveIntegerField()
 
@@ -194,13 +156,6 @@ class ScanReport(BaseModel):
     To come
     """
 
-    data_partner = models.ForeignKey(
-        DataPartner,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-    )
-
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -208,17 +163,12 @@ class ScanReport(BaseModel):
         null=True,
     )
 
-    name = models.CharField(
-        max_length=256,
-    )
+    name = models.CharField(max_length=256)
 
-    dataset = models.CharField(
-        max_length=128,
-    )
+    # TODO: rename to `dataset_name`
+    dataset = models.CharField(max_length=128)
 
-    hidden = models.BooleanField(
-        default=False,
-    )
+    hidden = models.BooleanField(default=False)
 
     file = models.FileField()
 
@@ -236,6 +186,35 @@ class ScanReport(BaseModel):
         related_name="data_dictionary",
     )
 
+    # TODO: rename to `dataset`
+    parent_dataset = models.ForeignKey(
+        "Dataset",
+        on_delete=models.CASCADE,
+        related_name="scan_reports",
+        related_query_name="scan_report",
+        null=True,
+        blank=True,
+    )
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
+
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="scanreport_viewings",
+        related_query_name="scanreport_viewing",
+        blank=True,
+    )
+    editors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="scanreport_editors",
+        related_query_name="scanreport_editor",
+        blank=True,
+    )
+
     def __str__(self):
         return str(self.id)
 
@@ -245,14 +224,9 @@ class ScanReportTable(BaseModel):
     To come
     """
 
-    scan_report = models.ForeignKey(
-        ScanReport,
-        on_delete=models.CASCADE,
-    )
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
 
-    name = models.CharField(
-        max_length=256,
-    )
+    name = models.CharField(max_length=256)
 
     # Quick notes:
     # - "ScanReportField", instead of ScanReportField,
@@ -285,22 +259,13 @@ class ScanReportField(BaseModel):
     To come
     """
 
-    scan_report_table = models.ForeignKey(
-        ScanReportTable,
-        on_delete=models.CASCADE,
-    )
+    scan_report_table = models.ForeignKey(ScanReportTable, on_delete=models.CASCADE)
 
-    name = models.CharField(
-        max_length=512,
-    )
+    name = models.CharField(max_length=512)
 
-    description_column = models.CharField(
-        max_length=512,
-    )
+    description_column = models.CharField(max_length=512)
 
-    type_column = models.CharField(
-        max_length=32,
-    )
+    type_column = models.CharField(max_length=32)
 
     max_length = models.IntegerField()
 
@@ -308,41 +273,21 @@ class ScanReportField(BaseModel):
 
     nrows_checked = models.IntegerField()
 
-    fraction_empty = models.DecimalField(
-        decimal_places=2,
-        max_digits=10,
-    )
+    fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
 
     nunique_values = models.IntegerField()
 
-    fraction_unique = models.DecimalField(
-        decimal_places=2,
-        max_digits=10,
-    )
+    fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
 
-    ignore_column = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-    )
+    ignore_column = models.CharField(max_length=64, blank=True, null=True)
 
-    is_patient_id = models.BooleanField(
-        default=False,
-    )
+    is_patient_id = models.BooleanField(default=False)
 
-    is_ignore = models.BooleanField(
-        default=False,
-    )
+    is_ignore = models.BooleanField(default=False)
 
-    classification_system = models.CharField(
-        max_length=64,
-        blank=True,
-        null=True,
-    )
+    classification_system = models.CharField(max_length=64, blank=True, null=True)
 
-    pass_from_source = models.BooleanField(
-        default=True,
-    )
+    pass_from_source = models.BooleanField(default=True)
 
     concept_id = models.IntegerField(
         default=-1,
@@ -353,9 +298,7 @@ class ScanReportField(BaseModel):
 
     field_description = models.CharField(max_length=256, blank=True, null=True)
 
-    concepts = GenericRelation(
-        ScanReportConcept,
-    )
+    concepts = GenericRelation(ScanReportConcept)
 
     def __str__(self):
         return str(self.id)
@@ -366,16 +309,9 @@ class ScanReportAssertion(BaseModel):
     To come
     """
 
-    scan_report = models.ForeignKey(
-        ScanReport,
-        on_delete=models.CASCADE,
-    )
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
 
-    negative_assertion = models.CharField(
-        max_length=64,
-        null=True,
-        blank=True,
-    )
+    negative_assertion = models.CharField(max_length=64, null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
@@ -417,24 +353,15 @@ class ScanReportValue(BaseModel):
     To come
     """
 
-    scan_report_field = models.ForeignKey(
-        ScanReportField,
-        on_delete=models.CASCADE,
-    )
+    scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
 
-    value = models.CharField(
-        max_length=128,
-    )
+    value = models.CharField(max_length=128)
 
     frequency = models.IntegerField()
 
-    conceptID = models.IntegerField(
-        default=-1,
-    )  # TODO rename it to concept_id
+    conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
 
-    concepts = GenericRelation(
-        ScanReportConcept,
-    )
+    concepts = GenericRelation(ScanReportConcept)
 
     value_description = models.CharField(max_length=512, blank=True, null=True)
 
@@ -459,15 +386,77 @@ class NLPModel(models.Model):
     Created for Sprint 14
     """
 
-    user_string = models.TextField(
-        max_length=1024,
-    )
+    user_string = models.TextField(max_length=1024)
 
-    json_response = models.TextField(
-        max_length=4096,
-        blank=True,
-        null=True,
-    )
+    json_response = models.TextField(max_length=4096, blank=True, null=True)
 
     def __str__(self):
+        return str(self.id)
+
+
+class Dataset(BaseModel):
+    """
+    Model for datasets which contain scan reports.
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+    data_partner = models.ForeignKey(
+        DataPartner,
+        on_delete=models.CASCADE,
+        related_name="datasets",
+        related_query_name="dataset",
+    )
+    visibility = models.CharField(
+        max_length=10,
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.PUBLIC,
+    )
+    viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_viewings",
+        related_query_name="dataset_viewing",
+        blank=True,
+    )
+    admins = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_admins",
+        related_query_name="dataset_admin",
+        blank=True,
+    )
+    editors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="dataset_editors",
+        related_query_name="dataset_editor",
+        blank=True,
+    )
+    hidden = models.BooleanField(default=False)
+    # `projects` field added by M2M field in `Project`
+    # `scan_reports` field added by FK field in `ScanReport`
+
+    class Meta:
+        verbose_name = "Dataset"
+        verbose_name_plural = "Datasets"
+
+    def __str__(self) -> str:
+        return str(self.id)
+
+
+class Project(BaseModel):
+    """
+    Model for projects which are made up of datasets.
+    """
+
+    name = models.CharField(max_length=100, unique=True)
+    datasets = models.ManyToManyField(
+        Dataset, related_name="projects", related_query_name="project", blank=True
+    )
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, related_name="projects", related_query_name="project"
+    )
+
+    class Meta:
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
+
+    def __str__(self) -> str:
         return str(self.id)

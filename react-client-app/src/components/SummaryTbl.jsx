@@ -1,6 +1,6 @@
 import React from 'react'
 import RulesTbl from './RulesTbl'
-function SummaryTbl({ values, filters,removeFilter, setDestinationFilter,setSourceFilter,destinationTableFilter,sourceTableFilter }) {
+function SummaryTbl({ values, filters, removeFilter, setDestinationFilter, setSourceFilter, destinationTableFilter, sourceTableFilter, scanReportId }) {
     const applyFilters = (variable) => {
         let newData = variable.map((scanreport) => scanreport);
         newData = newData.filter((rule) => !rule.destination_field.name.includes('_source_concept_id'));
@@ -15,10 +15,10 @@ function SummaryTbl({ values, filters,removeFilter, setDestinationFilter,setSour
     }
     return (
         <div>
-            
+
             <RulesTbl values={values}
-                filters={filters}removeFilter={removeFilter} setDestinationFilter={setDestinationFilter}setSourceFilter={setSourceFilter}
-                destinationTableFilter={destinationTableFilter}sourceTableFilter={sourceTableFilter} applyFilters={applyFilters}/>
+                filters={filters} removeFilter={removeFilter} setDestinationFilter={setDestinationFilter} setSourceFilter={setSourceFilter}
+                destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} applyFilters={applyFilters} scanReportId={scanReportId} />
         </div>
     )
 }

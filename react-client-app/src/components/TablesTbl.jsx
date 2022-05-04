@@ -8,44 +8,102 @@ import {
     Td,
     TableCaption,
     Flex,
+    Spacer,
     Spinner,
     Link,
     Button,
     HStack
 
 } from "@chakra-ui/react"
-
-
-import { getScanReportTableRows } from '../api/values'
+import CCBreadcrumbBar from './CCBreadcrumbBar'
+import PageHeading from './PageHeading'
+import { getScanReportTableRows, useGet, usePost } from '../api/values'
 import { downloadXLSXFile } from '../api/download'
+import Error404 from '../views/Error404'
 
 
 
-
-const TablesTbl = () => {
+const TablesTbl = ({ setTitle }) => {
     // get the value to use to query the fields endpoint from the page url
-    const value = parseInt(new URLSearchParams(window.location.search).get("search"))
-    const [values, setValues] = useState([]);
+    const pathArray = window.location.pathname.split("/")
+    const scanReportId = pathArray[pathArray.length - 1]
+    const [scanReportName, setScanReportName] = useState();
+    const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     useEffect(() => {
-        // get table on initial render
-        getScanReportTableRows(value).then(table => {
-            setValues(table)
-            setLoading(false)
-        })
+        setTitle(null)
+        // Check user can see the scan report
+        useGet(`/scanreports/${scanReportId}`).then(res => {
+            setScanReportName(res.dataset)
+            // If user can see scan report, get the tables
+            getScanReportTableRows(scanReportId).then(table => {
+                setScanReportTables(table)
+                setLoading(false)
+            })
+        }
+        ).catch(
+            err => {
+                // If user can't see scan report, show an error message
+                setError(true)
+                setLoading(false)
+            }
+        )
     }, []);
 
     const download_scan_report = () => {
-        downloadXLSXFile()
-        
+        downloadXLSXFile(scanReportId, window.scan_report_name)
+
     };
 
-    const download_data_dictionary = () => {
-        window.download_data_dictionary()
+    // This is broken now.
+    const download_data_dictionary = async () => {
+        const response = await usePost(window.location.href, { "download-dd": true }, false);
+        var type = response.headers['content-type'];
+        var blob = new Blob([response.data], { type: type });
+        var filename = "";
+        var disposition = response.headers['content-disposition'];
+        if (disposition && disposition.indexOf('attachment') !== -1) {
+            var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+            var matches = filenameRegex.exec(disposition);
+            if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+        }
+        if (typeof window.navigator.msSaveBlob !== 'undefined') {
+            // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+            window.navigator.msSaveBlob(blob, filename);
+        }
+        else {
+            var URL = window.URL || window.webkitURL;
+            var downloadUrl = URL.createObjectURL(blob);
+            if (filename) {
+                // use HTML5 a[download] attribute to specify filename
+                var a = document.createElement("a");
+                // safari doesn't support this yet
+                if (typeof a.download === 'undefined') {
+                    window.location.href = downloadUrl;
+                }
+                else {
+                    a.href = downloadUrl;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                }
+            }
+            else {
+                //window.location = downloadUrl;
+            }
+            setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+
+        }
+
     };
+
+    if (error) {
+        //Render Error State
+        return <Error404 setTitle={setTitle} />
+    }
 
     if (loading) {
         //Render Loading State
@@ -60,11 +118,27 @@ const TablesTbl = () => {
     }
     return (
         <div >
-            <HStack my="10px">
-            <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
-            <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
-
-            </HStack>
+            <CCBreadcrumbBar>
+                <Link href={"/"}>Home</Link>
+                <Link href={"/scanreports"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}`}>{scanReportName}</Link>
+            </CCBreadcrumbBar>
+            <PageHeading text={"Tables"} />
+            <Flex my="10px">
+                <HStack>
+                    <Link href={"/scanreports/" + scanReportId + "/details"}>
+                        <Button variant="blue" my="10px">Scan Report Details</Button>
+                    </Link>
+                    <Link href={"/scanreports/" + scanReportId + "/mapping_rules/"}>
+                        <Button variant="blue" my="10px">Go to Rules</Button>
+                    </Link>
+                </HStack>
+                <Spacer />
+                <HStack>
+                    <Button variant="green" onClick={download_scan_report}>Download Scan Report File</Button>
+                    <Button variant="blue" isDisabled={window.hide_button} onClick={download_data_dictionary}>Download Data Dictionary File</Button>
+                </HStack>
+            </Flex>
 
             <Table variant="striped" colorScheme="greyBasic">
                 <TableCaption></TableCaption>
@@ -73,19 +147,17 @@ const TablesTbl = () => {
                         <Th>Name</Th>
                         <Th>Person ID</Th>
                         <Th>Event Date</Th>
-                        <Th>Run NLP on Table</Th>
-                        <Th>Edit</Th>
+                        {window.canEdit && <Th>Edit</Th>}
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {values.length > 0 ?
-                        values.map((item, index) =>
+                    {scanReportTables.length > 0 ?
+                        scanReportTables.map((item, index) =>
                             <Tr key={index}>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "fields/?search=" + item.id}>{item.name}</Link></Td>
-                                <Td>{item.person_id ? item.person_id.name : null} </Td>
-                                <Td>{item.date_event ? item.date_event.name : null}</Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={"/nlp/table/run?search=" + item.id}>Run NLP on Table</Link></Td>
-                                <Td><Link style={{ color: "#0000FF", }} href={window.u + "tables/" + item.id + "/update/"}>Edit Table</Link></Td>
+                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}`}>{item.name}</Link></Td>
+                                <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
+                                <Td maxW={"200px"}>{item.date_event ? item.date_event.name : null}</Td>
+                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + item.scan_report + "/tables/" + item.id + "/update"}>Edit Table</Link></Td>}
                             </Tr>
 
                         )
@@ -96,7 +168,6 @@ const TablesTbl = () => {
                     }
                 </Tbody>
             </Table>
-            <Link href={"/scanreports/"+value+"/mapping_rules/"}><Button variant="blue" my="10px">Go to Rules</Button></Link>
         </div>
     );
 }
