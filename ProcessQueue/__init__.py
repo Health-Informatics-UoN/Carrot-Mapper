@@ -1366,43 +1366,24 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
     return fields_response_content
 
 
-def main(msg: func.QueueMessage):
-    api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id = startup(
-        msg
-    )
-    # Set the status to 'Upload in progress'
-    status_in_progress_response = requests.patch(
-        url=f"{api_url}scanreports/{scan_report_id}/",
-        data=json.dumps({"status": "UPINPRO"}),
-        headers=headers,
-    )
-
-    wb, data_dictionary, vocab_dictionary = parse_blobs(
-        scan_report_blob, data_dictionary_blob
-    )
-    # Get the first sheet 'Field Overview',
-    # to populate ScanReportTable & ScanReportField models
-    fo_ws = wb.worksheets[0]
-
-    table_name_to_id_map = post_tables(fo_ws, api_url, scan_report_id, headers)
-
-    """
-    POST fields per table:
-    For each row in Field Overview create an entry for scan_report_field,
-    Empty row signifies end of fields in a table
-    Append field entry to field_entries_to_post[] list,
-    Create JSON array with all the field entries, 
-    Send POST request to API with JSON as input,
-    Save the response data(field ids,field names) in a dictionary
-    Set the current working sheet to be the same as the current table
-    Post the values for that table
+def process_all_fields_and_values(
+    fo_ws,
+    table_name_to_id_map,
+    wb,
+    data_dictionary,
+    vocab_dictionary,
+    api_url,
+    scan_report_id,
+    headers,
+):
+    """Loop over all rows in Field Overview sheet.
+    This is the same as looping over all fields in all tables.
+    When the end of one table is reached, then post all the ScanReportFields
+    and ScanReportValues associated to that table, then continue down the
+    list of fields in tables.
     """
     field_entries_to_post = []
 
-    # Loop over all rows in Field Overview sheet.
-    # For sheets past the first two in the Scan Report
-    # i.e. all 'data' sheets that are not Field Overview and Table Overview
-    logger.info("Start fields loop")
     previous_row_value = None
     for i, row in enumerate(fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2):
         # Guard against unnecessary rows beyond the last true row with contents
@@ -1412,6 +1393,8 @@ def main(msg: func.QueueMessage):
             break
         previous_row_value = row[0].value
 
+        # If the row is not empty, then it is a field in a table, and should be added to
+        # the list ready for processing at the end of this table.
         if row[0].value != "" and row[0].value is not None:
             current_table_name = row[0].value
             # Create ScanReportField entry
@@ -1429,12 +1412,6 @@ def main(msg: func.QueueMessage):
                 "nunique_values": row[8].value,
                 "fraction_unique": round(default_zero(row[9].value), 2),
                 "ignore_column": None,
-                # "is_patient_id": False,
-                # "is_ignore": False,
-                # "pass_from_source": True,
-                # "classification_system": str(row[11].value),
-                # "concept_id": -1,
-                # "field_description": None,
             }
             # Append each entry to a list
             field_entries_to_post.append(field_entry)
@@ -1487,6 +1464,59 @@ def main(msg: func.QueueMessage):
                     headers,
                 )
             )
+
+
+def main(msg: func.QueueMessage):
+    api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id = startup(
+        msg
+    )
+    # Set the status to 'Upload in progress'
+    status_in_progress_response = requests.patch(
+        url=f"{api_url}scanreports/{scan_report_id}/",
+        data=json.dumps({"status": "UPINPRO"}),
+        headers=headers,
+    )
+
+    wb, data_dictionary, vocab_dictionary = parse_blobs(
+        scan_report_blob, data_dictionary_blob
+    )
+    # Get the first sheet 'Field Overview',
+    # to populate ScanReportTable & ScanReportField models
+    fo_ws = wb.worksheets[0]
+
+    # POST ScanReportTables
+    table_name_to_id_map = post_tables(fo_ws, api_url, scan_report_id, headers)
+
+    """
+    POST fields per table:
+    For each row in Field Overview create an entry for scan_report_field,
+    Empty row signifies end of fields in a table
+    Append field entry to field_entries_to_post[] list,
+    Create JSON array with all the field entries, 
+    Send POST request to API with JSON as input,
+    Save the response data(field ids,field names) in a dictionary
+    Set the current working sheet to be the same as the current table
+    Post the values for that table
+    """
+
+    logger.info("Start looping over all fields in all tables")
+    # Loop over all rows in Field Overview sheet.
+    # This is the same as looping over all fields in all tables.
+    # When the end of one table is reached, then post all the ScanReportFields
+    # and ScanReportValues associated to that table, then continue down the
+    # list of fields in tables until all fields in all tables have been 
+    # processed (along with their ScanReportValues).
+    process_all_fields_and_values(
+        fo_ws,
+        table_name_to_id_map,
+        wb,
+        data_dictionary,
+        vocab_dictionary,
+        api_url,
+        scan_report_id,
+        headers,
+    )
+
     logger.info("All tables completed. Now set status to 'Upload Complete'")
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
