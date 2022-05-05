@@ -612,26 +612,38 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         body = request.data
-        concept = ScanReportConcept.objects.filter(
-            concept=body["concept"],
-            object_id=body["object_id"],
-            content_type=body["content_type"],
-        )
-        if concept.count() > 0:
-            print("Can't add multiple concepts of the same id to the same object")
-            response = JsonResponse(
-                {
-                    "status_code": 400,
-                    "ok": False,
-                    "statusText": "Can't add multiple concepts of the same id to the same object",
-                }
+        if not isinstance(body, list):
+            concept = ScanReportConcept.objects.filter(
+                concept=body["concept"],
+                object_id=body["object_id"],
+                content_type=body["content_type"],
             )
-            response.status_code = 400
-            return response
+            if concept.count() > 0:
+                print("Can't add multiple concepts of the same id to the same object")
+                response = JsonResponse(
+                    {
+                        "status_code": 403,
+                        "ok": False,
+                        "statusText": "Can't add multiple concepts of the same id to the same object",
+                    }
+                )
+                response.status_code = 403
+                return response
+        else:
+            # for each item in the list, identify any existing SRConcepts that clash, and block their creation
+            # this method may be quite slow as it has to wait for each query
+            filtered = []
+            for item in body:
+                concept = ScanReportConcept.objects.filter(
+                    concept=item["concept"],
+                    object_id=item["object_id"],
+                    content_type=item["content_type"],
+                )
+                if concept.count() == 0:
+                    filtered.append(item)
+            body = filtered
 
-        serializer = self.get_serializer(
-            data=request.data, many=isinstance(request.data, list)
-        )
+        serializer = self.get_serializer(data=body, many=isinstance(body, list))
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)

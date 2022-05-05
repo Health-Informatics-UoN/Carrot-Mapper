@@ -2,7 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.0-beta
+## v2.0.1-beta
+### New Features
+
+### Improvements
+
+### Bugfixes
+
+## v2.0.0 was released 04/05/22
 
 - Added Project and Dataset tables to the database.
 - Added `add_datasets_to_partner` management command.
