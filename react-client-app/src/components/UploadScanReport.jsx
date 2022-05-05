@@ -227,9 +227,6 @@ const UploadScanReport = ({ setTitle }) => {
             if (dataDictionary && dataDictionary.name.split('.').pop() != "csv") {
                 throw { statusText: "You have attempted to upload a data dictionary which is not in csv format. Please upload a .csv file" }
             }
-            if (!scanReportIsPublic && scanreportViewers.length == 0) {
-                throw { statusText: "RESTRICTED scan reports must have at least one Viewer." }
-            }
             // The tests on the backend will also trigger an error
 
             let formData = new FormData()
