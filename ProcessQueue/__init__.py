@@ -326,6 +326,28 @@ def get_active_completed_scan_reports(api_url, headers):
     return active_srs
 
 
+def post_paginated_concepts(concepts_to_post, api_url, headers):
+    paginated_concepts_to_post = paginate(concepts_to_post)
+    concept_response = []
+    for concepts_to_post_item in paginated_concepts_to_post:
+        post_concept_response = requests.post(
+            url=api_url + "scanreportconcepts/",
+            headers=headers,
+            data=json.dumps(concepts_to_post_item),
+        )
+        logger.info(
+            f"CONCEPTS SAVE STATUS >>> "
+            f"{post_concept_response.status_code} "
+            f"{post_concept_response.reason}"
+        )
+        concept_response.append(
+            json.loads(post_concept_response.content.decode("utf-8"))
+        )
+    concept_content = flatten(concept_response)
+
+    concept_response_content += concept_content
+
+
 def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
     """
     This expects a dict of field names to ids which have been generated in a newly uploaded
@@ -510,26 +532,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             continue
 
     if concepts_to_post:
-        paginated_concepts_to_post = paginate(concepts_to_post)
-        concept_response = []
-        for concepts_to_post_item in paginated_concepts_to_post:
-            post_concept_response = requests.post(
-                url=api_url + "scanreportconcepts/",
-                headers=headers,
-                data=json.dumps(concepts_to_post_item),
-            )
-            logger.info(
-                f"CONCEPTS SAVE STATUS >>>"
-                f"{post_concept_response.status_code} "
-                f"{post_concept_response.reason}"
-            )
-            concept_response.append(
-                json.loads(post_concept_response.content.decode("utf-8"))
-            )
-        concept_content = flatten(concept_response)
-
-        concept_response_content += concept_content
-
+        post_paginated_concepts(concepts_to_post, api_url, headers)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
 
@@ -809,26 +812,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
             continue
 
     if concepts_to_post:
-        paginated_concepts_to_post = paginate(concepts_to_post)
-        concept_response = []
-        for concepts_to_post_item in paginated_concepts_to_post:
-            post_concept_response = requests.post(
-                url=api_url + "scanreportconcepts/",
-                headers=headers,
-                data=json.dumps(concepts_to_post_item),
-            )
-            logger.info(
-                f"CONCEPTS SAVE STATUS >>> "
-                f"{post_concept_response.status_code} "
-                f"{post_concept_response.reason}"
-            )
-            concept_response.append(
-                json.loads(post_concept_response.content.decode("utf-8"))
-            )
-        concept_content = flatten(concept_response)
-
-        concept_response_content += concept_content
-
+        post_paginated_concepts(concepts_to_post, api_url, headers)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
