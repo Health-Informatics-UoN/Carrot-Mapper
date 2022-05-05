@@ -300,6 +300,32 @@ def flatten(arr):
     return newArr
 
 
+def get_active_completed_scan_reports(api_url, headers):
+    # TODO: could this be replaced by a single API endpoint?
+    # get all scan reports to be used to filter values by only values that come from
+    # active scan reports that are marked as 'Mapping Complete'
+    get_scan_reports = requests.get(
+        url=f"{api_url}scanreports/",
+        headers=headers,
+    )
+    get_datasets = requests.get(
+        url=f"{api_url}datasets/",
+        headers=headers,
+    )
+    # get active scanreports and map them to fields. Remove any fields in archived
+    # reports or not marked as 'Mapping Complete'
+    active_srs = []
+    for item in get_scan_reports.json():
+        if item["hidden"] is False and item["status"] == "COMPLET":
+            for ds in get_datasets.json():
+                # Exclude scan reports if their parent_dataset is archived
+                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
+                    active_srs.append(str(item["id"]))
+    # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
+    # 'Mapping Complete'
+    return active_srs
+
+
 def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
     """
     This expects a dict of field names to ids which have been generated in a newly uploaded
@@ -396,26 +422,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         )
     existing_tables_details = flatten(existing_tables_details)
 
-    # get all scan reports to be used to filter values by only values that come from
-    # active scan reports that are marked as 'Mapping Complete'
-    get_scan_reports = requests.get(
-        url=f"{api_url}scanreports/",
-        headers=headers,
-    )
-    get_datasets = requests.get(
-        url=f"{api_url}datasets/",
-        headers=headers,
-    )
-    # get active scanreports and map them to fields. Remove any fields in archived
-    # reports or not marked as 'Mapping Complete'
-    active_srs = []
-    for item in get_scan_reports.json():
-        if item["hidden"] is False and item["status"] == "COMPLET":
-            for ds in get_datasets.json():
-                # Exclude scan reports if their parent_dataset is archived
-                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
-                    active_srs.append(str(item["id"]))
-    # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
+    active_srs = get_active_completed_scan_reports(api_url, headers)
+    # active_srs is list of report ids that belong to an active dataset, are not archived, and have the status
     # 'Mapping Complete'
 
     # map value id to active scan report
@@ -691,26 +699,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         )
     existing_tables_details = flatten(existing_tables_details)
 
-    # get all scan reports to be used to filter values by only values that come from
-    # active scan reports that are marked as 'Mapping Complete'
-    get_scan_reports = requests.get(
-        url=f"{api_url}scanreports/",
-        headers=headers,
-    )
-    get_datasets = requests.get(
-        url=f"{api_url}datasets/",
-        headers=headers,
-    )
-    # get active scanreports and map them to fields. Remove any fields in archived
-    # reports or not marked as 'Mapping Complete'
-    active_srs = []
-    for item in get_scan_reports.json():
-        if item["hidden"] is False and item["status"] == "COMPLET":
-            for ds in get_datasets.json():
-                # Exclude scan reports if their parent_dataset is archived
-                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
-                    active_srs.append(str(item["id"]))
-    # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
+    active_srs = get_active_completed_scan_reports(api_url, headers)
+    # active_srs is list of report ids that belong to an active dataset, are not archived, and have the status
     # 'Mapping Complete'
 
     # map value id to active scan report
