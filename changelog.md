@@ -6,6 +6,10 @@ Please append a line to the changelog for each change made.
 ### New Features
 
 ### Improvements
+* `visibility` set on SR when uploaded.
+* `viewers` and `editors` set on SR when uploaded.
+* `editors` set on creation of new dataset on SR upload page.
+* `editors` and `admins` field for dataset shown for PUBLIC dataset as well as RESTRICTED.
 
 ### Bugfixes
 
