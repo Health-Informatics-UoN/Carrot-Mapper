@@ -285,12 +285,7 @@ def process_failure(api_url, scan_report_id, headers):
         scan_report_fetched_data.content.decode("utf-8")
     )
 
-    json_data = json.dumps(
-        {
-            "dataset": f"FAILED: {scan_report_fetched_data['dataset']}",
-            "status": "UPFAILE",
-        }
-    )
+    json_data = json.dumps({"status": "UPFAILE"})
 
     failure_response = requests.patch(
         url=f"{api_url}scanreports/{scan_report_id}/", data=json_data, headers=headers
