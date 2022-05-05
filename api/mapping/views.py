@@ -247,7 +247,9 @@ class ProjectListView(ListAPIView):
 
     def get_queryset(self):
         if dataset := self.request.GET.get("dataset"):
-            return Project.objects.filter(datasets__exact=dataset).distinct()
+            return Project.objects.filter(
+                datasets__exact=dataset, members__id=self.request.user.id
+            ).distinct()
 
         return Project.objects.all()
 
