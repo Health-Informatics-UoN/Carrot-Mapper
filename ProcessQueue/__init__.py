@@ -1478,7 +1478,7 @@ def main(msg: func.QueueMessage):
     # This is the same as looping over all fields in all tables.
     # When the end of one table is reached, then post all the ScanReportFields
     # and ScanReportValues associated to that table, then continue down the
-    # list of fields in tables until all fields in all tables have been 
+    # list of fields in tables until all fields in all tables have been
     # processed (along with their ScanReportValues).
     process_all_fields_and_values(
         fo_ws,
