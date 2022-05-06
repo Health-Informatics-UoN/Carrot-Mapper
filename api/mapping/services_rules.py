@@ -792,6 +792,12 @@ def make_dag(data, colorscheme="gnbu9"):
 
 # this is here as we should move it out of coconnect.tools
 def view_mapping_rules(request, qs):
+    # If the QuerySet is empty, return Error 404
+    if not qs:
+        return HttpResponse(
+            "Could not make image. No mapping rules found.",
+            status=404,
+        )
     # get the rules
     output = get_mapping_rules_json(qs)
     # use make dag svg image
