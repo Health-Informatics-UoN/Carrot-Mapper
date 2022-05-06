@@ -348,33 +348,12 @@ def post_paginated_concepts(concepts_to_post, api_url, headers):
     concept_response_content += concept_content
 
 
-def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
-    """
-    This expects a dict of field names to ids which have been generated in a newly uploaded
-    scanreport, and content_type 15. It creates new concepts associated to any
-    field that matches the name of an existing field with an associated concept.
-    """
-    logger.info(f"reuse_existing_field_concepts")
-    # Gets all scan report concepts that are for the type field (or content type which should be field)
-    get_field_concept_ids = requests.get(
-        url=f"{api_url}scanreportconceptsfilter/?content_type="
-        f"{content_type}&fields=id,object_id,concept",
-        headers=headers,
-    )
-    # create dictionary that maps existing field ids to scan report concepts
-    # from the list of existing scan report concepts
-    existing_field_concept_ids = json.loads(
-        get_field_concept_ids.content.decode("utf-8")
-    )
-    existing_field_id_to_concept_map = {
-        str(element.get("object_id", None)): str(element.get("concept", None))
-        for element in existing_field_concept_ids
-    }
-    logger.debug(
-        f"field_id:concept_id for all existing fields with concepts: "
-        f"{existing_field_id_to_concept_map}"
-    )
-
+def get_existing_field_details_in_active_srs(
+    existing_field_id_to_concept_map, new_fields_map, api_url, headers
+):
+    """Return the details of all existing fields in active Scan Reports which are
+    marked as "Mapping Complete", such that the existing field names match the name
+    of a newly created field."""
     # print("FIELD TO CONCEPT MAP DICT", existing_field_id_to_concept_map)
     # creates a list of field ids from fields that already exist and have a concept
     existing_ids = list(existing_field_id_to_concept_map.keys())
@@ -468,6 +447,40 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         if str(item["id"]) in existing_field_id_to_active_scanreport_map
     ]
     # print("FILTERED FIELDS", fields)
+    return existing_fields_details_in_active_sr
+
+
+def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
+    """
+    This expects a dict of field names to ids which have been generated in a newly uploaded
+    scanreport, and content_type 15. It creates new concepts associated to any
+    field that matches the name of an existing field with an associated concept.
+    """
+    logger.info(f"reuse_existing_field_concepts")
+    # Gets all scan report concepts that are for the type field (or content type which should be field)
+    get_field_concept_ids = requests.get(
+        url=f"{api_url}scanreportconceptsfilter/?content_type="
+        f"{content_type}&fields=id,object_id,concept",
+        headers=headers,
+    )
+    # create dictionary that maps existing field ids to scan report concepts
+    # from the list of existing scan report concepts
+    existing_field_concept_ids = json.loads(
+        get_field_concept_ids.content.decode("utf-8")
+    )
+    existing_field_id_to_concept_map = {
+        str(element.get("object_id", None)): str(element.get("concept", None))
+        for element in existing_field_concept_ids
+    }
+    logger.debug(
+        f"field_id:concept_id for all existing fields with concepts: "
+        f"{existing_field_id_to_concept_map}"
+    )
+
+    # Get details of all fields from eligible Scan Reports that match the name of a newly added field
+    existing_fields_details_in_active_sr = get_existing_field_details_in_active_srs(
+        existing_field_id_to_concept_map, new_fields_map, api_url, headers
+    )
 
     existing_mappings_to_consider = [
         {
