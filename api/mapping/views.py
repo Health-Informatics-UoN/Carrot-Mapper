@@ -464,7 +464,16 @@ class DatasetCreateView(generics.CreateAPIView):
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(admins=[self.request.user])
+        admins = serializer.initial_data.get("admins")
+        # If no admins given, add the user uploading the dataset
+        if not admins:
+            serializer.save(admins=[self.request.user])
+        # If the user is not in the admins, add them
+        elif self.request.user.id not in admins:
+            serializer.save(admins=admins + [self.request.user.id])
+        # All is well, save
+        else:
+            serializer.save()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):

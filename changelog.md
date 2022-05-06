@@ -12,6 +12,8 @@ Please append a line to the changelog for each change made.
 * `editors` and `admins` field for dataset shown for PUBLIC dataset as well as RESTRICTED.
 
 ### Bugfixes
+* Admins specified by the user for Datasets on the SR upload form will now be added along with the user - who is already made an admin by default.
+  * Added tooltip to the form to explain this.
 
 ## v2.0.0 was released 04/05/22
 
