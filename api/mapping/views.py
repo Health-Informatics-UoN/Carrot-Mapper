@@ -464,7 +464,10 @@ class DatasetCreateView(generics.CreateAPIView):
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(admins=[self.request.user])
+        if not serializer.initial_data.get("admins"):
+            serializer.save(admins=[self.request.user])
+        else:
+            serializer.save()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
