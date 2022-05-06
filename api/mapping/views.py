@@ -212,6 +212,19 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
 
 
+class CountProjects(APIView):
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, dataset):
+        project_count = (
+            Project.objects.filter(datasets__exact=dataset).distinct().count()
+        )
+        content = {
+            "project_count": project_count,
+        }
+        return Response(content)
+
+
 class ProjectListView(ListAPIView):
     """
     API view to show all projects' names.
@@ -234,7 +247,9 @@ class ProjectListView(ListAPIView):
 
     def get_queryset(self):
         if dataset := self.request.GET.get("dataset"):
-            return Project.objects.filter(datasets__exact=dataset).distinct()
+            return Project.objects.filter(
+                datasets__exact=dataset, members__id=self.request.user.id
+            ).distinct()
 
         return Project.objects.all()
 
@@ -464,7 +479,16 @@ class DatasetCreateView(generics.CreateAPIView):
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(admins=[self.request.user])
+        admins = serializer.initial_data.get("admins")
+        # If no admins given, add the user uploading the dataset
+        if not admins:
+            serializer.save(admins=[self.request.user])
+        # If the user is not in the admins, add them
+        elif self.request.user.id not in admins:
+            serializer.save(admins=admins + [self.request.user.id])
+        # All is well, save
+        else:
+            serializer.save()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
