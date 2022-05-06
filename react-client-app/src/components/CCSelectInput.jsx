@@ -42,7 +42,7 @@ const CCSelectInput = (props) => {
                 isDisabled={props.isDisabled ? props.isDisabled : false}
             >
                 {props.selectOptions.map((item, index) =>
-                    <option key={index} value={item}>{item}</option>
+                    <option key={index} value={item} disabled={props.disabledOptions.includes(item)}>{item}</option>
                 )}
             </Select>
             {props.formErrors && props.formErrors.length > 0 &&
@@ -52,4 +52,8 @@ const CCSelectInput = (props) => {
     )
 }
 
+// Default props
+CCSelectInput.defaultProps = {
+    disabledOptions: []
+};
 export default CCSelectInput
