@@ -561,6 +561,10 @@ def get_mapping_rules_json(structural_mapping_rules):
         dict : formatted json that can be eaten by the TL-Tool
     """
 
+    # Return empty metadata and cdm if `structural_mapping_rules` is empty
+    if not structural_mapping_rules:
+        return {"metadata": {}, "cdm": {}}
+
     # use the first_qs to get the scan_report dataset name
     # all qs items will be from the same scan_report
     first_rule = structural_mapping_rules[0]
@@ -792,12 +796,6 @@ def make_dag(data, colorscheme="gnbu9"):
 
 # this is here as we should move it out of coconnect.tools
 def view_mapping_rules(request, qs):
-    # If the QuerySet is empty, return Error 404
-    if not qs:
-        return HttpResponse(
-            "Could not make image. No mapping rules found.",
-            status=404,
-        )
     # get the rules
     output = get_mapping_rules_json(qs)
     # use make dag svg image
