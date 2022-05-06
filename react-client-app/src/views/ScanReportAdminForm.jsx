@@ -72,7 +72,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     `/projects/?dataset=${scanReportQuery.parent_dataset}`
                 )
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
-                if(validUsers.includes(authorsQuery.id))authorsQuery.isDisabled=true
+                if(!usersQuery.map(item=>item.id).includes(authorsQuery.id))authorsQuery.isDisabled=true
                 // Set up state from the results of the queries
                 setScanReport(scanReportQuery)
                 setDatasets(datasetsQuery)
@@ -83,7 +83,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     authorsQuery
                 )
                 setIsPublic(scanReportQuery.visibility === "PUBLIC")
-                setUsersList([authorsQuery,...usersQuery.filter(user => validUsers.includes(user.id)).filter(user=>user.id===authorsQuery.id)])
+                setUsersList([authorsQuery, ...usersQuery.filter((user) => user.id != authorsQuery.id).filter((user) => validUsers.includes(user.id))]);
                 setViewers(
                     prevViewers => [
                         ...prevViewers,
