@@ -459,6 +459,7 @@ const UploadScanReport = ({ setTitle }) => {
                                             <CCMultiSelectInput
                                                 id={"dataset-admins"}
                                                 label={"Admins"}
+                                                info={"As the creator of this Dataset, you will automatically be one of its admins."}
                                                 isLoading={activeUsersList == undefined}
                                                 selectOptions={activeUsersList ? filterProjectUsers().map(item => item.username) : []}
                                                 currentSelections={datasetAdmins.map(item => item.username)}
