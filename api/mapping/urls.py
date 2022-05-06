@@ -140,6 +140,12 @@ urlpatterns = [
         views.CountStatsScanReportTableField.as_view(),
         name="countstatsscanreporttablefield",
     ),
+    # Project views
+    path(
+        "projects",
+        views.project_list_page,
+        name="projects",
+    ),
     # Dataset views
     path(
         "datasets",

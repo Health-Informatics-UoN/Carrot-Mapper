@@ -16,6 +16,8 @@ import Home from './components/Home';
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
 import UploadScanReport from './components/UploadScanReport'
 import DatasetTbl from './views/DatasetTbl'
+import ProjectsTbl from './views/ProjectsTbl'
+
 import DatasetsContent from './views/DatasetsContent'
 const App = ({ page }) => {
 
@@ -221,17 +223,17 @@ const App = ({ page }) => {
                             valuesRef.current = valuesRef.current.map((value) => value.id == id ? { ...value, conceptsLoaded: true } : value)
                             setValues(valuesRef.current)
                             let description = "Response: " + error.response.status + " " + error.response.statusText
-                            if(error.response&& error.response.data){
-                              const body = error.response.data
-                              description = "Response: " + body.status_code + " " + body.statusText
+                            if (error.response && error.response.data) {
+                                const body = error.response.data
+                                description = "Response: " + body.status_code + " " + body.statusText
                             }
                             if (typeof error !== "undefined" && error.response != null) {
-                              setAlert({
-                                status: "error",
-                                title: "Unable to link Concept id to value",
-                                description: description
-                              });
-                              onOpen();
+                                setAlert({
+                                    status: "error",
+                                    title: "Unable to link Concept id to value",
+                                    description: description
+                                });
+                                onOpen();
                             }
                         })
 
@@ -280,6 +282,8 @@ const App = ({ page }) => {
                 return <ScanReportAdminForm setTitle={setTitle} />
             case "Dataset List":
                 return <DatasetTbl setTitle={setTitle} />
+            case "Project List":
+                return <ProjectsTbl setTitle={setTitle} />
             case "404":
                 return <Error404 setTitle={setTitle} />
             default:

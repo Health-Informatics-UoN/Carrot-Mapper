@@ -1504,6 +1504,11 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 
 
 @login_required
+def project_list_page(request):
+    return render(request, "mapping/project_list.html")
+
+
+@login_required
 def dataset_list_page(request):
     return render(request, "mapping/dataset_list.html")
 
