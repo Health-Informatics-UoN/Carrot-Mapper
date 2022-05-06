@@ -163,7 +163,7 @@ const UploadScanReport = ({ setTitle }) => {
                 name: newDatasetName,
                 visibility: datasetVisibleToPublic ? "PUBLIC" : "RESTRICTED",
                 editors: datasetEditors.map(item => item.id),
-                admins: datasetAdmins.map(item => item.id)//users.map(item => item.id), Not sure what this was doing. Seemingly mapping the list of viewers to admins
+                admins: datasetAdmins.map(item => item.id),
             }
             if (!datasetVisibleToPublic) {
                 data.viewers = users.map(item => item.id)
