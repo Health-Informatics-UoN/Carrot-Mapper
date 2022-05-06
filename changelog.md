@@ -12,6 +12,7 @@ Please append a line to the changelog for each change made.
 * `editors` and `admins` field for dataset shown for PUBLIC dataset as well as RESTRICTED.
 
 ### Bugfixes
+* Fixed error 500 when trying to build mapping rules diagram without rules. Now returns 404 due to no rules.
 
 ## v2.0.0 was released 04/05/22
 
