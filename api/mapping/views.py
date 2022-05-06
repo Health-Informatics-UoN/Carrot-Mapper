@@ -463,6 +463,9 @@ class DatasetCreateView(generics.CreateAPIView):
     serializer_class = DatasetViewSerializer
     queryset = Dataset.objects.all()
 
+    def perform_create(self, serializer):
+        serializer.save(admins=[self.request.user])
+
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
     """
