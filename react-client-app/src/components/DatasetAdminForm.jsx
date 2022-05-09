@@ -13,7 +13,7 @@ import Error404 from '../views/Error404'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length - 2]
+    let datasetId = pathArray[pathArray.length - 3]
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     // Set up component state
