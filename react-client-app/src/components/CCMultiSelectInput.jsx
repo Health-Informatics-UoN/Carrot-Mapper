@@ -77,7 +77,7 @@ const CCMultiSelectInput = (props) => {
                 >
                     <option disabled>---Select---</option>
                     {props.selectOptions.map((item, index) =>
-                        <option key={index} value={item}>{item}</option>
+                        <option key={index} value={item} disabled={props.disabledOptions.includes(item)}>{item}</option>
                     )}
                 </Select>
             }
@@ -88,5 +88,10 @@ const CCMultiSelectInput = (props) => {
         </FormControl >
     )
 }
+
+// Default props
+CCMultiSelectInput.defaultProps = {
+    disabledOptions: []
+};
 
 export default CCMultiSelectInput
