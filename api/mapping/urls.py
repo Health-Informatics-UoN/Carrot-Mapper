@@ -147,17 +147,17 @@ urlpatterns = [
     ),
     # Dataset views
     path(
-        "datasets",
+        "datasets/",
         views.dataset_list_page,
         name="datasets",
     ),
     path(
-        "datasets/<int:pk>/details",
+        "datasets/<int:pk>/details/",
         views.dataset_admin_page,
         name="dataset_admin",
     ),
     path(
-        "datasets/<int:pk>",
+        "datasets/<int:pk>/",
         views.dataset_content_page,
         name="dataset_content",
     ),
@@ -167,17 +167,17 @@ urlpatterns = [
         name="dataset_list",
     ),
     path(
-        r"api/datasets/<int:pk>",
+        r"api/datasets/<int:pk>/",
         views.DatasetRetrieveView.as_view(),
         name="dataset_retrieve",
     ),
     path(
-        r"api/datasets/update/<int:pk>",
+        r"api/datasets/update/<int:pk>/",
         views.DatasetUpdateView.as_view(),
         name="dataset_update",
     ),
     path(
-        r"api/datasets/delete/<int:pk>",
+        r"api/datasets/delete/<int:pk>/",
         views.DatasetDeleteView.as_view(),
         name="dataset_delete",
     ),

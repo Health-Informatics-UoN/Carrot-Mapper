@@ -59,7 +59,7 @@ const DatasetAdminForm = ({ setTitle }) => {
         async () => {
             setTitle(null)
             try {
-                const datasetQuery = await useGet(`/datasets/${datasetId}`)
+                const datasetQuery = await useGet(`/datasets/${datasetId}/`)
                 const queries = [
                     useGet("/datapartners/"),
                     useGet("/usersfilter/?is_active=true"),
@@ -238,7 +238,7 @@ const DatasetAdminForm = ({ setTitle }) => {
         try {
             setUploadLoading(true)
             const response = await usePatch(
-                `/datasets/update/${datasetId}`,
+                `/datasets/update/${datasetId}/`,
                 patchData,
             )
             const currentProjects = await useGet(`/projects/?dataset=${datasetId}`)
@@ -300,9 +300,9 @@ const DatasetAdminForm = ({ setTitle }) => {
         <Container maxW='container.xl'>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/datasets"}>Datasets</Link>
-                <Link href={`/datasets/${datasetId}`}>{dataset.name}</Link>
-                <Link href={`/datasets/${datasetId}/details`}>Details</Link>
+                <Link href={"/datasets/"}>Datasets</Link>
+                <Link href={`/datasets/${datasetId}/`}>{dataset.name}</Link>
+                <Link href={`/datasets/${datasetId}/details/`}>Details</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
@@ -497,7 +497,7 @@ const DatasetAdminForm = ({ setTitle }) => {
                 </Box>
             </FormControl>
             {isAdmin &&
-                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={projectDifference===0?upload:warnUpload}>Submit</Button>
+                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={projectDifference === 0 ? upload : warnUpload}>Submit</Button>
             }
 
         </Container>
