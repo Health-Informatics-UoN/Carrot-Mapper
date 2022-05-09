@@ -26,7 +26,7 @@ import Error404 from '../views/Error404'
 const TablesTbl = ({ setTitle }) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
-    const scanReportId = pathArray[pathArray.length - 1]
+    const scanReportId = pathArray[pathArray.length - 2]
     const [scanReportName, setScanReportName] = useState();
     const [scanReportTables, setScanReportTables] = useState([]);
     const [loading, setLoading] = useState(true);

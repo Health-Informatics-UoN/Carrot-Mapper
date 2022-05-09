@@ -30,8 +30,8 @@ import Error404 from '../views/Error404'
 const ValuesTbl = (props) => {
     // get value to use in query from page url
     const pathArray = window.location.pathname.split("/")
-    const scanReportFieldId = pathArray[pathArray.length - 1]
-    const scanReportId = pathArray[pathArray.length - 5]
+    const scanReportFieldId = pathArray[pathArray.length - 2]
+    const scanReportId = pathArray[pathArray.length - 6]
     // set page state variables
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()

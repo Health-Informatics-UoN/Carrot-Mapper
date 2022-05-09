@@ -17,7 +17,7 @@ import Error404 from './Error404'
 const ScanReportAdminForm = ({ setTitle }) => {
     // scan report id in second to last block of the path
     let scanReportId = window.location.pathname.split("/")
-    scanReportId = scanReportId[scanReportId.length - 2]
+    scanReportId = scanReportId[scanReportId.length - 3]
 
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })

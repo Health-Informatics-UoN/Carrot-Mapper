@@ -5,8 +5,8 @@ import CCBreadcrumbBar from './CCBreadcrumbBar'
 import PageHeading from './PageHeading'
 const EditField = ({ setTitle }) => {
     const pathArray = window.location.pathname.split("/")
-    const scanReportId = pathArray[pathArray.length - 6]
-    const tableId = pathArray[pathArray.length - 4]
+    const scanReportId = pathArray[pathArray.length - 7]
+    const tableId = pathArray[pathArray.length - 5]
     const value = window.pk ? window.pk : window.location.href.split("fields/")[1].split("/")[0]
     const field = useRef([]);
     const [isIgnore, setIsIgnore] = useState(false);

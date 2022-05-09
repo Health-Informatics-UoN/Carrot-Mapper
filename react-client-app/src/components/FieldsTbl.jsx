@@ -31,11 +31,11 @@ import Error404 from '../views/Error404'
 const FieldsTbl = (props) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
-    const scanReportId = pathArray[pathArray.length - 3]
+    const scanReportId = pathArray[pathArray.length - 4]
     // const scanReportTableId = pathArray[pathArray.length - 1]
     // const scanReportTableId = window.pk ? window.pk : parseInt(new URLSearchParams(window.location.search).get("search"))
     const scanReportTableId = parseInt(new URLSearchParams(window.location.search).get("search")) ?
-        parseInt(new URLSearchParams(window.location.search).get("search")) : pathArray[pathArray.length - 1]
+        parseInt(new URLSearchParams(window.location.search).get("search")) : pathArray[pathArray.length - 2]
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [values, setValues] = useState([]);
@@ -51,7 +51,7 @@ const FieldsTbl = (props) => {
         props.setTitle(null)
         // run on initial render
         // Check if user can see SR table
-        useGet(`/scanreporttables/${scanReportTableId}`).then(
+        useGet(`/scanreporttables/${scanReportTableId}/`).then(
             res => {
                 // get field table values for specified id
                 getScanReportFieldValues(scanReportTableId, valuesRef).then(val => {
@@ -195,7 +195,7 @@ const FieldsTbl = (props) => {
                                             )}
                                         </Formik>
                                     </Td>
-                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={window.location.href + "/fields/" + item.id + "/update"}>Edit Field</Link></Td>}
+                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={window.location.href + "fields/" + item.id + "/update/"}>Edit Field</Link></Td>}
                                 </Tr>
                             )
                         }
