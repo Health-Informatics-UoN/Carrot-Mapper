@@ -40,8 +40,8 @@ function AnalysisTbl({ data }) {
                                                         {ancestor.source.map(source_id => {
 
                                                             if (source_id.concept__content_type == 15)
-                                                                return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + source_id.source_field__scan_report_table__scan_report + "/tables/" + source_id.source_field__scan_report_table__id}> {truncate(source_id.source_field__name)} </Link> </Text>
-                                                            return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}> <Link style={{ color: "#0000FF" }} href={"/scanreports/" + source_id.source_field__scan_report_table__scan_report + "/tables/" + source_id.source_field__scan_report_table__id + "/fields/" + source_id.source_field__id}> {truncate(source_id.source_field__name)} </Link></Text>
+                                                                return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={`/scanreports/${source_id.source_field__scan_report_table__scan_report}/tables/${source_id.source_field__scan_report_table__id}/`}> {truncate(source_id.source_field__name)} </Link> </Text>
+                                                            return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}> <Link style={{ color: "#0000FF" }} href={`/scanreports/${source_id.source_field__scan_report_table__scan_report}/tables/${source_id.source_field__scan_report_table__id}/fields/${source_id.source_field__id}/`} > {truncate(source_id.source_field__name)} </Link></Text>
                                                         })}
                                                     </div>
 
@@ -56,8 +56,8 @@ function AnalysisTbl({ data }) {
                                                         {descendant.source.map(source_id => {
 
                                                             if (source_id.concept__content_type == 15)
-                                                                return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + source_id.source_field__scan_report_table__scan_report + "/tables/" + source_id.source_field__scan_report_table__id}> {source_id.source_field__name} </Link></Text>
-                                                            return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + source_id.source_field__scan_report_table__scan_report + "/tables/" + source_id.source_field__scan_report_table__id + "/fields/" + source_id.source_field__id}> {source_id.source_field__name} </Link></Text>
+                                                                return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={`/scanreports/${source_id.source_field__scan_report_table__scan_report}/tables/${source_id.source_field__scan_report_table__id}/`}> {source_id.source_field__name} </Link></Text>
+                                                            return <Text maxWidth={"200px"} title={source_id.source_field__name} sx={{ m: 1 }}><Link style={{ color: "#0000FF", }} href={`/scanreports/${source_id.source_field__scan_report_table__scan_report}/tables/${source_id.source_field__scan_report_table__id}/fields/${source_id.source_field__id}/`}> {source_id.source_field__name} </Link></Text>
                                                         })}
                                                     </div>
                                                 </>

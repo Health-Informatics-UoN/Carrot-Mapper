@@ -36,7 +36,7 @@ const TablesTbl = ({ setTitle }) => {
     useEffect(() => {
         setTitle(null)
         // Check user can see the scan report
-        useGet(`/scanreports/${scanReportId}`).then(res => {
+        useGet(`/scanreports/${scanReportId}/`).then(res => {
             setScanReportName(res.dataset)
             // If user can see scan report, get the tables
             getScanReportTableRows(scanReportId).then(table => {
@@ -120,13 +120,13 @@ const TablesTbl = ({ setTitle }) => {
         <div >
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReportId}`}>{scanReportName}</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}/`}>{scanReportName}</Link>
             </CCBreadcrumbBar>
             <PageHeading text={"Tables"} />
             <Flex my="10px">
                 <HStack>
-                    <Link href={"/scanreports/" + scanReportId + "/details"}>
+                    <Link href={"/scanreports/" + scanReportId + "/details/"}>
                         <Button variant="blue" my="10px">Scan Report Details</Button>
                     </Link>
                     <Link href={"/scanreports/" + scanReportId + "/mapping_rules/"}>
@@ -154,10 +154,10 @@ const TablesTbl = ({ setTitle }) => {
                     {scanReportTables.length > 0 ?
                         scanReportTables.map((item, index) =>
                             <Tr key={index}>
-                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}`}>{item.name}</Link></Td>
+                                <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.id}/`}>{item.name}</Link></Td>
                                 <Td maxW={"200px"}>{item.person_id ? item.person_id.name : null} </Td>
                                 <Td maxW={"200px"}>{item.date_event ? item.date_event.name : null}</Td>
-                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + item.scan_report + "/tables/" + item.id + "/update"}>Edit Table</Link></Td>}
+                                {window.canEdit && <Td maxW={"200px"}><Link style={{ color: "#0000FF", }} href={"/scanreports/" + item.scan_report + "/tables/" + item.id + "/update/"}>Edit Table</Link></Td>}
                             </Tr>
 
                         )

@@ -59,7 +59,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
         async () => {
             setTitle(null)
             try {
-                const scanReportQuery = await useGet(`/scanreports/${scanReportId}`)
+                const scanReportQuery = await useGet(`/scanreports/${scanReportId}/`)
                 const queries = [
                     useGet("/datasets/"),
                     useGet("/usersfilter/?is_active=true"),
@@ -268,9 +268,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
         <Container maxW='container.xl'>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReportId}`}>{scanReport.dataset}</Link>
-                <Link href={`/scanreports/${scanReportId}/details`}>Details</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}/`}>{scanReport.dataset}</Link>
+                <Link href={`/scanreports/${scanReportId}/details/`}>Details</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>

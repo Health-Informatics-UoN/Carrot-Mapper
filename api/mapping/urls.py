@@ -193,7 +193,7 @@ urlpatterns = [
     path("api/", include(routers.urls)),
     path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("", views.home, name="home"),
-    path("scanreports", views.ScanReportListView.as_view(), name="scan-report-list"),
+    path("scanreports/", views.ScanReportListView.as_view(), name="scan-report-list"),
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableListView.as_view(),
@@ -210,12 +210,12 @@ urlpatterns = [
         name="tables-structural-mapping-filter-lvl2",
     ),
     path(
-        "scanreports/create",
+        "scanreports/create/",
         views.ScanReportFormView.as_view(),
         name="scan-report-form",
     ),
     path(
-        "scanreports/<int:pk>/details",
+        "scanreports/<int:pk>/details/",
         views.scanreport_admin_page,
         name="scan-report-details-form",
     ),
@@ -260,27 +260,27 @@ urlpatterns = [
         name="projects_update",
     ),
     path(
-        "scanreports/<int:pk>",
+        "scanreports/<int:pk>/",
         views.scanreport_table_list_page,
         name="scanreport_table",
     ),
     path(
-        "scanreports/<int:sr>/tables/<int:pk>",
+        "scanreports/<int:sr>/tables/<int:pk>/",
         views.scanreport_fields_list_page,
         name="scanreport_fields",
     ),
     path(
-        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>",
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>/",
         views.scanreport_values_list_page,
         name="scanreport_values",
     ),
     path(
-        "scanreports/<int:sr>/tables/<int:pk>/update",
+        "scanreports/<int:sr>/tables/<int:pk>/update/",
         views.update_scanreport_table_page,
         name="scan-report-table-update",
     ),
     path(
-        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>/update",
+        "scanreports/<int:sr>/tables/<int:tbl>/fields/<int:pk>/update/",
         views.update_scanreport_field_page,
         name="scan-report-field-update",
     ),

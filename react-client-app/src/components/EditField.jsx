@@ -45,7 +45,7 @@ const EditField = ({ setTitle }) => {
         // use endpoint to change scan report field value
         usePatch(`/scanreportfields/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = "/scanreports/" + scanReportId + "/tables/" + tableId
+            window.location.href = `/scanreports/${scanReportId}/tables/${tableId}/`
         })
             .catch(err => {
                 console.log(err)
@@ -66,11 +66,11 @@ const EditField = ({ setTitle }) => {
         <div>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReport.current.id}`}>{scanReport.current.dataset}</Link>
-                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}`}>{table.current.name}</Link>
-                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}`}>{field.current.name}</Link>
-                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}/update`}>Update</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/`}>{scanReport.current.dataset}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/`}>{table.current.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}/`}>{field.current.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.current.id}/fields/${field.current.id}/update/`}>Update</Link>
             </CCBreadcrumbBar>
             <PageHeading text={"Update Field - " + field.current.name} />
             <VStack mt="20px" align="start">

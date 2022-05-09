@@ -63,7 +63,7 @@ const FieldsTbl = (props) => {
                     scanReportTable.current = table
                     setMappingButtonDisabled(false)
                 })
-                useGet(`/scanreports/${scanReportId}`).then(sr => scanReportName.current = sr.dataset)
+                useGet(`/scanreports/${scanReportId}/`).then(sr => scanReportName.current = sr.dataset)
             }
         ).catch(
             err => {
@@ -111,9 +111,9 @@ const FieldsTbl = (props) => {
             <div>
                 <CCBreadcrumbBar>
                     <Link href={"/"}>Home</Link>
-                    <Link href={"/scanreports"}>Scan Reports</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}`}>{scanReportName.current}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}`}>{scanReportTable.current.name}</Link>
+                    <Link href={"/scanreports/"}>Scan Reports</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/`}>{scanReportName.current}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}/`}>{scanReportTable.current.name}</Link>
                 </CCBreadcrumbBar>
                 <PageHeading text={"Fields"} />
                 {isOpen &&
@@ -139,7 +139,7 @@ const FieldsTbl = (props) => {
                             // Create new row for every value object
                             values.map((item, index) =>
                                 <Tr key={item.id}>
-                                    <Td><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${scanReportTableId}/fields/${item.id}`}>{item.name}</Link></Td>
+                                    <Td><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${scanReportTableId}/fields/${item.id}/`}>{item.name}</Link></Td>
                                     <Td maxW="250px"><Text maxW="100%" w="max-content">{item.description_column}</Text></Td>
                                     <Td>{item.type_column}</Td>
 

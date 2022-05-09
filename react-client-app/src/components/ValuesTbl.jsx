@@ -59,7 +59,7 @@ const ValuesTbl = (props) => {
                 })
                 // get scan report values
                 getScanReports(scanReportFieldId, setScanReports, scanReportsRef, setLoadingMessage, setError)
-                useGet(`/scanreports/${scanReportId}`).then(sr => scanReportName.current = sr.dataset)
+                useGet(`/scanreports/${scanReportId}/`).then(sr => scanReportName.current = sr.dataset)
             }
         ).catch(
             err => {
@@ -108,10 +108,10 @@ const ValuesTbl = (props) => {
             <div>
                 <CCBreadcrumbBar>
                     <Link href={"/"}>Home</Link>
-                    <Link href={"/scanreports"}>Scan Reports</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}`}>{scanReportName.current}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}`}>{scanReportTable.current.name}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/fields/${scanReportField.current.id}`}>{scanReportField.current.name}</Link>
+                    <Link href={"/scanreports/"}>Scan Reports</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/`}>{scanReportName.current}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/`}>{scanReportTable.current.name}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/fields/${scanReportField.current.id}/`}>{scanReportField.current.name}</Link>
                 </CCBreadcrumbBar>
                 <PageHeading text={"Values"} />
                 {isOpen &&
