@@ -10,7 +10,7 @@ import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui
 
 const DatasetsContent = (props) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length - 1]
+    let datasetId = pathArray[pathArray.length - 2]
     const active = useRef(true)
     const data = useRef(null);
     const activeReports = useRef(null);
@@ -266,7 +266,7 @@ const DatasetsContent = (props) => {
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
                 <Link href={"/datasets/"}>Datasets</Link>
-                <Link href={`/datasets/${datasetId}`}>{datasetName}</Link>
+                <Link href={`/datasets/${datasetId}/`}>{datasetName}</Link>
             </CCBreadcrumbBar>
             <Flex>
                 <PageHeading text={title} />
