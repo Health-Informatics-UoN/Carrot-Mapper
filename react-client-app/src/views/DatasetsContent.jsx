@@ -139,7 +139,7 @@ const DatasetsContent = (props) => {
         if (active.current === true) {
             active.current = false
             setDisplayedData(archivedReports.current)
-            window.history.pushState({}, '', `/datasets/${datasetId}?filter=archived`)
+            window.history.pushState({}, '', `/datasets/${datasetId}/?filter=archived`)
             setTitle(`Scanreports in Dataset #${datasetId}`);
         }
 
