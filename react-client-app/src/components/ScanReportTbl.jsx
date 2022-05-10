@@ -276,7 +276,7 @@ const ScanReportTbl = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href="/scanreports/create"><Button variant="blue" my="10px">New Scan Report</Button></Link>
+            <Link href="/scanreports/create/"><Button variant="blue" my="10px">New Scan Report</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Author -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
@@ -367,17 +367,17 @@ const ScanReportTbl = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.id}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.data_partner.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id}>{item.parent_dataset.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/datasets/${item.parent_dataset.id}/`}>{item.parent_dataset.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
                                 </Td>
                                 <Td >
-                                    <Link href={"/scanreports/" + item.id + "/details"}><Button variant="blue">Details</Button></Link>
+                                    <Link href={"/scanreports/" + item.id + "/details/"}><Button variant="blue">Details</Button></Link>
                                 </Td>
                                 <Td >
                                     {item.statusLoading == true ?

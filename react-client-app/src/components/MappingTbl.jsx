@@ -46,7 +46,7 @@ const MappingTbl = (props) => {
     useEffect(() => {
         props.setTitle(null)
         // get scan report
-        useGet(`/scanreports/${scan_report_id}`).then(sr => scanReportName.current = sr.dataset)
+        useGet(`/scanreports/${scan_report_id}/`).then(sr => scanReportName.current = sr.dataset)
         // on initial load of the page,
         // get all mapping rules for the page unfiltered
         useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
@@ -358,8 +358,8 @@ const MappingTbl = (props) => {
             </AnalysisModal>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scan_report_id}`}>{scanReportName.current}</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scan_report_id}/`}>{scanReportName.current}</Link>
                 <Link href={`/scanreports/${scan_report_id}/mapping_rules/`}>Mapping Rules</Link>
             </CCBreadcrumbBar>
             <PageHeading text={"Mapping Rules"} />

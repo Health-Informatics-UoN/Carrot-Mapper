@@ -210,7 +210,7 @@ class TestDatasetUpdateView(TestCase):
         self.client.force_authenticate(self.admin_user)
         #  Make the request
         response = self.client.patch(
-            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+            f"/api/datasets/update/{self.dataset.id}/", data={"name": "The Two Towers"}
         )
         response_data = response.data
         # Ensure admin user can update Dataset
@@ -222,7 +222,7 @@ class TestDatasetUpdateView(TestCase):
         self.client.force_authenticate(self.non_admin_user)
         #  Make the request
         response = self.client.patch(
-            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+            f"/api/datasets/update/{self.dataset.id}/", data={"name": "The Two Towers"}
         )
         # Ensure non admin user is Forbidden
         self.assertEqual(response.status_code, 403)
@@ -232,7 +232,7 @@ class TestDatasetUpdateView(TestCase):
         self.client.force_authenticate(self.non_project_user)
         #  Make the request
         response = self.client.patch(
-            f"/api/datasets/update/{self.dataset.id}", data={"name": "The Two Towers"}
+            f"/api/datasets/update/{self.dataset.id}/", data={"name": "The Two Towers"}
         )
         # Ensure non project user is Forbidden
         self.assertEqual(response.status_code, 403)
@@ -279,7 +279,7 @@ class TestDatasetRetrieveView(TestCase):
         # Authenticate non admin user
         self.client.force_authenticate(self.non_admin_user)
         #  Make the request
-        response = self.client.get(f"/api/datasets/{self.dataset.id}")
+        response = self.client.get(f"/api/datasets/{self.dataset.id}/")
         # Ensure non admin user can see
         self.assertEqual(response.status_code, 200)
 
@@ -287,7 +287,7 @@ class TestDatasetRetrieveView(TestCase):
         # Authenticate admin user
         self.client.force_authenticate(self.admin_user)
         #  Make the request
-        response = self.client.get(f"/api/datasets/{self.dataset.id}")
+        response = self.client.get(f"/api/datasets/{self.dataset.id}/")
         # Ensure admin user can see
         self.assertEqual(response.status_code, 200)
 
@@ -295,7 +295,7 @@ class TestDatasetRetrieveView(TestCase):
         # Authenticate non project user
         self.client.force_authenticate(self.non_project_user)
         #  Make the request
-        response = self.client.get(f"/api/datasets/{self.dataset.id}")
+        response = self.client.get(f"/api/datasets/{self.dataset.id}/")
         # Ensure non project user is Forbidden
         self.assertEqual(response.status_code, 403)
 
@@ -340,7 +340,7 @@ class TestDatasetDeleteView(TestCase):
         # Authenticate admin user
         self.client.force_authenticate(self.admin_user)
         #  Make the request
-        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}/")
         # Ensure admin user can delete Dataset
         self.assertEqual(response.status_code, 204)
 
@@ -348,7 +348,7 @@ class TestDatasetDeleteView(TestCase):
         # Authenticate non admin user
         self.client.force_authenticate(self.non_admin_user)
         #  Make the request
-        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}/")
         # Ensure non admin user is Forbidden
         self.assertEqual(response.status_code, 403)
 
@@ -356,7 +356,7 @@ class TestDatasetDeleteView(TestCase):
         # Authenticate non project user
         self.client.force_authenticate(self.non_project_user)
         #  Make the request
-        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}")
+        response = self.client.delete(f"/api/datasets/delete/{self.dataset.id}/")
         # Ensure non project user is Forbidden
         self.assertEqual(response.status_code, 403)
 

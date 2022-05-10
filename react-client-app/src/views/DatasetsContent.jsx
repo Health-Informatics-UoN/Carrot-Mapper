@@ -10,7 +10,7 @@ import { ArrowRightIcon, ArrowLeftIcon, ViewIcon, ViewOffIcon } from '@chakra-ui
 
 const DatasetsContent = (props) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length - 1]
+    let datasetId = pathArray[pathArray.length - 2]
     const active = useRef(true)
     const data = useRef(null);
     const activeReports = useRef(null);
@@ -34,7 +34,7 @@ const DatasetsContent = (props) => {
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
         try {
             // get dataset name
-            let datasetNameQuery = await useGet(`/datasets/${datasetId}`)
+            let datasetNameQuery = await useGet(`/datasets/${datasetId}/`)
             setDatasetName(datasetNameQuery.name)
             // get scan reports and sort by id
             let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
@@ -130,7 +130,7 @@ const DatasetsContent = (props) => {
         if (active.current === false) {
             active.current = true
             setDisplayedData(activeReports.current)
-            window.history.pushState({}, '', `/datasets/${datasetId}`)
+            window.history.pushState({}, '', `/datasets/${datasetId}/`)
             setTitle(`Scanreports in Dataset #${datasetId}`)
         }
     }
@@ -265,8 +265,8 @@ const DatasetsContent = (props) => {
         <div>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/datasets"}>Datasets</Link>
-                <Link href={`/datasets/${datasetId}`}>{datasetName}</Link>
+                <Link href={"/datasets/"}>Datasets</Link>
+                <Link href={`/datasets/${datasetId}/`}>{datasetName}</Link>
             </CCBreadcrumbBar>
             <Flex>
                 <PageHeading text={title} />
@@ -274,7 +274,7 @@ const DatasetsContent = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Reports</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Reports</Button>
             </Flex>
-            <Link href={"/datasets/" + datasetId + "/details"}><Button variant="blue" my="10px">Dataset Details</Button></Link>
+            <Link href={"/datasets/" + datasetId + "/details/"}><Button variant="blue" my="10px">Dataset Details</Button></Link>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }, { title: "Dataset -", filter: datasetFilter }, { title: "Name -", filter: nameFilter }, { title: "Author -", filter: authorFilter }, { title: "Status -", filter: statusFilter }].map(filter => {
@@ -365,17 +365,17 @@ const DatasetsContent = (props) => {
                         // Create new row for every value object
                         applyFilters(displayedData).map((item, index) =>
                             <Tr className={expanded ? "largeTbl" : "mediumTbl"} key={index}>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.id}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.data_partner.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id + "/details"}>{item.parent_dataset.name}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}`}>{item.dataset}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.data_partner.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.parent_dataset.id + "/details/"}>{item.parent_dataset.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/scanreports/${item.id}/`}>{item.dataset}</Link></Td>
                                 <Td>{item.author.username}</Td>
                                 <Td maxW={"200px"} minW={expanded ? "170px" : "180px"}>{item.created_at.displayString}</Td>
                                 <Td >
                                     <Link href={"/scanreports/" + item.id + "/mapping_rules/"}><Button variant="blue">Rules</Button></Link>
                                 </Td>
                                 <Td >
-                                    <Link href={"/scanreports/" + item.id + "/details"}><Button variant="blue" my="10px">Details</Button></Link>
+                                    <Link href={"/scanreports/" + item.id + "/details/"}><Button variant="blue" my="10px">Details</Button></Link>
                                 </Td>
                                 <Td >
                                     {item.statusLoading === true ?

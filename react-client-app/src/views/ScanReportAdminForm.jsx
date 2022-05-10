@@ -17,7 +17,7 @@ import Error404 from './Error404'
 const ScanReportAdminForm = ({ setTitle }) => {
     // scan report id in second to last block of the path
     let scanReportId = window.location.pathname.split("/")
-    scanReportId = scanReportId[scanReportId.length - 2]
+    scanReportId = scanReportId[scanReportId.length - 3]
 
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
@@ -59,7 +59,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
         async () => {
             setTitle(null)
             try {
-                const scanReportQuery = await useGet(`/scanreports/${scanReportId}`)
+                const scanReportQuery = await useGet(`/scanreports/${scanReportId}/`)
                 const queries = [
                     useGet("/datasets/"),
                     useGet("/usersfilter/?is_active=true"),
@@ -268,9 +268,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
         <Container maxW='container.xl'>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReportId}`}>{scanReport.dataset}</Link>
-                <Link href={`/scanreports/${scanReportId}/details`}>Details</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}/`}>{scanReport.dataset}</Link>
+                <Link href={`/scanreports/${scanReportId}/details/`}>Details</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
