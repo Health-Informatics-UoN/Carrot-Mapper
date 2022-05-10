@@ -30,16 +30,16 @@ const ProjectsTbl = () => {
             datasetPromises.push(useGet(`/datasets/?id__in=${datasetIds[i].join()}`));
         }
 
-        let dataset = await Promise.all(datasetPromises)
+        // let dataset = await Promise.all(datasetPromises)
 
-        console.log(dataset)
-        dataset.forEach(x => {
-            projects.map(project => {
-                project.datasets = project.datasets.map(d_id => d_id == x.id ? { ...d_id, d_id: x.name } : d_id)
-            })
-        })
-        setProjects(projects)
-        console.log(projects)
+        // console.log(dataset)
+        // dataset.forEach(x => {
+        //     projects.map(project => {
+        //         project.datasets = project.datasets.map(d_id => d_id == x.id ? { ...d_id, d_id: x.name } : d_id)
+        //     })
+        // })
+        // setProjects(projects)
+        // console.log(projects)
         setLoadingMessage(null)
     }, []);
     if (loadingMessage) {
@@ -76,7 +76,7 @@ const ProjectsTbl = () => {
                                     {item.datasets.map((element) =>
                                         <Grid templateColumns="repeat(3, 1fr)">
                                             <>
-                                                <Text><Link href={"/datasets/" + element.id}>{element.name}</Link> </Text>
+                                                <Text><Link href={"/datasets/" + element}>{element}</Link> </Text>
                                             </>
 
                                         </Grid>
