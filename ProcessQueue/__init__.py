@@ -492,8 +492,14 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     ]
     logger.debug(f"{existing_mappings_to_consider=}")
 
-    existing_field_name_to_id_map = {}
-    for name in list(new_fields_map.keys()):
+    new_fields_full_details = [
+        {"name": name, "id": new_field_id}
+        for name, new_field_id in new_fields_map.items()
+    ]
+
+    existing_field_name_to_field_and_concept_id_map = {}
+    for item in new_fields_full_details:
+        name = item["name"]
         mappings_matching_field_name = [
             mapping
             for mapping in existing_mappings_to_consider
@@ -502,27 +508,36 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         target_concept_ids = set(
             [mapping["concept"] for mapping in mappings_matching_field_name]
         )
-        target_field_id = set(
-            [mapping["id"] for mapping in mappings_matching_field_name]
-        )
+
         if len(target_concept_ids) == 1:
-            existing_field_name_to_id_map[str(name)] = str(target_field_id.pop())
+            target_field_id = (
+                mapping["id"] for mapping in mappings_matching_field_name
+            )
+            existing_field_name_to_field_and_concept_id_map[str(name)] = (
+                str(next(target_field_id)),
+                str(target_concept_ids.pop()),
+            )
 
     # replace existing_field_name_to_id_map with field name to concept id map
     # field_name_to_concept_id_map = { element.key: existing_field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
 
-    logger.debug(f"{existing_field_name_to_id_map=}")
+    logger.debug(f"{existing_field_name_to_field_and_concept_id_map=}")
     concepts_to_post = []
     concept_response_content = []
     logger.debug(f"{new_fields_map=}")
     logger.debug(f"{existing_field_id_to_concept_map=}")
     # print("NAME IDS", new_fields_map.keys())
 
-    for name, new_field_id in new_fields_map.items():
+    for new_field_detail in new_fields_full_details:
         try:
-            existing_field_id = existing_field_name_to_id_map[name]
-            concept_id = existing_field_id_to_concept_map[str(existing_field_id)]
+            (
+                existing_field_id,
+                concept_id,
+            ) = existing_field_name_to_field_and_concept_id_map[
+                str(new_field_detail["name"])
+            ]
 
+            new_field_id = str(new_field_detail["id"])
             logger.info(
                 f"Found existing field with id: {existing_field_id} with existing "
                 f"concept mapping: {concept_id} which matches new field id: "
@@ -591,7 +606,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
     )
 
-    # TODO: Consider making this a tuple-dict like value_details_to_id_map?
+    # TODO: Consider making this a tuple-dict like value_details_to_value_and_concept_id_map?
     new_values_full_details = [
         {
             "name": value["value"],
@@ -765,7 +780,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     ]
     logger.debug(f"{existing_mappings_to_consider=}")
 
-    value_details_to_id_map = {}
+    value_details_to_value_and_concept_id_map = {}
     for item in new_values_full_details:
         name = item["name"]
         description = item["description"]
@@ -780,28 +795,27 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         target_concept_ids = set(
             [mapping["concept"] for mapping in mappings_matching_value_name]
         )
-        target_value_id = set(
-            [mapping["id"] for mapping in mappings_matching_value_name]
-        )
+
         if len(target_concept_ids) == 1:
-            value_details_to_id_map[
+            target_value_id = (
+                mapping["id"] for mapping in mappings_matching_value_name
+            )
+            value_details_to_value_and_concept_id_map[
                 (str(name), str(description), str(field_name))
-            ] = str(target_value_id.pop())
+            ] = (str(next(target_value_id)), str(target_concept_ids.pop()))
 
     concepts_to_post = []
     concept_response_content = []
     for new_value_detail in new_values_full_details:
         try:
-            existing_value_id = value_details_to_id_map[
+            existing_value_id, concept_id = value_details_to_value_and_concept_id_map[
                 (
                     str(new_value_detail["name"]),
                     str(new_value_detail["description"]),
                     str(new_value_detail["field_name"]),
                 )
             ]
-            # print("VALUE existing value id", existing_value_id)
-            concept_id = existing_value_id_to_concept_map[str(existing_value_id)]
-            # print("VALUE existing concept id", concept_id)
+
             new_value_id = str(new_value_detail["id"])
             logger.info(
                 f"Found existing value with id: {existing_value_id} with existing "
