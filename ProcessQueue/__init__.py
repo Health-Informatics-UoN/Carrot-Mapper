@@ -1059,7 +1059,7 @@ async def process_values_from_sheet(
     data_dictionary,
     vocab_dictionary,
     current_table_name,
-    names_to_ids_dict,
+    fieldnames_to_ids_dict,
     api_url,
     scan_report_id,
     headers,
@@ -1154,7 +1154,7 @@ async def process_values_from_sheet(
                 "frequency": int(frequency),
                 "conceptID": concept_id,
                 "value_description": val_desc,
-                "scan_report_field": names_to_ids_dict[name],
+                "scan_report_field": fieldnames_to_ids_dict[name],
             }
 
             # Append to list
@@ -1314,7 +1314,7 @@ async def process_values_from_sheet(
             )
 
     logger.info("PATCH values finished")
-    reuse_existing_field_concepts(names_to_ids_dict, 15, api_url, headers)
+    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15, api_url, headers)
     reuse_existing_value_concepts(values_response_content, 17, api_url, headers)
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
@@ -1423,12 +1423,12 @@ def process_all_fields_and_values(
             # Create a dictionary with field names and field ids from the response
             # as key value pairs
             # e.g ("Field Name": Field ID)
-            names_to_ids_dict = {
+            fieldnames_to_ids_dict = {
                 str(element.get("name", None)): str(element.get("id", None))
                 for element in fields_response_content
             }
 
-            # print("Dictionary id:name", names_to_ids_dict)
+            # print("Dictionary id:name", fieldnames_to_ids_dict)
 
             if current_table_name not in wb.sheetnames:
                 process_failure(api_url, scan_report_id, headers)
@@ -1445,7 +1445,7 @@ def process_all_fields_and_values(
                     data_dictionary,
                     vocab_dictionary,
                     current_table_name,
-                    names_to_ids_dict,
+                    fieldnames_to_ids_dict,
                     api_url,
                     scan_report_id,
                     headers,
