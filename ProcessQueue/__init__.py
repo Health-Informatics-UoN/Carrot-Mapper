@@ -497,6 +497,10 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         for name, new_field_id in new_fields_map.items()
     ]
 
+    # existing_field_name_to_field_and_concept_id_map will contain
+    # (field_name) -> (field_id, concept_id)
+    # for each field in new_fields_full_details
+    # if that field has only one match in existing_mappings_to_consider
     existing_field_name_to_field_and_concept_id_map = {}
     for item in new_fields_full_details:
         name = item["name"]
@@ -780,6 +784,10 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     ]
     logger.debug(f"{existing_mappings_to_consider=}")
 
+    # value_details_to_value_and_concept_id_map will contain
+    # (name, description, field_name) -> (value_id, concept_id)
+    # for each value/description/field tuple in new_values_full_details
+    # if that tuple has only one match in existing_mappings_to_consider
     value_details_to_value_and_concept_id_map = {}
     for item in new_values_full_details:
         name = item["name"]
