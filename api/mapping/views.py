@@ -831,6 +831,18 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
 #     }
 
 
+class ScanReportFilterViewSet(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = ScanReportViewSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in", "exact"],
+        "status": ["in", "exact"],
+        "hidden": ["in", "exact"],
+        "parent_dataset__hidden": ["in", "exact"],
+    }
+
+
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]

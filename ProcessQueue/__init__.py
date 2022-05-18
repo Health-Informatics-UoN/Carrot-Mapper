@@ -314,13 +314,13 @@ def get_active_completed_scan_reports(api_url, headers):
     )
     # get active scanreports and map them to fields. Remove any fields in archived
     # reports or not marked as 'Mapping Complete'
-    active_srs = []
-    for item in get_scan_reports.json():
-        if item["hidden"] is False and item["status"] == "COMPLET":
-            for ds in get_datasets.json():
-                # Exclude scan reports if their parent_dataset is archived
-                if ds["id"] == item["parent_dataset"] and ds["hidden"] is False:
-                    active_srs.append(str(item["id"]))
+    get_active_completed_srs = requests.get(
+        url=f"{api_url}scanreportfilter/?status=COMPLET&hidden"
+        f"=false&parent_dataset__hidden=false",
+        headers=headers,
+    )
+    active_srs = [str(item["id"]) for item in get_active_completed_srs.json()]
+
     # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
     # 'Mapping Complete'
     return active_srs
