@@ -2,10 +2,22 @@ import os
 from unittest import mock
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
 from rest_framework.authtoken.models import Token
 from .views import DatasetListView, ScanReportListViewSet
-from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
+from .models import (
+    Project,
+    Dataset,
+    ScanReport,
+    VisibilityChoices,
+    DataPartner,
+    ScanReportTable,
+    ScanReportField,
+    ScanReportValue,
+    ScanReportConcept,
+    Concept,
+)
 
 
 class TestDatasetListView(TestCase):
@@ -605,3 +617,281 @@ class TestScanReportListViewset(TestCase):
 
         # Assert the observed results are the same as the expected
         self.assertListEqual(observed_objs, expected_objs)
+
+
+class TestScanReportActiveConceptFilterViewSet(TestCase):
+    def setUp(self):
+        # Set up Data Partner
+        self.data_partner = DataPartner.objects.create(name="Silvan Elves")
+
+        # Set up datasets
+        self.public_dataset = Dataset.objects.create(
+            name="The Shire",
+            visibility=VisibilityChoices.PUBLIC,
+            data_partner=self.data_partner,
+        )
+        self.restricted_dataset = Dataset.objects.create(
+            name="The Mines of Moria",
+            visibility=VisibilityChoices.RESTRICTED,
+            data_partner=self.data_partner,
+        )
+
+        # Set up scan reports
+        self.scanreport1 = ScanReport.objects.create(
+            dataset="The Heights of Hobbits",
+            visibility=VisibilityChoices.PUBLIC,
+            parent_dataset=self.public_dataset,
+            status="COMPLET",
+        )
+        self.scanreport2 = ScanReport.objects.create(
+            dataset="The Kinds of Orcs",
+            visibility=VisibilityChoices.RESTRICTED,
+            parent_dataset=self.restricted_dataset,
+            status="COMPLET",
+        )
+
+        # Set up projects
+        self.project = Project.objects.create(name="The Fellowship of The Ring")
+        self.project.datasets.add(self.public_dataset, self.restricted_dataset)
+
+        # Set up tables/fields.values and SRConcepts. scanreportconcept1 is to a Field
+        # in a public SR. scanreportconcept2 is to a Value in a public SR.
+        # scanreportconcept3 is to a Field in a hidden SR in a hidden Dataset.
+        # scanreportconcept4 is to a Value in a hidden SR in a hidden Dataset.
+        # visibility of the SRs should not affect the output, but only the az_func_user
+        # should be able to see anything through this view.
+        self.scanreporttable1 = ScanReportTable.objects.create(
+            scan_report=self.scanreport1,
+            name="Table1",
+        )
+        self.scanreportfield1 = ScanReportField.objects.create(
+            scan_report_table=self.scanreporttable1,
+            name="Field1",
+            description_column="",
+            type_column="",
+            max_length=32,
+            nrows=0,
+            nrows_checked=0,
+            fraction_empty=0.0,
+            nunique_values=0,
+            fraction_unique=0.0,
+        )
+        self.scanreportvalue1 = ScanReportValue.objects.create(
+            scan_report_field=self.scanreportfield1,
+            value="Value1",
+            frequency=0,
+        )
+        self.scanreportconcept1 = ScanReportConcept.objects.create(
+            concept=Concept(
+                concept_id=1,
+                concept_name="",
+                domain_id="",
+                vocabulary_id="",
+                concept_class_id="",
+                standard_concept="",
+                concept_code="",
+                valid_start_date="",
+                valid_end_date="",
+            ),
+            content_type=ContentType(ScanReportField),
+            object_id=self.scanreportfield1.id,
+            content_object=self.scanreportfield1,
+        )
+        self.scanreportconcept2 = ScanReportConcept.objects.create(
+            concept=Concept(
+                concept_id=1,
+                concept_name="",
+                domain_id="",
+                vocabulary_id="",
+                concept_class_id="",
+                standard_concept="",
+                concept_code="",
+                valid_start_date="",
+                valid_end_date="",
+            ),
+            content_type=ContentType(ScanReportValue),
+            object_id=self.scanreportvalue1.id,
+            content_object=self.scanreportvalue1,
+        )
+        self.scanreporttable2 = ScanReportTable.objects.create(
+            scan_report=self.scanreport2,
+            name="Table2",
+        )
+
+        self.scanreportfield2 = ScanReportField.objects.create(
+            scan_report_table=self.scanreporttable2,
+            name="Field2",
+            description_column="",
+            type_column="",
+            max_length=32,
+            nrows=0,
+            nrows_checked=0,
+            fraction_empty=0.0,
+            nunique_values=0,
+            fraction_unique=0.0,
+        )
+        self.scanreportvalue2 = ScanReportValue.objects.create(
+            scan_report_field=self.scanreportfield2,
+            value="Value2",
+            frequency=0,
+        )
+        self.scanreportconcept3 = ScanReportConcept.objects.create(
+            concept=Concept(
+                concept_id=1,
+                concept_name="",
+                domain_id="",
+                vocabulary_id="",
+                concept_class_id="",
+                standard_concept="",
+                concept_code="",
+                valid_start_date="",
+                valid_end_date="",
+            ),
+            content_type=ContentType(ScanReportField),
+            object_id=self.scanreportfield2.id,
+            content_object=self.scanreportfield2,
+        )
+        self.scanreportconcept4 = ScanReportConcept.objects.create(
+            concept=Concept(
+                concept_id=1,
+                concept_name="",
+                domain_id="",
+                vocabulary_id="",
+                concept_class_id="",
+                standard_concept="",
+                concept_code="",
+                valid_start_date="",
+                valid_end_date="",
+            ),
+            content_type=ContentType(ScanReportValue),
+            object_id=self.scanreportvalue2.id,
+            content_object=self.scanreportvalue2,
+        )
+        # Set up API client
+        self.client = APIClient()
+
+    def test_admin_user_get(self):
+        """Users who are admins of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are the admin of.
+        """
+        User = get_user_model()
+
+        # user who is an admin of the parent dataset
+        admin_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(admin_user)
+        self.public_dataset.admins.add(admin_user)
+        self.restricted_dataset.admins.add(admin_user)
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(admin_user)
+        admin_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=15"
+        )
+        self.assertEqual(admin_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
+        print(observed_objs)
+        expected_objs = []
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_editor_get(self):
+        """Users who are editors of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are an editor of.
+        """
+        User = get_user_model()
+
+        # user who is an editor of the parent dataset
+        editor_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(editor_user)
+        self.public_dataset.editors.add(editor_user)
+        self.restricted_dataset.editors.add(editor_user)
+
+        # Get data editor_user should be able to see
+        self.client.force_authenticate(editor_user)
+        editor_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=15"
+        )
+        self.assertEqual(editor_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in editor_response.data])
+        expected_objs = []
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_viewer_get(self):
+        """Users who are viewers of the parent dataset can see all public SRs
+        and restricted SRs whose parent dataset they are a viewer of.
+        """
+        User = get_user_model()
+
+        # user who is a viewer of the parent dataset
+        viewer_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(viewer_user)
+        self.public_dataset.viewers.add(viewer_user)
+        self.restricted_dataset.viewers.add(viewer_user)
+
+        # Get data viewer_user should be able to see
+        self.client.force_authenticate(viewer_user)
+        viewer_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=15"
+        )
+        self.assertEqual(viewer_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in viewer_response.data])
+        expected_objs = []
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    def test_author_get(self):
+        """Authors can see all public SRs and restricted SRs they are the author of."""
+        User = get_user_model()
+
+        # user who is the author of a scan report
+        author_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
+        self.project.members.add(author_user)
+        self.scanreport1.author = author_user
+        self.scanreport1.save()
+
+        # Get data admin_user should be able to see
+        self.client.force_authenticate(author_user)
+        author_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=15"
+        )
+        self.assertEqual(author_response.status_code, 200)
+        observed_objs = sorted([obj.get("id") for obj in author_response.data])
+        expected_objs = []
+
+        # Assert the observed results are the same as the expected
+        self.assertListEqual(observed_objs, expected_objs)
+
+    @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
+    def test_az_function_user_get(self):
+        """AZ_FUNCTION_USER can see all public SRs and restricted SRs."""
+        User = get_user_model()
+
+        # AZ_FUNCTION_USER
+        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        self.project.members.add(az_user)
+        self.scanreport1.author = az_user
+        self.scanreport1.save()
+
+        # Get field data az_user should be able to see
+        self.client.force_authenticate(az_user)
+        az_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=15"
+        )
+        self.assertEqual(az_response.status_code, 200)
+        az_response_ids = [item["id"] for item in az_response.data]
+        self.assertTrue(self.scanreportconcept1.id in az_response_ids)
+        self.assertTrue(self.scanreportconcept3.id in az_response_ids)
+
+        # Get value data az_user should be able to see
+        self.client.force_authenticate(az_user)
+        az_response = self.client.get(
+            "/api/scanreportactiveconceptfilter/?content_type=17"
+        )
+        self.assertEqual(az_response.status_code, 200)
+        az_response_ids = [item["id"] for item in az_response.data]
+        self.assertTrue(self.scanreportconcept2.id in az_response_ids)
+        self.assertTrue(self.scanreportconcept4.id in az_response_ids)
