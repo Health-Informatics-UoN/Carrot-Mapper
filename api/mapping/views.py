@@ -694,6 +694,7 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
     in ScanReports that are "active" - that is, not hidden, with unhidden parent
     dataset, and marked with status "Mapping Complete"
     """
+
     serializer_class = ScanReportConceptSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["content_type"]

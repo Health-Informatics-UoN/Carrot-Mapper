@@ -450,9 +450,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         f"{content_type}&fields=id,object_id,concept",
         headers=headers,
     )
-    existing_field_concepts = json.loads(
-        get_field_concepts.content.decode("utf-8")
-    )
+    existing_field_concepts = json.loads(get_field_concepts.content.decode("utf-8"))
     # create dictionary that maps existing field ids to scan report concepts
     # from the list of existing scan report concepts from active SRs
     existing_field_id_to_concept_map = {
@@ -479,8 +477,10 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
         )
         existing_fields.append(json.loads(get_fields.content.decode("utf-8")))
     existing_fields = flatten(existing_fields)
-    logger.debug(f"ids and names of existing fields with concepts in active SRs:"
-                 f" {existing_fields}")
+    logger.debug(
+        f"ids and names of existing fields with concepts in active SRs:"
+        f" {existing_fields}"
+    )
 
     existing_mappings_to_consider = [
         {
