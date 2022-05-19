@@ -688,6 +688,46 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
+class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
+    """
+    This returns details of ScanReportConcepts that have the given content_type and are
+    in ScanReports that are "active" - that is, not hidden, with unhidden parent
+    dataset, and marked with status "Mapping Complete"
+    """
+    serializer_class = ScanReportConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["content_type"]
+
+    def get_queryset(self):
+        if self.request.GET["content_type"] == "15":
+            # ScanReportField
+            # we have SRCs with content_type 15, grab all SRFields in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            field_ids = ScanReportField.objects.filter(
+                scan_report_table__scan_report__hidden=False,
+                scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_table__scan_report__status="COMPLET",
+            )
+            qs = ScanReportConcept.objects.filter(
+                content_type=15, object_id__in=field_ids
+            )
+            return qs
+        elif self.request.GET["content_type"] == "17":  #
+            # ScanReportValue
+            # we have SRCs with content_type 17, grab all SRValues in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            value_ids = ScanReportValue.objects.filter(
+                scan_report_field__scan_report_table__scan_report__hidden=False,
+                scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_field__scan_report_table__scan_report__status="COMPLET",
+            )
+            qs = ScanReportConcept.objects.filter(
+                content_type=17, object_id__in=value_ids
+            )
+            return qs
+        return None
+
+
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()
     serializer_class = ClassificationSystemSerializer

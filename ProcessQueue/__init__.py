@@ -443,30 +443,44 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     field that matches the name of an existing field with an associated concept.
     """
     logger.info(f"reuse_existing_field_concepts")
-    # Gets all scan report concepts that are for the type field (or content type which should be field)
-    get_field_concept_ids = requests.get(
-        url=f"{api_url}scanreportconceptsfilter/?content_type="
+    # Gets all scan report concepts that are for the type field
+    # (or content type which should be field) and in "active" SRs
+    get_field_concepts = requests.get(
+        url=f"{api_url}scanreportactiveconceptfilter/?content_type="
         f"{content_type}&fields=id,object_id,concept",
         headers=headers,
     )
-    # create dictionary that maps existing field ids to scan report concepts
-    # from the list of existing scan report concepts
-    existing_field_concept_ids = json.loads(
-        get_field_concept_ids.content.decode("utf-8")
+    existing_field_concepts = json.loads(
+        get_field_concepts.content.decode("utf-8")
     )
+    # create dictionary that maps existing field ids to scan report concepts
+    # from the list of existing scan report concepts from active SRs
     existing_field_id_to_concept_map = {
         str(element.get("object_id", None)): str(element.get("concept", None))
-        for element in existing_field_concept_ids
+        for element in existing_field_concepts
     }
     logger.debug(
-        f"field_id:concept_id for all existing fields with concepts: "
+        f"field_id:concept_id for all existing fields in active SRs with concepts: "
         f"{existing_field_id_to_concept_map}"
     )
 
-    # Get details of all fields from eligible Scan Reports that match the name of a newly added field
-    existing_fields_details_in_active_sr = get_existing_field_details_in_active_srs(
-        existing_field_id_to_concept_map, new_fields_map, api_url, headers
+    # get details of existing selected fields, for the purpose of matching against
+    # new fields
+    existing_paginated_field_ids = paginate(
+        [value["object_id"] for value in existing_field_concepts], max_chars_for_get
     )
+    logger.debug(f"{existing_paginated_field_ids=}")
+    existing_fields = []
+    for ids in existing_paginated_field_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_fields = requests.get(
+            url=f"{api_url}scanreportfields/?id__in={ids_to_get}&fields=id,name",
+            headers=headers,
+        )
+        existing_fields.append(json.loads(get_fields.content.decode("utf-8")))
+    existing_fields = flatten(existing_fields)
+    logger.debug(f"ids and names of existing fields with concepts in active SRs:"
+                 f" {existing_fields}")
 
     existing_mappings_to_consider = [
         {
@@ -474,7 +488,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             "concept": existing_field_id_to_concept_map[str(field["id"])],
             "id": field["id"],
         }
-        for field in existing_fields_details_in_active_sr
+        for field in existing_fields
     ]
     logger.debug(f"{existing_mappings_to_consider=}")
 
