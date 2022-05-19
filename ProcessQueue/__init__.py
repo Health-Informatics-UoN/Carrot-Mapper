@@ -302,28 +302,14 @@ def flatten(arr):
 
 def get_active_completed_scan_reports(api_url, headers):
     # TODO: could this be replaced by a single API endpoint?
-    # get all scan reports to be used to filter values by only values that come from
-    # active scan reports that are marked as 'Mapping Complete'
-    get_scan_reports = requests.get(
-        url=f"{api_url}scanreports/",
-        headers=headers,
-    )
-    get_datasets = requests.get(
-        url=f"{api_url}datasets/",
-        headers=headers,
-    )
-    # get active scanreports and map them to fields. Remove any fields in archived
-    # reports or not marked as 'Mapping Complete'
+    # get all scan reports that are not hidden, do not live in a hidden Dataset,
+    # and are marked as 'Mapping Complete'
     get_active_completed_srs = requests.get(
         url=f"{api_url}scanreportfilter/?status=COMPLET&hidden"
         f"=false&parent_dataset__hidden=false",
         headers=headers,
     )
-    active_srs = [str(item["id"]) for item in get_active_completed_srs.json()]
-
-    # active reports is list of report ids that belong to an active dataset, are not archived, and have the status
-    # 'Mapping Complete'
-    return active_srs
+    return [str(item["id"]) for item in get_active_completed_srs.json()]
 
 
 def post_paginated_concepts(concepts_to_post, api_url, headers):
