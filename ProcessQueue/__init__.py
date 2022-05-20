@@ -396,9 +396,9 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             for mapping in existing_mappings_to_consider
             if mapping["name"] == name
         ]
-        target_concept_ids = set(
-            [mapping["concept"] for mapping in mappings_matching_field_name]
-        )
+        target_concept_ids = {
+            mapping["concept"] for mapping in mappings_matching_field_name
+        }
 
         if len(target_concept_ids) == 1:
             target_field_id = (
