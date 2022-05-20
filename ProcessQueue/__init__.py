@@ -410,9 +410,6 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
                 str(target_concept_ids.pop()),
             )
 
-    # replace existing_field_name_to_id_map with field name to concept id map
-    # field_name_to_concept_id_map = { element.key: existing_field_id_to_concept_map[int(element.value)] for element in field_name_to_id_map }
-
     logger.debug(f"{existing_field_name_to_field_and_concept_id_map=}")
     concepts_to_post = []
     logger.debug(f"{new_fields_map=}")
