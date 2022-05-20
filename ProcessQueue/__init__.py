@@ -1197,7 +1197,7 @@ def process_all_fields_and_values(
     field_entries_to_post = []
 
     previous_row_value = None
-    for i, row in enumerate(fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row), start=2):
+    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
         # Guard against unnecessary rows beyond the last true row with contents
         if (previous_row_value is None or previous_row_value == "") and (
             row[0].value is None or row[0].value == ""
