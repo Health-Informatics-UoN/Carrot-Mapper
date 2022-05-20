@@ -65,6 +65,14 @@ vocabs = [
 
 max_chars_for_get = 2000
 
+# Set up ccom API parameters:
+API_URL = os.environ.get("APP_URL") + "api/"
+HEADERS = {
+    "Content-type": "application/json",
+    "charset": "utf-8",
+    "Authorization": f"Token {os.environ.get('AZ_FUNCTION_KEY')}",
+}
+
 
 # @memory_profiler.profile(stream=profiler_logstream)
 def process_scan_report_sheet_table(sheet):
@@ -93,9 +101,9 @@ def process_scan_report_sheet_table(sheet):
     sheet.reset_dimensions()
     sheet.calculate_dimension(force=True)
     # Get header entries (skipping every second column which is just 'Frequency')
-    # So headers = ['a', 'b']
+    # So sheet_headers = ['a', 'b']
     first_row = sheet[1]
-    headers = [cell.value for cell in first_row[::2]]
+    sheet_headers = [cell.value for cell in first_row[::2]]
 
     # Set up an empty defaultdict, and fill it with one entry per header (i.e. one
     # per column)
@@ -108,12 +116,12 @@ def process_scan_report_sheet_table(sheet):
     #              'b': [('orange', 5), ('plantain', 50)]})
 
     d = defaultdict(list)
-    # Iterate over all rows beyond the header - use the number of headers*2 to
+    # Iterate over all rows beyond the header - use the number of sheet_headers*2 to
     # set the maximum column rather than relying on sheet.max_col as this is not
     # always reliably updated by Excel etc.
     for row in sheet.iter_rows(
         min_col=1,
-        max_col=len(headers) * 2,
+        max_col=len(sheet_headers) * 2,
         min_row=2,
         max_row=sheet.max_row,
         values_only=True,
@@ -122,7 +130,7 @@ def process_scan_report_sheet_table(sheet):
         this_row_empty = True
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
-        for (header, cell, freq) in zip(headers, row[::2], row[1::2]):
+        for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
             if cell != "" or freq != "":
                 d[header].append((str(cell), freq))
                 this_row_empty = False
@@ -225,13 +233,6 @@ def paginate(entries, max_chars=None):
 def startup(msg):
     logger.info("Python queue trigger function processed a queue item.")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    # Set up ccom API parameters:
-    api_url = os.environ.get("APP_URL") + "api/"
-    headers = {
-        "Content-type": "application/json",
-        "charset": "utf-8",
-        "Authorization": f"Token {os.environ.get('AZ_FUNCTION_KEY')}",
-    }
 
     # Get message from queue
     message = {
@@ -267,19 +268,19 @@ def startup(msg):
     logger.info(f"dequeue_count {msg.dequeue_count}")
     scan_report_id = body["scan_report_id"]
     if msg.dequeue_count == 2:
-        process_failure(api_url, scan_report_id, headers)
+        process_failure(scan_report_id)
 
     if msg.dequeue_count > 1:
         raise Exception("dequeue_count > 1")
 
     # Otherwise, this must be the first time we've seen this message. Proceed.
-    return api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id
+    return scan_report_blob, data_dictionary_blob, scan_report_id
 
 
-def process_failure(api_url, scan_report_id, headers):
+def process_failure(scan_report_id):
     scan_report_fetched_data = requests.get(
-        url=f"{api_url}scanreports/{scan_report_id}/",
-        headers=headers,
+        url=f"{API_URL}scanreports/{scan_report_id}/",
+        headers=HEADERS,
     )
 
     scan_report_fetched_data = json.loads(
@@ -289,7 +290,7 @@ def process_failure(api_url, scan_report_id, headers):
     json_data = json.dumps({"status": "UPFAILE"})
 
     failure_response = requests.patch(
-        url=f"{api_url}scanreports/{scan_report_id}/", data=json_data, headers=headers
+        url=f"{API_URL}scanreports/{scan_report_id}/", data=json_data, headers=HEADERS
     )
 
 
@@ -300,14 +301,14 @@ def flatten(arr):
     return [item for sublist in arr for item in sublist]
 
 
-def post_paginated_concepts(concepts_to_post, api_url, headers):
+def post_paginated_concepts(concepts_to_post):
     paginated_concepts_to_post = paginate(concepts_to_post)
     concept_response = []
     concept_response_content = []
     for concepts_to_post_item in paginated_concepts_to_post:
         post_concept_response = requests.post(
-            url=api_url + "scanreportconcepts/",
-            headers=headers,
+            url=f"{API_URL}scanreportconcepts/",
+            headers=HEADERS,
             data=json.dumps(concepts_to_post_item),
         )
         logger.info(
@@ -323,7 +324,7 @@ def post_paginated_concepts(concepts_to_post, api_url, headers):
     concept_response_content += concept_content
 
 
-def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers):
+def reuse_existing_field_concepts(new_fields_map, content_type):
     """
     This expects a dict of field names to ids which have been generated in a newly uploaded
     scanreport, and content_type 15. It creates new concepts associated to any
@@ -333,9 +334,9 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     # Gets all scan report concepts that are for the type field
     # (or content type which should be field) and in "active" SRs
     get_field_concepts = requests.get(
-        url=f"{api_url}scanreportactiveconceptfilter/?content_type="
+        url=f"{API_URL}scanreportactiveconceptfilter/?content_type="
         f"{content_type}&fields=id,object_id,concept",
-        headers=headers,
+        headers=HEADERS,
     )
     existing_field_concepts = json.loads(get_field_concepts.content.decode("utf-8"))
     # create dictionary that maps existing field ids to scan report concepts
@@ -359,8 +360,8 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
     for ids in existing_paginated_field_ids:
         ids_to_get = ",".join(map(str, ids))
         get_fields = requests.get(
-            url=f"{api_url}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=headers,
+            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
+            headers=HEADERS,
         )
         existing_fields.append(json.loads(get_fields.content.decode("utf-8")))
     existing_fields = flatten(existing_fields)
@@ -450,11 +451,11 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
             continue
 
     if concepts_to_post:
-        post_paginated_concepts(concepts_to_post, api_url, headers)
+        post_paginated_concepts(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
 
-def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers):
+def reuse_existing_value_concepts(new_values_map, content_type):
     """
     This expects a dict of value names to ids which have been generated in a newly uploaded scanreport and
     creates new concepts if any matching names are found with existing fields
@@ -462,9 +463,9 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     logger.info("reuse_existing_value_concepts")
     # get all scan report concepts with the content type of values
     get_value_concepts = requests.get(
-        url=f"{api_url}scanreportactiveconceptfilter/?content_type"
+        url=f"{API_URL}scanreportactiveconceptfilter/?content_type"
         f"={content_type}&fields=id,object_id,concept",
-        headers=headers,
+        headers=HEADERS,
     )
     # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
@@ -490,9 +491,9 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
         ids_to_get = ",".join(map(str, ids))
 
         get_field_tables = requests.get(
-            url=f"{api_url}scanreportvalues/?id__in={ids_to_get}&fields=id,value,scan_report_field,"
+            url=f"{API_URL}scanreportvalues/?id__in={ids_to_get}&fields=id,value,scan_report_field,"
             f"value_description",
-            headers=headers,
+            headers=HEADERS,
         )
         existing_values_filtered_by_id.append(
             json.loads(get_field_tables.content.decode("utf-8"))
@@ -506,15 +507,17 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     # scan_report_field of each value got from the active concepts filter.
 
     # get field ids from values and use to get scan report fields' details
-    existing_field_ids = {item["scan_report_field"] for item in existing_values_filtered_by_id}
+    existing_field_ids = {
+        item["scan_report_field"] for item in existing_values_filtered_by_id
+    }
     paginated_existing_field_ids = paginate(existing_field_ids, max_chars_for_get)
     existing_fields_details = []
     for ids in paginated_existing_field_ids:
         ids_to_get = ",".join(map(str, ids))
 
         get_value_fields = requests.get(
-            url=f"{api_url}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=headers,
+            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
+            headers=HEADERS,
         )
         existing_fields_details.append(
             json.loads(get_value_fields.content.decode("utf-8"))
@@ -551,8 +554,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     for ids in new_paginated_field_ids:
         ids_to_get = ",".join(map(str, ids))
         get_fields = requests.get(
-            url=f"{api_url}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=headers,
+            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
+            headers=HEADERS,
         )
         new_fields.append(json.loads(get_fields.content.decode("utf-8")))
     new_fields = flatten(new_fields)
@@ -605,8 +608,9 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
             and mapping["description"] == description
             and mapping["field_name"] == field_name
         ]
-        target_concept_ids = {mapping["concept"] for mapping in
-                              mappings_matching_value_name}
+        target_concept_ids = {
+            mapping["concept"] for mapping in mappings_matching_value_name
+        }
 
         if len(target_concept_ids) == 1:
             target_value_id = (
@@ -650,7 +654,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
             continue
 
     if concepts_to_post:
-        post_paginated_concepts(concepts_to_post, api_url, headers)
+        post_paginated_concepts(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
@@ -792,7 +796,7 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
-def post_tables(fo_ws, api_url, scan_report_id, headers):
+def post_tables(fo_ws, scan_report_id):
     # Get all the table names in the order they appear in the Field Overview page
     table_names = []
     # Iterate over cells in the first column, but because we're in ReadOnly mode we
@@ -845,9 +849,9 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     logger.info("POST tables")
     # POST request to scanreporttables
     tables_response = requests.post(
-        url=f"{api_url}scanreporttables/",
+        url=f"{API_URL}scanreporttables/",
         data=json.dumps(table_entries_to_post),
-        headers=headers,
+        headers=HEADERS,
     )
 
     logger.info("POST tables finished")
@@ -855,7 +859,7 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     logger.info(f"TABLE SAVE STATUS >>> {tables_response.status_code}")
     # Error on failure
     if tables_response.status_code != 201:
-        process_failure(api_url, scan_report_id, headers)
+        process_failure(scan_report_id)
         raise HTTPError(
             " ".join(
                 [
@@ -885,9 +889,7 @@ async def process_values_from_sheet(
     vocab_dictionary,
     current_table_name,
     fieldnames_to_ids_dict,
-    api_url,
     scan_report_id,
-    headers,
 ):
     # print("WORKING ON", sheet.title)
     # Reset list for values
@@ -1004,9 +1006,9 @@ async def process_values_from_sheet(
                 tasks.append(
                     asyncio.ensure_future(
                         client.post(
-                            url=f"{api_url}scanreportvalues/",
+                            url=f"{API_URL}scanreportvalues/",
                             data=json.dumps(page),
-                            headers=headers,
+                            headers=HEADERS,
                         )
                     )
                 )
@@ -1022,7 +1024,7 @@ async def process_values_from_sheet(
             )
 
             if values_response.status_code != 201:
-                process_failure(api_url, scan_report_id, headers)
+                process_failure(scan_report_id)
                 raise HTTPError(
                     " ".join(
                         [
@@ -1043,8 +1045,8 @@ async def process_values_from_sheet(
     # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
     logger.debug("GET posted values")
     get_ids_of_posted_values = requests.get(
-        url=api_url + "scanreportvaluepks/?scan_report=" + str(scan_report_id),
-        headers=headers,
+        url=f"{API_URL}scanreportvaluepks/?scan_report={scan_report_id}",
+        headers=HEADERS,
     )
     logger.debug("GET posted values finished")
 
@@ -1080,8 +1082,8 @@ async def process_values_from_sheet(
 
         # POST the ScanReportConcept data to the model
         concepts_response = requests.post(
-            url=api_url + "scanreportconcepts/",
-            headers=headers,
+            url=f"{API_URL}scanreportconcepts/",
+            headers=HEADERS,
             data=json.dumps(page),
         )
 
@@ -1091,7 +1093,7 @@ async def process_values_from_sheet(
             f"{concepts_response.reason}"
         )
         if concepts_response.status_code != 201:
-            process_failure(api_url, scan_report_id, headers)
+            process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1121,13 +1123,13 @@ async def process_values_from_sheet(
     for concept in ids_of_posted_values:
         logger.debug("PATCH value")
         value_response = requests.patch(
-            url=api_url + "scanreportvalues/" + str(concept["id"]) + "/",
-            headers=headers,
+            url=f"{API_URL}scanreportvalues/{concept['id']}/",
+            headers=HEADERS,
             data=put_update_json,
         )
         # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
         if value_response.status_code != 200:
-            process_failure(api_url, scan_report_id, headers)
+            process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1139,20 +1141,20 @@ async def process_values_from_sheet(
             )
 
     logger.info("PATCH values finished")
-    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15, api_url, headers)
-    reuse_existing_value_concepts(values_response_content, 17, api_url, headers)
+    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
+    reuse_existing_value_concepts(values_response_content, 17)
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
 
-def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
+def post_field_entries(field_entries_to_post, scan_report_id):
     paginated_field_entries_to_post = paginate(field_entries_to_post)
     fields_response_content = []
     # POST Fields
     for page in paginated_field_entries_to_post:
         fields_response = requests.post(
-            url=f"{api_url}scanreportfields/",
+            url=f"{API_URL}scanreportfields/",
             data=json.dumps(page),
-            headers=headers,
+            headers=HEADERS,
         )
         # print('dumped:', json.dumps(page))
         logger.info(
@@ -1161,7 +1163,7 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
         )
 
         if fields_response.status_code != 201:
-            process_failure(api_url, scan_report_id, headers)
+            process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1184,9 +1186,7 @@ def process_all_fields_and_values(
     wb,
     data_dictionary,
     vocab_dictionary,
-    api_url,
     scan_report_id,
-    headers,
 ):
     """Loop over all rows in Field Overview sheet.
     This is the same as looping over all fields in all tables.
@@ -1241,7 +1241,7 @@ def process_all_fields_and_values(
             logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
             fields_response_content = post_field_entries(
-                field_entries_to_post, api_url, scan_report_id, headers
+                field_entries_to_post, scan_report_id
             )
             field_entries_to_post = []
 
@@ -1256,7 +1256,7 @@ def process_all_fields_and_values(
             # print("Dictionary id:name", fieldnames_to_ids_dict)
 
             if current_table_name not in wb.sheetnames:
-                process_failure(api_url, scan_report_id, headers)
+                process_failure(scan_report_id)
                 raise ValueError(
                     f"Attempting to access sheet '{current_table_name}'"
                     f" in scan report, but no such sheet exists."
@@ -1271,22 +1271,18 @@ def process_all_fields_and_values(
                     vocab_dictionary,
                     current_table_name,
                     fieldnames_to_ids_dict,
-                    api_url,
                     scan_report_id,
-                    headers,
                 )
             )
 
 
 def main(msg: func.QueueMessage):
-    api_url, headers, scan_report_blob, data_dictionary_blob, scan_report_id = startup(
-        msg
-    )
+    scan_report_blob, data_dictionary_blob, scan_report_id = startup(msg)
     # Set the status to 'Upload in progress'
     status_in_progress_response = requests.patch(
-        url=f"{api_url}scanreports/{scan_report_id}/",
+        url=f"{API_URL}scanreports/{scan_report_id}/",
         data=json.dumps({"status": "UPINPRO"}),
-        headers=headers,
+        headers=HEADERS,
     )
 
     wb, data_dictionary, vocab_dictionary = parse_blobs(
@@ -1297,7 +1293,7 @@ def main(msg: func.QueueMessage):
     fo_ws = wb.worksheets[0]
 
     # POST ScanReportTables
-    table_name_to_id_map = post_tables(fo_ws, api_url, scan_report_id, headers)
+    table_name_to_id_map = post_tables(fo_ws, scan_report_id)
 
     """
     POST fields per table:
@@ -1324,17 +1320,15 @@ def main(msg: func.QueueMessage):
         wb,
         data_dictionary,
         vocab_dictionary,
-        api_url,
         scan_report_id,
-        headers,
     )
 
     logger.info("All tables completed. Now set status to 'Upload Complete'")
     # Set the status to 'Upload Complete'
     status_complete_response = requests.patch(
-        url=f"{api_url}scanreports/{scan_report_id}/",
+        url=f"{API_URL}scanreports/{scan_report_id}/",
         data=json.dumps({"status": "UPCOMPL"}),
-        headers=headers,
+        headers=HEADERS,
     )
     logger.info("Successfully set status to 'Upload Complete'")
     wb.close()
