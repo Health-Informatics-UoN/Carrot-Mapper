@@ -144,12 +144,12 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
-def default_zero(input):
+def default_zero(value):
     """
     Helper function that returns the input, replacing anything Falsey
     (such as Nones or empty strings) with 0.0.
     """
-    return round(input if input else 0.0, 2)
+    return round(value if value else 0.0, 2)
 
 
 def handle_max_chars(max_chars=None):
