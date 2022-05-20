@@ -297,8 +297,7 @@ def flatten(arr):
     """
     This expects a list of lists and returns a flattened list
     """
-    newArr = [item for sublist in arr for item in sublist]
-    return newArr
+    return [item for sublist in arr for item in sublist]
 
 
 def post_paginated_concepts(concepts_to_post, api_url, headers):
