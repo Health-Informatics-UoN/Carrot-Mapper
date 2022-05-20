@@ -315,6 +315,7 @@ def get_active_completed_scan_reports(api_url, headers):
 def post_paginated_concepts(concepts_to_post, api_url, headers):
     paginated_concepts_to_post = paginate(concepts_to_post)
     concept_response = []
+    concept_response_content = []
     for concepts_to_post_item in paginated_concepts_to_post:
         post_concept_response = requests.post(
             url=api_url + "scanreportconcepts/",
@@ -527,7 +528,6 @@ def reuse_existing_field_concepts(new_fields_map, content_type, api_url, headers
 
     logger.debug(f"{existing_field_name_to_field_and_concept_id_map=}")
     concepts_to_post = []
-    concept_response_content = []
     logger.debug(f"{new_fields_map=}")
     logger.debug(f"{existing_field_id_to_concept_map=}")
     # print("NAME IDS", new_fields_map.keys())
@@ -813,7 +813,6 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
             ] = (str(next(target_value_id)), str(target_concept_ids.pop()))
 
     concepts_to_post = []
-    concept_response_content = []
     for new_value_detail in new_values_full_details:
         try:
             existing_value_id, concept_id = value_details_to_value_and_concept_id_map[
