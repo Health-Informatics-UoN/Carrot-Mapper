@@ -230,7 +230,7 @@ def startup(msg):
     headers = {
         "Content-type": "application/json",
         "charset": "utf-8",
-        "Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY")),
+        "Authorization": f"Token {os.environ.get('AZ_FUNCTION_KEY')}",
     }
 
     # Get message from queue
@@ -507,9 +507,7 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
     # scan_report_field of each value got from the active concepts filter.
 
     # get field ids from values and use to get scan report fields' details
-    existing_field_ids = set(
-        [item["scan_report_field"] for item in existing_values_filtered_by_id]
-    )
+    existing_field_ids = {item["scan_report_field"] for item in existing_values_filtered_by_id}
     paginated_existing_field_ids = paginate(existing_field_ids, max_chars_for_get)
     existing_fields_details = []
     for ids in paginated_existing_field_ids:
@@ -608,9 +606,8 @@ def reuse_existing_value_concepts(new_values_map, content_type, api_url, headers
             and mapping["description"] == description
             and mapping["field_name"] == field_name
         ]
-        target_concept_ids = set(
-            [mapping["concept"] for mapping in mappings_matching_value_name]
-        )
+        target_concept_ids = {mapping["concept"] for mapping in
+                              mappings_matching_value_name}
 
         if len(target_concept_ids) == 1:
             target_value_id = (
@@ -849,7 +846,7 @@ def post_tables(fo_ws, api_url, scan_report_id, headers):
     logger.info("POST tables")
     # POST request to scanreporttables
     tables_response = requests.post(
-        "{}scanreporttables/".format(api_url),
+        url=f"{api_url}scanreporttables/",
         data=json.dumps(table_entries_to_post),
         headers=headers,
     )
@@ -1008,7 +1005,7 @@ async def process_values_from_sheet(
                 tasks.append(
                     asyncio.ensure_future(
                         client.post(
-                            url="{}scanreportvalues/".format(api_url),
+                            url=f"{api_url}scanreportvalues/",
                             data=json.dumps(page),
                             headers=headers,
                         )
@@ -1019,10 +1016,10 @@ async def process_values_from_sheet(
 
             values_responses = await asyncio.gather(*tasks)
 
-        for i, values_response in enumerate(values_responses):
+        for values_response, page_length in zip(values_responses, page_lengths):
             logger.info(
                 f"VALUES SAVE STATUSES >>> {values_response.status_code} "
-                f"{values_response.reason_phrase} {page_lengths[i]}"
+                f"{values_response.reason_phrase} {page_length}"
             )
 
             if values_response.status_code != 201:
@@ -1154,7 +1151,7 @@ def post_field_entries(field_entries_to_post, api_url, scan_report_id, headers):
     # POST Fields
     for page in paginated_field_entries_to_post:
         fields_response = requests.post(
-            "{}scanreportfields/".format(api_url),
+            url=f"{api_url}scanreportfields/",
             data=json.dumps(page),
             headers=headers,
         )
