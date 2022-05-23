@@ -283,9 +283,7 @@ def process_failure(scan_report_id):
         headers=HEADERS,
     )
 
-    scan_report_fetched_data = json.loads(
-        scan_report_fetched_data.content.decode("utf-8")
-    )
+    scan_report_fetched_data = scan_report_fetched_data.json()
 
     json_data = json.dumps({"status": "UPFAILE"})
 
@@ -316,12 +314,26 @@ def post_paginated_concepts(concepts_to_post):
             f"{post_concept_response.status_code} "
             f"{post_concept_response.reason}"
         )
-        concept_response.append(
-            json.loads(post_concept_response.content.decode("utf-8"))
-        )
+        concept_response.append(post_concept_response.json())
     concept_content = flatten(concept_response)
 
     concept_response_content += concept_content
+
+
+def get_existing_fields_from_ids(existing_field_ids):
+    paginated_existing_field_ids = paginate(existing_field_ids, max_chars_for_get)
+
+    # for each list in paginated ids, get scanreport fields that match any of the given
+    # ids (those with an associated concept)
+    existing_fields = []
+    for ids in paginated_existing_field_ids:
+        ids_to_get = ",".join(map(str, ids))
+        get_fields = requests.get(
+            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
+            headers=HEADERS,
+        )
+        existing_fields.append(get_fields.json())
+    return flatten(existing_fields)
 
 
 def select_concepts_to_post(
@@ -407,7 +419,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
         f"{content_type}&fields=id,object_id,concept",
         headers=HEADERS,
     )
-    existing_field_concepts = json.loads(get_field_concepts.content.decode("utf-8"))
+    existing_field_concepts = get_field_concepts.json()
     # create dictionary that maps existing field ids to scan report concepts
     # from the list of existing scan report concepts from active SRs
     existing_field_id_to_concept_map = {
@@ -421,24 +433,15 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
 
     # get details of existing selected fields, for the purpose of matching against
     # new fields
-    existing_paginated_field_ids = paginate(
-        [value["object_id"] for value in existing_field_concepts], max_chars_for_get
-    )
-    logger.debug(f"{existing_paginated_field_ids=}")
-    existing_fields = []
-    for ids in existing_paginated_field_ids:
-        ids_to_get = ",".join(map(str, ids))
-        get_fields = requests.get(
-            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=HEADERS,
-        )
-        existing_fields.append(json.loads(get_fields.content.decode("utf-8")))
-    existing_fields = flatten(existing_fields)
+    existing_field_ids = {item["object_id"] for item in existing_field_concepts}
+    existing_fields = get_existing_fields_from_ids(existing_field_ids)
     logger.debug(
         f"ids and names of existing fields with concepts in active SRs:"
         f" {existing_fields}"
     )
 
+    # Combine everything of the existing fields to get this list, one for each
+    # existing SRField with a SRConcept in an active SR.
     existing_mappings_to_consider = [
         {
             "name": field["name"],
@@ -449,10 +452,21 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
     ]
     logger.debug(f"{existing_mappings_to_consider=}")
 
+    # Handle the newly-added fields
     new_fields_full_details = [
         {"name": name, "id": new_field_id}
         for name, new_field_id in new_fields_map.items()
     ]
+    # Now we have existing_mappings_to_consider of the form:
+    #
+    # [{"id":, "name":, "concept":}]
+    #
+    # and new_fields_full_details of the form:
+    #
+    # [{"id":, "name":}]
+
+    # Now we simply look for unique matches on "name" across
+    # the two.
 
     # existing_field_name_to_field_and_concept_id_map will contain
     # (field_name) -> (field_id, concept_id)
@@ -479,12 +493,6 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
                 str(target_concept_ids.pop()),
             )
 
-    logger.debug(f"{existing_field_name_to_field_and_concept_id_map=}")
-    concepts_to_post = []
-    logger.debug(f"{new_fields_map=}")
-    logger.debug(f"{existing_field_id_to_concept_map=}")
-    # print("NAME IDS", new_fields_map.keys())
-
     # Use the new_fields_full_details as keys into
     # existing_field_name_to_field_and_concept_id_map to extract concept IDs and details
     # for new ScanReportConcept entries to post.
@@ -506,72 +514,65 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     with existing fields
     """
     logger.info("reuse_existing_value_concepts")
-    # get all scan report concepts with the content type of values
+    # Gets all scan report concepts that are for the type value
+    # (or content type which should be value) and in "active" SRs
     get_value_concepts = requests.get(
         url=f"{API_URL}scanreportactiveconceptfilter/?content_type"
         f"={content_type}&fields=id,object_id,concept",
         headers=HEADERS,
     )
+    existing_value_concepts = get_value_concepts.json()
     # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
-    existing_value_concepts = json.loads(get_value_concepts.content.decode("utf-8"))
     existing_value_id_to_concept_map = {
         str(element.get("object_id", None)): str(element.get("concept", None))
         for element in existing_value_concepts
     }
-
-    # paginate list of value ids from existing values that have scanreport
-    # concepts and use the list to get existing scanreport values that match the
-    # list any of the newly generated names
-
-    paginated_existing_ids = paginate(
-        [str(element.get("object_id", None)) for element in existing_value_concepts],
-        max_chars_for_get,
+    logger.debug(
+        f"value_id:concept_id for all existing values in active SRs with concepts: "
+        f"{existing_value_id_to_concept_map}"
     )
-    logger.debug("paginated_existing_ids")
+
+    # get details of existing selected values, for the purpose of matching against
+    # new values
+    existing_paginated_value_ids = paginate(
+        [value["object_id"] for value in existing_value_concepts], max_chars_for_get
+    )
+    logger.debug(f"{existing_paginated_value_ids=}")
 
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
     existing_values_filtered_by_id = []
-    for ids in paginated_existing_ids:
+    for ids in existing_paginated_value_ids:
         ids_to_get = ",".join(map(str, ids))
-
-        get_field_tables = requests.get(
+        get_values = requests.get(
             url=f"{API_URL}scanreportvalues/?id__in={ids_to_get}&fields=id,value,scan_report_field,"
             f"value_description",
             headers=HEADERS,
         )
-        existing_values_filtered_by_id.append(
-            json.loads(get_field_tables.content.decode("utf-8"))
-        )
-    logger.debug("existing_values_filtered_by_id")
-
+        existing_values_filtered_by_id.append(get_values.json())
     existing_values_filtered_by_id = flatten(existing_values_filtered_by_id)
-    logger.debug("existing_values_filtered_by_id flattened")
+    logger.debug("existing_values_filtered_by_id")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
     # scan_report_field of each value got from the active concepts filter.
+    logger.debug(
+        f"ids, values and value descriptions of existing values in active SRs with "
+        f"concepts: {existing_values_filtered_by_id}"
+    )
 
     # get field ids from values and use to get scan report fields' details
     existing_field_ids = {
         item["scan_report_field"] for item in existing_values_filtered_by_id
     }
-    paginated_existing_field_ids = paginate(existing_field_ids, max_chars_for_get)
-    existing_fields_details = []
-    for ids in paginated_existing_field_ids:
-        ids_to_get = ",".join(map(str, ids))
-
-        get_value_fields = requests.get(
-            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=HEADERS,
-        )
-        existing_fields_details.append(
-            json.loads(get_value_fields.content.decode("utf-8"))
-        )
-    existing_fields_details = flatten(existing_fields_details)
+    existing_fields = get_existing_fields_from_ids(existing_field_ids)
+    logger.debug(
+        f"ids and names of existing fields associated to values with concepts in "
+        f"active SRs: {existing_fields}"
+    )
 
     existing_field_id_to_name_map = {
-        str(field["id"]): field["name"] for field in existing_fields_details
+        str(field["id"]): field["name"] for field in existing_fields
     }
     logger.debug(f"{existing_field_id_to_name_map=}")
 
@@ -603,7 +604,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
             url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
             headers=HEADERS,
         )
-        new_fields.append(json.loads(get_fields.content.decode("utf-8")))
+        new_fields.append(get_fields.json())
     new_fields = flatten(new_fields)
     logger.debug(f"fields of newly generated values: {new_fields}")
 
@@ -612,7 +613,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
     )
 
-    # TODO: Consider making this a tuple-dict like value_details_to_value_and_concept_id_map?
     new_values_full_details = [
         {
             "name": value["value"],
@@ -629,11 +629,11 @@ def reuse_existing_value_concepts(new_values_map, content_type):
 
     # Now we have existing_mappings_to_consider of the form:
     #
-    # [{"id":, "name":, "concept":, "description":, "field_name":}
+    # [{"id":, "name":, "concept":, "description":, "field_name":}]
     #
     # and new_values_full_details of the form:
     #
-    # [{"id":, "name":, "description":, "field_name":}
+    # [{"id":, "name":, "description":, "field_name":}]
 
     # Now we simply look for unique matches on (name, description, field_name) across
     # the two.
@@ -892,7 +892,7 @@ def post_tables(fo_ws, scan_report_id):
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     # Load the result of the post request,
-    tables_content = json.loads(tables_response.content.decode("utf-8"))
+    tables_content = tables_response.json()
 
     # Save the table ids that were generated from the POST method
     table_ids = [element["id"] for element in tables_content]
@@ -1055,9 +1055,7 @@ async def process_values_from_sheet(
                     )
                 )
 
-            values_response_content += json.loads(
-                values_response.content.decode("utf-8")
-            )
+            values_response_content += values_response.json()
 
     logger.info("POST values all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
@@ -1070,7 +1068,7 @@ async def process_values_from_sheet(
     )
     logger.debug("GET posted values finished")
 
-    ids_of_posted_values = json.loads(get_ids_of_posted_values.content.decode("utf-8"))
+    ids_of_posted_values = get_ids_of_posted_values.json()
 
     # Create a list for a bulk data upload to the ScanReportConcept model
 
@@ -1124,7 +1122,7 @@ async def process_values_from_sheet(
                 )
             )
 
-        concepts_content = json.loads(concepts_response.content.decode("utf-8"))
+        concepts_content = concepts_response.json()
         concepts_response_content += concepts_content
 
     logger.info("POST concepts all finished")
@@ -1194,7 +1192,7 @@ def post_field_entries(field_entries_to_post, scan_report_id):
                 )
             )
 
-        fields_response_content += json.loads(fields_response.content.decode("utf-8"))
+        fields_response_content += fields_response.json()
 
     logger.info("POST fields all finished")
     return fields_response_content
