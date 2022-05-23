@@ -399,7 +399,7 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
     scanreport, and content_type 15. It creates new concepts associated to any
     field that matches the name of an existing field with an associated concept.
     """
-    logger.info(f"reuse_existing_field_concepts")
+    logger.info("reuse_existing_field_concepts")
     # Gets all scan report concepts that are for the type field
     # (or content type which should be field) and in "active" SRs
     get_field_concepts = requests.get(
@@ -528,7 +528,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         [str(element.get("object_id", None)) for element in existing_value_concepts],
         max_chars_for_get,
     )
-    logger.debug(f"paginated_existing_ids")
+    logger.debug("paginated_existing_ids")
 
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
@@ -544,10 +544,10 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         existing_values_filtered_by_id.append(
             json.loads(get_field_tables.content.decode("utf-8"))
         )
-    logger.debug(f"existing_values_filtered_by_id")
+    logger.debug("existing_values_filtered_by_id")
 
     existing_values_filtered_by_id = flatten(existing_values_filtered_by_id)
-    logger.debug(f"existing_values_filtered_by_id flattened")
+    logger.debug("existing_values_filtered_by_id flattened")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
     # scan_report_field of each value got from the active concepts filter.
