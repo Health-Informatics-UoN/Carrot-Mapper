@@ -1,22 +1,19 @@
-import csv
 import json
 import logging
 import os
 
 from collections import defaultdict
 from datetime import datetime
-from io import BytesIO
 
 import asyncio
 import httpx
-import openpyxl
 import psutil
 import requests
 import azure.functions as func
 
-from azure.storage.blob import BlobServiceClient
 from requests.models import HTTPError
 from shared_code import omop_helpers
+from . import helpers, blob_parser
 
 # import memory_profiler
 # root_logger = logging.getLogger()
@@ -144,163 +141,8 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
-def default_zero(value):
-    """
-    Helper function that returns the input, replacing anything Falsey
-    (such as Nones or empty strings) with 0.0.
-    """
-    return round(value if value else 0.0, 2)
-
-
-def handle_max_chars(max_chars=None):
-    if not max_chars:
-        max_chars = (
-            int(os.environ.get("PAGE_MAX_CHARS"))
-            if os.environ.get("PAGE_MAX_CHARS")
-            else 10000
-        )
-    return max_chars
-
-
-def perform_chunking(entries_to_post):
-    """
-    This expects a list of dicts, and returns a list of lists of lists of dicts,
-    where the maximum length of each list of dicts, under JSONification,
-    is less than max_chars, and the length of each list of lists of dicts is chunk_size
-    """
-    max_chars = handle_max_chars()
-    chunk_size = (
-        int(os.environ.get("CHUNK_SIZE")) if os.environ.get("CHUNK_SIZE") else 6
-    )
-
-    chunked_entries_to_post = []
-    this_page = []
-    this_chunk = []
-    page_no = 0
-    for entry in entries_to_post:
-        # If the current page won't be overfull, add the entry to the current page
-        if len(json.dumps(this_page)) + len(json.dumps(entry)) < max_chars:
-            this_page.append(entry)
-        # Otherwise, this page should be added to the current chunk.
-        else:
-            this_chunk.append(this_page)
-            page_no += 1
-            # Now check for a full chunk. If full, then add this chunk to the list of chunks.
-            if page_no % chunk_size == 0:
-                # append the chunk to the list of chunks, then reset the chunk to empty
-                chunked_entries_to_post.append(this_chunk)
-                this_chunk = []
-            # Now add the entry that would have over-filled the page.
-            this_page = [entry]
-    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
-    if this_page:
-        this_chunk.append(this_page)
-    # Similarly, if a chunk ends up half-filled, add it to thelist of chunks
-    if this_chunk:
-        chunked_entries_to_post.append(this_chunk)
-
-    return chunked_entries_to_post
-
-
-def paginate(entries, max_chars=None):
-    """
-    This expects a list of strings, and returns a list of lists of strings,
-    where the maximum length of each list of strings, under JSONification,
-    is less than max_chars
-    """
-    max_chars = handle_max_chars(max_chars)
-
-    paginated_entries = []
-    this_page = []
-    for entry in entries:
-        # If the current page won't be overfull, add the entry to the current page
-        if len(json.dumps(this_page)) + len(json.dumps(entry)) < max_chars:
-            this_page.append(entry)
-        else:
-            # Otherwise, this page should be added to the list of pages.
-            paginated_entries.append(this_page)
-            # Now add the entry that would have over-filled the page.
-            this_page = [entry]
-
-    # After all entries are added, check for a half-filled page, and if present add it to the list of pages
-    if this_page:
-        paginated_entries.append(this_page)
-
-    return paginated_entries
-
-
-# @memory_profiler.profile(stream=profiler_logstream)
-def startup(msg):
-    logger.info("Python queue trigger function processed a queue item.")
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-
-    # Get message from queue
-    message = {
-        "id": msg.id,
-        "body": msg.get_body().decode("utf-8"),
-        "expiration_time": (
-            msg.expiration_time.isoformat() if msg.expiration_time else None
-        ),
-        "insertion_time": (
-            msg.insertion_time.isoformat() if msg.insertion_time else None
-        ),
-        "time_next_visible": (
-            msg.time_next_visible.isoformat() if msg.time_next_visible else None
-        ),
-        "pop_receipt": msg.pop_receipt,
-        "dequeue_count": msg.dequeue_count,
-    }
-
-    logger.info(f"message: {message}")
-    # Grab message body from storage queues,
-    # extract filenames for scan reports and dictionaries
-    # print("body 1:", type(message["body"]), message["body"])
-    body = json.loads(message["body"])
-    # print("body 2:", type(body), body)
-    scan_report_blob = body["scan_report_blob"]
-    data_dictionary_blob = body["data_dictionary_blob"]
-
-    logger.info(f"MESSAGE BODY >>> {body}")
-
-    # If the message has been dequeued for a second time, then the upload has failed.
-    # Patch the name of the dataset to make it clear that it has failed,
-    # set the status to 'Upload Failed', and then stop.
-    logger.info(f"dequeue_count {msg.dequeue_count}")
-    scan_report_id = body["scan_report_id"]
-    if msg.dequeue_count == 2:
-        process_failure(scan_report_id)
-
-    if msg.dequeue_count > 1:
-        raise Exception("dequeue_count > 1")
-
-    # Otherwise, this must be the first time we've seen this message. Proceed.
-    return scan_report_blob, data_dictionary_blob, scan_report_id
-
-
-def process_failure(scan_report_id):
-    scan_report_fetched_data = requests.get(
-        url=f"{API_URL}scanreports/{scan_report_id}/",
-        headers=HEADERS,
-    )
-
-    scan_report_fetched_data = scan_report_fetched_data.json()
-
-    json_data = json.dumps({"status": "UPFAILE"})
-
-    failure_response = requests.patch(
-        url=f"{API_URL}scanreports/{scan_report_id}/", data=json_data, headers=HEADERS
-    )
-
-
-def flatten(arr):
-    """
-    This expects a list of lists and returns a flattened list
-    """
-    return [item for sublist in arr for item in sublist]
-
-
 def post_paginated_concepts(concepts_to_post):
-    paginated_concepts_to_post = paginate(concepts_to_post)
+    paginated_concepts_to_post = helpers.paginate(concepts_to_post)
     concept_response = []
     concept_response_content = []
     for concepts_to_post_item in paginated_concepts_to_post:
@@ -315,13 +157,15 @@ def post_paginated_concepts(concepts_to_post):
             f"{post_concept_response.reason}"
         )
         concept_response.append(post_concept_response.json())
-    concept_content = flatten(concept_response)
+    concept_content = helpers.flatten(concept_response)
 
     concept_response_content += concept_content
 
 
 def get_existing_fields_from_ids(existing_field_ids):
-    paginated_existing_field_ids = paginate(existing_field_ids, max_chars_for_get)
+    paginated_existing_field_ids = helpers.paginate(
+        existing_field_ids, max_chars_for_get
+    )
 
     # for each list in paginated ids, get scanreport fields that match any of the given
     # ids (those with an associated concept)
@@ -333,7 +177,7 @@ def get_existing_fields_from_ids(existing_field_ids):
             headers=HEADERS,
         )
         existing_fields.append(get_fields.json())
-    return flatten(existing_fields)
+    return helpers.flatten(existing_fields)
 
 
 def select_concepts_to_post(
@@ -535,7 +379,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
 
     # get details of existing selected values, for the purpose of matching against
     # new values
-    existing_paginated_value_ids = paginate(
+    existing_paginated_value_ids = helpers.paginate(
         [value["object_id"] for value in existing_value_concepts], max_chars_for_get
     )
     logger.debug(f"{existing_paginated_value_ids=}")
@@ -551,7 +395,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
             headers=HEADERS,
         )
         existing_values_filtered_by_id.append(get_values.json())
-    existing_values_filtered_by_id = flatten(existing_values_filtered_by_id)
+    existing_values_filtered_by_id = helpers.flatten(existing_values_filtered_by_id)
     logger.debug("existing_values_filtered_by_id")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
@@ -592,7 +436,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     ]
 
     # Now handle the newly-added values in a similar manner
-    new_paginated_field_ids = paginate(
+    new_paginated_field_ids = helpers.paginate(
         [value["scan_report_field"] for value in new_values_map], max_chars_for_get
     )
     logger.debug("new_paginated_field_ids")
@@ -605,7 +449,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
             headers=HEADERS,
         )
         new_fields.append(get_fields.json())
-    new_fields = flatten(new_fields)
+    new_fields = helpers.flatten(new_fields)
     logger.debug(f"fields of newly generated values: {new_fields}")
 
     new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
@@ -678,143 +522,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
-def remove_BOM(intermediate):
-    return [
-        {key.replace("\ufeff", ""): value for key, value in d.items()}
-        for d in intermediate
-    ]
-
-
-def process_three_item_dict(three_item_data):
-    """
-    Converts a list of dictionaries (each with keys 'csv_file_name', 'field_name' and
-    'code') to a nested dictionary with indices 'csv_file_name', 'field_name' and
-    internal value 'code'.
-
-    [{'csv_file_name': 'table1', 'field_name': 'field1', 'value': 'value1', 'code':
-    'code1'},
-    {'csv_file_name': 'table1', 'field_name': 'field2', 'value': 'value2'},
-    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value2', 'code':
-    'code2'},
-    {'csv_file_name': 'table3', 'field_name': 'field3', 'value': 'value3', 'code':
-    'code3'}]
-    ->
-    {'table1': {'field1': 'value1', 'field2': 'value2'},
-     'table2': {'field2': 'value2'},
-     'table3': {'field3': 'value3}
-    }
-    """
-    csv_file_names = set(row["csv_file_name"] for row in three_item_data)
-
-    # Initialise the dictionary with the keys, and each value set to a blank dict()
-    new_vocab_dictionary = dict.fromkeys(csv_file_names, dict())
-
-    # Fill each subdict with the data from the input list
-    for row in three_item_data:
-        new_vocab_dictionary[row["csv_file_name"]][row["field_name"]] = row["code"]
-
-    return new_vocab_dictionary
-
-
-def process_four_item_dict(four_item_data):
-    """
-    Converts a list of dictionaries (each with keys 'csv_file_name', 'field_name' and
-    'code' and 'value') to a nested dictionary with indices 'csv_file_name',
-    'field_name', 'code', and internal value 'value'.
-
-    [{'csv_file_name': 'table1', 'field_name': 'field1', 'value': 'value1', 'code':
-    'code1'},
-    {'csv_file_name': 'table1', 'field_name': 'field2', 'value': 'value2', 'code':
-    'code2'},
-    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value2', 'code':
-    'code2'},
-    {'csv_file_name': 'table2', 'field_name': 'field2', 'value': 'value3', 'code':
-    'code3'},
-    {'csv_file_name': 'table3', 'field_name': 'field3', 'value': 'value3', 'code':
-    'code3'}]
-    ->
-    {'table1': {'field1': {'value1': 'code1'}, 'field2': {'value2': 'code2'}},
-     'table2': {'field2': {'value2': 'code2', 'value3': 'code3'}},
-     'table3': {'field3': {'value3': 'code3'}}
-    }
-    """
-    csv_file_names = set(row["csv_file_name"] for row in four_item_data)
-
-    # Initialise the dictionary with the keys, and each value set to a blank dict()
-    new_data_dictionary = dict.fromkeys(csv_file_names, dict())
-
-    for row in four_item_data:
-        if row["field_name"] not in new_data_dictionary[row["csv_file_name"]]:
-            new_data_dictionary[row["csv_file_name"]][row["field_name"]] = dict()
-        new_data_dictionary[row["csv_file_name"]][row["field_name"]][row["code"]] = row[
-            "value"
-        ]
-
-    return new_data_dictionary
-
-
-# @memory_profiler.profile(stream=profiler_logstream)
-def parse_blobs(scan_report_blob, data_dictionary_blob):
-    logger.info("parse_blobs()")
-    # Set Storage Account connection string
-    blob_service_client = BlobServiceClient.from_connection_string(
-        os.environ.get("STORAGE_CONN_STRING")
-    )
-
-    # Grab scan report data from blob
-    streamdownloader = (
-        blob_service_client.get_container_client("scan-reports")
-        .get_blob_client(scan_report_blob)
-        .download_blob()
-    )
-    scanreport_bytes = BytesIO(streamdownloader.readall())
-    wb = openpyxl.load_workbook(
-        scanreport_bytes, data_only=True, keep_links=False, read_only=True
-    )
-
-    # If dictionary is present, also download dictionary
-    if data_dictionary_blob != "None":
-        # Access data as StorageStreamerDownloader class
-        # Decode and split the stream using csv.reader()
-        dict_client = blob_service_client.get_container_client("data-dictionaries")
-        blob_dict_client = dict_client.get_blob_client(data_dictionary_blob)
-
-        # Grab all rows with 4 elements for use as value descriptions
-        data_dictionary_intermediate = list(
-            row
-            for row in csv.DictReader(
-                blob_dict_client.download_blob().readall().decode("utf-8").splitlines()
-            )
-            if row["value"] != ""
-        )
-        # Remove BOM from start of file if it's supplied.
-        dictionary_data = remove_BOM(data_dictionary_intermediate)
-
-        # Convert to nested dictionaries, with structure
-        # {tables: {fields: {values: value description}}}
-        data_dictionary = process_four_item_dict(dictionary_data)
-
-        # Grab all rows with 3 elements for use as possible vocabs
-        vocab_dictionary_intermediate = list(
-            row
-            for row in csv.DictReader(
-                blob_dict_client.download_blob().readall().decode("utf-8").splitlines()
-            )
-            if row["value"] == ""
-        )
-        vocab_data = remove_BOM(vocab_dictionary_intermediate)
-
-        # Convert to nested dictionaries, with structure
-        # {tables: {fields: vocab}}
-        vocab_dictionary = process_three_item_dict(vocab_data)
-
-    else:
-        data_dictionary = None
-        vocab_dictionary = None
-
-    return wb, data_dictionary, vocab_dictionary
-
-
 # @memory_profiler.profile(stream=profiler_logstream)
 def post_tables(fo_ws, scan_report_id):
     # Get all the table names in the order they appear in the Field Overview page
@@ -879,7 +586,7 @@ def post_tables(fo_ws, scan_report_id):
     logger.info(f"TABLE SAVE STATUS >>> {tables_response.status_code}")
     # Error on failure
     if tables_response.status_code != 201:
-        process_failure(scan_report_id)
+        helpers.process_failure(scan_report_id)
         raise HTTPError(
             " ".join(
                 [
@@ -1011,7 +718,7 @@ async def process_values_from_sheet(
         f"POST {len(value_entries_to_post)} values to table {current_table_name}"
     )
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    chunked_value_entries_to_post = perform_chunking(value_entries_to_post)
+    chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
     values_response_content = []
     logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
     timeout = httpx.Timeout(60.0, connect=30.0)
@@ -1044,7 +751,7 @@ async def process_values_from_sheet(
             )
 
             if values_response.status_code != 201:
-                process_failure(scan_report_id)
+                helpers.process_failure(scan_report_id)
                 raise HTTPError(
                     " ".join(
                         [
@@ -1092,7 +799,7 @@ async def process_values_from_sheet(
 
     logger.info(f"POST {len(concept_id_data)} concepts")
 
-    paginated_concept_id_data = paginate(concept_id_data)
+    paginated_concept_id_data = helpers.paginate(concept_id_data)
 
     concepts_response_content = []
 
@@ -1111,7 +818,7 @@ async def process_values_from_sheet(
             f"{concepts_response.reason}"
         )
         if concepts_response.status_code != 201:
-            process_failure(scan_report_id)
+            helpers.process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1147,7 +854,7 @@ async def process_values_from_sheet(
         )
         # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
         if value_response.status_code != 200:
-            process_failure(scan_report_id)
+            helpers.process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1165,7 +872,7 @@ async def process_values_from_sheet(
 
 
 def post_field_entries(field_entries_to_post, scan_report_id):
-    paginated_field_entries_to_post = paginate(field_entries_to_post)
+    paginated_field_entries_to_post = helpers.paginate(field_entries_to_post)
     fields_response_content = []
     # POST Fields
     for page in paginated_field_entries_to_post:
@@ -1181,7 +888,7 @@ def post_field_entries(field_entries_to_post, scan_report_id):
         )
 
         if fields_response.status_code != 201:
-            process_failure(scan_report_id)
+            helpers.process_failure(scan_report_id)
             raise HTTPError(
                 " ".join(
                     [
@@ -1238,9 +945,9 @@ def process_all_fields_and_values(
                 "max_length": row[4].value,
                 "nrows": row[5].value,
                 "nrows_checked": row[6].value,
-                "fraction_empty": round(default_zero(row[7].value), 2),
+                "fraction_empty": round(helpers.default_zero(row[7].value), 2),
                 "nunique_values": row[8].value,
-                "fraction_unique": round(default_zero(row[9].value), 2),
+                "fraction_unique": round(helpers.default_zero(row[9].value), 2),
                 "ignore_column": None,
             }
             # Append each entry to a list
@@ -1274,7 +981,7 @@ def process_all_fields_and_values(
             # print("Dictionary id:name", fieldnames_to_ids_dict)
 
             if current_table_name not in wb.sheetnames:
-                process_failure(scan_report_id)
+                helpers.process_failure(scan_report_id)
                 raise ValueError(
                     f"Attempting to access sheet '{current_table_name}'"
                     f" in scan report, but no such sheet exists."
@@ -1294,6 +1001,54 @@ def process_all_fields_and_values(
             )
 
 
+# @memory_profiler.profile(stream=profiler_logstream)
+def startup(msg):
+    logger.info("Python queue trigger function processed a queue item.")
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+
+    # Get message from queue
+    message = {
+        "id": msg.id,
+        "body": msg.get_body().decode("utf-8"),
+        "expiration_time": (
+            msg.expiration_time.isoformat() if msg.expiration_time else None
+        ),
+        "insertion_time": (
+            msg.insertion_time.isoformat() if msg.insertion_time else None
+        ),
+        "time_next_visible": (
+            msg.time_next_visible.isoformat() if msg.time_next_visible else None
+        ),
+        "pop_receipt": msg.pop_receipt,
+        "dequeue_count": msg.dequeue_count,
+    }
+
+    logger.info(f"message: {message}")
+    # Grab message body from storage queues,
+    # extract filenames for scan reports and dictionaries
+    # print("body 1:", type(message["body"]), message["body"])
+    body = json.loads(message["body"])
+    # print("body 2:", type(body), body)
+    scan_report_blob = body["scan_report_blob"]
+    data_dictionary_blob = body["data_dictionary_blob"]
+
+    logger.info(f"MESSAGE BODY >>> {body}")
+
+    # If the message has been dequeued for a second time, then the upload has failed.
+    # Patch the name of the dataset to make it clear that it has failed,
+    # set the status to 'Upload Failed', and then stop.
+    logger.info(f"dequeue_count {msg.dequeue_count}")
+    scan_report_id = body["scan_report_id"]
+    if msg.dequeue_count == 2:
+        helpers.process_failure(scan_report_id)
+
+    if msg.dequeue_count > 1:
+        raise Exception("dequeue_count > 1")
+
+    # Otherwise, this must be the first time we've seen this message. Proceed.
+    return scan_report_blob, data_dictionary_blob, scan_report_id
+
+
 def main(msg: func.QueueMessage):
     scan_report_blob, data_dictionary_blob, scan_report_id = startup(msg)
     # Set the status to 'Upload in progress'
@@ -1303,7 +1058,7 @@ def main(msg: func.QueueMessage):
         headers=HEADERS,
     )
 
-    wb, data_dictionary, vocab_dictionary = parse_blobs(
+    wb, data_dictionary, vocab_dictionary = blob_parser.parse_blobs(
         scan_report_blob, data_dictionary_blob
     )
     # Get the first sheet 'Field Overview',
