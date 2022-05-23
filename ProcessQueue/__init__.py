@@ -324,6 +324,75 @@ def post_paginated_concepts(concepts_to_post):
     concept_response_content += concept_content
 
 
+def select_concepts_to_post(
+    new_content_details, details_to_id_and_concept_id_map, content_type
+):
+    """Depending on the content_type, generate a list concepts_to_post of
+    ScanReportConcepts to be posted. Content_type controls whether this is handling
+    fields or values. Fields have a key defined only by name, while values have a
+    key defined by name, description, and field name.
+
+    new_content_details is of type list, with each item in the list a dictionary
+    containing either "id" and "name" keys (for fields) or "id", "name",
+    "description", and "field_name" keys (for values).
+
+    details_to_id_and_concept_id_map has keys "name" (for fields) or ("name",
+    "description", "field_name") keys (for values), with entries (field_id,
+    concept_id) or (value_id, concept_id) respectively.
+    """
+    concepts_to_post = []
+    for new_content_detail in new_content_details:
+        try:
+            # fields
+            if content_type == 15:
+                (
+                    existing_content_id,
+                    concept_id,
+                ) = details_to_id_and_concept_id_map[str(new_content_detail["name"])]
+            # values
+            elif content_type == 17:
+                existing_content_id, concept_id = details_to_id_and_concept_id_map[
+                    (
+                        str(new_content_detail["name"]),
+                        str(new_content_detail["description"]),
+                        str(new_content_detail["field_name"]),
+                    )
+                ]
+            else:
+                raise RuntimeError(
+                    f"content_type must be 15 or 17: you provided {content_type}"
+                )
+
+            new_content_id = str(new_content_detail["id"])
+            if content_type == 15:
+                logger.info(
+                    f"Found existing field with id: {existing_content_id} with existing "
+                    f"concept mapping: {concept_id} which matches new field id: "
+                    f"{new_content_id}"
+                )
+            elif content_type == 17:
+                logger.info(
+                    f"Found existing value with id: {existing_content_id} with existing "
+                    f"concept mapping: {concept_id} which matches new value id: "
+                    f"{new_content_id}"
+                )
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry = {
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept_id,
+                "object_id": new_content_id,
+                "content_type": content_type,
+                "creation_type": "R",
+            }
+            concepts_to_post.append(concept_entry)
+        except KeyError:
+            continue
+
+
 def reuse_existing_field_concepts(new_fields_map, content_type):
     """
     This expects a dict of field names to ids which have been generated in a newly uploaded
@@ -416,36 +485,14 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
     logger.debug(f"{existing_field_id_to_concept_map=}")
     # print("NAME IDS", new_fields_map.keys())
 
-    for new_field_detail in new_fields_full_details:
-        try:
-            (
-                existing_field_id,
-                concept_id,
-            ) = existing_field_name_to_field_and_concept_id_map[
-                str(new_field_detail["name"])
-            ]
-
-            new_field_id = str(new_field_detail["id"])
-            logger.info(
-                f"Found existing field with id: {existing_field_id} with existing "
-                f"concept mapping: {concept_id} which matches new field id: "
-                f"{new_field_id}"
-            )
-            # Create ScanReportConcept entry for copying over the concept
-            concept_entry = {
-                "nlp_entity": None,
-                "nlp_entity_type": None,
-                "nlp_confidence": None,
-                "nlp_vocabulary": None,
-                "nlp_processed_string": None,
-                "concept": concept_id,
-                "object_id": new_field_id,
-                "content_type": content_type,
-                "creation_type": "R",
-            }
-            concepts_to_post.append(concept_entry)
-        except KeyError:
-            continue
+    # Use the new_fields_full_details as keys into
+    # existing_field_name_to_field_and_concept_id_map to extract concept IDs and details
+    # for new ScanReportConcept entries to post.
+    concepts_to_post = select_concepts_to_post(
+        new_fields_full_details,
+        existing_field_name_to_field_and_concept_id_map,
+        content_type,
+    )
 
     if concepts_to_post:
         post_paginated_concepts(concepts_to_post)
@@ -454,8 +501,9 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
 
 def reuse_existing_value_concepts(new_values_map, content_type):
     """
-    This expects a dict of value names to ids which have been generated in a newly uploaded scanreport and
-    creates new concepts if any matching names are found with existing fields
+    This expects a dict of value names to ids which have been generated in a newly
+    uploaded scanreport and creates new concepts if any matching names are found
+    with existing fields
     """
     logger.info("reuse_existing_value_concepts")
     # get all scan report concepts with the content type of values
@@ -472,8 +520,9 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         for element in existing_value_concepts
     }
 
-    # paginate list of value ids from existing values that have scanreport concepts and
-    # use the list to get existing scanreport values that match the list any of the newly generated names
+    # paginate list of value ids from existing values that have scanreport
+    # concepts and use the list to get existing scanreport values that match the
+    # list any of the newly generated names
 
     paginated_existing_ids = paginate(
         [str(element.get("object_id", None)) for element in existing_value_concepts],
@@ -617,38 +666,12 @@ def reuse_existing_value_concepts(new_values_map, content_type):
                 (str(name), str(description), str(field_name))
             ] = (str(next(target_value_id)), str(target_concept_ids.pop()))
 
-    concepts_to_post = []
-    for new_value_detail in new_values_full_details:
-        try:
-            existing_value_id, concept_id = value_details_to_value_and_concept_id_map[
-                (
-                    str(new_value_detail["name"]),
-                    str(new_value_detail["description"]),
-                    str(new_value_detail["field_name"]),
-                )
-            ]
-
-            new_value_id = str(new_value_detail["id"])
-            logger.info(
-                f"Found existing value with id: {existing_value_id} with existing "
-                f"concept mapping: {concept_id} which matches new value id: "
-                f"{new_value_id}"
-            )
-            # Create ScanReportConcept entry for copying over the concept
-            concept_entry = {
-                "nlp_entity": None,
-                "nlp_entity_type": None,
-                "nlp_confidence": None,
-                "nlp_vocabulary": None,
-                "nlp_processed_string": None,
-                "concept": concept_id,
-                "object_id": new_value_id,
-                "content_type": content_type,
-                "creation_type": "R",
-            }
-            concepts_to_post.append(concept_entry)
-        except KeyError:
-            continue
+    # Use the new_values_full_details as keys into
+    # value_details_to_value_and_concept_id_map to extract concept IDs and details
+    # for new ScanReportConcept entries to post.
+    concepts_to_post = select_concepts_to_post(
+        new_values_full_details, value_details_to_value_and_concept_id_map, content_type
+    )
 
     if concepts_to_post:
         post_paginated_concepts(concepts_to_post)
