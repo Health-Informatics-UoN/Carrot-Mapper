@@ -128,7 +128,7 @@ def process_scan_report_sheet_table(sheet):
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
         for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
-            if cell != "" or freq != "":
+            if (cell != "" and cell is not None) or (freq != "" and freq is not None):
                 d[header].append((str(cell), freq))
                 this_row_empty = False
         # This will trigger if we hit a row that is entirely empty. Short-circuit
@@ -905,6 +905,53 @@ def post_field_entries(field_entries_to_post, scan_report_id):
     return fields_response_content
 
 
+def post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary):
+    # This is the scenario where the line is empty, so we're at the end of
+    # the table. Don't add a field entry, but process all those so far.
+    # print("scan_report_field_entries >>>", field_entries_to_post)
+
+    # POST fields in this table
+    logger.info(
+        f"POST {len(field_entries_to_post)} fields to table "
+        f"{current_table_name}"
+    )
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+
+    fields_response_content = post_field_entries(
+        field_entries_to_post, scan_report_id
+    )
+
+    # Create a dictionary with field names and field ids from the response
+    # as key value pairs
+    # e.g ("Field Name": Field ID)
+    fieldnames_to_ids_dict = {
+        str(element.get("name", None)): str(element.get("id", None))
+        for element in fields_response_content
+    }
+
+    # print("Dictionary id:name", fieldnames_to_ids_dict)
+
+    if current_table_name not in wb.sheetnames:
+        helpers.process_failure(scan_report_id)
+        raise ValueError(
+            f"Attempting to access sheet '{current_table_name}'"
+            f" in scan report, but no such sheet exists."
+        )
+
+    # Go to Table sheet to process all the values from the sheet
+    sheet = wb[current_table_name]
+    asyncio.run(
+        process_values_from_sheet(
+            sheet,
+            data_dictionary,
+            vocab_dictionary,
+            current_table_name,
+            fieldnames_to_ids_dict,
+            scan_report_id,
+        )
+    )
+
+
 def process_all_fields_and_values(
     fo_ws,
     table_name_to_id_map,
@@ -922,7 +969,7 @@ def process_all_fields_and_values(
     field_entries_to_post = []
 
     previous_row_value = None
-    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
+    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row+2):
         # Guard against unnecessary rows beyond the last true row with contents
         if (previous_row_value is None or previous_row_value == "") and (
             row[0].value is None or row[0].value == ""
@@ -957,48 +1004,11 @@ def process_all_fields_and_values(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             # print("scan_report_field_entries >>>", field_entries_to_post)
-
-            # POST fields in this table
-            logger.info(
-                f"POST {len(field_entries_to_post)} fields to table "
-                f"{current_table_name}"
-            )
-            logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-
-            fields_response_content = post_field_entries(
-                field_entries_to_post, scan_report_id
-            )
+            post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary)
             field_entries_to_post = []
-
-            # Create a dictionary with field names and field ids from the response
-            # as key value pairs
-            # e.g ("Field Name": Field ID)
-            fieldnames_to_ids_dict = {
-                str(element.get("name", None)): str(element.get("id", None))
-                for element in fields_response_content
-            }
-
-            # print("Dictionary id:name", fieldnames_to_ids_dict)
-
-            if current_table_name not in wb.sheetnames:
-                helpers.process_failure(scan_report_id)
-                raise ValueError(
-                    f"Attempting to access sheet '{current_table_name}'"
-                    f" in scan report, but no such sheet exists."
-                )
-
-            # Go to Table sheet to process all the values from the sheet
-            sheet = wb[current_table_name]
-            asyncio.run(
-                process_values_from_sheet(
-                    sheet,
-                    data_dictionary,
-                    vocab_dictionary,
-                    current_table_name,
-                    fieldnames_to_ids_dict,
-                    scan_report_id,
-                )
-            )
+    # Catch the final table if it wasn't already posted in the loop above - sometimes the iter_rows() seems to now allow you to go beyond the last row.
+    if field_entries_to_post:
+        post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary)
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
