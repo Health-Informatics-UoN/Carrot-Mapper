@@ -905,21 +905,25 @@ def post_field_entries(field_entries_to_post, scan_report_id):
     return fields_response_content
 
 
-def post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary):
+def post_table_entries(
+    current_table_name,
+    field_entries_to_post,
+    scan_report_id,
+    wb,
+    data_dictionary,
+    vocab_dictionary,
+):
     # This is the scenario where the line is empty, so we're at the end of
     # the table. Don't add a field entry, but process all those so far.
     # print("scan_report_field_entries >>>", field_entries_to_post)
 
     # POST fields in this table
     logger.info(
-        f"POST {len(field_entries_to_post)} fields to table "
-        f"{current_table_name}"
+        f"POST {len(field_entries_to_post)} fields to table {current_table_name}"
     )
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
-    fields_response_content = post_field_entries(
-        field_entries_to_post, scan_report_id
-    )
+    fields_response_content = post_field_entries(field_entries_to_post, scan_report_id)
 
     # Create a dictionary with field names and field ids from the response
     # as key value pairs
@@ -969,7 +973,7 @@ def process_all_fields_and_values(
     field_entries_to_post = []
 
     previous_row_value = None
-    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row+2):
+    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row + 2):
         # Guard against unnecessary rows beyond the last true row with contents
         if (previous_row_value is None or previous_row_value == "") and (
             row[0].value is None or row[0].value == ""
@@ -1004,11 +1008,25 @@ def process_all_fields_and_values(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             # print("scan_report_field_entries >>>", field_entries_to_post)
-            post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary)
+            post_table_entries(
+                current_table_name,
+                field_entries_to_post,
+                scan_report_id,
+                wb,
+                data_dictionary,
+                vocab_dictionary,
+            )
             field_entries_to_post = []
     # Catch the final table if it wasn't already posted in the loop above - sometimes the iter_rows() seems to now allow you to go beyond the last row.
     if field_entries_to_post:
-        post_table_entries(current_table_name, field_entries_to_post, scan_report_id, wb, data_dictionary, vocab_dictionary)
+        post_table_entries(
+            current_table_name,
+            field_entries_to_post,
+            scan_report_id,
+            wb,
+            data_dictionary,
+            vocab_dictionary,
+        )
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
