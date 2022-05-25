@@ -12,17 +12,11 @@
    2. [JavaScript](#javascript)
 
 # Introduction
-This repository contains information and code for the CO-CONNECT Mapping Pipeline.
+This repository contains information and code for the CaRROT-Mapper system. This is a containerised 
+Django/React webapp and associated Azure Functions which facilitates the generation of rules mapping
+datasets to the OMOP standard through manual and automated means.
 
 # Getting Started <a name="getting-started"></a>
-
-## Manually
-To run the mapping pipeline Django MVP:
-
-1.	Clone this repository
-2.	Create a Python virtual environment and install Django
-3.	Create a new superuser for testing
-4. Log into the admin area at localhost:8080/admin/ to view the data
 
 ## Docker
 
@@ -39,23 +33,31 @@ docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 <docker_image
 
 ```
 
+## Manually
+To run the mapping pipeline Django MVP:
+
+1.	Clone this repository
+2.	Create a Python virtual environment and install Django
+3.	Create a new superuser for testing
+4. Log into the admin area at localhost:8080/admin/ to view the data
+
 # Pages
 
-:warning: If you run manually the port is `8000`, with the docker container, port `8000` (in the container) is forwarded to `8080` (local)
+:warning: If you run manually the port is `8000`. Using the docker container, port `8000` (in the container) is forwarded to `8080` (local)
 
 ## Admin 
 Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
 
 
-## ScanReports
-To access the scanreports route, go to:
-[http://127.0.0.1:8080/scanreports](http://127.0.0.1:8080/scanreports)
+## Home
+To access the homescreen, go to
+[http://localhost:8080/](http://localhost:8080/)
 
 # Custom Styling <a name="custom-styling"></a>
 
 The folder `api/static/` contains static folders that can be used to store custom `css` and `javascript`. Files contained within are then made publically accessable, i.e. viewable by the frontend code, for example:
 ```html
-<img src="{% static 'images/cropped-LARGE_co-connect-logo-1-180x180.png' %}"...>
+<img src="{% static 'images/coconnect-logo.png' %}"...>
 ```
 
 ## CSS
