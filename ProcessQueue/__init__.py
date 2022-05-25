@@ -248,6 +248,8 @@ def select_concepts_to_post(
         except KeyError:
             continue
 
+    return concepts_to_post
+
 
 def reuse_existing_field_concepts(new_fields_map, content_type):
     """
