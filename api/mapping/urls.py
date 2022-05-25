@@ -67,6 +67,18 @@ routers.register(
 #     views.ScanReportValueFilterViewSet,
 #     basename="scanreportvaluesfilter",
 # )
+routers.register(
+    r"scanreportfilter",
+    views.ScanReportFilterViewSet,
+    basename="scanreportfilter",
+)
+
+routers.register(
+    r"scanreportactiveconceptfilter",
+    views.ScanReportActiveConceptFilterViewSet,
+    basename="scanreportactiveconceptfilter",
+)
+
 
 routers.register(
     r"scanreportvaluesfilterscanreport",
