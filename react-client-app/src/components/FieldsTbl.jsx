@@ -31,11 +31,11 @@ import Error404 from '../views/Error404'
 const FieldsTbl = (props) => {
     // get the value to use to query the fields endpoint from the page url
     const pathArray = window.location.pathname.split("/")
-    const scanReportId = pathArray[pathArray.length - 3]
+    const scanReportId = pathArray[pathArray.length - 4]
     // const scanReportTableId = pathArray[pathArray.length - 1]
     // const scanReportTableId = window.pk ? window.pk : parseInt(new URLSearchParams(window.location.search).get("search"))
     const scanReportTableId = parseInt(new URLSearchParams(window.location.search).get("search")) ?
-        parseInt(new URLSearchParams(window.location.search).get("search")) : pathArray[pathArray.length - 1]
+        parseInt(new URLSearchParams(window.location.search).get("search")) : pathArray[pathArray.length - 2]
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [values, setValues] = useState([]);
@@ -51,7 +51,7 @@ const FieldsTbl = (props) => {
         props.setTitle(null)
         // run on initial render
         // Check if user can see SR table
-        useGet(`/scanreporttables/${scanReportTableId}`).then(
+        useGet(`/scanreporttables/${scanReportTableId}/`).then(
             res => {
                 // get field table values for specified id
                 getScanReportFieldValues(scanReportTableId, valuesRef).then(val => {
@@ -63,7 +63,7 @@ const FieldsTbl = (props) => {
                     scanReportTable.current = table
                     setMappingButtonDisabled(false)
                 })
-                useGet(`/scanreports/${scanReportId}`).then(sr => scanReportName.current = sr.dataset)
+                useGet(`/scanreports/${scanReportId}/`).then(sr => scanReportName.current = sr.dataset)
             }
         ).catch(
             err => {
@@ -111,9 +111,9 @@ const FieldsTbl = (props) => {
             <div>
                 <CCBreadcrumbBar>
                     <Link href={"/"}>Home</Link>
-                    <Link href={"/scanreports"}>Scan Reports</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}`}>{scanReportName.current}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}`}>{scanReportTable.current.name}</Link>
+                    <Link href={"/scanreports/"}>Scan Reports</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/`}>{scanReportName.current}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}/`}>{scanReportTable.current.name}</Link>
                 </CCBreadcrumbBar>
                 <PageHeading text={"Fields"} />
                 {isOpen &&
@@ -139,7 +139,7 @@ const FieldsTbl = (props) => {
                             // Create new row for every value object
                             values.map((item, index) =>
                                 <Tr key={item.id}>
-                                    <Td><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${scanReportTableId}/fields/${item.id}`}>{item.name}</Link></Td>
+                                    <Td><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${scanReportTableId}/fields/${item.id}/`}>{item.name}</Link></Td>
                                     <Td maxW="250px"><Text maxW="100%" w="max-content">{item.description_column}</Text></Td>
                                     <Td>{item.type_column}</Td>
 
@@ -195,7 +195,7 @@ const FieldsTbl = (props) => {
                                             )}
                                         </Formik>
                                     </Td>
-                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={window.location.href + "/fields/" + item.id + "/update"}>Edit Field</Link></Td>}
+                                    {window.canEdit && <Td><Link style={{ color: "#0000FF", }} href={window.location.href + "fields/" + item.id + "/update/"}>Edit Field</Link></Td>}
                                 </Tr>
                             )
                         }

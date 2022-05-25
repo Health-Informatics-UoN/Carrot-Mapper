@@ -19,7 +19,7 @@ export const OneCrumb = () => (
 export const TwoCrumbs = (args) => (
     <CCBreadcrumbBar {...args}>
         <Link href={"/"}>Home</Link>
-        <Link href={"/datasets"}>Datasets</Link>
+        <Link href={"/datasets/"}>Datasets</Link>
     </CCBreadcrumbBar>
 )
 
@@ -27,7 +27,7 @@ export const TwoCrumbs = (args) => (
 export const ThreeCrumbs = (args) => (
     <CCBreadcrumbBar {...args}>
         <Link href={"/"}>Home</Link>
-        <Link href={"/datasets"}>Datasets</Link>
+        <Link href={"/datasets/"}>Datasets</Link>
         <Link href={"/datasets/1234"}>1234</Link>
     </CCBreadcrumbBar>
 )

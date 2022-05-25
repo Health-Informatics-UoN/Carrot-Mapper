@@ -22,7 +22,7 @@ const EditTable = (props) => {
         // get scan report table to use to get tables 
         const scanreporttable = await useGet(`/scanreporttables/${value}/`)
         // get scan report for name and id for breadcrumbs
-        scanReport.current = await useGet(`/scanreports/${scanreporttable.scan_report}`)
+        scanReport.current = await useGet(`/scanreports/${scanreporttable.scan_report}/`)
         // get scan report tables for the scan report the table belongs to
         const tablesFilter = useGet(`/scanreporttables/?scan_report=${scanreporttable.scan_report}`)
         // get all fields for the scan report table
@@ -62,7 +62,7 @@ const EditTable = (props) => {
         }
         usePatch(`/scanreporttables/${value}/`, data).then((res) => {
             // redirect
-            window.location.href = `/scanreports/${table.scan_report}`
+            window.location.href = `/scanreports/${table.scan_report}/`
         })
             .catch(err => {
                 setAlert({
@@ -89,10 +89,10 @@ const EditTable = (props) => {
         <div>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReport.current.id}`}>{scanReport.current.dataset}</Link>
-                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}`}>{table.name}</Link>
-                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}/update`}>Update</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/`}>{scanReport.current.dataset}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}/`}>{table.name}</Link>
+                <Link href={`/scanreports/${scanReport.current.id}/tables/${table.id}/update/`}>Update</Link>
             </CCBreadcrumbBar>
             <PageHeading text={"Update Table"} />
             {isOpen &&

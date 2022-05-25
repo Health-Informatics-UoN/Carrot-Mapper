@@ -212,6 +212,19 @@ class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
 
 
+class CountProjects(APIView):
+    renderer_classes = (JSONRenderer,)
+
+    def get(self, request, dataset):
+        project_count = (
+            Project.objects.filter(datasets__exact=dataset).distinct().count()
+        )
+        content = {
+            "project_count": project_count,
+        }
+        return Response(content)
+
+
 class ProjectListView(ListAPIView):
     """
     API view to show all projects' names.
@@ -234,7 +247,9 @@ class ProjectListView(ListAPIView):
 
     def get_queryset(self):
         if dataset := self.request.GET.get("dataset"):
-            return Project.objects.filter(datasets__exact=dataset).distinct()
+            return Project.objects.filter(
+                datasets__exact=dataset, members__id=self.request.user.id
+            ).distinct()
 
         return Project.objects.all()
 
@@ -464,7 +479,16 @@ class DatasetCreateView(generics.CreateAPIView):
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(admins=[self.request.user])
+        admins = serializer.initial_data.get("admins")
+        # If no admins given, add the user uploading the dataset
+        if not admins:
+            serializer.save(admins=[self.request.user])
+        # If the user is not in the admins, add them
+        elif self.request.user.id not in admins:
+            serializer.save(admins=admins + [self.request.user.id])
+        # All is well, save
+        else:
+            serializer.save()
 
 
 class DatasetRetrieveView(generics.RetrieveAPIView):
@@ -664,6 +688,51 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
+class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
+    """
+    This returns details of ScanReportConcepts that have the given content_type and are
+    in ScanReports that are "active" - that is, not hidden, with unhidden parent
+    dataset, and marked with status "Mapping Complete".
+    This is only retrievable by AZ_FUNCTION_USER.
+    """
+
+    serializer_class = ScanReportConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["content_type"]
+
+    def get_queryset(self):
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+
+            if self.request.GET["content_type"] == "15":
+                # ScanReportField
+                # we have SRCs with content_type 15, grab all SRFields in active SRs,
+                # and then filter ScanReportConcepts by those object_ids
+                field_ids = ScanReportField.objects.filter(
+                    scan_report_table__scan_report__hidden=False,
+                    scan_report_table__scan_report__parent_dataset__hidden=False,
+                    scan_report_table__scan_report__status="COMPLET",
+                )
+                qs = ScanReportConcept.objects.filter(
+                    content_type=15, object_id__in=field_ids
+                )
+                return qs
+            elif self.request.GET["content_type"] == "17":  #
+                # ScanReportValue
+                # we have SRCs with content_type 17, grab all SRValues in active SRs,
+                # and then filter ScanReportConcepts by those object_ids
+                value_ids = ScanReportValue.objects.filter(
+                    scan_report_field__scan_report_table__scan_report__hidden=False,
+                    scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+                    scan_report_field__scan_report_table__scan_report__status="COMPLET",
+                )
+                qs = ScanReportConcept.objects.filter(
+                    content_type=17, object_id__in=value_ids
+                )
+                return qs
+            return None
+        return None
+
+
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()
     serializer_class = ClassificationSystemSerializer
@@ -805,6 +874,18 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
 #         "value": ["in", "exact"],
 #         "id": ["in", "exact"],
 #     }
+
+
+class ScanReportFilterViewSet(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = ScanReportViewSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in", "exact"],
+        "status": ["in", "exact"],
+        "hidden": ["in", "exact"],
+        "parent_dataset__hidden": ["in", "exact"],
+    }
 
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
@@ -1174,10 +1255,19 @@ class ScanReportFormView(FormView):
             dataset=form.cleaned_data["dataset"],
             parent_dataset=parent_dataset,
             name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
+            visibility=form.cleaned_data["visibility"],
         )
 
         scan_report.author = self.request.user
         scan_report.save()
+
+        # Add viewers to the scan report if specified
+        if sr_viewers := form.cleaned_data.get("viewers"):
+            scan_report.viewers.add(*sr_viewers)
+
+        # Add editors to the scan report if specified
+        if sr_editors := form.cleaned_data.get("editors"):
+            scan_report.editors.add(*sr_editors)
 
         # Grab Azure storage credentials
         blob_service_client = BlobServiceClient.from_connection_string(

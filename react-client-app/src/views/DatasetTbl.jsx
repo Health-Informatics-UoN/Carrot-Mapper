@@ -63,7 +63,7 @@ const DatasetTbl = (props) => {
         try {
             setDisplayedData(currentData => currentData.map(dataset => dataset.id == id ? { ...dataset, loading: true } : dataset))
             const patchData = { hidden: theIndicator }
-            const res = await usePatch(`/datasets/update/${id}`, patchData)
+            const res = await usePatch(`/datasets/update/${id}/`, patchData)
             data.current = data.current.map(dataset => dataset.id == id ? { ...dataset, hidden: theIndicator } : dataset)
             activeDatasets.current = data.current.filter(dataset => dataset.hidden == false)
             archivedDatasets.current = data.current.filter(dataset => dataset.hidden == true)
@@ -132,7 +132,7 @@ const DatasetTbl = (props) => {
         <div>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/datasets"}>Datasets</Link>
+                <Link href={"/datasets/"}>Datasets</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
@@ -185,12 +185,12 @@ const DatasetTbl = (props) => {
                         applyFilters(displayedData).map((item, index) =>
 
                             <Tr className={"mediumTbl"} key={index}>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.id}>{item.id}</Link></Td>
-                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={"/datasets/" + item.id}> {item.name}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/datasets/${item.id}/`}>{item.id}</Link></Td>
+                                <Td maxW={"100px"}><Link style={{ color: "#0000FF", }} href={`/datasets/${item.id}/`}> {item.name}</Link></Td>
                                 <Td maxW={"100px"}> {item.data_partner.name} </Td>
                                 <Td maxW={"100px"}> {item.visibility} </Td>
                                 <Td maxW={"200px"} minW={"180px"}>{item.created_at.displayString}</Td>
-                                <Td maxW={"100px"}><Link href={"/datasets/" + item.id + "/details"}><Button variant="blue" my="10px">Details</Button></Link></Td>
+                                <Td maxW={"100px"}><Link href={`/datasets/${item.id}/details/`}><Button variant="blue" my="10px">Details</Button></Link></Td>
                                 <Td textAlign="center">
                                     {item.hidden ?
                                         <>

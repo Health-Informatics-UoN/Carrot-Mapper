@@ -30,8 +30,8 @@ import Error404 from '../views/Error404'
 const ValuesTbl = (props) => {
     // get value to use in query from page url
     const pathArray = window.location.pathname.split("/")
-    const scanReportFieldId = pathArray[pathArray.length - 1]
-    const scanReportId = pathArray[pathArray.length - 5]
+    const scanReportFieldId = pathArray[pathArray.length - 2]
+    const scanReportId = pathArray[pathArray.length - 6]
     // set page state variables
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -59,7 +59,7 @@ const ValuesTbl = (props) => {
                 })
                 // get scan report values
                 getScanReports(scanReportFieldId, setScanReports, scanReportsRef, setLoadingMessage, setError)
-                useGet(`/scanreports/${scanReportId}`).then(sr => scanReportName.current = sr.dataset)
+                useGet(`/scanreports/${scanReportId}/`).then(sr => scanReportName.current = sr.dataset)
             }
         ).catch(
             err => {
@@ -108,10 +108,10 @@ const ValuesTbl = (props) => {
             <div>
                 <CCBreadcrumbBar>
                     <Link href={"/"}>Home</Link>
-                    <Link href={"/scanreports"}>Scan Reports</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}`}>{scanReportName.current}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}`}>{scanReportTable.current.name}</Link>
-                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/fields/${scanReportField.current.id}`}>{scanReportField.current.name}</Link>
+                    <Link href={"/scanreports/"}>Scan Reports</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/`}>{scanReportName.current}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/`}>{scanReportTable.current.name}</Link>
+                    <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTable.current.id}/fields/${scanReportField.current.id}/`}>{scanReportField.current.name}</Link>
                 </CCBreadcrumbBar>
                 <PageHeading text={"Values"} />
                 {isOpen &&
