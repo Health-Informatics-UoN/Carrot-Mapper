@@ -71,76 +71,6 @@ HEADERS = {
 }
 
 
-# @memory_profiler.profile(stream=profiler_logstream)
-def process_scan_report_sheet_table(sheet):
-    """
-    This function extracts the
-    data into the format below.
-
-    -- Example Table Sheet CSV --
-    a,   frequency,          b, frequency
-    apple,      20,     orange,         5
-    banana,      3,   plantain,        50
-    pear,       12,         '',        ''
-
-    --
-
-    -- output --
-    [(a,    apple, 20),
-     (a,   banana,  3),
-     (a,     pear, 12),
-     (b,   orange,  5),
-     (b, plantain, 50)]
-    --
-    """
-    logger.debug("Start process_scan_report_sheet_table")
-
-    sheet.reset_dimensions()
-    sheet.calculate_dimension(force=True)
-    # Get header entries (skipping every second column which is just 'Frequency')
-    # So sheet_headers = ['a', 'b']
-    first_row = sheet[1]
-    sheet_headers = [cell.value for cell in first_row[::2]]
-
-    # Set up an empty defaultdict, and fill it with one entry per header (i.e. one
-    # per column)
-    # Append each entry's value with the tuple (value, frequency) so that we end up
-    # with each entry containing one tuple per non-empty entry in the column.
-    #
-    # This will give us
-    #
-    # ordereddict({'a': [('apple', 20), ('banana', 3), ('pear', 12)],
-    #              'b': [('orange', 5), ('plantain', 50)]})
-
-    d = defaultdict(list)
-    # Iterate over all rows beyond the header - use the number of sheet_headers*2 to
-    # set the maximum column rather than relying on sheet.max_col as this is not
-    # always reliably updated by Excel etc.
-    for row in sheet.iter_rows(
-        min_col=1,
-        max_col=len(sheet_headers) * 2,
-        min_row=2,
-        max_row=sheet.max_row,
-        values_only=True,
-    ):
-        # Set boolean to track whether we hit a blank row for early exit below.
-        this_row_empty = True
-        # Iterate across the pairs of cells in the row. If the pair is non-empty,
-        # then add it to the relevant dict entry.
-        for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
-            if (cell != "" and cell is not None) or (freq != "" and freq is not None):
-                d[header].append((str(cell), freq))
-                this_row_empty = False
-        # This will trigger if we hit a row that is entirely empty. Short-circuit
-        # to exit early here - this saves us from situations where sheet.max_row is
-        # incorrectly set (too large)
-        if this_row_empty:
-            break
-
-    logger.debug("Finish process_scan_report_sheet_table")
-    return d
-
-
 def post_paginated_concepts(concepts_to_post):
     paginated_concepts_to_post = helpers.paginate(concepts_to_post)
     concept_response = []
@@ -524,91 +454,75 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
+
 # @memory_profiler.profile(stream=profiler_logstream)
-def post_tables(fo_ws, scan_report_id):
-    # Get all the table names in the order they appear in the Field Overview page
-    table_names = []
-    # Iterate over cells in the first column, but because we're in ReadOnly mode we
-    # can't do that in the simplest manner.
-    fo_ws.reset_dimensions()
-    fo_ws.calculate_dimension(force=True)
-    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
-        cell_value = row[0].value
-        # Check value is both non-empty and not seen before
-        if cell_value and cell_value not in table_names:
-            table_names.append(cell_value)
-
+def process_scan_report_sheet_table(sheet):
     """
-    For each table create a scan_report_table entry,
-    Append entry to table_entries_to_post[] list,
-    Create JSON array with all the entries,
-    Send POST request to API with JSON as input,
-    Save the response data(table IDs)
+    This function extracts the
+    data into the format below.
+
+    -- Example Table Sheet CSV --
+    a,   frequency,          b, frequency
+    apple,      20,     orange,         5
+    banana,      3,   plantain,        50
+    pear,       12,         '',        ''
+
+    --
+
+    -- output --
+    [(a,    apple, 20),
+     (a,   banana,  3),
+     (a,     pear, 12),
+     (b,   orange,  5),
+     (b, plantain, 50)]
+    --
     """
-    table_entries_to_post = []
-    # print("Working on Scan Report >>>", scan_report_id)
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    logger.info(f"TABLES NAMES >>> {table_names}")
+    logger.debug("Start process_scan_report_sheet_table")
 
-    for table_name in table_names:
-        # print("WORKING ON TABLE >>> ", table_name)
+    sheet.reset_dimensions()
+    sheet.calculate_dimension(force=True)
+    # Get header entries (skipping every second column which is just 'Frequency')
+    # So sheet_headers = ['a', 'b']
+    first_row = sheet[1]
+    sheet_headers = [cell.value for cell in first_row[::2]]
 
-        # Truncate table names because sheet names are truncated to 31 characters in Excel
-        short_table_name = table_name[:31]
+    # Set up an empty defaultdict, and fill it with one entry per header (i.e. one
+    # per column)
+    # Append each entry's value with the tuple (value, frequency) so that we end up
+    # with each entry containing one tuple per non-empty entry in the column.
+    #
+    # This will give us
+    #
+    # ordereddict({'a': [('apple', 20), ('banana', 3), ('pear', 12)],
+    #              'b': [('orange', 5), ('plantain', 50)]})
 
-        # Create ScanReportTable entry
-        # Link to scan report using ID from the queue message
-        table_entry = {
-            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "name": short_table_name,
-            "scan_report": str(scan_report_id),
-            "person_id": None,
-            "birth_date": None,
-            "measurement_date": None,
-            "condition_date": None,
-            "observation_date": None,
-        }
+    d = defaultdict(list)
+    # Iterate over all rows beyond the header - use the number of sheet_headers*2 to
+    # set the maximum column rather than relying on sheet.max_col as this is not
+    # always reliably updated by Excel etc.
+    for row in sheet.iter_rows(
+        min_col=1,
+        max_col=len(sheet_headers) * 2,
+        min_row=2,
+        max_row=sheet.max_row,
+        values_only=True,
+    ):
+        # Set boolean to track whether we hit a blank row for early exit below.
+        this_row_empty = True
+        # Iterate across the pairs of cells in the row. If the pair is non-empty,
+        # then add it to the relevant dict entry.
+        for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
+            if (cell != "" and cell is not None) or (freq != "" and freq is not None):
+                d[header].append((str(cell), freq))
+                this_row_empty = False
+        # This will trigger if we hit a row that is entirely empty. Short-circuit
+        # to exit early here - this saves us from situations where sheet.max_row is
+        # incorrectly set (too large)
+        if this_row_empty:
+            break
 
-        # print("SCAN REPORT TABLE ENTRY", table_entry)
-
-        # Append to list
-        table_entries_to_post.append(table_entry)
-
-    logger.info("POST tables")
-    # POST request to scanreporttables
-    tables_response = requests.post(
-        url=f"{API_URL}scanreporttables/",
-        data=json.dumps(table_entries_to_post),
-        headers=HEADERS,
-    )
-
-    logger.info("POST tables finished")
-
-    logger.info(f"TABLE SAVE STATUS >>> {tables_response.status_code}")
-    # Error on failure
-    if tables_response.status_code != 201:
-        helpers.process_failure(scan_report_id)
-        raise HTTPError(
-            " ".join(
-                [
-                    "Error in table save:",
-                    str(tables_response.status_code),
-                    str(json.dumps(table_entries_to_post)),
-                ]
-            )
-        )
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-
-    # Load the result of the post request,
-    tables_content = tables_response.json()
-
-    # Save the table ids that were generated from the POST method
-    table_ids = [element["id"] for element in tables_content]
-
-    logger.info(f"TABLE IDs {table_ids}")
-    table_name_to_id_map = dict(zip(table_names, table_ids))
-    return table_name_to_id_map
+    logger.debug("Finish process_scan_report_sheet_table")
+    return d
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
@@ -1029,6 +943,93 @@ def process_all_fields_and_values(
             data_dictionary,
             vocab_dictionary,
         )
+
+
+# @memory_profiler.profile(stream=profiler_logstream)
+def post_tables(fo_ws, scan_report_id):
+    # Get all the table names in the order they appear in the Field Overview page
+    table_names = []
+    # Iterate over cells in the first column, but because we're in ReadOnly mode we
+    # can't do that in the simplest manner.
+    fo_ws.reset_dimensions()
+    fo_ws.calculate_dimension(force=True)
+    for row in fo_ws.iter_rows(min_row=2, max_row=fo_ws.max_row):
+        cell_value = row[0].value
+        # Check value is both non-empty and not seen before
+        if cell_value and cell_value not in table_names:
+            table_names.append(cell_value)
+
+    """
+    For each table create a scan_report_table entry,
+    Append entry to table_entries_to_post[] list,
+    Create JSON array with all the entries,
+    Send POST request to API with JSON as input,
+    Save the response data(table IDs)
+    """
+    table_entries_to_post = []
+    # print("Working on Scan Report >>>", scan_report_id)
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+    logger.info(f"TABLES NAMES >>> {table_names}")
+
+    for table_name in table_names:
+        # print("WORKING ON TABLE >>> ", table_name)
+
+        # Truncate table names because sheet names are truncated to 31 characters in Excel
+        short_table_name = table_name[:31]
+
+        # Create ScanReportTable entry
+        # Link to scan report using ID from the queue message
+        table_entry = {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "name": short_table_name,
+            "scan_report": str(scan_report_id),
+            "person_id": None,
+            "birth_date": None,
+            "measurement_date": None,
+            "condition_date": None,
+            "observation_date": None,
+        }
+
+        # print("SCAN REPORT TABLE ENTRY", table_entry)
+
+        # Append to list
+        table_entries_to_post.append(table_entry)
+
+    logger.info("POST tables")
+    # POST request to scanreporttables
+    tables_response = requests.post(
+        url=f"{API_URL}scanreporttables/",
+        data=json.dumps(table_entries_to_post),
+        headers=HEADERS,
+    )
+
+    logger.info("POST tables finished")
+
+    logger.info(f"TABLE SAVE STATUS >>> {tables_response.status_code}")
+    # Error on failure
+    if tables_response.status_code != 201:
+        helpers.process_failure(scan_report_id)
+        raise HTTPError(
+            " ".join(
+                [
+                    "Error in table save:",
+                    str(tables_response.status_code),
+                    str(json.dumps(table_entries_to_post)),
+                ]
+            )
+        )
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+
+    # Load the result of the post request,
+    tables_content = tables_response.json()
+
+    # Save the table ids that were generated from the POST method
+    table_ids = [element["id"] for element in tables_content]
+
+    logger.info(f"TABLE IDs {table_ids}")
+    table_name_to_id_map = dict(zip(table_names, table_ids))
+    return table_name_to_id_map
 
 
 # @memory_profiler.profile(stream=profiler_logstream)
