@@ -561,6 +561,10 @@ def get_mapping_rules_json(structural_mapping_rules):
         dict : formatted json that can be eaten by the TL-Tool
     """
 
+    # Return empty metadata and cdm if `structural_mapping_rules` is empty
+    if not structural_mapping_rules:
+        return {"metadata": {}, "cdm": {}}
+
     # use the first_qs to get the scan_report dataset name
     # all qs items will be from the same scan_report
     first_rule = structural_mapping_rules[0]

@@ -13,7 +13,7 @@ import Error404 from '../views/Error404'
 
 const DatasetAdminForm = ({ setTitle }) => {
     let pathArray = window.location.pathname.split("/")
-    let datasetId = pathArray[pathArray.length - 2]
+    let datasetId = pathArray[pathArray.length - 3]
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [isAdmin, setIsAdmin] = useState(window.isAdmin)
     // Set up component state
@@ -28,8 +28,12 @@ const DatasetAdminForm = ({ setTitle }) => {
     const [viewers, setViewers] = useState([])
     const [admins, setAdmins] = useState([])
     const [editors, setEditors] = useState([])
+    const [projects, setProjects] = useState([])
+    const [projectsList, setProjectsList] = useState(undefined)
     const [usersList, setUsersList] = useState(undefined)
     const [error, setError] = useState(undefined)
+    const [projectDifference, setProjectDifference] = useState(0)
+
 
     function getUsersFromIds(userIds, userObjects) {
         /**
@@ -55,19 +59,24 @@ const DatasetAdminForm = ({ setTitle }) => {
         async () => {
             setTitle(null)
             try {
-                const datasetQuery = await useGet(`/datasets/${datasetId}`)
+                const datasetQuery = await useGet(`/datasets/${datasetId}/`)
                 const queries = [
                     useGet("/datapartners/"),
                     useGet("/usersfilter/?is_active=true"),
-                    useGet(`/projects/?dataset=${datasetId}`)
+                    useGet(`/projects/?dataset=${datasetId}`),
+                    useGet(`/projects`),
+                    useGet(`/countprojects/${datasetId}`),
                 ]
                 // Get dataset, data partners and users
-                const [dataPartnerQuery, usersQuery, projectsQuery] = await Promise.all(queries)
+                const [dataPartnerQuery, usersQuery, projectsQuery, allProjectsQuery, projectCount] = await Promise.all(queries)
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
                 // Set up state from the results of the queries
                 setDataset(datasetQuery)
                 setIsPublic(datasetQuery.visibility === "PUBLIC")
                 setDataPartners([...dataPartnerQuery])
+                setProjectsList(allProjectsQuery)
+                setProjects(projectsQuery)
+                setProjectDifference(projectCount.project_count - projectsQuery.length)
                 setSelectedDataPartner(
                     dataPartnerQuery.find(element => element.id === datasetQuery.data_partner)
                 )
@@ -168,12 +177,43 @@ const DatasetAdminForm = ({ setTitle }) => {
         setAdmins(pj => pj.filter(user => user.id != id))
     }
 
+    // Remove user chip from projects
+    const removeProject = (name) => {
+        setProjects(pj => pj.filter(project => project.name != name))
+    }
+
+    const mapDatasetToProjects = async (newProjects, discardedProjects) => {
+        const projectsQuery = await useGet("/projects/?datasets=true")
+        const promises = []
+        const full_projects = await useGet(`/projects/?name__in=${newProjects.map(project => project.name).join()}`)
+        full_projects.map(project => {
+            const data = {
+                id: project.id,
+                datasets: [datasetId, ...projectsQuery.find(item => item.name == project.name).datasets.filter(item => item != datasetId)]
+            }
+            promises.push(usePatch(`/projects/update/${project.id}/`, data))
+        })
+        if (discardedProjects.length > 0) {
+            const full_discarded_projects = await useGet(`/projects/?name__in=${discardedProjects.map(project => project.name).join()}`)
+            full_discarded_projects.map(project => {
+                const data = {
+                    id: project.id,
+                    datasets: projectsQuery.find(item => item.name == project.name).datasets.filter(item => item != datasetId)
+                }
+                promises.push(usePatch(`/projects/update/${project.id}/`, data))
+            })
+        }
+        await Promise.all(promises)
+        return
+    }
+
     // Send updated dataset to the DB
     async function upload() {
         /**
          * Send a `PATCH` request updating the dataset and
          * refresh the page with the new data
          */
+
         const patchData = {
             name: dataset.name,
             data_partner: selectedDataPartner.id,
@@ -194,12 +234,19 @@ const DatasetAdminForm = ({ setTitle }) => {
         if (!arraysEqual(newAdmins, dataset.admins)) {
             patchData.admins = newAdmins
         }
+
         try {
             setUploadLoading(true)
             const response = await usePatch(
-                `/datasets/update/${datasetId}`,
+                `/datasets/update/${datasetId}/`,
                 patchData,
             )
+            const currentProjects = await useGet(`/projects/?dataset=${datasetId}`)
+            if (!arraysEqual(currentProjects.map(item => item.name), projects.map(item => item.name))) {
+                const discardedProjects = currentProjects.filter(item => !projects.map(project => project.name).includes(item.name))
+                await mapDatasetToProjects(projects, discardedProjects)
+            }
+
             setUploadLoading(false)
             setDataset(response)
             setAlert({
@@ -226,6 +273,12 @@ const DatasetAdminForm = ({ setTitle }) => {
         }
     }
 
+    const warnUpload = () => {
+        if (confirm(`This Dataset is in ${projectDifference} further Projects that you cannot see. Do you want to continue with this edit?`) == true) {
+            upload()
+        }
+    }
+
     if (error) {
         //Render Error State
         return <Error404 setTitle={setTitle} />
@@ -247,9 +300,9 @@ const DatasetAdminForm = ({ setTitle }) => {
         <Container maxW='container.xl'>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/datasets"}>Datasets</Link>
-                <Link href={`/datasets/${datasetId}`}>{dataset.name}</Link>
-                <Link href={`/datasets/${datasetId}/details`}>Details</Link>
+                <Link href={"/datasets/"}>Datasets</Link>
+                <Link href={`/datasets/${datasetId}/`}>{dataset.name}</Link>
+                <Link href={`/datasets/${datasetId}/details/`}>Details</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
@@ -408,8 +461,43 @@ const DatasetAdminForm = ({ setTitle }) => {
 
                 </Box>
             </FormControl>
+            <FormControl isInvalid={formErrors.admins && formErrors.admins.length > 0}>
+                <Box mt={4}>
+                    <div style={{ display: "flex", flexWrap: "wrap", marginTop: "10px" }}>
+                        <div style={{ fontWeight: "bold", marginRight: "10px" }} >Projects: </div>
+                        {projects.map((project, index) => {
+                            return (
+                                <div key={index} style={{ marginTop: "0px" }}>
+                                    <ConceptTag conceptName={project.name} conceptId={""} conceptIdentifier={project.name} itemId={project.name} handleDelete={removeProject}
+                                        readOnly={!isAdmin} />
+                                </div>
+                            )
+                        })}
+                    </div>
+                    {isAdmin &&
+                        <>
+                            {projectsList == undefined ?
+                                <Select isDisabled={true} icon={<Spinner />} placeholder='Loading Viewers' />
+                                :
+                                <Select bg="white" mt={4} value="Add Project" readOnly onChange={(option) => setProjects(pj => [...pj.filter(project => project.name != JSON.parse(option.target.value).name), JSON.parse(option.target.value)])}>
+                                    <option disabled>Add Project</option>
+                                    <>
+                                        {projectsList.map((item, index) =>
+                                            <option key={index} value={JSON.stringify(item)}>{item.name}</option>
+                                        )}
+                                    </>
+                                </Select>
+                            }
+                            {formErrors.admins && formErrors.admins.length > 0 &&
+                                <FormErrorMessage>{formErrors.admins[0]}</FormErrorMessage>
+                            }
+                        </>
+                    }
+
+                </Box>
+            </FormControl>
             {isAdmin &&
-                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={upload}>Submit</Button>
+                <Button isLoading={uploadLoading} loadingText='Uploading' mt="10px" onClick={projectDifference === 0 ? upload : warnUpload}>Submit</Button>
             }
 
         </Container>

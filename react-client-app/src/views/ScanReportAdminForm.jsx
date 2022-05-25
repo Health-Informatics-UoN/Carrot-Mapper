@@ -17,7 +17,7 @@ import Error404 from './Error404'
 const ScanReportAdminForm = ({ setTitle }) => {
     // scan report id in second to last block of the path
     let scanReportId = window.location.pathname.split("/")
-    scanReportId = scanReportId[scanReportId.length - 2]
+    scanReportId = scanReportId[scanReportId.length - 3]
 
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' })
@@ -59,18 +59,22 @@ const ScanReportAdminForm = ({ setTitle }) => {
         async () => {
             setTitle(null)
             try {
-                const scanReportQuery = await useGet(`/scanreports/${scanReportId}`)
+                const scanReportQuery = await useGet(`/scanreports/${scanReportId}/`)
                 const queries = [
                     useGet("/datasets/"),
                     useGet("/usersfilter/?is_active=true"),
+                    useGet(`/users/${scanReportQuery.author}/`),
                 ]
                 // Get dataset, data partners and users
-                const [datasetsQuery, usersQuery] = await Promise.all(queries)
+                const [datasetsQuery, usersQuery, authorsQuery] = await Promise.all(queries)
                 // Get project members
                 const projectsQuery = await useGet(
                     `/projects/?dataset=${scanReportQuery.parent_dataset}`
                 )
                 const validUsers = [...(new Set(projectsQuery.map(project => project.members).flat()))]
+                if (!usersQuery.map(item => item.id).includes(authorsQuery.id)) {
+                    authorsQuery.isDisabled = true
+                }
                 // Set up state from the results of the queries
                 setScanReport(scanReportQuery)
                 setDatasets(datasetsQuery)
@@ -78,10 +82,10 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     datasetsQuery.find(element => element.id === scanReportQuery.parent_dataset)
                 )
                 setAuthor(
-                    usersQuery.find(element => element.id == scanReportQuery.author)
+                    authorsQuery
                 )
                 setIsPublic(scanReportQuery.visibility === "PUBLIC")
-                setUsersList(usersQuery.filter(user => validUsers.includes(user.id)))
+                setUsersList([authorsQuery, ...usersQuery.filter((user) => user.id != authorsQuery.id).filter((user) => validUsers.includes(user.id))]);
                 setViewers(
                     prevViewers => [
                         ...prevViewers,
@@ -264,9 +268,9 @@ const ScanReportAdminForm = ({ setTitle }) => {
         <Container maxW='container.xl'>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
-                <Link href={"/scanreports"}>Scan Reports</Link>
-                <Link href={`/scanreports/${scanReportId}`}>{scanReport.dataset}</Link>
-                <Link href={`/scanreports/${scanReportId}/details`}>Details</Link>
+                <Link href={"/scanreports/"}>Scan Reports</Link>
+                <Link href={`/scanreports/${scanReportId}/`}>{scanReport.dataset}</Link>
+                <Link href={`/scanreports/${scanReportId}/details/`}>Details</Link>
             </CCBreadcrumbBar>
             {isOpen &&
                 <ScaleFade initialScale={0.9} in={isOpen}>
@@ -287,6 +291,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 label={"Author"}
                 value={author.username}
                 selectOptions={usersList.map(item => item.username)}
+                disabledOptions={usersList.filter(item => item.isDisabled == true).map(item => item.username)}
                 handleInput={handleAuthorSelect}
                 isDisabled={!isAdmin}
                 formErrors={formErrors.dataset}
@@ -307,6 +312,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                     info={"If the Scan Report is PUBLIC, then all users with access to the Dataset have viewer access to the Scan Report. Additionally, Dataset admins and editors have viewer access to the Scan Report in all cases."}
                     isDisabled={!isAdmin}
                     selectOptions={usersList.map(item => item.username)}
+                    disabledOptions={usersList.filter(item => item.isDisabled == true).map(item => item.username)}
                     currentSelections={viewers.map(item => item.username)}
                     handleInput={addViewer}
                     handleDelete={removeViewer}
@@ -319,6 +325,7 @@ const ScanReportAdminForm = ({ setTitle }) => {
                 info={"Dataset admins and editors also have Scan Report editor permissions."}
                 isDisabled={!isAdmin}
                 selectOptions={usersList.map(item => item.username)}
+                disabledOptions={usersList.filter(item => item.isDisabled == true).map(item => item.username)}
                 currentSelections={editors.map(item => item.username)}
                 handleInput={addEditor}
                 handleDelete={removeEditor}

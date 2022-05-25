@@ -2,7 +2,26 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.0-beta
+## v2.0.1-beta
+### New Features
+
+### Improvements
+* `visibility` set on SR when uploaded.
+* `viewers` and `editors` set on SR when uploaded.
+* `editors` set on creation of new dataset on SR upload page.
+* `editors` and `admins` field for dataset shown for PUBLIC dataset as well as RESTRICTED.
+* Mapping rule reuse is much faster and the code is cleaner.
+* Scan Report upload code has been reorganised for clarity.
+
+### Bugfixes
+* Fixed error 500 when trying to build mapping rules diagram without rules.
+* Admins specified by the user for Datasets on the SR upload form will now be added along with the user - who is already made an admin by default.
+  * Added tooltip to the form to explain this.
+* All URLs now end in a slash (`/`).
+* Fixed a bug where the contents of the final table was not uploaded in some circumstances.
+* Fixed a bug where empty cells in individual field sheets were creating None records.
+
+## v2.0.0 was released 04/05/22
 
 - Added Project and Dataset tables to the database.
 - Added `add_datasets_to_partner` management command.
