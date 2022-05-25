@@ -454,7 +454,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
-
 # @memory_profiler.profile(stream=profiler_logstream)
 def process_scan_report_sheet_table(sheet):
     """
