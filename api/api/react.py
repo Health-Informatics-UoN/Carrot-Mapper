@@ -1,5 +1,3 @@
-from django.conf import settings
-import os
 from mapping.models import Status
 
 
