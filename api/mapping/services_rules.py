@@ -347,8 +347,6 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
     # It's RXNORM in NLP but RxNorm in OMOP db, so must convert
     if vocabulary_id == "RXNORM":
         vocabulary_id = "RxNorm"
-    else:
-        vocabulary_id = vocabulary_id
 
     # obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
