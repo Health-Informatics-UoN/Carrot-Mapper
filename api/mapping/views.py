@@ -1225,12 +1225,24 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_invalid(self, form):
+        storage = messages.get_messages(self.request)
+        for message in storage:
+            response = JsonResponse(
+                {
+                    "status_code": 422,
+                    "form-errors": form.errors,
+                    "ok": False,
+                    "statusText": str(message),
+                }
+            )
+            response.status_code = 422
+            return response
         response = JsonResponse(
             {
                 "status_code": 422,
                 "form-errors": form.errors,
                 "ok": False,
-                "statusText": "Could not process input",
+                "statusText": "Could not process input.",
             }
         )
         response.status_code = 422
@@ -1243,6 +1255,11 @@ class ScanReportFormView(FormView):
             has_editorship(parent_dataset, self.request)
             or is_admin(parent_dataset, self.request)
         ):
+            messages.warning(
+                self.request,
+                "You do not have editor or administrator "
+                "permissions on this Dataset.",
+            )
             return self.form_invalid(form)
 
         # Create random alphanumeric to link scan report to data dictionary
