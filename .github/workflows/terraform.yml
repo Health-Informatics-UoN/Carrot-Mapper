@@ -21,6 +21,7 @@ jobs:
     defaults:
       run:
         shell: bash
+        working-directory: ./terraform
 
     steps:
     # Checkout the repository to the GitHub Actions runner
@@ -37,7 +38,7 @@ jobs:
 
     - name: 'Terraform Init'
       id: init
-      run: terraform init 
+      run: terraform init
 
     - name: 'Terraform Validate'
       id: validate
