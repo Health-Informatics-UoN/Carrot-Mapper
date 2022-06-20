@@ -15,6 +15,7 @@ terraform {
   }
 }
 provider "azurerm" {
+  skip_provider_registration = "true"
   features {}
 }
 # Generate a random integer to create a globally unique name
