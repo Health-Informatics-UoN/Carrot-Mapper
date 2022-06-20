@@ -15,7 +15,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_AD_TENANT_ID }}
     runs-on: ubuntu-latest
-    environment: production
+    environment: tf-devel
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -48,6 +48,9 @@ jobs:
       id: plan
       run: terraform plan -no-color
       continue-on-error: true
+
+    - name: 'Terraform test'
+      run: echo "$GITHUB_REF"
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/terraform-devel'
