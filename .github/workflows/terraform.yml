@@ -50,6 +50,6 @@ jobs:
       continue-on-error: true
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/terraform-devel'
       id: apply
       run: terraform apply
