@@ -24,9 +24,8 @@ resource "random_integer" "ri" {
   max = 99999
 }
 # Create the resource group
-resource "azurerm_resource_group" "rg" {
-  name     = "terraformrg-${random_integer.ri.result}"
-  location = "uksouth"
+data "azurerm_resource_group" "rg" {
+  name     = "ccnet-tf-test"
 }
 # Create the Linux App Service Plan
 resource "azurerm_app_service_plan" "appserviceplan" {
