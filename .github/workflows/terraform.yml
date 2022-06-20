@@ -55,4 +55,4 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/terraform_devel'
       id: apply
-      run: terraform apply
+      run: terraform apply -auto-approve -input=false
