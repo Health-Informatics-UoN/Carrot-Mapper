@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - terraform_devel
-  pull_request:
 
 jobs:
   terraform:
