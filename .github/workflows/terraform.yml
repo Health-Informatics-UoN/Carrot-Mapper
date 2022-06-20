@@ -53,6 +53,6 @@ jobs:
       run: echo "$GITHUB_REF"
 
     - name: Terraform Apply
-      if: github.ref == 'refs/heads/terraform-devel'
+      if: github.ref == 'refs/heads/terraform_devel'
       id: apply
       run: terraform apply
