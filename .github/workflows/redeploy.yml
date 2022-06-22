@@ -30,7 +30,7 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         push: true
-        tags: ccomregredeploytest.azurecr.io/${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}/redeploytest:${{ github.sha }}
+        tags: ccomregdevel.azurecr.io/${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}/redeploytest:${{ github.sha }}
         file: ./Dockerfile.deploy
 
   deploy:
@@ -47,4 +47,4 @@ jobs:
       with:
         app-name: 'ccom-redeploy-test'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_TEST }}
-        images: 'ccomregdeploytest.azurecr.io/${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}/redeploytest:${{ github.sha }}'
+        images: 'ccomregdevel.azurecr.io/${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}/redeploytest:${{ github.sha }}'
