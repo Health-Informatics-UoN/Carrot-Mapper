@@ -22,7 +22,7 @@ jobs:
     - name: Log in to registry
       uses: docker/login-action@v1
       with:
-        registry: https://ccomregtest.azurecr.io/
+        registry: https://ccomregredeploytest.azurecr.io/
         username: ${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}
         password: ${{ secrets.REGISTRY_PASSWORD_REDEPLOY_TEST }}
 
