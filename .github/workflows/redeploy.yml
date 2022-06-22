@@ -46,6 +46,11 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      - name: Set variables
+        run: |
+          echo "registry_name=ccomregdevel" >> $GITHUB_ENV
+          echo "repo_name=redeploytest" >> $GITHUB_ENV
+
     - name: Deploy to Azure Web App
       id: deploy-to-webapp
       uses: azure/webapps-deploy@v2
