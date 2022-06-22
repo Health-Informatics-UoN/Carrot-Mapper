@@ -51,6 +51,6 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'ccom-devel'
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_REDEPLOY_TEST }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEPLOY_DEV }}
         slot-name: 'dev'
         images: '${{ env.registry_name }}.azurecr.io/${{ secrets.REGISTRY_USERNAME_REDEPLOY_TEST }}/${{ env.repo_name }}:${{ github.sha }}'
