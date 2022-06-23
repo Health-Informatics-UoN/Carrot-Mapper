@@ -38,6 +38,6 @@ jobs:
       id: fa
       with:
         app-name: 'ccom-funcs-redeploy-test'
-        slot-name: 'redeploy'
+        slot-name: 'dev'
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE_REDEPLOY_TEST }}
+        publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE_DEPLOY_DEV }}
