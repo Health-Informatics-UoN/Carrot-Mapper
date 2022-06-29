@@ -73,10 +73,6 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
 from django.core.mail import BadHeaderError, send_mail
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import CharField
-from django.db.models import Value as V
-from django.db.models.functions import Concat
 from django.db.models.query_utils import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
@@ -86,7 +82,6 @@ from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.views import generic
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
@@ -94,18 +89,13 @@ from django.views.generic.edit import FormView, UpdateView
 
 from .forms import (
     ScanReportAssertionForm,
-    ScanReportFieldConceptForm,
     ScanReportForm,
-    UserCreateForm,
-    ScanReportValueConceptForm,
-    ScanReportFieldForm,
 )
 from .models import (
     DataDictionary,
     DataPartner,
     OmopTable,
     OmopField,
-    OmopTable,
     Project,
     ScanReport,
     ScanReportAssertion,
@@ -132,7 +122,6 @@ from .services import download_data_dictionary_blob
 from .services_nlp import start_nlp_field_level
 
 from .services_rules import (
-    analyse_concepts,
     save_mapping_rules,
     remove_mapping_rules,
     find_existing_scan_report_concepts,
@@ -140,10 +129,6 @@ from .services_rules import (
     download_mapping_rules_as_csv,
     get_mapping_rules_list,
     view_mapping_rules,
-    find_date_event,
-    find_person_id,
-    find_destination_table,
-    find_standard_concept,
     m_allowed_tables,
 )
 
@@ -1225,12 +1210,24 @@ class ScanReportFormView(FormView):
     success_url = reverse_lazy("scan-report-list")
 
     def form_invalid(self, form):
+        storage = messages.get_messages(self.request)
+        for message in storage:
+            response = JsonResponse(
+                {
+                    "status_code": 422,
+                    "form-errors": form.errors,
+                    "ok": False,
+                    "statusText": str(message),
+                }
+            )
+            response.status_code = 422
+            return response
         response = JsonResponse(
             {
                 "status_code": 422,
                 "form-errors": form.errors,
                 "ok": False,
-                "statusText": "Could not process input",
+                "statusText": "Could not process input.",
             }
         )
         response.status_code = 422
@@ -1243,6 +1240,11 @@ class ScanReportFormView(FormView):
             has_editorship(parent_dataset, self.request)
             or is_admin(parent_dataset, self.request)
         ):
+            messages.warning(
+                self.request,
+                "You do not have editor or administrator "
+                "permissions on this Dataset.",
+            )
             return self.form_invalid(form)
 
         # Create random alphanumeric to link scan report to data dictionary
@@ -1494,72 +1496,6 @@ def run_nlp_table_level(request):
         start_nlp_field_level(search_term=item.id)
 
     return redirect("/tables/?search={}".format(table.id))
-
-
-def validate_concept(request, source_concept):
-    if find_destination_table(request, source_concept) == None:
-        return False
-
-    if not validate_standard_concept(request, source_concept):
-        return False
-
-    return True
-
-
-def validate_standard_concept(request, source_concept):
-
-    # if it's a standard concept -- pass
-    if source_concept.standard_concept == "S":
-        messages.success(
-            request,
-            "Concept {} - {} added successfully.".format(
-                source_concept.concept_id, source_concept.concept_name
-            ),
-        )
-        return True
-    else:
-        # otherwse
-        # return an error if it's Non-Standard
-        # dont allow the ScanReportConcept to be created
-        messages.error(
-            request,
-            "Concept {} ({}) is Non-Standard".format(
-                source_concept.concept_id, source_concept.concept_name
-            ),
-        )
-        concept = find_standard_concept(source_concept)
-        if concept == None:
-            messages.error(
-                request, "No associated Standard Concept could be found for this!"
-            )
-        else:
-            messages.error(
-                request,
-                "You could try {} ({}) ?".format(
-                    concept.concept_id, concept.concept_name
-                ),
-            )
-
-        return False
-
-
-def pass_content_object_validation(request, scan_report_table):
-    if find_person_id(scan_report_table) == None:
-        messages.error(
-            request,
-            f"you have not set a person_id on this table {scan_report_table.name}."
-            "Please go set this at the table level before trying to add a concept",
-        )
-        return False
-    if find_date_event(scan_report_table) == None:
-        messages.error(
-            request,
-            f"you have not set a date_event on this table {scan_report_table.name}."
-            "Please go set this at the table level before trying to add a concept",
-        )
-        return False
-
-    return True
 
 
 class DownloadScanReportViewSet(viewsets.ViewSet):

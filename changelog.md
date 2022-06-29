@@ -2,8 +2,17 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.1-beta
+##v2.1.0-beta
+### New features
+
+### Improvements
+
+### Bugfixes
+* Improved error message when attempting to upload to a Dataset without editor or admin permissions.
+
+## v2.0.1 was released 27/05/22
 ### New Features
+* None
 
 ### Improvements
 * `visibility` set on SR when uploaded.
