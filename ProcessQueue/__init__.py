@@ -603,7 +603,7 @@ async def process_values_from_sheet(
                             no_source_concept=True,
                         )
                         concept_id = concept_id["concept_id"]
-                    except:
+                    except RuntimeWarning:
                         concept_id = -1
                 else:
                     concept_id = -1

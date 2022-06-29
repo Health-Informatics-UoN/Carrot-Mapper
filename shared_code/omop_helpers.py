@@ -1,7 +1,9 @@
-import requests, json, os, time
+import requests, os, time
+import logging
 
 api_url = os.environ.get("APP_URL") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
+logger = logging.getLogger("test_logger")
 
 
 def find_standard_concept(source_concept):
@@ -15,7 +17,7 @@ def find_standard_concept(source_concept):
         },
     )
 
-    concept_relation = json.loads(concept_relation.content.decode("utf-8"))
+    concept_relation = concept_relation.json()
     concept_relation = concept_relation[0]
 
     if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:
@@ -24,7 +26,7 @@ def find_standard_concept(source_concept):
             headers=api_header,
             params={"concept_id": concept_relation["concept_id_2"]},
         )
-        concept = json.loads(concept.content.decode("utf-8"))
+        concept = concept.json()
         concept = concept[0]
         return concept
     else:
@@ -53,9 +55,10 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
         params={"concept_code": concept_code, "vocabulary_id": vocabulary_id},
     )
 
-    source_concept = json.loads(source_concept.content.decode("utf-8"))
+    source_concept = source_concept.json()
+    if len(source_concept) == 0:
+        raise RuntimeWarning("concept_code not recognised in vocab")
     source_concept = source_concept[0]
-
     # if the source_concept is standard
     if source_concept["standard_concept"] == "S":
         # the concept is the same as the source_concept
