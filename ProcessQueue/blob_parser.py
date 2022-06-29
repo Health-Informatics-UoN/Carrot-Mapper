@@ -6,6 +6,8 @@ from io import BytesIO
 import openpyxl
 
 from azure.storage.blob import BlobServiceClient
+import logging
+logger = logging.getLogger("test_logger")
 
 
 def remove_BOM(intermediate):
@@ -40,7 +42,7 @@ def process_three_item_dict(three_item_data):
     csv_file_names = set(row["csv_file_name"] for row in three_item_data)
 
     # Initialise the dictionary with the keys, and each value set to a blank dict()
-    new_vocab_dictionary = dict.fromkeys(csv_file_names, {})
+    new_vocab_dictionary = dict((filename, {}) for filename in csv_file_names)
 
     # Fill each subdict with the data from the input list
     for row in three_item_data:
