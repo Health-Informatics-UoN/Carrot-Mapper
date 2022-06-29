@@ -6,7 +6,7 @@ from datetime import datetime
 from django.contrib import messages
 from data.models import Concept, ConceptRelationship, ConceptAncestor
 
-from mapping.models import ScanReport, ScanReportTable, ScanReportField, ScanReportValue
+from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
 from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
 
 from graphviz import Digraph
@@ -74,7 +74,7 @@ def get_omop_field(destination_field, destination_table=None):
     """
 
     # if we haven't specified the table name
-    if destination_table == None:
+    if destination_table is None:
         # look up the field from the "allowed_tables"
         omop_field = OmopField.objects.filter(field=destination_field)
 
@@ -153,8 +153,8 @@ def find_destination_table(request, concept):
     domain = concept.domain_id.lower()
     # get the omop field for the source_concept_id for this domain
     omop_field = get_omop_field(f"{domain}_source_concept_id")
-    if omop_field == None:
-        if request != None:
+    if omop_field is None:
+        if request is not None:
             messages.error(
                 request,
                 f"Something up with this concept, '{domain}_source_concept_id' does not exist, or is from a table that is not allowed.",
@@ -181,7 +181,7 @@ def validate_person_id_and_date(request, source_table):
     # find the date event first
     person_id_source_field = find_person_id(source_table)
 
-    if person_id_source_field == None:
+    if person_id_source_field is None:
         msg = f"No person_id set for this table {source_table}, cannot create rules."
         if request:
             messages.error(request, msg)
@@ -190,7 +190,7 @@ def validate_person_id_and_date(request, source_table):
         return False
 
     date_event_source_field = find_date_event(source_table)
-    if date_event_source_field == None:
+    if date_event_source_field is None:
         msg = f"No date_event set for this table {source_table}, cannot create rules."
         if request:
             messages.error(msg)
@@ -222,8 +222,8 @@ def save_mapping_rules(request, scan_report_concept):
 
     # start looking up what table we're looking at
     destination_table = find_destination_table(request, concept)
-    if destination_table == None:
-        if request != None:
+    if destination_table is None:
+        if request is not None:
             messages.warning(
                 request,
                 f"Failed to make rules for {concept.concept_id} ({concept.concept_name})",
@@ -347,8 +347,6 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
     # It's RXNORM in NLP but RxNorm in OMOP db, so must convert
     if vocabulary_id == "RXNORM":
         vocabulary_id = "RxNorm"
-    else:
-        vocabulary_id = vocabulary_id
 
     # obtain the source_concept given the code and vocab
     source_concept = Concept.objects.get(
@@ -677,7 +675,7 @@ def download_mapping_rules_as_csv(request, qs):
         term_mapping = content.pop("term_mapping")
         content["isFieldMapping"] = ""
         # if no term mapping, set columns to blank
-        if term_mapping == None:
+        if term_mapping is None:
             content["source_value"] = ""
             content["concept"] = ""
         elif isinstance(term_mapping, dict):
@@ -765,11 +763,7 @@ def make_dag(data, colorscheme="gnbu9"):
                         shape="box",
                     )
 
-                    if "operations" in source:
-                        operations = source["operations"]
-
                     if "term_mapping" in source and source["term_mapping"] is not None:
-                        term_mapping = source["term_mapping"]
                         dot.edge(
                             table_name,
                             source_field_name,
