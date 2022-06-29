@@ -1,5 +1,6 @@
 import requests, os, time
 import logging
+
 api_url = os.environ.get("APP_URL") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
 logger = logging.getLogger("test_logger")
@@ -56,7 +57,7 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
 
     source_concept = source_concept.json()
     if len(source_concept) == 0:
-        raise RuntimeWarning('concept_code not recognised in vocab')
+        raise RuntimeWarning("concept_code not recognised in vocab")
     source_concept = source_concept[0]
     # if the source_concept is standard
     if source_concept["standard_concept"] == "S":
