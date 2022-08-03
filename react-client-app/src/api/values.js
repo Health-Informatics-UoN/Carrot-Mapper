@@ -192,11 +192,11 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     const m_date_field_mapper = {
         'person': ['birth_datetime'],
         'condition_occurrence': ['condition_start_datetime','condition_end_datetime'],
-        'measurement':['measurement_datetime'],
-        'observation':['observation_datetime'],
-        'drug_exposure':['drug_exposure_start_datetime','drug_exposure_end_datetime'],
-	'procedure_occurrence':['procedure_datetime'],
-	'specimen':['specimen_datetime']
+        'measurement': ['measurement_datetime'],
+        'observation': ['observation_datetime'],
+        'drug_exposure': ['drug_exposure_start_datetime','drug_exposure_end_datetime'],
+        'procedure_occurrence': ['procedure_datetime'],
+        'specimen': ['specimen_datetime']
         }
     const destination_field = await cachedOmopFunction(fields,domain+"_source_concept_id")
     // if a destination field can't be found for concept domain, return error
@@ -210,8 +210,8 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
     {
         scan_report:table.scan_report,
         concept: scan_report_concept.id, 
-        approved:true,
-        creation_type:"M",
+        approved: true,
+        creation_type: "M",
     }
     // create mapping rule for the following
     //person_id
@@ -251,8 +251,8 @@ const saveMappingRules = async (scan_report_concept,scan_report_value,table) => 
         promises.push(usePost(`/mappingrules/`,data))
     }  
     // when all requests have finished, return
-        const values = await Promise.all(promises)
-        return values
+    const values = await Promise.all(promises)
+    return values
 }
 //function to map concept domain to an omop field
 const mapConceptToOmopField = () =>{

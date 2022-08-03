@@ -2,13 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
-##v2.1.0-beta
+##v2.0.2
 ### New features
 
 ### Improvements
 
 ### Bugfixes
 * Improved error message when attempting to upload to a Dataset without editor or admin permissions.
+* Fixed an issue where procedure_occurrence and specimen rules were not correctly created when refreshing rules.
 
 ## v2.0.1 was released 27/05/22
 ### New Features
