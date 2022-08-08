@@ -1,5 +1,6 @@
 import requests, os, time
 import logging
+import asyncio
 
 api_url = os.environ.get("APP_URL") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
@@ -38,7 +39,8 @@ def find_standard_concept(source_concept):
         return source_concept
 
 
-def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
+async def get_concept_from_concept_code(concept_code, vocabulary_id, client,
+                                        no_source_concept=False):
 
     # NLP returns SNOMED as SNOWMEDCT_US
     # This sets SNOWMEDCT_US to SNOWMED if this function is
@@ -51,11 +53,17 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
         vocabulary_id = "RxNorm"
 
     # obtain the source_concept given the code and vocab
-    source_concept = requests.get(
-        url=api_url + "omop/conceptsfilter",
+    source_concept = await client.get(
+        url=api_url + "omop/conceptsfilter/",
         headers=api_header,
         params={"concept_code": concept_code, "vocabulary_id": vocabulary_id},
     )
+
+    # source_concept = requests.get(
+    #     url=api_url + "omop/conceptsfilter",
+    #     headers=api_header,
+    #     params={"concept_code": concept_code, "vocabulary_id": vocabulary_id},
+    # )
 
     source_concept = source_concept.json()
     if len(source_concept) == 0:

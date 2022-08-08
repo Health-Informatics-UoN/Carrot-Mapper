@@ -502,6 +502,98 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
+async def process_single_value(full_value, frequency, data_dictionary,
+                               current_table_name, fieldname, vocab_dictionary,
+                               fieldnames_to_ids_dict, client):
+    logger.debug(f"Start process_single_value {full_value} {fieldname} "
+                 f"{current_table_name}")
+    value = full_value[0:127]
+
+    if not frequency:
+        frequency = 0
+
+    if data_dictionary is not None:
+        # Look up value description. We use .get() to guard against
+        # nonexistence in the dictionary without having to manually check. It
+        # returns None if the value is not present
+        table = data_dictionary.get(
+            str(current_table_name)
+        )  # dict of fields in table
+        if table:
+            field = data_dictionary[str(current_table_name)].get(
+                str(fieldname)
+            )  # dict of values in field in table
+            if field:
+                val_desc = data_dictionary[str(current_table_name)][
+                    str(fieldname)
+                ].get(str(value))
+            else:
+                val_desc = None
+        else:
+            val_desc = None
+
+        # Grab data from the 'code' column in the data dictionary
+        # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
+        # or it could contain one of our pre-defined vocab names
+        # e.g. SNOMED, RxNorm, ICD9 etc.
+        # We use .get() to guard against nonexistence in the dictionary
+        # without having to manually check. It returns None if the value is
+        # not present
+        table = vocab_dictionary.get(
+            str(current_table_name)
+        )  # dict of fields in table
+        if table:
+            code = vocab_dictionary[str(current_table_name)].get(
+                str(fieldname)
+            )  # dict of values, will default to None if field not found in table
+        else:
+            code = None
+
+        # If 'code' is in our vocab list, try and convert the ScanReportValue
+        # (concept code) to conceptID
+        # If there's a faulty concept code for the vocab, fail gracefully and
+        # set concept_id to default (-1)
+        if code in vocabs:
+            logger.debug(f"  Get get_concept_from_concept_code {full_value} {fieldname} "
+                         f"{current_table_name} {code}")
+            try:
+                concept_id = await omop_helpers.get_concept_from_concept_code(
+                    concept_code=value,
+                    vocabulary_id=code,
+                    client=client,
+                    no_source_concept=True,
+                )
+                concept_id = concept_id["concept_id"]
+            except RuntimeWarning:
+                concept_id = -1
+            logger.debug(f"     Got get_concept_from_concept_code {full_value}"
+                         f" {fieldname} "
+                         f"{current_table_name} {code}")
+        else:
+            concept_id = -1
+
+    else:
+        val_desc = None
+        concept_id = -1
+
+    # Create ScanReportValue entry
+    # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
+    # to save any looked up conceptIDs in the previous block of code.
+    # The conceptID will be cleared later
+    scan_report_value_entry = {
+        "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "value": value,
+        "frequency": int(frequency),
+        "conceptID": concept_id,
+        "value_description": val_desc,
+        "scan_report_field": fieldnames_to_ids_dict[fieldname],
+    }
+    logger.debug(f"  End process_single_value {full_value} {fieldname} "
+                 f"{current_table_name}")
+    return scan_report_value_entry
+
+
 # @memory_profiler.profile(stream=profiler_logstream)
 async def process_values_from_sheet(
     sheet,
@@ -525,88 +617,22 @@ async def process_values_from_sheet(
     Create JSON array with all the value entries, 
     Send POST request to API with JSON as input
     """
-    for name, value_freq_tuples in fieldname_value_freq_dict.items():
-        for full_value, frequency in value_freq_tuples:
-            value = full_value[0:127]
+    timeout = httpx.Timeout(60.0, connect=30.0)
 
-            if not frequency:
-                frequency = 0
+    async with httpx.AsyncClient(timeout=timeout) as client:
 
-            if data_dictionary is not None:
-                # Look up value description. We use .get() to guard against
-                # nonexistence in the dictionary without having to manually check. It
-                # returns None if the value is not present
-                table = data_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    field = data_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values in field in table
-                    if field:
-                        val_desc = data_dictionary[str(current_table_name)][
-                            str(name)
-                        ].get(str(value))
-                    else:
-                        val_desc = None
-                else:
-                    val_desc = None
+        for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
+            tasks = []
+            for full_value, frequency in value_freq_tuples:
+                tasks.append(asyncio.ensure_future(process_single_value(full_value,
+                                                                        frequency,
+                                                                        data_dictionary, current_table_name, fieldname, vocab_dictionary, fieldnames_to_ids_dict, client)))
 
-                # Grab data from the 'code' column in the data dictionary
-                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-                # or it could contain one of our pre-defined vocab names
-                # e.g. SNOMED, RxNorm, ICD9 etc.
-                # We use .get() to guard against nonexistence in the dictionary
-                # without having to manually check. It returns None if the value is
-                # not present
-                table = vocab_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    code = vocab_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values, will default to None if field not found in table
-                else:
-                    code = None
-
-                # If 'code' is in our vocab list, try and convert the ScanReportValue
-                # (concept code) to conceptID
-                # If there's a faulty concept code for the vocab, fail gracefully and
-                # set concept_id to default (-1)
-                if code in vocabs:
-                    try:
-                        concept_id = omop_helpers.get_concept_from_concept_code(
-                            concept_code=value,
-                            vocabulary_id=code,
-                            no_source_concept=True,
-                        )
-                        concept_id = concept_id["concept_id"]
-                    except RuntimeWarning:
-                        concept_id = -1
-                else:
-                    concept_id = -1
-
-            else:
-                val_desc = None
-                concept_id = -1
-
-            # Create ScanReportValue entry
-            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-            # to save any looked up conceptIDs in the previous block of code.
-            # The conceptID will be cleared later
-            scan_report_value_entry = {
-                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "value": value,
-                "frequency": int(frequency),
-                "conceptID": concept_id,
-                "value_description": val_desc,
-                "scan_report_field": fieldnames_to_ids_dict[name],
-            }
-
-            # Append to list
-            value_entries_to_post.append(scan_report_value_entry)
-
+                # Append to list
+            these = await asyncio.gather(*tasks)
+            # logger.info(f"{these=}")
+            value_entries_to_post.extend(these)
+            # logger.info(f"{value_entries_to_post=}")
     logger.info(
         f"POST {len(value_entries_to_post)} values to table {current_table_name}"
     )
