@@ -31,35 +31,6 @@ stream_handler.setFormatter(
 logger.addHandler(stream_handler)
 logger.setLevel(logging.INFO)  # Set to logging.DEBUG to show the debug output
 
-
-# Agreed vocabs that are accepted for lookup/conversion
-# The Data Team decide what vocabs are accepted.
-# Add more as necessary by appending the list
-vocabs = [
-    "ABMS",
-    "ATC",
-    "HCPCS",
-    "HES Specialty",
-    "ICD10",
-    "ICD10CM",
-    "ICD10PCS",
-    "ICD9CM",
-    "ICD9Proc",
-    "LOINC",
-    "NDC",
-    "NUCC",
-    "OMOP Extension",
-    "OSM",
-    "PHDSC",
-    "Read",
-    "RxNorm",
-    "RxNorm Extension",
-    "SNOMED",
-    "SPL",
-    "UCUM",
-    "UK Biobank",
-]
-
 max_chars_for_get = 2000
 
 # Set up ccom API parameters:
@@ -69,6 +40,13 @@ HEADERS = {
     "charset": "utf-8",
     "Authorization": f"Token {os.environ.get('AZ_FUNCTION_KEY')}",
 }
+
+# Look up vocabs from the omop.vocabulary table.
+vocabs_raw = requests.get(
+    url=f"{API_URL}omop/vocabularies/",
+    headers=HEADERS,
+)
+vocabs = [vocab["vocabulary_id"] for vocab in vocabs_raw.json()]
 
 
 def post_paginated_concepts(concepts_to_post):
