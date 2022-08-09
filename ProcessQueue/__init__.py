@@ -43,10 +43,10 @@ HEADERS = {
 
 # Look up vocabs from the omop.vocabulary table.
 vocabs_raw = requests.get(
-        url=f"{API_URL}omop/vocabularies/",
-        headers=HEADERS,
-    )
-vocabs = [vocab['vocabulary_id'] for vocab in vocabs_raw.json()]
+    url=f"{API_URL}omop/vocabularies/",
+    headers=HEADERS,
+)
+vocabs = [vocab["vocabulary_id"] for vocab in vocabs_raw.json()]
 
 
 def post_paginated_concepts(concepts_to_post):
