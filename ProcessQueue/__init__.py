@@ -927,25 +927,49 @@ async def process_values_from_sheet(
 
     # TODO: speed this up: now a bottleneck along with the find_standard_concept code
     # above
-    for concept in ids_of_posted_values:
-        logger.debug("PATCH value")
-        value_response = requests.patch(
-            url=f"{API_URL}scanreportvalues/{concept['id']}/",
-            headers=HEADERS,
-            data=put_update_json,
-        )
-        # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-        if value_response.status_code != 200:
-            helpers.process_failure(scan_report_id)
-            raise HTTPError(
-                " ".join(
-                    [
-                        "Error in value save:",
-                        str(value_response.status_code),
-                        str(put_update_json),
-                    ]
+    # We can't do a bulk-patch with the existing API, so instead we parallelise the
+    # patch calls. Put all patch data into a queue, and then use a pool of n threads
+    # which grab the next item from the queue and run the PATCH request. Once all
+    # requests have been completed, the pool of threads is cancelled and execution
+    # can move on
+    timeout = httpx.Timeout(60.0, connect=30.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+
+        queue = asyncio.Queue()
+        for concept in ids_of_posted_values:
+            await queue.put(concept["id"])
+        n_threads = 6
+
+        async def run_patch_request(name: int, q: asyncio.Queue):
+            while True:
+                concept_id = await q.get()
+                logger.debug(f"Thread {name} will PATCH value {concept_id}")
+
+                value_response = await client.patch(
+                    url=f"{API_URL}scanreportvalues/{concept_id}/",
+                    headers=HEADERS,
+                    data=put_update_json,
                 )
-            )
+                # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
+                if value_response.status_code != 200:
+                    helpers.process_failure(scan_report_id)
+                    raise HTTPError(
+                        " ".join(
+                            [
+                                "Error in value save:",
+                                str(value_response.status_code),
+                                str(put_update_json),
+                            ]
+                        )
+                    )
+                q.task_done()
+
+        tasks = [
+            asyncio.create_task(run_patch_request(n, queue)) for n in range(n_threads)
+        ]
+        await queue.join()
+        for task in tasks:
+            task.cancel()
 
     logger.info("PATCH values finished")
     reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
