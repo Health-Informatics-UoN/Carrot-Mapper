@@ -21,22 +21,36 @@ def find_standard_concept(source_concept):
     concept_relation = concept_relation.json()
     if len(concept_relation) == 0:
         raise RuntimeWarning("concept_relation is empty in vocab")
-    concept_relation = concept_relation[0]
+    for relation in concept_relation:
+        if relation["concept_id_2"] != relation["concept_id_1"]:
+            concept = requests.get(
+                url=api_url + "omop/conceptsfilter",
+                headers=api_header,
+                params={"concept_id": relation["concept_id_2"]},
+            )
+            concept = concept.json()
+            # if empty, then conceptsfilter can't find an entry for the second
+            # concept in this relationship, so try the next relationship
+            if len(concept) == 0:
+                continue
+            # Not empty, so we've found an entry for the second concept in the
+            # relationship.
+            concept = concept[0]
+            # Check whether this is a standard concept: if it's not, move on
+            if concept["standard_concept"] != 'S':
+                continue
 
-    if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:
-        concept = requests.get(
-            url=api_url + "omop/conceptsfilter",
-            headers=api_header,
-            params={"concept_id": concept_relation["concept_id_2"]},
-        )
-        concept = concept.json()
-        if len(concept) == 0:
-            raise RuntimeWarning("concept filter returned empty")
-        concept = concept[0]
-        return concept
-    else:
+            return concept
+
         # may need some warning if this ever happens?
         return source_concept
+    # If none of the relationships yielded a second concept with an entry in the
+    # Concepts table, then return no concept, and the mapping will not go ahead.
+    logger.info(f"concept filter of {relation['concept_id_2']} (from "
+                f"{relation['concept_id_1']} returned empty")
+    source_concept["concept_id"] =  -1
+    return source_concept
+
 
 
 async def get_concept_from_concept_code(concept_code, vocabulary_id, client,

@@ -539,6 +539,7 @@ async def process_single_value(full_value, frequency, data_dictionary,
         # We use .get() to guard against nonexistence in the dictionary
         # without having to manually check. It returns None if the value is
         # not present
+        #TODO: this assumes vocab_dictionary exists if data_dictionary does
         table = vocab_dictionary.get(
             str(current_table_name)
         )  # dict of fields in table
@@ -617,22 +618,181 @@ async def process_values_from_sheet(
     Create JSON array with all the value entries, 
     Send POST request to API with JSON as input
     """
-    timeout = httpx.Timeout(60.0, connect=30.0)
+    logger.debug("create a")
+    a = []
+    for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
+        for full_value, frequency in value_freq_tuples:
+            a.append({"full_value": full_value,
+                      "frequency": frequency,
+                      "fieldname": fieldname,
+                      "table": current_table_name}
+                     )
 
-    async with httpx.AsyncClient(timeout=timeout) as client:
+    logger.debug("assign order")
+    # Add "order" field to each entry to enable correctly-ordered recombination at the end
+    for entry_number, entry in enumerate(a):
+        entry["order"] = entry_number
 
-        for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
-            tasks = []
-            for full_value, frequency in value_freq_tuples:
-                tasks.append(asyncio.ensure_future(process_single_value(full_value,
-                                                                        frequency,
-                                                                        data_dictionary, current_table_name, fieldname, vocab_dictionary, fieldnames_to_ids_dict, client)))
+    # Add val_desc to each entry
+    if data_dictionary:
+        logger.debug("apply data dictionary")
+        for entry in a:
+            table = data_dictionary.get(
+                str(entry["table"])
+            )  # dict of fields in table
+            if table:
+                field = data_dictionary[str(entry["table"])].get(
+                    str(entry["fieldname"])
+                )  # dict of values in field in table
+                if field:
+                    val_desc = data_dictionary[str(entry["table"])][
+                        str(entry["fieldname"])
+                    ].get(str(entry["full_value"]))
+                else:
+                    val_desc = None
+            else:
+                val_desc = None
+            entry["val_desc"] = val_desc
 
-                # Append to list
-            these = await asyncio.gather(*tasks)
-            # logger.info(f"{these=}")
-            value_entries_to_post.extend(these)
-            # logger.info(f"{value_entries_to_post=}")
+    # print("value descriptions added:")
+    # print(a)
+
+    # Add vocabulary_id to each entry
+    if vocab_dictionary:
+        logger.debug("apply vocab dictionary")
+        for entry in a:
+
+            table = vocab_dictionary.get(
+                str(entry["table"])
+            )  # dict of fields in table
+            if table:
+                code = vocab_dictionary[str(entry["table"])].get(
+                    str(entry["fieldname"])
+                )  # dict of values, will default to None if field not found in table
+            else:
+                code = None
+
+            entry["vocabulary_id"] = code
+
+    # print("vocab ids added:")
+    # print(a)
+
+    # print(set(entry["vocabulary_id"] for entry in a))
+
+    logger.debug("split by vocab")
+    # Split up by each vocabulary_id, so that we can send the contents of each to the
+    # endpoint in a separate call, with one vocabulary_id per call.
+    entries_split_by_vocab = defaultdict(list)
+    for entry in a:
+        entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
+
+    # print(entries_split_by_vocab)
+
+    # for vocab in entries_split_by_vocab:
+    #     print(vocab, entries_split_by_vocab[vocab])
+
+    for vocab in entries_split_by_vocab:
+        # print()
+        if vocab is None:
+            for entry in entries_split_by_vocab[vocab]:
+                entry["concept_id"] = -1
+                entry["standard_concept"] = None
+        else:
+            assert vocab is not None
+            logger.info(f"begin {vocab}")
+            paginated_concept_codes = helpers.paginate(
+                (str(entry["full_value"])
+                 for entry in
+                 entries_split_by_vocab[vocab]),
+                max_chars=max_chars_for_get)
+
+            concept_vocab_response = []
+            # concept_vocab_response_content = []
+            for concepts_to_get_item in paginated_concept_codes:
+                # print(f"{concepts_to_get_item=}")
+                get_concept_vocab_response = requests.get(
+                        f"{API_URL}omop/conceptsfilter/?concept_code__in="
+                        f"{','.join(concepts_to_get_item)}&vocabulary_id__in"
+                        f"={vocab}",
+                        headers=HEADERS,
+                )
+                logger.debug(
+                    f"CONCEPTS GET BY VOCAB STATUS >>> "
+                    f"{get_concept_vocab_response.status_code} "
+                    f"{get_concept_vocab_response.reason}"
+                )
+                # print('response', get_concept_vocab_response.json())
+                concept_vocab_response.append(get_concept_vocab_response.json())
+            # print(f"{concept_vocab_response=}")
+            concept_vocab_content = helpers.flatten(concept_vocab_response)
+
+            # Loop over all returned concepts, and match their concept_code and vocabulary_id (
+            # which is not necessary as we're within a single vocab's context anyway) with
+            # the full_value in the entries_split_by_vocab, and extend the latter by
+            # concept_id and standard_concept
+            logger.debug(f"begin double loop over {len(concept_vocab_content)} * "
+                         f"{len(entries_split_by_vocab[vocab])} pairs")
+            for entry in entries_split_by_vocab[vocab]:
+                entry["concept_id"] = -1
+                entry["standard_concept"] = None
+            # TODO: consider any better way of doing this, but shortcircuiting with
+            #  break seems sufficient - sub-1s for >600 values
+            for entry in entries_split_by_vocab[vocab]:
+                count = 0
+                for returned_concept in concept_vocab_content:
+                    # print("comparing", returned_concept, entry)
+                    count += 1
+                    if str(entry["full_value"]) == str(returned_concept["concept_code"]):
+                        print("matched", entry["full_value"], "after", count,
+                              "comparisons")
+                        entry["concept_id"] = str(returned_concept["concept_id"])
+                        entry["standard_concept"] = str(
+                            returned_concept["standard_concept"])
+                        # exit inner loop early if we find a concept for this entry
+                        break
+
+            logger.debug("finished double loop")
+
+            # TODO: Look at how to group this - this is now the bottleneck,
+            #  along with PATCH
+            for entry in entries_split_by_vocab[vocab]:
+                if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
+                    # print(f"this entry is {entry}")
+                    # print(f"looking up standard concept for {entry['concept_id']}")
+                    # Need to look up the standard concept and then copy its concept_id,
+                    # and set "standard_concept" here to "S"
+                    entry["concept_id"] = omop_helpers.find_standard_concept(
+                        entry)["concept_id"]
+                    if entry["concept_id"] != -1:
+                        entry["standard_concept"] = "S"
+                    # print(f"found standard {entry['concept_id']}")
+
+            logger.debug("finished standard concepts lookup")
+
+
+    print()
+    # print(a)
+    # for vocab in entries_split_by_vocab:
+    #     print(entries_split_by_vocab[vocab])
+        # print(f"{concept_vocab_content=}")
+        # concept_vocab_response_content += concept_vocab_content
+
+    logger.debug("create value_entries_to_post")
+    value_entries_to_post = []
+    for entry in a:
+        scan_report_value_entry = {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "value": entry["full_value"],
+            "frequency": int(entry["frequency"]),
+            "conceptID": entry["concept_id"],
+            "value_description": entry["val_desc"],
+            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
+        }
+        value_entries_to_post.append(scan_report_value_entry)
+
+    # print(value_entries_to_post)
+
     logger.info(
         f"POST {len(value_entries_to_post)} values to table {current_table_name}"
     )
@@ -665,7 +825,8 @@ async def process_values_from_sheet(
 
         for values_response, page_length in zip(values_responses, page_lengths):
             logger.info(
-                f"VALUES SAVE STATUSES >>> {values_response.status_code} "
+                f"VALUES SAVE STATUSES on {current_table_name} >>>"
+                f" {values_response.status_code} "
                 f"{values_response.reason_phrase} {page_length}"
             )
 
@@ -764,6 +925,8 @@ async def process_values_from_sheet(
 
     logger.info(f"PATCH {len(ids_of_posted_values)} values")
 
+    # TODO: speed this up: now a bottleneck along with the find_standard_concept code
+    # above
     for concept in ids_of_posted_values:
         logger.debug("PATCH value")
         value_response = requests.patch(
