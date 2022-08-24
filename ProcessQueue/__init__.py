@@ -555,7 +555,8 @@ async def process_values_from_sheet(
         for entry in a:
             if data_dictionary.get(str(entry["table"])):  # dict of fields in table
                 if data_dictionary[str(entry["table"])].get(
-                        str(entry["fieldname"])):  # dict of values in field in table
+                    str(entry["fieldname"])
+                ):  # dict of values in field in table
                     entry["val_desc"] = data_dictionary[str(entry["table"])][
                         str(entry["fieldname"])
                     ].get(str(entry["full_value"]))
@@ -568,16 +569,18 @@ async def process_values_from_sheet(
     # --------------------------------------------------------------------------------
     # Convert basic information about SRValues into entries for posting to the endpoint.
     logger.debug("create value_entries_to_post")
-    value_entries_to_post = [{
-        "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "value": entry["full_value"],
-        "frequency": int(entry["frequency"]),
-        # "conceptID": -1,
-        "value_description": entry["val_desc"],
-        "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
-    }
-        for entry in a]
+    value_entries_to_post = [
+        {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "value": entry["full_value"],
+            "frequency": int(entry["frequency"]),
+            # "conceptID": -1,
+            "value_description": entry["val_desc"],
+            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
+        }
+        for entry in a
+    ]
 
     # print(value_entries_to_post)
 
@@ -645,7 +648,7 @@ async def process_values_from_sheet(
     logger.debug("GET posted values")
     get_details_of_posted_values = requests.get(
         url=f"{API_URL}scanreportvaluesfilterscanreporttable/?scan_report_table"
-            f"={current_table_id}",
+        f"={current_table_id}",
         headers=HEADERS,
     )
     logger.debug("GET posted values finished")
@@ -663,8 +666,11 @@ async def process_values_from_sheet(
         for previously_posted_value in details_of_posted_values:
             if vocab_dictionary.get(str(current_table_name)):
                 vocab_id = vocab_dictionary[str(current_table_name)].get(
-                    str(fieldids_to_names_dict[
-                            str(previously_posted_value["scan_report_field"])])
+                    str(
+                        fieldids_to_names_dict[
+                            str(previously_posted_value["scan_report_field"])
+                        ]
+                    )
                 )  # dict of values, will default to None if field not found in table
             else:
                 vocab_id = None
@@ -757,9 +763,7 @@ async def process_values_from_sheet(
                 for returned_concept in concept_vocab_content:
                     # print("comparing", returned_concept, entry)
                     count += 1
-                    if str(entry["value"]) == str(
-                            returned_concept["concept_code"]
-                    ):
+                    if str(entry["value"]) == str(returned_concept["concept_code"]):
                         print(
                             "matched",
                             entry["value"],
@@ -782,7 +786,9 @@ async def process_values_from_sheet(
             entries_to_find_standard_concept = []
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
-                    logger.debug(f"looking for standard concept for nonstandard {entry['concept_id']}")
+                    logger.debug(
+                        f"looking for standard concept for nonstandard {entry['concept_id']}"
+                    )
                     entries_to_find_standard_concept.append(entry)
 
                     # print(f"this entry is {entry}")
@@ -821,7 +827,8 @@ async def process_values_from_sheet(
             "content_type": 17,
             "creation_type": "V",
         }
-        for concept in details_of_posted_values if concept["concept_id"] != -1
+        for concept in details_of_posted_values
+        if concept["concept_id"] != -1
     ]
 
     # ------------------------------------

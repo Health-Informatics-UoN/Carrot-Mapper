@@ -165,9 +165,11 @@ class ConceptRelationshipFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ConceptRelationship.objects.all()
     serializer_class = ConceptRelationshipSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"concept_id_1": ["in", "exact"],
-                        "concept_id_2": ["in", "exact"],
-                        "relationship_id": ["in", "exact"]}
+    filterset_fields = {
+        "concept_id_1": ["in", "exact"],
+        "concept_id_2": ["in", "exact"],
+        "relationship_id": ["in", "exact"],
+    }
 
 
 class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
