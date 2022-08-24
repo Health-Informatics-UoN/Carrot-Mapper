@@ -19,7 +19,8 @@ def find_standard_concept(source_concept):
 
     concept_relation = concept_relation.json()
     if len(concept_relation) == 0:
-        raise RuntimeWarning("concept_relation is empty in vocab")
+        return {"concept_id": -1}
+        # raise RuntimeWarning("concept_relation is empty in vocab")
     concept_relation = concept_relation[0]
 
     if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:

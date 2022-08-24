@@ -447,12 +447,13 @@ def process_scan_report_sheet_table(sheet):
     --
 
     -- output --
-    [(a,    apple, 20),
-     (a,   banana,  3),
-     (a,     pear, 12),
-     (b,   orange,  5),
-     (b, plantain, 50)]
-    --
+    dict({'a': [('apple', 20),
+                ('banana', 3),
+                ('pear', 12)],
+          'b': [('orange', 5),
+                ('plantain', 50)]
+          }
+         )
     """
     logger.debug("Start process_scan_report_sheet_table")
 
@@ -508,7 +509,9 @@ async def process_values_from_sheet(
     data_dictionary,
     vocab_dictionary,
     current_table_name,
+    current_table_id,
     fieldnames_to_ids_dict,
+    fieldids_to_names_dict,
     scan_report_id,
 ):
     # print("WORKING ON", sheet.title)
@@ -525,88 +528,61 @@ async def process_values_from_sheet(
     Create JSON array with all the value entries, 
     Send POST request to API with JSON as input
     """
-    for name, value_freq_tuples in fieldname_value_freq_dict.items():
+    a = []
+    for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
-            value = full_value[0:127]
+            a.append(
+                {
+                    "full_value": full_value,
+                    "frequency": frequency,
+                    "fieldname": fieldname,
+                    "table": current_table_name,
+                    "val_desc": None,
+                }
+            )
 
-            if not frequency:
-                frequency = 0
+    logger.debug("assign order")
+    # Add "order" field to each entry to enable correctly-ordered recombination at the end
+    for entry_number, entry in enumerate(a):
+        entry["order"] = entry_number
 
-            if data_dictionary is not None:
-                # Look up value description. We use .get() to guard against
-                # nonexistence in the dictionary without having to manually check. It
-                # returns None if the value is not present
-                table = data_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    field = data_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values in field in table
-                    if field:
-                        val_desc = data_dictionary[str(current_table_name)][
-                            str(name)
-                        ].get(str(value))
-                    else:
-                        val_desc = None
-                else:
-                    val_desc = None
+    # --------------------------------------------------------------------------------
+    # Update val_desc of each SRField entry if it has a value description from the
+    # data dictionary
 
-                # Grab data from the 'code' column in the data dictionary
-                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-                # or it could contain one of our pre-defined vocab names
-                # e.g. SNOMED, RxNorm, ICD9 etc.
-                # We use .get() to guard against nonexistence in the dictionary
-                # without having to manually check. It returns None if the value is
-                # not present
-                table = vocab_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    code = vocab_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values, will default to None if field not found in table
-                else:
-                    code = None
+    if data_dictionary:
+        logger.debug("apply data dictionary")
+        for entry in a:
+            if data_dictionary.get(str(entry["table"])):  # dict of fields in table
+                if data_dictionary[str(entry["table"])].get(
+                        str(entry["fieldname"])):  # dict of values in field in table
+                    entry["val_desc"] = data_dictionary[str(entry["table"])][
+                        str(entry["fieldname"])
+                    ].get(str(entry["full_value"]))
 
-                # If 'code' is in our vocab list, try and convert the ScanReportValue
-                # (concept code) to conceptID
-                # If there's a faulty concept code for the vocab, fail gracefully and
-                # set concept_id to default (-1)
-                if code in vocabs:
-                    try:
-                        concept_id = omop_helpers.get_concept_from_concept_code(
-                            concept_code=value,
-                            vocabulary_id=code,
-                            no_source_concept=True,
-                        )
-                        concept_id = concept_id["concept_id"]
-                    except RuntimeWarning:
-                        concept_id = -1
-                else:
-                    concept_id = -1
+    # print("value descriptions added:")
+    # print(a)
 
-            else:
-                val_desc = None
-                concept_id = -1
+    print()
 
-            # Create ScanReportValue entry
-            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-            # to save any looked up conceptIDs in the previous block of code.
-            # The conceptID will be cleared later
-            scan_report_value_entry = {
-                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "value": value,
-                "frequency": int(frequency),
-                "conceptID": concept_id,
-                "value_description": val_desc,
-                "scan_report_field": fieldnames_to_ids_dict[name],
-            }
+    # --------------------------------------------------------------------------------
+    # Convert basic information about SRValues into entries for posting to the endpoint.
+    logger.debug("create value_entries_to_post")
+    value_entries_to_post = [{
+        "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        "value": entry["full_value"],
+        "frequency": int(entry["frequency"]),
+        # "conceptID": -1,
+        "value_description": entry["val_desc"],
+        "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
+    }
+        for entry in a]
 
-            # Append to list
-            value_entries_to_post.append(scan_report_value_entry)
+    # print(value_entries_to_post)
 
+    # --------------------------------------------------------------------------------
+    # Chunk the SRValues data ready for upload, and then upload via the endpoint.
     logger.info(
         f"POST {len(value_entries_to_post)} values to table {current_table_name}"
     )
@@ -639,7 +615,8 @@ async def process_values_from_sheet(
 
         for values_response, page_length in zip(values_responses, page_lengths):
             logger.info(
-                f"VALUES SAVE STATUSES >>> {values_response.status_code} "
+                f"VALUES SAVE STATUSES on {current_table_name} >>>"
+                f" {values_response.status_code} "
                 f"{values_response.reason_phrase} {page_length}"
             )
 
@@ -659,18 +636,175 @@ async def process_values_from_sheet(
 
     logger.info("POST values all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    # Process conceptIDs in ScanReportValues
-    # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
+
+    # --------------------------------------------------------------------------------
+    # Get the details of all the SRValues posted in this table. Then we will be able
+    # to run them through the vocabulary mapper and apply any automatic vocab mappings.
+
+    # GET values where the scan_report_table is the current table.
     logger.debug("GET posted values")
-    get_ids_of_posted_values = requests.get(
-        url=f"{API_URL}scanreportvaluepks/?scan_report={scan_report_id}",
+    get_details_of_posted_values = requests.get(
+        url=f"{API_URL}scanreportvaluesfilterscanreporttable/?scan_report_table"
+            f"={current_table_id}",
         headers=HEADERS,
     )
     logger.debug("GET posted values finished")
 
-    ids_of_posted_values = get_ids_of_posted_values.json()
+    details_of_posted_values = get_details_of_posted_values.json()
 
+    # ---------------------------------------------------------------------------------
+    # Process the SRValues, comparing their SRFields to the vocabs, and then create a
+    # SRConcept entry if a valid translation is found.
+
+    # ------------------------------------------------------------------------------
+    # Add vocabulary_id to each entry from the vocab dictionary, defaulting to None
+    if vocab_dictionary:
+        logger.debug("apply vocab dictionary")
+        for previously_posted_value in details_of_posted_values:
+            if vocab_dictionary.get(str(current_table_name)):
+                vocab_id = vocab_dictionary[str(current_table_name)].get(
+                    str(fieldids_to_names_dict[
+                            str(previously_posted_value["scan_report_field"])])
+                )  # dict of values, will default to None if field not found in table
+            else:
+                vocab_id = None
+
+            previously_posted_value["vocabulary_id"] = vocab_id
+
+    # print("vocab ids added:")
+    # print(details_of_posted_values)
+
+    # print(set(entry["vocabulary_id"] for entry in a))
+
+    logger.debug("split by vocab")
+
+    # ---------------------------------------------------------------------
+    # Split up by each vocabulary_id, so that we can send the contents of each to the
+    # endpoint in a separate call, with one vocabulary_id per call.
+    entries_split_by_vocab = defaultdict(list)
+    for entry in details_of_posted_values:
+        entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
+
+    # print(entries_split_by_vocab)
+
+    # for vocab in entries_split_by_vocab:
+    #     print(vocab, entries_split_by_vocab[vocab])
+
+    # ----------------------------------------------
+    # For each vocab, set "concept_id" and "standard_concept" in each entry in the
+    # vocab.
+    #
+    # For the case when vocab is None, set it to defaults.
+    #
+    # For other cases, get the concepts from the vocab via /omop/conceptsfilter under
+    # pagination.
+    # Then match these back to the originating values, setting "concept_id" and
+    # "standard_concept" in each case.
+    # Finally, we need to fix any entries where "standard_concept" != "S" using
+    # `find_standard_concept()`
+    # TODO: `find_standard_concept()` currently only works on a one-by-one basis
+
+    for vocab in entries_split_by_vocab:
+        # print()
+        if vocab is None:
+            for entry in entries_split_by_vocab[vocab]:
+                entry["concept_id"] = -1
+                entry["standard_concept"] = None
+        else:
+            assert vocab is not None
+            logger.info(f"begin {vocab}")
+            paginated_values_in_this_vocab = helpers.paginate(
+                (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
+                max_chars=max_chars_for_get,
+            )
+
+            concept_vocab_response = []
+            # concept_vocab_response_content = []
+            for page_of_values in paginated_values_in_this_vocab:
+                # print(f"{concepts_to_get_item=}")
+                get_concept_vocab_response = requests.get(
+                    f"{API_URL}omop/conceptsfilter/?concept_code__in="
+                    f"{','.join(page_of_values)}&vocabulary_id__in"
+                    f"={vocab}",
+                    headers=HEADERS,
+                )
+                logger.debug(
+                    f"CONCEPTS GET BY VOCAB STATUS >>> "
+                    f"{get_concept_vocab_response.status_code} "
+                    f"{get_concept_vocab_response.reason}"
+                )
+                # print('response', get_concept_vocab_response.json())
+                concept_vocab_response.append(get_concept_vocab_response.json())
+            # print(f"{concept_vocab_response=}")
+            concept_vocab_content = helpers.flatten(concept_vocab_response)
+
+            # Loop over all returned concepts, and match their concept_code and vocabulary_id (
+            # which is not necessary as we're within a single vocab's context anyway) with
+            # the full_value in the entries_split_by_vocab, and extend the latter by
+            # concept_id and standard_concept
+            # print(f"{concept_vocab_content=}")
+            logger.debug(
+                f"begin double loop over {len(concept_vocab_content)} * "
+                f"{len(entries_split_by_vocab[vocab])} pairs"
+            )
+            for entry in entries_split_by_vocab[vocab]:
+                entry["concept_id"] = -1
+                entry["standard_concept"] = None
+            # TODO: consider any better way of doing this, but shortcircuiting with
+            #  break seems sufficient - sub-1s for >600 values
+            for entry in entries_split_by_vocab[vocab]:
+                count = 0
+                for returned_concept in concept_vocab_content:
+                    # print("comparing", returned_concept, entry)
+                    count += 1
+                    if str(entry["value"]) == str(
+                            returned_concept["concept_code"]
+                    ):
+                        print(
+                            "matched",
+                            entry["value"],
+                            "after",
+                            count,
+                            "comparisons",
+                        )
+                        entry["concept_id"] = str(returned_concept["concept_id"])
+                        entry["standard_concept"] = str(
+                            returned_concept["standard_concept"]
+                        )
+                        # exit inner loop early if we find a concept for this entry
+                        break
+
+            logger.debug("finished double loop")
+
+            # TODO: Look at how to group this - this is now the bottleneck
+            # ------------------------------------------------
+            # Identify which concepts are non-standard, and fix them
+            entries_to_find_standard_concept = []
+            for entry in entries_split_by_vocab[vocab]:
+                if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
+                    logger.debug(f"looking for standard concept for nonstandard {entry['concept_id']}")
+                    entries_to_find_standard_concept.append(entry)
+
+                    # print(f"this entry is {entry}")
+                    # print(f"looking up standard concept for {entry['concept_id']}")
+                    # Need to look up the standard concept and then copy its concept_id,
+                    # and set "standard_concept" here to "S"
+                    entry["concept_id"] = omop_helpers.find_standard_concept(entry)[
+                        "concept_id"
+                    ]
+                    if entry["concept_id"] != -1:
+                        entry["standard_concept"] = "S"
+                        logger.debug("found")
+                    else:
+                        logger.debug("not found")
+
+                    # print(f"found standard {entry['concept_id']}")
+
+            logger.debug("finished standard concepts lookup")
     # Create a list for a bulk data upload to the ScanReportConcept model
+
+    # ------------------------------------
+    # All Concepts are now ready. Generate their entries ready for POSTing
 
     concept_id_data = [
         {
@@ -679,7 +813,7 @@ async def process_values_from_sheet(
             "nlp_confidence": None,
             "nlp_vocabulary": None,
             "nlp_processed_string": None,
-            "concept": concept["conceptID"],
+            "concept": concept["concept_id"],
             "object_id": concept["id"],
             # TODO: we should query this value from the API
             # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
@@ -687,9 +821,11 @@ async def process_values_from_sheet(
             "content_type": 17,
             "creation_type": "V",
         }
-        for concept in ids_of_posted_values
+        for concept in details_of_posted_values if concept["concept_id"] != -1
     ]
 
+    # ------------------------------------
+    # Paginate the Concepts, and POST them
     logger.info(f"POST {len(concept_id_data)} concepts")
 
     paginated_concept_id_data = helpers.paginate(concept_id_data)
@@ -727,38 +863,7 @@ async def process_values_from_sheet(
 
     logger.info("POST concepts all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    # Update ScanReportValue to remove any data added to the conceptID field
-    # conceptID field only used temporarily to hold the converted concept code -> conceptID
-    # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
-    # need for the concept ID to also be saved to ScanReportValue::conceptID
 
-    # Reset conceptID to -1 (default). This doesn't need pagination because it's a
-    # loop over all relevant fields anyway
-    put_update_json = json.dumps({"conceptID": -1})
-
-    logger.info(f"PATCH {len(ids_of_posted_values)} values")
-
-    for concept in ids_of_posted_values:
-        logger.debug("PATCH value")
-        value_response = requests.patch(
-            url=f"{API_URL}scanreportvalues/{concept['id']}/",
-            headers=HEADERS,
-            data=put_update_json,
-        )
-        # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-        if value_response.status_code != 200:
-            helpers.process_failure(scan_report_id)
-            raise HTTPError(
-                " ".join(
-                    [
-                        "Error in value save:",
-                        str(value_response.status_code),
-                        str(put_update_json),
-                    ]
-                )
-            )
-
-    logger.info("PATCH values finished")
     reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
     reuse_existing_value_concepts(values_response_content, 17)
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
@@ -798,8 +903,9 @@ def post_field_entries(field_entries_to_post, scan_report_id):
     return fields_response_content
 
 
-def post_table_entries(
+def handle_single_table(
     current_table_name,
+    current_table_id,
     field_entries_to_post,
     scan_report_id,
     wb,
@@ -825,6 +931,10 @@ def post_table_entries(
         str(element.get("name", None)): str(element.get("id", None))
         for element in fields_response_content
     }
+    fieldids_to_names_dict = {
+        str(element.get("id", None)): str(element.get("name", None))
+        for element in fields_response_content
+    }
 
     # print("Dictionary id:name", fieldnames_to_ids_dict)
 
@@ -843,7 +953,9 @@ def post_table_entries(
             data_dictionary,
             vocab_dictionary,
             current_table_name,
+            current_table_id,
             fieldnames_to_ids_dict,
+            fieldids_to_names_dict,
             scan_report_id,
         )
     )
@@ -901,8 +1013,9 @@ def process_all_fields_and_values(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             # print("scan_report_field_entries >>>", field_entries_to_post)
-            post_table_entries(
+            handle_single_table(
                 current_table_name,
+                table_name_to_id_map[current_table_name],
                 field_entries_to_post,
                 scan_report_id,
                 wb,
@@ -912,8 +1025,9 @@ def process_all_fields_and_values(
             field_entries_to_post = []
     # Catch the final table if it wasn't already posted in the loop above - sometimes the iter_rows() seems to now allow you to go beyond the last row.
     if field_entries_to_post:
-        post_table_entries(
+        handle_single_table(
             current_table_name,
+            table_name_to_id_map[current_table_name],
             field_entries_to_post,
             scan_report_id,
             wb,
