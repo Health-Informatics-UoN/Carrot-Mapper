@@ -1,14 +1,35 @@
 import requests, os, time
 import logging
-import asyncio
 
 api_url = os.environ.get("APP_URL") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
 logger = logging.getLogger("test_logger")
 
 
-def find_standard_concept(source_concept):
+def find_many_standard_concepts(source_concepts):
+    # Get "Maps to" relations of all source concepts that aren't standard
+    concept_relations = requests.get(
+        url=api_url + "omop/conceptrelationshipfilter/?concept_id_1__in="
+            + ','.join(source_concept["concept_id"] for source_concept in source_concepts) +
+                "&relationship_id=Maps to",
+        headers=api_header,
+    ).json()
 
+    non_last_target_concepts = []
+    for concept_relation in concept_relations:
+        if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:
+            non_last_target_concepts.append(concept_relation)
+
+    concepts = requests.get(
+        url=api_url + f"omop/conceptsfilter/?concept_code__in="
+                      f"{','.join(relation['concept_id_2'] for relation in non_last_target_concepts)}",
+        headers=api_header,
+    )
+
+
+def find_standard_concept(source_concept):
+    # TODO: ideally this should legitimately return ALL the standard concepts
+    #  associated, which may be more than one!
     concept_relation = requests.get(
         url=api_url + "omop/conceptrelationshipfilter",
         headers=api_header,
