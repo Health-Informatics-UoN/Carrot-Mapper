@@ -69,7 +69,7 @@ def find_standard_concept(source_concept):
     # Concepts table, then return no concept, and the mapping will not go ahead.
     logger.info(f"concept filter of {relation['concept_id_2']} (from "
                 f"{relation['concept_id_1']} returned empty")
-    source_concept["concept_id"] =  -1
+    source_concept["concept_id"] = -1
     return source_concept
 
 

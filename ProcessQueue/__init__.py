@@ -29,7 +29,7 @@ stream_handler.setFormatter(
     )
 )
 logger.addHandler(stream_handler)
-logger.setLevel(logging.INFO)  # Set to logging.DEBUG to show the debug output
+logger.setLevel(logging.DEBUG)  # Set to logging.DEBUG to show the debug output
 
 max_chars_for_get = 2000
 
@@ -376,10 +376,10 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         }
         for value in new_values_map
     ]
-    logger.debug(
-        f"name, desc, field_name, id of newly-generated values: "
-        f"{new_values_full_details}",
-    )
+    # logger.debug(
+    #     f"name, desc, field_name, id of newly-generated values: "
+    #     f"{new_values_full_details}",
+    # )
 
     # Now we have existing_mappings_to_consider of the form:
     #
@@ -447,11 +447,13 @@ def process_scan_report_sheet_table(sheet):
     --
 
     -- output --
-    [(a,    apple, 20),
-     (a,   banana,  3),
-     (a,     pear, 12),
-     (b,   orange,  5),
-     (b, plantain, 50)]
+    ordereddict({'a': [('apple', 20),
+                       ('banana', 3),
+                       ('pear', 12)],
+                 'b': [('orange', 5),
+                       ('plantain', 50)]
+                 }
+                )
     --
     """
     logger.debug("Start process_scan_report_sheet_table")
@@ -502,11 +504,19 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
-async def process_single_value(full_value, frequency, data_dictionary,
-                               current_table_name, fieldname, vocab_dictionary,
-                               fieldnames_to_ids_dict, client):
-    logger.debug(f"Start process_single_value {full_value} {fieldname} "
-                 f"{current_table_name}")
+async def process_single_value(
+    full_value,
+    frequency,
+    data_dictionary,
+    current_table_name,
+    fieldname,
+    vocab_dictionary,
+    fieldnames_to_ids_dict,
+    client,
+):
+    logger.debug(
+        f"Start process_single_value {full_value} {fieldname} " f"{current_table_name}"
+    )
     value = full_value[0:127]
 
     if not frequency:
@@ -516,17 +526,15 @@ async def process_single_value(full_value, frequency, data_dictionary,
         # Look up value description. We use .get() to guard against
         # nonexistence in the dictionary without having to manually check. It
         # returns None if the value is not present
-        table = data_dictionary.get(
-            str(current_table_name)
-        )  # dict of fields in table
+        table = data_dictionary.get(str(current_table_name))  # dict of fields in table
         if table:
             field = data_dictionary[str(current_table_name)].get(
                 str(fieldname)
             )  # dict of values in field in table
             if field:
-                val_desc = data_dictionary[str(current_table_name)][
-                    str(fieldname)
-                ].get(str(value))
+                val_desc = data_dictionary[str(current_table_name)][str(fieldname)].get(
+                    str(value)
+                )
             else:
                 val_desc = None
         else:
@@ -539,10 +547,8 @@ async def process_single_value(full_value, frequency, data_dictionary,
         # We use .get() to guard against nonexistence in the dictionary
         # without having to manually check. It returns None if the value is
         # not present
-        #TODO: this assumes vocab_dictionary exists if data_dictionary does
-        table = vocab_dictionary.get(
-            str(current_table_name)
-        )  # dict of fields in table
+        # TODO: this assumes vocab_dictionary exists if data_dictionary does
+        table = vocab_dictionary.get(str(current_table_name))  # dict of fields in table
         if table:
             code = vocab_dictionary[str(current_table_name)].get(
                 str(fieldname)
@@ -555,8 +561,10 @@ async def process_single_value(full_value, frequency, data_dictionary,
         # If there's a faulty concept code for the vocab, fail gracefully and
         # set concept_id to default (-1)
         if code in vocabs:
-            logger.debug(f"  Get get_concept_from_concept_code {full_value} {fieldname} "
-                         f"{current_table_name} {code}")
+            logger.debug(
+                f"  Get get_concept_from_concept_code {full_value} {fieldname} "
+                f"{current_table_name} {code}"
+            )
             try:
                 concept_id = await omop_helpers.get_concept_from_concept_code(
                     concept_code=value,
@@ -567,9 +575,11 @@ async def process_single_value(full_value, frequency, data_dictionary,
                 concept_id = concept_id["concept_id"]
             except RuntimeWarning:
                 concept_id = -1
-            logger.debug(f"     Got get_concept_from_concept_code {full_value}"
-                         f" {fieldname} "
-                         f"{current_table_name} {code}")
+            logger.debug(
+                f"     Got get_concept_from_concept_code {full_value}"
+                f" {fieldname} "
+                f"{current_table_name} {code}"
+            )
         else:
             concept_id = -1
 
@@ -590,8 +600,9 @@ async def process_single_value(full_value, frequency, data_dictionary,
         "value_description": val_desc,
         "scan_report_field": fieldnames_to_ids_dict[fieldname],
     }
-    logger.debug(f"  End process_single_value {full_value} {fieldname} "
-                 f"{current_table_name}")
+    logger.debug(
+        f"  End process_single_value {full_value} {fieldname} " f"{current_table_name}"
+    )
     return scan_report_value_entry
 
 
@@ -622,11 +633,14 @@ async def process_values_from_sheet(
     a = []
     for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
-            a.append({"full_value": full_value,
-                      "frequency": frequency,
-                      "fieldname": fieldname,
-                      "table": current_table_name}
-                     )
+            a.append(
+                {
+                    "full_value": full_value,
+                    "frequency": frequency,
+                    "fieldname": fieldname,
+                    "table": current_table_name,
+                }
+            )
 
     logger.debug("assign order")
     # Add "order" field to each entry to enable correctly-ordered recombination at the end
@@ -637,9 +651,7 @@ async def process_values_from_sheet(
     if data_dictionary:
         logger.debug("apply data dictionary")
         for entry in a:
-            table = data_dictionary.get(
-                str(entry["table"])
-            )  # dict of fields in table
+            table = data_dictionary.get(str(entry["table"]))  # dict of fields in table
             if table:
                 field = data_dictionary[str(entry["table"])].get(
                     str(entry["fieldname"])
@@ -662,9 +674,7 @@ async def process_values_from_sheet(
         logger.debug("apply vocab dictionary")
         for entry in a:
 
-            table = vocab_dictionary.get(
-                str(entry["table"])
-            )  # dict of fields in table
+            table = vocab_dictionary.get(str(entry["table"]))  # dict of fields in table
             if table:
                 code = vocab_dictionary[str(entry["table"])].get(
                     str(entry["fieldname"])
@@ -701,20 +711,19 @@ async def process_values_from_sheet(
             assert vocab is not None
             logger.info(f"begin {vocab}")
             paginated_concept_codes = helpers.paginate(
-                (str(entry["full_value"])
-                 for entry in
-                 entries_split_by_vocab[vocab]),
-                max_chars=max_chars_for_get)
+                (str(entry["full_value"]) for entry in entries_split_by_vocab[vocab]),
+                max_chars=max_chars_for_get,
+            )
 
             concept_vocab_response = []
             # concept_vocab_response_content = []
             for concepts_to_get_item in paginated_concept_codes:
                 # print(f"{concepts_to_get_item=}")
                 get_concept_vocab_response = requests.get(
-                        f"{API_URL}omop/conceptsfilter/?concept_code__in="
-                        f"{','.join(concepts_to_get_item)}&vocabulary_id__in"
-                        f"={vocab}",
-                        headers=HEADERS,
+                    f"{API_URL}omop/conceptsfilter/?concept_code__in="
+                    f"{','.join(concepts_to_get_item)}&vocabulary_id__in"
+                    f"={vocab}",
+                    headers=HEADERS,
                 )
                 logger.debug(
                     f"CONCEPTS GET BY VOCAB STATUS >>> "
@@ -730,8 +739,10 @@ async def process_values_from_sheet(
             # which is not necessary as we're within a single vocab's context anyway) with
             # the full_value in the entries_split_by_vocab, and extend the latter by
             # concept_id and standard_concept
-            logger.debug(f"begin double loop over {len(concept_vocab_content)} * "
-                         f"{len(entries_split_by_vocab[vocab])} pairs")
+            logger.debug(
+                f"begin double loop over {len(concept_vocab_content)} * "
+                f"{len(entries_split_by_vocab[vocab])} pairs"
+            )
             for entry in entries_split_by_vocab[vocab]:
                 entry["concept_id"] = -1
                 entry["standard_concept"] = None
@@ -742,40 +753,51 @@ async def process_values_from_sheet(
                 for returned_concept in concept_vocab_content:
                     # print("comparing", returned_concept, entry)
                     count += 1
-                    if str(entry["full_value"]) == str(returned_concept["concept_code"]):
-                        print("matched", entry["full_value"], "after", count,
-                              "comparisons")
+                    if str(entry["full_value"]) == str(
+                        returned_concept["concept_code"]
+                    ):
+                        print(
+                            "matched",
+                            entry["full_value"],
+                            "after",
+                            count,
+                            "comparisons",
+                        )
                         entry["concept_id"] = str(returned_concept["concept_id"])
                         entry["standard_concept"] = str(
-                            returned_concept["standard_concept"])
+                            returned_concept["standard_concept"]
+                        )
                         # exit inner loop early if we find a concept for this entry
                         break
 
             logger.debug("finished double loop")
 
-            # TODO: Look at how to group this - this is now the bottleneck,
-            #  along with PATCH
+            # TODO: Look at how to group this - this is now the bottleneck
+            entries_to_find_standard_concept = []
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
+                    entries_to_find_standard_concept.append(entry)
+
+
                     # print(f"this entry is {entry}")
                     # print(f"looking up standard concept for {entry['concept_id']}")
                     # Need to look up the standard concept and then copy its concept_id,
                     # and set "standard_concept" here to "S"
-                    entry["concept_id"] = omop_helpers.find_standard_concept(
-                        entry)["concept_id"]
+                    entry["concept_id"] = omop_helpers.find_standard_concept(entry)[
+                        "concept_id"
+                    ]
                     if entry["concept_id"] != -1:
                         entry["standard_concept"] = "S"
                     # print(f"found standard {entry['concept_id']}")
 
             logger.debug("finished standard concepts lookup")
 
-
     print()
     # print(a)
     # for vocab in entries_split_by_vocab:
     #     print(entries_split_by_vocab[vocab])
-        # print(f"{concept_vocab_content=}")
-        # concept_vocab_response_content += concept_vocab_content
+    # print(f"{concept_vocab_content=}")
+    # concept_vocab_response_content += concept_vocab_content
 
     logger.debug("create value_entries_to_post")
     value_entries_to_post = []
@@ -925,8 +947,7 @@ async def process_values_from_sheet(
 
     logger.info(f"PATCH {len(ids_of_posted_values)} values")
 
-    # TODO: speed this up: now a bottleneck along with the find_standard_concept code
-    # above
+    # TODO: understand the best choice of thread numbers for performance.
     # We can't do a bulk-patch with the existing API, so instead we parallelise the
     # patch calls. Put all patch data into a queue, and then use a pool of n threads
     # which grab the next item from the queue and run the PATCH request. Once all
