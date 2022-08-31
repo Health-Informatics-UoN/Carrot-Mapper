@@ -755,13 +755,6 @@ async def process_values_from_sheet(
                     # print("comparing", returned_concept, entry)
                     count += 1
                     if str(entry["value"]) == str(returned_concept["concept_code"]):
-                        print(
-                            "matched",
-                            entry["value"],
-                            "after",
-                            count,
-                            "comparisons",
-                        )
                         entry["concept_id"] = str(returned_concept["concept_id"])
                         entry["standard_concept"] = str(
                             returned_concept["standard_concept"]
@@ -776,9 +769,6 @@ async def process_values_from_sheet(
             entries_to_find_standard_concept = []
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
-                    # logger.debug(
-                    #     f"looking for standard concept for nonstandard {entry['concept_id']}"
-                    # )
                     entries_to_find_standard_concept.append(entry)
             logger.debug(f"finished selecting nonstandard concepts - selected "
                          f"{len(entries_to_find_standard_concept)}")
@@ -846,38 +836,51 @@ async def process_values_from_sheet(
     logger.info(f"POST {len(concept_id_data)} concepts")
 
     # TODO: chunk and parallelise
-    paginated_concept_id_data = helpers.paginate(concept_id_data)
-
+    chunked_concept_id_data = helpers.perform_chunking(concept_id_data)
     concepts_response_content = []
+    logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
 
-    for page in paginated_concept_id_data:
+    timeout = httpx.Timeout(60.0, connect=30.0)
 
-        # POST the ScanReportConcept data to the model
-        concepts_response = requests.post(
-            url=f"{API_URL}scanreportconcepts/",
-            headers=HEADERS,
-            data=json.dumps(page),
-        )
-
-        logger.info(
-            f"CONCEPT SAVE STATUS >>> "
-            f"{concepts_response.status_code} "
-            f"{concepts_response.reason}"
-        )
-        if concepts_response.status_code != 201:
-            helpers.process_failure(scan_report_id)
-            raise HTTPError(
-                " ".join(
-                    [
-                        "Error in concept save:",
-                        str(concepts_response.status_code),
-                        str(json.dumps(page)),
-                    ]
+    for chunk in chunked_concept_id_data:
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            tasks = []
+            page_lengths = []
+            for page in chunk:
+                # POST concept_id_data to ScanReportConcept model
+                tasks.append(
+                    asyncio.ensure_future(
+                        client.post(
+                            url=f"{API_URL}scanreportconcepts/",
+                            data=json.dumps(page),
+                            headers=HEADERS,
+                        )
+                    )
                 )
+                page_lengths.append(len(page))
+
+            concepts_responses = await asyncio.gather(*tasks)
+
+        for concepts_response, page_length in zip(concepts_responses, page_lengths):
+            logger.info(
+                f"CONCEPT SAVE STATUSES on {current_table_name} >>>"
+                f" {concepts_response.status_code} "
+                f"{concepts_response.reason_phrase} {page_length}"
             )
 
-        concepts_content = concepts_response.json()
-        concepts_response_content += concepts_content
+            if concepts_response.status_code != 201:
+                helpers.process_failure(scan_report_id)
+                raise HTTPError(
+                    " ".join(
+                        [
+                            "Error in concept save:",
+                            str(concepts_response.status_code),
+                            str(json.dumps(page)),
+                        ]
+                    )
+                )
+
+            concepts_response_content += concepts_response.json()
 
     logger.info("POST concepts all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
