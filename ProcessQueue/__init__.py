@@ -363,9 +363,9 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     logger.debug(f"fields of newly generated values: {new_fields}")
 
     new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
-    logger.debug(
-        f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
-    )
+    # logger.debug(
+    #     f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
+    # )
 
     new_values_full_details = [
         {
@@ -376,10 +376,10 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         }
         for value in new_values_map
     ]
-    logger.debug(
-        f"name, desc, field_name, id of newly-generated values: "
-        f"{new_values_full_details}",
-    )
+    # logger.debug(
+    #     f"name, desc, field_name, id of newly-generated values: "
+    #     f"{new_values_full_details}",
+    # )
 
     # Now we have existing_mappings_to_consider of the form:
     #
@@ -521,17 +521,14 @@ async def process_values_from_sheet(
     fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
     """
-    For every result of process_scan_report_sheet_table,
-    Save the current name,value,frequency
-    Create ScanReportValue entry,
-    Append to value_entries_to_post[] list,
-    Create JSON array with all the value entries, 
-    Send POST request to API with JSON as input
+    For every result of process_scan_report_sheet_table, create an entry ready to be 
+    POSTed. This includes adding in any 'value description' supplied in the data 
+    dictionary.
     """
-    a = []
+    values_details = []
     for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
-            a.append(
+            values_details.append(
                 {
                     "full_value": full_value,
                     "frequency": frequency,
@@ -543,7 +540,7 @@ async def process_values_from_sheet(
 
     logger.debug("assign order")
     # Add "order" field to each entry to enable correctly-ordered recombination at the end
-    for entry_number, entry in enumerate(a):
+    for entry_number, entry in enumerate(values_details):
         entry["order"] = entry_number
 
     # --------------------------------------------------------------------------------
@@ -552,7 +549,7 @@ async def process_values_from_sheet(
 
     if data_dictionary:
         logger.debug("apply data dictionary")
-        for entry in a:
+        for entry in values_details:
             if data_dictionary.get(str(entry["table"])):  # dict of fields in table
                 if data_dictionary[str(entry["table"])].get(
                     str(entry["fieldname"])
@@ -560,11 +557,6 @@ async def process_values_from_sheet(
                     entry["val_desc"] = data_dictionary[str(entry["table"])][
                         str(entry["fieldname"])
                     ].get(str(entry["full_value"]))
-
-    # print("value descriptions added:")
-    # print(a)
-
-    print()
 
     # --------------------------------------------------------------------------------
     # Convert basic information about SRValues into entries for posting to the endpoint.
@@ -575,11 +567,10 @@ async def process_values_from_sheet(
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "value": entry["full_value"],
             "frequency": int(entry["frequency"]),
-            # "conceptID": -1,
             "value_description": entry["val_desc"],
             "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
         }
-        for entry in a
+        for entry in values_details
     ]
 
     # print(value_entries_to_post)
@@ -780,61 +771,81 @@ async def process_values_from_sheet(
 
             logger.debug("finished double loop")
 
-            # TODO: Look at how to group this - this is now the bottleneck
             # ------------------------------------------------
             # Identify which concepts are non-standard, and fix them
             entries_to_find_standard_concept = []
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
-                    logger.debug(
-                        f"looking for standard concept for nonstandard {entry['concept_id']}"
-                    )
+                    # logger.debug(
+                    #     f"looking for standard concept for nonstandard {entry['concept_id']}"
+                    # )
                     entries_to_find_standard_concept.append(entry)
+            logger.debug(f"finished selecting nonstandard concepts - selected "
+                         f"{len(entries_to_find_standard_concept)}")
 
-                    # print(f"this entry is {entry}")
-                    # print(f"looking up standard concept for {entry['concept_id']}")
-                    # Need to look up the standard concept and then copy its concept_id,
-                    # and set "standard_concept" here to "S"
-                    entry["concept_id"] = omop_helpers.find_standard_concept(entry)[
-                        "concept_id"
+            batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
+                entries_to_find_standard_concept
+            )
+            # logger.debug(f"{batched_standard_concepts_map=}")
+            # Each item in pairs_for_use is a tuple. First item is original concept
+            # id. Second item is the standard concept. Note that the first item is
+            # not guaranteed to be unique: one concept may map to multiple standard
+            # concepts.
+            for nonstandard_concept in batched_standard_concepts_map:
+                relevant_entry = helpers.get_by_concept_id(
+                    entries_split_by_vocab[vocab], nonstandard_concept
+                )
+
+                if isinstance(relevant_entry["concept_id"], (int, str)):
+                    relevant_entry["concept_id"] = batched_standard_concepts_map[
+                        nonstandard_concept
                     ]
-                    if entry["concept_id"] != -1:
-                        entry["standard_concept"] = "S"
-                        logger.debug("found")
-                    else:
-                        logger.debug("not found")
+                elif relevant_entry["concept_id"] is None:
+                    # This is the case where pairs_for_use contains an entry that
+                    # doesn't have a counterpart in entries_split_by_vocab, so this
+                    # should error or warn
+                    raise RuntimeWarning
 
-                    # print(f"found standard {entry['concept_id']}")
-
+            # logger.debug(f"{entries_split_by_vocab=}")
             logger.debug("finished standard concepts lookup")
-    # Create a list for a bulk data upload to the ScanReportConcept model
 
     # ------------------------------------
     # All Concepts are now ready. Generate their entries ready for POSTing
 
-    concept_id_data = [
-        {
-            "nlp_entity": None,
-            "nlp_entity_type": None,
-            "nlp_confidence": None,
-            "nlp_vocabulary": None,
-            "nlp_processed_string": None,
-            "concept": concept["concept_id"],
-            "object_id": concept["id"],
-            # TODO: we should query this value from the API
-            # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-            # but that's not available from an Azure Function.
-            "content_type": 17,
-            "creation_type": "V",
-        }
-        for concept in details_of_posted_values
-        if concept["concept_id"] != -1
-    ]
+    concept_id_data = []
+    for concept in details_of_posted_values:
+        if concept["concept_id"] != -1:
+            if isinstance(concept["concept_id"], list):
+                for concept_id in concept["concept_id"]:
+                    concept_id_data.append(
+                        {
+                            "concept": concept_id,
+                            "object_id": concept["id"],
+                            # TODO: we should query this value from the API
+                            # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                            # but that's not available from an Azure Function.
+                            "content_type": 17,
+                            "creation_type": "V",
+                        }
+                    )
+            else:
+                concept_id_data.append(
+                    {
+                        "concept": concept["concept_id"],
+                        "object_id": concept["id"],
+                        # TODO: we should query this value from the API
+                        # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                        # but that's not available from an Azure Function.
+                        "content_type": 17,
+                        "creation_type": "V",
+                    }
+                )
 
     # ------------------------------------
     # Paginate the Concepts, and POST them
     logger.info(f"POST {len(concept_id_data)} concepts")
 
+    # TODO: chunk and parallelise
     paginated_concept_id_data = helpers.paginate(concept_id_data)
 
     concepts_response_content = []
