@@ -770,8 +770,10 @@ async def process_values_from_sheet(
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
                     entries_to_find_standard_concept.append(entry)
-            logger.debug(f"finished selecting nonstandard concepts - selected "
-                         f"{len(entries_to_find_standard_concept)}")
+            logger.debug(
+                f"finished selecting nonstandard concepts - selected "
+                f"{len(entries_to_find_standard_concept)}"
+            )
 
             batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
                 entries_to_find_standard_concept

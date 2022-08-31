@@ -40,9 +40,10 @@ def find_standard_concept_batch(source_concepts: list):
     #     f"getting "
     #     f"{','.join(str(source_concept['concept_id']) for source_concept in source_concepts)}"
     # )
-    paginated_source_concepts = helpers.paginate((str(source_concept["concept_id"])
-                                                 for source_concept in source_concepts),
-                                                 max_chars=max_chars_for_get)
+    paginated_source_concepts = helpers.paginate(
+        (str(source_concept["concept_id"]) for source_concept in source_concepts),
+        max_chars=max_chars_for_get,
+    )
     # TODO: Needs pagination
     # Get "Maps to" relations of all source concepts supplied
     concept_relations_response = []
@@ -50,9 +51,7 @@ def find_standard_concept_batch(source_concepts: list):
         get_concept_relations_response = requests.get(
             url=api_url
             + "omop/conceptrelationshipfilter/?concept_id_1__in="
-            + ",".join(
-                str(concept_id) for concept_id in page
-            )
+            + ",".join(str(concept_id) for concept_id in page)
             + "&relationship_id=Maps to",
             headers=api_header,
         )
@@ -63,14 +62,18 @@ def find_standard_concept_batch(source_concepts: list):
 
     # Find those concepts with a "trail" to follow, that is, those which have
     # differing concept_id_1/2.
-    non_last_target_concepts = [concept_relation for concept_relation in concept_relations
-        if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]]
+    non_last_target_concepts = [
+        concept_relation
+        for concept_relation in concept_relations
+        if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]
+    ]
 
     logger.debug("non_last_targets selected")
 
-    paginated_concept_id_2s = helpers.paginate((str(relation["concept_id_2"])
-                                                 for relation in non_last_target_concepts),
-                                                 max_chars=max_chars_for_get)
+    paginated_concept_id_2s = helpers.paginate(
+        (str(relation["concept_id_2"]) for relation in non_last_target_concepts),
+        max_chars=max_chars_for_get,
+    )
     # Send all of those to conceptfilter again to check they are standard.
     concepts = []
     for page in paginated_concept_id_2s:
@@ -91,7 +94,9 @@ def find_standard_concept_batch(source_concepts: list):
     combined_pairs = defaultdict(list)
     for relationship in non_last_target_concepts:
         if concept_details[relationship["concept_id_2"]] == "S":
-            combined_pairs[relationship["concept_id_1"]].append(relationship["concept_id_2"])
+            combined_pairs[relationship["concept_id_1"]].append(
+                relationship["concept_id_2"]
+            )
 
     return combined_pairs
     # if len(concept_relation) == 0:
