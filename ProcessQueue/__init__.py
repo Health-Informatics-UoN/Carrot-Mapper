@@ -335,7 +335,8 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     # get details of existing selected values, for the purpose of matching against
     # new values
     existing_paginated_value_ids = helpers.paginate(
-        [value["object_id"] for value in existing_value_concepts], omop_helpers.max_chars_for_get
+        [value["object_id"] for value in existing_value_concepts],
+        omop_helpers.max_chars_for_get,
     )
     logger.debug(f"{existing_paginated_value_ids=}")
 
@@ -392,7 +393,8 @@ def reuse_existing_value_concepts(new_values_map, content_type):
 
     # Now handle the newly-added values in a similar manner
     new_paginated_field_ids = helpers.paginate(
-        [value["scan_report_field"] for value in new_values_map], omop_helpers.max_chars_for_get
+        [value["scan_report_field"] for value in new_values_map],
+        omop_helpers.max_chars_for_get,
     )
     logger.debug("new_paginated_field_ids")
 
@@ -541,25 +543,13 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
-# @memory_profiler.profile(stream=profiler_logstream)
-async def process_values_from_sheet(
-    sheet,
-    data_dictionary,
-    vocab_dictionary,
+async def add_SRValues_and_value_descriptions(
+    fieldname_value_freq_dict,
     current_table_name,
-    current_table_id,
+    data_dictionary,
     fieldnames_to_ids_dict,
-    fieldids_to_names_dict,
     scan_report_id,
 ):
-    # Get (col_name, value, frequency) for each field in the table
-    fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
-
-    """
-    For every result of process_scan_report_sheet_table, create an entry ready to be 
-    POSTed. This includes adding in any 'value description' supplied in the data 
-    dictionary.
-    """
     values_details = []
     for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
@@ -627,20 +617,49 @@ async def process_values_from_sheet(
     logger.info("POST values all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
+    return values_response_content
+
+
+# @memory_profiler.profile(stream=profiler_logstream)
+async def process_values_from_sheet(
+    sheet,
+    data_dictionary,
+    vocab_dictionary,
+    current_table_name,
+    current_table_id,
+    fieldnames_to_ids_dict,
+    fieldids_to_names_dict,
+    scan_report_id,
+):
+    # Get (col_name, value, frequency) for each field in the table
+    fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
+
+    """
+    For every result of process_scan_report_sheet_table, create an entry ready to be 
+    POSTed. This includes adding in any 'value description' supplied in the data 
+    dictionary.
+    """
+
+    values_response_content = await add_SRValues_and_value_descriptions(
+        fieldname_value_freq_dict,
+        current_table_name,
+        data_dictionary,
+        fieldnames_to_ids_dict,
+        scan_report_id,
+    )
+
     # --------------------------------------------------------------------------------
     # Get the details of all the SRValues posted in this table. Then we will be able
     # to run them through the vocabulary mapper and apply any automatic vocab mappings.
 
     # GET values where the scan_report_table is the current table.
     logger.debug("GET posted values")
-    get_details_of_posted_values = requests.get(
+    details_of_posted_values = requests.get(
         url=f"{API_URL}scanreportvaluesfilterscanreporttable/?scan_report_table"
         f"={current_table_id}",
         headers=HEADERS,
-    )
+    ).json()
     logger.debug("GET posted values finished")
-
-    details_of_posted_values = get_details_of_posted_values.json()
 
     # ---------------------------------------------------------------------------------
     # Process the SRValues, comparing their SRFields to the vocabs, and then create a
@@ -689,96 +708,101 @@ async def process_values_from_sheet(
     # int or str, or a list of such.
 
     for vocab in entries_split_by_vocab:
-        # print()
         if vocab is None:
+            # set to defaults, and skip all the remaining processing that a vocab
+            # would require
             for entry in entries_split_by_vocab[vocab]:
                 entry["concept_id"] = -1
                 entry["standard_concept"] = None
-        else:
-            assert vocab is not None
-            logger.info(f"begin {vocab}")
-            paginated_values_in_this_vocab = helpers.paginate(
-                (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
-                max_chars=omop_helpers.max_chars_for_get,
+            continue
+
+        assert vocab is not None
+        logger.info(f"begin {vocab}")
+
+        paginated_values_in_this_vocab = helpers.paginate(
+            (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
+            max_chars=omop_helpers.max_chars_for_get,
+        )
+
+        concept_vocab_response = []
+
+        for page_of_values in paginated_values_in_this_vocab:
+            page_of_values_to_get = ",".join(map(str, page_of_values))
+
+            get_concept_vocab_response = requests.get(
+                f"{API_URL}omop/conceptsfilter/?concept_code__in="
+                f"{page_of_values_to_get}&vocabulary_id__in"
+                f"={vocab}",
+                headers=HEADERS,
             )
-
-            concept_vocab_response = []
-
-            for page_of_values in paginated_values_in_this_vocab:
-                page_of_values_to_get = ",".join(map(str, page_of_values))
-
-                get_concept_vocab_response = requests.get(
-                    f"{API_URL}omop/conceptsfilter/?concept_code__in="
-                    f"{page_of_values_to_get}&vocabulary_id__in"
-                    f"={vocab}",
-                    headers=HEADERS,
-                )
-                logger.debug(
-                    f"CONCEPTS GET BY VOCAB STATUS >>> "
-                    f"{get_concept_vocab_response.status_code} "
-                    f"{get_concept_vocab_response.reason}"
-                )
-                concept_vocab_response.append(get_concept_vocab_response.json())
-
-            concept_vocab_content = helpers.flatten(concept_vocab_response)
-
-            # Loop over all returned concepts, and match their concept_code and vocabulary_id with
-            # the full_value in the entries_split_by_vocab, and set the latter's
-            # concept_id and standard_concept with those values
             logger.debug(
-                f"begin double loop over {len(concept_vocab_content)} * "
-                f"{len(entries_split_by_vocab[vocab])} pairs"
+                f"CONCEPTS GET BY VOCAB STATUS >>> "
+                f"{get_concept_vocab_response.status_code} "
+                f"{get_concept_vocab_response.reason}"
             )
-            for entry in entries_split_by_vocab[vocab]:
-                entry["concept_id"] = -1
-                entry["standard_concept"] = None
+            concept_vocab_response.append(get_concept_vocab_response.json())
 
-            for entry in entries_split_by_vocab[vocab]:
-                for returned_concept in concept_vocab_content:
-                    if str(entry["value"]) == str(returned_concept["concept_code"]):
-                        entry["concept_id"] = str(returned_concept["concept_id"])
-                        entry["standard_concept"] = str(
-                            returned_concept["standard_concept"]
-                        )
-                        # exit inner loop early if we find a concept for this entry
-                        break
+        concept_vocab_content = helpers.flatten(concept_vocab_response)
 
-            logger.debug("finished double loop")
+        # Loop over all returned concepts, and match their concept_code and vocabulary_id with
+        # the full_value in the entries_split_by_vocab, and set the latter's
+        # concept_id and standard_concept with those values
+        logger.debug(
+            f"begin double loop over {len(concept_vocab_content)} * "
+            f"{len(entries_split_by_vocab[vocab])} pairs"
+        )
+        for entry in entries_split_by_vocab[vocab]:
+            entry["concept_id"] = -1
+            entry["standard_concept"] = None
 
-            # ------------------------------------------------
-            # Identify which concepts are non-standard, and fix them in a batch call
-            entries_to_find_standard_concept = []
-            for entry in entries_split_by_vocab[vocab]:
-                if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
-                    entries_to_find_standard_concept.append(entry)
-            logger.debug(
-                f"finished selecting nonstandard concepts - selected "
-                f"{len(entries_to_find_standard_concept)}"
+        for entry in entries_split_by_vocab[vocab]:
+            for returned_concept in concept_vocab_content:
+                if str(entry["value"]) == str(returned_concept["concept_code"]):
+                    entry["concept_id"] = str(returned_concept["concept_id"])
+                    entry["standard_concept"] = str(
+                        returned_concept["standard_concept"]
+                    )
+                    # exit inner loop early if we find a concept for this entry
+                    break
+
+        logger.debug("finished double loop")
+
+        # ------------------------------------------------
+        # Identify which concepts are non-standard, and fix them in a batch call
+        entries_to_find_standard_concept = list(
+            filter(
+                lambda x: x["concept_id"] != -1 and x["standard_concept"] != "S",
+                entries_split_by_vocab[vocab],
+            )
+        )
+        logger.debug(
+            f"finished selecting nonstandard concepts - selected "
+            f"{len(entries_to_find_standard_concept)}"
+        )
+
+        batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
+            entries_to_find_standard_concept
+        )
+
+        # batched_standard_concepts_map maps from an original concept id to
+        # a list of associated standard concepts. Use each item to update the
+        # relevant entry from entries_split_by_vocab[vocab].
+        for nonstandard_concept in batched_standard_concepts_map:
+            relevant_entry = helpers.get_by_concept_id(
+                entries_split_by_vocab[vocab], nonstandard_concept
             )
 
-            batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
-                entries_to_find_standard_concept
-            )
+            if isinstance(relevant_entry["concept_id"], (int, str)):
+                relevant_entry["concept_id"] = batched_standard_concepts_map[
+                    nonstandard_concept
+                ]
+            elif relevant_entry["concept_id"] is None:
+                # This is the case where pairs_for_use contains an entry that
+                # doesn't have a counterpart in entries_split_by_vocab, so this
+                # should error or warn
+                raise RuntimeWarning
 
-            # batched_standard_concepts_map maps from an original concept id to
-            # a list of associated standard concepts. Use each item to update the
-            # relevant entry from entries_split_by_vocab[vocab].
-            for nonstandard_concept in batched_standard_concepts_map:
-                relevant_entry = helpers.get_by_concept_id(
-                    entries_split_by_vocab[vocab], nonstandard_concept
-                )
-
-                if isinstance(relevant_entry["concept_id"], (int, str)):
-                    relevant_entry["concept_id"] = batched_standard_concepts_map[
-                        nonstandard_concept
-                    ]
-                elif relevant_entry["concept_id"] is None:
-                    # This is the case where pairs_for_use contains an entry that
-                    # doesn't have a counterpart in entries_split_by_vocab, so this
-                    # should error or warn
-                    raise RuntimeWarning
-
-            logger.debug("finished standard concepts lookup")
+        logger.debug("finished standard concepts lookup")
 
     # ------------------------------------
     # All Concepts are now ready. Generate their entries ready for POSTing
