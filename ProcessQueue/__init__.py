@@ -70,6 +70,56 @@ def post_paginated_concepts(concepts_to_post):
     concept_response_content += concept_content
 
 
+async def post_chunks(chunked_data, endpoint, text_string, table_name, scan_report_id):
+    response_content = []
+    timeout = httpx.Timeout(60.0, connect=30.0)
+
+    for chunk_no, chunk in enumerate(chunked_data):
+        logger.debug(f"chunk {chunk_no}")
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            tasks = []
+            page_lengths = []
+            for page_no, page in enumerate(chunk):
+                logger.debug(f"chunk {chunk_no} page {page_no}")
+                # POST chunked data to endpoint
+                tasks.append(
+                    asyncio.ensure_future(
+                        client.post(
+                            url=f"{API_URL}{endpoint}/",
+                            data=json.dumps(page),
+                            headers=HEADERS,
+                        )
+                    )
+                )
+                page_lengths.append(len(page))
+
+            responses = await asyncio.gather(*tasks)
+            logger.debug(f"{responses}")
+
+        for response, page_length in zip(responses, page_lengths):
+            logger.info(
+                f"{text_string.upper()} SAVE STATUSES on {table_name} >>>"
+                f" {response.status_code} "
+                f"{response.reason_phrase} {page_length}"
+            )
+
+            if response.status_code != 201:
+                helpers.process_failure(scan_report_id)
+                raise HTTPError(
+                    " ".join(
+                        [
+                            f"Error in {text_string.lower()} save:",
+                            str(response.status_code),
+                            str(response.reason_phrase),
+                            str(response.json()),
+                        ]
+                    )
+                )
+
+            response_content += response.json()
+    return response_content
+
+
 def get_existing_fields_from_ids(existing_field_ids):
     paginated_existing_field_ids = helpers.paginate(
         existing_field_ids, max_chars_for_get
@@ -582,52 +632,15 @@ async def process_values_from_sheet(
     )
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
     chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
-    values_response_content = []
     logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
-    timeout = httpx.Timeout(60.0, connect=30.0)
 
-    page_count = 0
-    for chunk in chunked_value_entries_to_post:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            tasks = []
-            page_lengths = []
-            for page in chunk:
-                # POST value_entries_to_post to ScanReportValues model
-                tasks.append(
-                    asyncio.ensure_future(
-                        client.post(
-                            url=f"{API_URL}scanreportvalues/",
-                            data=json.dumps(page),
-                            headers=HEADERS,
-                        )
-                    )
-                )
-                page_lengths.append(len(page))
-                page_count += 1
-
-            values_responses = await asyncio.gather(*tasks)
-
-        for values_response, page_length in zip(values_responses, page_lengths):
-            logger.info(
-                f"VALUES SAVE STATUSES on {current_table_name} >>>"
-                f" {values_response.status_code} "
-                f"{values_response.reason_phrase} {page_length}"
-            )
-
-            if values_response.status_code != 201:
-                helpers.process_failure(scan_report_id)
-                raise HTTPError(
-                    " ".join(
-                        [
-                            "Error in values save:",
-                            str(values_response.status_code),
-                            str(json.dumps(page)),
-                        ]
-                    )
-                )
-
-            values_response_content += values_response.json()
-
+    values_response_content = await post_chunks(
+        chunked_value_entries_to_post,
+        "scanreportvalues",
+        "values",
+        table_name=current_table_name,
+        scan_report_id=scan_report_id,
+    )
     logger.info("POST values all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
@@ -833,56 +846,20 @@ async def process_values_from_sheet(
                     }
                 )
 
-    # ------------------------------------
-    # Paginate the Concepts, and POST them
-    logger.info(f"POST {len(concept_id_data)} concepts")
+    # --------------------------------------------------------------------------------
+    # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
+    logger.info(f"POST {len(concept_id_data)} concepts to table {current_table_name}")
 
-    # TODO: chunk and parallelise
     chunked_concept_id_data = helpers.perform_chunking(concept_id_data)
-    concepts_response_content = []
     logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
 
-    timeout = httpx.Timeout(60.0, connect=30.0)
-
-    for chunk in chunked_concept_id_data:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            tasks = []
-            page_lengths = []
-            for page in chunk:
-                # POST concept_id_data to ScanReportConcept model
-                tasks.append(
-                    asyncio.ensure_future(
-                        client.post(
-                            url=f"{API_URL}scanreportconcepts/",
-                            data=json.dumps(page),
-                            headers=HEADERS,
-                        )
-                    )
-                )
-                page_lengths.append(len(page))
-
-            concepts_responses = await asyncio.gather(*tasks)
-
-        for concepts_response, page_length in zip(concepts_responses, page_lengths):
-            logger.info(
-                f"CONCEPT SAVE STATUSES on {current_table_name} >>>"
-                f" {concepts_response.status_code} "
-                f"{concepts_response.reason_phrase} {page_length}"
-            )
-
-            if concepts_response.status_code != 201:
-                helpers.process_failure(scan_report_id)
-                raise HTTPError(
-                    " ".join(
-                        [
-                            "Error in concept save:",
-                            str(concepts_response.status_code),
-                            str(json.dumps(page)),
-                        ]
-                    )
-                )
-
-            concepts_response_content += concepts_response.json()
+    await post_chunks(
+            chunked_concept_id_data,
+            "scanreportconcepts",
+            "concept",
+            table_name=current_table_name,
+            scan_report_id=scan_report_id,
+        )
 
     logger.info("POST concepts all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
@@ -926,7 +903,7 @@ def post_field_entries(field_entries_to_post, scan_report_id):
     return fields_response_content
 
 
-def handle_single_table(
+async def handle_single_table(
     current_table_name,
     current_table_id,
     field_entries_to_post,
@@ -970,21 +947,20 @@ def handle_single_table(
 
     # Go to Table sheet to process all the values from the sheet
     sheet = wb[current_table_name]
-    asyncio.run(
-        process_values_from_sheet(
-            sheet,
-            data_dictionary,
-            vocab_dictionary,
-            current_table_name,
-            current_table_id,
-            fieldnames_to_ids_dict,
-            fieldids_to_names_dict,
-            scan_report_id,
-        )
+
+    await process_values_from_sheet(
+        sheet,
+        data_dictionary,
+        vocab_dictionary,
+        current_table_name,
+        current_table_id,
+        fieldnames_to_ids_dict,
+        fieldids_to_names_dict,
+        scan_report_id,
     )
 
 
-def process_all_fields_and_values(
+async def process_all_fields_and_values(
     fo_ws,
     table_name_to_id_map,
     wb,
@@ -1036,7 +1012,7 @@ def process_all_fields_and_values(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             # print("scan_report_field_entries >>>", field_entries_to_post)
-            handle_single_table(
+            await handle_single_table(
                 current_table_name,
                 table_name_to_id_map[current_table_name],
                 field_entries_to_post,
@@ -1048,7 +1024,7 @@ def process_all_fields_and_values(
             field_entries_to_post = []
     # Catch the final table if it wasn't already posted in the loop above - sometimes the iter_rows() seems to now allow you to go beyond the last row.
     if field_entries_to_post:
-        handle_single_table(
+        await handle_single_table(
             current_table_name,
             table_name_to_id_map[current_table_name],
             field_entries_to_post,
@@ -1232,13 +1208,14 @@ def main(msg: func.QueueMessage):
     # and ScanReportValues associated to that table, then continue down the
     # list of fields in tables until all fields in all tables have been
     # processed (along with their ScanReportValues).
-    process_all_fields_and_values(
-        fo_ws,
-        table_name_to_id_map,
-        wb,
-        data_dictionary,
-        vocab_dictionary,
-        scan_report_id,
+    asyncio.run(process_all_fields_and_values(
+            fo_ws,
+            table_name_to_id_map,
+            wb,
+            data_dictionary,
+            vocab_dictionary,
+            scan_report_id,
+        )
     )
 
     logger.info("All tables completed. Now set status to 'Upload Complete'")
