@@ -715,10 +715,11 @@ async def process_values_from_sheet(
             concept_vocab_response = []
 
             for page_of_values in paginated_values_in_this_vocab:
-                # print(f"{concepts_to_get_item=}")
+                page_of_values_to_get = ",".join(map(str, page_of_values))
+
                 get_concept_vocab_response = requests.get(
                     f"{API_URL}omop/conceptsfilter/?concept_code__in="
-                    f"{','.join(page_of_values)}&vocabulary_id__in"
+                    f"{page_of_values_to_get}&vocabulary_id__in"
                     f"={vocab}",
                     headers=HEADERS,
                 )

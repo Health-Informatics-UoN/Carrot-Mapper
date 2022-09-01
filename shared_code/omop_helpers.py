@@ -45,11 +45,10 @@ def find_standard_concept_batch(source_concepts: list):
     # Get "Maps to" relations of all source concepts supplied
     concept_relations_response = []
     for page in paginated_source_concepts:
+        page_of_concept_ids_to_get = ",".join(map(str, page))
         get_concept_relations_response = requests.get(
-            url=api_url
-            + "omop/conceptrelationshipfilter/?concept_id_1__in="
-            + ",".join(str(concept_id) for concept_id in page)
-            + "&relationship_id=Maps to",
+            url=f"{api_url}omop/conceptrelationshipfilter/?concept_id_1__in="
+            + f"{page_of_concept_ids_to_get}&relationship_id=Maps to",
             headers=api_header,
         )
         concept_relations_response.append(get_concept_relations_response.json())
