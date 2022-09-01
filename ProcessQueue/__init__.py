@@ -829,12 +829,12 @@ async def process_values_from_sheet(
     logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
 
     await post_chunks(
-            chunked_concept_id_data,
-            "scanreportconcepts",
-            "concept",
-            table_name=current_table_name,
-            scan_report_id=scan_report_id,
-        )
+        chunked_concept_id_data,
+        "scanreportconcepts",
+        "concept",
+        table_name=current_table_name,
+        scan_report_id=scan_report_id,
+    )
 
     logger.info("POST concepts all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
@@ -1183,7 +1183,8 @@ def main(msg: func.QueueMessage):
     # and ScanReportValues associated to that table, then continue down the
     # list of fields in tables until all fields in all tables have been
     # processed (along with their ScanReportValues).
-    asyncio.run(process_all_fields_and_values(
+    asyncio.run(
+        process_all_fields_and_values(
             fo_ws,
             table_name_to_id_map,
             wb,
