@@ -634,14 +634,26 @@ async def process_values_from_sheet(
     fieldids_to_names_dict,
     scan_report_id,
 ):
+    """
+    This function handles much of the complexity surrounding values for a given table.
+    They can have a value description from the data dictionary, and they can have a
+    vocab mapping from vocab dictionary.
+
+    In summary, we:
+    - get details of a ScanReportValue up together, including value description if
+    supplied, and then POST these all.
+    - get the details of the POSTed SRValues
+    - apply vocab mapping to each SRValue as appropriate. Much of the complexity and
+    audit-keeping is because of the requirement to do this with batch calls - single
+    calls are simply too slow.
+    """
     # Get (col_name, value, frequency) for each field in the table
     fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
-    """
-    For every result of process_scan_report_sheet_table, create an entry ready to be 
-    POSTed. This includes adding in any 'value description' supplied in the data 
-    dictionary.
-    """
+    # --------------------------------------------------------------------------------
+    # For every result of process_scan_report_sheet_table, create an entry ready to be
+    # POSTed. This includes adding in any 'value description' supplied in the data
+    # dictionary.
 
     values_response_content = await add_SRValues_and_value_descriptions(
         fieldname_value_freq_dict,
@@ -690,7 +702,12 @@ async def process_values_from_sheet(
 
     # ---------------------------------------------------------------------
     # Split up by each vocabulary_id, so that we can send the contents of each to the
-    # endpoint in a separate call, with one vocabulary_id per call.
+    # endpoint in a separate call, with one vocabulary_id per call. Note that the
+    # entries in entries_split_by_vocab are views of those in
+    # details_of_posted_values, which is the variable we will eventually use to
+    # populate our SRConcept entries. So which we mostly operate on
+    # entries_split_by_vocab[vocab[ below, these changes are accessible from
+    # details_of_posted_values
     entries_split_by_vocab = defaultdict(list)
     for entry in details_of_posted_values:
         entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
@@ -751,8 +768,8 @@ async def process_values_from_sheet(
         # the full_value in the entries_split_by_vocab, and set the latter's
         # concept_id and standard_concept with those values
         logger.debug(
-            f"begin double loop over {len(concept_vocab_content)} * "
-            f"{len(entries_split_by_vocab[vocab])} pairs"
+            f"Attempting to match {len(concept_vocab_content)} concepts to "
+            f"{len(entries_split_by_vocab[vocab])} SRValues"
         )
         for entry in entries_split_by_vocab[vocab]:
             entry["concept_id"] = -1
@@ -768,10 +785,11 @@ async def process_values_from_sheet(
                     # exit inner loop early if we find a concept for this entry
                     break
 
-        logger.debug("finished double loop")
+        logger.debug("finished matching")
 
         # ------------------------------------------------
-        # Identify which concepts are non-standard, and fix them in a batch call
+        # Identify which concepts are non-standard, and get their standard counterparts
+        # in a batch call
         entries_to_find_standard_concept = list(
             filter(
                 lambda x: x["concept_id"] != -1 and x["standard_concept"] != "S",
@@ -808,7 +826,10 @@ async def process_values_from_sheet(
         logger.debug("finished standard concepts lookup")
 
     # ------------------------------------
-    # All Concepts are now ready. Generate their entries ready for POSTing
+    # All Concepts are now ready. Generate their entries ready for POSTing from
+    # details_of_posted_values. Remember that entries_split_by_vocab is just a view
+    # into this list, so changes to entries_split_by_vocab above are reflected when
+    # we access details_of_posted_values below.
 
     concept_id_data = []
     for concept in details_of_posted_values:
