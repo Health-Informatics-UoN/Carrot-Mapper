@@ -1,4 +1,6 @@
-import requests, os, time
+import os
+import time
+import requests
 import logging
 from collections import defaultdict
 from ProcessQueue import helpers
