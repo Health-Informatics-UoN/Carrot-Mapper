@@ -58,11 +58,13 @@ def find_standard_concept_batch(source_concepts: list):
 
     # Find those concepts with a "trail" to follow, that is, those which have
     # differing concept_id_1/2.
-    filtered_concept_relations = [
-        concept_relation
-        for concept_relation in concept_relations
-        if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]
-    ]
+    filtered_concept_relations = list(
+        filter(
+            lambda concept_relation: concept_relation["concept_id_2"]
+            != concept_relation["concept_id_1"],
+            concept_relations,
+        )
+    )
 
     paginated_concept_id_2s = helpers.paginate(
         (str(relation["concept_id_2"]) for relation in filtered_concept_relations),

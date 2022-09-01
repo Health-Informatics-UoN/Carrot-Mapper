@@ -274,11 +274,12 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
     existing_field_name_to_field_and_concept_id_map = {}
     for item in new_fields_full_details:
         name = item["name"]
-        mappings_matching_field_name = [
-            mapping
-            for mapping in existing_mappings_to_consider
-            if mapping["name"] == name
-        ]
+        mappings_matching_field_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name, existing_mappings_to_consider
+            )
+        )
+
         target_concept_ids = {
             mapping["concept"] for mapping in mappings_matching_field_name
         }
@@ -441,13 +442,15 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         name = item["name"]
         description = item["description"]
         field_name = item["field_name"]
-        mappings_matching_value_name = [
-            mapping
-            for mapping in existing_mappings_to_consider
-            if mapping["name"] == name
-            and mapping["description"] == description
-            and mapping["field_name"] == field_name
-        ]
+        mappings_matching_value_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name
+                and mapping["description"] == description
+                and mapping["field_name"] == field_name,
+                existing_mappings_to_consider,
+            )
+        )
+
         target_concept_ids = {
             mapping["concept"] for mapping in mappings_matching_value_name
         }
