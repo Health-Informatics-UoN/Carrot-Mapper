@@ -73,12 +73,10 @@ async def post_chunks(chunked_data, endpoint, text_string, table_name, scan_repo
     timeout = httpx.Timeout(60.0, connect=30.0)
 
     for chunk_no, chunk in enumerate(chunked_data):
-        logger.debug(f"chunk {chunk_no}")
         async with httpx.AsyncClient(timeout=timeout) as client:
             tasks = []
             page_lengths = []
             for page_no, page in enumerate(chunk):
-                logger.debug(f"chunk {chunk_no} page {page_no}")
                 # POST chunked data to endpoint
                 tasks.append(
                     asyncio.ensure_future(
@@ -92,7 +90,6 @@ async def post_chunks(chunked_data, endpoint, text_string, table_name, scan_repo
                 page_lengths.append(len(page))
 
             responses = await asyncio.gather(*tasks)
-            logger.debug(f"{responses}")
 
         for response, page_length in zip(responses, page_lengths):
             logger.info(
@@ -555,9 +552,6 @@ async def process_values_from_sheet(
     fieldids_to_names_dict,
     scan_report_id,
 ):
-    # print("WORKING ON", sheet.title)
-    # Reset list for values
-    value_entries_to_post = []
     # Get (col_name, value, frequency) for each field in the table
     fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
@@ -613,8 +607,6 @@ async def process_values_from_sheet(
         }
         for entry in values_details
     ]
-
-    # print(value_entries_to_post)
 
     # --------------------------------------------------------------------------------
     # Chunk the SRValues data ready for upload, and then upload via the endpoint.
