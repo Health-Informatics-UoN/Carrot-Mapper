@@ -593,7 +593,8 @@ async def add_SRValues_and_value_descriptions(
         {
             "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
             "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "value": entry["full_value"],
+            "value": entry["full_value"][:127],  # truncate the value at this point
+            # to fit the size of the field in the ScanReportValue model.
             "frequency": int(entry["frequency"]),
             "value_description": entry["val_desc"],
             "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
