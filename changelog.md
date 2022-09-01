@@ -2,7 +2,18 @@
 
 Please append a line to the changelog for each change made.
 
-##v2.0.2
+## v2.0.3-beta
+### New features
+
+### Improvements
+* Improved error message reporting while checking the structure of uploaded files for consistency.
+* Rewritten values upload enables much faster uploads and vocabulary mapping.
+* Rewritten standard concept matching now enables a single nonstandard concept to be matched to more than one 
+standard concept.
+### Bugfixes
+
+
+## v2.0.2
 ### New features
 
 ### Improvements

@@ -31,37 +31,6 @@ stream_handler.setFormatter(
 logger.addHandler(stream_handler)
 logger.setLevel(logging.INFO)  # Set to logging.DEBUG to show the debug output
 
-
-# Agreed vocabs that are accepted for lookup/conversion
-# The Data Team decide what vocabs are accepted.
-# Add more as necessary by appending the list
-vocabs = [
-    "ABMS",
-    "ATC",
-    "HCPCS",
-    "HES Specialty",
-    "ICD10",
-    "ICD10CM",
-    "ICD10PCS",
-    "ICD9CM",
-    "ICD9Proc",
-    "LOINC",
-    "NDC",
-    "NUCC",
-    "OMOP Extension",
-    "OSM",
-    "PHDSC",
-    "Read",
-    "RxNorm",
-    "RxNorm Extension",
-    "SNOMED",
-    "SPL",
-    "UCUM",
-    "UK Biobank",
-]
-
-max_chars_for_get = 2000
-
 # Set up ccom API parameters:
 API_URL = os.environ.get("APP_URL") + "api/"
 HEADERS = {
@@ -69,6 +38,13 @@ HEADERS = {
     "charset": "utf-8",
     "Authorization": f"Token {os.environ.get('AZ_FUNCTION_KEY')}",
 }
+
+# Look up vocabs from the omop.vocabulary table.
+vocabs_raw = requests.get(
+    url=f"{API_URL}omop/vocabularies/",
+    headers=HEADERS,
+)
+vocabs = [vocab["vocabulary_id"] for vocab in vocabs_raw.json()]
 
 
 def post_paginated_concepts(concepts_to_post):
@@ -92,9 +68,56 @@ def post_paginated_concepts(concepts_to_post):
     concept_response_content += concept_content
 
 
+async def post_chunks(chunked_data, endpoint, text_string, table_name, scan_report_id):
+    response_content = []
+    timeout = httpx.Timeout(60.0, connect=30.0)
+
+    for chunk_no, chunk in enumerate(chunked_data):
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            tasks = []
+            page_lengths = []
+            for page_no, page in enumerate(chunk):
+                # POST chunked data to endpoint
+                tasks.append(
+                    asyncio.ensure_future(
+                        client.post(
+                            url=f"{API_URL}{endpoint}/",
+                            data=json.dumps(page),
+                            headers=HEADERS,
+                        )
+                    )
+                )
+                page_lengths.append(len(page))
+
+            responses = await asyncio.gather(*tasks)
+
+        for response, page_length in zip(responses, page_lengths):
+            logger.info(
+                f"{text_string.upper()} SAVE STATUSES on {table_name} >>>"
+                f" {response.status_code} "
+                f"{response.reason_phrase} {page_length}"
+            )
+
+            if response.status_code != 201:
+                helpers.process_failure(scan_report_id)
+                raise HTTPError(
+                    " ".join(
+                        [
+                            f"Error in {text_string.lower()} save:",
+                            str(response.status_code),
+                            str(response.reason_phrase),
+                            str(response.json()),
+                        ]
+                    )
+                )
+
+            response_content += response.json()
+    return response_content
+
+
 def get_existing_fields_from_ids(existing_field_ids):
     paginated_existing_field_ids = helpers.paginate(
-        existing_field_ids, max_chars_for_get
+        existing_field_ids, omop_helpers.max_chars_for_get
     )
 
     # for each list in paginated ids, get scanreport fields that match any of the given
@@ -251,11 +274,12 @@ def reuse_existing_field_concepts(new_fields_map, content_type):
     existing_field_name_to_field_and_concept_id_map = {}
     for item in new_fields_full_details:
         name = item["name"]
-        mappings_matching_field_name = [
-            mapping
-            for mapping in existing_mappings_to_consider
-            if mapping["name"] == name
-        ]
+        mappings_matching_field_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name, existing_mappings_to_consider
+            )
+        )
+
         target_concept_ids = {
             mapping["concept"] for mapping in mappings_matching_field_name
         }
@@ -312,7 +336,8 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     # get details of existing selected values, for the purpose of matching against
     # new values
     existing_paginated_value_ids = helpers.paginate(
-        [value["object_id"] for value in existing_value_concepts], max_chars_for_get
+        [value["object_id"] for value in existing_value_concepts],
+        omop_helpers.max_chars_for_get,
     )
     logger.debug(f"{existing_paginated_value_ids=}")
 
@@ -369,7 +394,8 @@ def reuse_existing_value_concepts(new_values_map, content_type):
 
     # Now handle the newly-added values in a similar manner
     new_paginated_field_ids = helpers.paginate(
-        [value["scan_report_field"] for value in new_values_map], max_chars_for_get
+        [value["scan_report_field"] for value in new_values_map],
+        omop_helpers.max_chars_for_get,
     )
     logger.debug("new_paginated_field_ids")
 
@@ -385,9 +411,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     logger.debug(f"fields of newly generated values: {new_fields}")
 
     new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
-    logger.debug(
-        f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
-    )
 
     new_values_full_details = [
         {
@@ -398,10 +421,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         }
         for value in new_values_map
     ]
-    logger.debug(
-        f"name, desc, field_name, id of newly-generated values: "
-        f"{new_values_full_details}",
-    )
 
     # Now we have existing_mappings_to_consider of the form:
     #
@@ -423,13 +442,15 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         name = item["name"]
         description = item["description"]
         field_name = item["field_name"]
-        mappings_matching_value_name = [
-            mapping
-            for mapping in existing_mappings_to_consider
-            if mapping["name"] == name
-            and mapping["description"] == description
-            and mapping["field_name"] == field_name
-        ]
+        mappings_matching_value_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name
+                and mapping["description"] == description
+                and mapping["field_name"] == field_name,
+                existing_mappings_to_consider,
+            )
+        )
+
         target_concept_ids = {
             mapping["concept"] for mapping in mappings_matching_value_name
         }
@@ -469,12 +490,13 @@ def process_scan_report_sheet_table(sheet):
     --
 
     -- output --
-    [(a,    apple, 20),
-     (a,   banana,  3),
-     (a,     pear, 12),
-     (b,   orange,  5),
-     (b, plantain, 50)]
-    --
+    dict({'a': [('apple', 20),
+                ('banana', 3),
+                ('pear', 12)],
+          'b': [('orange', 5),
+                ('plantain', 50)]
+          }
+         )
     """
     logger.debug("Start process_scan_report_sheet_table")
 
@@ -524,263 +546,339 @@ def process_scan_report_sheet_table(sheet):
     return d
 
 
+async def add_SRValues_and_value_descriptions(
+    fieldname_value_freq_dict,
+    current_table_name,
+    data_dictionary,
+    fieldnames_to_ids_dict,
+    scan_report_id,
+):
+    values_details = []
+    for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
+        for full_value, frequency in value_freq_tuples:
+            values_details.append(
+                {
+                    "full_value": full_value,
+                    "frequency": frequency,
+                    "fieldname": fieldname,
+                    "table": current_table_name,
+                    "val_desc": None,
+                }
+            )
+
+    logger.debug("assign order")
+    # Add "order" field to each entry to enable correctly-ordered recombination at the end
+    for entry_number, entry in enumerate(values_details):
+        entry["order"] = entry_number
+
+    # --------------------------------------------------------------------------------
+    # Update val_desc of each SRField entry if it has a value description from the
+    # data dictionary
+
+    if data_dictionary:
+        logger.debug("apply data dictionary")
+        for entry in values_details:
+            if data_dictionary.get(str(entry["table"])):  # dict of fields in table
+                if data_dictionary[str(entry["table"])].get(
+                    str(entry["fieldname"])
+                ):  # dict of values in field in table
+                    entry["val_desc"] = data_dictionary[str(entry["table"])][
+                        str(entry["fieldname"])
+                    ].get(str(entry["full_value"]))
+
+    # --------------------------------------------------------------------------------
+    # Convert basic information about SRValues into entries for posting to the endpoint.
+    logger.debug("create value_entries_to_post")
+    value_entries_to_post = [
+        {
+            "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "value": entry["full_value"][:127],  # truncate the value at this point
+            # to fit the size of the field in the ScanReportValue model.
+            "frequency": int(entry["frequency"]),
+            "value_description": entry["val_desc"],
+            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
+        }
+        for entry in values_details
+    ]
+
+    # --------------------------------------------------------------------------------
+    # Chunk the SRValues data ready for upload, and then upload via the endpoint.
+    logger.info(
+        f"POST {len(value_entries_to_post)} values to table {current_table_name}"
+    )
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+    chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
+    logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
+
+    values_response_content = await post_chunks(
+        chunked_value_entries_to_post,
+        "scanreportvalues",
+        "values",
+        table_name=current_table_name,
+        scan_report_id=scan_report_id,
+    )
+    logger.info("POST values all finished")
+    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
+
+    return values_response_content
+
+
 # @memory_profiler.profile(stream=profiler_logstream)
 async def process_values_from_sheet(
     sheet,
     data_dictionary,
     vocab_dictionary,
     current_table_name,
+    current_table_id,
     fieldnames_to_ids_dict,
+    fieldids_to_names_dict,
     scan_report_id,
 ):
-    # print("WORKING ON", sheet.title)
-    # Reset list for values
-    value_entries_to_post = []
+    """
+    This function handles much of the complexity surrounding values for a given table.
+    They can have a value description from the data dictionary, and they can have a
+    vocab mapping from vocab dictionary.
+
+    In summary, we:
+    - get details of a ScanReportValue up together, including value description if
+    supplied, and then POST these all.
+    - get the details of the POSTed SRValues
+    - apply vocab mapping to each SRValue as appropriate. Much of the complexity and
+    audit-keeping is because of the requirement to do this with batch calls - single
+    calls are simply too slow.
+    """
     # Get (col_name, value, frequency) for each field in the table
     fieldname_value_freq_dict = process_scan_report_sheet_table(sheet)
 
-    """
-    For every result of process_scan_report_sheet_table,
-    Save the current name,value,frequency
-    Create ScanReportValue entry,
-    Append to value_entries_to_post[] list,
-    Create JSON array with all the value entries, 
-    Send POST request to API with JSON as input
-    """
-    for name, value_freq_tuples in fieldname_value_freq_dict.items():
-        for full_value, frequency in value_freq_tuples:
-            value = full_value[0:127]
+    # --------------------------------------------------------------------------------
+    # For every result of process_scan_report_sheet_table, create an entry ready to be
+    # POSTed. This includes adding in any 'value description' supplied in the data
+    # dictionary.
 
-            if not frequency:
-                frequency = 0
-
-            if data_dictionary is not None:
-                # Look up value description. We use .get() to guard against
-                # nonexistence in the dictionary without having to manually check. It
-                # returns None if the value is not present
-                table = data_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    field = data_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values in field in table
-                    if field:
-                        val_desc = data_dictionary[str(current_table_name)][
-                            str(name)
-                        ].get(str(value))
-                    else:
-                        val_desc = None
-                else:
-                    val_desc = None
-
-                # Grab data from the 'code' column in the data dictionary
-                # 'code' can contain an ordinary value (e.g. Yes, No, Nurse, Doctor)
-                # or it could contain one of our pre-defined vocab names
-                # e.g. SNOMED, RxNorm, ICD9 etc.
-                # We use .get() to guard against nonexistence in the dictionary
-                # without having to manually check. It returns None if the value is
-                # not present
-                table = vocab_dictionary.get(
-                    str(current_table_name)
-                )  # dict of fields in table
-                if table:
-                    code = vocab_dictionary[str(current_table_name)].get(
-                        str(name)
-                    )  # dict of values, will default to None if field not found in table
-                else:
-                    code = None
-
-                # If 'code' is in our vocab list, try and convert the ScanReportValue
-                # (concept code) to conceptID
-                # If there's a faulty concept code for the vocab, fail gracefully and
-                # set concept_id to default (-1)
-                if code in vocabs:
-                    try:
-                        concept_id = omop_helpers.get_concept_from_concept_code(
-                            concept_code=value,
-                            vocabulary_id=code,
-                            no_source_concept=True,
-                        )
-                        concept_id = concept_id["concept_id"]
-                    except RuntimeWarning:
-                        concept_id = -1
-                else:
-                    concept_id = -1
-
-            else:
-                val_desc = None
-                concept_id = -1
-
-            # Create ScanReportValue entry
-            # We temporarily utilise the redundant 'conceptID' field in ScanReportValue
-            # to save any looked up conceptIDs in the previous block of code.
-            # The conceptID will be cleared later
-            scan_report_value_entry = {
-                "created_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "updated_at": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-                "value": value,
-                "frequency": int(frequency),
-                "conceptID": concept_id,
-                "value_description": val_desc,
-                "scan_report_field": fieldnames_to_ids_dict[name],
-            }
-
-            # Append to list
-            value_entries_to_post.append(scan_report_value_entry)
-
-    logger.info(
-        f"POST {len(value_entries_to_post)} values to table {current_table_name}"
+    values_response_content = await add_SRValues_and_value_descriptions(
+        fieldname_value_freq_dict,
+        current_table_name,
+        data_dictionary,
+        fieldnames_to_ids_dict,
+        scan_report_id,
     )
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
-    values_response_content = []
-    logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
-    timeout = httpx.Timeout(60.0, connect=30.0)
 
-    page_count = 0
-    for chunk in chunked_value_entries_to_post:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            tasks = []
-            page_lengths = []
-            for page in chunk:
-                # POST value_entries_to_post to ScanReportValues model
-                tasks.append(
-                    asyncio.ensure_future(
-                        client.post(
-                            url=f"{API_URL}scanreportvalues/",
-                            data=json.dumps(page),
-                            headers=HEADERS,
-                        )
-                    )
-                )
-                page_lengths.append(len(page))
-                page_count += 1
+    # --------------------------------------------------------------------------------
+    # Get the details of all the SRValues posted in this table. Then we will be able
+    # to run them through the vocabulary mapper and apply any automatic vocab mappings.
 
-            values_responses = await asyncio.gather(*tasks)
-
-        for values_response, page_length in zip(values_responses, page_lengths):
-            logger.info(
-                f"VALUES SAVE STATUSES >>> {values_response.status_code} "
-                f"{values_response.reason_phrase} {page_length}"
-            )
-
-            if values_response.status_code != 201:
-                helpers.process_failure(scan_report_id)
-                raise HTTPError(
-                    " ".join(
-                        [
-                            "Error in values save:",
-                            str(values_response.status_code),
-                            str(json.dumps(page)),
-                        ]
-                    )
-                )
-
-            values_response_content += values_response.json()
-
-    logger.info("POST values all finished")
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    # Process conceptIDs in ScanReportValues
-    # GET values where the conceptID != -1 (i.e. we've converted a concept code to conceptID in the previous code)
+    # GET values where the scan_report_table is the current table.
     logger.debug("GET posted values")
-    get_ids_of_posted_values = requests.get(
-        url=f"{API_URL}scanreportvaluepks/?scan_report={scan_report_id}",
+    details_of_posted_values = requests.get(
+        url=f"{API_URL}scanreportvaluesfilterscanreporttable/?scan_report_table"
+        f"={current_table_id}",
         headers=HEADERS,
-    )
+    ).json()
     logger.debug("GET posted values finished")
 
-    ids_of_posted_values = get_ids_of_posted_values.json()
+    # ---------------------------------------------------------------------------------
+    # Process the SRValues, comparing their SRFields to the vocabs, and then create a
+    # SRConcept entry if a valid translation is found.
 
-    # Create a list for a bulk data upload to the ScanReportConcept model
+    # ------------------------------------------------------------------------------
+    # Add vocabulary_id to each entry from the vocab dictionary, defaulting to None
+    if vocab_dictionary:
+        logger.debug("apply vocab dictionary")
+        for previously_posted_value in details_of_posted_values:
+            if vocab_dictionary.get(str(current_table_name)):
+                vocab_id = vocab_dictionary[str(current_table_name)].get(
+                    str(
+                        fieldids_to_names_dict[
+                            str(previously_posted_value["scan_report_field"])
+                        ]
+                    )
+                )  # dict of values, will default to None if field not found in table
+            else:
+                vocab_id = None
 
-    concept_id_data = [
-        {
-            "nlp_entity": None,
-            "nlp_entity_type": None,
-            "nlp_confidence": None,
-            "nlp_vocabulary": None,
-            "nlp_processed_string": None,
-            "concept": concept["conceptID"],
-            "object_id": concept["id"],
-            # TODO: we should query this value from the API
-            # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-            # but that's not available from an Azure Function.
-            "content_type": 17,
-            "creation_type": "V",
-        }
-        for concept in ids_of_posted_values
-    ]
+            previously_posted_value["vocabulary_id"] = vocab_id
 
-    logger.info(f"POST {len(concept_id_data)} concepts")
+    logger.debug("split by vocab")
 
-    paginated_concept_id_data = helpers.paginate(concept_id_data)
+    # ---------------------------------------------------------------------
+    # Split up by each vocabulary_id, so that we can send the contents of each to the
+    # endpoint in a separate call, with one vocabulary_id per call. Note that the
+    # entries in entries_split_by_vocab are views of those in
+    # details_of_posted_values, which is the variable we will eventually use to
+    # populate our SRConcept entries. So which we mostly operate on
+    # entries_split_by_vocab[vocab[ below, these changes are accessible from
+    # details_of_posted_values
+    entries_split_by_vocab = defaultdict(list)
+    for entry in details_of_posted_values:
+        entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
 
-    concepts_response_content = []
+    # ----------------------------------------------
+    # For each vocab, set "concept_id" and "standard_concept" in each entry in the
+    # vocab.
+    #
+    # For the case when vocab is None, set it to defaults.
+    #
+    # For other cases, get the concepts from the vocab via /omop/conceptsfilter under
+    # pagination.
+    # Then match these back to the originating values, setting "concept_id" and
+    # "standard_concept" in each case.
+    # Finally, we need to fix all entries where "standard_concept" != "S" using
+    # `find_standard_concept_batch()`. This may result in more than one standard
+    # concept for a single nonstandard concept, and so "concept_id" may be either an
+    # int or str, or a list of such.
 
-    for page in paginated_concept_id_data:
+    for vocab in entries_split_by_vocab:
+        if vocab is None:
+            # set to defaults, and skip all the remaining processing that a vocab
+            # would require
+            for entry in entries_split_by_vocab[vocab]:
+                entry["concept_id"] = -1
+                entry["standard_concept"] = None
+            continue
 
-        # POST the ScanReportConcept data to the model
-        concepts_response = requests.post(
-            url=f"{API_URL}scanreportconcepts/",
-            headers=HEADERS,
-            data=json.dumps(page),
+        assert vocab is not None
+        logger.info(f"begin {vocab}")
+
+        paginated_values_in_this_vocab = helpers.paginate(
+            (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
+            max_chars=omop_helpers.max_chars_for_get,
         )
 
-        logger.info(
-            f"CONCEPT SAVE STATUS >>> "
-            f"{concepts_response.status_code} "
-            f"{concepts_response.reason}"
+        concept_vocab_response = []
+
+        for page_of_values in paginated_values_in_this_vocab:
+            page_of_values_to_get = ",".join(map(str, page_of_values))
+
+            get_concept_vocab_response = requests.get(
+                f"{API_URL}omop/conceptsfilter/?concept_code__in="
+                f"{page_of_values_to_get}&vocabulary_id__in"
+                f"={vocab}",
+                headers=HEADERS,
+            )
+            logger.debug(
+                f"CONCEPTS GET BY VOCAB STATUS >>> "
+                f"{get_concept_vocab_response.status_code} "
+                f"{get_concept_vocab_response.reason}"
+            )
+            concept_vocab_response.append(get_concept_vocab_response.json())
+
+        concept_vocab_content = helpers.flatten(concept_vocab_response)
+
+        # Loop over all returned concepts, and match their concept_code and vocabulary_id with
+        # the full_value in the entries_split_by_vocab, and set the latter's
+        # concept_id and standard_concept with those values
+        logger.debug(
+            f"Attempting to match {len(concept_vocab_content)} concepts to "
+            f"{len(entries_split_by_vocab[vocab])} SRValues"
         )
-        if concepts_response.status_code != 201:
-            helpers.process_failure(scan_report_id)
-            raise HTTPError(
-                " ".join(
-                    [
-                        "Error in concept save:",
-                        str(concepts_response.status_code),
-                        str(json.dumps(page)),
-                    ]
-                )
+        for entry in entries_split_by_vocab[vocab]:
+            entry["concept_id"] = -1
+            entry["standard_concept"] = None
+
+        for entry in entries_split_by_vocab[vocab]:
+            for returned_concept in concept_vocab_content:
+                if str(entry["value"]) == str(returned_concept["concept_code"]):
+                    entry["concept_id"] = str(returned_concept["concept_id"])
+                    entry["standard_concept"] = str(
+                        returned_concept["standard_concept"]
+                    )
+                    # exit inner loop early if we find a concept for this entry
+                    break
+
+        logger.debug("finished matching")
+
+        # ------------------------------------------------
+        # Identify which concepts are non-standard, and get their standard counterparts
+        # in a batch call
+        entries_to_find_standard_concept = list(
+            filter(
+                lambda x: x["concept_id"] != -1 and x["standard_concept"] != "S",
+                entries_split_by_vocab[vocab],
+            )
+        )
+        logger.debug(
+            f"finished selecting nonstandard concepts - selected "
+            f"{len(entries_to_find_standard_concept)}"
+        )
+
+        batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
+            entries_to_find_standard_concept
+        )
+
+        # batched_standard_concepts_map maps from an original concept id to
+        # a list of associated standard concepts. Use each item to update the
+        # relevant entry from entries_split_by_vocab[vocab].
+        for nonstandard_concept in batched_standard_concepts_map:
+            relevant_entry = helpers.get_by_concept_id(
+                entries_split_by_vocab[vocab], nonstandard_concept
             )
 
-        concepts_content = concepts_response.json()
-        concepts_response_content += concepts_content
+            if isinstance(relevant_entry["concept_id"], (int, str)):
+                relevant_entry["concept_id"] = batched_standard_concepts_map[
+                    nonstandard_concept
+                ]
+            elif relevant_entry["concept_id"] is None:
+                # This is the case where pairs_for_use contains an entry that
+                # doesn't have a counterpart in entries_split_by_vocab, so this
+                # should error or warn
+                raise RuntimeWarning
+
+        logger.debug("finished standard concepts lookup")
+
+    # ------------------------------------
+    # All Concepts are now ready. Generate their entries ready for POSTing from
+    # details_of_posted_values. Remember that entries_split_by_vocab is just a view
+    # into this list, so changes to entries_split_by_vocab above are reflected when
+    # we access details_of_posted_values below.
+
+    concept_id_data = []
+    for concept in details_of_posted_values:
+        if concept["concept_id"] != -1:
+            if isinstance(concept["concept_id"], list):
+                for concept_id in concept["concept_id"]:
+                    concept_id_data.append(
+                        {
+                            "concept": concept_id,
+                            "object_id": concept["id"],
+                            # TODO: we should query this value from the API
+                            # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                            # but that's not available from an Azure Function.
+                            "content_type": 17,
+                            "creation_type": "V",
+                        }
+                    )
+            else:
+                concept_id_data.append(
+                    {
+                        "concept": concept["concept_id"],
+                        "object_id": concept["id"],
+                        # TODO: we should query this value from the API
+                        # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
+                        # but that's not available from an Azure Function.
+                        "content_type": 17,
+                        "creation_type": "V",
+                    }
+                )
+
+    # --------------------------------------------------------------------------------
+    # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
+    logger.info(f"POST {len(concept_id_data)} concepts to table {current_table_name}")
+
+    chunked_concept_id_data = helpers.perform_chunking(concept_id_data)
+    logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
+
+    await post_chunks(
+        chunked_concept_id_data,
+        "scanreportconcepts",
+        "concept",
+        table_name=current_table_name,
+        scan_report_id=scan_report_id,
+    )
 
     logger.info("POST concepts all finished")
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
-    # Update ScanReportValue to remove any data added to the conceptID field
-    # conceptID field only used temporarily to hold the converted concept code -> conceptID
-    # Now the conceptID is saved to the correct model (ScanReportConcept) there's no
-    # need for the concept ID to also be saved to ScanReportValue::conceptID
 
-    # Reset conceptID to -1 (default). This doesn't need pagination because it's a
-    # loop over all relevant fields anyway
-    put_update_json = json.dumps({"conceptID": -1})
-
-    logger.info(f"PATCH {len(ids_of_posted_values)} values")
-
-    for concept in ids_of_posted_values:
-        logger.debug("PATCH value")
-        value_response = requests.patch(
-            url=f"{API_URL}scanreportvalues/{concept['id']}/",
-            headers=HEADERS,
-            data=put_update_json,
-        )
-        # print("PATCH value finished", datetime.utcnow().strftime("%H:%M:%S.%fZ"))
-        if value_response.status_code != 200:
-            helpers.process_failure(scan_report_id)
-            raise HTTPError(
-                " ".join(
-                    [
-                        "Error in value save:",
-                        str(value_response.status_code),
-                        str(put_update_json),
-                    ]
-                )
-            )
-
-    logger.info("PATCH values finished")
     reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
     reuse_existing_value_concepts(values_response_content, 17)
     logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
@@ -820,8 +918,9 @@ def post_field_entries(field_entries_to_post, scan_report_id):
     return fields_response_content
 
 
-def post_table_entries(
+async def handle_single_table(
     current_table_name,
+    current_table_id,
     field_entries_to_post,
     scan_report_id,
     wb,
@@ -847,6 +946,10 @@ def post_table_entries(
         str(element.get("name", None)): str(element.get("id", None))
         for element in fields_response_content
     }
+    fieldids_to_names_dict = {
+        str(element.get("id", None)): str(element.get("name", None))
+        for element in fields_response_content
+    }
 
     # print("Dictionary id:name", fieldnames_to_ids_dict)
 
@@ -859,19 +962,20 @@ def post_table_entries(
 
     # Go to Table sheet to process all the values from the sheet
     sheet = wb[current_table_name]
-    asyncio.run(
-        process_values_from_sheet(
-            sheet,
-            data_dictionary,
-            vocab_dictionary,
-            current_table_name,
-            fieldnames_to_ids_dict,
-            scan_report_id,
-        )
+
+    await process_values_from_sheet(
+        sheet,
+        data_dictionary,
+        vocab_dictionary,
+        current_table_name,
+        current_table_id,
+        fieldnames_to_ids_dict,
+        fieldids_to_names_dict,
+        scan_report_id,
     )
 
 
-def process_all_fields_and_values(
+async def process_all_fields_and_values(
     fo_ws,
     table_name_to_id_map,
     wb,
@@ -923,8 +1027,9 @@ def process_all_fields_and_values(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             # print("scan_report_field_entries >>>", field_entries_to_post)
-            post_table_entries(
+            await handle_single_table(
                 current_table_name,
+                table_name_to_id_map[current_table_name],
                 field_entries_to_post,
                 scan_report_id,
                 wb,
@@ -934,8 +1039,9 @@ def process_all_fields_and_values(
             field_entries_to_post = []
     # Catch the final table if it wasn't already posted in the loop above - sometimes the iter_rows() seems to now allow you to go beyond the last row.
     if field_entries_to_post:
-        post_table_entries(
+        await handle_single_table(
             current_table_name,
+            table_name_to_id_map[current_table_name],
             field_entries_to_post,
             scan_report_id,
             wb,
@@ -1117,13 +1223,15 @@ def main(msg: func.QueueMessage):
     # and ScanReportValues associated to that table, then continue down the
     # list of fields in tables until all fields in all tables have been
     # processed (along with their ScanReportValues).
-    process_all_fields_and_values(
-        fo_ws,
-        table_name_to_id_map,
-        wb,
-        data_dictionary,
-        vocab_dictionary,
-        scan_report_id,
+    asyncio.run(
+        process_all_fields_and_values(
+            fo_ws,
+            table_name_to_id_map,
+            wb,
+            data_dictionary,
+            vocab_dictionary,
+            scan_report_id,
+        )
     )
 
     logger.info("All tables completed. Now set status to 'Upload Complete'")

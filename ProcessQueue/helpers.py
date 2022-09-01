@@ -119,3 +119,14 @@ def paginate(entries, max_chars=None):
         paginated_entries.append(this_page)
 
     return paginated_entries
+
+
+def get_by_concept_id(list_of_dicts: list, concept_id: str):
+    """
+    Given a list of dicts, return the dict from the list which
+    contains the concept_id supplied
+    """
+    for item in list_of_dicts:
+        if str(item["concept_id"]) == str(concept_id):
+            return item
+    return None

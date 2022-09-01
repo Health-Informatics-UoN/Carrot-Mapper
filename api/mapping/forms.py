@@ -180,6 +180,7 @@ class ScanReportForm(forms.Form):
                     f"You provided \n{source_headers[:10]}"
                 )
             )
+            raise ValidationError(errors)
 
         # Check tables are correctly separated in FO - a single empty line between each
         # table
@@ -201,6 +202,9 @@ class ScanReportForm(forms.Form):
                     )
                 )
             cell_above = cell
+
+        if errors:
+            raise ValidationError(errors)
 
         # Now that we're happy that the FO sheet is correctly formatted, we can move
         # on to comparing its contents to the sheets
@@ -239,6 +243,9 @@ class ScanReportForm(forms.Form):
                         f"not have matching sheets supplied."
                     )
                 )
+
+        if errors:
+            raise ValidationError(errors)
 
         # Loop over the rows, and for each table, once we reach the end of the table,
         # compare the fields provided with the fields in the associated sheet
