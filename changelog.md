@@ -7,7 +7,9 @@ Please append a line to the changelog for each change made.
 
 ### Improvements
 * Improved error message reporting while checking the structure of uploaded files for consistency.
-
+* Rewritten values upload enables much faster uploads and vocabulary mapping.
+* Rewritten standard concept matching now enables a single nonstandard concept to be matched to more than one 
+standard concept.
 ### Bugfixes
 
 
