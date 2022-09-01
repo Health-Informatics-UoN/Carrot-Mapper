@@ -31,8 +31,6 @@ stream_handler.setFormatter(
 logger.addHandler(stream_handler)
 logger.setLevel(logging.INFO)  # Set to logging.DEBUG to show the debug output
 
-max_chars_for_get = 2000
-
 # Set up ccom API parameters:
 API_URL = os.environ.get("APP_URL") + "api/"
 HEADERS = {
@@ -122,7 +120,7 @@ async def post_chunks(chunked_data, endpoint, text_string, table_name, scan_repo
 
 def get_existing_fields_from_ids(existing_field_ids):
     paginated_existing_field_ids = helpers.paginate(
-        existing_field_ids, max_chars_for_get
+        existing_field_ids, omop_helpers.max_chars_for_get
     )
 
     # for each list in paginated ids, get scanreport fields that match any of the given
@@ -340,7 +338,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     # get details of existing selected values, for the purpose of matching against
     # new values
     existing_paginated_value_ids = helpers.paginate(
-        [value["object_id"] for value in existing_value_concepts], max_chars_for_get
+        [value["object_id"] for value in existing_value_concepts], omop_helpers.max_chars_for_get
     )
     logger.debug(f"{existing_paginated_value_ids=}")
 
@@ -397,7 +395,7 @@ def reuse_existing_value_concepts(new_values_map, content_type):
 
     # Now handle the newly-added values in a similar manner
     new_paginated_field_ids = helpers.paginate(
-        [value["scan_report_field"] for value in new_values_map], max_chars_for_get
+        [value["scan_report_field"] for value in new_values_map], omop_helpers.max_chars_for_get
     )
     logger.debug("new_paginated_field_ids")
 
@@ -709,7 +707,7 @@ async def process_values_from_sheet(
             logger.info(f"begin {vocab}")
             paginated_values_in_this_vocab = helpers.paginate(
                 (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
-                max_chars=max_chars_for_get,
+                max_chars=omop_helpers.max_chars_for_get,
             )
 
             concept_vocab_response = []
