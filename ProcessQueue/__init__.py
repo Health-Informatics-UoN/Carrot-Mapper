@@ -413,9 +413,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
     logger.debug(f"fields of newly generated values: {new_fields}")
 
     new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
-    # logger.debug(
-    #     f"id:name of fields of newly generated values: " f"{new_fields_to_name_map}"
-    # )
 
     new_values_full_details = [
         {
@@ -426,10 +423,6 @@ def reuse_existing_value_concepts(new_values_map, content_type):
         }
         for value in new_values_map
     ]
-    # logger.debug(
-    #     f"name, desc, field_name, id of newly-generated values: "
-    #     f"{new_values_full_details}",
-    # )
 
     # Now we have existing_mappings_to_consider of the form:
     #
@@ -681,11 +674,6 @@ async def process_values_from_sheet(
 
             previously_posted_value["vocabulary_id"] = vocab_id
 
-    # print("vocab ids added:")
-    # print(details_of_posted_values)
-
-    # print(set(entry["vocabulary_id"] for entry in a))
-
     logger.debug("split by vocab")
 
     # ---------------------------------------------------------------------
@@ -694,11 +682,6 @@ async def process_values_from_sheet(
     entries_split_by_vocab = defaultdict(list)
     for entry in details_of_posted_values:
         entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
-
-    # print(entries_split_by_vocab)
-
-    # for vocab in entries_split_by_vocab:
-    #     print(vocab, entries_split_by_vocab[vocab])
 
     # ----------------------------------------------
     # For each vocab, set "concept_id" and "standard_concept" in each entry in the
@@ -710,9 +693,10 @@ async def process_values_from_sheet(
     # pagination.
     # Then match these back to the originating values, setting "concept_id" and
     # "standard_concept" in each case.
-    # Finally, we need to fix any entries where "standard_concept" != "S" using
-    # `find_standard_concept()`
-    # TODO: `find_standard_concept()` currently only works on a one-by-one basis
+    # Finally, we need to fix all entries where "standard_concept" != "S" using
+    # `find_standard_concept_batch()`. This may result in more than one standard
+    # concept for a single nonstandard concept, and so "concept_id" may be either an
+    # int or str, or a list of such.
 
     for vocab in entries_split_by_vocab:
         # print()
@@ -729,7 +713,7 @@ async def process_values_from_sheet(
             )
 
             concept_vocab_response = []
-            # concept_vocab_response_content = []
+
             for page_of_values in paginated_values_in_this_vocab:
                 # print(f"{concepts_to_get_item=}")
                 get_concept_vocab_response = requests.get(
@@ -743,16 +727,13 @@ async def process_values_from_sheet(
                     f"{get_concept_vocab_response.status_code} "
                     f"{get_concept_vocab_response.reason}"
                 )
-                # print('response', get_concept_vocab_response.json())
                 concept_vocab_response.append(get_concept_vocab_response.json())
-            # print(f"{concept_vocab_response=}")
+
             concept_vocab_content = helpers.flatten(concept_vocab_response)
 
-            # Loop over all returned concepts, and match their concept_code and vocabulary_id (
-            # which is not necessary as we're within a single vocab's context anyway) with
-            # the full_value in the entries_split_by_vocab, and extend the latter by
-            # concept_id and standard_concept
-            # print(f"{concept_vocab_content=}")
+            # Loop over all returned concepts, and match their concept_code and vocabulary_id with
+            # the full_value in the entries_split_by_vocab, and set the latter's
+            # concept_id and standard_concept with those values
             logger.debug(
                 f"begin double loop over {len(concept_vocab_content)} * "
                 f"{len(entries_split_by_vocab[vocab])} pairs"
@@ -760,13 +741,9 @@ async def process_values_from_sheet(
             for entry in entries_split_by_vocab[vocab]:
                 entry["concept_id"] = -1
                 entry["standard_concept"] = None
-            # TODO: consider any better way of doing this, but shortcircuiting with
-            #  break seems sufficient - sub-1s for >600 values
+
             for entry in entries_split_by_vocab[vocab]:
-                count = 0
                 for returned_concept in concept_vocab_content:
-                    # print("comparing", returned_concept, entry)
-                    count += 1
                     if str(entry["value"]) == str(returned_concept["concept_code"]):
                         entry["concept_id"] = str(returned_concept["concept_id"])
                         entry["standard_concept"] = str(
@@ -778,7 +755,7 @@ async def process_values_from_sheet(
             logger.debug("finished double loop")
 
             # ------------------------------------------------
-            # Identify which concepts are non-standard, and fix them
+            # Identify which concepts are non-standard, and fix them in a batch call
             entries_to_find_standard_concept = []
             for entry in entries_split_by_vocab[vocab]:
                 if entry["concept_id"] != -1 and entry["standard_concept"] != "S":
@@ -791,11 +768,10 @@ async def process_values_from_sheet(
             batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
                 entries_to_find_standard_concept
             )
-            # logger.debug(f"{batched_standard_concepts_map=}")
-            # Each item in pairs_for_use is a tuple. First item is original concept
-            # id. Second item is the standard concept. Note that the first item is
-            # not guaranteed to be unique: one concept may map to multiple standard
-            # concepts.
+
+            # batched_standard_concepts_map maps from an original concept id to
+            # a list of associated standard concepts. Use each item to update the
+            # relevant entry from entries_split_by_vocab[vocab].
             for nonstandard_concept in batched_standard_concepts_map:
                 relevant_entry = helpers.get_by_concept_id(
                     entries_split_by_vocab[vocab], nonstandard_concept
@@ -811,7 +787,6 @@ async def process_values_from_sheet(
                     # should error or warn
                     raise RuntimeWarning
 
-            # logger.debug(f"{entries_split_by_vocab=}")
             logger.debug("finished standard concepts lookup")
 
     # ------------------------------------

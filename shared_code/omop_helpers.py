@@ -36,15 +36,12 @@ def find_standard_concept_batch(source_concepts: list):
     if len(source_concepts) == 0:
         return {}
 
-    # logger.debug(
-    #     f"getting "
-    #     f"{','.join(str(source_concept['concept_id']) for source_concept in source_concepts)}"
-    # )
+    # Paginate the source concepts
     paginated_source_concepts = helpers.paginate(
         (str(source_concept["concept_id"]) for source_concept in source_concepts),
         max_chars=max_chars_for_get,
     )
-    # TODO: Needs pagination
+
     # Get "Maps to" relations of all source concepts supplied
     concept_relations_response = []
     for page in paginated_source_concepts:
@@ -58,27 +55,22 @@ def find_standard_concept_batch(source_concepts: list):
         concept_relations_response.append(get_concept_relations_response.json())
     concept_relations = helpers.flatten(concept_relations_response)
 
-    logger.debug("got CRel")
-
     # Find those concepts with a "trail" to follow, that is, those which have
     # differing concept_id_1/2.
-    non_last_target_concepts = [
+    filtered_concept_relations = [
         concept_relation
         for concept_relation in concept_relations
         if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]
     ]
 
-    logger.debug("non_last_targets selected")
-
     paginated_concept_id_2s = helpers.paginate(
-        (str(relation["concept_id_2"]) for relation in non_last_target_concepts),
+        (str(relation["concept_id_2"]) for relation in filtered_concept_relations),
         max_chars=max_chars_for_get,
     )
     # Send all of those to conceptfilter again to check they are standard.
     concepts = []
     for page in paginated_concept_id_2s:
         concept_id_2s_to_get = ",".join(map(str, page))
-
         get_concepts = requests.get(
             url=f"{api_url}omop/conceptsfilter/?concept_id__in={concept_id_2s_to_get}",
             headers=api_header,
@@ -92,32 +84,13 @@ def find_standard_concept_batch(source_concepts: list):
     # Filter by those concepts relationships where the second concept_id is standard
     # Now combine the pairs so that each pair is of type tuple(str, list(str))
     combined_pairs = defaultdict(list)
-    for relationship in non_last_target_concepts:
+    for relationship in filtered_concept_relations:
         if concept_details[relationship["concept_id_2"]] == "S":
             combined_pairs[relationship["concept_id_1"]].append(
                 relationship["concept_id_2"]
             )
 
     return combined_pairs
-    # if len(concept_relation) == 0:
-    #     return {"concept_id": -1}
-    #     # raise RuntimeWarning("concept_relation is empty in vocab")
-    # concept_relation = concept_relation[0]
-    #
-    # if concept_relation["concept_id_2"] != concept_relation["concept_id_1"]:
-    #     concept = requests.get(
-    #         url=api_url + "omop/conceptsfilter",
-    #         headers=api_header,
-    #         params={"concept_id": concept_relation["concept_id_2"]},
-    #     )
-    #     concept = concept.json()
-    #     if len(concept) == 0:
-    #         raise RuntimeWarning("concept filter returned empty")
-    #     concept = concept[0]
-    #     return concept
-    # else:
-    #     # may need some warning if this ever happens?
-    #     return source_concept
 
 
 def find_standard_concept(source_concept):
