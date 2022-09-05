@@ -8,7 +8,7 @@ Please append a line to the changelog for each change made.
 ### Improvements
 
 ### Bugfixes
-
+- Fixed strings shown when fields and values are loading or none are present.
 
 ## v2.0.3
 ### New features
