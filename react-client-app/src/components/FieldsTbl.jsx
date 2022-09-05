@@ -94,7 +94,7 @@ const FieldsTbl = (props) => {
         return (
             <Flex padding="30px">
                 <Spinner />
-                <Flex marginLeft="10px">Loading Field values {loadingMessage}</Flex>
+                <Flex marginLeft="10px">Loading Fields {loadingMessage}</Flex>
             </Flex>
         )
     }
@@ -102,7 +102,7 @@ const FieldsTbl = (props) => {
         //Render Empty List State
         return (
             <Flex padding="30px">
-                <Flex marginLeft="10px">No Field values Found</Flex>
+                <Flex marginLeft="10px">No Fields Found</Flex>
             </Flex>
         )
     }
