@@ -6,6 +6,7 @@ Please append a line to the changelog for each change made.
 ### New features
 
 ### Improvements
+- "Table Overview" and "_" sheets are now optional in Scan Report files. These are not currently used in our processing.
 
 ### Bugfixes
 - Fixed strings shown when fields and values are loading or none are present.
