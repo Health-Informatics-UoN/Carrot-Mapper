@@ -8,3 +8,4 @@ psutil
 resource
 memory-profiler
 httpx
+pre-commit
