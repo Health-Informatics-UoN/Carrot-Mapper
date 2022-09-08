@@ -1,13 +1,12 @@
-import React from 'react'
-import AnalysisTbl from './AnalysisTbl'
+import React from "react";
+import AnalysisTbl from "./AnalysisTbl";
 
 function ConceptAnalysis({ data }) {
-
-    return (
-        <div>
-            <AnalysisTbl data={data} />
-        </div>
-    )
+  return (
+    <div>
+      <AnalysisTbl data={data} />
+    </div>
+  );
 }
 
-export default ConceptAnalysis
+export default ConceptAnalysis;

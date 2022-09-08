@@ -1,24 +1,24 @@
-import { extendTheme } from "@chakra-ui/react"
+import { extendTheme } from "@chakra-ui/react";
 
 const theme = extendTheme({
   components: {
     Button: {
       variants: {
-        "blue": {
+        blue: {
           bg: "#475da7",
-          color: "white"
+          color: "white",
         },
-        "green": {
+        green: {
           bg: "#3db28c",
-          color: "white"
+          color: "white",
         },
-        "yellow": {
+        yellow: {
           bg: "#ffc107",
-          color: "white"
+          color: "white",
         },
-        "red": {
+        red: {
           bg: "#dc3544",
-          color: "white"
+          color: "white",
         },
       },
     },
@@ -37,31 +37,31 @@ const theme = extendTheme({
     lightyellow: "#FFFF8A",
     lightred: "#F7BEC0",
     brown: { light: "#C89D7C", bright: "#DCB190" },
-    upload:"#ececec",
+    upload: "#ececec",
     prog25: "#fef0d5",
     prog50: "#fbe3a9",
     prog75: "#fbd879",
-    pending:"#a3c1e2",
-    complete:"#50a95e",
-    blocked:"#e84e46",
-    in_progress:"#fbd879"
+    pending: "#a3c1e2",
+    complete: "#50a95e",
+    blocked: "#e84e46",
+    in_progress: "#fbd879",
   },
   styles: {
     global: {
       "Tr.largeTbl > Th": {
-        p: "5px"
+        p: "5px",
       },
       "Tr.largeTbl > Td": {
         p: "5px",
       },
       "Tr.mediumTbl > Th": {
-        p: "8px"
+        p: "8px",
       },
       "Tr.mediumTbl > Td": {
         p: "8px",
       },
     },
   },
-})
+});
 
-export default theme
+export default theme;
