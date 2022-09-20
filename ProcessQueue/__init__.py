@@ -556,6 +556,10 @@ async def add_SRValues_and_value_descriptions(
     values_details = []
     for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
+            try:
+                frequency = int(frequency)
+            except (ValueError, TypeError):
+                frequency = 0
             values_details.append(
                 {
                     "full_value": full_value,
@@ -682,22 +686,21 @@ async def process_values_from_sheet(
     # SRConcept entry if a valid translation is found.
 
     # ------------------------------------------------------------------------------
-    # Add vocabulary_id to each entry from the vocab dictionary, defaulting to None
-    if vocab_dictionary:
-        logger.debug("apply vocab dictionary")
-        for previously_posted_value in details_of_posted_values:
-            if vocab_dictionary.get(str(current_table_name)):
-                vocab_id = vocab_dictionary[str(current_table_name)].get(
-                    str(
-                        fieldids_to_names_dict[
-                            str(previously_posted_value["scan_report_field"])
-                        ]
-                    )
-                )  # dict of values, will default to None if field not found in table
-            else:
-                vocab_id = None
+    # Add vocabulary_id to each entry from the vocab dictionary, defaulting to None if
+    # either there is no vocab dictionary provided, or non vocabs associated to the given field
+    for previously_posted_value in details_of_posted_values:
+        if vocab_dictionary and vocab_dictionary.get(str(current_table_name)):
+            vocab_id = vocab_dictionary[str(current_table_name)].get(
+                str(
+                    fieldids_to_names_dict[
+                        str(previously_posted_value["scan_report_field"])
+                    ]
+                )
+            )  # dict of values, will default to None if field not found in table
+        else:
+            vocab_id = None
 
-            previously_posted_value["vocabulary_id"] = vocab_id
+        previously_posted_value["vocabulary_id"] = vocab_id
 
     logger.debug("split by vocab")
 
@@ -1244,3 +1247,4 @@ def main(msg: func.QueueMessage):
     logger.info("Successfully set status to 'Upload Complete'")
     wb.close()
     logger.info("Workbook successfully closed")
+    return
