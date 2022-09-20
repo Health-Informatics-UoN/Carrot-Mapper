@@ -1247,3 +1247,4 @@ def main(msg: func.QueueMessage):
     logger.info("Successfully set status to 'Upload Complete'")
     wb.close()
     logger.info("Workbook successfully closed")
+    return
