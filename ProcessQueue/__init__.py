@@ -556,6 +556,10 @@ async def add_SRValues_and_value_descriptions(
     values_details = []
     for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
         for full_value, frequency in value_freq_tuples:
+            try:
+                frequency = int(frequency)
+            except (ValueError, TypeError):
+                frequency = 0
             values_details.append(
                 {
                     "full_value": full_value,
