@@ -2,7 +2,18 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.3-beta
+## v2.0.4
+### New features
+
+### Improvements
+- "Table Overview" and "_" sheets are now optional in Scan Report files. These are not currently used in our processing.
+
+### Bugfixes
+- Fixed strings shown when fields and values are loading or none are present.
+- Fixed a regression when scan report upload encounters blank frequency cells
+- Fixed a regression when a data dictionary file is not supplied.
+
+## v2.0.3
 ### New features
 
 ### Improvements

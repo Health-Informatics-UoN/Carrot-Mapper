@@ -90,7 +90,7 @@ const ValuesTbl = (props) => {
         return (
             <Flex padding="30px">
                 <Spinner />
-                <Flex marginLeft="10px">Loading Scan Reports {loadingMessage}</Flex>
+                <Flex marginLeft="10px">Loading Values {loadingMessage}</Flex>
             </Flex>
         )
     }
@@ -99,7 +99,7 @@ const ValuesTbl = (props) => {
         return (
             <Flex padding="30px">
 
-                <Flex marginLeft="10px">No Scan Reports Found</Flex>
+                <Flex marginLeft="10px">No Values Found</Flex>
             </Flex>
         )
     }
