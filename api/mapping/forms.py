@@ -210,21 +210,29 @@ class ScanReportForm(forms.Form):
         # on to comparing its contents to the sheets
 
         # Check tables in FO match supplied sheets
-        table_names = list(
-            set(
-                cell.value
-                for cell in fo_ws["A"][1:]
-                if (cell.value != "" and cell.value is not None)
-            )
+        table_names = set(
+            cell.value
+            for cell in fo_ws["A"][1:]
+            if (cell.value != "" and cell.value is not None)
         )
-        expected_sheetnames = table_names + ["Field Overview", "Table Overview", "_"]
-        if sorted(wb.sheetnames) != sorted(expected_sheetnames):
-            sheets_only = set(wb.sheetnames).difference(expected_sheetnames)
-            fo_only = set(expected_sheetnames).difference(wb.sheetnames)
+        # Drop "Table Overview" and "_" sheetnames if present, as these are never used.
+        table_names.difference_update(["Table Overview", "_"])
+
+        # "Field Overview" is the only required sheet that is not a table name.
+        expected_sheetnames = list(table_names) + ["Field Overview"]
+
+        # Get names of sheet from workbook
+        actual_sheetnames = set(wb.sheetnames)
+        # Drop "Table Overview" and "_" sheetnames if present, as these are never used.
+        actual_sheetnames.difference_update(["Table Overview", "_"])
+
+        if sorted(actual_sheetnames) != sorted(expected_sheetnames):
+            sheets_only = set(actual_sheetnames).difference(expected_sheetnames)
+            fo_only = set(expected_sheetnames).difference(actual_sheetnames)
             errors.append(
                 ValidationError(
-                    f"Tables in Field Overview sheet do not "
-                    f"match the sheets supplied."
+                    "Tables in Field Overview sheet do not "
+                    "match the sheets supplied."
                 )
             )
             if sheets_only:
