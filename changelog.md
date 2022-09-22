@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.6
+### New features
+
+### Improvements
+- Removed an unnecessary API call that was badly affecting large Values pages. This greatly improves that page's loading time.
+
+### Bugfixes
+
+
 ## v2.0.5
 ### New features
 
