@@ -145,9 +145,15 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
         const conceptPromiseResults = await Promise.all(conceptPromises)
         const omopConcepts = [].concat.apply([], conceptPromiseResults)
 
-        // this query may need to be paginated. Also the endpoint does not actually exist so it is returning
+        // the endpoint does not actually exist so it is returning
         // all the mapping rules at the moment which works but needs to be fixed
-        const mappingRules = await useGet(`/mappingrulesfilter/?concepts__in=${scanreportconcepts.map(item=>item.id).join()}`)
+        const scanreportconceptIds = chunkIds(scanreportconcepts.map(item => item.id))
+        const scanreportconceptPromises = []
+        for (let i = 0; i < scanreportconceptIds.length; i++) {
+            scanreportconceptPromises.push(useGet(`/mappingrulesfilter/?concepts__in=${scanreportconceptIds[i].join()}`))
+        }
+        const mappingRulesPromiseResult = await Promise.all(scanreportconceptPromises)
+        const mappingRules = [].concat.apply([], mappingRulesPromiseResult)
         scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
 
 

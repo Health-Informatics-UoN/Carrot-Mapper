@@ -2,6 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.5
+### New features
+
+### Improvements
+
+### Bugfixes
+- Fixed an issue where too many concepts in a single page would result in a 400 error.
+
 ## v2.0.4
 ### New features
 
