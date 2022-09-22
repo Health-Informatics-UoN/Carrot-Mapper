@@ -809,7 +809,10 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
     queryset = MappingRule.objects.all()
     serializer_class = MappingRuleSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["scan_report"]
+    filterset_fields = {
+        "scan_report": ["in", "exact"],
+        "concept": ["in", "exact"],
+    }
 
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
