@@ -102,7 +102,7 @@ const getScanReportConcepts = async (id) => {
 }
 // get scan report concepts for all specified values
 const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},setScanReports=()=>{}) => {
-    // create array of ids and use them to batch query for scanreport concepts associated to those id's
+    // create array of ids and use them to batch query for ScanReportConcepts associated to those id's
     const valueIds = chunkIds(values.map(value => value.id))
     const valuePromises = []
     for (let i = 0; i < valueIds.length; i++) {
@@ -118,8 +118,10 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
         scanReportsRef.current = values
         return values
     }
-    // create a list of unique omop concept id's and use them to make a batch call to the api
+    // create a list of unique omop concept id's from scanreportconcepts.  and use them to make a batch call to the api
     const conceptIdsObject = {}
+    // TODO: dedent this
+    // conceptIdsObject will be a map from concept to object_id for each element in scanreportconcepts
         scanreportconcepts.map(value => {
             if (value.concept) {
                 if (conceptIdsObject[value.concept]) {
@@ -132,30 +134,19 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
         })
         // indicate that concepts are loaded for all values that have no concepts to be mapped to them
         values = values.map((scanReport) => Object.values(conceptIdsObject).find(arr => arr.includes(scanReport.id)) ?
-        scanReport : { ...scanReport, conceptsLoaded: true })
+                            scanReport : { ...scanReport, conceptsLoaded: true })
         scanReportsRef.current = values
         setScanReports(scanReportsRef.current)
 
+        // This is chunking the .concepts from the values.
         const conceptIds = chunkIds(Object.keys(conceptIdsObject))
-        // make batch call with unique concept ids
+        // make batch call with unique concept ids. Get all Concepts with the given concept_ids, and save to omopConcepts.
         const conceptPromises = []
         for (let i = 0; i < conceptIds.length; i++) {
             conceptPromises.push(useGet(`/omop/conceptsfilter/?concept_id__in=${conceptIds[i].join()}`))
         }
         const conceptPromiseResults = await Promise.all(conceptPromises)
         const omopConcepts = [].concat.apply([], conceptPromiseResults)
-
-        // the endpoint does not actually exist so it is returning
-        // all the mapping rules at the moment which works but needs to be fixed
-        const scanreportconceptIds = chunkIds(scanreportconcepts.map(item => item.id))
-        const scanreportconceptPromises = []
-        for (let i = 0; i < scanreportconceptIds.length; i++) {
-            scanreportconceptPromises.push(useGet(`/mappingrulesfilter/?concepts__in=${scanreportconceptIds[i].join()}`))
-        }
-        const mappingRulesPromiseResult = await Promise.all(scanreportconceptPromises)
-        const mappingRules = [].concat.apply([], mappingRulesPromiseResult)
-        scanreportconcepts = scanreportconcepts.map(element=>({...element,mappings:mappingRules.filter(el=>el.concept==element.id)}))
-
 
         scanreportconcepts = scanreportconcepts.map(element => ({ ...element, concept: omopConcepts.find(con => con.concept_id == element.concept) }))
         // map each scanreport concept to it's value
