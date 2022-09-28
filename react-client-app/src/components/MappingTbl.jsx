@@ -26,7 +26,6 @@ const MappingTbl = (props) => {
     const scan_report_id = pathArray[pathArray.length - 3]
     const scanReportName = useRef(null);
     const [values, setValues] = useState([]);
-    const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -320,21 +319,6 @@ const MappingTbl = (props) => {
 
     }
 
-    useEffect(() => {
-        useGet(`/analyse/${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
-            setData(res.data)
-            setLoading(false);
-            setLoadingMessage("");
-
-        })
-            .catch(err => {
-                setLoading(false);
-                setLoadingMessage("");
-                setError("An error has occured while fetching the rules")
-            })
-
-    }, []);
-
     if (loading) {
         //Render Loading State
         return (
@@ -354,7 +338,7 @@ const MappingTbl = (props) => {
                     destinationTableFilter={destinationTableFilter} sourceTableFilter={sourceTableFilter} scanReportId={scan_report_id} />
             </MappingModal>
             <AnalysisModal isOpenAnalyse={isOpenAnalyse} onOpenAnalyse={onOpenAnalyse} onCloseAnalyse={onCloseAnalyse}>
-                <ConceptAnalysis data={data} />
+                <ConceptAnalysis scan_report_id={scan_report_id} />
             </AnalysisModal>
             <CCBreadcrumbBar>
                 <Link href={"/"}>Home</Link>
