@@ -414,8 +414,8 @@ const Home = () => {
                                             <Thead>
                                                 <Tr>
                                                     <Th>ID</Th>
-                                                    <Th>Datapartner</Th>
-                                                    <Th>Dataset</Th>
+                                                    <Th>Scan Report</Th>
+                                                    <Th>DataPartner</Th>
                                                 </Tr>
                                             </Thead>
                                             <Tbody>
