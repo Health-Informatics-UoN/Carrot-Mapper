@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.7-beta
+### New features
+
+### Improvements
+- Improved consistency of presentation of key terms on dashboard
+
+### Bugfixes
+- Corrected headings in a table on the dashboard
+
 ## v2.0.6
 ### New features
 
