@@ -52,8 +52,13 @@
                 <li class="nav-item active">
                     <a class="nav-link" aria-current="page" href="{% url 'datasets' %}">Datasets</a>
                 </li>
-                <li class="nav-item active">
-                    <a class="nav-link" aria-current="page" href="{% url 'scan-report-list' %}">Scan Reports</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" href="#">Scan Reports</a>
+				<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+				<li><a class="dropdown-item" href="{% url 'scan-report-list' %}">Scan Reports</a></li>
+				<li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'scan-report-form' %}">New Scan Report Upload</a></li>
+                </ul>
                 </li>
                 <!--<li class="nav-item"><a class="nav-link">You are logged as: {{ user.username }}</a></li>-->
                 <li class="nav-item"><a class="nav-link" href="https://hdruk.github.io/CaRROT-Docs/" target="_blank">Documentation</a></li>
