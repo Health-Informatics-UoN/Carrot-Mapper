@@ -2,6 +2,18 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.7
+### New features
+
+### Improvements
+- Improved consistency of presentation of key terms on dashboard
+- Analysis of rules moved to trigger only after 'Analyse Rules' button is pressed. This has the benefit that this will not trigger an error in the largest SRs when viewing the mapping rules page (which was something we had seen, which blocks the ability to use the mapping rules page). The downside is that analysis does not load in the background, making the button seem less responsive.
+- Added 'Edit Table', 'Scan Report Details' and 'Mapping Rules' buttons to top of Fields and Values pages.
+- Add dropdown to "Scan Reports" item in navbar. This makes the "New Scan Report" page accessible from all other pages.
+
+### Bugfixes
+- Corrected headings in a table on the dashboard
+
 ## v2.0.6
 ### New features
 
