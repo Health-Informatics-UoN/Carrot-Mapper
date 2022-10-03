@@ -116,6 +116,20 @@ const FieldsTbl = (props) => {
                     <Link href={`/scanreports/${scanReportTable.current.scan_report}/tables/${scanReportTableId}/`}>{scanReportTable.current.name}</Link>
                 </CCBreadcrumbBar>
                 <PageHeading text={"Fields"} />
+                <Flex my="10px">
+                    <HStack>
+                        <Link href={"/scanreports/" + scanReportId + "/details/"}>
+                            <Button variant="blue" my="10px">Scan Report Details</Button>
+                        </Link>
+                        <Link href={"/scanreports/" + scanReportId + "/mapping_rules/"}>
+                            <Button isDisabled={mappingButtonDisabled} variant="blue" my="10px">Go to Rules</Button>
+                        </Link>
+                        {window.canEdit && <Link href={"/scanreports/" + scanReportId + "/tables/" + scanReportTableId + "/update/"}>
+                            <Button variant="blue" my="10px">Edit Table</Button>
+                        </Link>
+                        }
+                    </HStack>
+                </Flex>
                 {isOpen &&
                     <ScaleFade initialScale={0.9} in={isOpen}>
                         <ToastAlert hide={onClose} title={alert.title} status={alert.status} description={alert.description} />
@@ -201,7 +215,6 @@ const FieldsTbl = (props) => {
                         }
                     </Tbody>
                 </Table>
-                <Link href={"/scanreports/" + scanReportTable.current.scan_report + "/mapping_rules/"}><Button isDisabled={mappingButtonDisabled} variant="blue" my="10px">Go to Rules</Button></Link>
             </div>
         )
 

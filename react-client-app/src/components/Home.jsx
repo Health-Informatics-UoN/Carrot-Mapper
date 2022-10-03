@@ -230,7 +230,7 @@ const Home = () => {
                 anchor: 'x1',
                 title: 'Statuses'
             },
-            title: 'Datapartners in Statuses'
+            title: 'Data Partners in Statuses'
         }
         return { data, layout }
     }
@@ -308,7 +308,7 @@ const Home = () => {
                     <Table w="auto" variant="unstyled" colorScheme="greyBasic" border="1px solid black" >
                         <TableCaption placement="top">Scan Report Stats (All Time)</TableCaption>
                         <Tr>
-                            <Th>Scanreports</Th>
+                            <Th>Scan Reports</Th>
                             <Td>{countStats.scanreport_count}</Td>
                         </Tr>
                         <Tr>
@@ -330,7 +330,7 @@ const Home = () => {
                     </Table>
 
                     <Table w="auto" variant="unstyled" colorScheme="greyBasic" border="1px solid black" >
-                        <TableCaption placement="top">New scan reports uploaded</TableCaption>
+                        <TableCaption placement="top">New Scan Reports Uploaded</TableCaption>
                         <Tr>
                             <Th>in the last 24h</Th>
                             <Td>{timeline.day}</Td>
@@ -360,7 +360,7 @@ const Home = () => {
                         <Container w={["100%", "100%", "100%", "50%"]}>
                             <Plot
                                 data={scanreportDonutData}
-                                layout={{ autosize: true, title: 'Scanreports by Data Partner' }}
+                                layout={{ autosize: true, title: 'Scan Reports by Data Partner' }}
                                 textinfo="text"
                                 useResizeHandler={true}
                                 style={{ width: "100%", height: "auto" }}
@@ -372,7 +372,7 @@ const Home = () => {
                         <Container w={["100%", "100%", "100%", "50%"]}>
                             <Plot
                                 data={mappingrulesDonutData}
-                                layout={{ autosize: true, title: 'Mapping rules by Data Partner' }}
+                                layout={{ autosize: true, title: 'Mapping Rules by Data Partner' }}
                                 useResizeHandler={true}
                                 style={{ width: "100%", height: "auto" }}
                             />
@@ -394,7 +394,7 @@ const Home = () => {
                 <Thead>
                     <Tr>
                         <Th>Status</Th>
-                        <Th>Scanreports</Th>
+                        <Th>Scan Reports</Th>
                         <Th></Th>
                     </Tr>
                 </Thead>
@@ -410,12 +410,12 @@ const Home = () => {
                                 <Tr key={item.id}>
                                     <Td colSpan="3" >
                                         <Table variant="striped" colorScheme="greyBasic" >
-                                            <TableCaption placement="top">Scan reports with status {mapStatus(item.id)}</TableCaption>
+                                            <TableCaption placement="top">Scan Reports with status {mapStatus(item.id)}</TableCaption>
                                             <Thead>
                                                 <Tr>
                                                     <Th>ID</Th>
-                                                    <Th>Datapartner</Th>
-                                                    <Th>Dataset</Th>
+                                                    <Th>Scan Report</Th>
+                                                    <Th>Data Partner</Th>
                                                 </Tr>
                                             </Thead>
                                             <Tbody>
