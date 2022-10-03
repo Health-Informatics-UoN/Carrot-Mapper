@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.8
+### New features
+
+### Improvements
+- Removed get_context_data() from StructuralMappingTableListView, as it was unused and added a large overhead when calling get_mapping_rules_list().
+
+### Bugfixes
+
+
 ## v2.0.7
 ### New features
 
