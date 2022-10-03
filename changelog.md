@@ -2,7 +2,7 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.7-beta
+## v2.0.7
 ### New features
 
 ### Improvements
