@@ -1179,31 +1179,6 @@ class StructuralMappingTableListView(ListView):
 
         return qs
 
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-        pk = self.kwargs.get("pk")
-
-        scan_report = ScanReport.objects.get(pk=pk)
-
-        object_list = get_mapping_rules_list(self.get_queryset())
-        source_tables = list(set([x["source_table"].name for x in object_list]))
-
-        filtered_omop_table = self.kwargs.get("omop_table")
-        current_source_table = self.kwargs.get("source_table")
-
-        context.update(
-            {
-                "object_list": object_list,
-                "scan_report": scan_report,
-                "omop_tables": m_allowed_tables,
-                "source_tables": source_tables,
-                "filtered_omop_table": filtered_omop_table,
-                "current_source_table": current_source_table,
-            }
-        )
-        return context
-
 
 def modify_filename(filename, dt, rand):
     split_filename = os.path.splitext(str(filename))
