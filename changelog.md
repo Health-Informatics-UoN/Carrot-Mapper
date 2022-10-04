@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.9
+### New features
+
+### Improvements
+- Removed duplicated ScanReportConcepts which are produced when non-standard codes are mapped via multiple routes to the same standard code.
+
+### Bugfixes
+
+
 ## v2.0.8
 ### New features
 
