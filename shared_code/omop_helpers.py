@@ -2,7 +2,7 @@ import os
 import time
 import requests
 import logging
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from ProcessQueue import helpers
 
 api_url = os.environ.get("APP_URL") + "api/"
@@ -92,6 +92,12 @@ def find_standard_concept_batch(source_concepts: list):
             combined_pairs[relationship["concept_id_1"]].append(
                 relationship["concept_id_2"]
             )
+
+    # Remove duplicates from within each entry, by converting each to an Ordered Dict
+    # (the keys of which must be unique, and will preserve the order if that's
+    # important) and then back to a list.
+    for pair in combined_pairs:
+        combined_pairs[pair] = list(OrderedDict.fromkeys(combined_pairs[pair]))
 
     return combined_pairs
 
