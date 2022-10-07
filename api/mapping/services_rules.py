@@ -483,7 +483,7 @@ def get_mapping_rules_list(structural_mapping_rules):
 
     # get all the ids for all ScanReportValues that are used (have been mapped with a concept)
     scanreportvalue_content_type = ContentType.objects.get_for_model(ScanReportValue)
-    scan_report_concepts_with_scan_report_values = [
+    scan_report_values_with_scan_report_concepts = [
         obj.object_id
         for obj in ScanReportConcept.objects.filter(
             pk__in=scan_report_concepts_id_to_obj_map,
@@ -495,7 +495,7 @@ def get_mapping_rules_list(structural_mapping_rules):
         obj.id: obj.value
         for obj in list(
             ScanReportValue.objects.filter(
-                pk__in=scan_report_concepts_with_scan_report_values
+                pk__in=scan_report_values_with_scan_report_concepts
             )
         )
     }
