@@ -2,7 +2,6 @@ import json
 import io
 import csv
 from datetime import datetime
-import traceback
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
@@ -446,13 +445,8 @@ def get_mapping_rules_list(structural_mapping_rules):
         list : a list of rules that can be interpreted by the view.py
                page and processed to build a json
     """
-    traceback.print_stack()
-
     previous_time = datetime.utcnow()
     print("get_mapping_rules_list begins at " + str(previous_time))
-    # Queryset -> list, makes the calls to the db to get the rules
-    # structural_mapping_rules = list(structural_mapping_rules)
-    print(structural_mapping_rules.query)
     latest_time = datetime.utcnow()
     print("l465 at " + str(latest_time - previous_time))
     previous_time = datetime.utcnow()
@@ -488,17 +482,22 @@ def get_mapping_rules_list(structural_mapping_rules):
         )
 
     # get all the ids for all ScanReportValues that are used (have been mapped with a concept)
-    ct = ContentType.objects.get_for_model(ScanReportValue)
-    scan_report_values = [
+    scanreportvalue_content_type = ContentType.objects.get_for_model(ScanReportValue)
+    scan_report_concepts_with_scan_report_values = [
         obj.object_id
         for obj in ScanReportConcept.objects.filter(
-            pk__in=scan_report_concepts_id_to_obj_map, content_type=ct
+            pk__in=scan_report_concepts_id_to_obj_map,
+            content_type=scanreportvalue_content_type,
         )
     ]
     # make a batch call to the ORM again..
-    scan_report_values = {
+    scan_report_values_id_to_value_map = {
         obj.id: obj.value
-        for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values))
+        for obj in list(
+            ScanReportValue.objects.filter(
+                pk__in=scan_report_concepts_with_scan_report_values
+            )
+        )
     }
 
     # get all destination field ids
@@ -530,24 +529,30 @@ def get_mapping_rules_list(structural_mapping_rules):
     print("l549 at " + str(latest_time - previous_time))
     previous_time = datetime.utcnow()
 
-    structural_mapping_rules_sr_concepts_concepts = (
-        structural_mapping_rules.select_related("concept__concept")
-    )
-
-    concept_id_to_names_map = {
-        obj.concept.concept.concept_id: obj.concept.concept.concept_name
-        for obj in structural_mapping_rules_sr_concepts_concepts
-    }
-
-    rule_id_to_concept_names_map = {
-        obj.id: obj.concept.concept.concept_id
-        for obj in structural_mapping_rules_sr_concepts_concepts
-    }
+    # Using select_related() means we can chain together querysets into one database
+    # query rather than using multiple
     structural_mapping_rules_sr_concepts = structural_mapping_rules.select_related(
         "concept"
     )
+    # Generate rule.id to SRConcept.id map for all SRConcepts related to these rules.
     rule_to_srconcept_id_map = {
         obj.id: obj.concept.id for obj in structural_mapping_rules_sr_concepts
+    }
+
+    structural_mapping_rules_sr_concepts_concepts = (
+        structural_mapping_rules.select_related("concept__concept")
+    )
+    # Generate MappingRule.id to Concept.id map for all Concepts related to SRConcepts
+    # related to these MappingRules.
+    rule_id_to_concept_id_map = {
+        obj.id: obj.concept.concept.concept_id
+        for obj in structural_mapping_rules_sr_concepts_concepts
+    }
+    # Generate Concept.id to Concept.name map for all Concepts related to SRConcepts
+    # related to these MappingRules.
+    concept_id_to_names_map = {
+        obj.concept.concept.concept_id: obj.concept.concept.concept_name
+        for obj in structural_mapping_rules_sr_concepts_concepts
     }
 
     latest_time = datetime.utcnow()
@@ -555,10 +560,11 @@ def get_mapping_rules_list(structural_mapping_rules):
     previous_time = datetime.utcnow()
     # now loop over the rules to actually create the list version of the rules
     rules = []
-    scan_report_vs = [
+    scan_report_concepts_with_values = [
         obj.id
         for obj in ScanReportConcept.objects.filter(
-            pk__in=scan_report_concepts_id_to_obj_map, content_type=ct
+            pk__in=scan_report_concepts_id_to_obj_map,
+            content_type=scanreportvalue_content_type,
         )
     ]
 
@@ -604,7 +610,7 @@ def get_mapping_rules_list(structural_mapping_rules):
             # expensive inside the loop
             previous_time = datetime.utcnow()
 
-        concept_name = concept_id_to_names_map[rule_id_to_concept_names_map[rule.id]]
+        concept_name = concept_id_to_names_map[rule_id_to_concept_id_map[rule.id]]
         if rule_no < 5:
             latest_time = datetime.utcnow()
             print("l594 at " + str(latest_time - previous_time))  # This is most
@@ -613,10 +619,11 @@ def get_mapping_rules_list(structural_mapping_rules):
         # work out if we need term_mapping or not
         term_mapping = None
         if "concept_id" in destination_field.field:
-            if scan_report_concept.id in scan_report_vs:
+            if scan_report_concept.id in scan_report_concepts_with_values:
                 term_mapping = {
-                    scan_report_values[scan_report_concept.object_id]: concept_id  #
-                    # this can be expensive
+                    scan_report_values_id_to_value_map[
+                        scan_report_concept.object_id
+                    ]: concept_id
                 }
             else:
                 term_mapping = concept_id
