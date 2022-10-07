@@ -544,14 +544,8 @@ def get_mapping_rules_list(structural_mapping_rules):
     )
     # Generate MappingRule.id to Concept.id map for all Concepts related to SRConcepts
     # related to these MappingRules.
-    rule_id_to_concept_id_map = {
-        obj.id: obj.concept.concept.concept_id
-        for obj in structural_mapping_rules_sr_concepts_concepts
-    }
-    # Generate Concept.id to Concept.name map for all Concepts related to SRConcepts
-    # related to these MappingRules.
-    concept_id_to_names_map = {
-        obj.concept.concept.concept_id: obj.concept.concept.concept_name
+    rule_id_to_concept_name_map = {
+        obj.id: obj.concept.concept.concept_name
         for obj in structural_mapping_rules_sr_concepts_concepts
     }
 
@@ -574,48 +568,23 @@ def get_mapping_rules_list(structural_mapping_rules):
         # we've already cached it in these dictionaries by making a batch call
         destination_field = destination_fields[rule.omop_field_id]
         destination_table = destination_tables[destination_field.table_id]
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l580 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
+
         source_field = source_fields[rule.source_field_id]
         source_table = source_tables[source_field.scan_report_table_id]
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l581 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
+
         # get the concepts again
         rule_scan_report_concept_id = rule_to_srconcept_id_map[rule.id]
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l581.1 at " + str(latest_time - previous_time))  # Expensive
-            previous_time = datetime.utcnow()
+
         if rule.concept_id not in scan_report_concepts_id_to_obj_map:
             print(f"WARNING!! scan_report_concept {rule.concept_id} no longer exists")
             continue
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l581.2 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
-        scan_report_concept = scan_report_concepts_id_to_obj_map[rule.concept_id]
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l582 at " + str(latest_time - previous_time))  # This is most
-            # expensive inside the loop
-            previous_time = datetime.utcnow()
-        concept_id = scan_report_concept.concept_id
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l588 at " + str(latest_time - previous_time))  # This is most
-            # expensive inside the loop
-            previous_time = datetime.utcnow()
 
-        concept_name = concept_id_to_names_map[rule_id_to_concept_id_map[rule.id]]
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l594 at " + str(latest_time - previous_time))  # This is most
-            # expensive inside the loop
-            previous_time = datetime.utcnow()
+        scan_report_concept = scan_report_concepts_id_to_obj_map[rule.concept_id]
+
+        concept_id = scan_report_concept.concept_id
+
+        concept_name = rule_id_to_concept_name_map[rule.id]
+
         # work out if we need term_mapping or not
         term_mapping = None
         if "concept_id" in destination_field.field:
@@ -627,15 +596,9 @@ def get_mapping_rules_list(structural_mapping_rules):
                 }
             else:
                 term_mapping = concept_id
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l608 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
+
         creation_type = scan_report_concept.creation_type
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l613 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
+
         rules.append(
             {
                 "rule_id": rule_scan_report_concept_id,
@@ -648,10 +611,7 @@ def get_mapping_rules_list(structural_mapping_rules):
                 "creation_type": creation_type,
             }
         )
-        if rule_no < 5:
-            latest_time = datetime.utcnow()
-            print("l629 at " + str(latest_time - previous_time))
-            previous_time = datetime.utcnow()
+
     latest_time = datetime.utcnow()
     print("l632 at " + str(latest_time - previous_time))
     return rules
