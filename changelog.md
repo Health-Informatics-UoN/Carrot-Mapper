@@ -2,6 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.10
+### New features
+
+### Improvements
+- Rewritten `get_mapping_rules_list()` function to greatly speed up the loading of the `/mapping_rules` page.
+
+### Bugfixes
+
+
 ## v2.0.9
 ### New features
 
