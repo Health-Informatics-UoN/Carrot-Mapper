@@ -4,6 +4,7 @@ import csv
 from datetime import datetime
 
 from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from data.models import Concept, ConceptRelationship, ConceptAncestor
 
 from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
@@ -445,9 +446,6 @@ def get_mapping_rules_list(structural_mapping_rules):
                page and processed to build a json
     """
 
-    # Queryset -> list, makes the calls to the db to get the rules
-    structural_mapping_rules = list(structural_mapping_rules)
-
     # get all scan_report_concepts that are used
     # get the ids first so we can make a batch call
     scan_report_concepts = list(
@@ -457,11 +455,12 @@ def get_mapping_rules_list(structural_mapping_rules):
     nmapped_concepts = len(scan_report_concepts)
 
     # make the batch call
-    scan_report_concepts = {
+    scan_report_concepts_id_to_obj_map = {
         x.id: x
         for x in list(ScanReportConcept.objects.filter(pk__in=scan_report_concepts))
     }
-    ntotal_concepts = len(scan_report_concepts.values())
+
+    ntotal_concepts = len(scan_report_concepts_id_to_obj_map.values())
 
     if nmapped_concepts != ntotal_concepts:
         print(
@@ -470,15 +469,22 @@ def get_mapping_rules_list(structural_mapping_rules):
         )
 
     # get all the ids for all ScanReportValues that are used (have been mapped with a concept)
-    scan_report_values = [
+    scanreportvalue_content_type = ContentType.objects.get_for_model(ScanReportValue)
+    scan_report_values_with_scan_report_concepts = [
         obj.object_id
-        for obj in scan_report_concepts.values()
-        if obj.content_type.model_class() is ScanReportValue
+        for obj in ScanReportConcept.objects.filter(
+            pk__in=scan_report_concepts_id_to_obj_map,
+            content_type=scanreportvalue_content_type,
+        )
     ]
     # make a batch call to the ORM again..
-    scan_report_values = {
+    scan_report_values_id_to_value_map = {
         obj.id: obj.value
-        for obj in list(ScanReportValue.objects.filter(pk__in=scan_report_values))
+        for obj in list(
+            ScanReportValue.objects.filter(
+                pk__in=scan_report_values_with_scan_report_concepts
+            )
+        )
     }
 
     # get all destination field ids
@@ -506,10 +512,41 @@ def get_mapping_rules_list(structural_mapping_rules):
         for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))
     }
 
-    # now looop over the rules to actually create the list version of the rules
+    # Using select_related() means we can chain together querysets into one database
+    # query rather than using multiple
+    structural_mapping_rules_sr_concepts = structural_mapping_rules.select_related(
+        "concept"
+    )
+    # Generate rule.id to SRConcept.id map for all SRConcepts related to these rules.
+    rule_to_srconcept_id_map = {
+        obj.id: obj.concept.id for obj in structural_mapping_rules_sr_concepts
+    }
+
+    structural_mapping_rules_sr_concepts_concepts = (
+        structural_mapping_rules.select_related("concept__concept")
+    )
+    # Generate MappingRule.id to Concept.id map for all Concepts related to SRConcepts
+    # related to these MappingRules.
+    rule_id_to_concept_name_map = {
+        obj.id: obj.concept.concept.concept_name
+        for obj in structural_mapping_rules_sr_concepts_concepts
+    }
+
+    # Make a single query to get all ScanReportConcepts associated to
+    # ScanReportValues. This means we avoid what would be more understandable,
+    # but extremely slow, code to check whether each object is associated to a
+    # ScanReportValue.
+    scan_report_concepts_with_values = [
+        obj.id
+        for obj in ScanReportConcept.objects.filter(
+            pk__in=scan_report_concepts_id_to_obj_map,
+            content_type=scanreportvalue_content_type,
+        )
+    ]
+
+    # now loop over the rules to actually create the list version of the rules
     rules = []
     for rule in structural_mapping_rules:
-
         # get the fields/tables from the loop up lists
         # the speed up comes from here as we dont need to keep hitting the DB to get this data
         # we've already cached it in these dictionaries by making a batch call
@@ -520,28 +557,35 @@ def get_mapping_rules_list(structural_mapping_rules):
         source_table = source_tables[source_field.scan_report_table_id]
 
         # get the concepts again
-        scan_report_concept_id = rule.concept_id
-        if rule.concept_id not in scan_report_concepts:
+        rule_scan_report_concept_id = rule_to_srconcept_id_map[rule.id]
+
+        if rule.concept_id not in scan_report_concepts_id_to_obj_map:
             print(f"WARNING!! scan_report_concept {rule.concept_id} no longer exists")
             continue
-        scan_report_concept = scan_report_concepts[rule.concept_id]
+
+        scan_report_concept = scan_report_concepts_id_to_obj_map[rule.concept_id]
+
         concept_id = scan_report_concept.concept_id
-        concept_name = scan_report_concept.concept.concept_name
+
+        concept_name = rule_id_to_concept_name_map[rule.id]
 
         # work out if we need term_mapping or not
         term_mapping = None
         if "concept_id" in destination_field.field:
-            if scan_report_concept.content_type.model_class() is ScanReportValue:
+            if scan_report_concept.id in scan_report_concepts_with_values:
                 term_mapping = {
-                    scan_report_values[scan_report_concept.object_id]: concept_id
+                    scan_report_values_id_to_value_map[
+                        scan_report_concept.object_id
+                    ]: concept_id
                 }
             else:
                 term_mapping = concept_id
 
         creation_type = scan_report_concept.creation_type
+
         rules.append(
             {
-                "rule_id": scan_report_concept_id,
+                "rule_id": rule_scan_report_concept_id,
                 "rule_name": concept_name,
                 "destination_table": destination_table,
                 "destination_field": destination_field,
