@@ -532,8 +532,10 @@ def get_mapping_rules_list(structural_mapping_rules):
         for obj in structural_mapping_rules_sr_concepts_concepts
     }
 
-    # now loop over the rules to actually create the list version of the rules
-    rules = []
+    # Make a single query to get all ScanReportConcepts associated to
+    # ScanReportValues. This means we avoid what would be more understandable,
+    # but extremely slow, code to check whether each object is associated to a
+    # ScanReportValue.
     scan_report_concepts_with_values = [
         obj.id
         for obj in ScanReportConcept.objects.filter(
@@ -542,6 +544,8 @@ def get_mapping_rules_list(structural_mapping_rules):
         )
     ]
 
+    # now loop over the rules to actually create the list version of the rules
+    rules = []
     for rule in structural_mapping_rules:
         # get the fields/tables from the loop up lists
         # the speed up comes from here as we dont need to keep hitting the DB to get this data
