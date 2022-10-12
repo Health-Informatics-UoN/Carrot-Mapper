@@ -1,22 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { ChakraProvider } from "@chakra-ui/react"
 import styles from './styles'
-import DatasetAdminForm from './components/DatasetAdminForm'
-import ValuesTbl from './components/ValuesTbl'
-import PageHeading from './components/PageHeading'
-import MappingTbl from './components/MappingTbl';
-import FieldsTbl from './components/FieldsTbl';
-import TablesTbl from './components/TablesTbl';
-import EditTable from './components/EditTable';
-import EditField from './components/EditField';
-import Error404 from './views/Error404'
-import ScanReportTbl from './components/ScanReportTbl';
-import ScanReportAdminForm from './views/ScanReportAdminForm'
-import Home from './components/Home';
+const DatasetAdminForm = React.lazy(() => import('./components/DatasetAdminForm'));
+const ValuesTbl = React.lazy(() => import('./components/ValuesTbl'));
+const PageHeading = React.lazy(() => import('./components/PageHeading'));
+const MappingTbl = React.lazy(() => import('./components/MappingTbl'));
+const FieldsTbl = React.lazy(() => import('./components/FieldsTbl'));
+const TablesTbl = React.lazy(() => import('./components/TablesTbl'));
+const EditTable = React.lazy(() => import('./components/EditTable'));
+const EditField = React.lazy(() => import('./components/EditField'));
+const Error404 = React.lazy(() => import('./views/Error404'));
+const ScanReportTbl = React.lazy(() => import('./components/ScanReportTbl'));
+const ScanReportAdminForm = React.lazy(() => import('./views/ScanReportAdminForm'));
+const Home = React.lazy(() => import('./components/Home'));
 import { getScanReportConcepts, m_allowed_tables, useDelete, useGet, usePost, mapConceptToOmopField, saveMappingRules } from './api/values'
-import UploadScanReport from './components/UploadScanReport'
-import DatasetTbl from './views/DatasetTbl'
-import DatasetsContent from './views/DatasetsContent'
+const UploadScanReport = React.lazy(() => import('./components/UploadScanReport'));
+const DatasetTbl = React.lazy(() => import('./views/DatasetTbl'));
+const DatasetsContent = React.lazy(() => import('./views/DatasetsContent'));
 const App = ({ page }) => {
 
     const handleDeleteConcept = (id, conceptId, valuesRef, setValues, setAlert, onOpen) => {
@@ -283,13 +283,22 @@ const App = ({ page }) => {
             case "404":
                 return <Error404 setTitle={setTitle} />
             default:
-                return <ScanReportTbl setTitle={setTitle} />
+                return (
+                    <Suspense fallback={<div>Loading...</div>}>
+                        <ScanReportTbl setTitle={setTitle} />
+                    </Suspense>
+                        )
+
         }
     }
     return (
         <ChakraProvider theme={styles}>
-            <PageHeading text={title} />
-            {getPage()}
+            {
+                <Suspense fallback={<div>Loading...</div>}>
+                    <PageHeading text={title} />
+                    {getPage()}
+                </Suspense>
+            }
         </ChakraProvider>
     )
 }
