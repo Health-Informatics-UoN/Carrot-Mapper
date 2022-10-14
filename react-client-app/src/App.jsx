@@ -283,12 +283,7 @@ const App = ({ page }) => {
             case "404":
                 return <Error404 setTitle={setTitle} />
             default:
-                return (
-                    <Suspense fallback={<div>Loading...</div>}>
-                        <ScanReportTbl setTitle={setTitle} />
-                    </Suspense>
-                        )
-
+                return <ScanReportTbl setTitle={setTitle} />
         }
     }
     return (
