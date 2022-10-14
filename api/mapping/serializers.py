@@ -41,6 +41,11 @@ from .permissions import (
 )
 
 
+class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = DataPartner
+        fields = "__all__"
+
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concept
@@ -163,6 +168,15 @@ class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Dataset
         fields = "__all__"
+
+
+class DatasetAndDataPartnerViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    data_partner = DataPartnerSerializer(read_only=True)
+
+    class Meta:
+        model = Dataset
+        fields = ("id", "name", "data_partner", "admins",
+                  "visibility", "created_at", "hidden")
 
 
 class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -334,10 +348,7 @@ class DataDictionarySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataPartner
-        fields = "__all__"
+
 
 
 class OmopFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer):

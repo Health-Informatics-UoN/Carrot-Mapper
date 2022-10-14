@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import { Center, Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, ButtonGroup, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
 import { useGet, usePatch, chunkIds } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import Pagination from 'react-js-pagination'
 import ToastAlert from '../components/ToastAlert'
+// require("bootstrap/less/bootstrap.less");
 
 const DatasetTbl = (props) => {
     const data = useRef(null);
@@ -19,13 +21,19 @@ const DatasetTbl = (props) => {
     const [title, setTitle] = useState("Datasets");
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItemsCount, setTotalItemsCount] = useState(null);
+//     const [activePage, setActivePage] = useState(1)
+
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null);
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
-        // get datasets and sort by id
-        let datasets = await useGet(`/datasets/`);
-        datasets = datasets.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+
+        // get datasets and data partners, and sort by id
+        let datasets = await useGet(`/datasets_data_partners/?p=${currentPage}&page_size=10`);
+        setTotalItemsCount(datasets.count)
+        datasets = datasets.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
         // for each dataset use the data partner and admin ids to get name to display
         // get list of unique data partner and admin ids
         const adminObject = {};
@@ -37,27 +45,31 @@ const DatasetTbl = (props) => {
             dataset.created_at = created_at;
         });
 
-        const dataPartnerObject = {};
-        datasets.map((dataset) => {
-            dataPartnerObject[dataset.data_partner] = true;
-        });
-        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
-        const dataPartnerPromises = [];
-        for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
-        }
-        let dataPartners = await Promise.all(dataPartnerPromises)
-        dataPartners = dataPartners[0]
-        dataPartners.forEach((element) => {
-            datasets = datasets.map((dataset) => dataset.data_partner == element.id ? { ...dataset, data_partner: element } : dataset);
-        });
         data.current = datasets
         activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
         archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
         active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
         active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
         setLoadingMessage(null)
-    }, []);
+    }, [currentPage]);
+
+//     const goToNextPage = () => {
+//         onPageChange(currentPage + 1)
+//     }
+//
+//     const goToPreviousPage = () => {
+//         onPageChange(currentPage - 1)
+//     }
+//
+    const onPageChange = (page) => {
+        setCurrentPage(page)
+    }
+
+//     handlePageChange(pageNumber) {
+//         console.log(`active page is ${pageNumber}`);
+// //         this.setState({activePage: pageNumber});
+//       setActivePage(pageNumber)
+//       }
 
     const activateOrArchiveDataset = async (id, theIndicator) => {
         try {
@@ -145,6 +157,17 @@ const DatasetTbl = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Datasets</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Datasets</Button>
             </Flex>
+            <Center>
+                <Pagination
+                    activePage={currentPage}
+                    itemsCountPerPage={10}
+                    totalItemsCount={totalItemsCount}
+                    pageRangeDisplayed={5}
+                    onChange={onPageChange}
+                    itemClass='btn paginate'
+                    activeClass='btn disabled paginate'
+                />
+            </Center>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }].map(filter => {

@@ -17,6 +17,8 @@ from rest_framework.generics import (
 )
 from rest_framework.renderers import JSONRenderer
 
+from .paginations import CustomPagination
+
 from .serializers import (
     GetRulesAnalysis,
     ScanReportEditSerializer,
@@ -39,6 +41,7 @@ from .serializers import (
     UserSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
+    DatasetAndDataPartnerViewSerializer,
     ProjectSerializer,
     ProjectNameSerializer,
     ProjectDatasetSerializer,
@@ -272,6 +275,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"parent_dataset": ["exact"]}
 
@@ -304,7 +308,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            return ScanReport.objects.all().distinct()
+            return ScanReport.objects.all().distinct().order_by('-id')
 
         return ScanReport.objects.filter(
             # parent dataset and SR are public checks
@@ -408,7 +412,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
                 visibility=VisibilityChoices.PUBLIC,
             ),
             parent_dataset__project__members=self.request.user.id,
-        ).distinct()
+        ).distinct().order_by('-id')
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
@@ -428,6 +432,7 @@ class DatasetListView(generics.ListAPIView):
     """
 
     serializer_class = DatasetViewSerializer
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
@@ -460,7 +465,50 @@ class DatasetListView(generics.ListAPIView):
                 visibility=VisibilityChoices.RESTRICTED,
             ),
             project__members=self.request.user.id,
-        ).distinct()
+        ).distinct().order_by('-id')
+
+
+class DatasetAndDataPartnerListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
+
+    serializer_class = DatasetAndDataPartnerViewSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in"],
+        "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
+    }
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.prefetch_related("data_partner").all().distinct()
+
+        return Dataset.objects.filter(
+            Q(visibility=VisibilityChoices.PUBLIC)
+            | Q(
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                admins=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            ),
+            project__members=self.request.user.id,
+        ).prefetch_related("data_partner").distinct().order_by('-id')
 
 
 class DatasetCreateView(generics.CreateAPIView):
@@ -514,7 +562,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportTable.objects.all()
+    queryset = ScanReportTable.objects.all().order_by('id')
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -567,7 +615,8 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportField.objects.all()
+    queryset = ScanReportField.objects.all().order_by('id')
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
@@ -666,7 +715,7 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportConcept.objects.all()
+    queryset = ScanReportConcept.objects.all().order_by('id')
     serializer_class = ScanReportConceptSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
@@ -816,7 +865,8 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
-    queryset = ScanReportValue.objects.all()
+    queryset = ScanReportValue.objects.all().order_by('id')
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
@@ -871,6 +921,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
 class ScanReportFilterViewSet(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportViewSerializer
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in", "exact"],

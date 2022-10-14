@@ -179,6 +179,11 @@ urlpatterns = [
         name="dataset_list",
     ),
     path(
+        r"api/datasets_data_partners/",
+        views.DatasetAndDataPartnerListView.as_view(),
+        name="dataset_data_partners_list",
+    ),
+    path(
         r"api/datasets/<int:pk>/",
         views.DatasetRetrieveView.as_view(),
         name="dataset_retrieve",
