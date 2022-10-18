@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Center, Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, ButtonGroup, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
-import { useGet, usePatch, chunkIds } from '../api/values'
+import { Center, Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import { useGet, usePatch } from '../api/values'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
@@ -8,7 +8,6 @@ import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import Pagination from 'react-js-pagination'
 import ToastAlert from '../components/ToastAlert'
-// require("bootstrap/less/bootstrap.less");
 import queryString from "query-string"
 
 const DatasetTbl = (props) => {
@@ -28,14 +27,11 @@ const DatasetTbl = (props) => {
     const [firstLoad, setFirstLoad] = useState(true);
 
     useEffect(() => {
-        console.log('useEffect', currentPage, page_size)
         // run on initial page load
         props.setTitle(null);
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
 
-        console.log(currentPage, page_size)
         const parsed_query = queryString.parse(window.location.search)
-        console.log(parsed_query)
 
         const setThings = async (parsed_query) => {
             if ("page_size" in parsed_query) {
@@ -48,17 +44,13 @@ const DatasetTbl = (props) => {
         }
         setThings(parsed_query)
 
-        console.log(currentPage, page_size)
         setFirstLoad(false)
     }, []);
 
     useEffect(async () => {
-        console.log('useEffect2', currentPage, page_size)
-        console.log('firstLoad', firstLoad)
         // if not the first load, then load data etc. This clause avoids an initial call using the default values of
         // currentPage and page_size, which is not desired.
         if (!firstLoad) {
-            console.log('firstLoad', firstLoad)
             // run on initial page load
             props.setTitle(null);
             window.location.search === '?filter=archived' ? active.current = false : active.current = true
@@ -85,19 +77,9 @@ const DatasetTbl = (props) => {
             active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
             setLoadingMessage(null)
         }
-        console.log('firstLoad', firstLoad)
     }, [currentPage, page_size, firstLoad]);
 
-//     const goToNextPage = () => {
-//         onPageChange(currentPage + 1)
-//     }
-//
-//     const goToPreviousPage = () => {
-//         onPageChange(currentPage - 1)
-//     }
-//
     const onPageChange = (page) => {
-        console.log(page)
         const parsed_query = queryString.parse(window.location.search)
         if ("page_size" in parsed_query) {
             set_page_size(parsed_query["page_size"])
@@ -105,19 +87,9 @@ const DatasetTbl = (props) => {
         if ("p" in parsed_query) {
             setCurrentPage(page)
         }
-        console.log(page_size)
-        console.log(currentPage)
         window.history.pushState({}, '', `/datasets/?p=${page}&page_size=${page_size}`)
-//         window.location.replace(`/datasets/?p=${page}&page_size=${page_size}`)
         setCurrentPage(page)
-//         setCurrentPage(page)
     }
-
-//     handlePageChange(pageNumber) {
-//         console.log(`active page is ${pageNumber}`);
-// //         this.setState({activePage: pageNumber});
-//       setActivePage(pageNumber)
-//       }
 
     const activateOrArchiveDataset = async (id, theIndicator) => {
         try {
