@@ -9,12 +9,14 @@ import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import Pagination from 'react-js-pagination'
 import ToastAlert from '../components/ToastAlert'
 // require("bootstrap/less/bootstrap.less");
+import queryString from "query-string"
 
 const DatasetTbl = (props) => {
     const data = useRef(null);
     const [displayedData, setDisplayedData] = useState(null);
     const activeDatasets = useRef(null);
     const active = useRef(true)
+    const [page_size, set_page_size] = useState(10)
     const archivedDatasets = useRef(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Datasets")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
@@ -23,35 +25,68 @@ const DatasetTbl = (props) => {
     const { isOpen, onOpen, onClose } = useDisclosure()
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItemsCount, setTotalItemsCount] = useState(null);
-//     const [activePage, setActivePage] = useState(1)
+    const [firstLoad, setFirstLoad] = useState(true);
 
-    useEffect(async () => {
+    useEffect(() => {
+        console.log('useEffect', currentPage, page_size)
         // run on initial page load
         props.setTitle(null);
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
 
-        // get datasets and data partners, and sort by id
-        let datasets = await useGet(`/datasets_data_partners/?p=${currentPage}&page_size=10`);
-        setTotalItemsCount(datasets.count)
-        datasets = datasets.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
-        // for each dataset use the data partner and admin ids to get name to display
-        // get list of unique data partner and admin ids
-        const adminObject = {};
-        datasets.map((dataset) => {
-            adminObject[dataset.admin] = true;
-            const created_at = {};
-            created_at.created_at = dataset.created_at;
-            created_at.displayString = moment(dataset.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
-            dataset.created_at = created_at;
-        });
+        console.log(currentPage, page_size)
+        const parsed_query = queryString.parse(window.location.search)
+        console.log(parsed_query)
 
-        data.current = datasets
-        activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
-        archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
-        active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
-        active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
-        setLoadingMessage(null)
-    }, [currentPage]);
+        const setThings = async (parsed_query) => {
+            if ("page_size" in parsed_query) {
+                set_page_size(parsed_query["page_size"])
+            }
+            if ("p" in parsed_query) {
+                setCurrentPage(parsed_query["p"])
+            }
+            window.history.pushState({}, '', `/datasets/?p=${currentPage}&page_size=${page_size}`)
+        }
+        setThings(parsed_query)
+
+        console.log(currentPage, page_size)
+        setFirstLoad(false)
+    }, []);
+
+    useEffect(async () => {
+        console.log('useEffect2', currentPage, page_size)
+        console.log('firstLoad', firstLoad)
+        // if not the first load, then load data etc. This clause avoids an initial call using the default values of
+        // currentPage and page_size, which is not desired.
+        if (!firstLoad) {
+            console.log('firstLoad', firstLoad)
+            // run on initial page load
+            props.setTitle(null);
+            window.location.search === '?filter=archived' ? active.current = false : active.current = true
+
+            // get datasets and data partners, and sort by id
+            let datasets = await useGet(`/datasets_data_partners/?p=${currentPage}&page_size=${page_size}`);
+            setTotalItemsCount(datasets.count)
+            datasets = datasets.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+            // for each dataset use the data partner and admin ids to get name to display
+            // get list of unique data partner and admin ids
+            const adminObject = {};
+            datasets.map((dataset) => {
+                adminObject[dataset.admin] = true;
+                const created_at = {};
+                created_at.created_at = dataset.created_at;
+                created_at.displayString = moment(dataset.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
+                dataset.created_at = created_at;
+            });
+
+            data.current = datasets
+            activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
+            archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
+            active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
+            active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
+            setLoadingMessage(null)
+        }
+        console.log('firstLoad', firstLoad)
+    }, [currentPage, page_size, firstLoad]);
 
 //     const goToNextPage = () => {
 //         onPageChange(currentPage + 1)
@@ -62,7 +97,20 @@ const DatasetTbl = (props) => {
 //     }
 //
     const onPageChange = (page) => {
+        console.log(page)
+        const parsed_query = queryString.parse(window.location.search)
+        if ("page_size" in parsed_query) {
+            set_page_size(parsed_query["page_size"])
+        }
+        if ("p" in parsed_query) {
+            setCurrentPage(page)
+        }
+        console.log(page_size)
+        console.log(currentPage)
+        window.history.pushState({}, '', `/datasets/?p=${page}&page_size=${page_size}`)
+//         window.location.replace(`/datasets/?p=${page}&page_size=${page_size}`)
         setCurrentPage(page)
+//         setCurrentPage(page)
     }
 
 //     handlePageChange(pageNumber) {
@@ -160,7 +208,7 @@ const DatasetTbl = (props) => {
             <Center>
                 <Pagination
                     activePage={currentPage}
-                    itemsCountPerPage={10}
+                    itemsCountPerPage={page_size}
                     totalItemsCount={totalItemsCount}
                     pageRangeDisplayed={5}
                     onChange={onPageChange}
