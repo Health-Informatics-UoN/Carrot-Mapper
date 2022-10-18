@@ -99,7 +99,7 @@ const Home = () => {
         // get scan reports from endpoint
         let scanreports = await useGet(`/scanreports/`)
         // sort scan reports
-        scanreports = scanreports.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+        scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // create a list of unique datapartners and make a batch query to get their data
         const datasetObject = {}
         scanreports.map(scanreport => {

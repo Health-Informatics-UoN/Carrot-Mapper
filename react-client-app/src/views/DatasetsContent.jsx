@@ -34,11 +34,11 @@ const DatasetsContent = (props) => {
         window.location.search === '?filter=archived' ? active.current = false : active.current = true
         try {
             // get dataset name
-            let datasetNameQuery = await useGet(`/datasets/${datasetId}/?page=1`)
+            let datasetNameQuery = await useGet(`/datasets/${datasetId}/`)
             setDatasetName(datasetNameQuery.name)
             // get scan reports and sort by id
             let scanreports = await useGet(`/scanreports/?parent_dataset=${datasetId}`);
-            scanreports = scanreports.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+            scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
             // for each scan report use the data partner and author ids to get name to display
             // get list of unique data partner and auther ids
             const authorObject = {};

@@ -160,7 +160,6 @@ const getValuesScanReportConcepts = async (values,contentType,scanReportsRef={},
 const getScanReports = async (valueId, setScanReports, scanReportsRef, setLoadingMessage, setError) => {
     // query endpoint for field values
     let values = await useGet(`/scanreportvalues/?scan_report_field=${valueId}`)
-    values = values.results
     if (!Array.isArray(values)) {
         setError(true)
         return
@@ -316,7 +315,7 @@ const chunkIds = (list) => {
 // get field values for a given table id and map any scanreport concepts that are associated
 const getScanReportFieldValues = async (valueId, valuesRef) => {
     let response = await useGet(`/scanreportfields/?scan_report_table=${valueId}`)
-    response = response.results.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+    response = response.sort((a, b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
     if (response.length == 0) {
         return []
     }
@@ -332,7 +331,7 @@ const getScanReportTableRows = async (id) =>{
         return []
     }
     // sort table
-    table = table.results.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
+    table = table.sort((a,b) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 :0))
     // get ids of scanroport fields that need to be retrieved and do a batch call
     const fieldIdsObject = {}
     table.map(element=>{   
