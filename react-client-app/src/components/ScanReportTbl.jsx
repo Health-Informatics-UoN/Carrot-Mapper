@@ -35,7 +35,7 @@ const ScanReportTbl = (props) => {
         window.location.search == '?filter=archived' ? active.current = false : active.current = true
         // get scan reports and sort by id
         let scanreports = await useGet(`/scanreports/`)
-        scanreports = scanreports.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
+        scanreports = scanreports.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0))
         // for each scan report use the data partner and author ids to get name to display
         // get list of unique data partner and auther ids
         const authorObject = {};
@@ -79,7 +79,7 @@ const ScanReportTbl = (props) => {
         }
         let dataPartners = await Promise.all(dataPartnerPromises)
         dataPartners = dataPartners[0]
-        dataPartners.results.forEach((element) => {
+        dataPartners.forEach((element) => {
             scanreports = scanreports.map((scanreport) => scanreport.parent_dataset.data_partner == element.id ? { ...scanreport, data_partner: element } : scanreport);
         });
         // split data into active reports and archived report
