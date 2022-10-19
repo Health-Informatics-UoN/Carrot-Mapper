@@ -424,7 +424,7 @@ class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
     def to_representation(self, scan_report):
-        qs = MappingRule.objects.filter(scan_report=scan_report)
+        qs = self.context['view'].get_queryset()
         rules = get_mapping_rules_list(qs)
         for rule in rules:
             rule["destination_table"] = {
@@ -447,7 +447,7 @@ class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
                 "name": rule["source_field"].name,
             }
 
-        return rules
+        return rules[0]
 
 
 class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):

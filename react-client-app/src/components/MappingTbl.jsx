@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import {
+    Center,
     Flex,
     Spinner,
     Link,
@@ -18,7 +19,8 @@ import RulesTbl from './RulesTbl'
 import ConceptAnalysis from './ConceptAnalysis'
 import PageHeading from './PageHeading'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
-
+import queryString from "query-string"
+import Pagination from 'react-js-pagination'
 
 
 const MappingTbl = (props) => {
@@ -40,52 +42,70 @@ const MappingTbl = (props) => {
     const downLoadingImgRef = useRef(false)
     const { isOpen, onOpen, onClose } = useDisclosure()
     const { isOpen: isOpenAnalyse, onOpen: onOpenAnalyse, onClose: onCloseAnalyse } = useDisclosure()
-
+    const [page_size, set_page_size] = useState(30)
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItemsCount, setTotalItemsCount] = useState(null);
+    const [firstLoad, setFirstLoad] = useState(true);
 
     useEffect(() => {
+        // run on initial load of the page
         props.setTitle(null)
-        // get scan report
+        // get scan report name for breadcrumbs
         useGet(`/scanreports/${scan_report_id}/`).then(sr => scanReportName.current = sr.dataset)
-        // on initial load of the page,
-        // get all mapping rules for the page unfiltered
-        useGet(`/mappingruleslist/?id=${scan_report_id}`).then(res => { // not sure if this needs a / on the end or not as it's an undocumented endpoint
+
+        const parsed_query = queryString.parse(window.location.search)
+
+        const setThings = async (parsed_query) => {
+           if ("page_size" in parsed_query) {
+                set_page_size(parsed_query["page_size"])
+                const local_page_size = parsed_query["page_size"]
+            }
+            else
+            {
+                const local_page_size = page_size
+            }
+            if ("p" in parsed_query) {
+                setCurrentPage(parsed_query["p"])
+                const local_page = parsed_query["p"]
+            }
+            else
+            {
+                const local_page = currentPage
+            }
+             if ("page_size" in parsed_query || "p" in parsed_query) {
+                window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${local_page}&page_size=${local_page_size}`)
+            }
+        }
+        setThings(parsed_query)
+
+        setFirstLoad(false)
+    }, []);
+
+
+    useEffect(async () => {
+        // if not the first load, then load data etc. This clause avoids an initial call using the default values of
+        // currentPage and page_size, which is not desired.
+        if (!firstLoad) {
+            // get all mapping rules for the page unfiltered
+            let res = await useGet(`/mappingruleslist/?id=${scan_report_id}&p=${currentPage}&page_size=${page_size}`)
+            setTotalItemsCount(res.count)
+
             // sort results and add an index to be able to find them later
-            let tempRules = res[0].sort((a, b) => a.rule_id > b.rule_id ? 1 : b.rule_id > a.rule_id ? -1 : 0).map((item, index) => ({ ...item, startIndex: index }));
-            // find any rows with matching concepts
-            let newData = tempRules.map((scanreport) => scanreport);
-            newData = newData.filter((rule) => !rule.destination_field.name.includes('_source_concept_id') && rule.term_mapping != null);
+            let tempRules = res.results.sort((a, b) => a.rule_id > b.rule_id ? 1 : b.rule_id > a.rule_id ? -1 : 0).map((item, index) => ({ ...item, startIndex: index }));
 
-            newData = newData.filter(item => {
-                const matches = newData
-                    .filter((row) =>
-                        row.source_table.id === item.source_table.id &&
-                        row.source_field.id === item.source_field.id &&
-                        Object.keys(row.term_mapping)[0] === Object.keys(item.term_mapping)[0]
-                    );
-                if (matches.length > 1) {
-                    return true
-                }
-                return false
-            })
+            // Here there used to be functionality to highlight any values/fields with more than one associated concept.
+            // This has now been removed due to the way pagination works.
+            // Look in the git history if this needs rectifying in future!
 
-            // set any found rows with matching concepts to have flag=true
-            tempRules = tempRules.map(item => {
-                if (newData.find(data => data.startIndex == item.startIndex)) {
-                    item.flag = true
-                }
-                return item
-            })
-            setValues(tempRules)
+            const setThings = async (tempRules) => {
+                setValues(tempRules)
+            }
+            setThings(tempRules)
 
             setLoading(false);
             setLoadingMessage("");
-        })
-            .catch(err => {
-                setLoading(false);
-                setLoadingMessage("");
-                setError("An error has occured while fetching the rules")
-            })
-    }, []);
+        }
+    }, [currentPage, page_size, firstLoad]);
 
     useEffect(async () => {
         // run when map diagram state has changed
@@ -123,6 +143,18 @@ const MappingTbl = (props) => {
         }
     }, [mapDiagram]);
 
+
+    const onPageChange = (page) => {
+        const parsed_query = queryString.parse(window.location.search)
+        if ("page_size" in parsed_query) {
+            set_page_size(parsed_query["page_size"])
+        }
+        if ("p" in parsed_query) {
+            setCurrentPage(page)
+        }
+        window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${page}&page_size=${page_size}`)
+        setCurrentPage(page)
+    }
 
     // call refresh rules function from django then get new data
     const refreshRules = async () => {
@@ -378,6 +410,17 @@ const MappingTbl = (props) => {
                     </>
                 }
             </div>
+            <Center>
+                <Pagination
+                    activePage={currentPage}
+                    itemsCountPerPage={page_size}
+                    totalItemsCount={totalItemsCount}
+                    pageRangeDisplayed={5}
+                    onChange={onPageChange}
+                    itemClass='btn paginate'
+                    activeClass='btn disabled paginate'
+                />
+            </Center>
             {error ?
                 <div>{error}</div>
                 :
