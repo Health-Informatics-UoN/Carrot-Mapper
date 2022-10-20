@@ -31,7 +31,6 @@ from mapping.models import (
 from .services_rules import (
     analyse_concepts,
     get_mapping_rules_json,
-    get_mapping_rules_list,
 )
 
 from .permissions import (

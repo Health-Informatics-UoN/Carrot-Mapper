@@ -29,6 +29,7 @@ const MappingTbl = (props) => {
     const scanReportName = useRef(null);
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [mapDiagram, setMapDiagram] = useState({ showing: false, image: null });
     const svg = useRef(null);
@@ -63,24 +64,31 @@ const MappingTbl = (props) => {
         // if not the first load, then load data etc. This clause avoids an initial call using the default values of
         // currentPage and page_size, which is not desired.
         if (!firstLoad) {
-            // get all mapping rules for the page unfiltered
-            let res = await useGet(`/mappingruleslist/?id=${scan_report_id}&p=${currentPage}&page_size=${page_size}`)
-            setTotalItemsCount(res.count)
+            try {
+                // get all mapping rules for the page unfiltered
+                let res = await useGet(`/mappingruleslist/?id=${scan_report_id}&p=${currentPage}&page_size=${page_size}`)
+                setTotalItemsCount(res.count)
 
-            // sort results and add an index to be able to find them later
-            let tempRules = res.results.sort((a, b) => a.rule_id > b.rule_id ? 1 : b.rule_id > a.rule_id ? -1 : 0).map((item, index) => ({ ...item, startIndex: index }));
+                // sort results and add an index to be able to find them later
+                let tempRules = res.results.sort((a, b) => a.rule_id > b.rule_id ? 1 : b.rule_id > a.rule_id ? -1 : 0).map((item, index) => ({ ...item, startIndex: index }));
 
-            // Here there used to be functionality to highlight any values/fields with more than one associated concept.
-            // This has now been removed due to the way pagination works.
-            // Look in the git history if this needs rectifying in future!
+                // Here there used to be functionality to highlight any values/fields with more than one associated concept.
+                // This has now been removed due to the way pagination works.
+                // Look in the git history if this needs rectifying in future!
 
-            const setThings = async (tempRules) => {
-                setValues(tempRules)
+                const setValuesAsync = async (tempRules) => {
+                    setValues(tempRules)
+                }
+                setValuesAsync(tempRules)
+
+                setLoading(false);
+                setLoadingMessage("");
             }
-            setThings(tempRules)
-
-            setLoading(false);
-            setLoadingMessage("");
+            catch (error) {
+                setLoading(false);
+                setLoadingMessage("");
+                setError("An error has occurred while fetching the rules")
+            }
         }
     }, [currentPage, page_size, firstLoad]);
 
