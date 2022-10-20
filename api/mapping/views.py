@@ -37,7 +37,6 @@ from .serializers import (
     OmopFieldSerializer,
     MappingRuleSerializer,
     GetRulesJSON,
-    GetRulesList,
     UserSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
@@ -845,49 +844,41 @@ class DownloadJSON(viewsets.ModelViewSet):
 class RulesList(viewsets.ModelViewSet):
     queryset = MappingRule.objects.all().order_by("id")
     pagination_class = CustomPagination
-    # serializer_class = GetRulesList
     filter_backends = [DjangoFilterBackend]
-    # filterset_fields = ["id"]
     http_method_names = ["get"]
 
-    def get_serializer_class(self):
-        # if self.request.method in ["GET"]:
-        #     return GetRulesList2
-        return super().get_serializer_class()
-
-    # def get_serializer_class(self, request):
-    #
-    #     serializer = self.get_serializer(
-    #         data=request.data, many=isinstance(request.data, list)
-    #     )
-
     def get_queryset(self):
-        queryset = MappingRule.objects.all().order_by("id")
         _id = self.request.query_params.get("id", None)
-        print(_id)
+        queryset = self.queryset
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
-        print(len(queryset))
         return queryset
 
     def list(self, request):
-        # queryset = self.get_queryset()
-        queryset = MappingRule.objects.all().order_by("id")
+        """
+        This is a somewhat strange way of doing things (because we don't use a serializer class,
+        but seems to be a limitation of how django handles the combination of pagination and
+        filtering on ID of a model (ScanReport) that's not that being returned (MappingRule).
+
+        Instead, this is in effect a ListSerializer for MappingRule but that only works for in
+        the scenario we have. This means that get_mapping_rules_list() must now handle pagination
+        directly.
+        """
+        queryset = self.queryset
         _id = self.request.query_params.get("id", None)
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
-        print(datetime.datetime.now(), "list", _id, len(queryset))
+        # Filter on ScanReport ID
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
-        # if page_size is not None and p is not None:
-        #     queryset = queryset.filter(scan_report__id=_id)
-        # count = len(queryset)
         count = queryset.count()
-        print(datetime.datetime.now(), "count", count)
+
+        # Get subset of mapping rules that fit onto the page to be displayed
+        p = self.request.query_params.get("p", None)
+        page_size = self.request.query_params.get("page_size", None)
         rules = get_mapping_rules_list(
             queryset, page_number=int(p), page_size=int(page_size)
         )
-        print(datetime.datetime.now(), "len rules", len(rules))
+
+        # Process all rules
         for rule in rules:
             rule["destination_table"] = {
                 "id": int(str(rule["destination_table"])),

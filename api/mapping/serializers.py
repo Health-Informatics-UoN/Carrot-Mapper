@@ -418,38 +418,6 @@ class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
         return rules
 
 
-class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
-
-    def to_representation(self, scan_report):
-        qs = self.context["view"].get_queryset()
-        rules = get_mapping_rules_list(qs)
-        for rule in rules:
-            rule["destination_table"] = {
-                "id": int(str(rule["destination_table"])),
-                "name": rule["destination_table"].table,
-            }
-
-            rule["destination_field"] = {
-                "id": int(str(rule["destination_field"])),
-                "name": rule["destination_field"].field,
-            }
-
-            rule["source_table"] = {
-                "id": int(str(rule["source_table"])),
-                "name": rule["source_table"].name,
-            }
-
-            rule["source_field"] = {
-                "id": int(str(rule["source_field"])),
-                "name": rule["source_field"].name,
-            }
-
-        return rules[0]
-
-
 class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport

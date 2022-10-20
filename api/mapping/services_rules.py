@@ -441,18 +441,20 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
     """
     Args:
         qs : queryset of all mapping rules
+        page_number: if present, the number of the page to be returned under pagination
+        page_size: if present, the size of the page to be returned under pagination (
+          that is, when viewed on the mappingruleslist page. We don't supply
+          `page_number` or `page_size` on other calls, so that all values are returned
+          in e.g. the files for download.
     Returns:
         list : a list of rules that can be interpreted by the view.py
                page and processed to build a json
     """
     # In the case of a paginated call, calculate the slice by hand and apply.
+    # page_number is 1-based.
     if page_number is not None:
-        first_index = (page_number - 1) * page_size if page_number is not None else 0
-        last_index = (
-            page_number * page_size
-            if page_number is not None
-            else len(structural_mapping_rules)
-        )
+        first_index = (page_number - 1) * page_size
+        last_index = page_number * page_size
         structural_mapping_rules = structural_mapping_rules[first_index:last_index]
 
     # get all scan_report_concepts that are used
