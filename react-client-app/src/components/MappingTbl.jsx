@@ -11,6 +11,7 @@ import {
 
 import { ArrowForwardIcon } from '@chakra-ui/icons'
 import { useGet, usePost } from '../api/values'
+import { set_pagination_variables } from '../api/pagination_helpers'
 import ConceptTag from './ConceptTag'
 import MappingModal from './MappingModal'
 import AnalysisModal from './AnalysisModal'
@@ -19,7 +20,6 @@ import RulesTbl from './RulesTbl'
 import ConceptAnalysis from './ConceptAnalysis'
 import PageHeading from './PageHeading'
 import CCBreadcrumbBar from './CCBreadcrumbBar'
-import queryString from "query-string"
 import Pagination from 'react-js-pagination'
 
 
@@ -47,29 +47,14 @@ const MappingTbl = (props) => {
     const [totalItemsCount, setTotalItemsCount] = useState(null);
     const [firstLoad, setFirstLoad] = useState(true);
 
-    useEffect(() => {
+    useEffect(async () => {
         // run on initial load of the page
         props.setTitle(null)
         // get scan report name for breadcrumbs
         useGet(`/scanreports/${scan_report_id}/`).then(sr => scanReportName.current = sr.dataset)
 
-        const parsed_query = queryString.parse(window.location.search)
-
-        const setThings = async (parsed_query) => {
-            let local_page_size = page_size
-            if ("page_size" in parsed_query) {
-                set_page_size(parsed_query["page_size"])
-                local_page_size = parsed_query["page_size"]
-            }
-            let local_page = currentPage
-            if ("p" in parsed_query) {
-                setCurrentPage(parsed_query["p"])
-            }
-            if ("page_size" in parsed_query || "p" in parsed_query) {
-                window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${local_page}&page_size=${local_page_size}`)
-            }
-        }
-        setThings(parsed_query)
+        let { local_page, local_page_size } = await set_pagination_variables(window.location.search, page_size, set_page_size, currentPage, setCurrentPage);
+        window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${local_page}&page_size=${local_page_size}`)
 
         setFirstLoad(false)
     }, []);
@@ -136,15 +121,7 @@ const MappingTbl = (props) => {
         }
     }, [mapDiagram]);
 
-
     const onPageChange = (page) => {
-        const parsed_query = queryString.parse(window.location.search)
-        if ("page_size" in parsed_query) {
-            set_page_size(parsed_query["page_size"])
-        }
-        if ("p" in parsed_query) {
-            setCurrentPage(page)
-        }
         window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${page}&page_size=${page_size}`)
         setCurrentPage(page)
     }

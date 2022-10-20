@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Center, Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
 import { useGet, usePatch } from '../api/values'
+import { set_pagination_variables } from '../api/pagination_helpers'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
@@ -8,7 +9,6 @@ import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
 import Pagination from 'react-js-pagination'
 import ToastAlert from '../components/ToastAlert'
-import queryString from "query-string"
 
 const DatasetTbl = (props) => {
     const data = useRef(null);
@@ -26,28 +26,21 @@ const DatasetTbl = (props) => {
     const [totalItemsCount, setTotalItemsCount] = useState(null);
     const [firstLoad, setFirstLoad] = useState(true);
 
-    useEffect(() => {
+    useEffect(async () => {
         // run on initial page load
         props.setTitle(null);
-        window.location.search === '?filter=archived' ? active.current = false : active.current = true
+        let { local_page, local_page_size } = await set_pagination_variables(window.location.search, page_size, set_page_size, currentPage, setCurrentPage);
 
-        const parsed_query = queryString.parse(window.location.search)
-
-        const setThings = async (parsed_query) => {
-            let local_page_size = page_size
-            if ("page_size" in parsed_query) {
-                set_page_size(parsed_query["page_size"])
-                local_page_size = parsed_query["page_size"]
-            }
-            let local_page = currentPage
-            if ("p" in parsed_query) {
-                setCurrentPage(parsed_query["p"])
-            }
-            if ("page_size" in parsed_query || "p" in parsed_query) {
-                window.history.pushState({}, '', `/datasets/?p=${local_page}&page_size=${local_page_size}`)
-            }
+        // set active.current based on the presence of the filter=archived flag.
+        if (!active.current) {
+            active.current = false
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${local_page}&page_size=${local_page_size}`)
         }
-        setThings(parsed_query)
+        else
+        {
+            active.current = true
+            window.history.pushState({}, '', `/datasets/?p=${local_page}&page_size=${local_page_size}`)
+        }
 
         setFirstLoad(false)
     }, []);
@@ -58,8 +51,7 @@ const DatasetTbl = (props) => {
         if (!firstLoad) {
             // run on initial page load
             props.setTitle(null);
-            window.location.search === '?filter=archived' ? active.current = false : active.current = true
-
+            window.location.search.search('filter=archived') > 0 ? active.current = false : active.current = true
             // get datasets and data partners, and sort by id
             let datasets = await useGet(`/datasets_data_partners/?p=${currentPage}&page_size=${page_size}`);
             setTotalItemsCount(datasets.count)
@@ -85,14 +77,13 @@ const DatasetTbl = (props) => {
     }, [currentPage, page_size, firstLoad]);
 
     const onPageChange = (page) => {
-        const parsed_query = queryString.parse(window.location.search)
-        if ("page_size" in parsed_query) {
-            set_page_size(parsed_query["page_size"])
+        if (active.current == false) {
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${page}&page_size=${page_size}`)
         }
-        if ("p" in parsed_query) {
-            setCurrentPage(page)
+        else
+        {
+            window.history.pushState({}, '', `/datasets/?p=${page}&page_size=${page_size}`)
         }
-        window.history.pushState({}, '', `/datasets/?p=${page}&page_size=${page_size}`)
         setCurrentPage(page)
     }
 
@@ -115,27 +106,26 @@ const DatasetTbl = (props) => {
             onOpen()
             setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
         }
-
-
     }
+
     // show active datasets and change url when 'Active Datasets' button is pressed
     const goToActive = () => {
         if (active.current == false) {
             active.current = true
             setDisplayedData(activeDatasets.current)
-            window.history.pushState({}, '', '/datasets/')
+            window.history.pushState({}, '', `/datasets/?p=${currentPage}&page_size=${page_size}`)
             setTitle("Active Datasets")
         }
     }
+
     // show archived datasets and change url when 'Archived Datasets' button is pressed
     const goToArchived = () => {
         if (active.current == true) {
             active.current = false
             setDisplayedData(archivedDatasets.current)
-            window.history.pushState({}, '', '/datasets/?filter=archived')
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${currentPage}&page_size=${page_size}`)
             setTitle("Archived Datasets");
         }
-
     }
 
     const applyFilters = (variable) => {
