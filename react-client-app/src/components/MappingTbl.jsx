@@ -56,23 +56,18 @@ const MappingTbl = (props) => {
         const parsed_query = queryString.parse(window.location.search)
 
         const setThings = async (parsed_query) => {
-           if ("page_size" in parsed_query) {
+            let local_page_size = page_size
+            if ("page_size" in parsed_query) {
                 set_page_size(parsed_query["page_size"])
-                const local_page_size = parsed_query["page_size"]
+                local_page_size = parsed_query["page_size"]
             }
-            else
-            {
-                const local_page_size = page_size
-            }
+            let local_page = currentPage
             if ("p" in parsed_query) {
                 setCurrentPage(parsed_query["p"])
                 const local_page = parsed_query["p"]
             }
-            else
-            {
-                const local_page = currentPage
-            }
-             if ("page_size" in parsed_query || "p" in parsed_query) {
+
+            if ("page_size" in parsed_query || "p" in parsed_query) {
                 window.history.pushState({}, '', `/scanreports/${scan_report_id}/mapping_rules/?p=${local_page}&page_size=${local_page_size}`)
             }
         }
