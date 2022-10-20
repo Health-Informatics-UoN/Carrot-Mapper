@@ -42,7 +42,6 @@ const DatasetTbl = (props) => {
             let local_page = currentPage
             if ("p" in parsed_query) {
                 setCurrentPage(parsed_query["p"])
-                const local_page = parsed_query["p"]
             }
             if ("page_size" in parsed_query || "p" in parsed_query) {
                 window.history.pushState({}, '', `/datasets/?p=${local_page}&page_size=${local_page_size}`)

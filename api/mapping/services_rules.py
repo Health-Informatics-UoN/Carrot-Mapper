@@ -448,8 +448,11 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
     # In the case of a paginated call, calculate the slice by hand and apply.
     if page_number is not None:
         first_index = (page_number - 1) * page_size if page_number is not None else 0
-        last_index = page_number * page_size if page_number is not None else len(
-            structural_mapping_rules)
+        last_index = (
+            page_number * page_size
+            if page_number is not None
+            else len(structural_mapping_rules)
+        )
         structural_mapping_rules = structural_mapping_rules[first_index:last_index]
 
     # get all scan_report_concepts that are used

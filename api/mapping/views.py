@@ -843,12 +843,12 @@ class DownloadJSON(viewsets.ModelViewSet):
 
 
 class RulesList(viewsets.ModelViewSet):
-    queryset = MappingRule.objects.all().order_by('id')
+    queryset = MappingRule.objects.all().order_by("id")
     pagination_class = CustomPagination
     # serializer_class = GetRulesList
     filter_backends = [DjangoFilterBackend]
     # filterset_fields = ["id"]
-    http_method_names = ['get']
+    http_method_names = ["get"]
 
     def get_serializer_class(self):
         # if self.request.method in ["GET"]:
@@ -862,8 +862,8 @@ class RulesList(viewsets.ModelViewSet):
     #     )
 
     def get_queryset(self):
-        queryset = MappingRule.objects.all().order_by('id')
-        _id = self.request.query_params.get('id', None)
+        queryset = MappingRule.objects.all().order_by("id")
+        _id = self.request.query_params.get("id", None)
         print(_id)
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
@@ -872,21 +872,22 @@ class RulesList(viewsets.ModelViewSet):
 
     def list(self, request):
         # queryset = self.get_queryset()
-        queryset = MappingRule.objects.all().order_by('id')
-        _id = self.request.query_params.get('id', None)
-        p = self.request.query_params.get('p', None)
-        page_size = self.request.query_params.get('page_size', None)
-        print(datetime.datetime.now(), 'list', _id, len(queryset))
+        queryset = MappingRule.objects.all().order_by("id")
+        _id = self.request.query_params.get("id", None)
+        p = self.request.query_params.get("p", None)
+        page_size = self.request.query_params.get("page_size", None)
+        print(datetime.datetime.now(), "list", _id, len(queryset))
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
         # if page_size is not None and p is not None:
         #     queryset = queryset.filter(scan_report__id=_id)
         # count = len(queryset)
         count = queryset.count()
-        print(datetime.datetime.now(), 'count', count)
-        rules = get_mapping_rules_list(queryset, page_number=int(p),
-                                       page_size=int(page_size))
-        print(datetime.datetime.now(), 'len rules', len(rules))
+        print(datetime.datetime.now(), "count", count)
+        rules = get_mapping_rules_list(
+            queryset, page_number=int(p), page_size=int(page_size)
+        )
+        print(datetime.datetime.now(), "len rules", len(rules))
         for rule in rules:
             rule["destination_table"] = {
                 "id": int(str(rule["destination_table"])),
@@ -908,7 +909,7 @@ class RulesList(viewsets.ModelViewSet):
                 "name": rule["source_field"].name,
             }
 
-        return Response(data={'count': count, 'results': rules})
+        return Response(data={"count": count, "results": rules})
 
 
 class AnalyseRules(viewsets.ModelViewSet):
