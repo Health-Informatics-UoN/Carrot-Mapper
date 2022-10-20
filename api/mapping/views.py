@@ -17,6 +17,8 @@ from rest_framework.generics import (
 )
 from rest_framework.renderers import JSONRenderer
 
+from .paginations import CustomPagination
+
 from .serializers import (
     GetRulesAnalysis,
     ScanReportEditSerializer,
@@ -35,10 +37,10 @@ from .serializers import (
     OmopFieldSerializer,
     MappingRuleSerializer,
     GetRulesJSON,
-    GetRulesList,
     UserSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
+    DatasetAndDataPartnerViewSerializer,
     ProjectSerializer,
     ProjectNameSerializer,
     ProjectDatasetSerializer,
@@ -463,6 +465,54 @@ class DatasetListView(generics.ListAPIView):
         ).distinct()
 
 
+class DatasetAndDataPartnerListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
+
+    serializer_class = DatasetAndDataPartnerViewSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in"],
+        "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
+    }
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.prefetch_related("data_partner").all().distinct()
+
+        return (
+            Dataset.objects.filter(
+                Q(visibility=VisibilityChoices.PUBLIC)
+                | Q(
+                    viewers=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                )
+                | Q(
+                    editors=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                )
+                | Q(
+                    admins=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                ),
+                project__members=self.request.user.id,
+            )
+            .prefetch_related("data_partner")
+            .distinct()
+            .order_by("-id")
+        )
+
+
 class DatasetCreateView(generics.CreateAPIView):
     serializer_class = DatasetViewSerializer
     queryset = Dataset.objects.all()
@@ -792,10 +842,65 @@ class DownloadJSON(viewsets.ModelViewSet):
 
 
 class RulesList(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = GetRulesList
+    queryset = MappingRule.objects.all().order_by("id")
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["id"]
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        _id = self.request.query_params.get("id", None)
+        queryset = self.queryset
+        if _id is not None:
+            queryset = queryset.filter(scan_report__id=_id)
+        return queryset
+
+    def list(self, request):
+        """
+        This is a somewhat strange way of doing things (because we don't use a serializer class,
+        but seems to be a limitation of how django handles the combination of pagination and
+        filtering on ID of a model (ScanReport) that's not that being returned (MappingRule).
+
+        Instead, this is in effect a ListSerializer for MappingRule but that only works for in
+        the scenario we have. This means that get_mapping_rules_list() must now handle pagination
+        directly.
+        """
+        queryset = self.queryset
+        _id = self.request.query_params.get("id", None)
+        # Filter on ScanReport ID
+        if _id is not None:
+            queryset = queryset.filter(scan_report__id=_id)
+        count = queryset.count()
+
+        # Get subset of mapping rules that fit onto the page to be displayed
+        p = self.request.query_params.get("p", None)
+        page_size = self.request.query_params.get("page_size", None)
+        rules = get_mapping_rules_list(
+            queryset, page_number=int(p), page_size=int(page_size)
+        )
+
+        # Process all rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
 
 
 class AnalyseRules(viewsets.ModelViewSet):
