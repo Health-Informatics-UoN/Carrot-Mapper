@@ -29,7 +29,6 @@ const MappingTbl = (props) => {
     const scanReportName = useRef(null);
     const [values, setValues] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(undefined);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [mapDiagram, setMapDiagram] = useState({ showing: false, image: null });
     const svg = useRef(null);
