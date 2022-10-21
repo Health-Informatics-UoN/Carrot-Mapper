@@ -32,7 +32,7 @@ const DatasetTbl = (props) => {
         let { local_page, local_page_size } = await set_pagination_variables(window.location.search, page_size, set_page_size, currentPage, setCurrentPage);
 
         // set active.current based on the presence of the filter=archived flag.
-        if (!active.current) {
+        if (window.location.search.search('filter=archived') > 0) {
             active.current = false
             window.history.pushState({}, '', `/datasets/?filter=archived&p=${local_page}&page_size=${local_page_size}`)
         }
