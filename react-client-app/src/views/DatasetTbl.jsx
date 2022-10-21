@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
-import { useGet, usePatch, chunkIds } from '../api/values'
+import { Center, Flex, Spinner, Table, Thead, Tbody, Tr, Th, Td, Spacer, TableCaption, Link, Button, HStack, Select, Text, useDisclosure, ScaleFade } from "@chakra-ui/react"
+import { useGet, usePatch } from '../api/values'
+import { set_pagination_variables } from '../api/pagination_helpers'
 import PageHeading from '../components/PageHeading'
 import ConceptTag from '../components/ConceptTag'
 import CCBreadcrumbBar from '../components/CCBreadcrumbBar'
 import moment from 'moment';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons'
+import Pagination from 'react-js-pagination'
 import ToastAlert from '../components/ToastAlert'
 
 const DatasetTbl = (props) => {
@@ -13,51 +15,77 @@ const DatasetTbl = (props) => {
     const [displayedData, setDisplayedData] = useState(null);
     const activeDatasets = useRef(null);
     const active = useRef(true)
+    const [page_size, set_page_size] = useState(10)
     const archivedDatasets = useRef(null);
     const [loadingMessage, setLoadingMessage] = useState("Loading Datasets")
     const [datapartnerFilter, setDataPartnerFilter] = useState("All");
     const [title, setTitle] = useState("Datasets");
     const [alert, setAlert] = useState({ hidden: true, title: '', description: '', status: 'error' });
     const { isOpen, onOpen, onClose } = useDisclosure()
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalItemsCount, setTotalItemsCount] = useState(null);
+    const [firstLoad, setFirstLoad] = useState(true);
+
     useEffect(async () => {
         // run on initial page load
         props.setTitle(null);
-        window.location.search === '?filter=archived' ? active.current = false : active.current = true
-        // get datasets and sort by id
-        let datasets = await useGet(`/datasets/`);
-        datasets = datasets.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
-        // for each dataset use the data partner and admin ids to get name to display
-        // get list of unique data partner and admin ids
-        const adminObject = {};
-        datasets.map((dataset) => {
-            adminObject[dataset.admin] = true;
-            const created_at = {};
-            created_at.created_at = dataset.created_at;
-            created_at.displayString = moment(dataset.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
-            dataset.created_at = created_at;
-        });
+        let { local_page, local_page_size } = await set_pagination_variables(window.location.search, page_size, set_page_size, currentPage, setCurrentPage);
 
-        const dataPartnerObject = {};
-        datasets.map((dataset) => {
-            dataPartnerObject[dataset.data_partner] = true;
-        });
-        const dataPartnerIds = chunkIds(Object.keys(dataPartnerObject));
-        const dataPartnerPromises = [];
-        for (let i = 0; i < dataPartnerIds.length; i++) {
-            dataPartnerPromises.push(useGet(`/datapartners/?id__in=${dataPartnerIds[i].join()}`));
+        // set active.current based on the presence of the filter=archived flag.
+        if (window.location.search.search('filter=archived') > 0) {
+            active.current = false
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${local_page}&page_size=${local_page_size}`)
         }
-        let dataPartners = await Promise.all(dataPartnerPromises)
-        dataPartners = dataPartners[0]
-        dataPartners.forEach((element) => {
-            datasets = datasets.map((dataset) => dataset.data_partner == element.id ? { ...dataset, data_partner: element } : dataset);
-        });
-        data.current = datasets
-        activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
-        archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
-        active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
-        active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
-        setLoadingMessage(null)
+        else
+        {
+            active.current = true
+            window.history.pushState({}, '', `/datasets/?p=${local_page}&page_size=${local_page_size}`)
+        }
+
+        setFirstLoad(false)
     }, []);
+
+    useEffect(async () => {
+        // if not the first load, then load data etc. This clause avoids an initial call using the default values of
+        // currentPage and page_size, which is not desired.
+        if (!firstLoad) {
+            // run on initial page load
+            props.setTitle(null);
+            window.location.search.search('filter=archived') > 0 ? active.current = false : active.current = true
+            // get datasets and data partners, and sort by id
+            let datasets = await useGet(`/datasets_data_partners/?p=${currentPage}&page_size=${page_size}`);
+            setTotalItemsCount(datasets.count)
+            datasets = datasets.results.sort((b, a) => (a.id > b.id) ? 1 : ((b.id > a.id) ? -1 : 0));
+            // for each dataset use the data partner and admin ids to get name to display
+            // get list of unique data partner and admin ids
+            const adminObject = {};
+            datasets.map((dataset) => {
+                adminObject[dataset.admin] = true;
+                const created_at = {};
+                created_at.created_at = dataset.created_at;
+                created_at.displayString = moment(dataset.created_at.toString()).format("MMM. DD, YYYY, h:mm a");
+                dataset.created_at = created_at;
+            });
+
+            data.current = datasets
+            activeDatasets.current = datasets.filter(dataset => dataset.hidden == false)
+            archivedDatasets.current = datasets.filter(dataset => dataset.hidden == true)
+            active.current ? setDisplayedData(activeDatasets.current) : setDisplayedData(archivedDatasets.current);
+            active.current ? setTitle("Active Datasets") : setTitle("Archived Datasets");
+            setLoadingMessage(null)
+        }
+    }, [currentPage, page_size, firstLoad]);
+
+    const onPageChange = (page) => {
+        if (active.current == false) {
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${page}&page_size=${page_size}`)
+        }
+        else
+        {
+            window.history.pushState({}, '', `/datasets/?p=${page}&page_size=${page_size}`)
+        }
+        setCurrentPage(page)
+    }
 
     const activateOrArchiveDataset = async (id, theIndicator) => {
         try {
@@ -78,27 +106,26 @@ const DatasetTbl = (props) => {
             onOpen()
             setDisplayedData(currentData => currentData.map(scanreport => scanreport.id == id ? { ...scanreport, loading: false } : scanreport))
         }
-
-
     }
+
     // show active datasets and change url when 'Active Datasets' button is pressed
     const goToActive = () => {
         if (active.current == false) {
             active.current = true
             setDisplayedData(activeDatasets.current)
-            window.history.pushState({}, '', '/datasets/')
+            window.history.pushState({}, '', `/datasets/?p=${currentPage}&page_size=${page_size}`)
             setTitle("Active Datasets")
         }
     }
+
     // show archived datasets and change url when 'Archived Datasets' button is pressed
     const goToArchived = () => {
         if (active.current == true) {
             active.current = false
             setDisplayedData(archivedDatasets.current)
-            window.history.pushState({}, '', '/datasets/?filter=archived')
+            window.history.pushState({}, '', `/datasets/?filter=archived&p=${currentPage}&page_size=${page_size}`)
             setTitle("Archived Datasets");
         }
-
     }
 
     const applyFilters = (variable) => {
@@ -145,6 +172,17 @@ const DatasetTbl = (props) => {
                 <Button variant="blue" mr="10px" onClick={goToActive}>Active Datasets</Button>
                 <Button variant="blue" onClick={goToArchived}>Archived Datasets</Button>
             </Flex>
+            <Center>
+                <Pagination
+                    activePage={currentPage}
+                    itemsCountPerPage={page_size}
+                    totalItemsCount={totalItemsCount}
+                    pageRangeDisplayed={5}
+                    onChange={onPageChange}
+                    itemClass='btn paginate'
+                    activeClass='btn disabled paginate'
+                />
+            </Center>
             <HStack>
                 <Text style={{ fontWeight: "bold" }}>Applied Filters: </Text>
                 {[{ title: "Data Partner -", filter: datapartnerFilter }].map(filter => {
