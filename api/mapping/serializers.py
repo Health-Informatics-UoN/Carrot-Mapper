@@ -31,7 +31,6 @@ from mapping.models import (
 from .services_rules import (
     analyse_concepts,
     get_mapping_rules_json,
-    get_mapping_rules_list,
 )
 
 from .permissions import (
@@ -39,6 +38,12 @@ from .permissions import (
     is_admin,
     is_az_function_user,
 )
+
+
+class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = DataPartner
+        fields = "__all__"
 
 
 class ConceptSerializer(serializers.ModelSerializer):
@@ -163,6 +168,24 @@ class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Dataset
         fields = "__all__"
+
+
+class DatasetAndDataPartnerViewSerializer(
+    DynamicFieldsMixin, serializers.ModelSerializer
+):
+    data_partner = DataPartnerSerializer(read_only=True)
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+            "data_partner",
+            "admins",
+            "visibility",
+            "created_at",
+            "hidden",
+        )
 
 
 class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -334,12 +357,6 @@ class DataDictionarySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataPartner
-        fields = "__all__"
-
-
 class OmopFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = OmopField
@@ -397,38 +414,6 @@ class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
     def to_representation(self, scan_report):
         qs = MappingRule.objects.filter(scan_report=scan_report)
         rules = get_mapping_rules_json(qs)
-        return rules
-
-
-class GetRulesList(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
-
-    def to_representation(self, scan_report):
-        qs = MappingRule.objects.filter(scan_report=scan_report)
-        rules = get_mapping_rules_list(qs)
-        for rule in rules:
-            rule["destination_table"] = {
-                "id": int(str(rule["destination_table"])),
-                "name": rule["destination_table"].table,
-            }
-
-            rule["destination_field"] = {
-                "id": int(str(rule["destination_field"])),
-                "name": rule["destination_field"].field,
-            }
-
-            rule["source_table"] = {
-                "id": int(str(rule["source_table"])),
-                "name": rule["source_table"].name,
-            }
-
-            rule["source_field"] = {
-                "id": int(str(rule["source_field"])),
-                "name": rule["source_field"].name,
-            }
-
         return rules
 
 

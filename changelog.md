@@ -2,6 +2,17 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.11
+### New features
+- Add pagination to the Dataset list page and the Mapping Rules list page.
+
+### Improvements
+- Used lazy loading to reduce communication and improve loading speeds.
+- Rewritten Dockerfile to speed up rebuilds when editing React files. 
+
+### Bugfixes
+
+
 ## v2.0.10
 ### New features
 
