@@ -2,6 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.12
+### New features
+
+### Improvements 
+
+### Bugfixes
+- Handle zero SRs gracefully on Home page and Scan Report list page.
+
 ## v2.0.11
 ### New features
 - Add pagination to the Dataset list page and the Mapping Rules list page.
