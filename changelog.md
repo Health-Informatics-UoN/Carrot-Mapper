@@ -2,6 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.0.13
+### New features
+
+### Improvements 
+- Updated storybook to 6.4.9, removing a number of vulnerabilities.
+### Bugfixes
+
+
 ## v2.0.12
 ### New features
 
