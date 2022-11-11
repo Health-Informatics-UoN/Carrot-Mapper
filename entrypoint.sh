@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Run npm build
-export PATH=$PATH:/home/django/.nvm/versions/node/v12.18.3/bin
+export PATH=$PATH:/home/django/.nvm/versions/node/v16.18.1/bin
 npm run build
 
 # Wait until DB is available
