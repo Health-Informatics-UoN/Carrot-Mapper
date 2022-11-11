@@ -35,8 +35,8 @@
     "moment": "^2.29.2",
     "plotly.js": "^2.5.1",
     "query-string": "^7.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
     "react-js-pagination": "^3.0.3",
     "react-plotly.js": "^2.5.1",
     "swr": "^1.2.0"
@@ -47,6 +47,9 @@
     },
     "babel-loader": {
       "loader-utils": ">=1.4.1"
+    },
+    "@chakra-ui/icons": {
+      "@chakra-ui/system": "^1.0.0"
     }
   }
 }
