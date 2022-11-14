@@ -14,10 +14,10 @@
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.14.5",
-    "@storybook/addon-actions": "^6.5.12",
-    "@storybook/addon-essentials": "^6.5.12",
-    "@storybook/addon-links": "^6.5.12",
-    "@storybook/react": "^6.5.12",
+    "@storybook/addon-actions": "^6.2.9",
+    "@storybook/addon-essentials": "^6.2.9",
+    "@storybook/addon-links": "^6.2.9",
+    "@storybook/react": "^6.2.9",
     "babel-loader": "^8.2.2",
     "eslint": "^7.29.0",
     "eslint-plugin-react": "^7.24.0",
@@ -35,21 +35,10 @@
     "moment": "^2.29.2",
     "plotly.js": "^2.5.1",
     "query-string": "^7.1.1",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
     "react-js-pagination": "^3.0.3",
     "react-plotly.js": "^2.5.1",
-    "swr": "^1.2.0"
-  },
-  "overrides": {
-    "react-js-pagination": {
-      "tar": ">=6.1.9"
-    },
-    "babel-loader": {
-      "loader-utils": ">=1.4.1"
-    },
-    "@chakra-ui/icons": {
-      "@chakra-ui/system": "^1.0.0"
-    }
+    "swr": "^0.5.6"
   }
 }
