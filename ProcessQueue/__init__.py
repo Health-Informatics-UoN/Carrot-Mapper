@@ -532,7 +532,7 @@ def process_scan_report_sheet_table(sheet):
         this_row_empty = True
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
-        for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
+        for header, cell, freq in zip(sheet_headers, row[::2], row[1::2]):
             if (cell != "" and cell is not None) or (freq != "" and freq is not None):
                 d[header].append((str(cell), freq))
                 this_row_empty = False
