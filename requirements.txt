@@ -4,7 +4,6 @@ azure-storage-blob==12.8.1
 requests
 openpyxl
 datetime
-psutil
 resource
 memory-profiler
 httpx
