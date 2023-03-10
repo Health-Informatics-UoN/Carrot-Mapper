@@ -124,7 +124,6 @@ def get_person_id_rule(
 def get_date_rules(
     request, scan_report, scan_report_concept, source_table, destination_table
 ):
-
     #!todo - need some checks for this
     date_event_source_field = find_date_event(source_table)
 
@@ -134,7 +133,6 @@ def get_date_rules(
     # in the case of condition_occurrence, it returns start and end
     date_rules = []
     for date_omop_field in date_omop_fields:
-
         # get the actual omop field object
         date_event_omop_field = OmopField.objects.get(
             table=destination_table, field=date_omop_field
@@ -406,7 +404,6 @@ def find_standard_concept(source_concept):
 class Concept2OMOP:
     @staticmethod
     def get_rules_by_scan_report_concept(scan_report_concept_id):
-
         print("scan_report_concept_id: {}".format(scan_report_concept_id))
 
         _scan_report_concept = ScanReportConcept.objects.get(pk=scan_report_concept_id)
@@ -765,7 +762,6 @@ colorscheme = "gnbu9"
 
 
 def make_dag(data, colorscheme="gnbu9"):
-
     dot = Digraph(strict=True, format="svg")
     dot.attr(rankdir="RL")
     with dot.subgraph(name="cluster_0") as dest, dot.subgraph(name="cluster_1") as inp:
@@ -859,7 +855,6 @@ def view_mapping_rules(request, qs):
 
 
 def find_existing_scan_report_concepts(request, table_id):
-
     # find ScanReportValue associated to this table_id
     # that have at least one concept added to them
     values = (
@@ -976,7 +971,6 @@ def analyse_concepts(scan_report_id):
             # Check if the descendant is a mapped concept in any other scan report
             # and that it's not the same as the original concept
             if (desc in all_mapping_rules) and (desc != rule):
-
                 # Get all the details for that descendant:
                 # descendant name, current mapping rule name, where that descendant is mapped to
                 desc_name, source_ids = get_concept_details(desc)
@@ -1000,7 +994,6 @@ def analyse_concepts(scan_report_id):
             # If ancestor is a mapping rule in any other scan report,
             # and is not the same rule as the current one
             if (anc in all_mapping_rules) and (anc != rule):
-
                 # Get all the details for that ancestor:
                 # ancestor name, current mapping rule name, where that ancestor is mapped to
                 concept, source_ids = get_concept_details(anc)

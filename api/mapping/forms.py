@@ -72,7 +72,6 @@ class ScanReportForm(forms.Form):
         )
 
     def clean_data_dictionary_file(self):
-
         data_dictionary = self.cleaned_data.get("data_dictionary_file")
 
         if data_dictionary is None:
@@ -364,7 +363,6 @@ class ScanReportForm(forms.Form):
         return True
 
     def clean_scan_report_file(self):
-
         scan_report = self.cleaned_data.get("scan_report_file")
 
         if not str(scan_report).endswith(".xlsx"):
