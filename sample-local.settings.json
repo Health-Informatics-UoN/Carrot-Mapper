@@ -10,6 +10,7 @@
         "SCAN_REPORT_QUEUE_NAME":"scanreports-local",
         "NLP_QUEUE_NAME":"nlpqueue-local",
         "PAGE_MAX_CHARS": "30000",
-        "CHUNK_SIZE": "6"
+        "CHUNK_SIZE": "6",
+        "FUNCTIONS_EXTENSION_VERSION": "~4"
     }
 }
