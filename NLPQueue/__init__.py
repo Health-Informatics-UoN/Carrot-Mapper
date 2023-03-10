@@ -10,7 +10,6 @@ api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY
 
 
 def main(msg: func.QueueMessage):
-
     # Define NLP things
     url = "https://ccnett2.cognitiveservices.azure.com/text/analytics/v3.1-preview.5/entities/health/jobs?stringIndexType=TextElements_v8"
     headers = {
@@ -42,9 +41,7 @@ def main(msg: func.QueueMessage):
     codes_dict = omop_helpers.concept_code_to_id(codes)
 
     for item in codes_dict:
-
         if item["pk"].split("_")[1] == "field":
-
             print("SAVING TO FIELD LEVEL...")
             payload = {
                 "nlp_entity": item["nlp_entity"],
@@ -58,7 +55,6 @@ def main(msg: func.QueueMessage):
             }
 
         else:
-
             print("SAVING TO VALUE LEVEL...")
             payload = {
                 "nlp_entity": item["nlp_entity"],

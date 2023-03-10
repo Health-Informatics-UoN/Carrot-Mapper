@@ -741,7 +741,6 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-
             if self.request.GET["content_type"] == "15":
                 # ScanReportField
                 # we have SRCs with content_type 15, grab all SRFields in active SRs,
@@ -1269,7 +1268,6 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
 
     def get_queryset(self):
-
         qs = super().get_queryset()
         search_term = self.kwargs.get("pk")
 
@@ -1563,7 +1561,6 @@ def load_omop_fields(request):
 # To be removed
 # Run NLP at the field level
 def run_nlp_field_level(request):
-
     search_term = request.GET.get("search", None)
     field = ScanReportField.objects.get(pk=search_term)
     start_nlp_field_level(request, search_term=search_term)
@@ -1574,7 +1571,6 @@ def run_nlp_field_level(request):
 # To be removed
 # Run NLP for all fields/values within a table
 def run_nlp_table_level(request):
-
     search_term = request.GET.get("search", None)
     table = ScanReportTable.objects.get(pk=search_term)
     fields = ScanReportField.objects.filter(scan_report_table=search_term)

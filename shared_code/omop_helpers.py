@@ -103,7 +103,6 @@ def find_standard_concept_batch(source_concepts: list):
 
 
 def find_standard_concept(source_concept):
-
     concept_relation = requests.get(
         url=api_url + "omop/conceptrelationshipfilter",
         headers=api_header,
@@ -136,7 +135,6 @@ def find_standard_concept(source_concept):
 
 
 def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
-
     # NLP returns SNOMED as SNOWMEDCT_US
     # This sets SNOWMEDCT_US to SNOWMED if this function is
     # used within services_nlp.py
@@ -204,9 +202,7 @@ def concept_code_to_id(codes):
 
 
 def get_data_from_nlp(url, headers, post_response_url):
-
     for url in post_response_url:
-
         req = requests.get(url, headers=headers)
         job = req.json()
 

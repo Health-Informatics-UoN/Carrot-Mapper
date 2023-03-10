@@ -261,7 +261,6 @@ class CanViewProject(permissions.BasePermission):
 
 
 class CanView(permissions.BasePermission):
-
     message = "You do not have permission to view this."
 
     def has_object_permission(self, request, view, obj):
@@ -279,7 +278,6 @@ class CanView(permissions.BasePermission):
 
 
 class CanEdit(permissions.BasePermission):
-
     message = "You do not have permission to edit this."
 
     def has_object_permission(self, request, view, obj):
@@ -295,7 +293,6 @@ class CanEdit(permissions.BasePermission):
 
 
 class CanAdmin(permissions.BasePermission):
-
     message = "You are not an admin of this."
 
     def has_object_permission(self, request, view, obj):
