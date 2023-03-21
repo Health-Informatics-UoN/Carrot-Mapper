@@ -7,7 +7,6 @@ from datetime import datetime
 
 import asyncio
 import httpx
-import psutil
 import requests
 import azure.functions as func
 
@@ -532,7 +531,7 @@ def process_scan_report_sheet_table(sheet):
         this_row_empty = True
         # Iterate across the pairs of cells in the row. If the pair is non-empty,
         # then add it to the relevant dict entry.
-        for (header, cell, freq) in zip(sheet_headers, row[::2], row[1::2]):
+        for header, cell, freq in zip(sheet_headers, row[::2], row[1::2]):
             if (cell != "" and cell is not None) or (freq != "" and freq is not None):
                 d[header].append((str(cell), freq))
                 this_row_empty = False
@@ -611,7 +610,6 @@ async def add_SRValues_and_value_descriptions(
     logger.info(
         f"POST {len(value_entries_to_post)} values to table {current_table_name}"
     )
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
     chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
     logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
 
@@ -623,7 +621,6 @@ async def add_SRValues_and_value_descriptions(
         scan_report_id=scan_report_id,
     )
     logger.info("POST values all finished")
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     return values_response_content
 
@@ -880,11 +877,9 @@ async def process_values_from_sheet(
     )
 
     logger.info("POST concepts all finished")
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
     reuse_existing_value_concepts(values_response_content, 17)
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
 
 def post_field_entries(field_entries_to_post, scan_report_id):
@@ -938,7 +933,6 @@ async def handle_single_table(
     logger.info(
         f"POST {len(field_entries_to_post)} fields to table {current_table_name}"
     )
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     fields_response_content = post_field_entries(field_entries_to_post, scan_report_id)
 
@@ -1076,7 +1070,6 @@ def post_tables(fo_ws, scan_report_id):
     """
     table_entries_to_post = []
     # print("Working on Scan Report >>>", scan_report_id)
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
     logger.info(f"TABLES NAMES >>> {table_names}")
 
     for table_name in table_names:
@@ -1127,7 +1120,6 @@ def post_tables(fo_ws, scan_report_id):
                 ]
             )
         )
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     # Load the result of the post request,
     tables_content = tables_response.json()
@@ -1143,7 +1135,6 @@ def post_tables(fo_ws, scan_report_id):
 # @memory_profiler.profile(stream=profiler_logstream)
 def startup(msg):
     logger.info("Python queue trigger function processed a queue item.")
-    logger.debug(f"RAM memory % used: {psutil.virtual_memory()}")
 
     # Get message from queue
     message = {

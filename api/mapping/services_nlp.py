@@ -25,7 +25,6 @@ def get_data_from_nlp(url, headers, post_response_url):
 
     get_response = []
     for url in post_response_url:
-
         req = requests.get(url, headers=headers)
         job = req.json()
 
@@ -101,7 +100,6 @@ def concept_code_to_id(codes):
 
 
 def start_nlp_field_level(request, search_term):
-
     field = ScanReportField.objects.get(pk=search_term)
     scan_report_id = field.scan_report_table.scan_report.id
 
@@ -109,7 +107,6 @@ def start_nlp_field_level(request, search_term):
     # If True, we pass field-level data i.e. a single string (field description)
     # If False, we pass all values associated with that field
     if field.pass_from_source:
-
         # We want to use the field description if available
         # However, we fall back to field name if field_description is "" (blank)
         field_text = (
@@ -152,7 +149,6 @@ def start_nlp_field_level(request, search_term):
         return True
 
     else:
-
         # Grab assertions for the ScanReport
         assertions = ScanReportAssertion.objects.filter(scan_report__id=scan_report_id)
         neg_assertions = assertions.values_list("negative_assertion")
@@ -172,7 +168,6 @@ def start_nlp_field_level(request, search_term):
 
         # Send data to Azure Storage Queue
         for item in scan_report_values:
-
             field_text = (
                 item.scan_report_field.description_column
                 if item.scan_report_field.description_column is not None
