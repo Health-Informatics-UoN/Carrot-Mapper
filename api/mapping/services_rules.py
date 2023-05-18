@@ -860,7 +860,8 @@ def find_existing_scan_report_concepts(request, table_id):
     values = (
         ScanReportValue.objects.all()
         .filter(scan_report_field__scan_report_table__scan_report=table_id)
-        .filter(concepts__isnull=False).distinct()
+        .filter(concepts__isnull=False)
+        .distinct()
         .order_by("id")
     )
 
@@ -869,7 +870,8 @@ def find_existing_scan_report_concepts(request, table_id):
     fields = (
         ScanReportField.objects.all()
         .filter(scan_report_table__scan_report=table_id)
-        .filter(concepts__isnull=False).distinct()
+        .filter(concepts__isnull=False)
+        .distinct()
         .order_by("id")
     )
 

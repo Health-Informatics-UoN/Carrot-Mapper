@@ -8,13 +8,15 @@ from datetime import datetime
 
 
 class Command(BaseCommand):
-    help = "Refresh all the mapping rules associated to the supplied Scan Report. " \
-           "This can take a _very_ long time (hours) to execute for large numbers of " \
-           "ScanReportConcepts. It can also hang at random intervals. If this occurs " \
-           "(a single ScanReportConcept takes <2s to complete, so it's easy to spot " \
-           "when it hangs) then reboot the container, then comment out the " \
-           "'remove_mapping_rules' line below and set skip_first to skip n " \
-           "ScanReportConcepts."
+    help = (
+        "Refresh all the mapping rules associated to the supplied Scan Report. "
+        "This can take a _very_ long time (hours) to execute for large numbers of "
+        "ScanReportConcepts. It can also hang at random intervals. If this occurs "
+        "(a single ScanReportConcept takes <2s to complete, so it's easy to spot "
+        "when it hangs) then reboot the container, then comment out the "
+        "'remove_mapping_rules' line below and set skip_first to skip n "
+        "ScanReportConcepts."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument("--report-id", required=True, type=int)
