@@ -861,6 +861,8 @@ def find_existing_scan_report_concepts(request, table_id):
         ScanReportValue.objects.all()
         .filter(scan_report_field__scan_report_table__scan_report=table_id)
         .filter(concepts__isnull=False)
+        .distinct()
+        .order_by("id")
     )
 
     # find ScanReportField associated to this table_id
@@ -869,6 +871,8 @@ def find_existing_scan_report_concepts(request, table_id):
         ScanReportField.objects.all()
         .filter(scan_report_table__scan_report=table_id)
         .filter(concepts__isnull=False)
+        .distinct()
+        .order_by("id")
     )
 
     # retrieve all value concepts
