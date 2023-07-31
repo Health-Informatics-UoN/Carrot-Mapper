@@ -1238,6 +1238,16 @@ class StructuralMappingTableListView(ListView):
                 request, self.kwargs.get("pk")
             )
             # save all of them
+            
+            # queue_name = 'rules-armando'
+            refresh_report_id=self.kwargs.get("pk")
+            queue = QueueClient.from_connection_string(
+            conn_str=os.environ.get("STORAGE_CONN_STRING"),
+            queue_name=os.environ.get("RULES_QUEUE_NAME"),
+            )
+            queue.send_message(refresh_report_id)
+            
+            
             nconcepts = 0
             nbadconcepts = 0
             for concept in all_associated_concepts:
