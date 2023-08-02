@@ -1231,40 +1231,53 @@ class StructuralMappingTableListView(ListView):
             or body.get("refresh_rules", None) is not None
         ):
             # remove all existing rules first
-            remove_mapping_rules(request, self.kwargs.get("pk"))
+            # remove_mapping_rules(request, self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
             ## this method could be taking too long to execute
-            all_associated_concepts = find_existing_scan_report_concepts(
-                request, self.kwargs.get("pk")
-            )
-            # save all of them
+            # all_associated_concepts = find_existing_scan_report_concepts(
+            #     request, self.kwargs.get("pk")
+            # )
+            # # save all of them
             
             # queue_name = 'rules-armando'
             refresh_report_id=self.kwargs.get("pk")
+            
+            azure_dict = {
+                "scan_report_id": refresh_report_id,
+            }
+            
+            
+            queue_message = json.dumps(azure_dict)
+            message_bytes = queue_message.encode("ascii")
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode("ascii")
+
+            
+            
             queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
             queue_name=os.environ.get("RULES_QUEUE_NAME"),
             )
-            queue.send_message(refresh_report_id)
+            queue.send_message(base64_message)
             
             
-            nconcepts = 0
-            nbadconcepts = 0
-            for concept in all_associated_concepts:
-                if save_mapping_rules(request, concept):
-                    nconcepts += 1
-                else:
-                    nbadconcepts += 1
+            # nconcepts = 0
+            # nbadconcepts = 0
+            # for concept in all_associated_concepts:
+            #     if save_mapping_rules(request, concept):
+            #         nconcepts += 1
+            #     else:
+            #         nbadconcepts += 1
 
-            if nbadconcepts == 0:
-                messages.success(
-                    request, f"Found and added rules for {nconcepts} existing concepts"
-                )
-            else:
-                messages.success(
-                    request,
-                    f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
-                )
+            # if nbadconcepts == 0:
+            #     messages.success(
+            #         request, f"Found and added rules for {nconcepts} existing concepts"
+            #     )
+            # else:
+            #     messages.success(
+            #         request,
+            #         f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
+            #     )
             return redirect(request.path)
 
         elif (

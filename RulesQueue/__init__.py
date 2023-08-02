@@ -33,17 +33,27 @@ HEADERS = {
 }
 
 
-
-
-
-
-
-
-
-
-
 def main(msg: func.QueueMessage) -> None:
-    logging.info('Python queue trigger function processed a queue item: %s',
-                 msg.get_body().decode('utf-8'))
+    
+    body= msg.get_body().decode("utf-8")
+    body= json.loads(body)
+    SR_ID= body["scan_report_id"]
+    
+    
+#     # mapping_rules_id=requests.get(
+    url=API_URL + "mappingrulesfilter/?scan_report=" + str(SR_ID) +'&fields=id'
+#     # headers=HEADERS,
+#     # )
+    logging.info(url)
 
 
+# def main(msg: func.QueueMessage) -> None:
+#     logging.info('Python queue trigger function processed a queue item: %s',
+#                  msg.get_body().decode('utf-8'))
+
+    get_mappingrules_response = requests.get(
+            url=url,
+            headers=HEADERS,
+        )
+    
+    logging.info(get_mappingrules_response.json())
