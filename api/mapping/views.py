@@ -770,6 +770,63 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
             return None
         return None
 
+class ScanReportConceptByScanReportIDFilterViewSet(viewsets.ModelViewSet):
+    """
+    
+    This returns ID of all ScanReportConcepts that are associated to the supplied ScanReportID
+    
+    This is only retrievable by AZ_FUNCTION_USER.
+    """
+
+    serializer_class = ScanReportConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in", "exact"],
+    }
+    
+    def get_queryset(self):
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            scan_report_id = self.request.GET["sr_id"]
+            # if self.request.GET["content_type"] == "15":
+            
+                # ScanReportField
+                # we have SRCs with content_type 15, grab all SRFields in active SRs,
+                # and then filter ScanReportConcepts by those object_ids
+            field_ids = ScanReportField.objects.filter(
+                    # scan_report_table__scan_report__hidden=False,
+                    # scan_report_table__scan_report__parent_dataset__hidden=False,
+                    # scan_report_table__scan_report__status="COMPLET",
+                    scan_report_table__scan_report__id=scan_report_id,
+                )
+            field_qs = ScanReportConcept.objects.filter(
+                    content_type=15, object_id__in=field_ids
+                )
+            # return qs
+        # elif self.request.GET["content_type"] == "17":  #
+        
+                # ScanReportValue
+                # we have SRCs with content_type 17, grab all SRValues in active SRs,
+                # and then filter ScanReportConcepts by those object_ids
+            value_ids = ScanReportValue.objects.filter(
+                    # scan_report_field__scan_report_table__scan_report__hidden=False,
+                    # scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+                    # scan_report_field__scan_report_table__scan_report__status="COMPLET",
+                    scan_report_field__scan_report_table__scan_report__id=scan_report_id,
+                )
+            value_qs = ScanReportConcept.objects.filter(
+                    content_type=17, object_id__in=value_ids
+                )
+            print('value_qs', value_qs)
+            # return value_qs
+            our_qs = field_qs.union(value_qs)
+            print(our_qs)
+            
+            qs = ScanReportConcept.objects.filter(id__in=our_qs.values('id'))
+            print(qs)
+            return qs
+            # return None
+        return None
+
 
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()

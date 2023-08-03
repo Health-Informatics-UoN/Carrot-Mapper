@@ -106,6 +106,12 @@ routers.register(
 )
 
 routers.register(
+    r"scanreportconceptsbyscanreportidfilter",
+    views.ScanReportConceptByScanReportIDFilterViewSet,
+    basename="scanreportconceptsbyscanreportidfilter",
+)
+
+routers.register(
     r"classificationsystems",
     views.ClassificationSystemViewSet,
     basename="classificationsystems",
