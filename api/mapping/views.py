@@ -828,35 +828,39 @@ class ScanReportConceptByScanReportIDFilterViewSet(viewsets.ModelViewSet):
         return None
 
 class ScanReportConceptDetailsFilterViewSet(viewsets.ModelViewSet):
-    """
+    # """
     
-    This returns ScanReportValue and ScanReportField associated to a given ScanReportConceptID
+    # This returns ScanReportValue and ScanReportField associated to a given ScanReportConceptID
     
-    This is only retrievable by AZ_FUNCTION_USER.
-    """
-    serializer_class = MappingRuleSerializer
+    # This is only retrievable by AZ_FUNCTION_USER.
+    # """
+    serializer_class = ScanReportConceptSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "concept": ["in", "exact"],
+        "concept__concept_id": ["in", "exact"],
+        "object_id": ["in", "exact"],
+        "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
     }
     def get_queryset(self):
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             concept_id = self.request.GET["con_id"]
             
-            SRreportID = MappingRule.objects.filter(
-                concept=concept_id
+            locator_id=ScanReportConcept.objects.filter(
+                id=concept_id
                 )
             
-            qs=MappingRule.objects.filter(scan_report__in=SRreportID.values('scan_report'))
-            qs2=MappingRule.objects.filter(source_field__in=SRreportID.values('source_field'))
-            qs3=MappingRule.objects.filter(concept__in=SRreportID.values('concept'))
-            print(qs)
-            print(qs2)
-            print(qs3)
-            return qs.union(qs2).union(qs3)
-            
-        return None    
+            # if self.request.GET["content_type"] == "17":
+            #     value_object_id=ScanReportConcept.objects.filter(
+            #     object_id=concept_id
+            #     )
+            #     return value_object_id
+
+                
+                
+            print(locator_id)
+            return locator_id
+        return None
 
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()
