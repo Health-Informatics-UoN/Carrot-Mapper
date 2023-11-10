@@ -6,221 +6,507 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('data', '__first__'),
+        ("data", "__first__"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ClassificationSystem',
+            name="ClassificationSystem",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=64)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='DataDictionary',
+            name="DataDictionary",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(blank=True, max_length=256, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(blank=True, max_length=256, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='DataPartner',
+            name="DataPartner",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=64)),
             ],
             options={
-                'verbose_name': 'Data Partner',
-                'verbose_name_plural': 'Data Partners',
+                "verbose_name": "Data Partner",
+                "verbose_name_plural": "Data Partners",
             },
         ),
         migrations.CreateModel(
-            name='NLPModel',
+            name="NLPModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user_string', models.TextField(max_length=1024)),
-                ('json_response', models.TextField(blank=True, max_length=4096, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("user_string", models.TextField(max_length=1024)),
+                (
+                    "json_response",
+                    models.TextField(blank=True, max_length=4096, null=True),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='OmopTable',
+            name="OmopTable",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('table', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("table", models.CharField(max_length=64)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ScanReport',
+            name="ScanReport",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=256)),
-                ('dataset', models.CharField(max_length=128)),
-                ('hidden', models.BooleanField(default=False)),
-                ('file', models.FileField(upload_to='')),
-                ('status', models.CharField(choices=[('UPINPRO', 'Upload in Progress'), ('UPCOMPL', 'Upload Complete'), ('UPFAILE', 'Upload Failed'), ('PENDING', 'Mapping 0%'), ('INPRO25', 'Mapping 25%'), ('INPRO50', 'Mapping 50%'), ('INPRO75', 'Mapping 75%'), ('COMPLET', 'Mapping Complete'), ('BLOCKED', 'Blocked')], default='UPINPRO', max_length=7)),
-                ('author', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('data_dictionary', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='data_dictionary', to='mapping.datadictionary')),
-                ('data_partner', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='mapping.datapartner')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=256)),
+                ("dataset", models.CharField(max_length=128)),
+                ("hidden", models.BooleanField(default=False)),
+                ("file", models.FileField(upload_to="")),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("UPINPRO", "Upload in Progress"),
+                            ("UPCOMPL", "Upload Complete"),
+                            ("UPFAILE", "Upload Failed"),
+                            ("PENDING", "Mapping 0%"),
+                            ("INPRO25", "Mapping 25%"),
+                            ("INPRO50", "Mapping 50%"),
+                            ("INPRO75", "Mapping 75%"),
+                            ("COMPLET", "Mapping Complete"),
+                            ("BLOCKED", "Blocked"),
+                        ],
+                        default="UPINPRO",
+                        max_length=7,
+                    ),
+                ),
+                (
+                    "author",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "data_dictionary",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="data_dictionary",
+                        to="mapping.datadictionary",
+                    ),
+                ),
+                (
+                    "data_partner",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.datapartner",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ScanReportField',
+            name="ScanReportField",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=512)),
-                ('description_column', models.CharField(max_length=512)),
-                ('type_column', models.CharField(max_length=32)),
-                ('max_length', models.IntegerField()),
-                ('nrows', models.IntegerField()),
-                ('nrows_checked', models.IntegerField()),
-                ('fraction_empty', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('nunique_values', models.IntegerField()),
-                ('fraction_unique', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('ignore_column', models.CharField(blank=True, max_length=64, null=True)),
-                ('is_patient_id', models.BooleanField(default=False)),
-                ('is_ignore', models.BooleanField(default=False)),
-                ('classification_system', models.CharField(blank=True, max_length=64, null=True)),
-                ('pass_from_source', models.BooleanField(default=True)),
-                ('concept_id', models.IntegerField(blank=True, default=-1, null=True)),
-                ('field_description', models.CharField(blank=True, max_length=256, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=512)),
+                ("description_column", models.CharField(max_length=512)),
+                ("type_column", models.CharField(max_length=32)),
+                ("max_length", models.IntegerField()),
+                ("nrows", models.IntegerField()),
+                ("nrows_checked", models.IntegerField()),
+                (
+                    "fraction_empty",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                ("nunique_values", models.IntegerField()),
+                (
+                    "fraction_unique",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                (
+                    "ignore_column",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                ("is_patient_id", models.BooleanField(default=False)),
+                ("is_ignore", models.BooleanField(default=False)),
+                (
+                    "classification_system",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                ("pass_from_source", models.BooleanField(default=True)),
+                ("concept_id", models.IntegerField(blank=True, default=-1, null=True)),
+                (
+                    "field_description",
+                    models.CharField(blank=True, max_length=256, null=True),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ScanReportValue',
+            name="ScanReportValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('value', models.CharField(max_length=128)),
-                ('frequency', models.IntegerField()),
-                ('conceptID', models.IntegerField(default=-1)),
-                ('value_description', models.CharField(blank=True, max_length=512, null=True)),
-                ('scan_report_field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreportfield')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("value", models.CharField(max_length=128)),
+                ("frequency", models.IntegerField()),
+                ("conceptID", models.IntegerField(default=-1)),
+                (
+                    "value_description",
+                    models.CharField(blank=True, max_length=512, null=True),
+                ),
+                (
+                    "scan_report_field",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreportfield",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ScanReportTable',
+            name="ScanReportTable",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=256)),
-                ('date_event', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='date_event', to='mapping.scanreportfield')),
-                ('person_id', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='person_id', to='mapping.scanreportfield')),
-                ('scan_report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreport')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=256)),
+                (
+                    "date_event",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="date_event",
+                        to="mapping.scanreportfield",
+                    ),
+                ),
+                (
+                    "person_id",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="person_id",
+                        to="mapping.scanreportfield",
+                    ),
+                ),
+                (
+                    "scan_report",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreport",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='scanreportfield',
-            name='scan_report_table',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreporttable'),
+            model_name="scanreportfield",
+            name="scan_report_table",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                to="mapping.scanreporttable",
+            ),
         ),
         migrations.CreateModel(
-            name='ScanReportConcept',
+            name="ScanReportConcept",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('nlp_entity', models.CharField(blank=True, max_length=64, null=True)),
-                ('nlp_entity_type', models.CharField(blank=True, max_length=64, null=True)),
-                ('nlp_confidence', models.DecimalField(blank=True, decimal_places=2, max_digits=3, null=True)),
-                ('nlp_vocabulary', models.CharField(blank=True, max_length=64, null=True)),
-                ('nlp_concept_code', models.CharField(blank=True, max_length=64, null=True)),
-                ('nlp_processed_string', models.CharField(blank=True, max_length=256, null=True)),
-                ('object_id', models.PositiveIntegerField()),
-                ('creation_type', models.CharField(choices=[('M', 'Manual'), ('V', 'Vocab'), ('R', 'Reuse')], default='M', max_length=1)),
-                ('concept', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='data.concept')),
-                ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("nlp_entity", models.CharField(blank=True, max_length=64, null=True)),
+                (
+                    "nlp_entity_type",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                (
+                    "nlp_confidence",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=3, null=True
+                    ),
+                ),
+                (
+                    "nlp_vocabulary",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                (
+                    "nlp_concept_code",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                (
+                    "nlp_processed_string",
+                    models.CharField(blank=True, max_length=256, null=True),
+                ),
+                ("object_id", models.PositiveIntegerField()),
+                (
+                    "creation_type",
+                    models.CharField(
+                        choices=[("M", "Manual"), ("V", "Vocab"), ("R", "Reuse")],
+                        default="M",
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "concept",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        to="data.concept",
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="contenttypes.contenttype",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ScanReportAssertion',
+            name="ScanReportAssertion",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('negative_assertion', models.CharField(blank=True, max_length=64, null=True)),
-                ('scan_report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreport')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "negative_assertion",
+                    models.CharField(blank=True, max_length=64, null=True),
+                ),
+                (
+                    "scan_report",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreport",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='OmopField',
+            name="OmopField",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('field', models.CharField(max_length=64)),
-                ('table', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.omoptable')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("field", models.CharField(max_length=64)),
+                (
+                    "table",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.omoptable",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='MappingRule',
+            name="MappingRule",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('approved', models.BooleanField(default=False)),
-                ('concept', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreportconcept')),
-                ('omop_field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.omopfield')),
-                ('scan_report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreport')),
-                ('source_field', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreportfield')),
-                ('source_table', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='mapping.scanreporttable')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("approved", models.BooleanField(default=False)),
+                (
+                    "concept",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreportconcept",
+                    ),
+                ),
+                (
+                    "omop_field",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.omopfield",
+                    ),
+                ),
+                (
+                    "scan_report",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreport",
+                    ),
+                ),
+                (
+                    "source_field",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreportfield",
+                    ),
+                ),
+                (
+                    "source_table",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="mapping.scanreporttable",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddConstraint(
-            model_name='datapartner',
-            constraint=models.UniqueConstraint(fields=('name',), name='datapartner_name_unique'),
+            model_name="datapartner",
+            constraint=models.UniqueConstraint(
+                fields=("name",), name="datapartner_name_unique"
+            ),
         ),
     ]

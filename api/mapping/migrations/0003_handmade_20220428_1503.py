@@ -6,16 +6,15 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('mapping', '0001_initial'),
-        ('mapping', '0002_auto_20220428_1110')
+        ("mapping", "0001_initial"),
+        ("mapping", "0002_auto_20220428_1110"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='scanreport',
-            name='data_partner',
+            model_name="scanreport",
+            name="data_partner",
         ),
     ]
