@@ -302,129 +302,94 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         """
         If the User is the `AZ_FUNCTION_USER`, return all ScanReports.
 
-        Else, return only the ScanReports which are on projects a user is a member,
-        which are "PUBLIC", or "RESTRICTED" ScanReports that a user is a viewer of.
+        Else, apply the correct rules regarding the visibility of the Dataset and SR,
+        and the membership of the User of viewer/editor/admin/author for either.
         """
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReport.objects.all().distinct()
 
         f = ScanReport.objects.filter(
-            # parent dataset and SR are public checks
-            (Q(parent_dataset__visibility=VisibilityChoices.PUBLIC)
-            & (
-                Q(
-                    # parent dataset and SR are public
-                    # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                    visibility=VisibilityChoices.PUBLIC,
-                )
-                # parent dataset is public but SR restricted checks
-                | (
-                    Q(visibility=VisibilityChoices.RESTRICTED)
-                    & (
-                        Q(
-                            # parent dataset is public
-                            # SR is restricted and user is in SR viewers
-                            # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                            viewers=self.request.user.id,
-                            # visibility=VisibilityChoices.RESTRICTED,
-                        )
-                        | Q(
-                            # parent dataset is public
-                            # SR is restricted and user is in SR editors
-                            # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                            editors=self.request.user.id,
-                            # visibility=VisibilityChoices.RESTRICTED,
-                        )
-                        | Q(
-                            # parent dataset is public
-                            # SR is restricted and user is SR author
-                            # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                            author=self.request.user.id,
-                            # visibility=VisibilityChoices.RESTRICTED,
-                        )
-                        | Q(
-                            # parent dataset is public
-                            # SR is restricted and user is in parent dataset editors
-                            # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                            parent_dataset__editors=self.request.user.id,
-                            # visibility=VisibilityChoices.RESTRICTED,
-                        )
-                        | Q(
-                            # parent dataset is public
-                            # SR is restricted and user is in parent dataset admins
-                            # parent_dataset__visibility=VisibilityChoices.PUBLIC,
-                            parent_dataset__admins=self.request.user.id,
-                            # visibility=VisibilityChoices.RESTRICTED,
+            (
+                Q(parent_dataset__visibility=VisibilityChoices.PUBLIC)
+                & (
+                    Q(
+                        # Dataset and SR are 'PUBLIC'
+                        visibility=VisibilityChoices.PUBLIC,
+                    )
+                    | (
+                        Q(visibility=VisibilityChoices.RESTRICTED)
+                        & (
+                            Q(
+                                # Dataset is public
+                                # SR is restricted but user is in SR viewers
+                                viewers=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset is public
+                                # SR is restricted but user is in SR editors
+                                editors=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset is public
+                                # SR is restricted but user is SR author
+                                author=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset is public
+                                # SR is restricted but user is in Dataset editors
+                                parent_dataset__editors=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset is public
+                                # SR is restricted but user is in Dataset admins
+                                parent_dataset__admins=self.request.user.id,
+                            )
                         )
                     )
                 )
             )
-             )
-            # parent dataset and SR are restricted checks
-            | (Q(
-                parent_dataset__visibility=VisibilityChoices.RESTRICTED
-            )
-            & (
-                Q(
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    viewers=self.request.user.id,
-                    # visibility=VisibilityChoices.RESTRICTED,
+            | (
+                Q(parent_dataset__visibility=VisibilityChoices.RESTRICTED)
+                & (
+                    Q(
+                        # Dataset and SR are restricted
+                        # User is in Dataset admins
+                        parent_dataset__admins=self.request.user.id,
+                    )
+                    | Q(
+                        # Dataset and SR are restricted
+                        # User is in Dataset editors
+                        parent_dataset__editors=self.request.user.id,
+                    )
+                    | (
+                        Q(parent_dataset__viewers=self.request.user.id)
+                        & (
+                            Q(
+                                # Dataset and SR are restricted
+                                # User is in Dataset viewers and SR viewers
+                                viewers=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset and SR are restricted
+                                # User is in Dataset viewers and SR editors
+                                editors=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset and SR are restricted
+                                # User is in Dataset viewers and SR author
+                                author=self.request.user.id,
+                            )
+                            | Q(
+                                # Dataset is restricted
+                                # But SR is 'PUBLIC'
+                                visibility=VisibilityChoices.PUBLIC,
+                            )
+                        )
+                    )
                 )
-                | Q(
-                    # parent dataset and SR are restricted
-                    # user is in SR editors
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    editors=self.request.user.id,
-                    # visibility=VisibilityChoices.RESTRICTED,
-                )
-                | Q(
-                    # parent dataset and SR are restricted
-                    # user is SR author
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    author=self.request.user.id,
-                    # visibility=VisibilityChoices.RESTRICTED,
-                )
-                | Q(
-                    # parent dataset and SR are restricted
-                    # user is in parent dataset admins
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    parent_dataset__admins=self.request.user.id,
-                    # visibility=VisibilityChoices.RESTRICTED,
-                )
-                | Q(
-                    # parent dataset and SR are restricted
-                    # user is in parent dataset editors
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    parent_dataset__editors=self.request.user.id,
-                    # visibility=VisibilityChoices.RESTRICTED,
-                )
-                # parent dataset is restricted but SR is public checks
-                | Q(
-                    # parent dataset is restricted and SR public
-                    # user is in parent dataset editors
-                    # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                    # parent_dataset__editors=self.request.user.id,
-                    visibility=VisibilityChoices.PUBLIC,
-                )
-                # | Q(
-                #     # parent dataset is restricted and SR public
-                #     # user is in parent dataset admins
-                #     # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                #     # parent_dataset__admins=self.request.user.id,
-                #     # visibility=VisibilityChoices.PUBLIC,
-                # )
-                # | Q(
-                #     # parent dataset is restricted and SR public
-                #     # user is in parent dataset viewers
-                #     # parent_dataset__visibility=VisibilityChoices.RESTRICTED,
-                #     # parent_dataset__viewers=self.request.user.id,
-                #     # visibility=VisibilityChoices.PUBLIC,
-                # )
-               )
             ),
             parent_dataset__project__members=self.request.user.id,
         ).distinct()
-        print(f.query)
         return f
 
     def create(self, request, *args, **kwargs):
