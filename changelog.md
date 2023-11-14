@@ -2,12 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.13
+## v2.0.13-dev
 ### New features
+- Added refresh_mapping_rules management command.
 
 ### Improvements 
-- Updated storybook to 6.4.9, removing a number of vulnerabilities.
+- Disabled stats counting on the ScanReport main page. This should improve the stability of the system, as those counts were tying up the server for 45 seconds or more.
+
 ### Bugfixes
+- Bug fixed in `find_existing_scan_report_concepts()` which was causing some `SRConcepts` to be processed multiple times. This didn't cause any issues, but was misleading and wasteful.
 
 
 ## v2.0.12
