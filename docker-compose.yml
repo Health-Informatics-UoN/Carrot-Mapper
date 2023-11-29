@@ -28,3 +28,6 @@ services:
       - .env
     volumes: 
       - $PWD/api:/api
+    depends_on:
+      - db
+      - azurite
