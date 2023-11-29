@@ -1,16 +1,16 @@
 ALLOWED_HOSTS=['localhost']
-AZURE_ACCOUNT_NAME=ccomstoragedev
+AZURE_ACCOUNT_NAME=devstoreaccount1
 COCONNECT_DB_ENGINE=django.db.backends.postgresql
-COCONNECT_DB_HOST=
-COCONNECT_DB_NAME=
-COCONNECT_DB_PASSWORD=
+COCONNECT_DB_HOST=db
+COCONNECT_DB_NAME=postgres
+COCONNECT_DB_PASSWORD=postgres
 COCONNECT_DB_PORT=5432
-COCONNECT_DB_USER=
+COCONNECT_DB_USER=postgres
 COCONNECT_DB_AUTH_TOKEN=
 DEBUG=True
 NLP_QUEUE_NAME=nlpqueue
 SCAN_REPORT_QUEUE_NAME=scanreports
 SECRET_KEY=secret
-STORAGE_CONN_STRING=
-CCOM_APP_URL= 
+STORAGE_CONN_STRING="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;"
+CCOM_APP_URL= http://localhost:8000
 
