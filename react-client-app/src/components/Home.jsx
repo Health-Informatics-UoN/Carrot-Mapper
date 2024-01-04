@@ -87,7 +87,7 @@ const Home = () => {
             }
             // set the state of the data to be used in the donuts and tables
             setDonutData(filteredReports)
-            setMappingDonutData(filteredReports)
+            // setMappingDonutData(filteredReports)
             setStatuses(filteredStatuses)
             setCountStats(generatedCountStats)
             setTimeline(timeline)
@@ -370,7 +370,7 @@ const Home = () => {
                         </Container>
                     }
 
-                    {mappingrulesDonutData &&
+                    {/* {mappingrulesDonutData &&
                         <Container w={["100%", "100%", "100%", "50%"]}>
                             <Plot
                                 data={mappingrulesDonutData}
@@ -379,7 +379,7 @@ const Home = () => {
                                 style={{ width: "100%", height: "auto" }}
                             />
                         </Container>
-                    }
+                    } */}
                 </Stack>
             </VStack>
 
