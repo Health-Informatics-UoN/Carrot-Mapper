@@ -79,11 +79,11 @@ const Home = () => {
             // generate count stats of filtered data by adding up the count stats of the scan reports in the filtered list
             generatedCountStats =
             {
-                scanreport_count: filteredReports.length,
-                scanreporttable_count: filteredReports.map(report => report.scanreporttable_count).reduce((a, b) => { return a + b; }, 0),
-                scanreportfield_count: filteredReports.map(report => report.scanreportfield_count).reduce((a, b) => { return a + b; }, 0),
-                scanreportvalue_count: filteredReports.map(report => report.scanreportvalue_count).reduce((a, b) => { return a + b; }, 0),
-                scanreportmappingrule_count: filteredReports.map(report => report.scanreportmappingrule_count).reduce((a, b) => { return a + b; }, 0),
+                scanreport_count: "Disabled", //filteredReports.length,
+                scanreporttable_count: "Disabled", //filteredReports.map(report => report.scanreporttable_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportfield_count: "Disabled", //filteredReports.map(report => report.scanreportfield_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportvalue_count: "Disabled", //filteredReports.map(report => report.scanreportvalue_count).reduce((a, b) => { return a + b; }, 0),
+                scanreportmappingrule_count: "Disabled", //filteredReports.map(report => report.scanreportmappingrule_count).reduce((a, b) => { return a + b; }, 0),
             }
             // set the state of the data to be used in the donuts and tables
             setDonutData(filteredReports)
