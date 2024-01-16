@@ -14,3 +14,4 @@ gunicorn
 graphviz
 drf-dynamic-fields
 django-cors-headers
+python-dotenv

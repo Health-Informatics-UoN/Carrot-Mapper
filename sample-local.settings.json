@@ -1,11 +1,11 @@
 {
     "IsEncrypted":false,
     "Values": {
-        "AzureWebJobsStorage":"",
+        "AzureWebJobsStorage":"UseDevelopmentStorage=true",
         "FUNCTIONS_WORKER_RUNTIME":"python",
-        "STORAGE_CONN_STRING":"",
+        "STORAGE_CONN_STRING":"DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;",
         "NLP_API_KEY":"",
-        "APP_URL":"http://localhost:8080/",
+        "APP_URL":"http://localhost:8000/",
         "AZ_FUNCTION_KEY":"",
         "SCAN_REPORT_QUEUE_NAME":"scanreports-local",
         "NLP_QUEUE_NAME":"nlpqueue-local",

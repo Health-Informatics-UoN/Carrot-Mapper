@@ -1,12 +1,6 @@
 ### Table of Contents
 1. [Introduction](#introduction)
 1. [Getting Started](#getting-started)
-   1. [Docker](#docker)
-   1. [Manually](#manually)
-   1. [Refreshing](#refreshing) 
-1. [Pages](#pages)
-   1. [Admin](#admin)
-   1. [Home](#home)
 1. [Custom Styling](#custom-styling)
    1. [CSS](#css)
    2. [JavaScript](#javascript)
@@ -18,40 +12,7 @@ datasets to the OMOP standard through manual and automated means.
 
 # Getting Started <a name="getting-started"></a>
 
-## Docker
-
-Copy `Teams Software Team -> files -> env files -> env` to the root of project and rename it to `.env`. Ensure that it 
-contains all the variables from `sample-env.txt` from the repository. Then run the commands below.
-
-```bash
-#build the docker image, and tag it
-#make sure you include . at the end of the command
-docker build --tag <docker_image>:<tag> .
-
-# run the app
-docker run -it --volume $PWD/api:/api --env-file .env -p 8080:8000 <docker_image>
-
-```
-
-## Manually
-To run the mapping pipeline Django MVP:
-
-1.	Clone this repository
-2.	Create a Python virtual environment and install Django
-3.	Create a new superuser for testing
-4. Log into the admin area at localhost:8080/admin/ to view the data
-
-# Pages
-
-:warning: If you run manually the port is `8000`. Using the docker container, port `8000` (in the container) is forwarded to `8080` (local)
-
-## Admin 
-Point to [http://127.0.0.1:8080/admin/](http://127.0.0.1:8080/admin/) to access the django admin.
-
-
-## Home
-To access the homescreen, go to
-[http://localhost:8080/](http://localhost:8080/)
+See the Developer Quickstart at the [CaRROT documentation](https://hdruk.github.io/CaRROT-Docs/CaRROT-Mapper/quickstart-webapp/).
 
 # Custom Styling <a name="custom-styling"></a>
 
