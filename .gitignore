@@ -9,5 +9,4 @@ react-client-app/node_modules/
 api/static/javascript/react
 */__pycache__/*
 **/pgdata/**
-.vscode
 api/staticfiles

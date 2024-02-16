@@ -1,0 +1,26 @@
+{
+  "folders": [
+    {
+      "name": "ROOT",
+      "path": "../"
+    },
+    {
+      "name": "app/api",
+      "path": "../app/api"
+    },
+    {
+      "name": "app/workers",
+      "path": "../app/workers"
+    },
+    {
+      "name": "app/react-client-app",
+      "path": "../app/react-client-app"
+    },
+  ],
+  "extensions": {
+    "recommendations": [
+      "davidanson.vscode-markdownlint",
+      "esbenp.prettier-vscode"
+    ]
+  }
+}
