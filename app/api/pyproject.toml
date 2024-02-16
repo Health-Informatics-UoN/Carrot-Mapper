@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "api"
 version = "0.1.0"
-description = ""
+description = "Web app for CaRROT Mapper"
 license = "MIT"
 
 [tool.poetry.dependencies]
@@ -24,6 +24,9 @@ drf-dynamic-fields = "0.4.0"
 django-cors-headers = "3.11.0"
 python-dotenv = "1.0.0"
 
+[tool.poe.tasks]
+dev = "poetry run python manage.py runserver 8000"
+manage = "poetry run python manage.py"
 
 [build-system]
 requires = ["poetry-core"]
