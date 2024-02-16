@@ -2,7 +2,7 @@
 name = "workers"
 version = "0.1.0"
 description = "Workers for CaRROT Mapper"
-authors = [""]
+authors = ["John Smith <john@example.com>"]
 license = "MIT"
 readme = "README.md"
 

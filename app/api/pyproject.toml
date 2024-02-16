@@ -2,7 +2,7 @@
 name = "api"
 version = "0.1.0"
 description = "Web app for CaRROT Mapper"
-authors = [""]
+authors = ["John Smith <john@example.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
