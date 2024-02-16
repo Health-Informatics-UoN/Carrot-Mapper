@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+django = "3.1.14"
+openpyxl = "^3.1.2"
+django-select2 = "^7.10.0"
+django-extra-views = "^0.14.0"
+psycopg2 = "^2.9.9"
+djangorestframework = "^3.14.0"
+django-filter = "^21.1"
+requests = "^2.31.0"
+azure-common = "^1.1.28"
+azure-storage-queue = "12.1.6"
+azure-storage-blob = "12.8.1"
+whitenoise = "6.6.0"
+gunicorn = "21.2.0"
+graphviz = "0.20.1"
+drf-dynamic-fields = "0.4.0"
+django-cors-headers = "3.11.0"
+python-dotenv = "1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
