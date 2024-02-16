@@ -20,14 +20,14 @@ services:
   web:
     image: carrot
     build:
-      context: .
+      context: app/api
       dockerfile: Dockerfile
     ports:
       - 8000:8000
     env_file:
       - .env
     volumes: 
-      - $PWD/api:/api
+      - $PWD/app/api:/api
     depends_on:
       - db
       - azurite
