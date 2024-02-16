@@ -6,7 +6,7 @@
       "type": "shell",
       "command": "npm run build",
       "options": {
-        "cwd": "${workspaceFolder}/react-client-app"
+        "cwd": "../react-client-app"
       }
     },
     {
@@ -19,7 +19,7 @@
         "--noinput"
       ],
       "options": {
-        "cwd": "${workspaceFolder}/api"
+        "cwd": "${workspaceFolder}"
       }
     },
     {
@@ -29,57 +29,6 @@
         "Build React App",
         "Collect Django Static Files"
       ]
-    },
-    {
-      "type": "func",
-      "label": "func: host start",
-      "command": "host start",
-      "problemMatcher": "$func-python-watch",
-      "isBackground": true,
-      "dependsOn": "pip install (functions)"
-    },
-    {
-      "label": "pip install (functions)",
-      "type": "shell",
-      "osx": {
-        "command": "${config:azureFunctions.pythonVenv}/bin/python -m pip install -r requirements.txt"
-      },
-      "windows": {
-        "command": "${config:azureFunctions.pythonVenv}\\Scripts\\python -m pip install -r requirements.txt"
-      },
-      "linux": {
-        "command": "${config:azureFunctions.pythonVenv}/bin/python -m pip install -r requirements.txt"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Start Snowpack Dev Server",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "start"],
-      "options": {
-        "cwd": "${workspaceFolder}/react-client-app"
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "custom",
-        "pattern": {
-          "regexp": "^.+$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": "^.*Starting up...$",
-          "endsPattern": "^.*Ready.*$"
-        }
-      },
-      "presentation": {
-        "reveal": "always",
-        "panel": "new"
-      }
-    }
-    
+    },  
   ]
 }

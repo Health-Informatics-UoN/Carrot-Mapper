@@ -1,35 +1,9 @@
 {
-  "version": "0.2.0",
+  "version": "0.0.1",
   "configurations": [
     {
-      "name": "Python: Django",
-      "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/api/manage.py",
-      "args": [
-        "runserver"
-      ],
-      "django": true,
-      "justMyCode": true,
-      "preLaunchTask": "Build & Collect Static"
-    },
-    {
-      "name": "Python: Django with Snowpack",
-      "type": "python",
-      "request": "launch",
-      "program": "${workspaceFolder}/api/manage.py",
-      "args": ["runserver"],
-      "django": true,
-      "justMyCode": true,
-      "preLaunchTask": "Start Snowpack Dev Server",
-      "presentation": {
-        "group": "django",
-        "order": 1
-      }
-    },
-    {
       "name": "Python: Functions",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}",
       "args": [
@@ -37,18 +11,5 @@
       ],
       "justMyCode": true
     },
-    {
-      "name": "Attach to Python Functions",
-      "type": "python",
-      "request": "attach",
-      "port": 9091,
-      "preLaunchTask": "func: host start"
-    }
   ],
-  "compounds": [
-    {
-      "name": "Django & Snowpack Dev Servers",
-      "configurations": ["Python: Django with Snowpack"]
-    }
-  ]
 }
