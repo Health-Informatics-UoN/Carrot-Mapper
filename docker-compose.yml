@@ -20,7 +20,7 @@ services:
   web:
     image: carrot
     build:
-      context: app/api
+      context: app
       dockerfile: Dockerfile
     ports:
       - 8000:8000
