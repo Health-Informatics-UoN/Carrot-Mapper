@@ -4,10 +4,9 @@ version = "0.1.0"
 description = "Workers for CaRROT Mapper"
 authors = ["John Smith <john@example.com>"]
 license = "MIT"
-readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "3.8"
+python = "^3.9"
 azure-common = "^1.1.28"
 azure-functions = "^1.18.0"
 azure-storage-blob = "12.8.1"
