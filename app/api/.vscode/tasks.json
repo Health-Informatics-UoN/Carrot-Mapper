@@ -12,8 +12,10 @@
     {
       "label": "Collect Django Static Files",
       "type": "shell",
-      "command": "python",
+      "command": "poetry",
       "args": [
+        "run",
+        "python",
         "manage.py",
         "collectstatic",
         "--noinput"

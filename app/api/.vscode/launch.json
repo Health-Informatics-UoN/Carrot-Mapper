@@ -11,7 +11,7 @@
       ],
       "django": true,
       "justMyCode": true,
-      "preLaunchTask": "Build & Collect Static"
-    },
+      "preLaunchTask": "Build & Collect Static",
+    }
   ],
 }
