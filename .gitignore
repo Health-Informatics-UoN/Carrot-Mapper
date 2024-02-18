@@ -10,3 +10,4 @@ app/api/static/javascript/react
 */__pycache__/*
 **/pgdata/**
 app/api/staticfiles
+.venv

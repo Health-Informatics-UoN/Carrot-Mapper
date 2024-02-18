@@ -24,5 +24,8 @@
       "ms-azuretools.vscode-azurefunctions",
       "ms-python.python"
     ]
+  },
+  "settings": {
+    "debug.internalConsoleOptions": "neverOpen"
   }
 }
