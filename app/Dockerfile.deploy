@@ -46,7 +46,7 @@ RUN poetry config virtualenvs.create false \
 
 # Copy react-client-app directory
 USER root
-COPY ./react-client-app /react-client-app
+COPY app/react-client-app /react-client-app
 RUN chown -R django:django /react-client-app
 
 # Install nvm as django user
