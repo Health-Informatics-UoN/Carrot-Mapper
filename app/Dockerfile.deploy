@@ -25,7 +25,7 @@ RUN addgroup -q django && \
     adduser --quiet --ingroup django --disabled-password django
 
 # Create /api directory for mounting
-COPY ./api /api
+COPY app/api /api
 WORKDIR /api
 RUN chown -R django:django /api
 
@@ -34,7 +34,7 @@ USER django
 ENV PATH=/home/django/.local/bin:$PATH
 
 # Copy pyproject.toml
-COPY /api/pyproject.toml /api/pyproject.toml
+COPY app/api/pyproject.toml app/api/pyproject.toml
 
 # Install Poetry
 RUN pip install poetry
@@ -58,7 +58,7 @@ RUN [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && [ -s "$NVM_DIR/bash_comp
 
 # Copy entrypoint as root, elevate it to executable, then give it over to django user
 USER root
-COPY ./entrypoint.sh /entrypoint.sh
+COPY app/entrypoint.sh /entrypoint.sh
 RUN chmod u+x /entrypoint.sh
 RUN chown -R django:django /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
