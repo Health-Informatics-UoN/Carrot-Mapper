@@ -25,10 +25,10 @@ jobs:
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install Poetry
+    - name: 'Install Poetry'
       uses: snok/install-poetry@v1
 
-    - name: Resolve Project Dependencies Using Poetry
+    - name: 'Resolve Project Dependencies Using Poetry'
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         poetry config virtualenvs.create false
@@ -36,7 +36,7 @@ jobs:
         popd
       shell: bash
 
-    - name: 'Resolve Project Dependencies Using Pip'
+    - name: 'Install Dependencies Using Pip'
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
