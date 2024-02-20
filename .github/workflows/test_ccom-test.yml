@@ -6,7 +6,7 @@ name: Build and deploy container app to Azure Web App - ccom-test
 on:
   push:
     branches:
-      - test
+      - feat/635/refactor-repo-structure
   workflow_dispatch:
 
 jobs:
@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: ccomregtest.azurecr.io/${{ secrets.REGISTRY_USERNAME_TEST }}/test:${{ github.sha }}
-        file: ./Dockerfile.deploy
+        file: ./app/Dockerfile.deploy
 
   deploy:
     runs-on: ubuntu-latest
