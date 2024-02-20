@@ -13,7 +13,7 @@ jobs:
     - name: 'Checkout Github Action'
       uses: actions/checkout@v2
       with:
-        ref: devel
+        ref: feat/635/refactor-repo-structure
         submodules: recursive
 
     - uses: azure/docker-login@v1
