@@ -6,7 +6,7 @@ name: Build and deploy Python project to Azure Function App - ccom-funcs-dev
 on:
   push:
     branches:
-      - devel
+      - feat/635/refactor-repo-structure
   workflow_dispatch:
 
 env:
