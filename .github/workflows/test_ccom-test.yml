@@ -6,7 +6,7 @@ name: Build and deploy container app to Azure Web App - ccom-test
 on:
   push:
     branches:
-      - feat/635/refactor-repo-structure
+      - test
   workflow_dispatch:
 
 jobs:
