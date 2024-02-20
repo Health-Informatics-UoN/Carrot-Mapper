@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - feat/635/refactor-repo-structure
+      - devel
 
 name: Linux_Container_Python_Workflow
 
@@ -13,7 +13,7 @@ jobs:
     - name: 'Checkout Github Action'
       uses: actions/checkout@v2
       with:
-        ref: feat/635/refactor-repo-structure
+        ref: devel
         submodules: recursive
 
     - uses: azure/docker-login@v1
