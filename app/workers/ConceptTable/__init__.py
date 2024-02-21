@@ -3,16 +3,13 @@ from collections import defaultdict
 from typing import Any, Dict
 
 import azure.functions as func
+from shared_code import blob_parser, helpers, logger, omop_helpers
 from shared_code.api import (
-    ScanReportStatus,
     get_concept_vocabs,
     get_scan_report_table,
     get_scan_report_values_filter_scan_report_table,
     post_chunks,
-    update_scan_report_status,
 )
-
-from shared_code import blob_parser, helpers, logger, omop_helpers
 
 
 def _create_concept(concept: Dict[str, Any], concept_id: str) -> Dict[str, Any]:
@@ -230,6 +227,6 @@ def main(msg: func.QueueMessage):
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    # _handle_table(table, vocab_dictionary)
+    _handle_table(table, vocab_dictionary)
 
     return

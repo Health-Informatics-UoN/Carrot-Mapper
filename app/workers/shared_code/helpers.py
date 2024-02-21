@@ -3,7 +3,8 @@ import os
 from typing import Any, Dict, List, Optional, Tuple
 
 import azure.functions as func
-from shared_code.api import ScanReportStatus, update_scan_report_status
+
+# from shared_code.api import ScanReportStatus, update_scan_report_status
 from shared_code.logger import logger
 
 
@@ -82,8 +83,8 @@ def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
         ValueError: If the dequeue count of the message exceeds 1.
     """
     logger.info(f"dequeue_count {msg.dequeue_count}")
-    if msg.dequeue_count == 2:
-        update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
+    # if msg.dequeue_count == 2:
+    # update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
     if msg.dequeue_count > 1:
         raise ValueError("dequeue_count > 1")
 
