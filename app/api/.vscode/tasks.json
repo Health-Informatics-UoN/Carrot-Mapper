@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build React App",
+      "type": "shell",
+      "command": "npm run build",
+      "options": {
+        "cwd": "../react-client-app"
+      }
+    },
+    {
+      "label": "Collect Django Static Files",
+      "type": "shell",
+      "command": "poetry",
+      "args": [
+        "run",
+        "python",
+        "manage.py",
+        "collectstatic",
+        "--noinput"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      }
+    },
+    {
+      "label": "Build & Collect Static",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build React App",
+        "Collect Django Static Files"
+      ]
+    },  
+  ]
+}

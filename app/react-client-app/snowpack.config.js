@@ -5,9 +5,9 @@
 module.exports = {
   routes: [
     {
-        match: 'routes',
-        src: '.*',
-        dest: '/index.html'
+      match: "routes",
+      src: ".*",
+      dest: "/index.html",
     },
   ],
   mount: {
@@ -24,12 +24,12 @@ module.exports = {
   },
   buildOptions: {
     /* ... */
-    out: '/api/static/javascript/react' ,
+    out: "/api/static/javascript/react",
     //watch: true
   },
   exclude: [
     "**/node_modules/**/*", // from the default at https://www.snowpack.dev/reference/configuration
     "**/.stories.js",
-    "**/stories/**/*"
-  ]
+    "**/stories/**/*",
+  ],
 };

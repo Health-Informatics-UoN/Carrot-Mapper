@@ -16,18 +16,18 @@ services:
       - "10000:10000"
       - "10001:10001"
       - "10002:10002"
-  
+
   web:
     image: carrot
     build:
-      context: .
+      context: app
       dockerfile: Dockerfile
     ports:
       - 8000:8000
     env_file:
       - .env
-    volumes: 
-      - $PWD/api:/api
+    volumes:
+      - $PWD/app/api:/api
     depends_on:
       - db
       - azurite

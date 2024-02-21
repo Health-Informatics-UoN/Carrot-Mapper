@@ -45,9 +45,17 @@ RUN chown -R django:django /api
 # Install PyPI packages as django user
 USER django
 ENV PATH=/home/django/.local/bin:$PATH
-COPY ./api/requirements.txt /api/requirements.txt
-RUN pip install --upgrade pip
-RUN pip install -r /api/requirements.txt --no-cache-dir
+
+# Copy pyproject.toml
+COPY /api/pyproject.toml /api/pyproject.toml
+
+# Install Poetry
+RUN pip install poetry
+
+# Export requirements from pyproject.toml and install them
+RUN poetry config virtualenvs.create false \
+    && poetry export --format requirements.txt --output /api/requirements.txt --without-hashes \
+    && pip install --no-cache-dir -r /api/requirements.txt
 
 # Copy react-client-app/src and react-client-app/.storybook directories
 USER django

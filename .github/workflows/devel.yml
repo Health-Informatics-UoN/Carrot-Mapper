@@ -23,7 +23,7 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD_DEV }}
 
     - run: |
-        docker build -f Dockerfile.deploy . -t ccomreg.azurecr.io/dev:${{ github.sha }}
+        docker build -f app/Dockerfile.deploy . -t ccomreg.azurecr.io/dev:${{ github.sha }}
         docker push ccomreg.azurecr.io/dev:${{ github.sha }}
 
     - uses: azure/webapps-deploy@v2
@@ -31,4 +31,3 @@ jobs:
         app-name: 'ccom-dev'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
         images: 'ccomreg.azurecr.io/dev:${{ github.sha }}'
-
