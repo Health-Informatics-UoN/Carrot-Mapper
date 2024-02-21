@@ -1,12 +1,11 @@
 import csv
+import logging
 import os
-
 from io import BytesIO
+from typing import Dict, Tuple
 
 import openpyxl
-
 from azure.storage.blob import BlobServiceClient
-import logging
 
 logger = logging.getLogger("test_logger")
 
@@ -159,3 +158,81 @@ def parse_blobs(scan_report_blob, data_dictionary_blob):
         vocab_dictionary = None
 
     return workbook, data_dictionary, vocab_dictionary
+
+
+def get_scan_report(blob: str) -> openpyxl.Workbook:
+    """
+    Retrieves a scan report from a blob storage and returns it as a Workbook.
+
+    Args:
+        blob (str): The name of the scan report blob.
+
+    Returns:
+        Workbook: The scan report as an openpyxl Workbook object.
+    """
+    # Set Storage Account connection string
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
+
+    # Grab scan report data from blob
+    streamdownloader = (
+        blob_service_client.get_container_client("scan-reports")
+        .get_blob_client(blob)
+        .download_blob()
+    )
+    scanreport_bytes = BytesIO(streamdownloader.readall())
+    return openpyxl.load_workbook(
+        scanreport_bytes, data_only=True, keep_links=False, read_only=True
+    )
+
+
+def get_data_dictionary(blob: str) -> Tuple[Dict[str, str]]:
+    """
+    Retrieves the data dictionary and vocabulary dictionary from a blob storage.
+
+    Args:
+        blob (str): The name of the blob containing the data dictionary.
+
+    Returns:
+        Tuple[Dict[Any, Any], Dict[Any, Any]]: A tuple containing the data dictionary and vocabulary dictionary.
+    """
+
+    # Set Storage Account connection string
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
+    # Access data as StorageStreamerDownloader class
+    # Decode and split the stream using csv.reader()
+    dict_client = blob_service_client.get_container_client("data-dictionaries")
+    blob_dict_client = dict_client.get_blob_client(blob)
+
+    # Grab all rows with 4 elements for use as value descriptions
+    data_dictionary_intermediate = [
+        row
+        for row in csv.DictReader(
+            blob_dict_client.download_blob().readall().decode("utf-8").splitlines()
+        )
+        if row["value"] != ""
+    ]
+    # Remove BOM from start of file if it's supplied.
+    dictionary_data = remove_BOM(data_dictionary_intermediate)
+
+    # Convert to nested dictionaries, with structure
+    # {tables: {fields: {values: value description}}}
+    data_dictionary = process_four_item_dict(dictionary_data)
+
+    # Grab all rows with 3 elements for use as possible vocabs
+    vocab_dictionary_intermediate = [
+        row
+        for row in csv.DictReader(
+            blob_dict_client.download_blob().readall().decode("utf-8").splitlines()
+        )
+        if row["value"] == ""
+    ]
+    vocab_data = remove_BOM(vocab_dictionary_intermediate)
+
+    # Convert to nested dictionaries, with structure
+    # {tables: {fields: vocab}}
+    vocab_dictionary = process_three_item_dict(vocab_data)
+    return data_dictionary, vocab_dictionary
