@@ -24,7 +24,7 @@ module.exports = {
   },
   buildOptions: {
     /* ... */
-    out: "/api/static/javascript/react",
+    out: "../api/static/javascript/react",
     //watch: true
   },
   exclude: [
