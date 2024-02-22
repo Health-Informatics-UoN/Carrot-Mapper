@@ -10,6 +10,7 @@ from shared_code.api import (
     get_scan_report_fields_by_ids,
     get_scan_report_fields_by_table,
     get_scan_report_table,
+    get_scan_report_values,
     get_scan_report_values_filter_scan_report_table,
     post_chunks,
     post_scan_report_concepts,
@@ -238,6 +239,161 @@ def reuse_existing_field_concepts(
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
 
+def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> None:
+    # sourcery skip: extract-duplicate-method, inline-immediately-returned-variable
+    """
+    This expects a dict of value names to ids which have been generated in a newly
+    uploaded scanreport and creates new concepts if any matching names are found
+    with existing fields
+
+    TODO: Why the f is this is parameter if it only accepts one specific number?
+    Is it that much different from reuse_existing_field_concepts... ?
+    Args:
+        new_fields_map (Dict[str, str]): A map of field names to Ids.
+        content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
+    """
+    logger.info("reuse_existing_value_concepts")
+    # Gets all scan report concepts that are for the type value
+    # (or content type which should be value) and in "active" SRs
+
+    existing_value_concepts = get_scan_report_active_concepts(content_type)
+    # create dictionary that maps existing value ids to scan report concepts
+    # from the list of existing scan report concepts
+    existing_value_id_to_concept_map = {
+        str(element.get("object_id", None)): str(element.get("concept", None))
+        for element in existing_value_concepts
+    }
+    logger.debug(
+        f"value_id:concept_id for all existing values in active SRs with concepts: "
+        f"{existing_value_id_to_concept_map}"
+    )
+
+    # get details of existing selected values, for the purpose of matching against
+    # new values
+    existing_paginated_value_ids = helpers.paginate(
+        [value["object_id"] for value in existing_value_concepts],
+        omop_helpers.max_chars_for_get,
+    )
+    logger.debug(f"{existing_paginated_value_ids=}")
+
+    # for each list in paginated ids, get scanreport values that match any of the given
+    # ids (those with an associated concept)
+    existing_values_filtered_by_id = []
+    for ids in existing_paginated_value_ids:
+        ids_to_get = ",".join(map(str, ids))
+        values = get_scan_report_values(ids_to_get)
+        existing_values_filtered_by_id.append(values)
+    existing_values_filtered_by_id = helpers.flatten(existing_values_filtered_by_id)
+    logger.debug("existing_values_filtered_by_id")
+
+    # existing_values_filtered_by_id now contains the id,value,value_dec,
+    # scan_report_field of each value got from the active concepts filter.
+    logger.debug(
+        f"ids, values and value descriptions of existing values in active SRs with "
+        f"concepts: {existing_values_filtered_by_id}"
+    )
+
+    # get field ids from values and use to get scan report fields' details
+    existing_field_ids = {
+        item["scan_report_field"] for item in existing_values_filtered_by_id
+    }
+    existing_fields = get_scan_report_fields_by_ids(existing_field_ids)
+    logger.debug(
+        f"ids and names of existing fields associated to values with concepts in "
+        f"active SRs: {existing_fields}"
+    )
+
+    existing_field_id_to_name_map = {
+        str(field["id"]): field["name"] for field in existing_fields
+    }
+    logger.debug(f"{existing_field_id_to_name_map=}")
+
+    # Combine everything of the existing values to get this list, one for each
+    # existing SRValue with a SRConcept in an active SR.
+    existing_mappings_to_consider = [
+        {
+            "name": value["value"],
+            "concept": existing_value_id_to_concept_map[str(value["id"])],
+            "id": value["id"],
+            "description": value["value_description"],
+            "field_name": existing_field_id_to_name_map[
+                str(value["scan_report_field"])
+            ],
+        }
+        for value in existing_values_filtered_by_id
+    ]
+
+    # Now handle the newly-added values in a similar manner
+    logger.debug("new_paginated_field_ids")
+    new_field_ids = [value["scan_report_field"] for value in new_values_map]
+    new_fields = get_scan_report_fields_by_ids(new_field_ids)
+    logger.debug(f"fields of newly generated values: {new_fields}")
+
+    new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
+
+    new_values_full_details = [
+        {
+            "name": value["value"],
+            "description": value["value_description"],
+            "field_name": new_fields_to_name_map[str(value["scan_report_field"])],
+            "id": value["id"],
+        }
+        for value in new_values_map
+    ]
+
+    # Now we have existing_mappings_to_consider of the form:
+    #
+    # [{"id":, "name":, "concept":, "description":, "field_name":}]
+    #
+    # and new_values_full_details of the form:
+    #
+    # [{"id":, "name":, "description":, "field_name":}]
+
+    # Now we simply look for unique matches on (name, description, field_name) across
+    # the two.
+
+    # value_details_to_value_and_concept_id_map will contain
+    # (name, description, field_name) -> (value_id, concept_id)
+    # for each value/description/field tuple in new_values_full_details
+    # if that tuple has only one match in existing_mappings_to_consider
+    value_details_to_value_and_concept_id_map = {}
+    for item in new_values_full_details:
+        name = item["name"]
+        description = item["description"]
+        field_name = item["field_name"]
+        mappings_matching_value_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name
+                and mapping["description"] == description
+                and mapping["field_name"] == field_name,
+                existing_mappings_to_consider,
+            )
+        )
+
+        target_concept_ids = {
+            mapping["concept"] for mapping in mappings_matching_value_name
+        }
+
+        if len(target_concept_ids) == 1:
+            target_value_id = (
+                mapping["id"] for mapping in mappings_matching_value_name
+            )
+            value_details_to_value_and_concept_id_map[
+                (str(name), str(description), str(field_name))
+            ] = (str(next(target_value_id)), str(target_concept_ids.pop()))
+
+    # Use the new_values_full_details as keys into
+    # value_details_to_value_and_concept_id_map to extract concept IDs and details
+    # for new ScanReportConcept entries to post.
+    if concepts_to_post := select_concepts_to_post(
+        new_values_full_details,
+        value_details_to_value_and_concept_id_map,
+        content_type,
+    ):
+        post_scan_report_concepts(concepts_to_post)
+        logger.info("POST concepts all finished in reuse_existing_value_concepts")
+
+
 def _handle_concepts(
     entries_grouped_by_vocab: defaultdict[str, List[Dict[str, Any]]]
 ) -> None:
@@ -416,11 +572,10 @@ async def _handle_table(
 
     logger.info("POST concepts all finished")
 
-    # handle reuse existing stuff?
-    # TODO: Get this.
-    #  {'PersonID': '100', 'Date': '101', 'Test': '102', 'Symptom': '103', 'Testtype': '104'}
-    fieldnames_to_ids_dict = []
-    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
+    # handle reuse
+    values_response_content = []
+    reuse_existing_field_concepts(fieldids_to_names, 15)
+    reuse_existing_value_concepts(values_response_content, 17)
 
 
 def main(msg: func.QueueMessage):
