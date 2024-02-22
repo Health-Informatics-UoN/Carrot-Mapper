@@ -85,61 +85,45 @@ def select_concepts_to_post(
       name, description, and field name.
 
     Args:
-        new_content_details (List[Dict[str, str, str (optional), str (optional)]]):
+        new_content_details (List[Dict[str (optional), str (optional)]]):
           Each item in the list a dict containing either "id" and "name" keys (for fields)
           or "id", "name", "description", and "field_name" keys (for values).
 
-        details_to_id_and_concept_id_map (List[Dict[str, str, str]]): keys "name" (for fields) or ("name",
+        details_to_id_and_concept_id_map (List[Dict[str, str]]): keys "name" (for fields) or ("name",
           "description", "field_name") keys (for values), with entries (field_id, concept_id)
           or (value_id, concept_id) respectively.
 
         content_type (Literal[15, 17]): Controls whether to handle fields (15), or values (17).
 
     Returns:
-        A list of `Concepts` that look like `ScanReportConcepts` to create.
+        A list of `Concepts` to create.
 
     Raises:
-        Exception: RunTimeError: A content_type other than 15 or 17 was provided.
+        Exception:  ValueError: A content_type other than 15 or 17 was provided.
     """
     concepts_to_post = []
-    for new_content_detail in new_content_details:
-        try:
-            # fields
-            if content_type == 15:
-                (
-                    existing_content_id,
-                    concept_id,
-                ) = details_to_id_and_concept_id_map[str(new_content_detail["name"])]
-            # values
-            elif content_type == 17:
-                existing_content_id, concept_id = details_to_id_and_concept_id_map[
-                    (
-                        str(new_content_detail["name"]),
-                        str(new_content_detail["description"]),
-                        str(new_content_detail["field_name"]),
-                    )
-                ]
-            else:
-                raise RuntimeError(
-                    f"content_type must be 15 or 17: you provided {content_type}"
-                )
 
-            new_content_id = str(new_content_detail["id"])
-            if content_type == 15:
-                logger.info(
-                    f"Found existing field with id: {existing_content_id} with existing "
-                    f"concept mapping: {concept_id} which matches new field id: "
-                    f"{new_content_id}"
-                )
-            elif content_type == 17:
-                logger.info(
-                    f"Found existing value with id: {existing_content_id} with existing "
-                    f"concept mapping: {concept_id} which matches new value id: "
-                    f"{new_content_id}"
-                )
+    for new_content_detail in new_content_details:
+        if content_type == 15:
+            key = str(new_content_detail["name"])
+        elif content_type == 17:
+            key = (
+                str(new_content_detail["name"]),
+                str(new_content_detail["description"]),
+                str(new_content_detail["field_name"]),
+            )
+        else:
+            raise ValueError(f"Unsupported content_type: {content_type}")
+
+        try:
+            existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
+            logger.info(
+                f"Found existing {'field' if content_type == 15 else 'value'} with id: {existing_content_id} "
+                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 15 else 'value'} id: {new_content_detail['id']}"
+            )
             # Create ScanReportConcept entry for copying over the concept
             concept_entry = _create_concept(
-                concept_id, new_content_id, content_type, "R"
+                concept_id, str(new_content_detail["id"]), content_type, "R"
             )
             concepts_to_post.append(concept_entry)
         except KeyError:
