@@ -221,7 +221,7 @@ def get_by_concept_id(list_of_dicts: list, concept_id: str):
 def add_vocabulary_id_to_entries(
     table_values: List[Dict[str, Any]],
     vocab: Dict[str, Any],
-    fieldids_to_names: Dict[str, str],
+    fieldids_to_names: List[Dict[str, Any]],
     table_name: str,
 ):
     """
@@ -233,7 +233,7 @@ def add_vocabulary_id_to_entries(
     Args:
         posted_values (list[dict]): List of dictionaries of previously posted values.
         vocab (Dict[str, Any]): Dict mapping table names to dictionaries of field names and vocab IDs.
-        fieldids_to_names (Dict[str, str]): Dict mapping field IDs to field names.
+        fieldids_to_names (List[Dict[str, Any]): List of field IDs to field names.
         table_name (str): The current table name.
 
     Returns:
@@ -242,6 +242,15 @@ def add_vocabulary_id_to_entries(
     for value in table_values:
         vocab_id = None
         if vocab and vocab.get(table_name):
-            if field_name := fieldids_to_names.get(str(value.get("scan_report_field"))):
+            scan_report_field = value.get("scan_report_field")
+            if field := next(
+                (
+                    field
+                    for field in fieldids_to_names
+                    if field["id"] == scan_report_field
+                ),
+                None,
+            ):
+                field_name = field["name"]
                 vocab_id = vocab[table_name].get(field_name)
         value["vocabulary_id"] = vocab_id
