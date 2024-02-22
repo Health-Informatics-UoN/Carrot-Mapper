@@ -1,26 +1,36 @@
 import asyncio
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal, Optional
 
 import azure.functions as func
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
+    get_scan_report_active_concepts,
+    get_scan_report_fields_by_ids,
     get_scan_report_fields_by_table,
     get_scan_report_table,
     get_scan_report_values_filter_scan_report_table,
     post_chunks,
+    post_scan_report_concepts,
 )
 from shared_code.logger import logger
 
 
-def _create_concept(concept_id: str, object_id: str) -> Dict[str, Any]:
+def _create_concept(
+    concept_id: str,
+    object_id: str,
+    content_type: Literal[15, 17] = 17,
+    creation_type: Literal["V", "R"] = "V",
+) -> Dict[str, Any]:
     """
     Creates a new Concept dict.
 
     Args:
         concept_id (str): The Id of the Concept to create.
         object_id (str): The Object Id of the Concept to create.
+        content_type (Literal[15, 17]): The Content Type Id of the Concept.
+        creation_type (Literal["R", "V"]): The Creation Type value of the Concept.
 
     Returns:
         Dict[str, Any]: A Concept as a dictionary.
@@ -32,8 +42,8 @@ def _create_concept(concept_id: str, object_id: str) -> Dict[str, Any]:
     return {
         "concept": concept_id,
         "object_id": object_id,
-        "content_type": 17,
-        "creation_type": "V",
+        "content_type": content_type,
+        "creation_type": creation_type,
     }
 
 
@@ -61,6 +71,194 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
                 )
 
     return concept_id_data
+
+
+def select_concepts_to_post(
+    new_content_details: List[Dict[Optional[str], Optional[str]]],
+    details_to_id_and_concept_id_map: List[Dict[str, str]],
+    content_type: Literal[15, 17],
+) -> List[Dict[str, Any]]:
+    """
+    Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
+    Content_type controls whether this is handling fields or values.
+    Fields have a key defined only by name, while values have a key defined by:
+      name, description, and field name.
+
+    Args:
+        new_content_details (List[Dict[str, str, str (optional), str (optional)]]):
+          Each item in the list a dict containing either "id" and "name" keys (for fields)
+          or "id", "name", "description", and "field_name" keys (for values).
+
+        details_to_id_and_concept_id_map (List[Dict[str, str, str]]): keys "name" (for fields) or ("name",
+          "description", "field_name") keys (for values), with entries (field_id, concept_id)
+          or (value_id, concept_id) respectively.
+
+        content_type (Literal[15, 17]): Controls whether to handle fields (15), or values (17).
+
+    Returns:
+        A list of `Concepts` that look like `ScanReportConcepts` to create.
+
+    Raises:
+        Exception: RunTimeError: A content_type other than 15 or 17 was provided.
+    """
+    concepts_to_post = []
+    for new_content_detail in new_content_details:
+        try:
+            # fields
+            if content_type == 15:
+                (
+                    existing_content_id,
+                    concept_id,
+                ) = details_to_id_and_concept_id_map[str(new_content_detail["name"])]
+            # values
+            elif content_type == 17:
+                existing_content_id, concept_id = details_to_id_and_concept_id_map[
+                    (
+                        str(new_content_detail["name"]),
+                        str(new_content_detail["description"]),
+                        str(new_content_detail["field_name"]),
+                    )
+                ]
+            else:
+                raise RuntimeError(
+                    f"content_type must be 15 or 17: you provided {content_type}"
+                )
+
+            new_content_id = str(new_content_detail["id"])
+            if content_type == 15:
+                logger.info(
+                    f"Found existing field with id: {existing_content_id} with existing "
+                    f"concept mapping: {concept_id} which matches new field id: "
+                    f"{new_content_id}"
+                )
+            elif content_type == 17:
+                logger.info(
+                    f"Found existing value with id: {existing_content_id} with existing "
+                    f"concept mapping: {concept_id} which matches new value id: "
+                    f"{new_content_id}"
+                )
+            # Create ScanReportConcept entry for copying over the concept
+            concept_entry = {
+                "nlp_entity": None,
+                "nlp_entity_type": None,
+                "nlp_confidence": None,
+                "nlp_vocabulary": None,
+                "nlp_processed_string": None,
+                "concept": concept_id,
+                "object_id": new_content_id,
+                "content_type": content_type,
+                "creation_type": "R",
+            }
+            concepts_to_post.append(concept_entry)
+        except KeyError:
+            continue
+
+    return concepts_to_post
+
+
+def reuse_existing_field_concepts(
+    new_fields_map: Dict[str, str], content_type: Literal[15]
+) -> None:
+    """
+    It creates new concepts associated to any field that matches the name of an existing
+    field with an associated concept.
+
+    This expects a dict of field names to ids which have been generated in a newly uploaded
+    scanreport, and content_type 15.
+
+    Args:
+        new_fields_map (Dict[str, str]): A map of field names to Ids.
+        content_type (Literal[15]): The content type, represents `ScanReportField` (15)
+    """
+    logger.info("reuse_existing_field_concepts")
+    # Gets all scan report concepts that are for the type field
+    # (or content type which should be field) and in "active" SRs
+    existing_field_concepts = get_scan_report_active_concepts(content_type)
+
+    # create dictionary that maps existing field ids to scan report concepts
+    # from the list of existing scan report concepts from active SRs
+    existing_field_id_to_concept_map = {
+        str(element.get("object_id", None)): str(element.get("concept", None))
+        for element in existing_field_concepts
+    }
+    logger.debug(
+        f"field_id:concept_id for all existing fields in active SRs with concepts: "
+        f"{existing_field_id_to_concept_map}"
+    )
+
+    # get details of existing selected fields, for the purpose of matching against
+    # new fields
+    existing_field_ids = {item["object_id"] for item in existing_field_concepts}
+    existing_fields = get_scan_report_fields_by_ids(existing_field_ids)
+    logger.debug(
+        f"ids and names of existing fields with concepts in active SRs:"
+        f" {existing_fields}"
+    )
+
+    # Combine everything of the existing fields to get this list, one for each
+    # existing SRField with a SRConcept in an active SR.
+    existing_mappings_to_consider = [
+        {
+            "name": field["name"],
+            "concept": existing_field_id_to_concept_map[str(field["id"])],
+            "id": field["id"],
+        }
+        for field in existing_fields
+    ]
+    logger.debug(f"{existing_mappings_to_consider=}")
+
+    # Handle the newly-added fields
+    new_fields_full_details = [
+        {"name": name, "id": new_field_id}
+        for name, new_field_id in new_fields_map.items()
+    ]
+    # Now we have existing_mappings_to_consider of the form:
+    #
+    # [{"id":, "name":, "concept":}]
+    #
+    # and new_fields_full_details of the form:
+    #
+    # [{"id":, "name":}]
+
+    # Now we simply look for unique matches on "name" across
+    # the two.
+
+    # existing_field_name_to_field_and_concept_id_map will contain
+    # (field_name) -> (field_id, concept_id)
+    # for each field in new_fields_full_details
+    # if that field has only one match in existing_mappings_to_consider
+    existing_field_name_to_field_and_concept_id_map = {}
+    for item in new_fields_full_details:
+        name = item["name"]
+        mappings_matching_field_name = list(
+            filter(
+                lambda mapping: mapping["name"] == name, existing_mappings_to_consider
+            )
+        )
+
+        target_concept_ids = {
+            mapping["concept"] for mapping in mappings_matching_field_name
+        }
+
+        if len(target_concept_ids) == 1:
+            target_field_id = (
+                mapping["id"] for mapping in mappings_matching_field_name
+            )
+            existing_field_name_to_field_and_concept_id_map[str(name)] = (
+                str(next(target_field_id)),
+                str(target_concept_ids.pop()),
+            )
+
+    # Use the new_fields_full_details as keys into
+    # existing_field_name_to_field_and_concept_id_map to extract concept IDs and details
+    # for new ScanReportConcept entries to post.
+    if concepts_to_post := select_concepts_to_post(
+        new_fields_full_details,
+        existing_field_name_to_field_and_concept_id_map,
+        content_type,
+    ):
+        post_scan_report_concepts(concepts_to_post)
+        logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
 
 def _handle_concepts(
@@ -233,6 +431,9 @@ async def _handle_table(
     logger.info("POST concepts all finished")
 
     # handle reuse existing stuff?
+    # TODO: Get this.
+    fieldnames_to_ids_dict = []
+    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
 
 
 def main(msg: func.QueueMessage):
