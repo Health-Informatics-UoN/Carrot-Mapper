@@ -117,7 +117,6 @@ def post_scan_report_concepts(concepts: List[str]) -> None:
     POST Concepts to the API.
 
     Works by paginating the concepts first.
-    TODO: Seems to keep track of the response, does it need to be returned?
 
     Args:
         concepts (List[str]): A list of the concepts to POST

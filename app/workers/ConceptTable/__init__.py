@@ -36,8 +36,7 @@ def _create_concept(
         Dict[str, Any]: A Concept as a dictionary.
 
     TODO: we should query `content_type` from the API
-    - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-    but that's not available from an Azure Function.
+    https://github.com/Health-Informatics-UoN/CaRROT-Mapper/issues/637
     """
     return {
         "concept": concept_id,
@@ -133,18 +132,21 @@ def select_concepts_to_post(
 
 
 def reuse_existing_field_concepts(
-    new_fields_map: Dict[str, str], content_type: Literal[15]
+    new_fields_map: List[Dict[str, str]], content_type: Literal[15]
 ) -> None:
     """
-    It creates new concepts associated to any field that matches the name of an existing
+    Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
 
-    This expects a dict of field names to ids which have been generated in a newly uploaded
+    This expects a list of field names to ids which have been generated in a uploaded
     scanreport, and content_type 15.
 
     Args:
-        new_fields_map (Dict[str, str]): A map of field names to Ids.
+        new_fields_map (List[Dict[str, Any]]): A list of fields.
         content_type (Literal[15]): The content type, represents `ScanReportField` (15)
+
+    Returns:
+        None
     """
     logger.info("reuse_existing_field_concepts")
     # Gets all scan report concepts that are for the type field
@@ -185,8 +187,7 @@ def reuse_existing_field_concepts(
 
     # Handle the newly-added fields
     new_fields_full_details = [
-        {"name": name, "id": new_field_id}
-        for name, new_field_id in new_fields_map.items()
+        {"name": field["name"], "id": str(field["id"])} for field in new_fields_map
     ]
     # Now we have existing_mappings_to_consider of the form:
     #
@@ -354,6 +355,16 @@ async def _handle_table(
 ) -> None:
     """
     Handles Concept Creation on a table.
+
+    Remarks:
+        Works by transforming table_values, then generating concepts from them.
+
+    Args:
+        table (Dict[str, Any]): Table object to create for.
+        vocab (Dict[str, Dict[str, str]]): Vocab dictionary.
+
+    Returns:
+        None
     """
     # get values for that table?
     table_values = get_scan_report_values_filter_scan_report_table(table["id"])
@@ -369,7 +380,6 @@ async def _handle_table(
     helpers.add_vocabulary_id_to_entries(
         table_values, vocab, fieldids_to_names, table["name"]
     )
-    # print(table_values)
     # [{'id': 569, 'value': '46457-8', 'created_at': '2024-02-22T11:01:48.520215Z',
     # 'updated_at': '2024-02-22T11:01:48.520284Z', 'frequency': 5, 'conceptID': -1,
     # 'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
@@ -408,6 +418,7 @@ async def _handle_table(
 
     # handle reuse existing stuff?
     # TODO: Get this.
+    #  {'PersonID': '100', 'Date': '101', 'Test': '102', 'Symptom': '103', 'Testtype': '104'}
     fieldnames_to_ids_dict = []
     reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
 
