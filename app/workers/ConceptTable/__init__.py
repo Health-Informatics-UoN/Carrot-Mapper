@@ -29,8 +29,8 @@ def _create_concept(
     Args:
         concept_id (str): The Id of the Concept to create.
         object_id (str): The Object Id of the Concept to create.
-        content_type (Literal[15, 17]): The Content Type Id of the Concept.
-        creation_type (Literal["R", "V"]): The Creation Type value of the Concept.
+        content_type (Literal[15, 17], optional): The Content Type Id of the Concept.
+        creation_type (Literal["R", "V"], optional): The Creation Type value of the Concept.
 
     Returns:
         Dict[str, Any]: A Concept as a dictionary.
@@ -138,17 +138,9 @@ def select_concepts_to_post(
                     f"{new_content_id}"
                 )
             # Create ScanReportConcept entry for copying over the concept
-            concept_entry = {
-                "nlp_entity": None,
-                "nlp_entity_type": None,
-                "nlp_confidence": None,
-                "nlp_vocabulary": None,
-                "nlp_processed_string": None,
-                "concept": concept_id,
-                "object_id": new_content_id,
-                "content_type": content_type,
-                "creation_type": "R",
-            }
+            concept_entry = _create_concept(
+                concept_id, new_content_id, content_type, "R"
+            )
             concepts_to_post.append(concept_entry)
         except KeyError:
             continue
