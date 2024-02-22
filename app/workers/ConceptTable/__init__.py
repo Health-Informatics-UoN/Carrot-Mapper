@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import azure.functions as func
-from shared_code import blob_parser, helpers, logger, omop_helpers
+from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
     get_scan_report_fields_by_table,
@@ -11,59 +11,51 @@ from shared_code.api import (
     get_scan_report_values_filter_scan_report_table,
     post_chunks,
 )
+from shared_code.logger import logger
 
 
-def _create_concept(concept: Dict[str, Any], concept_id: str) -> Dict[str, Any]:
+def _create_concept(concept_id: str, object_id: str) -> Dict[str, Any]:
     """
-    Creates a concept.
+    Creates a new Concept dict.
+
+    Args:
+        concept_id (str): The Id of the Concept to create.
+        object_id (str): The Object Id of the Concept to create.
+
+    Returns:
+        Dict[str, Any]: A Concept as a dictionary.
+
     TODO: we should query `content_type` from the API
     - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
     but that's not available from an Azure Function.
     """
     return {
         "concept": concept_id,
-        "object_id": concept["id"],
+        "object_id": object_id,
         "content_type": 17,
         "creation_type": "V",
     }
 
 
-def _create_concepts(existing_values) -> None:
+def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Creates concepts.
     All Concepts are now ready. Generate their entries ready for POSTing from
-    details_of_posted_values. Remember that entries_split_by_vocab is just a view
-    into this list, so changes to entries_split_by_vocab above are reflected when
-    we access details_of_posted_values below.
+    details_of_posted_values.
     """
     concept_id_data = []
-    for concept in existing_values:
+    for concept in table_values:
         if concept["concept_id"] != -1:
             if isinstance(concept["concept_id"], list):
                 concept_id_data.extend(
-                    {
-                        "concept": concept_id,
-                        "object_id": concept["id"],
-                        # TODO: we should query this value from the API
-                        # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-                        # but that's not available from an Azure Function.
-                        "content_type": 17,
-                        "creation_type": "V",
-                    }
+                    _create_concept(concept_id, concept["id"])
                     for concept_id in concept["concept_id"]
                 )
             else:
                 concept_id_data.append(
-                    {
-                        "concept": concept["concept_id"],
-                        "object_id": concept["id"],
-                        # TODO: we should query this value from the API
-                        # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
-                        # but that's not available from an Azure Function.
-                        "content_type": 17,
-                        "creation_type": "V",
-                    }
+                    _create_concept(concept["concept_id"], concept["id"])
                 )
+
     return concept_id_data
 
 
@@ -204,21 +196,23 @@ async def _handle_table(
     # 'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
     # group table_values by their vocabulary_id
-    entries_split_by_vocab = defaultdict(list)
+    entries_grouped_by_vocab = defaultdict(list)
     for entry in table_values:
-        entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
+        entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
     # ['LOINC': [
     # {'id': 512, 'value': '46457-8', 'created_at': '2024-02-14T17: 18: 07.414357Z',
     # 'updated_at': '2024-02-14T17: 18: 07.414390Z', 'frequency': 5, 'conceptID': -1,
     #  'value_description': None, 'scan_report_field': 72, 'vocabulary_id': 'LOINC' }],
 
-    _handle_concepts(entries_split_by_vocab)
-    print(entries_split_by_vocab)
+    _handle_concepts(entries_grouped_by_vocab)
     logger.debug("finished standard concepts lookup")
-    # concepts = _create_concepts(table_values)
+    # Remember that entries_split_by_vocab is just a view
+    # into this list, so changes to entries_split_by_vocab above are reflected when
+    # we access details_of_posted_values below.
+    concepts = _create_concepts(table_values)
 
     # # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
-    # logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
+    logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
 
     # chunked_concept_id_data = helpers.perform_chunking(concepts)
     # logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
