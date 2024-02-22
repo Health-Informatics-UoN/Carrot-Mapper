@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 from io import BytesIO
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 import openpyxl
 from azure.storage.blob import BlobServiceClient
@@ -187,7 +187,9 @@ def get_scan_report(blob: str) -> openpyxl.Workbook:
     )
 
 
-def get_data_dictionary(blob: str) -> Tuple[Dict[str, str]]:
+def get_data_dictionary(
+    blob: str,
+) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]:
     """
     Retrieves the data dictionary and vocabulary dictionary from a blob storage.
 

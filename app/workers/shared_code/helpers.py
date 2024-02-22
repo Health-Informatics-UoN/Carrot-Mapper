@@ -219,7 +219,7 @@ def get_by_concept_id(list_of_dicts: list, concept_id: str):
 
 
 def add_vocabulary_id_to_entries(
-    posted_values: List[Dict[str, Any]],
+    table_values: List[Dict[str, Any]],
     vocab: Dict[str, Any],
     fieldids_to_names: Dict[str, str],
     table_name: str,
@@ -239,11 +239,9 @@ def add_vocabulary_id_to_entries(
     Returns:
         None
     """
-    for previously_posted_value in posted_values:
+    for value in table_values:
         vocab_id = None
         if vocab and vocab.get(table_name):
-            if field_name := fieldids_to_names.get(
-                str(previously_posted_value.get("scan_report_field"))
-            ):
+            if field_name := fieldids_to_names.get(str(value.get("scan_report_field"))):
                 vocab_id = vocab[table_name].get(field_name)
-        previously_posted_value["vocabulary_id"] = vocab_id
+        value["vocabulary_id"] = vocab_id

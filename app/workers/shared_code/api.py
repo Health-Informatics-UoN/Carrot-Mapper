@@ -6,9 +6,8 @@ from typing import Any, Dict, List, Literal
 
 import httpx
 import requests
-from shared_code.logger import logger
-
 from shared_code import helpers, omop_helpers
+from shared_code.logger import logger
 
 # Code for making request to the API
 # At some we want to use the DB directly, and make this file unnecessary.
@@ -220,10 +219,15 @@ def get_scan_report_table(id: str) -> Dict[str, Any]:
 
     Raises:
         Exception: requests.HTTPError: If the request fails.
+        Exception: KeyError: If the Scan Report Table for the ID is not found.
     """
     response = requests.get(url=f"{API_URL}scanreporttables/?id={id}", headers=HEADERS)
     response.raise_for_status()
-    return response.json()
+
+    if scan_report_tables := response.json():
+        return scan_report_tables[0]
+    else:
+        raise KeyError("ScanReportTable not found for the given ID.")
 
 
 def get_scan_report_values(ids: str) -> List[Dict[str, Any]]:
