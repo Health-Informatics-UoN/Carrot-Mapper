@@ -16,11 +16,11 @@ def unwrap_message(msg: func.QueueMessage) -> Tuple[str, str, str, str]:
         msg (func.QueueMessage): The message received from the queue.
 
     Returns:
-        Tuple[str, str, str]: A tuple containing the extracted:
-            - The blob containing the scan report.
-            - The blob containing the data dictionary.
-            - The ID of the scan report.
-            - The ID of the scan report table.
+        Tuple[str, str, str, str]: A tuple containing the extracted:
+        - The blob containing the scan report.
+        - The blob containing the data dictionary.
+        - The ID of the scan report.
+        - The ID of the scan report table.
 
     Raises:
         Exception: If the dequeue count of the message exceeds 1.
@@ -57,11 +57,11 @@ def _extract_details(message: dict) -> Tuple[str, str, str, str]:
         message (dict): The unwrapped message body.
 
     Returns:
-        Tuple[str, str, str]: A tuple containing the extracted:
-            - The blob containing the scan report.
-            - The blob containing the data dictionary.
-            - The ID of the scan report.
-            - The ID of the scan report table.
+        Tuple[str, str, str, str]: A tuple containing the extracted:
+        - The blob containing the scan report.
+        - The blob containing the data dictionary.
+        - The ID of the scan report.
+        - The ID of the scan report table.
     """
     scan_report_blob = message.get("scan_report_blob", "")
     data_dictionary_blob = message.get("data_dictionary_blob", "")
