@@ -571,6 +571,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         )
 
     def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        # sourcery skip: extract-method, inline-variable
         """
         Perform a partial update on the instance.
 
@@ -591,30 +592,33 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         # Map the table
 
         # Get the data dictionary name
-        scan_report_instance = instance.scan_report
-        data_dictionary_name = (
-            scan_report_instance.data_dictionary.name
-            if scan_report_instance.data_dictionary
-            else None
-        )
+        # TODO: Make this an env variable so we can turn it on/off
+        add_concept = True
+        if add_concept:
+            scan_report_instance = instance.scan_report
+            data_dictionary_name = (
+                scan_report_instance.data_dictionary.name
+                if scan_report_instance.data_dictionary
+                else None
+            )
 
-        # Send to queue
-        # TODO: We should move queue sending to a service.
-        azure_dict = {
-            "scan_report_id": scan_report_instance.id,
-            "table_id": instance.id,
-            "data_dictionary_blob": data_dictionary_name,
-        }
-        queue_message = json.dumps(azure_dict)
-        message_bytes = queue_message.encode("ascii")
-        base64_bytes = base64.b64encode(message_bytes)
-        base64_message = base64_bytes.decode("ascii")
+            # Send to queue
+            # TODO: We should move queue sending to a service.
+            azure_dict = {
+                "scan_report_id": scan_report_instance.id,
+                "table_id": instance.id,
+                "data_dictionary_blob": data_dictionary_name,
+            }
+            queue_message = json.dumps(azure_dict)
+            message_bytes = queue_message.encode("ascii")
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode("ascii")
 
-        queue = QueueClient.from_connection_string(
-            conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=os.environ.get("CONCEPT_TABLE_QUEUE_NAME"),
-        )
-        queue.send_message(base64_message)
+            queue = QueueClient.from_connection_string(
+                conn_str=os.environ.get("STORAGE_CONN_STRING"),
+                queue_name=os.environ.get("CONCEPT_TABLE_QUEUE_NAME"),
+            )
+            queue.send_message(base64_message)
 
         return Response(serializer.data)
 
@@ -1425,9 +1429,16 @@ class ScanReportFormView(FormView):
 
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
+        # TODO: Make this env variable to switch.
+        upload_only = True
+        if upload_only:
+            queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
+        else:
+            queue_name = os.environ.get("SCAN_REPORT_QUEUE_NAME")
+
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=os.environ.get("UPLOAD_QUEUE_NAME"),
+            queue_name=queue_name,
         )
         queue.send_message(base64_message)
 
