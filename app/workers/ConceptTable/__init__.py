@@ -573,9 +573,8 @@ async def _handle_table(
     logger.info("POST concepts all finished")
 
     # handle reuse
-    values_response_content = []
     reuse_existing_field_concepts(fieldids_to_names, 15)
-    reuse_existing_value_concepts(values_response_content, 17)
+    reuse_existing_value_concepts(table_values, 17)
 
 
 def main(msg: func.QueueMessage):
