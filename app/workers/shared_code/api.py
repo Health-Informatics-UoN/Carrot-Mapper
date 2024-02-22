@@ -177,6 +177,28 @@ def get_scan_report_fields_by_ids(field_ids: List[str]) -> List[Dict[str, Any]]:
     return helpers.flatten(existing_fields)
 
 
+def get_scan_report_fields_by_table(id: str) -> List[Dict[str, Any]]:
+    """
+    Retrieve scan report fields by table ID.
+
+    Args:
+        id (str): The ID of the table.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries containing the fields of the scan report table.
+
+    Raises:
+        requests.HTTPError: If the request fails.
+
+    """
+    response = requests.get(
+        url=f"{API_URL}scanreportfields/?scan_report_table__in={id}&fields=id,name",
+        headers=HEADERS,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
 def get_scan_report_active_concepts(
     content_type: Literal[15, 17]
 ) -> List[Dict[str, Any]]:
