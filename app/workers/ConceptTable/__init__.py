@@ -39,9 +39,13 @@ def _create_concept(concept_id: str, object_id: str) -> Dict[str, Any]:
 
 def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Creates concepts.
-    All Concepts are now ready. Generate their entries ready for POSTing from
-    details_of_posted_values.
+    Generate Concept entries ready for POSTing from a list of values.
+
+    Args:
+        table_values (List[Dict[str, Any]]): List of values to create concepts from.
+
+    Returns:
+        List[Dict[str, Any]]: List of Concept dictionaries.
     """
     concept_id_data = []
     for concept in table_values:
@@ -60,13 +64,14 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
 
 
 def _handle_concepts(
-    entries_split_by_vocab: defaultdict[str, List[Dict[str, Any]]]
+    entries_grouped_by_vocab: defaultdict[str, List[Dict[str, Any]]]
 ) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
     Transforms the defaultdict inplace.
 
     For the case when vocab is None, set it to defaults.
+    TODO: Could do with splitting this out into smaller functions also.
 
     For other cases, get the concepts from the vocab via /omop/conceptsfilter under
     pagination.
@@ -78,12 +83,12 @@ def _handle_concepts(
     int or str, or a list of such.
 
     Args:
-        entries_split_by_vocab: (defaultdict[str, List[Dict[str, Any]]]): ??
+        entries_grouped_by_vocab: (defaultdict[str, List[Dict[str, Any]]]): Entries grouped by Vocab.
 
     Returns:
         None
     """
-    for vocab, value in entries_split_by_vocab.items():
+    for vocab, value in entries_grouped_by_vocab.items():
         if vocab is None:
             # set to defaults, and skip all the remaining processing that a vocab
             # would require
@@ -96,7 +101,7 @@ def _handle_concepts(
         logger.info(f"begin {vocab}")
 
         paginated_values_in_this_vocab = helpers.paginate(
-            (str(entry["value"]) for entry in entries_split_by_vocab[vocab]),
+            (str(entry["value"]) for entry in entries_grouped_by_vocab[vocab]),
             max_chars=omop_helpers.max_chars_for_get,
         )
 
@@ -115,13 +120,13 @@ def _handle_concepts(
         # concept_id and standard_concept with those values
         logger.debug(
             f"Attempting to match {len(concept_vocab_content)} concepts to "
-            f"{len(entries_split_by_vocab[vocab])} SRValues"
+            f"{len(entries_grouped_by_vocab[vocab])} SRValues"
         )
-        for entry in entries_split_by_vocab[vocab]:
+        for entry in entries_grouped_by_vocab[vocab]:
             entry["concept_id"] = -1
             entry["standard_concept"] = None
 
-        for entry in entries_split_by_vocab[vocab]:
+        for entry in entries_grouped_by_vocab[vocab]:
             for returned_concept in concept_vocab_content:
                 if str(entry["value"]) == str(returned_concept["concept_code"]):
                     entry["concept_id"] = str(returned_concept["concept_id"])
@@ -139,7 +144,7 @@ def _handle_concepts(
         entries_to_find_standard_concept = list(
             filter(
                 lambda x: x["concept_id"] != -1 and x["standard_concept"] != "S",
-                entries_split_by_vocab[vocab],
+                entries_grouped_by_vocab[vocab],
             )
         )
         logger.debug(
@@ -156,7 +161,7 @@ def _handle_concepts(
         # relevant entry from entries_split_by_vocab[vocab].
         for nonstandard_concept in batched_standard_concepts_map:
             relevant_entry = helpers.get_by_concept_id(
-                entries_split_by_vocab[vocab], nonstandard_concept
+                entries_grouped_by_vocab[vocab], nonstandard_concept
             )
 
             if isinstance(relevant_entry["concept_id"], (int, str)):
@@ -214,18 +219,18 @@ async def _handle_table(
     # # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
     logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
 
-    # chunked_concept_id_data = helpers.perform_chunking(concepts)
-    # logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
+    chunked_concept_id_data = helpers.perform_chunking(concepts)
+    logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
 
-    # await post_chunks(
-    #     chunked_concept_id_data,
-    #     "scanreportconcepts",
-    #     "concept",
-    #     table_name=table["name"],
-    #     scan_report_id=table["scan_report"],
-    # )
+    await post_chunks(
+        chunked_concept_id_data,
+        "scanreportconcepts",
+        "concept",
+        table_name=table["name"],
+        scan_report_id=table["scan_report"],
+    )
 
-    # logger.info("POST concepts all finished")
+    logger.info("POST concepts all finished")
 
     # handle reuse existing stuff?
 
