@@ -1,11 +1,12 @@
 import asyncio
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import azure.functions as func
 from shared_code import blob_parser, helpers, logger, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
+    get_scan_report_fields_by_table,
     get_scan_report_table,
     get_scan_report_values_filter_scan_report_table,
     post_chunks,
@@ -66,22 +67,29 @@ def _create_concepts(existing_values) -> None:
     return concept_id_data
 
 
-def _handle_concepts(entries_split_by_vocab) -> None:
+def _handle_concepts(
+    entries_split_by_vocab: defaultdict[str, List[Dict[str, Any]]]
+) -> None:
     """
-    Handles concept creation?
-     For each vocab, set "concept_id" and "standard_concept" in each entry in the
-     vocab.
+    For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
+    Transforms the defaultdict inplace.
 
-     For the case when vocab is None, set it to defaults.
+    For the case when vocab is None, set it to defaults.
 
-     For other cases, get the concepts from the vocab via /omop/conceptsfilter under
-     pagination.
-     Then match these back to the originating values, setting "concept_id" and
-     "standard_concept" in each case.
-     Finally, we need to fix all entries where "standard_concept" != "S" using
-     `find_standard_concept_batch()`. This may result in more than one standard
-     concept for a single nonstandard concept, and so "concept_id" may be either an
-     int or str, or a list of such.
+    For other cases, get the concepts from the vocab via /omop/conceptsfilter under
+    pagination.
+    Then match these back to the originating values, setting "concept_id" and
+    "standard_concept" in each case.
+    Finally, we need to fix all entries where "standard_concept" != "S" using
+    `find_standard_concept_batch()`. This may result in more than one standard
+    concept for a single nonstandard concept, and so "concept_id" may be either an
+    int or str, or a list of such.
+
+    Args:
+        entries_split_by_vocab: (defaultdict[str, List[Dict[str, Any]]]): ??
+
+    Returns:
+        None
     """
     for vocab, value in entries_split_by_vocab.items():
         if vocab is None:
@@ -170,44 +178,60 @@ def _handle_concepts(entries_split_by_vocab) -> None:
                 raise RuntimeWarning
 
 
-async def _handle_table(table: Dict[str, Any], vocab: Dict[Any, Any]) -> None:
+async def _handle_table(
+    table: Dict[str, Any], vocab: Dict[str, Dict[str, str]]
+) -> None:
     """
     Handles Concept Creation on a table.
     """
     # get values for that table?
     table_values = get_scan_report_values_filter_scan_report_table(table["id"])
+    # list: [{'id': 480, 'value': '110', 'created_at': '2024-02-14T17:18:07.342308Z',
+    # 'updated_at': '2024-02-14T17:18:07.342349Z', 'frequency': 1, 'conceptID': -1,
+    # 'value_description': None, 'scan_report_field': 68}]
     # Add vocab id to each entry from the vocab dict
 
-    # TODO: Get this?
-    fieldids_to_names_dict = []
+    fieldids_to_names = get_scan_report_fields_by_table(table["id"])
+    #  [{'id': 68, 'name': '\ufeffPersonID'},
+    # {'id': 69, 'name': 'Date'}, {'id': 70, 'name': 'Test'}, {'id': 71, 'name': 'Symptom'}, {'id': 72, 'name': 'Testtype'}]
 
     helpers.add_vocabulary_id_to_entries(
-        table_values, vocab, fieldids_to_names_dict, table["name"]
+        table_values, vocab, fieldids_to_names, table["name"]
     )
+    # print(table_values)
+    # [{'id': 569, 'value': '46457-8', 'created_at': '2024-02-22T11:01:48.520215Z',
+    # 'updated_at': '2024-02-22T11:01:48.520284Z', 'frequency': 5, 'conceptID': -1,
+    # 'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
+    # group table_values by their vocabulary_id
     entries_split_by_vocab = defaultdict(list)
     for entry in table_values:
         entries_split_by_vocab[entry["vocabulary_id"]].append(entry)
+    # ['LOINC': [
+    # {'id': 512, 'value': '46457-8', 'created_at': '2024-02-14T17: 18: 07.414357Z',
+    # 'updated_at': '2024-02-14T17: 18: 07.414390Z', 'frequency': 5, 'conceptID': -1,
+    #  'value_description': None, 'scan_report_field': 72, 'vocabulary_id': 'LOINC' }],
 
     _handle_concepts(entries_split_by_vocab)
+    print(entries_split_by_vocab)
     logger.debug("finished standard concepts lookup")
-    concepts = _create_concepts(table_values)
+    # concepts = _create_concepts(table_values)
 
-    # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
-    logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
+    # # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
+    # logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
 
-    chunked_concept_id_data = helpers.perform_chunking(concepts)
-    logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
+    # chunked_concept_id_data = helpers.perform_chunking(concepts)
+    # logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
 
-    await post_chunks(
-        chunked_concept_id_data,
-        "scanreportconcepts",
-        "concept",
-        table_name=table["name"],
-        scan_report_id=table["scan_report"],
-    )
+    # await post_chunks(
+    #     chunked_concept_id_data,
+    #     "scanreportconcepts",
+    #     "concept",
+    #     table_name=table["name"],
+    #     scan_report_id=table["scan_report"],
+    # )
 
-    logger.info("POST concepts all finished")
+    # logger.info("POST concepts all finished")
 
     # handle reuse existing stuff?
 
@@ -223,10 +247,16 @@ def main(msg: func.QueueMessage):
 
     # get the table
     table = get_scan_report_table(table_id)
+    # table:
+    # {'id': 22, 'created_at': '2024-02-14T17:18:06.599126Z',
+    # 'updated_at': '2024-02-20T15:24:28.681054Z', 'name': 'Covid19.csv',
+    # 'scan_report': 24, 'person_id': 68, 'date_event': 69}
 
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
+    # vocab dict:
+    # {'Covid19.csv': {'Symptom': 'SNOMED', 'Testtype': 'LOINC'}}
 
-    _handle_table(table, vocab_dictionary)
+    asyncio.run(_handle_table(table, vocab_dictionary))
 
     return
