@@ -751,6 +751,7 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
     in ScanReports that are "active" - that is, not hidden, with unhidden parent
     dataset, and marked with status "Mapping Complete".
     This is only retrievable by AZ_FUNCTION_USER.
+    TODO: Return 403, and add AZ_FUNCTION_USER to the .env example, and docs.
     """
 
     serializer_class = ScanReportConceptSerializer
@@ -1430,7 +1431,7 @@ class ScanReportFormView(FormView):
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
         # TODO: Make this env variable to switch.
-        upload_only = True
+        upload_only = False
         if upload_only:
             queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
         else:
