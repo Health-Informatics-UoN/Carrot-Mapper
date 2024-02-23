@@ -24,7 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import BadHeaderError, send_mail
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
@@ -751,7 +751,6 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
     in ScanReports that are "active" - that is, not hidden, with unhidden parent
     dataset, and marked with status "Mapping Complete".
     This is only retrievable by AZ_FUNCTION_USER.
-    TODO: Return 403, and add AZ_FUNCTION_USER to the .env example, and docs.
     """
 
     serializer_class = ScanReportConceptSerializer
@@ -759,34 +758,34 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
     filterset_fields = ["content_type"]
 
     def get_queryset(self):
-        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            if self.request.GET["content_type"] == "15":
-                # ScanReportField
-                # we have SRCs with content_type 15, grab all SRFields in active SRs,
-                # and then filter ScanReportConcepts by those object_ids
-                field_ids = ScanReportField.objects.filter(
-                    scan_report_table__scan_report__hidden=False,
-                    scan_report_table__scan_report__parent_dataset__hidden=False,
-                    scan_report_table__scan_report__status="COMPLET",
-                )
-                qs = ScanReportConcept.objects.filter(
-                    content_type=15, object_id__in=field_ids
-                )
-                return qs
-            elif self.request.GET["content_type"] == "17":  #
-                # ScanReportValue
-                # we have SRCs with content_type 17, grab all SRValues in active SRs,
-                # and then filter ScanReportConcepts by those object_ids
-                value_ids = ScanReportValue.objects.filter(
-                    scan_report_field__scan_report_table__scan_report__hidden=False,
-                    scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-                    scan_report_field__scan_report_table__scan_report__status="COMPLET",
-                )
-                qs = ScanReportConcept.objects.filter(
-                    content_type=17, object_id__in=value_ids
-                )
-                return qs
-            return None
+        if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
+            raise PermissionDenied(
+                "You do not have permission to access this resource."
+            )
+        if self.request.GET["content_type"] == "15":
+            # ScanReportField
+            # we have SRCs with content_type 15, grab all SRFields in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            field_ids = ScanReportField.objects.filter(
+                scan_report_table__scan_report__hidden=False,
+                scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_table__scan_report__status="COMPLET",
+            )
+            return ScanReportConcept.objects.filter(
+                content_type=15, object_id__in=field_ids
+            )
+        elif self.request.GET["content_type"] == "17":  #
+            # ScanReportValue
+            # we have SRCs with content_type 17, grab all SRValues in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            value_ids = ScanReportValue.objects.filter(
+                scan_report_field__scan_report_table__scan_report__hidden=False,
+                scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_field__scan_report_table__scan_report__status="COMPLET",
+            )
+            return ScanReportConcept.objects.filter(
+                content_type=17, object_id__in=value_ids
+            )
         return None
 
 
@@ -1431,7 +1430,7 @@ class ScanReportFormView(FormView):
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
         # TODO: Make this env variable to switch.
-        upload_only = False
+        upload_only = True
         if upload_only:
             queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
         else:
