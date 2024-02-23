@@ -402,7 +402,6 @@ def _handle_concepts(
     Transforms the defaultdict inplace.
 
     For the case when vocab is None, set it to defaults.
-    TODO: Could do with splitting this out into smaller functions also.
 
     For other cases, get the concepts from the vocab via /omop/conceptsfilter under
     pagination.
@@ -421,89 +420,176 @@ def _handle_concepts(
     """
     for vocab, value in entries_grouped_by_vocab.items():
         if vocab is None:
-            # set to defaults, and skip all the remaining processing that a vocab
-            # would require
-            for entry in value:
-                entry["concept_id"] = -1
-                entry["standard_concept"] = None
-            continue
+            # Set to defaults, and skip all the remaining processing that a vocab would require
+            _set_defaults_for_none_vocab(value)
+        else:
+            _process_concepts_for_vocab(vocab, value)
 
-        assert vocab is not None
-        logger.info(f"begin {vocab}")
 
-        paginated_values_in_this_vocab = helpers.paginate(
-            (str(entry["value"]) for entry in entries_grouped_by_vocab[vocab]),
-            max_chars=omop_helpers.max_chars_for_get,
-        )
+def _set_defaults_for_none_vocab(entries: List[Dict[str, Any]]) -> None:
+    """
+    Set default values for entries with none vocabulary.
 
-        concept_vocab_response = []
+    Args:
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
 
-        for page_of_values in paginated_values_in_this_vocab:
-            page_of_values_to_get = ",".join(map(str, page_of_values))
+    Returns:
+        None
 
-            concept_vocab = get_concept_vocabs(vocab, page_of_values_to_get)
-            concept_vocab_response.append(concept_vocab)
+    """
+    for entry in entries:
+        entry["concept_id"] = -1
+        entry["standard_concept"] = None
 
-        concept_vocab_content = helpers.flatten(concept_vocab_response)
 
-        # Loop over all returned concepts, and match their concept_code and vocabulary_id with
-        # the full_value in the entries_split_by_vocab, and set the latter's
-        # concept_id and standard_concept with those values
-        logger.debug(
-            f"Attempting to match {len(concept_vocab_content)} concepts to "
-            f"{len(entries_grouped_by_vocab[vocab])} SRValues"
-        )
-        for entry in entries_grouped_by_vocab[vocab]:
-            entry["concept_id"] = -1
-            entry["standard_concept"] = None
+def _process_concepts_for_vocab(vocab: str, entries: List[Dict[str, Any]]) -> None:
+    """
+    Process concepts for a specific vocabulary.
 
-        for entry in entries_grouped_by_vocab[vocab]:
-            for returned_concept in concept_vocab_content:
-                if str(entry["value"]) == str(returned_concept["concept_code"]):
-                    entry["concept_id"] = str(returned_concept["concept_id"])
-                    entry["standard_concept"] = str(
-                        returned_concept["standard_concept"]
-                    )
-                    # exit inner loop early if we find a concept for this entry
-                    break
+    Args:
+        vocab (str): The vocabulary to process concepts for.
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
 
-        logger.debug("finished matching")
+    Returns:
+        None
 
-        # ------------------------------------------------
-        # Identify which concepts are non-standard, and get their standard counterparts
-        # in a batch call
-        entries_to_find_standard_concept = list(
-            filter(
-                lambda x: x["concept_id"] != -1 and x["standard_concept"] != "S",
-                entries_grouped_by_vocab[vocab],
-            )
-        )
-        logger.debug(
-            f"finished selecting nonstandard concepts - selected "
-            f"{len(entries_to_find_standard_concept)}"
-        )
+    """
+    logger.info(f"begin {vocab}")
+    paginated_values = _paginate_values(entries)
+    concept_vocab_content = _fetch_concepts_for_vocab(vocab, paginated_values)
 
-        batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
-            entries_to_find_standard_concept
-        )
+    logger.debug(
+        f"Attempting to match {len(concept_vocab_content)} concepts to "
+        f"{len(entries)} SRValues"
+    )
+    _match_concepts_to_entries(entries, concept_vocab_content)
+    logger.debug("finished matching")
+    _batch_process_non_standard_concepts(entries)
 
-        # batched_standard_concepts_map maps from an original concept id to
-        # a list of associated standard concepts. Use each item to update the
-        # relevant entry from entries_split_by_vocab[vocab].
-        for nonstandard_concept in batched_standard_concepts_map:
-            relevant_entry = helpers.get_by_concept_id(
-                entries_grouped_by_vocab[vocab], nonstandard_concept
-            )
 
-            if isinstance(relevant_entry["concept_id"], (int, str)):
-                relevant_entry["concept_id"] = batched_standard_concepts_map[
-                    nonstandard_concept
-                ]
-            elif relevant_entry["concept_id"] is None:
-                # This is the case where pairs_for_use contains an entry that
-                # doesn't have a counterpart in entries_split_by_vocab, so this
-                # should error or warn
-                raise RuntimeWarning
+def _paginate_values(entries: List[Dict[str, Any]]) -> List[List[str]]:
+    """
+    Paginate values for processing.
+
+    Args:
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
+
+    Returns:
+        List[List[str]]: A paginated list of values.
+
+    """
+    values = [str(entry["value"]) for entry in entries]
+    return helpers.paginate(values, max_chars=omop_helpers.max_chars_for_get)
+
+
+def _fetch_concepts_for_vocab(
+    vocab: str, paginated_values: List[List[str]]
+) -> List[Dict[str, Any]]:
+    """
+    Fetch concepts for a specific vocabulary.
+
+    Args:
+        vocab (str): The vocabulary to fetch concepts for.
+        paginated_values (List[List[str]]): A paginated list of values.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries representing the fetched concepts.
+
+    """
+    concept_vocab_response = [
+        get_concept_vocabs(vocab, ",".join(page_of_values))
+        for page_of_values in paginated_values
+    ]
+    return helpers.flatten(concept_vocab_response)
+
+
+def _match_concepts_to_entries(
+    entries: List[Dict[str, Any]], concept_vocab_content: List[Dict[str, Any]]
+) -> None:
+    """
+    Match concepts to entries.
+
+    Remarks:
+        Loop over all returned concepts, and match their concept_code and vocabulary_id with
+        the full_value in the entries, and set the latter's
+        concept_id and standard_concept with those values
+
+    Args:
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
+        concept_vocab_content (List[Dict[str, Any]]): A list of dictionaries representing the concept vocabulary content.
+
+    Returns:
+        None
+
+    """
+    for entry in entries:
+        entry["concept_id"] = -1
+        entry["standard_concept"] = None
+        for returned_concept in concept_vocab_content:
+            if str(entry["value"]) == str(returned_concept["concept_code"]):
+                entry["concept_id"] = str(returned_concept["concept_id"])
+                entry["standard_concept"] = str(returned_concept["standard_concept"])
+                # exit inner loop early if we find a concept for this entry
+                break
+
+
+def _batch_process_non_standard_concepts(entries: List[Dict[str, Any]]) -> None:
+    """
+    Batch process non-standard concepts.
+
+    Args:
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
+
+    Returns:
+        None
+    """
+    nonstandard_entries = [
+        entry
+        for entry in entries
+        if entry["concept_id"] != -1 and entry["standard_concept"] != "S"
+    ]
+    logger.debug(
+        f"finished selecting nonstandard concepts - selected "
+        f"{len(nonstandard_entries)}"
+    )
+    batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
+        nonstandard_entries
+    )
+    _update_entries_with_standard_concepts(entries, batched_standard_concepts_map)
+
+
+def _update_entries_with_standard_concepts(
+    entries: List[Dict[str, Any]], standard_concepts_map: Dict[str, Any]
+) -> None:
+    """
+    Update entries with standard concepts.
+
+    Remarks:
+        batched_standard_concepts_map maps from an original concept id to
+        a list of associated standard concepts. Use each item to update the
+        relevant entry from entries[vocab].
+
+    Args:
+        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
+        standard_concepts_map (Dict[str, Any]): A dictionary mapping non-standard concepts to standard concepts.
+
+    Returns:
+        None
+
+    Raises:
+        RuntimeWarning: If the relevant entry's concept ID is None.
+    """
+    for nonstandard_concept, standard_concepts in standard_concepts_map.items():
+        relevant_entry = helpers.get_by_concept_id(entries, nonstandard_concept)
+        if isinstance(relevant_entry["concept_id"], (int, str)):
+            relevant_entry["concept_id"] = standard_concepts
+        elif relevant_entry["concept_id"] is None:
+            """
+            This is the case where pairs_for_use contains an entry that
+            doesn't have a counterpart in entries, so this
+            should error or warn
+            """
+            raise RuntimeWarning
 
 
 async def _handle_table(
@@ -523,7 +609,6 @@ async def _handle_table(
         None
     """
     table_values = get_scan_report_values_filter_scan_report_table(table["id"])
-
     table_fields = get_scan_report_fields_by_table(table["id"])
 
     # Add vocab id to each entry from the vocab dict
@@ -539,6 +624,7 @@ async def _handle_table(
 
     _handle_concepts(entries_grouped_by_vocab)
     logger.debug("finished standard concepts lookup")
+
     # Remember that entries_grouped_by_vocab is just a view into table values
     # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
     concepts = _create_concepts(table_values)
@@ -575,15 +661,9 @@ def main(msg: func.QueueMessage):
 
     # get the table
     table = get_scan_report_table(table_id)
-    # table:
-    # {'id': 22, 'created_at': '2024-02-14T17:18:06.599126Z',
-    # 'updated_at': '2024-02-20T15:24:28.681054Z', 'name': 'Covid19.csv',
-    # 'scan_report': 24, 'person_id': 68, 'date_event': 69}
 
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
-    # vocab dict:
-    # {'Covid19.csv': {'Symptom': 'SNOMED', 'Testtype': 'LOINC'}}
 
     asyncio.run(_handle_table(table, vocab_dictionary))
 
