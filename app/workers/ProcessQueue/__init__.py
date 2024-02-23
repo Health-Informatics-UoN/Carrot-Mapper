@@ -1,17 +1,18 @@
-import asyncio
 import json
 import logging
 import os
+
 from collections import defaultdict
 from datetime import datetime
 
-import azure.functions as func
+import asyncio
 import httpx
 import requests
+import azure.functions as func
+
 from requests.models import HTTPError
 from shared_code import omop_helpers
-
-from . import blob_parser, helpers
+from . import helpers, blob_parser
 
 # import memory_profiler
 # root_logger = logging.getLogger()
@@ -1202,7 +1203,7 @@ def main(msg: func.QueueMessage):
     For each row in Field Overview create an entry for scan_report_field,
     Empty row signifies end of fields in a table
     Append field entry to field_entries_to_post[] list,
-    Create JSON array with all the field entries,
+    Create JSON array with all the field entries, 
     Send POST request to API with JSON as input,
     Save the response data(field ids,field names) in a dictionary
     Set the current working sheet to be the same as the current table

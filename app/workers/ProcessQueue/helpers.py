@@ -1,6 +1,5 @@
 import json
 import os
-
 import requests
 
 # Set up ccom API parameters:

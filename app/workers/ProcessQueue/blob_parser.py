@@ -1,10 +1,12 @@
 import csv
-import logging
 import os
+
 from io import BytesIO
 
 import openpyxl
+
 from azure.storage.blob import BlobServiceClient
+import logging
 
 logger = logging.getLogger("test_logger")
 
