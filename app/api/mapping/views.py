@@ -571,7 +571,6 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         )
 
     def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        # sourcery skip: extract-method, inline-variable
         """
         Perform a partial update on the instance.
 
@@ -590,11 +589,9 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
 
         # Map the table
-
-        # Get the data dictionary name
-        # TODO: Make this an env variable so we can turn it on/off
-        add_concept = True
-        if add_concept:
+        # Check if this env should be Adding Concepts
+        add_concepts = os.environ.get("UPLOAD_ONLY").lower() == "true"
+        if add_concepts:
             scan_report_instance = instance.scan_report
             data_dictionary_name = (
                 scan_report_instance.data_dictionary.name
@@ -603,7 +600,6 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             )
 
             # Send to queue
-            # TODO: We should move queue sending to a service.
             azure_dict = {
                 "scan_report_id": scan_report_instance.id,
                 "table_id": instance.id,
@@ -1429,8 +1425,8 @@ class ScanReportFormView(FormView):
 
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
-        # TODO: Make this env variable to switch.
-        upload_only = True
+        # Check if this env should be using Upload Only, and send it the right queue.
+        upload_only = os.environ.get("UPLOAD_ONLY").lower() == "true"
         if upload_only:
             queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
         else:
