@@ -36,7 +36,7 @@ def _create_concept(
     Returns:
         Dict[str, Any]: A Concept as a dictionary.
 
-    TODO: we should query `content_type` from the API
+    TODO: we should query `content_type` from the API, when this is fixed:
     https://github.com/Health-Informatics-UoN/CaRROT-Mapper/issues/637
     """
     return {
@@ -74,7 +74,7 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
 
 
 def select_concepts_to_post(
-    new_content_details: List[Dict[Optional[str], Optional[str]]],
+    new_content_details: List[Dict[str, str]],
     details_to_id_and_concept_id_map: List[Dict[str, str]],
     content_type: Literal[15, 17],
 ) -> List[Dict[str, Any]]:
@@ -85,7 +85,7 @@ def select_concepts_to_post(
       name, description, and field name.
 
     Args:
-        new_content_details (List[Dict[str (optional), str (optional)]]):
+        new_content_details (List[Dict[str, str]]):
           Each item in the list a dict containing either "id" and "name" keys (for fields)
           or "id", "name", "description", and "field_name" keys (for values).
 
@@ -96,7 +96,7 @@ def select_concepts_to_post(
         content_type (Literal[15, 17]): Controls whether to handle fields (15), or values (17).
 
     Returns:
-        A list of `Concepts` to create.
+        A list of reused `Concepts` to create.
 
     Raises:
         Exception:  ValueError: A content_type other than 15 or 17 was provided.
@@ -522,41 +522,28 @@ async def _handle_table(
     Returns:
         None
     """
-    # get values for that table?
     table_values = get_scan_report_values_filter_scan_report_table(table["id"])
-    # list: [{'id': 480, 'value': '110', 'created_at': '2024-02-14T17:18:07.342308Z',
-    # 'updated_at': '2024-02-14T17:18:07.342349Z', 'frequency': 1, 'conceptID': -1,
-    # 'value_description': None, 'scan_report_field': 68}]
+
+    table_fields = get_scan_report_fields_by_table(table["id"])
+
     # Add vocab id to each entry from the vocab dict
-
-    fieldids_to_names = get_scan_report_fields_by_table(table["id"])
-    #  [{'id': 68, 'name': '\ufeffPersonID'},
-    # {'id': 69, 'name': 'Date'}, {'id': 70, 'name': 'Test'}, {'id': 71, 'name': 'Symptom'}, {'id': 72, 'name': 'Testtype'}]
-
     helpers.add_vocabulary_id_to_entries(
-        table_values, vocab, fieldids_to_names, table["name"]
+        table_values, vocab, table_fields, table["name"]
     )
-    # [{'id': 569, 'value': '46457-8', 'created_at': '2024-02-22T11:01:48.520215Z',
-    # 'updated_at': '2024-02-22T11:01:48.520284Z', 'frequency': 5, 'conceptID': -1,
-    # 'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
-    # group table_values by their vocabulary_id
+    # group table_values by their vocabulary_id, for example:
+    # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
     entries_grouped_by_vocab = defaultdict(list)
     for entry in table_values:
         entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
-    # ['LOINC': [
-    # {'id': 512, 'value': '46457-8', 'created_at': '2024-02-14T17: 18: 07.414357Z',
-    # 'updated_at': '2024-02-14T17: 18: 07.414390Z', 'frequency': 5, 'conceptID': -1,
-    #  'value_description': None, 'scan_report_field': 72, 'vocabulary_id': 'LOINC' }],
 
     _handle_concepts(entries_grouped_by_vocab)
     logger.debug("finished standard concepts lookup")
-    # Remember that entries_split_by_vocab is just a view
-    # into this list, so changes to entries_split_by_vocab above are reflected when
-    # we access details_of_posted_values below.
+    # Remember that entries_grouped_by_vocab is just a view into table values
+    # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
     concepts = _create_concepts(table_values)
 
-    # # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
+    # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
     logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
 
     chunked_concept_id_data = helpers.perform_chunking(concepts)
@@ -572,8 +559,8 @@ async def _handle_table(
 
     logger.info("POST concepts all finished")
 
-    # handle reuse
-    reuse_existing_field_concepts(fieldids_to_names, 15)
+    # handle reuse of concepts
+    reuse_existing_field_concepts(table_fields, 15)
     reuse_existing_value_concepts(table_values, 17)
 
 

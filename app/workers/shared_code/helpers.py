@@ -229,6 +229,9 @@ def add_vocabulary_id_to_entries(
     either there is no vocab dictionary provided, or non vocabs associated to the given field.
 
     Transforms the dictionary in place.
+    [{'id': 569, 'value': '46457-8', 'created_at': '2024-02-22T11:01:48.520215Z',
+    'updated_at': '2024-02-22T11:01:48.520284Z', 'frequency': 5, 'conceptID': -1,
+    'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
     Args:
         posted_values (list[dict]): List of dictionaries of previously posted values.
