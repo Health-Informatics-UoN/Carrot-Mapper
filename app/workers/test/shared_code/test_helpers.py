@@ -1,3 +1,4 @@
+import os
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -82,4 +83,28 @@ def test_default_zero(value, expected):
     result = helpers.default_zero(value)
 
     # Assert
+    assert result == expected
+
+
+def test_handle_max_chars():
+    # Arrange
+    os.environ["PAGE_MAX_CHARS"] = "10"
+
+    # Act
+    result = helpers.handle_max_chars()
+
+    # Assert
+    result == 10
+
+
+def test_perform_chunking():
+    # Arrange
+    entries = [{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]
+    os.environ["CHUNK_SIZE"] = "1"
+
+    # Act
+    result = helpers.perform_chunking(entries)
+
+    # Assert
+    expected = [[[{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]]]
     assert result == expected
