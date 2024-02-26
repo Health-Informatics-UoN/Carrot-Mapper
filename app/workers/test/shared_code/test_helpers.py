@@ -74,3 +74,12 @@ def test__flatten_list():
 
     # Assert
     assert flattened_list == [1, 2, 3, 4, 5, 6, 7, 8]
+
+
+@pytest.mark.parametrize("value, expected", [(1, 1), ("", 0.0), (None, 0.0)])
+def test_default_zero(value, expected):
+    # Act
+    result = helpers.default_zero(value)
+
+    # Assert
+    assert result == expected
