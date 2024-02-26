@@ -40,8 +40,8 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
     logger.info("reuse_existing_value_concepts")
     # Gets all scan report concepts that are for the type value
     # (or content type which should be value) and in "active" SRs
-
     existing_value_concepts = get_scan_report_active_concepts(content_type)
+
     # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
     existing_value_id_to_concept_map = {
