@@ -150,7 +150,7 @@ def _fetch_concepts_for_vocab(
         get_concept_vocabs(vocab, ",".join(page_of_values))
         for page_of_values in paginated_values
     ]
-    return helpers.flatten(concept_vocab_response)
+    return helpers.flatten_list(concept_vocab_response)
 
 
 def _match_concepts_to_entries(

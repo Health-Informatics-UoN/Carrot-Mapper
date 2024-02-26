@@ -138,7 +138,7 @@ def post_scan_report_concepts(concepts: List[str]) -> None:
             f"CONCEPTS SAVE STATUS >>> " f"{response.status_code} " f"{response.reason}"
         )
         responses.append(response.json())
-    concept_content = helpers.flatten(responses)
+    concept_content = helpers.flatten_list(responses)
 
     concept_response_content += concept_content
 
@@ -173,7 +173,7 @@ def get_scan_report_fields(field_ids: List[str]) -> List[Dict[str, Any]]:
         )
         response.raise_for_status()
         existing_fields.append(response.json())
-    return helpers.flatten(existing_fields)
+    return helpers.flatten_list(existing_fields)
 
 
 def get_scan_report_fields_by_table(id: str) -> List[Dict[str, Any]]:

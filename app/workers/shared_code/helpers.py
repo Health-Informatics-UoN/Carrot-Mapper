@@ -83,15 +83,22 @@ def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
         ValueError: If the dequeue count of the message exceeds 1.
     """
     logger.info(f"dequeue_count {msg.dequeue_count}")
+    # TODO: Fix this
     # if msg.dequeue_count == 2:
     # update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
     if msg.dequeue_count > 1:
         raise ValueError("dequeue_count > 1")
 
 
-def flatten(arr):
+def flatten_list(arr: List[List[Any]]) -> List[Any]:
     """
-    This expects a list of lists and returns a flattened list
+    Flattens a List of Lists to a List.
+
+    Args:
+        arr: A Lists of Lists to flatten
+
+    Returns:
+        List(Any): A flattened list
     """
     return [item for sublist in arr for item in sublist]
 
