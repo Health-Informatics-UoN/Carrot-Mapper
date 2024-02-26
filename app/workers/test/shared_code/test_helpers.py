@@ -108,3 +108,15 @@ def test_perform_chunking():
     # Assert
     expected = [[[{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]]]
     assert result == expected
+
+
+def test_paginate():
+    # Arrange
+    entries = ["One", "Two"]
+
+    # Act
+    result = helpers.paginate(entries, 1)
+
+    # Assert
+    expected = [[], ["One"], ["Two"]]
+    assert result == expected
