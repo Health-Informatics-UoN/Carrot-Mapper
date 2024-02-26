@@ -18,3 +18,25 @@ def test_unwrap_message_body():
 
     # Assert
     assert unwrapped_body == {"test key": "test value"}
+
+
+def test_extract_details():
+    # Arrange
+    message = {
+        "scan_report_blob": "scan_report_blob",
+        "data_dictionary_blob": "data_dictionary_blob",
+        "scan_report_id": "scan_report_id",
+        "table_id": "table_id",
+    }
+
+    # Act
+    result = helpers._extract_details(message)
+
+    # Assert
+    expected_result = (
+        "scan_report_blob",
+        "data_dictionary_blob",
+        "scan_report_id",
+        "table_id",
+    )
+    assert result == expected_result
