@@ -11,6 +11,18 @@ from shared_code.api import (
 from shared_code.helpers import create_concept
 from shared_code.logger import logger
 
+"""
+Functions for finding, mapping, and creation of reusable Scan Report Concepts.
+
+Gets the existing list of Concepts on a Scan Report, and finds them to reuse.
+
+This happens for Scan Report Fields and Values.
+
+TODO: Move extract this out to it's own Azure Function, either if latency is not
+a problem and won't really slow it down. Or when the functions are able to use the
+database directly so the whole process is faster.
+"""
+
 
 def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> None:
     # sourcery skip: extract-duplicate-method, inline-immediately-returned-variable
