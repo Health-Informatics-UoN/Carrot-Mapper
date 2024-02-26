@@ -143,7 +143,7 @@ def post_scan_report_concepts(concepts: List[str]) -> None:
     concept_response_content += concept_content
 
 
-def get_scan_report_fields_by_ids(field_ids: List[str]) -> List[Dict[str, Any]]:
+def get_scan_report_fields(field_ids: List[str]) -> List[Dict[str, Any]]:
     """
     Gets ScanReportFields that match any of the given Ids.
 

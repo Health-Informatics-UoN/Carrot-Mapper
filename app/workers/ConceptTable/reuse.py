@@ -4,7 +4,7 @@ from ProcessQueue import helpers
 from shared_code import omop_helpers
 from shared_code.api import (
     get_scan_report_active_concepts,
-    get_scan_report_fields_by_ids,
+    get_scan_report_fields,
     get_scan_report_values,
     post_scan_report_concepts,
 )
@@ -82,7 +82,7 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
     existing_field_ids = {
         item["scan_report_field"] for item in existing_values_filtered_by_id
     }
-    existing_fields = get_scan_report_fields_by_ids(existing_field_ids)
+    existing_fields = get_scan_report_fields(existing_field_ids)
     logger.debug(
         f"ids and names of existing fields associated to values with concepts in "
         f"active SRs: {existing_fields}"
@@ -111,7 +111,7 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
     # Now handle the newly-added values in a similar manner
     logger.debug("new_paginated_field_ids")
     new_field_ids = [value["scan_report_field"] for value in new_values_map]
-    new_fields = get_scan_report_fields_by_ids(new_field_ids)
+    new_fields = get_scan_report_fields(new_field_ids)
     logger.debug(f"fields of newly generated values: {new_fields}")
 
     new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
@@ -215,7 +215,7 @@ def reuse_existing_field_concepts(
     # get details of existing selected fields, for the purpose of matching against
     # new fields
     existing_field_ids = {item["object_id"] for item in existing_field_concepts}
-    existing_fields = get_scan_report_fields_by_ids(existing_field_ids)
+    existing_fields = get_scan_report_fields(existing_field_ids)
     logger.debug(
         f"ids and names of existing fields with concepts in active SRs:"
         f" {existing_fields}"
