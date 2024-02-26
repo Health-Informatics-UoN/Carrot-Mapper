@@ -120,3 +120,16 @@ def test_paginate():
     # Assert
     expected = [[], ["One"], ["Two"]]
     assert result == expected
+
+
+def test_get_by_concept_id():
+    # Arrange
+    concept_id = 1
+    expected_item = {"concept_id": concept_id}
+    entries = [expected_item, {"concept_id": 2}]
+
+    # Act
+    result = helpers.get_by_concept_id(entries, concept_id)
+
+    # Assert
+    assert result == expected_item

@@ -214,7 +214,7 @@ def paginate(entries: List[str], max_chars: Optional[int] = None) -> List[List[s
     return paginated_entries
 
 
-def get_by_concept_id(list_of_dicts: list, concept_id: str):
+def get_by_concept_id(list_of_dicts: List[Dict[str, Any]], concept_id: str):
     """
     Given a list of dicts, return the dict from the list which
     contains the concept_id supplied
