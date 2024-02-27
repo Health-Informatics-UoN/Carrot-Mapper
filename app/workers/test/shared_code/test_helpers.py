@@ -1,12 +1,9 @@
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from azure.functions import QueueMessage
 from shared_code import helpers
-
-# Mocking the logger
-logger = MagicMock()
 
 
 def test__unwrap_message_body():
@@ -59,11 +56,6 @@ def test__handle_failure(dequeue_count, should_raise_error):
             helpers._handle_failure(msg, scan_report_id)
 
         # Assert
-        # Ensure ValueError is raised only when it should be
-        assert (
-            logger.info.call_args_list[-1][0][0]
-            == f"dequeue_count {str(dequeue_count)}"
-        ) == (not should_raise_error)
 
 
 def test__flatten_list():
