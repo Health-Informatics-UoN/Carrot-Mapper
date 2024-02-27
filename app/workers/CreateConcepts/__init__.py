@@ -303,7 +303,7 @@ def main(msg: func.QueueMessage):
     Processes a queue message.
     Unwraps the message content
     Gets the vocab_dictionary
-    Creates concepts...
+    Runs the create concepts processes.
     """
     _, data_dictionary_blob, _, table_id = helpers.unwrap_message(msg)
 
