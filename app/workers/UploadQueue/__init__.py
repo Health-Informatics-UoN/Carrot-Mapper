@@ -154,11 +154,11 @@ def _transform_scan_report_sheet_table(sheet: Worksheet) -> defaultdict[Any, Lis
 
 
 async def _add_SRValues_and_value_descriptions(
-    fieldname_value_freq_dict,
-    current_table_name,
-    data_dictionary,
-    fieldnames_to_ids_dict,
-    scan_report_id,
+    fieldname_value_freq_dict: Dict[str, Tuple[str]],
+    current_table_name: str,
+    data_dictionary: Dict[Any, Dict],
+    fieldnames_to_ids_dict: Dict[str, str],
+    scan_report_id: str,
 ):
     """
     Add ScanReportValues and value descriptions to the values_details list.
@@ -169,7 +169,7 @@ async def _add_SRValues_and_value_descriptions(
         current_table_name: The name of the current table.
         data_dictionary: The data dictionary containing field-value descriptions.
         fieldnames_to_ids_dict: A dictionary mapping field names to field IDs.
-        scan_report_id: The ID of the scan report.
+        scan_report_id (str): The ID of the scan report.
 
     Returns:
         The response content after posting the values.
