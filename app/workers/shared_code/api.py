@@ -13,7 +13,6 @@ from shared_code.logger import logger
 # At some we want to use the DB directly, and make this file unnecessary.
 
 # Set up ccom API Args:
-# TODO: Move all url mapping to top level constants here
 API_URL = os.environ.get("APP_URL", "") + "api/"
 HEADERS = {
     "Content-type": "application/json",

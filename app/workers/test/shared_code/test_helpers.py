@@ -40,24 +40,6 @@ def test__extract_details():
     assert result == expected_result
 
 
-@pytest.mark.skip
-@pytest.mark.parametrize("dequeue_count, should_raise_error", [(1, False), (2, True)])
-def test__handle_failure(dequeue_count, should_raise_error):
-    # Arrange
-    msg = QueueMessage()
-    with patch.object(msg, "dequeue_count", new=dequeue_count):
-        scan_report_id = "sample_scan_report_id"
-
-        # Act
-        if should_raise_error:
-            with pytest.raises(ValueError):
-                helpers._handle_failure(msg, scan_report_id)
-        else:
-            helpers._handle_failure(msg, scan_report_id)
-
-        # Assert
-
-
 def test__flatten_list():
     # Arrange
     nested_list = [[1, 2, 3], [4, 5], [6, 7, 8]]
@@ -87,20 +69,6 @@ def test_handle_max_chars():
 
     # Assert
     result == 10
-
-
-@pytest.mark.skip
-def test_perform_chunking():
-    # Arrange
-    entries = [{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]
-    os.environ["CHUNK_SIZE"] = "1"
-
-    # Act
-    result = helpers.perform_chunking(entries)
-
-    # Assert
-    expected = [[[{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]]]
-    assert result == expected
 
 
 def test_paginate():

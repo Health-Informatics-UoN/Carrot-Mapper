@@ -7,6 +7,7 @@ import azure.functions as func
 from openpyxl import Workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.worksheet.worksheet import Worksheet
+from shared_code import blob_parser, helpers
 from shared_code.api import (
     ScanReportStatus,
     post_chunks,
@@ -15,8 +16,6 @@ from shared_code.api import (
     update_scan_report_status,
 )
 from shared_code.logger import logger
-
-from shared_code import blob_parser, helpers
 
 
 def _get_unique_table_names(worksheet: Worksheet) -> List[str]:
@@ -340,7 +339,6 @@ async def _create_fields(
         worksheet (Worksheet): The worksheet containing table names.
         id (str): Scan Report ID to POST to
     """
-    # TODO: Feels like this whole thing needs refactoring.
     field_entries_to_post = []
 
     previous_row_value = None
@@ -374,7 +372,6 @@ async def _create_fields(
 
     # Catch the final table if it wasn't already posted in the loop above -
     # sometimes the iter_rows() seems to now allow you to go beyond the last row.
-    # TODO: This feels unnecessary.
     if field_entries_to_post:
         await _handle_single_table(
             current_table_name,
