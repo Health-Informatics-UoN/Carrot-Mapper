@@ -304,6 +304,9 @@ def main(msg: func.QueueMessage):
     Unwraps the message content
     Gets the vocab_dictionary
     Runs the create concepts processes.
+
+    Args:
+        msg (func.QueueMessage): The message received from the queue.
     """
     _, data_dictionary_blob, _, table_id = helpers.unwrap_message(msg)
 
