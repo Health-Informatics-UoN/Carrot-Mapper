@@ -24,14 +24,11 @@ database directly so the whole process is faster.
 
 
 def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> None:
-    # sourcery skip: extract-duplicate-method, inline-immediately-returned-variable
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
     with existing fields
 
-    TODO: Why the f is this is parameter if it only accepts one specific number?
-    Is it that much different from reuse_existing_field_concepts... ?
     Args:
         new_fields_map (Dict[str, str]): A map of field names to Ids.
         content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
