@@ -2,7 +2,7 @@ import csv
 import logging
 import os
 from io import BytesIO
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 import openpyxl
 from azure.storage.blob import BlobServiceClient
@@ -10,9 +10,15 @@ from azure.storage.blob import BlobServiceClient
 logger = logging.getLogger("test_logger")
 
 
-def remove_BOM(intermediate):
+def remove_BOM(intermediate: List[Dict[str, Any]]):
     """
-    Given a list of dictionaries, remove any occurrences of the BOM in the keys
+    Given a list of dictionaries, remove any occurrences of the BOM in the keys.
+
+    Args:
+        intermediate (List[Dict[str, Any]]): List of dictionaries to remove from.
+
+    Returns:
+        The list of dictionaries with BOM removed from the keys.
     """
     return [
         {key.replace("\ufeff", ""): value for key, value in d.items()}
