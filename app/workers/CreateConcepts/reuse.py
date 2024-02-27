@@ -67,7 +67,9 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
         ids_to_get = ",".join(map(str, ids))
         values = get_scan_report_values(ids_to_get)
         existing_values_filtered_by_id.append(values)
-    existing_values_filtered_by_id = helpers.flatten(existing_values_filtered_by_id)
+    existing_values_filtered_by_id = helpers.flatten_list(
+        existing_values_filtered_by_id
+    )
     logger.debug("existing_values_filtered_by_id")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
