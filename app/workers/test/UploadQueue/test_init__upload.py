@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-from openpyxl import Workbook
 from openpyxl.cell.cell import Cell
 from UploadQueue import (
     _create_field_entry,
