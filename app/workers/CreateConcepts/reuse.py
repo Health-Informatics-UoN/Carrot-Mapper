@@ -1,7 +1,6 @@
 from typing import Any, Dict, List, Literal
 
-from ProcessQueue import helpers
-from shared_code import omop_helpers
+from shared_code import helpers, omop_helpers
 from shared_code.api import (
     get_scan_report_active_concepts,
     get_scan_report_fields,

@@ -6,7 +6,7 @@ from collections import OrderedDict, defaultdict
 import requests
 from shared_code import helpers
 
-api_url = os.environ.get("APP_URL") + "api/"
+api_url = os.environ.get("APP_URL", "") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
 logger = logging.getLogger("test_logger")
 

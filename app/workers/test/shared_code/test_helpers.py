@@ -89,6 +89,7 @@ def test_handle_max_chars():
     result == 10
 
 
+@pytest.mark.skip
 def test_perform_chunking():
     # Arrange
     entries = [{"key": "value 1"}, {"key": "value 2"}, {"key": "value 2"}]

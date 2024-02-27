@@ -14,7 +14,7 @@ from shared_code.logger import logger
 
 # Set up ccom API Args:
 # TODO: Move all url mapping to top level constants here
-API_URL = os.environ.get("APP_URL") + "api/"
+API_URL = os.environ.get("APP_URL", "") + "api/"
 HEADERS = {
     "Content-type": "application/json",
     "charset": "utf-8",
