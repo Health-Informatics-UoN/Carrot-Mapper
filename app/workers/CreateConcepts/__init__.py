@@ -229,15 +229,15 @@ def _update_entries_with_standard_concepts(
     """
     for nonstandard_concept, standard_concepts in standard_concepts_map.items():
         relevant_entry = helpers.get_by_concept_id(entries, nonstandard_concept)
-        if isinstance(relevant_entry["concept_id"], (int, str)):
-            relevant_entry["concept_id"] = standard_concepts
-        elif relevant_entry["concept_id"] is None:
+        if relevant_entry is None:
             """
             This is the case where pairs_for_use contains an entry that
             doesn't have a counterpart in entries, so this
             should error or warn
             """
             raise RuntimeWarning
+        elif isinstance(relevant_entry["concept_id"], (int, str)):
+            relevant_entry["concept_id"] = standard_concepts
 
 
 async def _handle_table(
