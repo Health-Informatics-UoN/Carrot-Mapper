@@ -1,4 +1,8 @@
-from CreateConcepts import _create_concepts, _set_defaults_for_none_vocab
+from CreateConcepts import (
+    _create_concepts,
+    _match_concepts_to_entries,
+    _set_defaults_for_none_vocab,
+)
 
 
 def test__create_concepts():
@@ -32,3 +36,23 @@ def test__set_defaults_for_none_vocab():
 
     # Assert
     entries == [{"concept_id": -1, "standard_concept": None}]
+
+
+def test__match_concepts_to_entries():
+    # Arrange
+    entries = [
+        {"value": 1, "concept_id": 1, "standard_concept": "standard 1"},
+        {"value": 2, "concept_id": 1, "standard_concept": "standard 2"},
+    ]
+    vocab = [
+        {"concept_code": 2, "concept_id": "200", "standard_concept": "New Standard"}
+    ]
+
+    # Act
+    _match_concepts_to_entries(entries, vocab)
+
+    # Assert
+    assert entries == [
+        {"value": 1, "concept_id": -1, "standard_concept": None},
+        {"value": 2, "concept_id": "200", "standard_concept": "New Standard"},
+    ]
