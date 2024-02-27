@@ -1,4 +1,4 @@
-from CreateConcepts import _create_concepts
+from CreateConcepts import _create_concepts, _set_defaults_for_none_vocab
 
 
 def test__create_concepts():
@@ -21,3 +21,14 @@ def test__create_concepts():
         {"concept": 4, "object_id": "D", "content_type": 17, "creation_type": "V"},
     ]
     assert result == expected_result
+
+
+def test__set_defaults_for_none_vocab():
+    # Arrange
+    entries = [{"concept_id": 1, "standard_concept": "test"}]
+
+    # Act
+    _set_defaults_for_none_vocab(entries)
+
+    # Assert
+    entries == [{"concept_id": -1, "standard_concept": None}]
