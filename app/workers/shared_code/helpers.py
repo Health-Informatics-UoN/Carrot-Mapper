@@ -3,8 +3,6 @@ import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import azure.functions as func
-
-# from shared_code.api import ScanReportStatus, update_scan_report_status
 from shared_code.logger import logger
 
 
@@ -30,7 +28,6 @@ def unwrap_message(msg: func.QueueMessage) -> Tuple[str, str, str, str]:
     scan_report_blob, data_dictionary_blob, scan_report_id, table_id = _extract_details(
         message
     )
-    _handle_failure(msg, scan_report_id)
     return scan_report_blob, data_dictionary_blob, scan_report_id, table_id
 
 
@@ -69,25 +66,6 @@ def _extract_details(message: dict) -> Tuple[str, str, str, str]:
     table_id = message.get("table_id", "")
 
     return scan_report_blob, data_dictionary_blob, scan_report_id, table_id
-
-
-def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
-    """
-    Handles failure scenarios where the message has been dequeued more than once.
-
-    Args:
-        msg (func.QueueMessage): The message received from the queue.
-        scan_report_id (str): The ID of the scan report.
-
-    Raises:
-        ValueError: If the dequeue count of the message exceeds 1.
-    """
-    logger.info(f"dequeue_count {msg.dequeue_count}")
-    # TODO: Fix this
-    # if msg.dequeue_count == 2:
-    # update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
-    if msg.dequeue_count > 1:
-        raise ValueError("dequeue_count > 1")
 
 
 def flatten_list(arr: List[List[Any]]) -> List[Any]:

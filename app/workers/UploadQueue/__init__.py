@@ -382,6 +382,25 @@ async def _create_fields(
         )
 
 
+def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
+    """
+    Handles failure scenarios where the message has been dequeued more than once.
+
+    Args:
+        msg (func.QueueMessage): The message received from the queue.
+        scan_report_id (str): The ID of the scan report.
+
+    Raises:
+        ValueError: If the dequeue count of the message exceeds 1.
+    """
+    logger.info(f"dequeue_count {msg.dequeue_count}")
+
+    if msg.dequeue_count == 2:
+        update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
+    if msg.dequeue_count > 1:
+        raise ValueError("dequeue_count > 1")
+
+
 def main(msg: func.QueueMessage) -> None:
     """
     Processes a queue message
@@ -397,6 +416,7 @@ def main(msg: func.QueueMessage) -> None:
     scan_report_blob, data_dictionary_blob, scan_report_id, _ = helpers.unwrap_message(
         msg
     )
+    _handle_failure(msg, scan_report_id)
 
     update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_IN_PROGRESS)
 
