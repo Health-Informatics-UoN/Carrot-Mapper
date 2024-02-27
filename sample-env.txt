@@ -10,6 +10,8 @@ COCONNECT_DB_AUTH_TOKEN=
 DEBUG=True
 NLP_QUEUE_NAME=nlpqueue-local
 SCAN_REPORT_QUEUE_NAME=scanreports-local
+UPLOAD_QUEUE_NAME=uploadreports-local
+CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
 SECRET_KEY=secret
 STORAGE_CONN_STRING="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;"
 CCOM_APP_URL= http://localhost:8000

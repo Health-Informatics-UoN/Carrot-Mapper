@@ -612,7 +612,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
             queue = QueueClient.from_connection_string(
                 conn_str=os.environ.get("STORAGE_CONN_STRING"),
-                queue_name=os.environ.get("CONCEPT_TABLE_QUEUE_NAME"),
+                queue_name=os.environ.get("CREATE_CONCEPTS_QUEUE_NAME"),
             )
             queue.send_message(base64_message)
 
