@@ -3,10 +3,7 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 import azure.functions as func
-from ConceptTable.reuse import (
-    reuse_existing_field_concepts,
-    reuse_existing_value_concepts,
-)
+from reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
