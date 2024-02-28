@@ -20,6 +20,7 @@ This happens for Scan Report Fields and Values.
 TODO: Move extract this out to it's own Azure Function, either if latency is not
 a problem and won't really slow it down. Or when the functions are able to use the
 database directly so the whole process is faster.
+This can then include refactoring these into smaller functions, and remove the duplication.
 """
 
 
