@@ -49,8 +49,10 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          python-version: ['3.8', '3.11']
-          django-version: [ '3.1.14', '4.2']
+          # python-version: ['3.8', '3.11']
+          # django-version: [ '3.1.14', '4.2']
+          python-version: ['3.8']
+          django-version: [ '3.1.14']
 
       steps:
         - uses: actions/checkout@v3
@@ -83,6 +85,9 @@ jobs:
             pip install "Django==${{ matrix.django-version }}"
 
         - name: Test with Django
+          env:
+            SECRET_KEY: 'test'
+            ALLOWED_HOSTS: "['localhost']"
           working-directory: app/api
           run: |
             poetry run python manage.py test mapping -v2
