@@ -1,13 +1,13 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-import pytest
 from openpyxl.cell.cell import Cell
 from UploadQueue import (
     _apply_data_dictionary,
     _assign_order,
     _create_field_entry,
     _create_table_entry,
+    _create_value_entries,
     _create_values_details,
     _get_unique_table_names,
 )
@@ -239,3 +239,46 @@ def test__apply_data_dictionary():
     assert values_details[0]["val_desc"] == "description1"
     assert values_details[1]["val_desc"] == "description2"
     assert values_details[2]["val_desc"] == "description3"
+
+
+def test__create_value_entries():
+    # Arrange
+    values_details = [
+        {
+            "full_value": "value1",
+            "frequency": 10,
+            "fieldname": "field1",
+            "val_desc": "description1",
+        },
+        {
+            "full_value": "value2",
+            "frequency": 20,
+            "fieldname": "field1",
+            "val_desc": "description2",
+        },
+    ]
+
+    fieldnames_to_ids_dict = {
+        "field1": "field_id_1",
+        "field2": "field_id_2",
+    }
+
+    # Mock datetime
+    expected_datetime = "2024-02-29T00:00:00.000000Z"
+    with patch("UploadQueue.datetime") as mock_datetime:
+        mock_datetime.now.return_value = datetime(2024, 2, 29, tzinfo=timezone.utc)
+
+        # Act
+        result = _create_value_entries(values_details, fieldnames_to_ids_dict)
+
+    # Assert
+    for i, entry in enumerate(result):
+        assert entry["created_at"] == expected_datetime
+        assert entry["updated_at"] == expected_datetime
+        assert entry["value"] == values_details[i]["full_value"]
+        assert entry["frequency"] == values_details[i]["frequency"]
+        assert entry["value_description"] == values_details[i]["val_desc"]
+        assert (
+            entry["scan_report_field"]
+            == fieldnames_to_ids_dict[values_details[i]["fieldname"]]
+        )
