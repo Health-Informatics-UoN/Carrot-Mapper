@@ -203,6 +203,20 @@ def _apply_data_dictionary(
             )
 
 
+def _assign_order(values_details: List[Dict[str, Any]]) -> None:
+    """
+    Add "order" field to each entry to enable correctly-ordered recombination at the end.
+
+    Args:
+        values_details (List[Dict[str, Any]]): List of value details to transform.
+
+    Returns:
+        None
+    """
+    for entry_number, entry in enumerate(values_details):
+        entry["order"] = entry_number
+
+
 def _create_values_details(
     fieldname_value_freq: Dict[str, Tuple[str]],
     table_name: str,
@@ -220,15 +234,12 @@ def _create_values_details(
             fieldname-value pair.
     """
     values_details = []
-    for entry_number, (fieldname, value_freq_tuples) in enumerate(
-        fieldname_value_freq.items()
-    ):
+    for fieldname, value_freq_tuples in fieldname_value_freq.items():
         for full_value, frequency in value_freq_tuples:
             try:
                 frequency = int(frequency)
             except (ValueError, TypeError):
                 frequency = 0
-            # Add "order" field to each entry to enable correctly-ordered recombination at the end
             values_details.append(
                 {
                     "full_value": full_value,
@@ -236,7 +247,6 @@ def _create_values_details(
                     "fieldname": fieldname,
                     "table": table_name,
                     "val_desc": None,
-                    "order": entry_number,
                 }
             )
     return values_details
@@ -266,6 +276,8 @@ async def _add_SRValues_and_value_descriptions(
     values_details = _create_values_details(
         fieldname_value_freq_dict, current_table_name
     )
+    logger.debug("Assign order")
+    _assign_order(values_details)
 
     # --------------------------------------------------------------------------------
     # Update val_desc of each SRField entry if it has a value description from the
