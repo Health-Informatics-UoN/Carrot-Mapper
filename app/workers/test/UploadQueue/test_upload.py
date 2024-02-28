@@ -1,15 +1,17 @@
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
+import pytest
 from openpyxl.cell.cell import Cell
 from UploadQueue import (
     _create_field_entry,
     _create_table_entry,
+    _create_values_details,
     _get_unique_table_names,
 )
 
 
-def test_get_unique_table_names():
+def test__get_unique_table_names():
     # Arrange
     worksheet_mock = MagicMock()
 
@@ -38,7 +40,7 @@ def test_get_unique_table_names():
     assert result == expected_result
 
 
-def test_create_table_entry():
+def test__create_table_entry():
     # Arrange
     table_name = "SampleTableName"
     scan_report_id = "1"
@@ -66,7 +68,7 @@ def test_create_table_entry():
     assert result == expected_result
 
 
-def test_create_field_entry():
+def test__create_field_entry():
     # Arrange
     row = (
         Cell(None, value="empty_row"),
@@ -107,3 +109,50 @@ def test_create_field_entry():
         "ignore_column": None,
     }
     assert result == expected_result
+
+
+def test__create_values_details():
+    # Arrange
+    table_name = "test_table"
+
+    fieldname_value_freq = {
+        "field1": [("value1", "10"), ("value2", "20")],
+        "field2": [("value3", "30"), ("value4", "40")],
+    }
+
+    # Act
+    result = _create_values_details(fieldname_value_freq, table_name)
+
+    # Assert
+    expected = [
+        {
+            "full_value": "value1",
+            "frequency": 10,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value2",
+            "frequency": 20,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value3",
+            "frequency": 30,
+            "fieldname": "field2",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value4",
+            "frequency": 40,
+            "fieldname": "field2",
+            "table": "test_table",
+            "val_desc": None,
+        },
+    ]
+
+    assert result == expected
