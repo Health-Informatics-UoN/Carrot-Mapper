@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from openpyxl.cell.cell import Cell
 from UploadQueue import (
+    _assign_order,
     _create_field_entry,
     _create_table_entry,
     _create_values_details,
@@ -156,3 +157,37 @@ def test__create_values_details():
     ]
 
     assert result == expected
+
+
+def test__assign_order():
+    # Arrange
+    values_details = [
+        {
+            "full_value": "value1",
+            "frequency": 10,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value2",
+            "frequency": 20,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value3",
+            "frequency": 30,
+            "fieldname": "field2",
+            "table": "test_table",
+            "val_desc": None,
+        },
+    ]
+
+    # Act
+    _assign_order(values_details)
+
+    # Assert
+    for i, entry in enumerate(values_details):
+        assert entry["order"] == i
