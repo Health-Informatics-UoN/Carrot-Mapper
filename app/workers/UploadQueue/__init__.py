@@ -156,7 +156,17 @@ def _transform_scan_report_sheet_table(sheet: Worksheet) -> defaultdict[Any, Lis
 def _create_value_entries(
     values_details: List[Dict[str, Any]], fieldnames_to_ids_dict: Dict[str, str]
 ) -> List[Dict[str, Any]]:
-    """ """
+    """
+    Create value entries based on values_details and fieldnames_to_ids_dict.
+
+    Args:
+        values_details (List[Dict[str, Any]]): A list of dictionaries of the value
+            details for each fieldname-value pair.
+        fieldnames_to_ids_dict (Dict[str, str]): A dictionary mapping fieldnames to their IDs.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries of value entries.
+    """
     return [
         {
             "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -173,7 +183,18 @@ def _create_value_entries(
 def _apply_data_dictionary(
     values_details: List[Dict[str, Any]], data_dictionary: Dict[Any, Dict]
 ) -> None:
-    """ """
+    """
+    Apply data dictionary to update value descriptions in values_details from the data dict.
+
+    Args:
+        values_details (List[Dict[str, Any]]): A list of dictionaries with the value
+            details for each fieldname-value pair.
+        data_dictionary (Dict[Any, Dict]): A dictionary mapping table names to dictionaries
+            containing fieldname-value mappings and their corresponding value descriptions.
+
+    Returns:
+        None
+    """
     for entry in values_details:
         table_data = data_dictionary.get(str(entry["table"]))
         if table_data and table_data.get(str(entry["fieldname"])):
@@ -186,7 +207,18 @@ def _create_values_details(
     fieldname_value_freq: Dict[str, Tuple[str]],
     table_name: str,
 ) -> List[Dict[str, Any]]:
-    """ """
+    """
+    Create value details for each fieldname-value pair.
+
+    Args:
+        fieldname_value_freq (Dict[str, Tuple[str]]): A dictionary mapping fieldnames to
+            tuples of value-frequency pairs.
+        table_name (str): The name of the table.
+
+    Returns:
+        List[Dict[str, Any]]: A list of dictionaries containing the value details for each
+            fieldname-value pair.
+    """
     values_details = []
     for entry_number, (fieldname, value_freq_tuples) in enumerate(
         fieldname_value_freq.items()
@@ -238,7 +270,6 @@ async def _add_SRValues_and_value_descriptions(
     # --------------------------------------------------------------------------------
     # Update val_desc of each SRField entry if it has a value description from the
     # data dictionary
-
     if data_dictionary:
         logger.debug("apply data dictionary")
         _apply_data_dictionary(values_details, data_dictionary)
