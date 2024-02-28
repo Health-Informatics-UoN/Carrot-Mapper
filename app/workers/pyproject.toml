@@ -18,6 +18,12 @@ httpx = "^0.26.0"
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
 
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.0.2"
+coverage = "^7.4.3"
+pytest-cov = "^4.1.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
