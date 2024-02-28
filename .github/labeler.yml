@@ -1,0 +1,22 @@
+"Area: Migrations":
+  - 'app/api/mapping/migrations/*'
+
+dependencies:
+  - 'package.json'
+  - 'package-lock.json'
+  - 'poetry.lock'
+  - 'project.toml'
+
+"Area: CI":
+  - '.github/**/*'
+
+"Area: Backend":
+  - 'app/api/**'
+  - 'lib/Data/**'
+  - 'lib/Monitor.Shared/**'
+
+"Area: Frontend":
+  - 'app/react-client-app/**'
+
+"Area: Workers":
+  - 'app/workers/**'
