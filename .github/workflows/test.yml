@@ -54,6 +54,20 @@ jobs:
           python-version: ['3.8']
           django-version: [ '3.1.14']
 
+      services:
+        postgres:
+          image: postgres
+          env:
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: test
+          options: >-
+            --health-cmd pg_isready
+            --health-interval 10s
+            --health-timeout 5s
+            --health-retries 5
+          ports:
+            - 5432:5432
+
       steps:
         - uses: actions/checkout@v3
 
@@ -88,6 +102,12 @@ jobs:
           env:
             SECRET_KEY: 'test'
             ALLOWED_HOSTS: "['localhost']"
+            COCONNECT_DB_ENGINE: "django.db.backends.postgresql"
+            COCONNECT_DB_HOST: "localhost"
+            COCONNECT_DB_NAME: "test"
+            COCONNECT_DB_PASSWORD: "postgres"
+            COCONNECT_DB_PORT: "5432"
+            COCONNECT_DB_USER: "postgres"
           working-directory: app/api
           run: |
             poetry run python manage.py test mapping -v2
