@@ -153,6 +153,63 @@ def _transform_scan_report_sheet_table(sheet: Worksheet) -> defaultdict[Any, Lis
     return d
 
 
+def _create_value_entries(
+    values_details: List[Dict[str, Any]], fieldnames_to_ids_dict: Dict[str, str]
+) -> List[Dict[str, Any]]:
+    """ """
+    return [
+        {
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            "value": entry["full_value"][:127],
+            "frequency": int(entry["frequency"]),
+            "value_description": entry["val_desc"],
+            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
+        }
+        for entry in values_details
+    ]
+
+
+def _apply_data_dictionary(
+    values_details: List[Dict[str, Any]], data_dictionary: Dict[Any, Dict]
+) -> None:
+    """ """
+    for entry in values_details:
+        table_data = data_dictionary.get(str(entry["table"]))
+        if table_data and table_data.get(str(entry["fieldname"])):
+            entry["val_desc"] = table_data[str(entry["fieldname"])].get(
+                str(entry["full_value"])
+            )
+
+
+def _create_values_details(
+    fieldname_value_freq: Dict[str, Tuple[str]],
+    table_name: str,
+) -> List[Dict[str, Any]]:
+    """ """
+    values_details = []
+    for entry_number, (fieldname, value_freq_tuples) in enumerate(
+        fieldname_value_freq.items()
+    ):
+        for full_value, frequency in value_freq_tuples:
+            try:
+                frequency = int(frequency)
+            except (ValueError, TypeError):
+                frequency = 0
+            # Add "order" field to each entry to enable correctly-ordered recombination at the end
+            values_details.append(
+                {
+                    "full_value": full_value,
+                    "frequency": frequency,
+                    "fieldname": fieldname,
+                    "table": table_name,
+                    "val_desc": None,
+                    "order": entry_number,
+                }
+            )
+    return values_details
+
+
 async def _add_SRValues_and_value_descriptions(
     fieldname_value_freq_dict: Dict[str, Tuple[str]],
     current_table_name: str,
@@ -174,27 +231,9 @@ async def _add_SRValues_and_value_descriptions(
     Returns:
         The response content after posting the values.
     """
-    values_details = []
-    for fieldname, value_freq_tuples in fieldname_value_freq_dict.items():
-        for full_value, frequency in value_freq_tuples:
-            try:
-                frequency = int(frequency)
-            except (ValueError, TypeError):
-                frequency = 0
-            values_details.append(
-                {
-                    "full_value": full_value,
-                    "frequency": frequency,
-                    "fieldname": fieldname,
-                    "table": current_table_name,
-                    "val_desc": None,
-                }
-            )
-
-    logger.debug("assign order")
-    # Add "order" field to each entry to enable correctly-ordered recombination at the end
-    for entry_number, entry in enumerate(values_details):
-        entry["order"] = entry_number
+    values_details = _create_values_details(
+        fieldname_value_freq_dict, current_table_name
+    )
 
     # --------------------------------------------------------------------------------
     # Update val_desc of each SRField entry if it has a value description from the
@@ -202,37 +241,19 @@ async def _add_SRValues_and_value_descriptions(
 
     if data_dictionary:
         logger.debug("apply data dictionary")
-        for entry in values_details:
-            if data_dictionary.get(str(entry["table"])) and data_dictionary[
-                str(entry["table"])
-            ].get(str(entry["fieldname"])):
-                entry["val_desc"] = data_dictionary[str(entry["table"])][
-                    str(entry["fieldname"])
-                ].get(str(entry["full_value"]))
+        _apply_data_dictionary(values_details, data_dictionary)
 
     # Convert basic information about SRValues into entries for posting to the endpoint.
     logger.debug("create value_entries_to_post")
-    value_entries_to_post = [
-        {
-            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "value": entry["full_value"][:127],
-            "frequency": int(entry["frequency"]),
-            "value_description": entry["val_desc"],
-            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
-        }
-        for entry in values_details
-    ]
+    value_entries = _create_value_entries(values_details, fieldnames_to_ids_dict)
 
     # Chunk the SRValues data ready for upload, and then upload via the endpoint.
-    logger.info(
-        f"POST {len(value_entries_to_post)} values to table {current_table_name}"
-    )
-    chunked_value_entries_to_post = helpers.perform_chunking(value_entries_to_post)
-    logger.debug(f"chunked values list len: {len(chunked_value_entries_to_post)}")
+    logger.info(f"POST {len(value_entries)} values to table {current_table_name}")
+    chunked_value_entries = helpers.perform_chunking(value_entries)
+    logger.debug(f"chunked values list len: {len(chunked_value_entries)}")
 
-    values_response_content = await post_chunks(
-        chunked_value_entries_to_post,
+    response_content = await post_chunks(
+        chunked_value_entries,
         "scanreportvalues",
         "values",
         table_name=current_table_name,
@@ -240,7 +261,7 @@ async def _add_SRValues_and_value_descriptions(
     )
     logger.info("POST values all finished")
 
-    return values_response_content
+    return response_content
 
 
 async def _handle_single_table(
