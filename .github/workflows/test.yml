@@ -78,6 +78,7 @@ jobs:
         - name: Install django ${{ matrix.django-version }}
           working-directory: app/api
           run: |
+            poetry run python -m venv .venv
             source .venv/bin/activate
             pip install "Django==${{ matrix.django-version }}"
 
