@@ -14,7 +14,7 @@ env:
   PYTHON_VERSION: '3.8' # set this to the python version to use (supports 3.6, 3.7, 3.8)
 
 jobs:
-  build-and-deploy:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
     - name: 'Checkout GitHub Action'
@@ -67,7 +67,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_FUNCTIONS_NAME }}
-          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
           package: ${{ github.workspace }}/functionsapp
 
   # Deploy Test
@@ -87,14 +87,14 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_FUNCTIONS_NAME }}
-          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
           package: ${{ github.workspace }}/functionsapp
 
   # Deploy Production
   deploy-prod:
     runs-on: ubuntu-latest
     needs: deploy-test
-    environment: production
+    environment: prod
 
     steps:
       - name: Download artifact from build job
@@ -107,5 +107,5 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: ${{ env.AZURE_WEBAPP_FUNCTIONS_NAME }}
-          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
           package: ${{ github.workspace }}/functionsapp
