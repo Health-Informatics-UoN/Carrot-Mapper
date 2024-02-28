@@ -179,8 +179,8 @@ const DatasetTbl = (props) => {
                     totalItemsCount={totalItemsCount}
                     pageRangeDisplayed={5}
                     onChange={onPageChange}
-                    itemClass='btn paginate'
-                    activeClass='btn btn-primary disabled paginate'
+                    itemClass='btn paginate-inactive'
+                    activeClass='btn paginate-active'
                 />
             </Center>
             <HStack>
