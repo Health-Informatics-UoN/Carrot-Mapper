@@ -5,7 +5,7 @@ dependencies:
   - 'package.json'
   - 'package-lock.json'
   - 'poetry.lock'
-  - 'project.toml'
+  - 'pyproject.toml'
 
 "Area: CI":
   - '.github/**/*'
