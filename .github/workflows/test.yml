@@ -76,6 +76,7 @@ jobs:
           run: poetry install --no-interaction --no-root
 
         - name: Install django ${{ matrix.django-version }}
+          working-directory: app/api
           run: |
             source .venv/bin/activate
             pip install "Django==${{ matrix.django-version }}"
