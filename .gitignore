@@ -11,5 +11,3 @@ app/api/static/javascript/react
 **/pgdata/**
 app/api/staticfiles
 .venv
-staticfiles
-static
