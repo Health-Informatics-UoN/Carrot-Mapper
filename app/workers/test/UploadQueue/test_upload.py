@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from openpyxl.cell.cell import Cell
 from UploadQueue import (
+    _apply_data_dictionary,
     _assign_order,
     _create_field_entry,
     _create_table_entry,
@@ -191,3 +192,50 @@ def test__assign_order():
     # Assert
     for i, entry in enumerate(values_details):
         assert entry["order"] == i
+
+
+def test__apply_data_dictionary():
+    # Arrange
+    values_details = [
+        {
+            "full_value": "value1",
+            "frequency": 10,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value2",
+            "frequency": 20,
+            "fieldname": "field1",
+            "table": "test_table",
+            "val_desc": None,
+        },
+        {
+            "full_value": "value3",
+            "frequency": 30,
+            "fieldname": "field2",
+            "table": "test_table",
+            "val_desc": None,
+        },
+    ]
+
+    data_dictionary = {
+        "test_table": {
+            "field1": {
+                "value1": "description1",
+                "value2": "description2",
+            },
+            "field2": {
+                "value3": "description3",
+            },
+        }
+    }
+
+    # Act
+    _apply_data_dictionary(values_details, data_dictionary)
+
+    # Assert
+    assert values_details[0]["val_desc"] == "description1"
+    assert values_details[1]["val_desc"] == "description2"
+    assert values_details[2]["val_desc"] == "description3"
