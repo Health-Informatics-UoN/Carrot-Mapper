@@ -169,8 +169,15 @@ const DatasetTbl = (props) => {
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
-                <Button variant="blue" mr="10px" onClick={goToActive}>Active Datasets</Button>
-                <Button variant="blue" onClick={goToArchived}>Archived Datasets</Button>
+                {title === "Active Datasets" ? (
+                    <Button variant="blue" onClick={goToArchived}>
+                        Archived Datasets
+                     </Button>
+                ) : (
+                    <Button variant="blue" mr="10px" onClick={goToActive}>
+                        Active Datasets
+                    </Button>
+                )}
             </Flex>
             <Center>
                 <Pagination
