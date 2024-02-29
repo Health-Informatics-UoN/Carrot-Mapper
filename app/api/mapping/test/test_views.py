@@ -1,23 +1,25 @@
 import os
 from unittest import mock
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.test import APIRequestFactory, APIClient, force_authenticate
+from django.test import TestCase
 from rest_framework.authtoken.models import Token
-from .views import DatasetListView, ScanReportListViewSet
-from .models import (
-    Project,
-    Dataset,
-    ScanReport,
-    VisibilityChoices,
-    DataPartner,
-    ScanReportTable,
-    ScanReportField,
-    ScanReportValue,
-    ScanReportConcept,
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+
+from ..models import (
     Concept,
+    DataPartner,
+    Dataset,
+    Project,
+    ScanReport,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
+    VisibilityChoices,
 )
+from ..views import DatasetListView, ScanReportListViewSet
 
 
 class TestDatasetListView(TestCase):
@@ -76,7 +78,7 @@ class TestDatasetListView(TestCase):
 
     def test_dataset_returns(self):
         # Make the request for Datasets
-        request = self.factory.get(f"/api/datasets/")
+        request = self.factory.get("/api/datasets/")
         # Add user1 to the request; this is not automatic
         request.user = self.user1
         # Authenticate the user1
@@ -125,7 +127,7 @@ class TestDatasetListView(TestCase):
     def test_dataset_filtering(self):
         # Make the request for the public_dataset1
         request = self.factory.get(
-            f"/api/datasets/", {"id__in": self.public_dataset1.id}
+            "/api/datasets/", {"id__in": self.public_dataset1.id}
         )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
@@ -145,7 +147,7 @@ class TestDatasetListView(TestCase):
 
         # Make the request for the public_dataset3
         request = self.factory.get(
-            f"/api/datasets/", {"id__in": self.public_dataset3.id}
+            "/api/datasets/", {"id__in": self.public_dataset3.id}
         )
         # Add user1 to the request; this is not automatic
         request.user = self.user1
@@ -166,7 +168,7 @@ class TestDatasetListView(TestCase):
         User = get_user_model()
         az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
         # Make the request for the Dataset
-        request = self.factory.get(f"/api/datasets/")
+        request = self.factory.get("/api/datasets/")
         # Add the user to the request; this is not automatic
         request.user = az_user
         # Authenticate az_user

@@ -1,22 +1,23 @@
-from django.test import TestCase
+from data.models import Concept
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from data.models import Concept
-from .services_rules import analyse_concepts
+from django.test import TestCase
 from rest_framework.authtoken.models import Token
-from .models import (
+
+from ..models import (
     DataPartner,
+    Dataset,
     MappingRule,
     OmopField,
     OmopTable,
     Project,
-    Dataset,
     ScanReport,
     ScanReportConcept,
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
 )
+from ..services_rules import analyse_concepts
 
 
 class TestMisalignedMappings(TestCase):

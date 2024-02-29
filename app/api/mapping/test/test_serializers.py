@@ -1,11 +1,13 @@
 import os
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
-from rest_framework.test import APIRequestFactory
+from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ValidationError
-from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
-from .serializers import ScanReportEditSerializer, DatasetEditSerializer
+from rest_framework.test import APIRequestFactory
+
+from ..models import DataPartner, Dataset, Project, ScanReport, VisibilityChoices
+from ..serializers import DatasetEditSerializer, ScanReportEditSerializer
 
 
 class TestScanReportEditSerializer(TestCase):
