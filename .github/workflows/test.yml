@@ -110,4 +110,4 @@ jobs:
             COCONNECT_DB_USER: "postgres"
           working-directory: app/api
           run: |
-            poetry run python manage.py test mapping -v2
+            poetry run pytest --no-migrations
