@@ -2,9 +2,7 @@ from data.models import Concept
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
-
-from ..models import (
+from mapping.models import (
     DataPartner,
     Dataset,
     MappingRule,
@@ -17,7 +15,8 @@ from ..models import (
     ScanReportTable,
     ScanReportValue,
 )
-from ..services_rules import analyse_concepts
+from mapping.services_rules import analyse_concepts
+from rest_framework.authtoken.models import Token
 
 
 class TestMisalignedMappings(TestCase):

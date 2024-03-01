@@ -3,12 +3,8 @@ from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView
-from rest_framework.test import APIRequestFactory, force_authenticate
-
-from ..models import DataPartner, Dataset, Project, ScanReport, VisibilityChoices
-from ..permissions import (
+from mapping.models import DataPartner, Dataset, Project, ScanReport, VisibilityChoices
+from mapping.permissions import (
     CanAdmin,
     CanEdit,
     CanView,
@@ -17,7 +13,10 @@ from ..permissions import (
     has_viewership,
     is_admin,
 )
-from ..views import ProjectRetrieveView
+from mapping.views import ProjectRetrieveView
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import GenericAPIView
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 
 class TestHasViewership(TestCase):

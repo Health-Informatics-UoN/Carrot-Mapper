@@ -4,10 +4,7 @@ from unittest import mock
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
-
-from ..models import (
+from mapping.models import (
     Concept,
     DataPartner,
     Dataset,
@@ -19,7 +16,9 @@ from ..models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from ..views import DatasetListView, ScanReportListViewSet
+from mapping.views import DatasetListView, ScanReportListViewSet
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
 
 class TestDatasetListView(TestCase):
