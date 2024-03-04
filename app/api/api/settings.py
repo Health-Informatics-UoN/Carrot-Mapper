@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     "django_filters",
     "rest_framework.authtoken",
     "corsheaders",
+    "test",
 ]
 
 MIDDLEWARE = [
@@ -111,7 +113,6 @@ DATABASES = {
         "PASSWORD": os.getenv("COCONNECT_DB_PASSWORD"),
         "TEST": {
             "NAME": "throwaway-db",
-            "MIRROR": "default",
         },
     }
 }
