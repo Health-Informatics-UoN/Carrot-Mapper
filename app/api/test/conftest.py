@@ -6,6 +6,12 @@ from django.db import connection
 
 @pytest.fixture(scope="session")
 def django_db_setup(django_db_blocker):
+    """
+    Override Pytest db setup, to create the "omop.Concept" table.
+
+    This is necessary for the migrations to run succesfully in test,
+    as the migrations depend on this schema/table existing.
+    """
 
     settings.DATABASES["default"]["NAME"] = "test-db"
     with django_db_blocker.unblock():
