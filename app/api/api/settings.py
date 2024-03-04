@@ -112,7 +112,7 @@ DATABASES = {
         "USER": os.getenv("COCONNECT_DB_USER"),
         "PASSWORD": os.getenv("COCONNECT_DB_PASSWORD"),
         "TEST": {
-            "NAME": "throwaway-db",
+            "NAME": "throwawaydb",
         },
     }
 }
