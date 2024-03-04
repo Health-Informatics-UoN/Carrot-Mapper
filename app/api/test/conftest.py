@@ -1,4 +1,5 @@
 import pytest
+from data.models.concept import Concept
 from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
@@ -17,7 +18,6 @@ def django_db_setup(django_db_blocker):
     with django_db_blocker.unblock():
         with connection.cursor() as cursor:
             cursor.execute("CREATE SCHEMA IF NOT EXISTS omop")
-            cursor.execute(
-                "CREATE TABLE IF NOT EXISTS omop.CONCEPT (concept_id integer NOT NULL primary key)"
-            )
+        with connection.schema_editor() as schema_editor:
+            schema_editor.create_model(Concept)
         call_command("migrate", "--noinput")
