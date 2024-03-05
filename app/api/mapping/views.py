@@ -24,6 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import BadHeaderError, send_mail
 from django.db.models.query_utils import Q
@@ -80,6 +81,7 @@ from .serializers import (
     ConceptRelationshipSerializer,
     ConceptSerializer,
     ConceptSynonymSerializer,
+    ContentTypeSerializer,
     DataDictionarySerializer,
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
@@ -758,6 +760,7 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
             raise PermissionDenied(
                 "You do not have permission to access this resource."
             )
+        # TODO: This is a problem.
         if self.request.GET["content_type"] == "15":
             # ScanReportField
             # we have SRCs with content_type 15, grab all SRFields in active SRs,
@@ -1128,6 +1131,27 @@ class ScanReportValuePKViewSet(viewsets.ModelViewSet):
             ]
         ).exclude(conceptID=-1)
         return qs
+
+
+class GetContentTypeID(APIView):
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieves the content type ID based on the provided type name.
+
+        Args:
+            self: The instance of the class.
+            request: The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
+        serializer = ContentTypeSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        type_name = serializer.validated_data.get("type_name")
+        try:
+            content_type = ContentType.objects.get(model=type_name)
+            return Response({"content_type_id": content_type.id})
+        except ContentType.DoesNotExist:
+            return Response({"error": "Content type not found"}, status=404)
 
 
 @login_required
