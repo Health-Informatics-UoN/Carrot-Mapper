@@ -67,7 +67,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/dev:${{ github.sha }}
+          tags: ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}
           file: ./app/Dockerfile.deploy
 
   # Deploy Workers Dev
@@ -146,7 +146,7 @@ jobs:
           app-name: 'ccom'
           slot-name: 'dev'
           publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ccomregprod.azurecr.io/${{ env.REGISTRY_USERNAME }}/dev:${{ github.sha }}'
+          images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
   # Deploy Web App Test
   # deploy-web-test:
@@ -164,7 +164,7 @@ jobs:
   #         app-name: 'ccom'
   #         slot-name: 'test'
   #         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         images: 'ccomregprod.azurecr.io/${{ env.REGISTRY_USERNAME }}/test:${{ github.sha }}'
+  #         images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
 
   # # Deploy Web App Prod
@@ -183,4 +183,4 @@ jobs:
   #         app-name: 'ccom'
   #         slot-name: 'prod'
   #         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         images: 'ccomregprod.azurecr.io/${{ env.REGISTRY_USERNAME }}/prod:${{ github.sha }}'
+  #         images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
