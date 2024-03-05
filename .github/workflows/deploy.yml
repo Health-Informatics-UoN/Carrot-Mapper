@@ -45,7 +45,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: functionsapp
-        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
   build-and-publish-web:
     runs-on: 'ubuntu-latest'
@@ -86,8 +86,10 @@ jobs:
       - name: 'Run Azure webapp deploy action using publish profile credentials'
         uses: azure/webapps-deploy@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_FUNCTIONS_NAME }}
-          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+        # TODO: Change these back after testing
+          app-name: 'ccom-funcs-dev'
+          # publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE_DEV  }}
           package: ${{ github.workspace }}/functionsapp
 
   # Deploy Workers Test
@@ -145,7 +147,10 @@ jobs:
         with:
           app-name: 'ccom'
           slot-name: 'dev'
-          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          # TODO: Change these back after testing
+          # publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          # images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_DEV }}
           images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
   # Deploy Web App Test
