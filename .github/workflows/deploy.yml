@@ -73,7 +73,7 @@ jobs:
   # Deploy Workers Dev
   deploy-workers-dev:
     runs-on: ubuntu-latest
-    needs: build-and-publish-workers
+    needs: [build-and-publish-workers, build-and-publish-web]
     # environment: dev
 
     steps:
