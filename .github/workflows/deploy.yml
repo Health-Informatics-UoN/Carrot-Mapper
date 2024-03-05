@@ -147,8 +147,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom'
-          slot-name: 'dev'
+          app-name: 'ccom-dev'
           # TODO: Change these back after testing
           # publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
           # images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
@@ -168,8 +167,7 @@ jobs:
   #       id: deploy-to-webapp
   #       uses: azure/webapps-deploy@v2
   #       with:
-  #         app-name: 'ccom'
-  #         slot-name: 'test'
+  #         app-name: 'ccom-test'
   #         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
   #         images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
@@ -188,6 +186,6 @@ jobs:
   #       uses: azure/webapps-deploy@v2
   #       with:
   #         app-name: 'ccom'
-  #         slot-name: 'prod'
+  #         slot-name: 'production'
   #         publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
   #         images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
