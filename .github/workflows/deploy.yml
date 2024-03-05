@@ -1,4 +1,4 @@
-name: Build and deploy workers and webapp app to Azure Web App - ccom
+name: Build and Deploy to Azure - ccom
 
 on:
   push:
