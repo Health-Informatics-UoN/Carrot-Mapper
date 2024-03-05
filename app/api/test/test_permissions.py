@@ -533,7 +533,7 @@ class TestCanView(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user
@@ -637,7 +637,7 @@ class TestCanEdit(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user
@@ -738,7 +738,7 @@ class TestCanAdmin(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user

@@ -1,4 +1,4 @@
-from typing import Generator, Union
+from typing import Generator
 
 import psycopg2
 import pytest

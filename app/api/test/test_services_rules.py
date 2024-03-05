@@ -1,3 +1,6 @@
+from datetime import date
+
+import pytest
 from data.models import Concept
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -264,6 +267,7 @@ class TestMisalignedMappings(TestCase):
             concept=self.scan_report_concept_cough_desc,
         )
 
+    @pytest.mark.skip(reason="This test relies on a more complete OMOP db.")
     def test_analyse_concepts(self):
         data = analyse_concepts(self.scan_report1.id)
         test_data = data["data"][0]
