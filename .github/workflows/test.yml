@@ -49,10 +49,8 @@ jobs:
       strategy:
         fail-fast: false
         matrix:
-          # python-version: ['3.8', '3.11']
-          # django-version: [ '3.1.14', '4.2']
-          python-version: ['3.8']
-          django-version: [ '3.1.14']
+          python-version: ['3.8', '3.11']
+          django-version: [ '3.1.14', '4.2']
 
       services:
         postgres:
