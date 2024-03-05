@@ -3,7 +3,7 @@ name: Build and deploy workers and webapp app to Azure Web App - ccom
 on:
   push:
     branches:
-      - master
+      - refactor/639/update-environment-workflows
   workflow_dispatch:
 
 env:
@@ -74,7 +74,7 @@ jobs:
   deploy-workers-dev:
     runs-on: ubuntu-latest
     needs: build-and-publish-workers
-    environment: dev
+    # environment: dev
 
     steps:
       - name: Download artifact from build job
@@ -136,9 +136,9 @@ jobs:
   deploy-web-dev:
     runs-on: ubuntu-latest
     needs: [build-and-publish-web, deploy-workers-dev]
-    environment:
-      name: 'dev'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    # environment:
+    #   name: 'dev'
+    #   url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
       - name: Deploy to Azure Web App
