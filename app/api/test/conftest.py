@@ -11,7 +11,7 @@ from psycopg2.sql import Composable
 from pytest_django import DjangoDbBlocker
 
 
-def run_sql(db: str, sql: str | bytes | Composable):
+def run_sql(db: str, sql: str | Composable):
     """
     Executes the given SQL query on the given database.
 
