@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Union
 
 import psycopg2
 import pytest
@@ -7,11 +7,10 @@ from django.conf import settings
 from django.core.management import call_command
 from django.db import connection
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from psycopg2.sql import Composable
 from pytest_django import DjangoDbBlocker
 
 
-def run_sql(db: str, sql: str | Composable):
+def run_sql(db: str, sql: str):
     """
     Executes the given SQL query on the given database.
 
