@@ -325,24 +325,6 @@ def get_concept_vocabs(
     return response.json()
 
 
-def get_content_type_id(type_name: str) -> int:
-    """
-    Gets the content type Id for a given content type.
-
-    Args:
-        type_name: Name of the content type to get the Id for.
-
-    Returns:
-        The Id of the content type.
-    """
-    response = requests.get(
-        f"{API_URL}contenttypeid?type_name={type_name}", headers=HEADERS
-    )
-    response.raise_for_status()
-    data = response.json()
-    return data["content_type_id"]
-
-
 async def post_chunks(
     chunked_data: List[List[Dict]],
     endpoint: str,

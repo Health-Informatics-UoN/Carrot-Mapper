@@ -2,7 +2,6 @@ from typing import Any, Dict, List, Literal
 
 from shared_code import helpers, omop_helpers
 from shared_code.api import (
-    get_content_type_id,
     get_scan_report_active_concepts,
     get_scan_report_fields,
     get_scan_report_values,
