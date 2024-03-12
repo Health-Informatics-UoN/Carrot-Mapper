@@ -78,9 +78,15 @@ body {
     box-shadow: 0 0 0.4rem rgb(0 0 0 / 10%), 0 0.4rem 0.4rem rgb(0 0 0 / 20%);
 }
 
-.paginate{
+.paginate-inactive {
     background-color: #c6cad8;
     margin: 11px;
+}
+
+.paginate-active {
+    background-color: #475da7;
+    margin: 11px;
+    color: #ffff;
 }
 
 

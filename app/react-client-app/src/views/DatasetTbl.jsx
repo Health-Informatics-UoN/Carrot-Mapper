@@ -169,8 +169,12 @@ const DatasetTbl = (props) => {
             <Flex>
                 <PageHeading text={title} />
                 <Spacer />
-                <Button variant="blue" mr="10px" onClick={goToActive}>Active Datasets</Button>
-                <Button variant="blue" onClick={goToArchived}>Archived Datasets</Button>
+                <Button disabled={title === "Active Datasets"} variant="blue" mr="10px" onClick={goToActive}>
+                    Active Datasets
+                </Button>
+                <Button disabled={title === "Archived Datasets"} variant="blue" onClick={goToArchived}>
+                    Archived Datasets
+                 </Button>
             </Flex>
             <Center>
                 <Pagination
@@ -179,8 +183,8 @@ const DatasetTbl = (props) => {
                     totalItemsCount={totalItemsCount}
                     pageRangeDisplayed={5}
                     onChange={onPageChange}
-                    itemClass='btn paginate'
-                    activeClass='btn disabled paginate'
+                    itemClass='btn paginate-inactive'
+                    activeClass='btn paginate-active'
                 />
             </Center>
             <HStack>
