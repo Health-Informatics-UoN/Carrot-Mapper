@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from enum import Enum
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Union
 
 import httpx
 import requests
@@ -198,7 +198,7 @@ def get_scan_report_fields_by_table(id: str) -> List[Dict[str, Any]]:
 
 
 def get_scan_report_active_concepts(
-    content_type: Literal[15, 17]
+    content_type: Literal["scanreportfield", "scanreportvalue"]
 ) -> List[Dict[str, Any]]:
     """
     Get ScanReportConcepts that have the given content_type and are
@@ -209,8 +209,8 @@ def get_scan_report_active_concepts(
     - Marked with status "Mapping Complete"
 
     Args:
-        content_type (Literal[15, 17]): The `django_content_type` Id to filter by.
-        Represents `ScanReportField` (15), or `ScanReportValue` (17)
+        content_type (Literal["ScanReportField", "ScanReportValue"]): The `django_content_type` to filter by.
+        Represents `ScanReportField`, or `ScanReportValue`
 
     Returns:
         A list of ScanReportConcepts matching the criteria.
@@ -323,6 +323,24 @@ def get_concept_vocabs(
         f"{response.reason}"
     )
     return response.json()
+
+
+def get_content_type_id(type_name: str) -> int:
+    """
+    Gets the content type Id for a given content type.
+
+    Args:
+        type_name: Name of the content type to get the Id for.
+
+    Returns:
+        The Id of the content type.
+    """
+    response = requests.get(
+        f"{API_URL}contenttypeid?type_name={type_name}", headers=HEADERS
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["content_type_id"]
 
 
 async def post_chunks(
