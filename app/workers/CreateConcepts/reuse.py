@@ -335,16 +335,10 @@ def select_concepts_to_post(
     """
     concepts_to_post = []
 
-    # TODO: proposed fix.
-    # Get the content type from the API here, and pass it to wherever below.
-    # TODO: okay so content_type needs to be a string of the content, not 15 or 17.
-    content_type_id = get_content_type_id(content_type)
-
     for new_content_detail in new_content_details:
-        # TODO: This is a problem, but again it's conditional, so maybe not it.
-        if content_type == "ScanReportValues":
+        if content_type == "scanreportfield":
             key = str(new_content_detail["name"])
-        elif content_type == "ScanReportFields":
+        elif content_type == "scanreportvalue":
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -355,14 +349,13 @@ def select_concepts_to_post(
 
         try:
             existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
-            # logger.info(
-            #     f"Found existing {'field' if content_type == "ScanReportFields" else 'value'} with id: {existing_content_id} "
-            #     f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == "ScanReportFields" else 'value'} id: {new_content_detail['id']}"
-            # )
+            logger.info(
+                f"Found existing {'field' if content_type == 'scanreportfield' else 'value'} with id: {existing_content_id} "
+                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 'scanreportfield' else 'value'} id: {new_content_detail['id']}"
+            )
             # Create ScanReportConcept entry for copying over the concept
-            # TODO: This is the "source" of the problem.
             concept_entry = create_concept(
-                concept_id, str(new_content_detail["id"]), content_type_id, "R"
+                concept_id, str(new_content_detail["id"]), content_type, "R"
             )
             concepts_to_post.append(concept_entry)
         except KeyError:
