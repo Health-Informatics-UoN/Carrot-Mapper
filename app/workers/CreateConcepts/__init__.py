@@ -6,7 +6,6 @@ import azure.functions as func
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
-    get_content_type_id,
     get_scan_report_fields_by_table,
     get_scan_report_table,
     get_scan_report_values_filter_scan_report_table,
@@ -27,20 +26,18 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     Returns:
         List[Dict[str, Any]]: List of Concept dictionaries.
     """
-    # TODO: create_concepts here defaults to 17. it wants the ScanReportFields.
-    content_type = get_content_type_id("scanreportfield")
     concept_id_data = []
     for concept in table_values:
         if concept["concept_id"] != -1:
             if isinstance(concept["concept_id"], list):
                 concept_id_data.extend(
-                    helpers.create_concept(concept_id, concept["id"], content_type)
+                    helpers.create_concept(concept_id, concept["id"], "scanreportfield")
                     for concept_id in concept["concept_id"]
                 )
             else:
                 concept_id_data.append(
                     helpers.create_concept(
-                        concept["concept_id"], concept["id"], content_type
+                        concept["concept_id"], concept["id"], "scanreportfield"
                     )
                 )
 
