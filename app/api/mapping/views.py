@@ -692,10 +692,15 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         body = request.data
         if not isinstance(body, list):
+            # Extract the content_type
+            content_type_str = body.pop("content_type", None)
+            content_type = ContentType.objects.get(model=content_type_str)
+            body["content_type"] = content_type.id
+
             concept = ScanReportConcept.objects.filter(
                 concept=body["concept"],
                 object_id=body["object_id"],
-                content_type=body["content_type"],
+                content_type=content_type,
             )
             if concept.count() > 0:
                 print("Can't add multiple concepts of the same id to the same object")
@@ -713,10 +718,15 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
             # this method may be quite slow as it has to wait for each query
             filtered = []
             for item in body:
+                # Extract the content_type
+                content_type_str = item.pop("content_type", None)
+                content_type = ContentType.objects.get(model=content_type_str)
+                item["content_type"] = content_type.id
+
                 concept = ScanReportConcept.objects.filter(
                     concept=item["concept"],
                     object_id=item["object_id"],
-                    content_type=item["content_type"],
+                    content_type=content_type,
                 )
                 if concept.count() == 0:
                     filtered.append(item)
