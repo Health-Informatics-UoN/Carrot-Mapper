@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Literal
 
 from shared_code import helpers, omop_helpers
 from shared_code.api import (
+    get_content_type_id,
     get_scan_report_active_concepts,
     get_scan_report_fields,
     get_scan_report_values,
@@ -24,7 +25,7 @@ This can then include refactoring these into smaller functions, and remove the d
 """
 
 
-def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> None:
+def reuse_existing_value_concepts(new_values_map) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
@@ -32,9 +33,13 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
 
     Args:
         new_fields_map (Dict[str, str]): A map of field names to Ids.
-        content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
     """
     logger.info("reuse_existing_value_concepts")
+    # TODO: I mean this is just setting it anyway.
+    # content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
+    content_type = 17
+    content_type = "scanreportvalue"
+
     # Gets all scan report concepts that are for the type value
     # (or content type which should be value) and in "active" SRs
     existing_value_concepts = get_scan_report_active_concepts(content_type)
@@ -178,9 +183,7 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
-def reuse_existing_field_concepts(
-    new_fields_map: List[Dict[str, str]], content_type: Literal[15]
-) -> None:
+def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
@@ -190,14 +193,31 @@ def reuse_existing_field_concepts(
 
     Args:
         new_fields_map (List[Dict[str, Any]]): A list of fields.
-        content_type (Literal[15]): The content type, represents `ScanReportField` (15)
 
     Returns:
         None
     """
     logger.info("reuse_existing_field_concepts")
+    # TODO: unfuck this.
+    # content_type (Literal[15]): The content type, represents `ScanReportField` (15)
+    content_type = 15
+    # desired:
+    content_type = "scanreportfield"
+
+    # I could just get it from the api here, which would override the below.
+    # problem is that select_concepts_to_post() needs to actually know the specific content type.
+    # so this variable is doing 2 things, it is controlling behaviour inside this logic.
+    # but it is also asking the backend to do things in a specific manner.
+    # if we then ask the backend to tell us what to do, we don't know the difference.
+
+    # 2 options:
+    #     1. we call my nice new api again
+    #     2. we change the below api to filter differently
+    #           TODO: Looks like the api is part of the problem! we might fix it there!
+
     # Gets all scan report concepts that are for the type field
     # (or content type which should be field) and in "active" SRs
+    # TODO: I (me, this line of code) don't know what the correct content_type number is to fetch it though
     existing_field_concepts = get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing field ids to scan report concepts
@@ -288,7 +308,7 @@ def reuse_existing_field_concepts(
 def select_concepts_to_post(
     new_content_details: List[Dict[str, str]],
     details_to_id_and_concept_id_map: List[Dict[str, str]],
-    content_type: Literal[15, 17],
+    content_type: Literal["scanreportfield", "scanreportvalue"],
 ) -> List[Dict[str, Any]]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
@@ -305,7 +325,7 @@ def select_concepts_to_post(
           "description", "field_name") keys (for values), with entries (field_id, concept_id)
           or (value_id, concept_id) respectively.
 
-        content_type (Literal[15, 17]): Controls whether to handle fields (15), or values (17).
+        content_type (Literal["ScanReportFields", "ScanReportValues"]): Controls whether to handle ScanReportFields (15), or ScanReportValues (17).
 
     Returns:
         A list of reused `Concepts` to create.
@@ -315,10 +335,16 @@ def select_concepts_to_post(
     """
     concepts_to_post = []
 
+    # TODO: proposed fix.
+    # Get the content type from the API here, and pass it to wherever below.
+    # TODO: okay so content_type needs to be a string of the content, not 15 or 17.
+    content_type_id = get_content_type_id(content_type)
+
     for new_content_detail in new_content_details:
-        if content_type == 15:
+        # TODO: This is a problem, but again it's conditional, so maybe not it.
+        if content_type == "ScanReportValues":
             key = str(new_content_detail["name"])
-        elif content_type == 17:
+        elif content_type == "ScanReportFields":
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -329,13 +355,14 @@ def select_concepts_to_post(
 
         try:
             existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
-            logger.info(
-                f"Found existing {'field' if content_type == 15 else 'value'} with id: {existing_content_id} "
-                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 15 else 'value'} id: {new_content_detail['id']}"
-            )
+            # logger.info(
+            #     f"Found existing {'field' if content_type == "ScanReportFields" else 'value'} with id: {existing_content_id} "
+            #     f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == "ScanReportFields" else 'value'} id: {new_content_detail['id']}"
+            # )
             # Create ScanReportConcept entry for copying over the concept
+            # TODO: This is the "source" of the problem.
             concept_entry = create_concept(
-                concept_id, str(new_content_detail["id"]), content_type, "R"
+                concept_id, str(new_content_detail["id"]), content_type_id, "R"
             )
             concepts_to_post.append(concept_entry)
         except KeyError:
