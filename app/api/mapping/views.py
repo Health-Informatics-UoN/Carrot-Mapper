@@ -1,82 +1,32 @@
+import base64
+import datetime
 import json
 import os
-import base64
 import random
 import string
-import datetime
+from typing import Any
 
-from azure.storage.queue import QueueClient
 from azure.storage.blob import BlobServiceClient, ContentSettings
-
-from rest_framework import status, viewsets, generics
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.generics import (
-    ListAPIView,
-    RetrieveAPIView,
-)
-from rest_framework.renderers import JSONRenderer
-
-from .paginations import CustomPagination
-
-from .serializers import (
-    GetRulesAnalysis,
-    ScanReportEditSerializer,
-    ScanReportViewSerializer,
-    ScanReportTableEditSerializer,
-    ScanReportTableListSerializer,
-    ScanReportFieldEditSerializer,
-    ScanReportFieldListSerializer,
-    ScanReportValueEditSerializer,
-    ScanReportValueViewSerializer,
-    ScanReportConceptSerializer,
-    ClassificationSystemSerializer,
-    DataDictionarySerializer,
-    DataPartnerSerializer,
-    OmopTableSerializer,
-    OmopFieldSerializer,
-    MappingRuleSerializer,
-    GetRulesJSON,
-    UserSerializer,
-    DatasetEditSerializer,
-    DatasetViewSerializer,
-    DatasetAndDataPartnerViewSerializer,
-    ProjectSerializer,
-    ProjectNameSerializer,
-    ProjectDatasetSerializer,
-)
-from .serializers import (
-    ConceptSerializer,
-    VocabularySerializer,
-    ConceptRelationshipSerializer,
-    ConceptAncestorSerializer,
-    ConceptClassSerializer,
-    ConceptSynonymSerializer,
-    DomainSerializer,
-    DrugStrengthSerializer,
-)
-from django_filters.rest_framework import DjangoFilterBackend
+from azure.storage.queue import QueueClient
 from data.models import (
     Concept,
-    Vocabulary,
-    ConceptRelationship,
     ConceptAncestor,
     ConceptClass,
+    ConceptRelationship,
     ConceptSynonym,
     Domain,
     DrugStrength,
+    Vocabulary,
 )
-
-from data.models import Concept
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import BadHeaderError, send_mail
 from django.db.models.query_utils import Q
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
@@ -88,50 +38,86 @@ from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, status, viewsets
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .forms import (
-    ScanReportAssertionForm,
-    ScanReportForm,
-)
+from .forms import ScanReportAssertionForm, ScanReportForm
 from .models import (
+    ClassificationSystem,
     DataDictionary,
     DataPartner,
-    OmopTable,
+    Dataset,
+    MappingRule,
     OmopField,
+    OmopTable,
     Project,
     ScanReport,
     ScanReportAssertion,
+    ScanReportConcept,
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    MappingRule,
-    ScanReportConcept,
-    ClassificationSystem,
-    Dataset,
     VisibilityChoices,
 )
+from .paginations import CustomPagination
 from .permissions import (
-    CanViewProject,
-    CanView,
     CanAdmin,
     CanEdit,
+    CanView,
+    CanViewProject,
     has_editorship,
     has_viewership,
     is_admin,
 )
+from .serializers import (
+    ClassificationSystemSerializer,
+    ConceptAncestorSerializer,
+    ConceptClassSerializer,
+    ConceptRelationshipSerializer,
+    ConceptSerializer,
+    ConceptSynonymSerializer,
+    DataDictionarySerializer,
+    DataPartnerSerializer,
+    DatasetAndDataPartnerViewSerializer,
+    DatasetEditSerializer,
+    DatasetViewSerializer,
+    DomainSerializer,
+    DrugStrengthSerializer,
+    GetRulesAnalysis,
+    GetRulesJSON,
+    MappingRuleSerializer,
+    OmopFieldSerializer,
+    OmopTableSerializer,
+    ProjectDatasetSerializer,
+    ProjectNameSerializer,
+    ProjectSerializer,
+    ScanReportConceptSerializer,
+    ScanReportEditSerializer,
+    ScanReportFieldEditSerializer,
+    ScanReportFieldListSerializer,
+    ScanReportTableEditSerializer,
+    ScanReportTableListSerializer,
+    ScanReportValueEditSerializer,
+    ScanReportValueViewSerializer,
+    ScanReportViewSerializer,
+    UserSerializer,
+    VocabularySerializer,
+)
 from .services import download_data_dictionary_blob
-
 from .services_nlp import start_nlp_field_level
-
 from .services_rules import (
-    save_mapping_rules,
-    remove_mapping_rules,
-    find_existing_scan_report_concepts,
     download_mapping_rules,
     download_mapping_rules_as_csv,
+    find_existing_scan_report_concepts,
     get_mapping_rules_list,
-    view_mapping_rules,
     m_allowed_tables,
+    remove_mapping_rules,
+    save_mapping_rules,
+    view_mapping_rules,
 )
 
 
@@ -584,6 +570,54 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        """
+        Perform a partial update on the instance.
+
+        Args:
+            request (Any): The request object.
+            *args (Any): Additional positional arguments.
+            **kwargs (Any): Additional keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
+        instance = self.get_object()
+        partial = kwargs.pop("partial", True)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Map the table
+        # Check if this env should be Adding Concepts
+        add_concepts = os.environ.get("UPLOAD_ONLY").lower() == "true"
+        if add_concepts:
+            scan_report_instance = instance.scan_report
+            data_dictionary_name = (
+                scan_report_instance.data_dictionary.name
+                if scan_report_instance.data_dictionary
+                else None
+            )
+
+            # Send to queue
+            azure_dict = {
+                "scan_report_id": scan_report_instance.id,
+                "table_id": instance.id,
+                "data_dictionary_blob": data_dictionary_name,
+            }
+            queue_message = json.dumps(azure_dict)
+            message_bytes = queue_message.encode("ascii")
+            base64_bytes = base64.b64encode(message_bytes)
+            base64_message = base64_bytes.decode("ascii")
+
+            queue = QueueClient.from_connection_string(
+                conn_str=os.environ.get("STORAGE_CONN_STRING"),
+                queue_name=os.environ.get("CREATE_CONCEPTS_QUEUE_NAME"),
+            )
+            queue.send_message(base64_message)
+
+        return Response(serializer.data)
+
 
 # class ScanReportTableFilterViewSet(viewsets.ModelViewSet):
 #     queryset = ScanReportTable.objects.all()
@@ -720,34 +754,34 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
     filterset_fields = ["content_type"]
 
     def get_queryset(self):
-        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
-            if self.request.GET["content_type"] == "15":
-                # ScanReportField
-                # we have SRCs with content_type 15, grab all SRFields in active SRs,
-                # and then filter ScanReportConcepts by those object_ids
-                field_ids = ScanReportField.objects.filter(
-                    scan_report_table__scan_report__hidden=False,
-                    scan_report_table__scan_report__parent_dataset__hidden=False,
-                    scan_report_table__scan_report__status="COMPLET",
-                )
-                qs = ScanReportConcept.objects.filter(
-                    content_type=15, object_id__in=field_ids
-                )
-                return qs
-            elif self.request.GET["content_type"] == "17":  #
-                # ScanReportValue
-                # we have SRCs with content_type 17, grab all SRValues in active SRs,
-                # and then filter ScanReportConcepts by those object_ids
-                value_ids = ScanReportValue.objects.filter(
-                    scan_report_field__scan_report_table__scan_report__hidden=False,
-                    scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-                    scan_report_field__scan_report_table__scan_report__status="COMPLET",
-                )
-                qs = ScanReportConcept.objects.filter(
-                    content_type=17, object_id__in=value_ids
-                )
-                return qs
-            return None
+        if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
+            raise PermissionDenied(
+                "You do not have permission to access this resource."
+            )
+        if self.request.GET["content_type"] == "15":
+            # ScanReportField
+            # we have SRCs with content_type 15, grab all SRFields in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            field_ids = ScanReportField.objects.filter(
+                scan_report_table__scan_report__hidden=False,
+                scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_table__scan_report__status="COMPLET",
+            )
+            return ScanReportConcept.objects.filter(
+                content_type=15, object_id__in=field_ids
+            )
+        elif self.request.GET["content_type"] == "17":  #
+            # ScanReportValue
+            # we have SRCs with content_type 17, grab all SRValues in active SRs,
+            # and then filter ScanReportConcepts by those object_ids
+            value_ids = ScanReportValue.objects.filter(
+                scan_report_field__scan_report_table__scan_report__hidden=False,
+                scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+                scan_report_field__scan_report_table__scan_report__status="COMPLET",
+            )
+            return ScanReportConcept.objects.filter(
+                content_type=17, object_id__in=value_ids
+            )
         return None
 
 
@@ -1184,7 +1218,7 @@ class StructuralMappingTableListView(ListView):
     def post(self, request, *args, **kwargs):
         try:
             body = json.loads(request.body.decode("utf-8"))
-        except ValueError as e:
+        except ValueError:
             body = {}
         if (
             request.POST.get("download_rules") is not None
@@ -1205,7 +1239,7 @@ class StructuralMappingTableListView(ListView):
             # remove all existing rules first
             remove_mapping_rules(request, self.kwargs.get("pk"))
             # get all associated ScanReportConcepts for this given ScanReport
-            ## this method could be taking too long to execute
+            # this method could be taking too long to execute
             all_associated_concepts = find_existing_scan_report_concepts(
                 request, self.kwargs.get("pk")
             )
@@ -1391,9 +1425,16 @@ class ScanReportFormView(FormView):
 
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
+        # Check if this env should be using Upload Only, and send it the right queue.
+        upload_only = os.environ.get("UPLOAD_ONLY").lower() == "true"
+        if upload_only:
+            queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
+        else:
+            queue_name = os.environ.get("SCAN_REPORT_QUEUE_NAME")
+
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=os.environ.get("SCAN_REPORT_QUEUE_NAME"),
+            queue_name=queue_name,
         )
         queue.send_message(base64_message)
 

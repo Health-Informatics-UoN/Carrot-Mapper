@@ -394,8 +394,8 @@ const MappingTbl = (props) => {
                     totalItemsCount={totalItemsCount}
                     pageRangeDisplayed={5}
                     onChange={onPageChange}
-                    itemClass='btn paginate'
-                    activeClass='btn disabled paginate'
+                    itemClass='btn paginate-inactive'
+                    activeClass='btn paginate-active'
                 />
             </Center>
             {error ?
