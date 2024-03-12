@@ -247,7 +247,7 @@ def add_vocabulary_id_to_entries(
 def create_concept(
     concept_id: str,
     object_id: str,
-    content_type: Literal[15, 17] = 17,
+    content_type: int,
     creation_type: Literal["V", "R"] = "V",
 ) -> Dict[str, Any]:
     """
@@ -256,14 +256,11 @@ def create_concept(
     Args:
         concept_id (str): The Id of the Concept to create.
         object_id (str): The Object Id of the Concept to create.
-        content_type (Literal[15, 17], optional): The Content Type Id of the Concept.
+        content_type (int): The Content Type Id of the Concept.
         creation_type (Literal["R", "V"], optional): The Creation Type value of the Concept.
 
     Returns:
         Dict[str, Any]: A Concept as a dictionary.
-
-    TODO: we should query `content_type` from the API, when this is fixed:
-    https://github.com/Health-Informatics-UoN/CaRROT-Mapper/issues/637
     """
     return {
         "concept": concept_id,
