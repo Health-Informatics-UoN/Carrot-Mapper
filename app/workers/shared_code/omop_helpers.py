@@ -1,11 +1,12 @@
+import logging
 import os
 import time
-import requests
-import logging
-from collections import defaultdict, OrderedDict
-from ProcessQueue import helpers
+from collections import OrderedDict, defaultdict
 
-api_url = os.environ.get("APP_URL") + "api/"
+import requests
+from shared_code import helpers
+
+api_url = os.environ.get("APP_URL", "") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
 logger = logging.getLogger("test_logger")
 
@@ -54,7 +55,7 @@ def find_standard_concept_batch(source_concepts: list):
             headers=api_header,
         )
         concept_relations_response.append(get_concept_relations_response.json())
-    concept_relations = helpers.flatten(concept_relations_response)
+    concept_relations = helpers.flatten_list(concept_relations_response)
 
     # Find those concepts with a "trail" to follow, that is, those which have
     # differing concept_id_1/2.
@@ -79,7 +80,7 @@ def find_standard_concept_batch(source_concepts: list):
             headers=api_header,
         )
         concepts.append(get_concepts.json())
-    concepts = helpers.flatten(concepts)
+    concepts = helpers.flatten_list(concepts)
     logger.debug("concepts got")
 
     concept_details = {a["concept_id"]: a["standard_concept"] for a in concepts}

@@ -152,7 +152,7 @@ jobs:
         with:
           app-name: 'ccom-dev'
           publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
   # Deploy Web App Test
   deploy-web-test:
@@ -169,7 +169,7 @@ jobs:
         with:
           app-name: 'ccom-test'
           publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
 
   # Deploy Web App Prod
@@ -188,4 +188,4 @@ jobs:
           app-name: 'ccom'
           slot-name: 'production'
           publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ccomregprod.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'

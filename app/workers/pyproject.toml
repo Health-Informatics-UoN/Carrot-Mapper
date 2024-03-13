@@ -21,9 +21,16 @@ memory-profiler = "^0.61.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0.2"
-coverage = "^7.4.3"
 pytest-cov = "^4.1.0"
+coverage = "^7.4.3"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "/test",
+]
