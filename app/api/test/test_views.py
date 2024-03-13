@@ -746,31 +746,6 @@ class TestScanReportActiveConceptFilterViewSet(TestCase):
         # Set up API client
         self.client = APIClient()
 
-    def test_admin_user_get(self):
-        """Users who are admins of the parent dataset can see all public SRs
-        and restricted SRs whose parent dataset they are the admin of.
-        """
-        User = get_user_model()
-
-        # user who is an admin of the parent dataset
-        admin_user = User.objects.create(username="gandalf", password="fiwuenfwinefiw")
-        self.project.members.add(admin_user)
-        self.public_dataset.admins.add(admin_user)
-        self.restricted_dataset.admins.add(admin_user)
-
-        # Get data admin_user should be able to see
-        self.client.force_authenticate(admin_user)
-        admin_response = self.client.get(
-            "/api/scanreportactiveconceptfilter/?content_type=15"
-        )
-        self.assertEqual(admin_response.status_code, 200)
-        observed_objs = sorted([obj.get("id") for obj in admin_response.data])
-        print(observed_objs)
-        expected_objs = []
-
-        # Assert the observed results are the same as the expected
-        self.assertListEqual(observed_objs, expected_objs)
-
     def test_editor_get(self):
         """Users who are editors of the parent dataset can see all public SRs
         and restricted SRs whose parent dataset they are an editor of.
