@@ -12,7 +12,7 @@ Please append a line to the changelog for each change made.
 - Extract Azure function ProcessQueue, into UploadQueue and CreateConcepts. Moving the upload to be standalone, and creating concepts and reusing them to when the user sets the Person ID and Date Event per table.
 ### Bugfixes
 - Bug fixed in `find_existing_scan_report_concepts()` which was causing some `SRConcepts` to be processed multiple times. This didn't cause any issues, but was misleading and wasteful.
-
+- Fixed hardcoded `content_type` id used in the backend, client, and workers.
 
 ## v2.0.12
 ### New features
