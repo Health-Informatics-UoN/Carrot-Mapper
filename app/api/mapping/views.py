@@ -763,20 +763,19 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
 
     serializer_class = ScanReportConceptSerializer
     filter_backends = [DjangoFilterBackend]
-    # filterset_fields = ["content_type"]
 
     def get_queryset(self):
         if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
             raise PermissionDenied(
                 "You do not have permission to access this resource."
             )
-        # TODO: This is a problem.
+
         content_type_str = self.request.GET["content_type"]
         content_type = ContentType.objects.get(model=content_type_str)
 
         if content_type_str == "scanreportfield":
             # ScanReportField
-            # we have SRCs with content_type 15, grab all SRFields in active SRs,
+            # we have SRCs of content_type "field", grab all SRFields in active SRs,
             # and then filter ScanReportConcepts by those object_ids
             field_ids = ScanReportField.objects.filter(
                 scan_report_table__scan_report__hidden=False,
@@ -788,7 +787,7 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
             )
         elif content_type_str == "scanreportvalue":
             # ScanReportValue
-            # we have SRCs with content_type 17, grab all SRValues in active SRs,
+            # we have SRCs of content_type "value", grab all SRValues in active SRs,
             # and then filter ScanReportConcepts by those object_ids
             value_ids = ScanReportValue.objects.filter(
                 scan_report_field__scan_report_table__scan_report__hidden=False,
@@ -1147,9 +1146,6 @@ class ScanReportValuePKViewSet(viewsets.ModelViewSet):
 
 
 class GetContentTypeID(APIView):
-    """
-    TODO: Add documentation
-    """
 
     def get(self, request, *args, **kwargs):
         """
