@@ -209,7 +209,7 @@ def get_scan_report_active_concepts(
     - Marked with status "Mapping Complete"
 
     Args:
-        content_type (Literal["ScanReportField", "ScanReportValue"]): The `django_content_type` to filter by.
+        content_type (Literal["scanreportfield", "scanreportvalue"]): The `django_content_type` to filter by.
         Represents `ScanReportField`, or `ScanReportValue`
 
     Returns:
