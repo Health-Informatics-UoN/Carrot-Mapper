@@ -303,7 +303,7 @@ def select_concepts_to_post(
           "description", "field_name") keys (for values), with entries (field_id, concept_id)
           or (value_id, concept_id) respectively.
 
-        content_type (Literal["ScanReportFields", "ScanReportValues"]): Controls whether to handle ScanReportFields (15), or ScanReportValues (17).
+        content_type (Literal["scanreportfield", "scanreportvalue"]): Controls whether to handle ScanReportFields (15), or ScanReportValues (17).
 
     Returns:
         A list of reused `Concepts` to create.
