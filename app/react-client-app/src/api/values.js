@@ -84,6 +84,16 @@ const useDelete = async (url) => {
   });
   return response;
 };
+
+/**
+ * Gets the Content Type ID for a given contentType
+ * @param {string} contentType to fetch
+ * @returns JSON { content_type_id: id }
+ */
+const getContentTypeId = async (contentType) => {
+  return await useGet(`/contenttypeid?type_name=${contentType}`);
+};
+
 // get scan report field with given id
 const getScanReportField = async (id) => {
   const field = await useGet(`/scanreportfields/${id}/`);
@@ -118,9 +128,7 @@ const getValuesScanReportConcepts = async (
   let scanreportconcepts = [].concat.apply([], promiseResult);
 
   // Get the content_type_id for the given content_type
-  const { content_type_id } = await useGet(
-    `/contenttypeid?type_name=${contentType}`,
-  );
+  const { content_type_id } = await getContentTypeId(contentType);
 
   // only keep the scanreport concepts that are of the correct content type
   scanreportconcepts = scanreportconcepts.filter(
@@ -288,11 +296,10 @@ const saveMappingRules = async (
   });
 
   // Get the content_type_id for the scan_report_field
-  const { scan_report_field_content_type_id } = await useGet(
-    "/contenttypeid?type_name=scanreportfield",
-  );
+  const { content_type_id } = await getContentTypeId("scanreportfield");
+
   // set source field depending on content type
-  if (scan_report_concept.content_type == scan_report_field_content_type_id) {
+  if (scan_report_concept.content_type == content_type_id) {
     data.source_field = scan_report_concept.object_id;
   } else {
     data.source_field = scan_report_value.scan_report_field;
@@ -450,6 +457,7 @@ export {
   useDelete,
   getScanReportFieldValues,
   chunkIds,
+  getContentTypeId,
   getScanReportField,
   getScanReportTable,
   mapConceptToOmopField,
