@@ -256,7 +256,7 @@ def create_concept(
     Args:
         concept_id (str): The Id of the Concept to create.
         object_id (str): The Object Id of the Concept to create.
-        content_type (int): The Content Type of the Concept.
+        content_type (Literal["scanreportfield", "scanreportvalue"]): The Content Type of the Concept.
         creation_type (Literal["R", "V"], optional): The Creation Type value of the Concept.
 
     Returns:
