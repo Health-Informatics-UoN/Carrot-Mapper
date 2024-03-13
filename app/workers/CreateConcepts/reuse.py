@@ -34,9 +34,6 @@ def reuse_existing_value_concepts(new_values_map) -> None:
         new_fields_map (Dict[str, str]): A map of field names to Ids.
     """
     logger.info("reuse_existing_value_concepts")
-    # TODO: I mean this is just setting it anyway.
-    # content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
-    content_type = 17
     content_type = "scanreportvalue"
 
     # Gets all scan report concepts that are for the type value
@@ -197,26 +194,8 @@ def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
         None
     """
     logger.info("reuse_existing_field_concepts")
-    # TODO: unfuck this.
-    # content_type (Literal[15]): The content type, represents `ScanReportField` (15)
-    content_type = 15
-    # desired:
     content_type = "scanreportfield"
 
-    # I could just get it from the api here, which would override the below.
-    # problem is that select_concepts_to_post() needs to actually know the specific content type.
-    # so this variable is doing 2 things, it is controlling behaviour inside this logic.
-    # but it is also asking the backend to do things in a specific manner.
-    # if we then ask the backend to tell us what to do, we don't know the difference.
-
-    # 2 options:
-    #     1. we call my nice new api again
-    #     2. we change the below api to filter differently
-    #           TODO: Looks like the api is part of the problem! we might fix it there!
-
-    # Gets all scan report concepts that are for the type field
-    # (or content type which should be field) and in "active" SRs
-    # TODO: I (me, this line of code) don't know what the correct content_type number is to fetch it though
     existing_field_concepts = get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing field ids to scan report concepts
