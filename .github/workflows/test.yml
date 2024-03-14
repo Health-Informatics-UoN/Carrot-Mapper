@@ -40,10 +40,9 @@ jobs:
 
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
-        working-directory: app/workers
         with:
-          pytest-coverage-path: pytest-coverage.txt
-          junitxml-path: pytest.xml
+          pytest-coverage-path: app/workers/pytest-coverage.txt
+          junitxml-path: app/workers/pytest.xml
 
   test-django:
       runs-on: ubuntu-latest
