@@ -24,7 +24,7 @@ This can then include refactoring these into smaller functions, and remove the d
 """
 
 
-def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> None:
+def reuse_existing_value_concepts(new_values_map) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
@@ -32,9 +32,10 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
 
     Args:
         new_fields_map (Dict[str, str]): A map of field names to Ids.
-        content_type (Literal[17]): The content type, represents `ScanReportValue` (17)
     """
     logger.info("reuse_existing_value_concepts")
+    content_type = "scanreportvalue"
+
     # Gets all scan report concepts that are for the type value
     # (or content type which should be value) and in "active" SRs
     existing_value_concepts = get_scan_report_active_concepts(content_type)
@@ -178,9 +179,7 @@ def reuse_existing_value_concepts(new_values_map, content_type: Literal[17]) -> 
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
-def reuse_existing_field_concepts(
-    new_fields_map: List[Dict[str, str]], content_type: Literal[15]
-) -> None:
+def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
@@ -190,14 +189,13 @@ def reuse_existing_field_concepts(
 
     Args:
         new_fields_map (List[Dict[str, Any]]): A list of fields.
-        content_type (Literal[15]): The content type, represents `ScanReportField` (15)
 
     Returns:
         None
     """
     logger.info("reuse_existing_field_concepts")
-    # Gets all scan report concepts that are for the type field
-    # (or content type which should be field) and in "active" SRs
+    content_type = "scanreportfield"
+
     existing_field_concepts = get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing field ids to scan report concepts
@@ -288,7 +286,7 @@ def reuse_existing_field_concepts(
 def select_concepts_to_post(
     new_content_details: List[Dict[str, str]],
     details_to_id_and_concept_id_map: List[Dict[str, str]],
-    content_type: Literal[15, 17],
+    content_type: Literal["scanreportfield", "scanreportvalue"],
 ) -> List[Dict[str, Any]]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
@@ -305,7 +303,7 @@ def select_concepts_to_post(
           "description", "field_name") keys (for values), with entries (field_id, concept_id)
           or (value_id, concept_id) respectively.
 
-        content_type (Literal[15, 17]): Controls whether to handle fields (15), or values (17).
+        content_type (Literal["scanreportfield", "scanreportvalue"]): Controls whether to handle ScanReportFields (15), or ScanReportValues (17).
 
     Returns:
         A list of reused `Concepts` to create.
@@ -316,9 +314,9 @@ def select_concepts_to_post(
     concepts_to_post = []
 
     for new_content_detail in new_content_details:
-        if content_type == 15:
+        if content_type == "scanreportfield":
             key = str(new_content_detail["name"])
-        elif content_type == 17:
+        elif content_type == "scanreportvalue":
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -330,8 +328,8 @@ def select_concepts_to_post(
         try:
             existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
             logger.info(
-                f"Found existing {'field' if content_type == 15 else 'value'} with id: {existing_content_id} "
-                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 15 else 'value'} id: {new_content_detail['id']}"
+                f"Found existing {'field' if content_type == 'scanreportfield' else 'value'} with id: {existing_content_id} "
+                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 'scanreportfield' else 'value'} id: {new_content_detail['id']}"
             )
             # Create ScanReportConcept entry for copying over the concept
             concept_entry = create_concept(

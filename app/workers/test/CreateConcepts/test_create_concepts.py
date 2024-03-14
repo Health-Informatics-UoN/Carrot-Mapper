@@ -21,10 +21,30 @@ def test__create_concepts():
 
     # Assert
     expected_result = [
-        {"concept": 1, "object_id": "A", "content_type": 17, "creation_type": "V"},
-        {"concept": 2, "object_id": "B", "content_type": 17, "creation_type": "V"},
-        {"concept": 3, "object_id": "B", "content_type": 17, "creation_type": "V"},
-        {"concept": 4, "object_id": "D", "content_type": 17, "creation_type": "V"},
+        {
+            "concept": 1,
+            "object_id": "A",
+            "content_type": "scanreportvalue",
+            "creation_type": "V",
+        },
+        {
+            "concept": 2,
+            "object_id": "B",
+            "content_type": "scanreportvalue",
+            "creation_type": "V",
+        },
+        {
+            "concept": 3,
+            "object_id": "B",
+            "content_type": "scanreportvalue",
+            "creation_type": "V",
+        },
+        {
+            "concept": 4,
+            "object_id": "D",
+            "content_type": "scanreportvalue",
+            "creation_type": "V",
+        },
     ]
     assert result == expected_result
 

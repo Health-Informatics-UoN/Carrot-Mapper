@@ -198,7 +198,7 @@ def get_scan_report_fields_by_table(id: str) -> List[Dict[str, Any]]:
 
 
 def get_scan_report_active_concepts(
-    content_type: Literal[15, 17]
+    content_type: Literal["scanreportfield", "scanreportvalue"]
 ) -> List[Dict[str, Any]]:
     """
     Get ScanReportConcepts that have the given content_type and are
@@ -209,8 +209,8 @@ def get_scan_report_active_concepts(
     - Marked with status "Mapping Complete"
 
     Args:
-        content_type (Literal[15, 17]): The `django_content_type` Id to filter by.
-        Represents `ScanReportField` (15), or `ScanReportValue` (17)
+        content_type (Literal["scanreportfield", "scanreportvalue"]): The `django_content_type` to filter by.
+        Represents `ScanReportField`, or `ScanReportValue`
 
     Returns:
         A list of ScanReportConcepts matching the criteria.
