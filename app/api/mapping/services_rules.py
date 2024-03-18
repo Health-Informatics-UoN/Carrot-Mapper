@@ -593,12 +593,12 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
 
         rules.append(
             {
-                "source_table": source_table,
-                "source_field": source_field,
                 "rule_id": rule_scan_report_concept_id,
                 "omop_term": concept_name,
                 "destination_table": destination_table,
                 "domain": destination_field,   
+                "source_table": source_table,
+                "source_field": source_field,
                 "term_mapping": term_mapping,
                 "creation_type": creation_type,
             }
@@ -724,10 +724,10 @@ def download_mapping_rules_as_csv(request, qs):
     # loop over the content
     for content in output:
         # replace the django model objects with string names
-        content["source_table"] = content["source_table"].name
-        content["source_field"] = content["source_field"].name
         content["destination_table"] = content["destination_table"].table
         content["domain"] = content["domain"].field
+        content["source_table"] = content["source_table"].name
+        content["source_field"] = content["source_field"].name
 
         # pop out the term mapping
         term_mapping = content.pop("term_mapping")
@@ -753,6 +753,7 @@ def download_mapping_rules_as_csv(request, qs):
             content["concept_id"] = term_mapping
             content["isFieldMapping"] = "1"
 
+        # Lookup and extract concept
         if content["concept_id"]:
             concept = Concept.objects.filter(concept_id=content["concept_id"]).first()
             content["validity"] = concept.valid_start_date <= today < concept.valid_end_date
