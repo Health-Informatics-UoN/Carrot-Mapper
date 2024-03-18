@@ -1,19 +1,24 @@
-import json
-import io
 import csv
-from datetime import datetime, date
+import io
+import json
+from datetime import date, datetime
 
+from data.models import Concept, ConceptAncestor, ConceptRelationship
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from data.models import Concept, ConceptRelationship, ConceptAncestor
-
-from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
-
-from graphviz import Digraph
-
-from django.http import HttpResponse
 from django.db.models import Q
+from django.http import HttpResponse
+from graphviz import Digraph
+from mapping.models import (
+    MappingRule,
+    OmopField,
+    OmopTable,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
+)
+from mapping.serializers import ConceptSerializer
 
 
 class NonStandardConceptMapsToSelf(Exception):
@@ -124,7 +129,7 @@ def get_person_id_rule(
 def get_date_rules(
     request, scan_report, scan_report_concept, source_table, destination_table
 ):
-    #!todo - need some checks for this
+    # !todo - need some checks for this
     date_event_source_field = find_date_event(source_table)
 
     date_omop_fields = m_date_field_mapper[destination_table.table]
@@ -596,7 +601,7 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
                 "rule_id": rule_scan_report_concept_id,
                 "omop_term": concept_name,
                 "destination_table": destination_table,
-                "domain": destination_field,   
+                "domain": destination_field,
                 "source_table": source_table,
                 "source_field": source_field,
                 "term_mapping": term_mapping,
@@ -631,7 +636,7 @@ def get_mapping_rules_json(structural_mapping_rules):
 
     # get the list of rules
     # this is the same list/function that is used
-    #!NOTE: we could cache this to speed things up, as the page load will call this once already
+    # !NOTE: we could cache this to speed things up, as the page load will call this once already
     all_rules = get_mapping_rules_list(structural_mapping_rules)
 
     cdm = {}
@@ -713,7 +718,21 @@ def download_mapping_rules_as_csv(request, qs):
 
     # setup the headers from the first object
     # replace term_mapping ({'source_value':'concept'}) with separate columns
-    headers = ["source_table", "source_field", "source_value", "concept_id", "omop_term", "class", "concept", "validity", "domain",  "vocabulary", "creation_type", "rule_id", "isFieldMapping"]
+    headers = [
+        "source_table",
+        "source_field",
+        "source_value",
+        "concept_id",
+        "omop_term",
+        "class",
+        "concept",
+        "validity",
+        "domain",
+        "vocabulary",
+        "creation_type",
+        "rule_id",
+        "isFieldMapping",
+    ]
 
     # write the headers to the csv
     writer.writerow(headers)
@@ -743,7 +762,6 @@ def download_mapping_rules_as_csv(request, qs):
         elif isinstance(term_mapping, dict):
             # if is a dict, it's a map between a source value and a concept
             # set these based on the value/key
-            # TODO: Check when this runs and why and then get the concept data 
             content["source_value"] = list(term_mapping.keys())[0]
             content["concept_id"] = list(term_mapping.values())[0]
             content["isFieldMapping"] = "0"
@@ -756,7 +774,9 @@ def download_mapping_rules_as_csv(request, qs):
         # Lookup and extract concept
         if content["concept_id"]:
             concept = Concept.objects.filter(concept_id=content["concept_id"]).first()
-            content["validity"] = concept.valid_start_date <= today < concept.valid_end_date
+            content["validity"] = (
+                concept.valid_start_date <= today < concept.valid_end_date
+            )
             content["vocabulary"] = concept.vocabulary_id
             content["concept"] = concept.concept_name
             content["class"] = concept.concept_class_id
@@ -897,7 +917,7 @@ def find_existing_scan_report_concepts(request, table_id):
     return all_concepts
 
 
-#! NOTE
+# !NOTE
 # this could be slow if there are 100s of concepts to be added
 def save_multiple_mapping_rules(request, all_concepts):
     # now loop over all concepts and save new rules
