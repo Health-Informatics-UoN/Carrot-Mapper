@@ -1,7 +1,7 @@
 import json
 import io
 import csv
-from datetime import datetime
+from datetime import datetime, date
 
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
@@ -593,12 +593,12 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
 
         rules.append(
             {
-                "rule_id": rule_scan_report_concept_id,
-                "rule_name": concept_name,
-                "destination_table": destination_table,
-                "destination_field": destination_field,
                 "source_table": source_table,
                 "source_field": source_field,
+                "rule_id": rule_scan_report_concept_id,
+                "omop_term": concept_name,
+                "destination_table": destination_table,
+                "domain": destination_field,   
                 "term_mapping": term_mapping,
                 "creation_type": creation_type,
             }
@@ -640,7 +640,7 @@ def get_mapping_rules_json(structural_mapping_rules):
         # get the rule id
         # i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
         # append the rule_id to not overwrite mappings to the same concept ID
-        _id = rule["rule_name"] + " " + str(rule["rule_id"])
+        _id = rule["omop_term"] + " " + str(rule["rule_id"])
 
         # get the table name
         table_name = rule["destination_table"].table
@@ -656,7 +656,7 @@ def get_mapping_rules_json(structural_mapping_rules):
             cdm[table_name][_id] = {}
 
         # make a new mapping spec for the destination table
-        destination_field = rule["destination_field"].field
+        destination_field = rule["domain"].field
         cdm[table_name][_id][destination_field] = {
             "source_table": rule["source_table"].name.replace("\ufeff", ""),
             "source_field": rule["source_field"].name.replace("\ufeff", ""),
@@ -713,38 +713,52 @@ def download_mapping_rules_as_csv(request, qs):
 
     # setup the headers from the first object
     # replace term_mapping ({'source_value':'concept'}) with separate columns
-    headers = [str(x) for x in output[0].keys() if str(x) != "term_mapping"]
-    headers += ["source_value", "concept", "isFieldMapping"]
+    headers = ["source_table", "source_field", "source_value", "concept_id", "omop_term", "class", "concept", "validity", "domain",  "vocabulary", "creation_type", "rule_id", "isFieldMapping"]
 
     # write the headers to the csv
     writer.writerow(headers)
 
+    # Get the current date to check validity
+    today = date.today()
+
     # loop over the content
     for content in output:
         # replace the django model objects with string names
-        content["destination_table"] = content["destination_table"].table
-        content["destination_field"] = content["destination_field"].field
         content["source_table"] = content["source_table"].name
         content["source_field"] = content["source_field"].name
+        content["destination_table"] = content["destination_table"].table
+        content["domain"] = content["domain"].field
 
         # pop out the term mapping
         term_mapping = content.pop("term_mapping")
         content["isFieldMapping"] = ""
+        content["validity"] = ""
+        content["vocabulary"] = ""
+        content["concept"] = ""
+        content["class"] = ""
         # if no term mapping, set columns to blank
         if term_mapping is None:
             content["source_value"] = ""
-            content["concept"] = ""
+            content["concept_id"] = ""
         elif isinstance(term_mapping, dict):
             # if is a dict, it's a map between a source value and a concept
             # set these based on the value/key
+            # TODO: Check when this runs and why and then get the concept data 
             content["source_value"] = list(term_mapping.keys())[0]
-            content["concept"] = list(term_mapping.values())[0]
+            content["concept_id"] = list(term_mapping.values())[0]
             content["isFieldMapping"] = "0"
         else:
             # otherwise it is a scalar, it is a term map of a field, so set this
             content["source_value"] = ""
-            content["concept"] = term_mapping
+            content["concept_id"] = term_mapping
             content["isFieldMapping"] = "1"
+
+        if content["concept_id"]:
+            concept = Concept.objects.filter(concept_id=content["concept_id"]).first()
+            content["validity"] = concept.valid_start_date <= today < concept.valid_end_date
+            content["vocabulary"] = concept.vocabulary_id
+            content["concept"] = concept.concept_name
+            content["class"] = concept.concept_class_id
 
         # extract and write the contents now
         content = [str(content[x]) for x in headers]

@@ -67,7 +67,7 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                             <Tr key={index} bg={item.flag ? "lightred" : ""}>
                                 <Td maxW={[50, 100, 200]} >{item.rule_id} </Td>
                                 <Td maxW={[50, 100, 200]} >{item.destination_table.name} </Td>
-                                <Td maxW={[50, 100, 200]} >{item.destination_field.name}</Td>
+                                <Td maxW={[50, 100, 200]} >{item.domain.name}</Td>
                                 <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.source_table.id}/`}>{item.source_table.name}</Link></Td>
                                 <Td maxW={[50, 100, 200]} ><Link style={{ color: "#0000FF", }} href={`/scanreports/${scanReportId}/tables/${item.source_table.id}/fields/${item.source_field.id}/`}>{item.source_field.name}</Link></Td>
                                 <Td maxW={[50, 100, 200]} >
@@ -82,13 +82,13 @@ function RulesTbl({ values, filters, removeFilter, setDestinationFilter, setSour
                                                         <ArrowForwardIcon />
                                                         <span style={{ color: "#1d8459", }}>
                                                             {item.term_mapping[Object.keys(item.term_mapping)[0]] + " "}
-                                                            {item.rule_name}
+                                                            {item.omop_term}
                                                         </span>
                                                     </div>
                                                 </VStack>
                                                 :
                                                 <div>
-                                                    {JSON.stringify(item.term_mapping)} {item.rule_name}
+                                                    {JSON.stringify(item.term_mapping)} {item.omop_term}
                                                 </div>
                                             }
 
