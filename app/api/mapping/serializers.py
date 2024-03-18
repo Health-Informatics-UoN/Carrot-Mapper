@@ -1,43 +1,35 @@
-from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied, NotFound
-from drf_dynamic_fields import DynamicFieldsMixin
-from django.contrib.auth.models import User
 from data.models import (
     Concept,
-    Vocabulary,
-    ConceptRelationship,
     ConceptAncestor,
     ConceptClass,
+    ConceptRelationship,
     ConceptSynonym,
     Domain,
     DrugStrength,
+    Vocabulary,
 )
+from django.contrib.auth.models import User
+from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.models import (
-    ScanReportField,
-    ScanReportValue,
-    ScanReport,
-    ScanReportTable,
-    ScanReportConcept,
     ClassificationSystem,
     DataDictionary,
     DataPartner,
+    Dataset,
+    MappingRule,
     OmopField,
     OmopTable,
-    MappingRule,
-    Dataset,
     Project,
+    ScanReport,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
 )
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound, PermissionDenied
 
-from .services_rules import (
-    analyse_concepts,
-    get_mapping_rules_json,
-)
-
-from .permissions import (
-    has_editorship,
-    is_admin,
-    is_az_function_user,
-)
+from .permissions import has_editorship, is_admin, is_az_function_user
+from .services_rules import analyse_concepts, get_mapping_rules_json
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -132,7 +124,7 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                 is_admin(self.instance, request) or is_az_function_user(request.user)
             ):
                 raise serializers.ValidationError(
-                    """You must be the author of the scan report or an admin of the parent dataset 
+                    """You must be the author of the scan report or an admin of the parent dataset
                     to change this field."""
                 )
         return author
@@ -143,7 +135,7 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                 is_admin(self.instance, request) or is_az_function_user(request.user)
             ):
                 raise serializers.ValidationError(
-                    """You must be the author of the scan report or an admin of the parent dataset 
+                    """You must be the author of the scan report or an admin of the parent dataset
                     to change this field."""
                 )
         return viewers
@@ -154,7 +146,7 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                 is_admin(self.instance, request) or is_az_function_user(request.user)
             ):
                 raise serializers.ValidationError(
-                    """You must be the author of the scan report or an admin of the parent dataset 
+                    """You must be the author of the scan report or an admin of the parent dataset
                     to change this field."""
                 )
         return editors
@@ -425,3 +417,18 @@ class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
     def to_representation(self, scan_report):
         analysis = analyse_concepts(scan_report.id)
         return analysis
+
+
+class ContentTypeSerializer(serializers.Serializer):
+    """
+    Serializes the content type name.
+
+    Args:
+        self: The instance of the class.
+
+    Attributes:
+        type_name: The serialized content type name.
+
+    """
+
+    type_name = serializers.CharField(max_length=100)

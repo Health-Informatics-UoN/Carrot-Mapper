@@ -31,12 +31,14 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
         if concept["concept_id"] != -1:
             if isinstance(concept["concept_id"], list):
                 concept_id_data.extend(
-                    helpers.create_concept(concept_id, concept["id"])
+                    helpers.create_concept(concept_id, concept["id"], "scanreportvalue")
                     for concept_id in concept["concept_id"]
                 )
             else:
                 concept_id_data.append(
-                    helpers.create_concept(concept["concept_id"], concept["id"])
+                    helpers.create_concept(
+                        concept["concept_id"], concept["id"], "scanreportvalue"
+                    )
                 )
 
     return concept_id_data
@@ -294,8 +296,8 @@ async def _handle_table(
     logger.info("POST concepts all finished")
 
     # handle reuse of concepts
-    reuse_existing_field_concepts(table_fields, 15)
-    reuse_existing_value_concepts(table_values, 17)
+    reuse_existing_field_concepts(table_fields)
+    reuse_existing_value_concepts(table_values)
 
 
 def main(msg: func.QueueMessage):

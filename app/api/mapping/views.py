@@ -24,6 +24,7 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordChangeDoneView
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import BadHeaderError, send_mail
 from django.db.models.query_utils import Q
@@ -80,6 +81,7 @@ from .serializers import (
     ConceptRelationshipSerializer,
     ConceptSerializer,
     ConceptSynonymSerializer,
+    ContentTypeSerializer,
     DataDictionarySerializer,
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
@@ -690,10 +692,15 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         body = request.data
         if not isinstance(body, list):
+            # Extract the content_type
+            content_type_str = body.pop("content_type", None)
+            content_type = ContentType.objects.get(model=content_type_str)
+            body["content_type"] = content_type.id
+
             concept = ScanReportConcept.objects.filter(
                 concept=body["concept"],
                 object_id=body["object_id"],
-                content_type=body["content_type"],
+                content_type=content_type,
             )
             if concept.count() > 0:
                 print("Can't add multiple concepts of the same id to the same object")
@@ -711,10 +718,15 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
             # this method may be quite slow as it has to wait for each query
             filtered = []
             for item in body:
+                # Extract the content_type
+                content_type_str = item.pop("content_type", None)
+                content_type = ContentType.objects.get(model=content_type_str)
+                item["content_type"] = content_type.id
+
                 concept = ScanReportConcept.objects.filter(
                     concept=item["concept"],
                     object_id=item["object_id"],
-                    content_type=item["content_type"],
+                    content_type=content_type,
                 )
                 if concept.count() == 0:
                     filtered.append(item)
@@ -751,36 +763,39 @@ class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
 
     serializer_class = ScanReportConceptSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["content_type"]
 
     def get_queryset(self):
         if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
             raise PermissionDenied(
                 "You do not have permission to access this resource."
             )
-        if self.request.GET["content_type"] == "15":
+
+        content_type_str = self.request.GET["content_type"]
+        content_type = ContentType.objects.get(model=content_type_str)
+
+        if content_type_str == "scanreportfield":
             # ScanReportField
-            # we have SRCs with content_type 15, grab all SRFields in active SRs,
+            # we have SRCs of content_type "field", grab all SRFields in active SRs,
             # and then filter ScanReportConcepts by those object_ids
             field_ids = ScanReportField.objects.filter(
                 scan_report_table__scan_report__hidden=False,
                 scan_report_table__scan_report__parent_dataset__hidden=False,
                 scan_report_table__scan_report__status="COMPLET",
-            )
+            ).values_list("id", flat=True)
             return ScanReportConcept.objects.filter(
-                content_type=15, object_id__in=field_ids
+                content_type=content_type, object_id__in=field_ids
             )
-        elif self.request.GET["content_type"] == "17":  #
+        elif content_type_str == "scanreportvalue":
             # ScanReportValue
-            # we have SRCs with content_type 17, grab all SRValues in active SRs,
+            # we have SRCs of content_type "value", grab all SRValues in active SRs,
             # and then filter ScanReportConcepts by those object_ids
             value_ids = ScanReportValue.objects.filter(
                 scan_report_field__scan_report_table__scan_report__hidden=False,
                 scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
                 scan_report_field__scan_report_table__scan_report__status="COMPLET",
-            )
+            ).values_list("id", flat=True)
             return ScanReportConcept.objects.filter(
-                content_type=17, object_id__in=value_ids
+                content_type=content_type, object_id__in=value_ids
             )
         return None
 
@@ -1128,6 +1143,28 @@ class ScanReportValuePKViewSet(viewsets.ModelViewSet):
             ]
         ).exclude(conceptID=-1)
         return qs
+
+
+class GetContentTypeID(APIView):
+
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieves the content type ID based on the provided type name.
+
+        Args:
+            self: The instance of the class.
+            request: The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
+        serializer = ContentTypeSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        type_name = serializer.validated_data.get("type_name")
+        try:
+            content_type = ContentType.objects.get(model=type_name)
+            return Response({"content_type_id": content_type.id})
+        except ContentType.DoesNotExist:
+            return Response({"error": "Content type not found"}, status=404)
 
 
 @login_required
