@@ -1,19 +1,24 @@
-import json
-import io
 import csv
-from datetime import datetime
+import io
+import json
+from datetime import date, datetime
 
+from data.models import Concept, ConceptAncestor, ConceptRelationship
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from data.models import Concept, ConceptRelationship, ConceptAncestor
-
-from mapping.models import ScanReportTable, ScanReportField, ScanReportValue
-from mapping.models import ScanReportConcept, OmopTable, OmopField, Concept, MappingRule
-
-from graphviz import Digraph
-
-from django.http import HttpResponse
 from django.db.models import Q
+from django.http import HttpResponse
+from graphviz import Digraph
+from mapping.models import (
+    MappingRule,
+    OmopField,
+    OmopTable,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
+)
+from mapping.serializers import ConceptSerializer
 
 
 class NonStandardConceptMapsToSelf(Exception):
@@ -124,7 +129,7 @@ def get_person_id_rule(
 def get_date_rules(
     request, scan_report, scan_report_concept, source_table, destination_table
 ):
-    #!todo - need some checks for this
+    # !todo - need some checks for this
     date_event_source_field = find_date_event(source_table)
 
     date_omop_fields = m_date_field_mapper[destination_table.table]
@@ -594,9 +599,9 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
         rules.append(
             {
                 "rule_id": rule_scan_report_concept_id,
-                "rule_name": concept_name,
+                "omop_term": concept_name,
                 "destination_table": destination_table,
-                "destination_field": destination_field,
+                "domain": destination_field,
                 "source_table": source_table,
                 "source_field": source_field,
                 "term_mapping": term_mapping,
@@ -631,7 +636,7 @@ def get_mapping_rules_json(structural_mapping_rules):
 
     # get the list of rules
     # this is the same list/function that is used
-    #!NOTE: we could cache this to speed things up, as the page load will call this once already
+    # !NOTE: we could cache this to speed things up, as the page load will call this once already
     all_rules = get_mapping_rules_list(structural_mapping_rules)
 
     cdm = {}
@@ -640,7 +645,7 @@ def get_mapping_rules_json(structural_mapping_rules):
         # get the rule id
         # i.e. 5 rules with have the same id as they're associated to the same object e.g. person mapping of 'F' to 8532
         # append the rule_id to not overwrite mappings to the same concept ID
-        _id = rule["rule_name"] + " " + str(rule["rule_id"])
+        _id = rule["omop_term"] + " " + str(rule["rule_id"])
 
         # get the table name
         table_name = rule["destination_table"].table
@@ -656,7 +661,7 @@ def get_mapping_rules_json(structural_mapping_rules):
             cdm[table_name][_id] = {}
 
         # make a new mapping spec for the destination table
-        destination_field = rule["destination_field"].field
+        destination_field = rule["domain"].field
         cdm[table_name][_id][destination_field] = {
             "source_table": rule["source_table"].name.replace("\ufeff", ""),
             "source_field": rule["source_field"].name.replace("\ufeff", ""),
@@ -713,38 +718,68 @@ def download_mapping_rules_as_csv(request, qs):
 
     # setup the headers from the first object
     # replace term_mapping ({'source_value':'concept'}) with separate columns
-    headers = [str(x) for x in output[0].keys() if str(x) != "term_mapping"]
-    headers += ["source_value", "concept", "isFieldMapping"]
+    headers = [
+        "source_table",
+        "source_field",
+        "source_value",
+        "concept_id",
+        "omop_term",
+        "class",
+        "concept",
+        "validity",
+        "domain",
+        "vocabulary",
+        "creation_type",
+        "rule_id",
+        "isFieldMapping",
+    ]
 
     # write the headers to the csv
     writer.writerow(headers)
+
+    # Get the current date to check validity
+    today = date.today()
 
     # loop over the content
     for content in output:
         # replace the django model objects with string names
         content["destination_table"] = content["destination_table"].table
-        content["destination_field"] = content["destination_field"].field
+        content["domain"] = content["domain"].field
         content["source_table"] = content["source_table"].name
         content["source_field"] = content["source_field"].name
 
         # pop out the term mapping
         term_mapping = content.pop("term_mapping")
         content["isFieldMapping"] = ""
+        content["validity"] = ""
+        content["vocabulary"] = ""
+        content["concept"] = ""
+        content["class"] = ""
         # if no term mapping, set columns to blank
         if term_mapping is None:
             content["source_value"] = ""
-            content["concept"] = ""
+            content["concept_id"] = ""
         elif isinstance(term_mapping, dict):
             # if is a dict, it's a map between a source value and a concept
             # set these based on the value/key
             content["source_value"] = list(term_mapping.keys())[0]
-            content["concept"] = list(term_mapping.values())[0]
+            content["concept_id"] = list(term_mapping.values())[0]
             content["isFieldMapping"] = "0"
         else:
             # otherwise it is a scalar, it is a term map of a field, so set this
             content["source_value"] = ""
-            content["concept"] = term_mapping
+            content["concept_id"] = term_mapping
             content["isFieldMapping"] = "1"
+
+        # Lookup and extract concept
+        if content["concept_id"]:
+            concept = Concept.objects.filter(concept_id=content["concept_id"]).first()
+            content["validity"] = (
+                concept.valid_start_date <= today < concept.valid_end_date
+            )
+            content["vocabulary"] = concept.vocabulary_id
+            content["concept"] = concept.concept_name
+            content["class"] = concept.concept_class_id
 
         # extract and write the contents now
         content = [str(content[x]) for x in headers]
@@ -882,7 +917,7 @@ def find_existing_scan_report_concepts(request, table_id):
     return all_concepts
 
 
-#! NOTE
+# !NOTE
 # this could be slow if there are 100s of concepts to be added
 def save_multiple_mapping_rules(request, all_concepts):
     # now loop over all concepts and save new rules
