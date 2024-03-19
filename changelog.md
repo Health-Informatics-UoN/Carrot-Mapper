@@ -10,6 +10,7 @@ Please append a line to the changelog for each change made.
 - Disabled stats counting on the ScanReport main page. This should improve the stability of the system, as those counts were tying up the server for 45 seconds or more.
 - Restructure repo to separate dependencies.
 - Extract Azure function ProcessQueue, into UploadQueue and CreateConcepts. Moving the upload to be standalone, and creating concepts and reusing them to when the user sets the Person ID and Date Event per table.
+- Updated the CSV export function - reordered the columns and added new columns (class, concept, validity and vocabulary).
 ### Bugfixes
 - Bug fixed in `find_existing_scan_report_concepts()` which was causing some `SRConcepts` to be processed multiple times. This didn't cause any issues, but was misleading and wasteful.
 - Fixed hardcoded `content_type` id used in the backend, client, and workers.
