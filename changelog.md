@@ -6,17 +6,19 @@ Please append a line to the changelog for each change made.
 ### New features
 - Added refresh_mapping_rules management command.
 
-### Improvements 
+### Improvements
 - Disabled stats counting on the ScanReport main page. This should improve the stability of the system, as those counts were tying up the server for 45 seconds or more.
-
+- Restructure repo to separate dependencies.
+- Extract Azure function ProcessQueue, into UploadQueue and CreateConcepts. Moving the upload to be standalone, and creating concepts and reusing them to when the user sets the Person ID and Date Event per table.
+- Updated the CSV export function - reordered the columns and added new columns (class, concept, validity and vocabulary).
 ### Bugfixes
 - Bug fixed in `find_existing_scan_report_concepts()` which was causing some `SRConcepts` to be processed multiple times. This didn't cause any issues, but was misleading and wasteful.
-
+- Fixed hardcoded `content_type` id used in the backend, client, and workers.
 
 ## v2.0.12
 ### New features
 
-### Improvements 
+### Improvements
 
 ### Bugfixes
 - Handle zero SRs gracefully on Home page and Scan Report list page.
@@ -27,7 +29,7 @@ Please append a line to the changelog for each change made.
 
 ### Improvements
 - Used lazy loading to reduce communication and improve loading speeds.
-- Rewritten Dockerfile to speed up rebuilds when editing React files. 
+- Rewritten Dockerfile to speed up rebuilds when editing React files.
 
 ### Bugfixes
 
@@ -105,7 +107,7 @@ Please append a line to the changelog for each change made.
 ### Improvements
 * Improved error message reporting while checking the structure of uploaded files for consistency.
 * Rewritten values upload enables much faster uploads and vocabulary mapping.
-* Rewritten standard concept matching now enables a single nonstandard concept to be matched to more than one 
+* Rewritten standard concept matching now enables a single nonstandard concept to be matched to more than one
 standard concept.
 ### Bugfixes
 
