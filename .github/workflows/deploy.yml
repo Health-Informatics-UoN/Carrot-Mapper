@@ -90,7 +90,7 @@ jobs:
           app-name: 'ccom-funcs-dev'
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
-          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
   # Deploy Web App Dev
   deploy-web-dev:
@@ -106,7 +106,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'ccom-dev'
-          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
   # Deploy Workers Test
@@ -129,7 +129,7 @@ jobs:
           app-name: 'ccom-funcs-test'
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
-          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
   # Deploy Web App Test
   deploy-web-test:
@@ -145,7 +145,7 @@ jobs:
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'ccom-test'
-          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
   # Deploy Workers Production
@@ -168,7 +168,7 @@ jobs:
           app-name: 'ccom-funcs-prod'
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
-          publish-profile: ${{ env.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
   # Deploy Web App Production
   deploy-web-production:
@@ -185,5 +185,5 @@ jobs:
         with:
           app-name: 'ccom'
           slot-name: 'production'
-          publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
