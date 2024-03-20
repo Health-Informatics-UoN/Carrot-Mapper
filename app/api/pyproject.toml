@@ -24,7 +24,13 @@ graphviz = "0.20.1"
 drf-dynamic-fields = "0.4.0"
 django-cors-headers = "3.11.0"
 python-dotenv = "1.0.0"
+pytest-django = "^4.8.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+DJANGO_SETTINGS_MODULE = "api.settings"

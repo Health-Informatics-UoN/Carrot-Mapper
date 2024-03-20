@@ -1,23 +1,22 @@
 import os
 from unittest import mock
-from django.test import TestCase
+
 from django.contrib.auth import get_user_model
-from rest_framework.generics import GenericAPIView
-from rest_framework.test import APIRequestFactory, force_authenticate
-from rest_framework.authtoken.models import Token
-from .permissions import (
+from django.test import TestCase
+from mapping.models import DataPartner, Dataset, Project, ScanReport, VisibilityChoices
+from mapping.permissions import (
+    CanAdmin,
+    CanEdit,
+    CanView,
+    CanViewProject,
     has_editorship,
     has_viewership,
     is_admin,
-    CanAdmin,
-    CanEdit,
-    CanViewProject,
-    CanView,
 )
-from .views import (
-    ProjectRetrieveView,
-)
-from .models import Project, Dataset, ScanReport, VisibilityChoices, DataPartner
+from mapping.views import ProjectRetrieveView
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import GenericAPIView
+from rest_framework.test import APIRequestFactory, force_authenticate
 
 
 class TestHasViewership(TestCase):
@@ -534,7 +533,7 @@ class TestCanView(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user
@@ -638,7 +637,7 @@ class TestCanEdit(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user
@@ -739,7 +738,7 @@ class TestCanAdmin(TestCase):
     @mock.patch.dict(os.environ, {"AZ_FUNCTION_USER": "az_functions"}, clear=True)
     def test_az_function_user_perm(self):
         User = get_user_model()
-        az_user = User.objects.get(username=os.getenv("AZ_FUNCTION_USER"))
+        az_user = User.objects.create(username="az_functions")
 
         # Add the user to the request; this is not automatic
         self.request.user = az_user

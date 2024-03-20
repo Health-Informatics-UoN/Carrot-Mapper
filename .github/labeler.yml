@@ -1,0 +1,26 @@
+"Area: Migrations":
+  - 'app/api/mapping/migrations/*'
+
+dependencies:
+  - 'app/react-client-app/package.json'
+  - 'app/react-client-app/package-lock.json'
+  - 'poetry.lock'
+  - 'pyproject.toml'
+  - 'app/workers/poetry.lock'
+  - 'app/workers/pyproject.toml'
+  - 'app/api/poetry.lock'
+  - 'app/api/pyproject.toml'
+
+"Area: CI":
+  - '.github/**/*'
+
+"Area: Backend":
+  - 'app/api/**'
+  - 'lib/Data/**'
+  - 'lib/Monitor.Shared/**'
+
+"Area: Frontend":
+  - 'app/react-client-app/**'
+
+"Area: Workers":
+  - 'app/workers/**'

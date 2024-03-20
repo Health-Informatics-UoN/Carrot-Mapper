@@ -1,22 +1,25 @@
-from django.test import TestCase
+from datetime import date
+
+import pytest
+from data.models import Concept
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from data.models import Concept
-from .services_rules import analyse_concepts
-from rest_framework.authtoken.models import Token
-from .models import (
+from django.test import TestCase
+from mapping.models import (
     DataPartner,
+    Dataset,
     MappingRule,
     OmopField,
     OmopTable,
     Project,
-    Dataset,
     ScanReport,
     ScanReportConcept,
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
 )
+from mapping.services_rules import analyse_concepts
+from rest_framework.authtoken.models import Token
 
 
 class TestMisalignedMappings(TestCase):
@@ -264,6 +267,7 @@ class TestMisalignedMappings(TestCase):
             concept=self.scan_report_concept_cough_desc,
         )
 
+    @pytest.mark.skip(reason="This test relies on a more complete OMOP db.")
     def test_analyse_concepts(self):
         data = analyse_concepts(self.scan_report1.id)
         test_data = data["data"][0]
