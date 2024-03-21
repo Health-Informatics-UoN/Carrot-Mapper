@@ -8,7 +8,7 @@ on:
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './app/workers'
-  PYTHON_VERSION: '3.8'
+  PYTHON_VERSION: '3.11'
 
 jobs:
   build-and-publish-workers:
