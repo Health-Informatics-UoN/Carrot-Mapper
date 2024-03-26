@@ -1,18 +1,17 @@
+import asyncio
 import json
 import logging
 import os
-
 from collections import defaultdict
 from datetime import datetime
 
-import asyncio
+import azure.functions as func
 import httpx
 import requests
-import azure.functions as func
-
 from requests.models import HTTPError
 from shared_code import omop_helpers
-from . import helpers, blob_parser
+
+from . import blob_parser, helpers
 
 # import memory_profiler
 # root_logger = logging.getLogger()
@@ -152,13 +151,13 @@ def select_concepts_to_post(
     for new_content_detail in new_content_details:
         try:
             # fields
-            if content_type == 15:
+            if content_type == "scanreportfield":
                 (
                     existing_content_id,
                     concept_id,
                 ) = details_to_id_and_concept_id_map[str(new_content_detail["name"])]
             # values
-            elif content_type == 17:
+            elif content_type == "scanreportvalue":
                 existing_content_id, concept_id = details_to_id_and_concept_id_map[
                     (
                         str(new_content_detail["name"]),
@@ -168,17 +167,17 @@ def select_concepts_to_post(
                 ]
             else:
                 raise RuntimeError(
-                    f"content_type must be 15 or 17: you provided {content_type}"
+                    f"content_type must be scanreportvalue or scanreportfield: you provided {content_type}"
                 )
 
             new_content_id = str(new_content_detail["id"])
-            if content_type == 15:
+            if content_type == "scanreportfield":
                 logger.info(
                     f"Found existing field with id: {existing_content_id} with existing "
                     f"concept mapping: {concept_id} which matches new field id: "
                     f"{new_content_id}"
                 )
-            elif content_type == 17:
+            elif content_type == "scanreportvalue":
                 logger.info(
                     f"Found existing value with id: {existing_content_id} with existing "
                     f"concept mapping: {concept_id} which matches new value id: "
@@ -844,7 +843,7 @@ async def process_values_from_sheet(
                             # TODO: we should query this value from the API
                             # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
                             # but that's not available from an Azure Function.
-                            "content_type": 17,
+                            "content_type": "scanreportvalue",
                             "creation_type": "V",
                         }
                     )
@@ -856,7 +855,7 @@ async def process_values_from_sheet(
                         # TODO: we should query this value from the API
                         # - via ORM it would be ContentType.objects.get(model='scanreportvalue').id,
                         # but that's not available from an Azure Function.
-                        "content_type": 17,
+                        "content_type": "scanreportfield",
                         "creation_type": "V",
                     }
                 )
@@ -878,8 +877,8 @@ async def process_values_from_sheet(
 
     logger.info("POST concepts all finished")
 
-    reuse_existing_field_concepts(fieldnames_to_ids_dict, 15)
-    reuse_existing_value_concepts(values_response_content, 17)
+    reuse_existing_field_concepts(fieldnames_to_ids_dict, "scanreportfield")
+    reuse_existing_value_concepts(values_response_content, "scanreportvalue")
 
 
 def post_field_entries(field_entries_to_post, scan_report_id):
@@ -1203,7 +1202,7 @@ def main(msg: func.QueueMessage):
     For each row in Field Overview create an entry for scan_report_field,
     Empty row signifies end of fields in a table
     Append field entry to field_entries_to_post[] list,
-    Create JSON array with all the field entries, 
+    Create JSON array with all the field entries,
     Send POST request to API with JSON as input,
     Save the response data(field ids,field names) in a dictionary
     Set the current working sheet to be the same as the current table
