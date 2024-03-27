@@ -744,7 +744,7 @@ def download_mapping_rules_as_csv(request, qs):
                 concept.valid_start_date <= today < concept.valid_end_date
             )
             content["vocabulary"] = concept.vocabulary_id
-            content["concept"] = concept.concept_name
+            content["concept"] = concept.standard_concept
             content["class"] = concept.concept_class_id
 
         # extract and write the contents now
