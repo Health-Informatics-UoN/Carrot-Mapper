@@ -7,8 +7,7 @@ const fetchKeys = {
 
 export async function getScanReports(): Promise<ScanReport[]> {
   try {
-    // return await request<ScanReport[]>(fetchKeys.list);
-    return scanReports;
+    return await request<ScanReport[]>(fetchKeys.list);
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];

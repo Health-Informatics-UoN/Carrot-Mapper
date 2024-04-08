@@ -12,7 +12,7 @@ files = [
 ]
 
 [package.extras]
-tests = ["mypy (>=0.800)", "pytest", "pytest-asyncio"]
+tests = ["pytest", "pytest-asyncio"]
 
 [[package]]
 name = "azure-common"
@@ -398,6 +398,24 @@ files = [
 
 [package.dependencies]
 Django = ">=4.2"
+
+[[package]]
+name = "django-revproxy"
+version = "0.12.0"
+description = "Yet another Django reverse proxy application"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django_revproxy-0.12.0-py3-none-any.whl", hash = "sha256:bd8e735414783477e18a79b3bb1e2180e0c60d412cd2bfdcf34d8898406b26e4"},
+]
+
+[package.dependencies]
+Django = ">=3.0"
+urllib3 = ">=1.12"
+
+[package.extras]
+diazo = ["diazo (>=1.0.5)", "lxml (>=3.4)"]
+tests = ["coverage", "diazo", "flake8", "lxml (>=3.4)"]
 
 [[package]]
 name = "django-select2"
