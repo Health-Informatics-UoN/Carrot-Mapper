@@ -7,6 +7,8 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { getScanReports } from "@/api/scan-reports";
+import { DataTable } from "@/components/data-table";
+import { columns } from "./columns";
 
 export default async function ScanReports() {
   const result = await getScanReports();
@@ -43,6 +45,9 @@ export default async function ScanReports() {
       <Button size="lg" className="my-5 text-md bg-blue-900 hover:bg-blue-800">
         New Scan Report
       </Button>
+      <div className="mb-10">
+        <DataTable columns={columns} data={result} />
+      </div>
     </div>
   );
 }
