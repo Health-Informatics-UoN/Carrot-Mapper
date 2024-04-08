@@ -1,0 +1,74 @@
+name: Build and Deploy Next.js Client App
+
+on:
+  push:
+    branches:
+      - main
+      - next-client-app-github-pipeline
+
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: app/next-client-app
+  NODE_VERSION: 20
+
+jobs:
+  publish_WebFrontend:
+    name: Publish Next.js Client App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm install and build
+        run: |
+          npm i --workspaces=false
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Cache .next/cache
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH  }}/.next/cache
+          key: nextjs | $(Agent.OS) | ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/package-lock.json
+
+      - name: Build
+        run: npm run build --workspaces=false
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Copy Static Assets
+        run: |
+          cp -r .next/static .next/standalone/.next/
+          cp -r public .next/standalone/
+        working-directory: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Publish webapp artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/.next/standalone
+          name: frontendwebapp
+
+  # Deploy Dev
+  deploy-dev:
+    name: Deploy Next Dev
+    needs: publish_WebFrontend
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          path: frontendwebapp
+          name: frontendwebapp
+
+      - name: Deploy to Azure WebApp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ccom-next-dev
+          publish-profile: ${{ secrets.AZURE_WEBAPP_NEXT_PUBLISH_PROFILE }}
+          package: ${{ github.workspace }}/frontendwebapp
