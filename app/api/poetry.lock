@@ -2,20 +2,17 @@
 
 [[package]]
 name = "asgiref"
-version = "3.7.2"
+version = "3.2.10"
 description = "ASGI specs, helper code, and adapters"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.5"
 files = [
-    {file = "asgiref-3.7.2-py3-none-any.whl", hash = "sha256:89b2ef2247e3b562a16eef663bc0e2e703ec6468e2fa8a5cd61cd449786d4f6e"},
-    {file = "asgiref-3.7.2.tar.gz", hash = "sha256:9e0ce3aa93a819ba5b45120216b23878cf6e8525eb3848653452b4192b92afed"},
+    {file = "asgiref-3.2.10-py3-none-any.whl", hash = "sha256:9fc6fb5d39b8af147ba40765234fa822b39818b12cc80b35ad9b0cef3a476aed"},
+    {file = "asgiref-3.2.10.tar.gz", hash = "sha256:7e51911ee147dd685c3c8b805c0ad0cb58d360987b56953878f8c06d2d1c6f1a"},
 ]
 
-[package.dependencies]
-typing-extensions = {version = ">=4", markers = "python_version < \"3.11\""}
-
 [package.extras]
-tests = ["mypy (>=0.800)", "pytest", "pytest-asyncio"]
+tests = ["pytest", "pytest-asyncio"]
 
 [[package]]
 name = "azure-common"
@@ -392,6 +389,24 @@ files = [
 
 [package.dependencies]
 Django = ">=2.2"
+
+[[package]]
+name = "django-revproxy"
+version = "0.12.0"
+description = "Yet another Django reverse proxy application"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django_revproxy-0.12.0-py3-none-any.whl", hash = "sha256:bd8e735414783477e18a79b3bb1e2180e0c60d412cd2bfdcf34d8898406b26e4"},
+]
+
+[package.dependencies]
+Django = ">=3.0"
+urllib3 = ">=1.12"
+
+[package.extras]
+diazo = ["diazo (>=1.0.5)", "lxml (>=3.4)"]
+tests = ["coverage", "diazo", "flake8", "lxml (>=3.4)"]
 
 [[package]]
 name = "django-select2"
@@ -831,4 +846,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "452fdaad5e991e3bd5e8bb3ae9f0c39fa6cd98cb355e2280ae8d75cc94786770"
+content-hash = "94e0b8087312907e0b55284f3afed16bcf9042bcfea8c125d82e6b9735eb8ae2"

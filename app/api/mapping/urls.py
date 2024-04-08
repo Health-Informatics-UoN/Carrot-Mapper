@@ -38,7 +38,7 @@ routers.register(
 )
 
 routers.register(r"users", views.UserViewSet, basename="users")
-routers.register(r"usersfilter", views.UserFilterViewSet, basename="users")
+routers.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
 
 routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
 routers.register(

@@ -25,6 +25,7 @@ drf-dynamic-fields = "0.4.0"
 django-cors-headers = "3.11.0"
 python-dotenv = "1.0.0"
 pytest-django = "^4.8.0"
+django-revproxy = "^0.12.0"
 
 [build-system]
 requires = ["poetry-core"]

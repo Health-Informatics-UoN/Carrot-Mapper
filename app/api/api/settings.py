@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "test",
+    "proxy",
+    "revproxy",
 ]
 
 MIDDLEWARE = [
@@ -171,3 +173,5 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 NLP_API_KEY = os.getenv("NLP_API_KEY")
 
 SESSION_COOKIE_AGE = 86400  # session length is 24 hours
+
+NEXTJS_URL = os.environ.get("NEXTJS_URL", "http://localhost:3000")
