@@ -36,14 +36,14 @@ function NavMenu({ options, children }: NavMenuProps) {
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
       <DropdownMenuContent>
         {options.map((option, index) => (
-          <>
+          <div key={option.name}>
             <DropdownMenuItem key={index}>
               <a className="text-lg w-full h-full" href={option.link}>
                 {option.name}
               </a>
             </DropdownMenuItem>
             {!(index >= options.length - 1) && <DropdownMenuSeparator />}
-          </>
+          </div>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
