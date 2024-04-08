@@ -12,7 +12,7 @@ files = [
 ]
 
 [package.extras]
-tests = ["pytest", "pytest-asyncio"]
+tests = ["mypy (>=0.800)", "pytest", "pytest-asyncio"]
 
 [[package]]
 name = "azure-common"
@@ -774,4 +774,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "dd0aa3fdc92cea3cf9871ea163527cc86328b4137a7cf513aa3149dfca4fa352"
+content-hash = "aab182bd3ede7227dd09f667cbfd3e94cba9f83526c2761d3a1b77f8d43d3fd0"
