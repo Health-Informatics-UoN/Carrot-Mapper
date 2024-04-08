@@ -1,5 +1,6 @@
 import { apiUrl as apiUrl } from "@/constants";
 import { ApiError } from "./error";
+import { cookies } from "next/headers";
 
 interface RequestOptions {
   method?: string;
@@ -11,8 +12,18 @@ interface RequestOptions {
 }
 
 const request = async <T>(url: string, options: RequestOptions = {}) => {
+  // Auth with Django session
+  const cookieStore = cookies();
+  const session = cookieStore.get("sessionid")?.value;
+
+  const headers: HeadersInit = {
+    Cookie: `sessionid=${session}`,
+    ...(options.headers || {}),
+  };
+
   const response = await fetch(`${apiUrl}/api/${url}`, {
     method: options.method || "GET",
+    headers: headers,
     body: options.body,
     cache: options.cache,
     next: options.next,
