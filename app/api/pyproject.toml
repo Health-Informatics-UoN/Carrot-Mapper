@@ -7,7 +7,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-django = "3.1.2"
+django = "3.1.14"
 openpyxl = "^3.1.2"
 django-select2 = "^7.10.0"
 django-extra-views = "^0.14.0"
