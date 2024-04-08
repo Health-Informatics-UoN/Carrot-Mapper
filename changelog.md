@@ -13,6 +13,7 @@ Please append a line to the changelog for each change made.
 - Updated the CSV export function - reordered the columns and added new columns (class, concept, validity and vocabulary).
 - Update the Azure functions to use Python 3.11
 - Add `django-revproxy` to reverse proxy the Next.js frontend.
+- Update the webapp to use Python 3.11, Django 4.2, and update other dependencies.
 ### Bugfixes
 - Bug fixed in `find_existing_scan_report_concepts()` which was causing some `SRConcepts` to be processed multiple times. This didn't cause any issues, but was misleading and wasteful.
 - Fixed hardcoded `content_type` id used in the backend, client, and workers.
