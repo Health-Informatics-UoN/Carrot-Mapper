@@ -15,7 +15,6 @@ INSTALLED_APPS = [
     "shared",
 ]
 
-# Add the database settings
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("COCONNECT_DB_ENGINE"),
