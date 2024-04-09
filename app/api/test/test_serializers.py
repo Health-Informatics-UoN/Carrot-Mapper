@@ -2,11 +2,17 @@ import os
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from mapping.models import DataPartner, Dataset, Project, ScanReport, VisibilityChoices
 from mapping.serializers import DatasetEditSerializer, ScanReportEditSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APIRequestFactory
+from shared.data.models import (
+    DataPartner,
+    Dataset,
+    Project,
+    ScanReport,
+    VisibilityChoices,
+)
 
 
 class TestScanReportEditSerializer(TestCase):
