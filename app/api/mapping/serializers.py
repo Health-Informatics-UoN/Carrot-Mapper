@@ -3,16 +3,6 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from shared.data.models import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
-from shared.models import (
     ClassificationSystem,
     DataDictionary,
     DataPartner,
@@ -26,6 +16,16 @@ from shared.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
+)
+from shared.data.omop import (
+    Concept,
+    ConceptAncestor,
+    ConceptClass,
+    ConceptRelationship,
+    ConceptSynonym,
+    Domain,
+    DrugStrength,
+    Vocabulary,
 )
 
 from .permissions import has_editorship, is_admin, is_az_function_user

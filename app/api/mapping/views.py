@@ -36,16 +36,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from shared.data.models import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
-from shared.models import (
     ClassificationSystem,
     DataDictionary,
     DataPartner,
@@ -61,6 +51,16 @@ from shared.models import (
     ScanReportTable,
     ScanReportValue,
     VisibilityChoices,
+)
+from shared.data.omop import (
+    Concept,
+    ConceptAncestor,
+    ConceptClass,
+    ConceptRelationship,
+    ConceptSynonym,
+    Domain,
+    DrugStrength,
+    Vocabulary,
 )
 
 from .forms import ScanReportAssertionForm, ScanReportForm

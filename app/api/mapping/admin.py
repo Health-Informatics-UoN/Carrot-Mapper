@@ -1,5 +1,5 @@
 from django.contrib import admin
-from shared.models import (
+from shared.data.models import (
     ClassificationSystem,
     DataDictionary,
     DataPartner,

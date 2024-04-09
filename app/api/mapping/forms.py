@@ -9,7 +9,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField
-from shared.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
+from shared.data.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
 
 
 class ShowNameChoiceField(ModelChoiceField):

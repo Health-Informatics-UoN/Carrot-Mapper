@@ -8,8 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpResponse
 from graphviz import Digraph
-from shared.data.models import Concept, ConceptAncestor, ConceptRelationship
-from shared.models import (
+from shared.data.models import (
     MappingRule,
     OmopField,
     OmopTable,
@@ -18,6 +17,7 @@ from shared.models import (
     ScanReportTable,
     ScanReportValue,
 )
+from shared.data.omop import Concept, ConceptAncestor, ConceptRelationship
 
 
 class NonStandardConceptMapsToSelf(Exception):

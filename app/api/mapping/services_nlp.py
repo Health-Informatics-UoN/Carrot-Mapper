@@ -8,7 +8,7 @@ import requests
 from azure.storage.queue import QueueClient
 from django.contrib import messages
 from django.db.models import Q
-from shared.models import ScanReportAssertion, ScanReportField, ScanReportValue
+from shared.data.models import ScanReportAssertion, ScanReportField, ScanReportValue
 
 from .services_rules import get_concept_from_concept_code
 
