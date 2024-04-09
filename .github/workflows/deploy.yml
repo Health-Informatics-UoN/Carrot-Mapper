@@ -31,7 +31,7 @@ jobs:
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         poetry config virtualenvs.create false
-        poetry export --format requirements.txt --output requirements.txt
+        poetry export --format requirements.txt --output requirements.txt --without-hashes
         popd
       shell: bash
 
