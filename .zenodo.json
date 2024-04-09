@@ -22,27 +22,33 @@
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Panagi, Vasiliki"
+            "name": "Panagi, Vasiliki",
+            "orcid": "0000-0002-4206-4024"
         },
         {
             "affiliation": "Health Data Research UK; University of Edinburgh",
-            "name": "Macdonald, Calum"
+            "name": "Macdonald, Calum",
+            "orcid": "0000-0001-7857-9188"
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Rae, Andy"
+            "name": "Rae, Andy",
+            "orcid": "0009-0004-8544-2576"
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Akashili, Emeka"
+            "name": "Akashili, Emeka",
+            "orcid": "0009-0001-5739-9812"
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Tarr, Simon"
+            "name": "Tarr, Simon",
+            "orcid": "0000-0001-8464-1240"
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Adejumo, Sam"
+            "name": "Adejumo, Sam",
+            "orcid": "0000-0001-6685-3047"
         },
         {
             "affiliation": "University of Dundee",
@@ -51,7 +57,8 @@
         },
         {
             "affiliation": "University of Nottingham",
-            "name": "Santos, Roberto"
+            "name": "Santos, Roberto",
+            "orcid": "0000-0003-1333-2605"
         }
     ],
     "description": "Carrot-Mapper enables conversion of data to the OMOP Common Data Model, without data being egressed from its secure location, nor requiring access to the secure location. Carrot-Mapper automates as much of the process as possible, and also enables users to reuse each others' mappings. Carrot-Mapper pairs with Carrot-CDM to complete the OMOP conversion process.",
