@@ -2,12 +2,13 @@
 To come
 """
 
-from data.models import Concept
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
+
+from .data.models import Concept
 
 STATUS_LIVE = "LIVE"
 STATUS_ARCHIVED = "ARCHIVED"
@@ -60,6 +61,9 @@ class ClassificationSystem(BaseModel):
 
     name = models.CharField(max_length=64)
 
+    class Meta:
+        app_label = "mapping"
+
     def __str__(self):
         return str(self.id)
 
@@ -78,6 +82,7 @@ class DataPartner(BaseModel):
         constraints = [
             UniqueConstraint(fields=["name"], name="datapartner_name_unique")
         ]
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -89,6 +94,9 @@ class OmopTable(BaseModel):
     """
 
     table = models.CharField(max_length=64)
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -102,6 +110,9 @@ class OmopField(BaseModel):
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
 
     field = models.CharField(max_length=64)
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -144,6 +155,9 @@ class ScanReportConcept(BaseModel):
         choices=CreationType.choices,
         default=CreationType.Manual,
     )
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -213,6 +227,9 @@ class ScanReport(BaseModel):
         blank=True,
     )
 
+    class Meta:
+        app_label = "mapping"
+
     def __str__(self):
         return str(self.id)
 
@@ -247,6 +264,9 @@ class ScanReportTable(BaseModel):
         blank=True,
         related_name="date_event",
     )
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -298,6 +318,9 @@ class ScanReportField(BaseModel):
 
     concepts = GenericRelation(ScanReportConcept)
 
+    class Meta:
+        app_label = "mapping"
+
     def __str__(self):
         return str(self.id)
 
@@ -310,6 +333,9 @@ class ScanReportAssertion(BaseModel):
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
 
     negative_assertion = models.CharField(max_length=64, null=True, blank=True)
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -342,6 +368,9 @@ class MappingRule(BaseModel):
 
     approved = models.BooleanField(default=False)
 
+    class Meta:
+        app_label = "mapping"
+
     def __str__(self):
         return str(self.id)
 
@@ -363,6 +392,9 @@ class ScanReportValue(BaseModel):
 
     value_description = models.CharField(max_length=512, blank=True, null=True)
 
+    class Meta:
+        app_label = "mapping"
+
     def __str__(self):
         return str(self.id)
 
@@ -373,6 +405,9 @@ class DataDictionary(BaseModel):
     """
 
     name = models.CharField(max_length=256, blank=True, null=True)
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -387,6 +422,9 @@ class NLPModel(models.Model):
     user_string = models.TextField(max_length=1024)
 
     json_response = models.TextField(max_length=4096, blank=True, null=True)
+
+    class Meta:
+        app_label = "mapping"
 
     def __str__(self):
         return str(self.id)
@@ -434,6 +472,7 @@ class Dataset(BaseModel):
     class Meta:
         verbose_name = "Dataset"
         verbose_name_plural = "Datasets"
+        app_label = "mapping"
 
     def __str__(self) -> str:
         return str(self.id)
@@ -455,6 +494,7 @@ class Project(BaseModel):
     class Meta:
         verbose_name = "Project"
         verbose_name_plural = "Projects"
+        app_label = "mapping"
 
     def __str__(self) -> str:
         return str(self.id)
