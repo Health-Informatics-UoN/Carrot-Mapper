@@ -41,6 +41,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -395,8 +396,9 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportListViewSetV2(ScanReportListViewSet):
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"parent_dataset": ["exact"]}
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {"hidden": ["exact"], "name": ["in", "exact"]}
+    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
