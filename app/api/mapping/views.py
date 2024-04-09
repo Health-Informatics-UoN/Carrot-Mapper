@@ -295,7 +295,6 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         Else, apply the correct rules regarding the visibility of the Dataset and SR,
         and the membership of the User of viewer/editor/admin/author for either.
         """
-        return ScanReport.objects.all().distinct()
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReport.objects.all().distinct()
 
@@ -399,6 +398,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {"hidden": ["exact"], "name": ["in", "exact"]}
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
