@@ -13,6 +13,10 @@
       "path": "../app/workers"
     },
     {
+      "name": "app/shared",
+      "path": "../app/shared"
+    },
+    {
       "name": "app/react-client-app",
       "path": "../app/react-client-app"
     },
