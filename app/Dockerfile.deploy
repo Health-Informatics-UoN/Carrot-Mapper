@@ -45,8 +45,8 @@ RUN pip install poetry
 
 # Export requirements from pyproject.toml and install them
 RUN poetry config virtualenvs.create false \
-    && poetry export --format requirements.txt --output /api/requirements.txt --without-hashes \
-    && pip install --no-cache-dir -r /api/requirements.txt
+    && poetry export --format requirements.txt --output app/api/requirements.txt --without-hashes \
+    && pip install --no-cache-dir -r app/api/requirements.txt
 
 # Copy react-client-app directory
 USER root
