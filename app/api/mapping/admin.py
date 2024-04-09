@@ -1,21 +1,20 @@
 from django.contrib import admin
-
-from .models import (
-    DataPartner,
-    ScanReport,
-    ScanReportTable,
-    ScanReportField,
-    ScanReportValue,
-    ScanReportAssertion,
+from shared.models import (
     ClassificationSystem,
-    OmopTable,
-    OmopField,
     DataDictionary,
+    DataPartner,
+    Dataset,
     MappingRule,
     NLPModel,
-    ScanReportConcept,
-    Dataset,
+    OmopField,
+    OmopTable,
     Project,
+    ScanReport,
+    ScanReportAssertion,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
 )
 
 

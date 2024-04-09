@@ -1,4 +1,4 @@
-from mapping.models import Status
+from shared.models import Status
 
 
 def react(request):

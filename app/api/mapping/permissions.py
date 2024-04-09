@@ -1,10 +1,11 @@
 import os
 from typing import Any
+
 from django.contrib.auth.models import User
 from django.db.models.query_utils import Q
 from rest_framework import permissions
 from rest_framework.request import Request
-from .models import (
+from shared.models import (
     Dataset,
     ScanReport,
     ScanReportField,
@@ -12,7 +13,6 @@ from .models import (
     ScanReportValue,
     VisibilityChoices,
 )
-
 
 # Get scan report for the table|field|value
 SCAN_REPORT_QUERIES = {

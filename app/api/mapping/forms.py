@@ -1,20 +1,15 @@
+import csv
+from collections import Counter
+from io import BytesIO, StringIO
+
+import openpyxl
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.forms.models import ModelChoiceField
-
-from mapping.models import (
-    Dataset,
-    ScanReportField,
-    ScanReport,
-    VisibilityChoices,
-)
-import openpyxl
-import csv
-from io import BytesIO, StringIO
-from collections import Counter
+from shared.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
 
 
 class ShowNameChoiceField(ModelChoiceField):

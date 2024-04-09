@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from mapping.models import Dataset
+from shared.models import Dataset
 
 
 class Command(BaseCommand):

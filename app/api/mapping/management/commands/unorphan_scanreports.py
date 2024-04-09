@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from mapping.models import Dataset, ScanReport, Project
+from shared.models import Dataset, Project, ScanReport
 
 
 class Command(BaseCommand):

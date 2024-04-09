@@ -1,4 +1,8 @@
-from data.models import (
+from django.contrib.auth.models import User
+from drf_dynamic_fields import DynamicFieldsMixin
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound, PermissionDenied
+from shared.data.models import (
     Concept,
     ConceptAncestor,
     ConceptClass,
@@ -8,9 +12,7 @@ from data.models import (
     DrugStrength,
     Vocabulary,
 )
-from django.contrib.auth.models import User
-from drf_dynamic_fields import DynamicFieldsMixin
-from mapping.models import (
+from shared.models import (
     ClassificationSystem,
     DataDictionary,
     DataPartner,
@@ -25,8 +27,6 @@ from mapping.models import (
     ScanReportTable,
     ScanReportValue,
 )
-from rest_framework import serializers
-from rest_framework.exceptions import NotFound, PermissionDenied
 
 from .permissions import has_editorship, is_admin, is_az_function_user
 from .services_rules import analyse_concepts, get_mapping_rules_json
