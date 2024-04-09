@@ -1,7 +1,6 @@
 from datetime import date
 
 import pytest
-from data.models import Concept
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
@@ -20,6 +19,7 @@ from shared.data.models import (
     ScanReportTable,
     ScanReportValue,
 )
+from shared.data.omop import Concept
 
 
 class TestMisalignedMappings(TestCase):
