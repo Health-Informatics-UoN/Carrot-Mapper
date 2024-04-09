@@ -106,6 +106,7 @@ from .serializers import (
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
+    ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
 )
@@ -293,6 +294,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         Else, apply the correct rules regarding the visibility of the Dataset and SR,
         and the membership of the User of viewer/editor/admin/author for either.
         """
+        return ScanReport.objects.all().distinct()
         if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
             return ScanReport.objects.all().distinct()
 
@@ -390,6 +392,16 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ScanReportListViewSetV2(ScanReportListViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"parent_dataset": ["exact"]}
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            return ScanReportViewSerializerV2
+        return super().get_serializer_class()
 
 
 class DatasetListView(generics.ListAPIView):

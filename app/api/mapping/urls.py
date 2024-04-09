@@ -42,6 +42,9 @@ routers.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter"
 
 routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
 routers.register(
+    r"scanreports2", views.ScanReportListViewSetV2, basename="scanreportsv2"
+)
+routers.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
 # routers.register(
