@@ -41,6 +41,7 @@ from django.views.generic import ListView
 from django.views.generic.edit import FormView, UpdateView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -106,6 +107,7 @@ from .serializers import (
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
+    ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
 )
@@ -390,6 +392,18 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ScanReportListViewSetV2(ScanReportListViewSet):
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {"hidden": ["exact"], "name": ["in", "exact"]}
+    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            return ScanReportViewSerializerV2
+        return super().get_serializer_class()
 
 
 class DatasetListView(generics.ListAPIView):
