@@ -36,4 +36,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-DJANGO_SETTINGS_MODULE = "api.settings"
+DJANGO_SETTINGS_MODULE = "test.settings"
