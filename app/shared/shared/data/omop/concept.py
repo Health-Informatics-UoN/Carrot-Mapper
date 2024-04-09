@@ -40,4 +40,5 @@ class Concept(models.Model):
 
     class Meta:
         managed = False
+        app_label = "data"
         db_table = 'omop"."concept'

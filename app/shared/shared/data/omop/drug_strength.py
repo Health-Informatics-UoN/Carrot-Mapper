@@ -35,4 +35,5 @@ class DrugStrength(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."drug_strength'
+        app_label = "data"
         unique_together = (("drug_concept_id", "ingredient_concept_id"),)

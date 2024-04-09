@@ -25,4 +25,5 @@ class ConceptRelationship(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."concept_relationship'
+        app_label = "data"
         unique_together = (("concept_id_1", "concept_id_2", "relationship_id"),)

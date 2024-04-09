@@ -15,3 +15,4 @@ class Vocabulary(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."vocabulary'
+        app_label = "data"
