@@ -2,14 +2,12 @@
 To come
 """
 
+from data.models import Concept
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.constraints import UniqueConstraint
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.fields import GenericRelation
-
-from data.models import Concept
 
 STATUS_LIVE = "LIVE"
 STATUS_ARCHIVED = "ARCHIVED"
@@ -317,7 +315,7 @@ class ScanReportAssertion(BaseModel):
         return str(self.id)
 
 
-#!! TODO --- Give this model a better name(?)
+# TODO --- Give this model a better name(?)
 class MappingRule(BaseModel):
     """
     To come
@@ -330,7 +328,7 @@ class MappingRule(BaseModel):
     # e.g. condition_concept_id
     omop_field = models.ForeignKey(OmopField, on_delete=models.CASCADE)
 
-    #!! TODO --- STOP USING THIS
+    # TODO --- STOP USING THIS
     source_table = models.ForeignKey(
         ScanReportTable, on_delete=models.CASCADE, blank=True, null=True
     )
