@@ -35,6 +35,10 @@ ENV PATH=/home/django/.local/bin:$PATH
 
 # Copy pyproject.toml
 COPY app/api/pyproject.toml app/api/pyproject.toml
+COPY app/api/poetry.lock app/api/poetry.lock
+
+# Copy shared package
+COPY app/shared /shared
 
 # Install Poetry
 RUN pip install poetry

@@ -13,4 +13,5 @@ class ConceptAncestor(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."concept_ancestor'
+        app_label = "data"
         unique_together = (("ancestor_concept_id", "descendant_concept_id"),)

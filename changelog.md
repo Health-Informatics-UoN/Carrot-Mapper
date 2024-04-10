@@ -2,7 +2,15 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.0.13-dev
+## v2.1.01-dev
+### New features
+
+### Improvements
+- Added a `shared` library for the database models, enabling both the Django and Azure Functions to directly access the database.
+### Bugfixes
+- Fix reusing Concepts without a data dictionary.
+
+## v2.1.00
 ### New features
 - Added refresh_mapping_rules management command.
 

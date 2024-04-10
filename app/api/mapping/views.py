@@ -8,16 +8,6 @@ from typing import Any
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.storage.queue import QueueClient
-from data.models import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
@@ -46,9 +36,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from .forms import ScanReportAssertionForm, ScanReportForm
-from .models import (
+from shared.data.models import (
     ClassificationSystem,
     DataDictionary,
     DataPartner,
@@ -65,6 +53,18 @@ from .models import (
     ScanReportValue,
     VisibilityChoices,
 )
+from shared.data.omop import (
+    Concept,
+    ConceptAncestor,
+    ConceptClass,
+    ConceptRelationship,
+    ConceptSynonym,
+    Domain,
+    DrugStrength,
+    Vocabulary,
+)
+
+from .forms import ScanReportAssertionForm, ScanReportForm
 from .paginations import CustomPagination
 from .permissions import (
     CanAdmin,

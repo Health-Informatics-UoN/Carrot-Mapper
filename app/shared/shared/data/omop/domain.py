@@ -11,3 +11,4 @@ class Domain(models.Model):
     class Meta:
         managed = False
         db_table = 'omop"."domain'
+        app_label = "data"

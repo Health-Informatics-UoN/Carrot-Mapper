@@ -692,6 +692,22 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "shared"
+version = "0.1.0"
+description = "Carrot shared library"
+optional = false
+python-versions = "^3.11"
+files = []
+develop = true
+
+[package.dependencies]
+django = "4.2"
+
+[package.source]
+type = "directory"
+url = "../shared"
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -774,4 +790,4 @@ brotli = ["Brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "fa0bc2e800826e1583765d3d67d2b5d48b01e3385be15a81bb3819dd3aaaa742"
+content-hash = "61f4c6255ac616c8430a0312344b1c61a10562f5127d8b9c5b9657e9e2a1880d"

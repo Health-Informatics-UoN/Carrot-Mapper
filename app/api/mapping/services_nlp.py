@@ -3,14 +3,13 @@ import json
 import logging
 import os
 import time
-from azure.storage.queue import QueueClient
 
 import requests
-from data.models import Concept, ConceptRelationship
-from django.db.models import Q
+from azure.storage.queue import QueueClient
 from django.contrib import messages
+from django.db.models import Q
+from shared.data.models import ScanReportAssertion, ScanReportField, ScanReportValue
 
-from .models import ScanReportAssertion, ScanReportField, ScanReportValue
 from .services_rules import get_concept_from_concept_code
 
 # Get an instance of a logger

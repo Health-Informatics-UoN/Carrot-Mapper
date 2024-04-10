@@ -1,0 +1,76 @@
+{
+    "creators": [
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Cox, Samuel",
+            "orcid": "0000-0002-9841-9816"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Quinlan, Philip",
+            "orcid": "0000-0002-3012-6646"
+        },
+        {
+            "affiliation": "Health Data Research UK; University of Dundee",
+            "name": "Jefferson, Emily",
+            "orcid": "0000-0003-2992-7582"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Lea, Daniel",
+            "orcid": "0000-0001-8152-0398"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Panagi, Vasiliki",
+            "orcid": "0000-0002-4206-4024"
+        },
+        {
+            "affiliation": "Health Data Research UK; University of Edinburgh",
+            "name": "Macdonald, Calum",
+            "orcid": "0000-0001-7857-9188"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Rae, Andy",
+            "orcid": "0009-0004-8544-2576"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Akashili, Emeka",
+            "orcid": "0009-0001-5739-9812"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Tarr, Simon",
+            "orcid": "0000-0001-8464-1240"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Adejumo, Sam",
+            "orcid": "0000-0001-6685-3047"
+        },
+        {
+            "affiliation": "University of Dundee",
+            "name": "Mumtaz, Shahzad",
+            "orcid": "0000-0003-2606-2405"
+        },
+        {
+            "affiliation": "University of Nottingham",
+            "name": "Santos, Roberto",
+            "orcid": "0000-0003-1333-2605"
+        }
+    ],
+    "description": "Carrot-Mapper enables conversion of data to the OMOP Common Data Model, without data being egressed from its secure location, nor requiring access to the secure location. Carrot-Mapper automates as much of the process as possible, and also enables users to reuse each others' mappings. Carrot-Mapper pairs with Carrot-CDM to complete the OMOP conversion process.",
+    "keywords": [
+        "OMOP",
+        "CDM",
+        "health",
+        "data",
+        "mapping"
+    ],
+    "license": {
+        "id": "MIT"
+    },
+    "title": "Carrot-Mapper"
+}
