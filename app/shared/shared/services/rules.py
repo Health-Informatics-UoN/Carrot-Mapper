@@ -3,6 +3,8 @@ from typing import List
 from shared.data.models import (
     MappingRule,
     OmopField,
+    OmopTable,
+    ScanReport,
     ScanReportConcept,
     ScanReportField,
     ScanReportTable,
@@ -102,13 +104,14 @@ def validate_person_id_and_date(source_table: ScanReportTable):
     return date_event_source_field is not None
 
 
-def get_omop_field(destination_field: str, destination_table=None):
+def get_omop_field(destination_field: str, destination_table: str = None):
     """
-    function to return the destination_field object, given lookup names
+    Get the destination_field object, given a field name, and/or the table.
 
     Args:
       - destination_field (str) : the name of the destination field
       - [optional] destination_table (str) : the name of destination table, if known
+
     Returns:
       - OmopField : the destination field object
     """
@@ -134,8 +137,23 @@ def get_omop_field(destination_field: str, destination_table=None):
 
 
 def get_person_id_rule(
-    scan_report, scan_report_concept, source_table, destination_table
-):
+    scan_report: ScanReport,
+    scan_report_concept: ScanReportConcept,
+    source_table: ScanReportTable,
+    destination_table: OmopTable,
+) -> MappingRule:
+    """
+    Get the rule for person_id, given
+
+    Args:
+        - scan_report (ScanReport):
+        - scan_report_concept (ScanReportConcept):
+        - source_table (ScanReportTable):
+        - destination_table (OmopTable):
+
+    Returns:
+        - MappingRule:
+    """
     # look up what source_field for this table contains the person id
     person_id_source_field = source_table.person_id
 
@@ -185,7 +203,16 @@ def get_date_rules(scan_report, scan_report_concept, source_table, destination_t
     return date_rules
 
 
-def find_destination_table(concept):
+def find_destination_table(concept: ScanReportConcept) -> OmopTable:
+    """
+    Get the destination table for a given ScanReportConcept
+
+    Args:
+        concept (ScanReportConcept): The Concept to get the table for.
+
+    Returns:
+        destination_table (OmopTable): The destination table for the concept.
+    """
     domain = concept.domain_id.lower()
     # get the omop field for the source_concept_id for this domain
     omop_field = get_omop_field(f"{domain}_source_concept_id")
