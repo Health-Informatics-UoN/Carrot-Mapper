@@ -856,7 +856,7 @@ def view_mapping_rules(request, qs):
 
 
 def find_existing_scan_report_concepts(request, scan_report_id):
-    # find ScanReportValue associated to this table_id
+    # find ScanReportValue associated to this scan_report_id
     # that have at least one concept added to them
     values = (
         ScanReportValue.objects.all()
@@ -866,7 +866,7 @@ def find_existing_scan_report_concepts(request, scan_report_id):
         .order_by("id")
     )
 
-    # find ScanReportField associated to this table_id
+    # find ScanReportField associated to this scan_report_id
     # that have at least one concept added to them
     fields = (
         ScanReportField.objects.all()
