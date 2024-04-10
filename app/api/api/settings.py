@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "test",
     "proxy",
     "revproxy",
+    "shared",
 ]
 
 MIDDLEWARE = [

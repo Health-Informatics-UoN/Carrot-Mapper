@@ -3,13 +3,12 @@ import io
 import json
 from datetime import date, datetime
 
-from data.models import Concept, ConceptAncestor, ConceptRelationship
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpResponse
 from graphviz import Digraph
-from mapping.models import (
+from shared.data.models import (
     MappingRule,
     OmopField,
     OmopTable,
@@ -18,6 +17,7 @@ from mapping.models import (
     ScanReportTable,
     ScanReportValue,
 )
+from shared.data.omop import Concept, ConceptAncestor, ConceptRelationship
 
 
 class NonStandardConceptMapsToSelf(Exception):

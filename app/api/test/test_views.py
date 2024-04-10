@@ -6,7 +6,10 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, TransactionTestCase
-from mapping.models import (
+from mapping.views import DatasetListView, ScanReportListViewSet
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from shared.data.models import (
     Concept,
     DataPartner,
     Dataset,
@@ -18,9 +21,6 @@ from mapping.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from mapping.views import DatasetListView, ScanReportListViewSet
-from rest_framework.authtoken.models import Token
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
 
 class TestDatasetListView(TestCase):
