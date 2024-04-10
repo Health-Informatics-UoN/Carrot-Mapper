@@ -8,6 +8,7 @@ Please append a line to the changelog for each change made.
 ### Improvements
 - Added a `shared` library for the database models, enabling both the Django and Azure Functions to directly access the database.
 ### Bugfixes
+- Fix reusing Concepts without a data dictionary.
 
 ## v2.1.00
 ### New features
