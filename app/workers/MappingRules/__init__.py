@@ -1,4 +1,12 @@
+import os
+
 import azure.functions as func
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
+import django
+
+django.setup()
+
 from shared.services import refresh_mapping_rules
 
 
