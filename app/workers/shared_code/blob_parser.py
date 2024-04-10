@@ -133,7 +133,7 @@ def get_data_dictionary(
     Returns:
         Tuple[Optional[Dict[str, Dict[str, Any]]], Optional[Dict[str, Dict[str, Any]]]]: A tuple containing the data dictionary and vocabulary dictionary.
     """
-    if blob is None:
+    if blob is None or blob == "None":
         return None, None
 
     # Set Storage Account connection string
