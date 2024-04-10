@@ -5,6 +5,7 @@ from shared.data.models import (
     OmopField,
     ScanReportConcept,
     ScanReportField,
+    ScanReportTable,
     ScanReportValue,
 )
 
@@ -47,9 +48,16 @@ def delete_mapping_rules(table_id: int) -> None:
 
 
 def find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
-    # TODO: Docs
-    # find ScanReportValue associated to this table_id
-    # that have at least one concept added to them
+    """
+    Get ScanReportConcepts associated to a table.
+
+    Args:
+        table_id (int): Id of the ScanReportTable to filter by.
+
+    Returns:
+        A list of ScanReportConcept attached to the Table Id.
+    """
+
     values = (
         ScanReportValue.objects.all()
         .filter(scan_report_field__scan_report_table=table_id)
@@ -75,13 +83,16 @@ def find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
     return all_concepts
 
 
-def validate_person_id_and_date(request, source_table):
+def validate_person_id_and_date(source_table: ScanReportTable):
     """
-    Before creating any rules, we need to make sure the person_id and date_event
-    has been set
-    """
+    Check that the person_id and date_event is set on the table
 
-    # find the date event first
+    Args:
+        source_table (ScanReportTable): The ScanReportTable to validate
+
+    Returns:
+        bool: True if both person_id and date_event are both set on the Table.
+    """
     person_id_source_field = source_table.person_id
 
     if person_id_source_field is None:
@@ -91,9 +102,10 @@ def validate_person_id_and_date(request, source_table):
     return date_event_source_field is not None
 
 
-def get_omop_field(destination_field, destination_table=None):
+def get_omop_field(destination_field: str, destination_table=None):
     """
     function to return the destination_field object, given lookup names
+
     Args:
       - destination_field (str) : the name of the destination field
       - [optional] destination_table (str) : the name of destination table, if known
@@ -122,7 +134,7 @@ def get_omop_field(destination_field, destination_table=None):
 
 
 def get_person_id_rule(
-    request, scan_report, scan_report_concept, source_table, destination_table
+    scan_report, scan_report_concept, source_table, destination_table
 ):
     # look up what source_field for this table contains the person id
     person_id_source_field = source_table.person_id
@@ -144,9 +156,7 @@ def get_person_id_rule(
     return rule_domain_person_id
 
 
-def get_date_rules(
-    request, scan_report, scan_report_concept, source_table, destination_table
-):
+def get_date_rules(scan_report, scan_report_concept, source_table, destination_table):
     # !todo - need some checks for this
     date_event_source_field = source_table.date_event
 
@@ -195,7 +205,6 @@ def save_mapping_rules(concept: ScanReportConcept) -> None:
 
     function to save the rules
     Args:
-       - request (HttpRequest): django object for the request (get/post)
        - concept (ScanReportConcept) : object containing the Concept and Link to source_value
     """
     content_object = concept.content_object
