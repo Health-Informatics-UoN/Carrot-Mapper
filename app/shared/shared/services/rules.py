@@ -52,8 +52,26 @@ def find_existing_scan_report_concepts(table_id: int) -> List[ScanReportConcept]
     return all_concepts
 
 
+def save_mapping_rules(concept: ScanReportConcept) -> None:
+    """
+    Save mapping rules from a given ScanReportConcept
+    """
+    pass
+
+
 def refresh_mapping_rules(table_id: int):
     """
     TODO: Docs
     """
     delete_mapping_rules(table_id)
+
+    concepts = find_existing_scan_report_concepts(table_id)
+
+    nconcepts = 0
+    nbadconcepts = 0
+
+    for concept in concepts:
+        if save_mapping_rules(concept):
+            nconcepts += 1
+        else:
+            nbadconcepts += 1
