@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from azure.storage.queue import QueueClient
 
@@ -9,8 +9,8 @@ from azure.storage.queue import QueueClient
 def add_message(
     queue_name: str,
     message: Dict[str, Any],
-    conn_str: str = None,
-    queue_client: QueueClient = None,
+    conn_str: Optional[str] = None,
+    queue_client: Optional[QueueClient] = None,
 ) -> None:
     """
     Add a message to the specified Azure Storage Queue.
