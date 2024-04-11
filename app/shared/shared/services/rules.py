@@ -39,10 +39,10 @@ def delete_mapping_rules(table_id: int) -> None:
     Delete existing mapping rules related to a Scan Report Table.
 
     Args:
-        table_id (int): The Id of the ScanReportTable to delete the rules for.
+        - table_id (int): The Id of the ScanReportTable to delete the rules for.
 
     Returns:
-        None
+        - None
     """
     rules = MappingRule.objects.all().filter(source_field__scan_report_table=table_id)
 
@@ -54,10 +54,10 @@ def find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
     Get ScanReportConcepts associated to a table.
 
     Args:
-        table_id (int): Id of the ScanReportTable to filter by.
+        - table_id (int): Id of the ScanReportTable to filter by.
 
     Returns:
-        A list of ScanReportConcept attached to the Table Id.
+        - A list of ScanReportConcept attached to the Table Id.
     """
 
     values = (
@@ -152,7 +152,7 @@ def get_person_id_rule(
         - destination_table (OmopTable):
 
     Returns:
-        - MappingRule:
+        - MappingRule for the person_id
     """
     # look up what source_field for this table contains the person id
     person_id_source_field = source_table.person_id
@@ -174,8 +174,25 @@ def get_person_id_rule(
     return rule_domain_person_id
 
 
-def get_date_rules(scan_report, scan_report_concept, source_table, destination_table):
-    # !todo - need some checks for this
+def get_date_rules(
+    scan_report: ScanReport,
+    scan_report_concept: ScanReportConcept,
+    source_table: ScanReportTable,
+    destination_table: OmopTable,
+):
+    """
+    Get date rules for mapping between source and destination tables.
+
+    Args:
+        - scan_report: The ScanReport object.
+        - scan_report_concept: The ScanReportConcept object.
+        - source_table: The ScanReportTable object.
+        - destination_table: The OmopTable object.
+
+    Returns:
+        - List of MappingRule representing the date rules.
+    """
+
     date_event_source_field = source_table.date_event
 
     date_omop_fields = m_date_field_mapper[destination_table.table]
@@ -208,10 +225,10 @@ def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     Get the destination table for a given ScanReportConcept
 
     Args:
-        concept (ScanReportConcept): The Concept to get the table for.
+        - concept (ScanReportConcept): The Concept to get the table for.
 
     Returns:
-        destination_table (OmopTable): The destination table for the concept.
+        - destination_table (OmopTable): The destination table for the concept.
     """
     domain = concept.domain_id.lower()
     # get the omop field for the source_concept_id for this domain
@@ -228,11 +245,13 @@ def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
 
 def save_mapping_rules(concept: ScanReportConcept) -> bool:
     """
-    Save mapping rules from a given ScanReportConcept
+    Save mapping rules from a given ScanReportConcept.
 
-    function to save the rules
     Args:
-       - concept (ScanReportConcept) : object containing the Concept and Link to source_value
+        - concept (ScanReportConcept) : object containing the Concept and Link to source_value
+
+    Returns:
+        - bool: If the rule has been saved.
     """
     content_object = concept.content_object
     if isinstance(content_object, ScanReportValue):
@@ -333,9 +352,17 @@ def save_mapping_rules(concept: ScanReportConcept) -> bool:
     return True
 
 
-def refresh_mapping_rules(table_id: int):
+def refresh_mapping_rules(table_id: int) -> None:
     """
-    TODO: Docs
+    Refreshes the Mapping Rules for a given Scan Report Table.
+
+    Deletes all the existing rules, gets the concepts, and saves the mapping rules again.
+
+    Args:
+        - table_id (int): The Id of the table to refresh the rules for.
+
+    Returns:
+        - None
     """
     delete_mapping_rules(table_id)
 
