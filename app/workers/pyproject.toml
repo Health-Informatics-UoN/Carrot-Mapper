@@ -19,6 +19,7 @@ python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
+mypy = "^1.9.0"
 
 
 [tool.poetry.group.test.dependencies]
