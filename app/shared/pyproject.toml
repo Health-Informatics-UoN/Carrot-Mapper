@@ -10,6 +10,13 @@ python = "^3.11"
 django = "4.2"
 psycopg2-binary = "^2.9.9"
 
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.1.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
