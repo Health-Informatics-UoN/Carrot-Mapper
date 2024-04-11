@@ -34,7 +34,7 @@ m_date_field_mapper = {
 }
 
 
-def delete_mapping_rules(table_id: int) -> None:
+def _delete_mapping_rules(table_id: int) -> None:
     """
     Delete existing mapping rules related to a Scan Report Table.
 
@@ -49,7 +49,7 @@ def delete_mapping_rules(table_id: int) -> None:
     rules.delete()
 
 
-def find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
+def _find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
     """
     Get ScanReportConcepts associated to a table.
 
@@ -85,7 +85,7 @@ def find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
     return all_concepts
 
 
-def validate_person_id_and_date(source_table: ScanReportTable):
+def _validate_person_id_and_date(source_table: ScanReportTable):
     """
     Check that the person_id and date_event is set on the table
 
@@ -104,7 +104,7 @@ def validate_person_id_and_date(source_table: ScanReportTable):
     return date_event_source_field is not None
 
 
-def get_omop_field(destination_field: str, destination_table: Optional[str] = None):
+def _get_omop_field(destination_field: str, destination_table: Optional[str] = None):
     """
     Get the destination_field object, given a field name, and/or the table.
 
@@ -136,7 +136,7 @@ def get_omop_field(destination_field: str, destination_table: Optional[str] = No
     return omop_field
 
 
-def get_person_id_rule(
+def _get_person_id_rule(
     scan_report: ScanReport,
     scan_report_concept: ScanReportConcept,
     source_table: ScanReportTable,
@@ -174,7 +174,7 @@ def get_person_id_rule(
     return rule_domain_person_id
 
 
-def get_date_rules(
+def _get_date_rules(
     scan_report: ScanReport,
     scan_report_concept: ScanReportConcept,
     source_table: ScanReportTable,
@@ -220,7 +220,7 @@ def get_date_rules(
     return date_rules
 
 
-def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
+def _find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     """
     Get the destination table for a given ScanReportConcept
 
@@ -232,7 +232,7 @@ def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     """
     domain = concept.domain_id.lower()
     # get the omop field for the source_concept_id for this domain
-    omop_field = get_omop_field(f"{domain}_source_concept_id")
+    omop_field = _get_omop_field(f"{domain}_source_concept_id")
     if omop_field is None:
         return None
     # start looking up what table we're looking at
@@ -243,7 +243,7 @@ def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     return destination_table
 
 
-def save_mapping_rules(concept: ScanReportConcept) -> bool:
+def _save_mapping_rules(concept: ScanReportConcept) -> bool:
     """
     Save mapping rules from a given ScanReportConcept.
 
@@ -265,29 +265,29 @@ def save_mapping_rules(concept: ScanReportConcept) -> bool:
     concept = concept.concept
 
     # start looking up what table we're looking at
-    destination_table = find_destination_table(concept)
+    destination_table = _find_destination_table(concept)
     if destination_table is None:
         return False
 
     # get the omop field for the source_concept_id for this domain
     domain = concept.domain_id.lower()
-    omop_field = get_omop_field(f"{domain}_source_concept_id")
+    omop_field = _get_omop_field(f"{domain}_source_concept_id")
 
     # obtain the source table
     source_table = source_field.scan_report_table
 
     # check whether the person_id and date events for this table are valid
     # if not, we dont want to create any rules for this concept
-    if not validate_person_id_and_date(source_table):
+    if not _validate_person_id_and_date(source_table):
         return False
 
     # create a person_id rule
-    person_id_rule = get_person_id_rule(
+    person_id_rule = _get_person_id_rule(
         scan_report, concept, source_table, destination_table
     )
     rules = [person_id_rule]
     # create(potentially multiple) date_rules
-    date_rules = get_date_rules(scan_report, concept, source_table, destination_table)
+    date_rules = _get_date_rules(scan_report, concept, source_table, destination_table)
     rules += date_rules
 
     # create/update a model for the domain source_concept_id
@@ -309,7 +309,7 @@ def save_mapping_rules(concept: ScanReportConcept) -> bool:
     #    - all term mapping rules associated need to be applied
     rule_domain_concept_id, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
-        omop_field=get_omop_field(f"{domain}_concept_id"),
+        omop_field=_get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
         concept=concept,
         approved=True,
@@ -321,7 +321,7 @@ def save_mapping_rules(concept: ScanReportConcept) -> bool:
     #  - do_term_mapping is set to false
     rule_domain_source_value, created = MappingRule.objects.update_or_create(
         scan_report=scan_report,
-        omop_field=get_omop_field(f"{domain}_source_value"),
+        omop_field=_get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
         concept=concept,
         approved=True,
@@ -338,7 +338,7 @@ def save_mapping_rules(concept: ScanReportConcept) -> bool:
         #  - do_term_mapping is set to false
         rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
             scan_report=scan_report,
-            omop_field=get_omop_field("value_as_number", "measurement"),
+            omop_field=_get_omop_field("value_as_number", "measurement"),
             source_field=source_field,
             concept=concept,
             approved=True,
@@ -364,15 +364,15 @@ def refresh_mapping_rules(table_id: int) -> None:
     Returns:
         - None
     """
-    delete_mapping_rules(table_id)
+    _delete_mapping_rules(table_id)
 
-    concepts = find_existing_concepts(table_id)
+    concepts = _find_existing_concepts(table_id)
 
     nconcepts = 0
     nbadconcepts = 0
 
     for concept in concepts:
-        if save_mapping_rules(concept):
+        if _save_mapping_rules(concept):
             nconcepts += 1
         else:
             nbadconcepts += 1
