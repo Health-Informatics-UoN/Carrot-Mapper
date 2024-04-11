@@ -1,8 +1,10 @@
 import asyncio
+import os
 from collections import defaultdict
 from typing import Any, Dict, List
 
 import azure.functions as func
+from shared.services.azurequeue import add_message
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
@@ -319,5 +321,11 @@ def main(msg: func.QueueMessage):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     asyncio.run(_handle_table(table, vocab_dictionary))
+
+    # send to MappingRules queue
+    message = {
+        "table_id": table_id,
+    }
+    add_message(os.environ.get("MAPPING_RULES_QUEUE_NAME"), message)
 
     return
