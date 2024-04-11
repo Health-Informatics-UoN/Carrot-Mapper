@@ -1,13 +1,33 @@
 "use client";
 
-import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  ChevronDownIcon,
+  ArchiveIcon,
+  Pencil2Icon,
+} from "@radix-ui/react-icons";
 import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
+import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<ScanReport>[] = [
+export const columns: ColumnDef<ScanReportResult>[] = [
   {
-    accessorKey: "id",
+    accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    enableHiding: false,
+  },
+  {
+    accessorKey: "dataset",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Dataset" />
     ),
     enableHiding: false,
   },
@@ -19,30 +39,9 @@ export const columns: ColumnDef<ScanReport>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "dataset_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Dataset" />
-    ),
-    enableHiding: false,
-  },
-  {
-    accessorKey: "dataset",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    enableHiding: false,
-  },
-  {
-    accessorKey: "author_name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Author" />
-    ),
-    enableHiding: false,
-  },
-  {
     accessorKey: "created_at",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Date" />
+      <DataTableColumnHeader column={column} title="Uploaded" />
     ),
     enableHiding: false,
     enableSorting: true,
@@ -58,6 +57,41 @@ export const columns: ColumnDef<ScanReport>[] = [
       };
       const formattedDate = date.toLocaleDateString("en-US", options);
       return formattedDate;
+    },
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    enableHiding: false,
+    cell: ({ row }) => {
+      return "TBD";
+    },
+  },
+  {
+    accessorKey: "actions",
+    header: "",
+    enableHiding: false,
+    cell: ({ row }) => {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" className="bg-blue-900">
+              Actions <ChevronDownIcon className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              Archive <ArchiveIcon className="ml-auto" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              Edit <Pencil2Icon className="ml-auto" />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
     },
   },
 ];
