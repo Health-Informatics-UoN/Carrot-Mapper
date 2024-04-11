@@ -11,7 +11,7 @@ import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 
 export default async function ScanReports() {
-  const scanReports = await getScanReports();
+  const result = await getScanReports();
 
   return (
     <div className="pt-10 px-16">
@@ -23,7 +23,7 @@ export default async function ScanReports() {
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
+              <BreadcrumbLink href="/scan-reports">Scan Reports</BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -46,7 +46,7 @@ export default async function ScanReports() {
         New Scan Report
       </Button>
       <div className="mb-10">
-        <DataTable columns={columns} data={scanReports.results} />
+        <DataTable columns={columns} data={result} />
       </div>
     </div>
   );
