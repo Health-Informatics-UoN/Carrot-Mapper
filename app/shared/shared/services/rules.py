@@ -243,7 +243,7 @@ def _find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     return destination_table
 
 
-def _save_mapping_rules(concept: ScanReportConcept) -> bool:
+def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     """
     Save mapping rules from a given ScanReportConcept.
 
@@ -253,7 +253,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
     Returns:
         - bool: If the rule has been saved.
     """
-    content_object = concept.content_object
+    content_object = scan_report_concept.content_object
     if isinstance(content_object, ScanReportValue):
         scan_report_value = content_object
         source_field = scan_report_value.scan_report_field
@@ -262,7 +262,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
 
     scan_report = source_field.scan_report_table.scan_report
 
-    concept = concept.concept
+    concept = scan_report_concept.concept
 
     # start looking up what table we're looking at
     destination_table = _find_destination_table(concept)
@@ -283,11 +283,13 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
 
     # create a person_id rule
     person_id_rule = _get_person_id_rule(
-        scan_report, concept, source_table, destination_table
+        scan_report, scan_report_concept, source_table, destination_table
     )
     rules = [person_id_rule]
     # create(potentially multiple) date_rules
-    date_rules = _get_date_rules(scan_report, concept, source_table, destination_table)
+    date_rules = _get_date_rules(
+        scan_report, scan_report_concept, source_table, destination_table
+    )
     rules += date_rules
 
     # create/update a model for the domain source_concept_id
@@ -298,7 +300,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
         scan_report=scan_report,
         omop_field=omop_field,
         source_field=source_field,
-        concept=concept,
+        concept=scan_report_concept,
         approved=True,
     )
     rules.append(rule_domain_source_concept_id)
@@ -311,7 +313,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
         scan_report=scan_report,
         omop_field=_get_omop_field(f"{domain}_concept_id"),
         source_field=source_field,
-        concept=concept,
+        concept=scan_report_concept,
         approved=True,
     )
     rules.append(rule_domain_concept_id)
@@ -323,7 +325,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
         scan_report=scan_report,
         omop_field=_get_omop_field(f"{domain}_source_value"),
         source_field=source_field,
-        concept=concept,
+        concept=scan_report_concept,
         approved=True,
     )
     # add this new concept mapping
@@ -340,7 +342,7 @@ def _save_mapping_rules(concept: ScanReportConcept) -> bool:
             scan_report=scan_report,
             omop_field=_get_omop_field("value_as_number", "measurement"),
             source_field=source_field,
-            concept=concept,
+            concept=scan_report_concept,
             approved=True,
         )
         rules.append(rule_domain_value_as_number)
