@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from shared.data.models import (
     MappingRule,
@@ -104,7 +104,7 @@ def validate_person_id_and_date(source_table: ScanReportTable):
     return date_event_source_field is not None
 
 
-def get_omop_field(destination_field: str, destination_table: str = None):
+def get_omop_field(destination_field: str, destination_table: Optional[str] = None):
     """
     Get the destination_field object, given a field name, and/or the table.
 
@@ -203,7 +203,7 @@ def get_date_rules(scan_report, scan_report_concept, source_table, destination_t
     return date_rules
 
 
-def find_destination_table(concept: ScanReportConcept) -> OmopTable:
+def find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
     """
     Get the destination table for a given ScanReportConcept
 
@@ -226,7 +226,7 @@ def find_destination_table(concept: ScanReportConcept) -> OmopTable:
     return destination_table
 
 
-def save_mapping_rules(concept: ScanReportConcept) -> None:
+def save_mapping_rules(concept: ScanReportConcept) -> bool:
     """
     Save mapping rules from a given ScanReportConcept
 
