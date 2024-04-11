@@ -24,9 +24,9 @@ def main(msg: func.QueueMessage):
     """
     message_body = json.loads(msg.get_body().decode("utf-8"))
     table_id = message_body.get("table_id")
-    logger.info("We're now mapping some rules")
+    logger.info(f"Generating mapping rules for table: {table_id}")
 
     refresh_mapping_rules(table_id)
-    logger.info("We are now refreshed.")
+    logger.info(f"Finished mapping rules for table: {table_id}")
 
     return
