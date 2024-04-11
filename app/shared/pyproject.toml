@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.11"
 django = "4.2"
 psycopg2-binary = "^2.9.9"
+azure-storage-queue = "^12.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.9.0"
