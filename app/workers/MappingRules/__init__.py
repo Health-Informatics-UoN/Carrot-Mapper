@@ -8,7 +8,7 @@ import django
 
 django.setup()
 
-from shared.services import refresh_mapping_rules
+from shared.services.rules import refresh_mapping_rules
 
 
 def main(msg: func.QueueMessage):
