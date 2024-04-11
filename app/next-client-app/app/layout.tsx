@@ -1,6 +1,9 @@
-import type { Metadata } from "next";
-import { Navbar } from "@/components/Navbar";
 import "./globals.css";
+import "./custom.css";
+import "bootstrap/dist/css/bootstrap.css";
+import type { Metadata } from "next";
+import BootstrapClient from "@/components/BootstrapClient";
+import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "CaRROT-Mapper",
@@ -14,8 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <Navbar /> {children}
+      <body style={{ paddingTop: "90px" }}>
+        <Navbar />
+        {children}
+        <BootstrapClient />
       </body>
     </html>
   );
