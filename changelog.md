@@ -7,6 +7,7 @@ Please append a line to the changelog for each change made.
 
 ### Improvements
 - Added a `shared` library for the database models, enabling both the Django and Azure Functions to directly access the database.
+- Created new Azure Function MappingRules, which generates the reusable rules for a Scan Report table, when the CreateConcepts has finished.
 ### Bugfixes
 - Fix reusing Concepts without a data dictionary.
 
