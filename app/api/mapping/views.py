@@ -1270,37 +1270,6 @@ class StructuralMappingTableListView(ListView):
             qs = self.get_queryset()
             return download_mapping_rules_as_csv(request, qs)
         elif (
-            request.POST.get("refresh_rules") is not None
-            or body.get("refresh_rules", None) is not None
-        ):
-            # remove all existing rules first
-            remove_mapping_rules(request, self.kwargs.get("pk"))
-            # get all associated ScanReportConcepts for this given ScanReport
-            # this method could be taking too long to execute
-            all_associated_concepts = find_existing_scan_report_concepts(
-                request, self.kwargs.get("pk")
-            )
-            # save all of them
-            nconcepts = 0
-            nbadconcepts = 0
-            for concept in all_associated_concepts:
-                if save_mapping_rules(request, concept):
-                    nconcepts += 1
-                else:
-                    nbadconcepts += 1
-
-            if nbadconcepts == 0:
-                messages.success(
-                    request, f"Found and added rules for {nconcepts} existing concepts"
-                )
-            else:
-                messages.success(
-                    request,
-                    f"Found and added rules for {nconcepts} existing concepts. However, couldnt add rules for {nbadconcepts} concepts.",
-                )
-            return redirect(request.path)
-
-        elif (
             request.POST.get("get_svg") is not None
             or body.get("get_svg", None) is not None
         ):
