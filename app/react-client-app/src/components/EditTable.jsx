@@ -144,8 +144,8 @@ const EditTable = (props) => {
           Mapping Rules cannot be generated without the Person ID and Date Event
           being set.
           <br />
-          Once you set these, Concepts that are reusable will be associated and
-          Mapping Rules will be generated.
+          Once you set these, Mapping Rules will be generated for all Concepts
+          currently associated to the table.
           <br />
         </Alert>
       </Flex>
