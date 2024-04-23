@@ -3,6 +3,7 @@ import json
 import os
 from typing import Any
 
+from api.paginations import CustomPagination
 from azure.storage.blob import BlobServiceClient
 from azure.storage.queue import QueueClient
 from django.contrib.auth.models import User
@@ -11,7 +12,6 @@ from django.core.exceptions import PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from mapping.paginations import CustomPagination
 from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
