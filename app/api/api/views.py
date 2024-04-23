@@ -3,12 +3,13 @@ import json
 import os
 from typing import Any
 
+from azure.storage.blob import BlobServiceClient
 from azure.storage.queue import QueueClient
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db.models.query_utils import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.paginations import CustomPagination
 from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
@@ -1094,3 +1095,34 @@ class GetContentTypeID(APIView):
             return Response({"content_type_id": content_type.id})
         except ContentType.DoesNotExist:
             return Response({"error": "Content type not found"}, status=404)
+
+
+class DownloadScanReportViewSet(viewsets.ViewSet):
+    def list(self, request, pk):
+        scan_report = ScanReport.objects.get(id=pk)
+        # scan_report = ScanReportSerializer(scan_reports, many=False).data
+        # Set Storage Account connection string
+        print(scan_report)
+        # TODO: `name` is not always defined, it seems
+        blob_name = scan_report.name
+        print(blob_name)
+        container = "scan-reports"
+        blob_service_client = BlobServiceClient.from_connection_string(
+            os.environ.get("STORAGE_CONN_STRING")
+        )
+
+        # Grab scan report data from blob
+        streamdownloader = (
+            blob_service_client.get_container_client(container)
+            .get_blob_client(blob_name)
+            .download_blob()
+        )
+        scan_report = streamdownloader.readall()
+
+        response = HttpResponse(
+            scan_report,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{blob_name}"'
+
+        return response
