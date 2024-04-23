@@ -1,8 +1,6 @@
 from api import views
+from api.routers import routers
 from django.urls import include, path
-from rest_framework import routers
-
-routers = routers.DefaultRouter()
 
 urlpatterns = [
     path("", include(routers.urls)),
