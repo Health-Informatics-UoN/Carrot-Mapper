@@ -10,6 +10,7 @@ urlpatterns = [
         else None
     ),
     path("", include("mapping.urls")),
+    path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
     path("admin/", admin.site.urls),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
