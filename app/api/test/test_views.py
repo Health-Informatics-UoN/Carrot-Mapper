@@ -3,10 +3,10 @@ from datetime import date
 from unittest import mock
 
 import pytest
+from api.views import DatasetListView
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, TransactionTestCase
-from mapping.views import DatasetListView, ScanReportListViewSet
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 from shared.data.models import (
