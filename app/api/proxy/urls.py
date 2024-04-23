@@ -1,4 +1,4 @@
-from api import settings
+from config import settings
 from django.urls import re_path
 from revproxy.views import ProxyView
 
