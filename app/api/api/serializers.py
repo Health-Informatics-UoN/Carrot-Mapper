@@ -16,7 +16,6 @@ from shared.data.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    Ì,
 )
 from shared.data.omop import (
     Concept,
