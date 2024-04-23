@@ -2,21 +2,7 @@ import os
 from typing import Any
 
 from api.paginations import CustomPagination
-from azure.storage.blob import BlobServiceClient
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
-from django.db.models.query_utils import Q
-from django.http import HttpResponse, JsonResponse
-from django_filters.rest_framework import DjangoFilterBackend
-from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
-from mapping.services_rules import get_mapping_rules_list
-from rest_framework import generics, status, viewsets
-from rest_framework.generics import ListAPIView, RetrieveAPIView
-from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from serializers import (
+from api.serializers import (
     ClassificationSystemSerializer,
     ConceptAncestorSerializer,
     ConceptClassSerializer,
@@ -51,6 +37,20 @@ from serializers import (
     UserSerializer,
     VocabularySerializer,
 )
+from azure.storage.blob import BlobServiceClient
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import PermissionDenied
+from django.db.models.query_utils import Q
+from django.http import HttpResponse, JsonResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
+from mapping.services_rules import get_mapping_rules_list
+from rest_framework import generics, status, viewsets
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from shared.data.models import (
     ClassificationSystem,
     DataDictionary,

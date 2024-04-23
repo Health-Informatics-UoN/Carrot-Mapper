@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
+from mapping.permissions import has_editorship, is_admin, is_az_function_user
+from mapping.services_rules import analyse_concepts, get_mapping_rules_json
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from shared.data.models import (
@@ -27,9 +29,6 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-
-from ..mapping.permissions import has_editorship, is_admin, is_az_function_user
-from ..mapping.services_rules import analyse_concepts, get_mapping_rules_json
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
