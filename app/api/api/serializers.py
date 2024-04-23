@@ -130,15 +130,22 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
         NotFound: If the parent dataset is not found.
     """
 
-    name = serializers.CharField(source="dataset")
-    dataset = serializers.SerializerMethodField()
+    parent_dataset = serializers.SerializerMethodField()
     data_partner = serializers.SerializerMethodField()
 
     class Meta:
         model = ScanReport
-        fields = ("id", "name", "dataset", "data_partner", "status", "created_at")
+        fields = (
+            "id",
+            "name",
+            "dataset",
+            "parent_dataset",
+            "data_partner",
+            "status",
+            "created_at",
+        )
 
-    def get_dataset(self, obj):
+    def get_parent_dataset(self, obj):
         return obj.parent_dataset.name if obj.parent_dataset else None
 
     def get_data_partner(self, obj):
