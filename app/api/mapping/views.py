@@ -63,18 +63,7 @@ from shared.data.omop import (
     Vocabulary,
 )
 
-from .forms import ScanReportAssertionForm, ScanReportForm
-from .paginations import CustomPagination
-from .permissions import (
-    CanAdmin,
-    CanEdit,
-    CanView,
-    CanViewProject,
-    has_editorship,
-    has_viewership,
-    is_admin,
-)
-from .serializers import (
+from ..api.serializers import (
     ClassificationSystemSerializer,
     ConceptAncestorSerializer,
     ConceptClassSerializer,
@@ -108,6 +97,17 @@ from .serializers import (
     ScanReportViewSerializer,
     UserSerializer,
     VocabularySerializer,
+)
+from .forms import ScanReportAssertionForm, ScanReportForm
+from .paginations import CustomPagination
+from .permissions import (
+    CanAdmin,
+    CanEdit,
+    CanView,
+    CanViewProject,
+    has_editorship,
+    has_viewership,
+    is_admin,
 )
 from .services_nlp import start_nlp_field_level
 from .services_rules import (

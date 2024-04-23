@@ -16,6 +16,7 @@ from shared.data.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
+    Ì,
 )
 from shared.data.omop import (
     Concept,
@@ -28,8 +29,8 @@ from shared.data.omop import (
     Vocabulary,
 )
 
-from .permissions import has_editorship, is_admin, is_az_function_user
-from .services_rules import analyse_concepts, get_mapping_rules_json
+from ..mapping.permissions import has_editorship, is_admin, is_az_function_user
+from ..mapping.services_rules import analyse_concepts, get_mapping_rules_json
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
