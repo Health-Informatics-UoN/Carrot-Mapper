@@ -11,6 +11,7 @@
         "NLP_QUEUE_NAME":"nlpqueue-local",
         "UPLOAD_QUEUE_NAME": "uploadreports-local",
         "CREATE_CONCEPTS_QUEUE_NAME":"conceptqueue-local",
+        "MAPPING_RULES_QUEUE_NAME":"mapping-rules-queue-local",
         "PAGE_MAX_CHARS": "30000",
         "CHUNK_SIZE": "6"
     }
