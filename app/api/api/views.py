@@ -1,11 +1,8 @@
-import base64
-import json
 import os
 from typing import Any
 
 from api.paginations import CustomPagination
 from azure.storage.blob import BlobServiceClient
-from azure.storage.queue import QueueClient
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -80,6 +77,7 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
+from shared.services.azurequeue import add_message
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -546,32 +544,20 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         self.perform_update(serializer)
 
         # Map the table
-        # Check if this env should be Adding Concepts
-        add_concepts = os.environ.get("UPLOAD_ONLY").lower() == "true"
-        if add_concepts:
-            scan_report_instance = instance.scan_report
-            data_dictionary_name = (
-                scan_report_instance.data_dictionary.name
-                if scan_report_instance.data_dictionary
-                else None
-            )
+        scan_report_instance = instance.scan_report
+        data_dictionary_name = (
+            scan_report_instance.data_dictionary.name
+            if scan_report_instance.data_dictionary
+            else None
+        )
 
-            # Send to queue
-            azure_dict = {
-                "scan_report_id": scan_report_instance.id,
-                "table_id": instance.id,
-                "data_dictionary_blob": data_dictionary_name,
-            }
-            queue_message = json.dumps(azure_dict)
-            message_bytes = queue_message.encode("ascii")
-            base64_bytes = base64.b64encode(message_bytes)
-            base64_message = base64_bytes.decode("ascii")
-
-            queue = QueueClient.from_connection_string(
-                conn_str=os.environ.get("STORAGE_CONN_STRING"),
-                queue_name=os.environ.get("CREATE_CONCEPTS_QUEUE_NAME"),
-            )
-            queue.send_message(base64_message)
+        # Send to queue
+        azure_dict = {
+            "scan_report_id": scan_report_instance.id,
+            "table_id": instance.id,
+            "data_dictionary_blob": data_dictionary_name,
+        }
+        add_message(os.environ.get("CREATE_CONCEPTS_QUEUE_NAME"), azure_dict)
 
         return Response(serializer.data)
 
