@@ -4,6 +4,7 @@ from revproxy.views import ProxyView
 
 # A set of urls that will override any root paths requested, and proxy them to the Next.js app.
 urlpatterns = [
+    # /scanreports/ and escape any further paths
     re_path(
         r"^scanreports/(?P<path>(?![\d/]).*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports"),
