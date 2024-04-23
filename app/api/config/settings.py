@@ -41,8 +41,10 @@ DEBUG = os.getenv("DEBUG", "False") in ["True", 1]
 ALLOWED_HOSTS = [
     x.strip()[1:-1] for x in os.environ.get("ALLOWED_HOSTS")[1:-1].split(",")
 ]
-# SECURE_SSL_REDIRECT = True
-# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# We need this for Azure App Service
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
