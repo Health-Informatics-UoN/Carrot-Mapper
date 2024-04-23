@@ -30,16 +30,23 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter, useSearchParams } from "next/navigation";
+import { navigateWithSearchParam } from "@/lib/client-utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  count: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  count,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentPage = searchParams.get("p");
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -63,6 +70,10 @@ export function DataTable<TData, TValue>({
       columnVisibility,
     },
   });
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(count / pageSize);
+  const pagesArray = Array.from(Array(totalPages), (_, index) => index + 1);
 
   return (
     <div>
@@ -128,6 +139,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:cursor-pointer"
+                  onClick={() => router.push(`${(row.original as any).id}`)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -152,23 +165,30 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
+      <div className="flex items-center justify-center space-x-2 py-4">
+        {pagesArray.map((pageNumber) => (
+          <Button
+            key={pageNumber}
+            size="sm"
+            variant="outline"
+            className="bg-[#475da7] text-white"
+            onClick={() =>
+              navigateWithSearchParam(
+                "p",
+                pageNumber.toString(),
+                router,
+                searchParams,
+              )
+            }
+            disabled={
+              currentPage
+                ? currentPage === pageNumber.toString()
+                : pageNumber.toString() === "1"
+            }
+          >
+            {pageNumber}
+          </Button>
+        ))}
       </div>
     </div>
   );
