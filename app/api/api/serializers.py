@@ -116,6 +116,39 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serializer for the ScanReportViewV2, for version 2.
+    Args:
+        self: The instance of the class.
+        data: The data to be validated.
+    Returns:
+        dict: The validated data for the scan report.
+    Raises:
+        serializers.ValidationError: If the request context is missing.
+        PermissionDenied: If the user does not have the required permissions.
+        NotFound: If the parent dataset is not found.
+    """
+
+    name = serializers.CharField(source="dataset")
+    dataset = serializers.SerializerMethodField()
+    data_partner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ScanReport
+        fields = ("id", "name", "dataset", "data_partner", "status", "created_at")
+
+    def get_dataset(self, obj):
+        return obj.parent_dataset.name if obj.parent_dataset else None
+
+    def get_data_partner(self, obj):
+        return (
+            obj.parent_dataset.data_partner.name
+            if obj.parent_dataset.data_partner
+            else None
+        )
+
+
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_author(self, author):
         if request := self.context.get("request"):

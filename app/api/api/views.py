@@ -34,6 +34,7 @@ from api.serializers import (
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
+    ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
 )
@@ -47,6 +48,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -348,6 +350,26 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         )
 
 
+class ScanReportListViewSetV2(ScanReportListViewSet):
+    """
+    A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
+
+    Remarks:
+    - This viewset extends ScanReportListViewSet and provides custom behavior listing scan reports.
+    - Includes custom filtering, ordering, and pagination.
+    """
+
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = {"hidden": ["exact"], "name": ["in", "exact"]}
+    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            return ScanReportViewSerializerV2
+        return super().get_serializer_class()
+
+
 class DatasetListView(generics.ListAPIView):
     """
     API view to show all datasets.
@@ -602,17 +624,6 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
-
-
-# class ScanReportFieldFilterViewSet(viewsets.ModelViewSet):
-#     queryset = ScanReportField.objects.all()
-#     serializer_class = ScanReportFieldSerializer
-#     filter_backends = [DjangoFilterBackend]
-#     filterset_fields = {
-#         "scan_report_table": ["in", "exact"],
-#         "name": ["in", "exact"],
-#         "id": ["in", "exact"],
-#     }
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
