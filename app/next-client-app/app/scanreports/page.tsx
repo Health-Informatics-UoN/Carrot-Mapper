@@ -46,7 +46,7 @@ export default async function ScanReports() {
         New Scan Report
       </Button>
       <div className="mb-10">
-        <DataTable columns={columns} data={result} />
+        <DataTable columns={columns} data={result} type="scanreport"/>
       </div>
     </div>
   );
