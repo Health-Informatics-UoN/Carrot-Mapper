@@ -1,9 +1,9 @@
 from api import views
-from api.routers import routers
+from api.router import router
 from django.urls import include, path
 
 urlpatterns = [
-    path("", include(routers.urls)),
+    path("", include(router.urls)),
     path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
     path(
         r"countprojects/<int:dataset>",

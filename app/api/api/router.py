@@ -1,122 +1,122 @@
 from api import views
 from rest_framework import routers
 
-routers = routers.DefaultRouter()
+router = routers.DefaultRouter()
 
 
-routers.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
-routers.register(
+router.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
+router.register(
     r"omop/conceptsfilter", views.ConceptFilterViewSet, basename="conceptsfilter"
 )
 
-routers.register(r"omop/vocabularies", views.VocabularyViewSet, basename="vocabularies")
-routers.register(
+router.register(r"omop/vocabularies", views.VocabularyViewSet, basename="vocabularies")
+router.register(
     r"omop/conceptrelationships",
     views.ConceptRelationshipViewSet,
     basename="conceptrelationships",
 )
-routers.register(
+router.register(
     r"omop/conceptrelationshipfilter",
     views.ConceptRelationshipFilterViewSet,
     basename="conceptrelationshipfilter",
 )
 
-routers.register(
+router.register(
     r"omop/conceptancestors", views.ConceptAncestorViewSet, basename="conceptancestors"
 )
-routers.register(
+router.register(
     r"omop/conceptclasses", views.ConceptClassViewSet, basename="conceptclasses"
 )
-routers.register(
+router.register(
     r"omop/conceptsynonyms", views.ConceptSynonymViewSet, basename="conceptsynonyms"
 )
-routers.register(r"omop/domains", views.DomainViewSet, basename="domains")
-routers.register(
+router.register(r"omop/domains", views.DomainViewSet, basename="domains")
+router.register(
     r"omop/drugstrengths", views.DrugStrengthViewSet, basename="drugstrengths"
 )
 
-routers.register(r"users", views.UserViewSet, basename="users")
-routers.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
+router.register(r"users", views.UserViewSet, basename="users")
+router.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
 
-routers.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
-routers.register(
+router.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
+router.register(
     r"v2/scanreports", views.ScanReportListViewSetV2, basename="v2scanreports"
 )
-routers.register(
+router.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
 
-routers.register(
+router.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
 )
 
-routers.register(
+router.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
 )
-routers.register(
+router.register(
     r"scanreportfilter",
     views.ScanReportFilterViewSet,
     basename="scanreportfilter",
 )
 
-routers.register(
+router.register(
     r"scanreportactiveconceptfilter",
     views.ScanReportActiveConceptFilterViewSet,
     basename="scanreportactiveconceptfilter",
 )
 
 
-routers.register(
+router.register(
     r"scanreportvaluesfilterscanreport",
     views.ScanReportValuesFilterViewSetScanReport,
     basename="scanreportvaluesfilterscanreport",
 )
-routers.register(
+router.register(
     r"scanreportvaluesfilterscanreporttable",
     views.ScanReportValuesFilterViewSetScanReportTable,
     basename="scanreportvaluesfilterscanreporttable",
 )
 
-routers.register(
+router.register(
     r"scanreportvaluepks", views.ScanReportValuePKViewSet, basename="scanreportvaluepks"
 )
 
 
-routers.register(
+router.register(
     r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"
 )
-routers.register(
+router.register(
     r"scanreportconceptsfilter",
     views.ScanReportConceptFilterViewSet,
     basename="scanreportconceptsfilter",
 )
 
-routers.register(
+router.register(
     r"classificationsystems",
     views.ClassificationSystemViewSet,
     basename="classificationsystems",
 )
-routers.register(
+router.register(
     r"datadictionaries", views.DataDictionaryViewSet, basename="DataDictionaries"
 )
 
-routers.register(r"datapartners", views.DataPartnerViewSet, basename="datapartners")
-routers.register(
+router.register(r"datapartners", views.DataPartnerViewSet, basename="datapartners")
+router.register(
     r"datapartnersfilter", views.DataPartnerFilterViewSet, basename="datapartnersfilter"
 )
 
-routers.register(r"omoptables", views.OmopTableViewSet, basename="omoptables")
-routers.register(
+router.register(r"omoptables", views.OmopTableViewSet, basename="omoptables")
+router.register(
     r"omoptablesfilter", views.OmopTableFilterViewSet, basename="omoptablesfilter"
 )
-routers.register(r"omopfields", views.OmopFieldViewSet, basename="omopfields")
-routers.register(
+router.register(r"omopfields", views.OmopFieldViewSet, basename="omopfields")
+router.register(
     r"omopfieldsfilter", views.OmopFieldFilterViewSet, basename="omopfieldsfilter"
 )
-routers.register(r"mappingrules", views.MappingRuleViewSet, basename="mappingrule")
-routers.register(r"json", views.DownloadJSON, basename="getjson")
-routers.register(r"mappingruleslist", views.RulesList, basename="getlist")
-routers.register(
+router.register(r"mappingrules", views.MappingRuleViewSet, basename="mappingrule")
+router.register(r"json", views.DownloadJSON, basename="getjson")
+router.register(r"mappingruleslist", views.RulesList, basename="getlist")
+router.register(
     r"mappingrulesfilter", views.MappingRuleFilterViewSet, basename="mappingrulefilter"
 )
-routers.register(r"analyse", views.AnalyseRules, basename="getanalysis")
+router.register(r"analyse", views.AnalyseRules, basename="getanalysis")
