@@ -2,7 +2,7 @@ import { scanReports } from "./data";
 import request from "./request";
 
 const fetchKeys = {
-  list: "scanreports",
+  list: "scanreports/",
 };
 
 export async function getScanReports(): Promise<ScanReport[]> {
