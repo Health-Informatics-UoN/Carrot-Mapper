@@ -2,9 +2,9 @@
 
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react"
- 
-import { Button } from "@/components/ui/button"
+import { MoreHorizontal } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 
-
-export const columns: ColumnDef<DataSet>[] = [
+export const columns: ColumnDef<DataSetResult>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -55,6 +54,7 @@ export const columns: ColumnDef<DataSet>[] = [
   },
   {
     accessorKey: "data_partner",
+    accessorFn: (row) => row.data_partner.name,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Data Partner" />
     ),
@@ -92,8 +92,8 @@ export const columns: ColumnDef<DataSet>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const dataset = row.original
- 
+      const dataset = row.original;
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -106,14 +106,10 @@ export const columns: ColumnDef<DataSet>[] = [
             <DropdownMenuItem>Details</DropdownMenuItem>
             <DropdownMenuItem>Archive</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(dataset.name)}
-            >
-              Copy Dataset's name
-            </DropdownMenuItem>
+            <DropdownMenuItem>Copy Dataset's name</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
     header: "Actions",
   },
