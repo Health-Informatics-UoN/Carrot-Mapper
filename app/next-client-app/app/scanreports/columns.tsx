@@ -16,6 +16,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { archiveScanReports } from "@/api/scanreports";
+import { revalidatePath } from "next/cache";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -88,6 +90,16 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: "",
     enableHiding: false,
     cell: ({ row }) => {
+      const id = row.original.id;
+
+      const handleArchive = async () => {
+        try {
+          await archiveScanReports(id);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -96,7 +108,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
               Archive <ArchiveIcon className="ml-auto" />
             </DropdownMenuItem>
             <DropdownMenuSeparator />

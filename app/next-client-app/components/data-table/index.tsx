@@ -30,8 +30,8 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter, useSearchParams } from "next/navigation";
-import { navigateWithSearchParam } from "@/lib/client-utils";
+import { useRouter } from "next/navigation";
+import { DataTablePagination } from "./DataTablePagination";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -45,8 +45,6 @@ export function DataTable<TData, TValue>({
   count,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentPage = searchParams.get("p");
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -73,7 +71,7 @@ export function DataTable<TData, TValue>({
 
   const pageSize = 10;
   const totalPages = Math.ceil(count / pageSize);
-  const pagesArray = Array.from(Array(totalPages), (_, index) => index + 1);
+  const pages = Array.from(Array(totalPages), (_, index) => index + 1);
 
   return (
     <div>
@@ -168,29 +166,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-center space-x-2 py-4">
-        {pagesArray.map((pageNumber) => (
-          <Button
-            key={pageNumber}
-            size="sm"
-            variant="outline"
-            className="bg-[#475da7] text-white"
-            onClick={() =>
-              navigateWithSearchParam(
-                "p",
-                pageNumber.toString(),
-                router,
-                searchParams,
-              )
-            }
-            disabled={
-              currentPage
-                ? currentPage === pageNumber.toString()
-                : pageNumber.toString() === "1"
-            }
-          >
-            {pageNumber}
-          </Button>
-        ))}
+        <DataTablePagination table={table} count={count} />
       </div>
     </div>
   );
