@@ -154,8 +154,19 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
 
     def get_queryset(self):
-        # No data is passed to the view, it is all API fetched.
-        return MappingRule.objects.none()
+        qs = super().get_queryset()
+        search_term = self.kwargs.get("pk")
+
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
+        return qs
 
 
 def modify_filename(filename, dt, rand):
