@@ -28,23 +28,30 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
+import { navigateWithSearchParam } from "@/lib/client-utils";
+import { MixerHorizontalIcon } from "@radix-ui/react-icons";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   count: number;
+  filter: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   count,
+  filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
+  const searchParam = useSearchParams();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -77,20 +84,33 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filter reports..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
+          placeholder={`Filter by ${filter}...`}
+          onChange={(event) => {
+            const param = event.currentTarget.value;
+            navigateWithSearchParam(
+              `${filter}__contains`,
+              param,
+              router,
+              searchParam,
+            );
+          }}
           className="max-w-sm"
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns
+            <Button
+              aria-label="Toggle columns"
+              variant="outline"
+              size="sm"
+              className="ml-auto hidden h-8 lg:flex"
+            >
+              <MixerHorizontalIcon className="mr-2 size-4" />
+              View
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -166,7 +186,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-center space-x-2 py-4">
-        <DataTablePagination table={table} count={count} />
+        <DataTablePagination count={count} />
       </div>
     </div>
   );

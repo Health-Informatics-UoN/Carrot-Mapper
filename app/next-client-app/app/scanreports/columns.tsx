@@ -8,40 +8,45 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ChevronDownIcon,
-  ArchiveIcon,
   Pencil2Icon,
+  DotsHorizontalIcon,
+  EyeNoneIcon,
+  EyeOpenIcon,
+  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
+import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { archiveScanReports } from "@/api/scanreports";
-import { revalidatePath } from "next/cache";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
+    id: "Name",
     accessorKey: "dataset",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    enableHiding: false,
+    enableHiding: true,
   },
   {
+    id: "Dataset",
     accessorKey: "parent_dataset",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Dataset" />
     ),
-    enableHiding: false,
+    enableHiding: true,
   },
   {
+    id: "Data Partner",
     accessorKey: "data_partner",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Data Partner" />
     ),
-    enableHiding: false,
+    enableHiding: true,
   },
   {
+    id: "Uploaded",
     accessorKey: "created_at",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Uploaded" />
@@ -63,6 +68,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     },
   },
   {
+    id: "Status",
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
@@ -73,28 +79,30 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     },
   },
   {
+    id: "Rules",
     accessorKey: "rules",
     header: "",
     enableHiding: false,
     cell: ({ row }) => {
       const id = row.original.id;
       return (
-        <Link href={`/scanreports/${id}/mapping_rules`}>
+        <Link href={`/scanreports/${id}/mapping_rules/`}>
           <Button className="bg-[#475da7]">Rules</Button>
         </Link>
       );
     },
   },
   {
+    id: "Actions",
     accessorKey: "actions",
-    header: "",
+    header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.id;
+      const { id, hidden } = row.original;
 
       const handleArchive = async () => {
         try {
-          await archiveScanReports(id);
+          await archiveScanReports(id, !hidden);
         } catch (error) {
           console.error(error);
         }
@@ -103,18 +111,37 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" className="bg-[#475da7]">
-              Actions <ChevronDownIcon className="ml-2" />
+            <Button variant="ghost" size="sm">
+              <DotsHorizontalIcon className="size-4" aria-hidden="true" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <DropdownMenuItem onClick={handleArchive}>
-              Archive <ArchiveIcon className="ml-auto" />
+              {hidden ? "Unarchive" : "Archive"}
+              {hidden ? (
+                <EyeOpenIcon className="ml-auto" />
+              ) : (
+                <EyeNoneIcon className="ml-auto" />
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              Edit <Pencil2Icon className="ml-auto" />
-            </DropdownMenuItem>
+            <Link
+              href={`/scanreports/${id}/details/`}
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <DropdownMenuItem>
+                Details <Pencil2Icon className="ml-auto" />
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuSeparator />
+            <Link
+              href={`/scanreports/${id}/assertions/`}
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <DropdownMenuItem>
+                Assertions <ExclamationTriangleIcon className="ml-auto" />
+              </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );

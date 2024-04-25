@@ -19,13 +19,13 @@ export async function getScanReports(
   }
 }
 
-export async function archiveScanReports(id: number) {
+export async function archiveScanReports(id: number, hidden: boolean) {
   await request(fetchKeys.archive(id), {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
     },
-    body: JSON.stringify({ hidden: true }),
+    body: JSON.stringify({ hidden: hidden }),
   });
   revalidatePath("/scanreports/");
 }
