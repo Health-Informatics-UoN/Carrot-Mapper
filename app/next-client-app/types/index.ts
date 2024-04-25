@@ -5,6 +5,7 @@ interface ScanReportResult {
   data_partner: string;
   status: string;
   created_at: Date;
+  hidden: boolean;
 }
 interface ScanReport {
   count: number;
