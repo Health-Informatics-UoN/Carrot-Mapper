@@ -16,6 +16,7 @@ Resource = "^0.2.1"
 httpx = "^0.26.0"
 shared = {path = "../shared", develop = true}
 python-dotenv = "^1.0.1"
+azure-functions-durable = "^1.2.9"
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
