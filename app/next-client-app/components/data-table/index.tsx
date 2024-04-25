@@ -26,26 +26,30 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableViewOptions } from "./DataTableViewOptions";
+import { navigateWithSearchParam } from "@/lib/client-utils";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  type: String;
+  count: number;
+  filter: string;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  type,
+  count,
+  filter,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
+  const searchParam = useSearchParams();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-
-  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -57,49 +61,37 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(count / pageSize);
 
   return (
     <div>
       <div className="flex justify-between my-4">
         <Input
-          placeholder={
-            type === "dataset" ? "Filter datasets by name" : "Filter reports"
-          }
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <Input
-          placeholder={
-            type === "dataset"
-              ? "Filter datasets by data partner"
-              : "Filter reports"
-          }
-          value={
-            (table.getColumn("data_partner")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("data_partner")?.setFilterValue(event.target.value)
-          }
+          placeholder={`Filter by ${filter}...`}
+          onChange={(event) => {
+            const param = event.currentTarget.value;
+            navigateWithSearchParam(
+              `${filter}__contains`,
+              param,
+              router,
+              searchParam
+            );
+          }}
           className="max-w-sm"
         />
         <div>
           <DataTableViewOptions table={table} />
         </div>
       </div>
-      <div>
-        <DataTablePagination table={table} />
-      </div>
+      <div></div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -150,24 +142,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+      <DataTablePagination count={count} />
     </div>
   );
 }

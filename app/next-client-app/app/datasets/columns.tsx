@@ -53,6 +53,7 @@ export const columns: ColumnDef<DataSetResult>[] = [
     enableHiding: true,
   },
   {
+    id: "Data Partner",
     accessorKey: "data_partner",
     accessorFn: (row) => row.data_partner.name,
     header: ({ column }) => (
@@ -69,6 +70,7 @@ export const columns: ColumnDef<DataSetResult>[] = [
   },
 
   {
+    id: "Creation Date",
     accessorKey: "created_at",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Creation Date" />

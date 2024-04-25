@@ -9,9 +9,17 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { getDataSets } from "@/api/datasets";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { objToQuery } from "@/lib/client-utils";
+import Link from "next/link";
 
-export default async function DataSets() {
-  const dataset = await getDataSets();
+interface DataSetListProps {
+  searchParams?: { [key: string]: string | undefined } | {};
+}
+
+export default async function DataSets({ searchParams }: DataSetListProps) {
+  const query = objToQuery(searchParams ?? {});
+  const dataset = await getDataSets(query);
 
   return (
     <div className="pt-10 px-16">
@@ -29,21 +37,48 @@ export default async function DataSets() {
         </Breadcrumb>
       </div>
       <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold"> Active Datasets</h1>
-        <div>
-          <Button
-            size="lg"
-            className="mr-3 text-md bg-blue-900 hover:bg-blue-800"
-          >
-            Active Datasets
+        <h1 className="text-4xl font-semibold">Dataset List</h1>
+        <Link href="/">
+          <Button size="lg" className="text-md bg-[#475da7]">
+            New Dataset
           </Button>
-          <Button size="lg" className="text-md bg-blue-900 hover:bg-blue-800">
-            Archived Datasets
-          </Button>
-        </div>
+        </Link>
       </div>
-      <div className="mb-10">
-        <DataTable columns={columns} data={dataset.results} type="dataset" />
+      <div className="my-5">
+        <Tabs
+          defaultValue={
+            (searchParams as any)?.hidden
+              ? (searchParams as any)?.hidden === "true"
+                ? "archived"
+                : "active"
+              : "active"
+          }
+        >
+          <TabsList className="grid w-25 grid-cols-2">
+            <a href="?hidden=false" className="h-full w-full text-slate-700">
+              <TabsTrigger value="active">Active Datasets</TabsTrigger>
+            </a>
+            <a href="?hidden=true" className="h-full w-full text-slate-700">
+              <TabsTrigger value="archived">Archived Datasets</TabsTrigger>
+            </a>
+          </TabsList>
+          <TabsContent value="active">
+            <DataTable
+              columns={columns}
+              data={dataset.results}
+              count={dataset.count}
+              filter="dataset"
+            />
+          </TabsContent>
+          <TabsContent value="archived">
+            <DataTable
+              columns={columns}
+              data={dataset.results}
+              count={dataset.count}
+              filter="dataset"
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
