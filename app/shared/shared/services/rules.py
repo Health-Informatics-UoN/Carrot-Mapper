@@ -34,7 +34,7 @@ m_date_field_mapper = {
 }
 
 
-def _delete_mapping_rules(table_id: int) -> None:
+def delete_mapping_rules(table_id: int) -> None:
     """
     Delete existing mapping rules related to a Scan Report Table.
 
