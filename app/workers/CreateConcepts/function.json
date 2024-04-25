@@ -3,8 +3,9 @@
   "bindings": [
     {
       "name": "msg",
-      "type": "queueTrigger",
+      "type": "activityTrigger",
       "direction": "in",
+      "datatype": "string",
       "queueName": "%CREATE_CONCEPTS_QUEUE_NAME%",
       "connection": "STORAGE_CONN_STRING"
     }
