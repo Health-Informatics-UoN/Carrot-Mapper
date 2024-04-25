@@ -88,33 +88,6 @@ def update_scanreport_table_page(request, sr, pk):
 @method_decorator(login_required, name="dispatch")
 class ScanReportListView(ListView):
     model = ScanReport
-    # order the scanreports now so the latest is first in the table
-    ordering = ["-created_at"]
-
-    # handle and post methods
-    # so far just handle a post when a button to click to hide/show a report
-    def post(self, request, *args, **kwargs):
-        # obtain the scanreport id from the buttont that is clicked
-        _id = request.POST.get("scanreport_id")
-        if _id is not None:
-            # obtain the scan report based on this id
-            report = ScanReport.objects.get(pk=_id)
-            # switch hidden True -> False, or False -> True, if clicked
-            report.hidden = not report.hidden
-            # update the model
-            report.save()
-        # return to the same page
-        return redirect(request.META["HTTP_REFERER"])
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-        # add the current user to the context
-        # this is needed so the hide/show buttons can be only turned on
-        # by whoever created the report
-        context["current_user"] = self.request.user
-        context["filterset"] = self.filterset
-        return context
 
     def get_queryset(self):
         # No data is passed to the view, it is all API fetched.
