@@ -117,15 +117,8 @@ class ScanReportListView(ListView):
         return context
 
     def get_queryset(self):
-        search_term = self.request.GET.get("filter", None)
-        qs = super().get_queryset()
-        if search_term == "archived":
-            qs = qs.filter(hidden=True)
-            self.filterset = "Archived"
-        else:
-            qs = qs.filter(hidden=False)
-            self.filterset = "Active"
-        return qs
+        # No data is passed to the view, it is all API fetched.
+        return ScanReport.objects.none()
 
 
 @method_decorator(login_required, name="dispatch")
@@ -161,19 +154,8 @@ class StructuralMappingTableListView(ListView):
             return redirect(request.path)
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        search_term = self.kwargs.get("pk")
-
-        if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term).order_by(
-                "concept",
-                "omop_field__table",
-                "omop_field__field",
-                "source_table__name",
-                "source_field__name",
-            )
-
-        return qs
+        # No data is passed to the view, it is all API fetched.
+        return MappingRule.objects.none()
 
 
 def modify_filename(filename, dt, rand):
