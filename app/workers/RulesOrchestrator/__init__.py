@@ -12,6 +12,15 @@ from shared.services.rules import find_existing_concepts_count
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
+    """
+    Orchestration.
+
+    Remarks:
+        - Call CreateConcepts
+        - Get the number of existing concepts count
+        - Paginate it...
+        - Then fan out by giving MappingRules a page number
+    """
 
     # CreateConcepts
     msg: Dict[str, Any] = context.get_input()
@@ -31,7 +40,9 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # Fan out
     tasks = [
-        context.call_activity("MappingRules", (page_num, page_size))
+        context.call_activity(
+            "MappingRules", {"page_num": page_num, "page_size": page_size}
+        )
         for page_num in range(num_pages)
     ]
     results = yield context.task_all(tasks)
