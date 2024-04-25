@@ -4,7 +4,7 @@ import request from "./request";
 
 const fetchKeys = {
   list: (filterName?: string) =>
-    filterName ? `scanreports2/?${filterName}` : "scanreports2",
+    filterName ? `v2/scanreports/?${filterName}` : "v2/scanreports",
   archive: (id: number) => `scanreports/${id}/`,
 };
 

@@ -7,7 +7,8 @@
       "request": "launch",
       "program": "manage.py",
       "args": [
-        "runserver"
+        "runserver",
+        "7000"
       ],
       "django": true,
       "justMyCode": true,

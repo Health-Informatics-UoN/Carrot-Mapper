@@ -1,7 +1,7 @@
 interface ScanReportResult {
   id: number;
-  name: string;
   dataset: string;
+  parent_dataset: string;
   data_partner: string;
   status: string;
   created_at: Date;

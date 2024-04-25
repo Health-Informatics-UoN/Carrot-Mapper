@@ -21,14 +21,14 @@ import { revalidatePath } from "next/cache";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "dataset",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
     enableHiding: false,
   },
   {
-    accessorKey: "dataset",
+    accessorKey: "parent_dataset",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Dataset" />
     ),
