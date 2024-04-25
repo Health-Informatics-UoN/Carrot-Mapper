@@ -1,19 +1,42 @@
-from typing import Dict
+import os
+from typing import Any, Dict
 
 import azure.durable_functions as df
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
+import django
+
+django.setup()
+
+from shared.services.rules import find_existing_concepts_count
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # CreateConcepts
-    msg = context.get_input()
-    result1 = yield context.call_activity("CreateConcepts", msg)
+    msg: Dict[str, Any] = context.get_input()
+    result = yield context.call_activity("CreateConcepts", msg)
 
-    # Get concepts ?
+    table_id = msg.get("table_id")
 
-    # Fan out.
+    # we don't delete rules in the function anymore, the webapp does that.
 
-    return [result1]
+    # Get concepts number
+    concepts_count = find_existing_concepts_count(table_id)
+
+    page_size = 1000
+
+    # Paginate
+    num_pages = (concepts_count + page_size - 1) // page_size
+
+    # Fan out
+    tasks = [
+        context.call_activity("MappingRules", (page_num, page_size))
+        for page_num in range(num_pages)
+    ]
+    results = yield context.task_all(tasks)
+
+    return [result, results]
 
 
 main = df.Orchestrator.create(orchestrator_function)
