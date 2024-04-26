@@ -279,11 +279,7 @@ class ScanReportFormView(FormView):
         print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
 
         # Check if this env should be using Upload Only, and send it the right queue.
-        upload_only = os.environ.get("UPLOAD_ONLY").lower() == "true"
-        if upload_only:
-            queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
-        else:
-            queue_name = os.environ.get("SCAN_REPORT_QUEUE_NAME")
+        queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
 
         queue = QueueClient.from_connection_string(
             conn_str=os.environ.get("STORAGE_CONN_STRING"),
