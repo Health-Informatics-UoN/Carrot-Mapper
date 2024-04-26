@@ -62,10 +62,10 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data,
     columns,
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -91,7 +91,7 @@ export function DataTable<TData, TValue>({
               `${filter}__contains`,
               param,
               router,
-              searchParam,
+              searchParam
             );
           }}
           className="max-w-sm"
@@ -166,7 +166,7 @@ export function DataTable<TData, TValue>({
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </div>
                     </TableCell>
