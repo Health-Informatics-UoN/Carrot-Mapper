@@ -40,6 +40,7 @@ from api.serializers import (
     VocabularySerializer,
 )
 from azure.storage.blob import BlobServiceClient
+from config import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -583,11 +584,13 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             "table_id": instance.id,
             "data_dictionary_blob": data_dictionary_name,
         }
-        response = requests.post(
-            "http://localhost:7071/api/orchestrators/RulesOrchestrator", json=msg
-        )
+        orchestrator_url = f"{settings.AZ_FUNCTIONS_URL}/api/orchestrators/{settings.AZ_FUNCTIONS_RULES_NAME}"
+        response = requests.post(orchestrator_url, json=msg)
         response.raise_for_status()
-        # TODO: Get the job ID fom the response for now, but we need to save it.
+
+        # TODO: The worker_id can be used for status, but we need to save it somewhere.
+        # resp_json = response.json()
+        # worker_id = resp_json.get("id")
 
         return Response(serializer.data)
 
