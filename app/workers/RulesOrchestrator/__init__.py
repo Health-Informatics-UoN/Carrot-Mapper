@@ -41,7 +41,8 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     # Fan out
     tasks = [
         context.call_activity(
-            "MappingRules", {"page_num": page_num, "page_size": page_size}
+            "MappingRules",
+            {"table_id": table_id, "page_num": page_num, "page_size": page_size},
         )
         for page_num in range(num_pages)
     ]

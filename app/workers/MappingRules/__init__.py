@@ -23,9 +23,9 @@ def main(msg: Dict[str, Any]):
     Return:
         - None
     """
-    table_id = msg.get("table_id")
-    page = msg.get("page_num")
-    page_size = msg.get("page_size")
+    table_id = msg.pop("table_id")
+    page = msg.pop("page_num")
+    page_size = msg.pop("page_size")
 
     logger.info(f"Generating mapping rules for table: {table_id}, page: {page}")
 
