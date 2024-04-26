@@ -18,9 +18,9 @@ jobs:
   #         echo `git diff origin/master HEAD --name-only | grep .py` >> changed.txt
   #     - name: Check PEP8
   #       run: |
-  #         while read file; do 
+  #         while read file; do
   #            echo $file
-  #            pylint $file 
+  #            pylint $file
   #         done < changed.txt
 #
  format_python_code:
@@ -51,7 +51,7 @@ jobs:
        run: |
          touch .env
 
-         echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env  
+         echo COCONNECT_DB_ENGINE=django.db.backends.postgresql >> .env
          echo COCONNECT_DB_HOST=${{ secrets.COCONNECT_DB_HOST }} >> .env
          echo COCONNECT_DB_NAME=${{ secrets.COCONNECT_DB_DB }} >> .env
          echo COCONNECT_DB_PORT=${{ secrets.COCONNECT_DB_PORT }} >> .env
@@ -87,10 +87,20 @@ jobs:
          docker logs $containerid >> logs.out
          #shutdown the container
          docker stop $containerid
-     #save the logs so they can be further checked 
+     #save the logs so they can be further checked
      - uses: actions/upload-artifact@v2
        with:
          name: my-artifact
          path: logs.out
          retention-days: 1
 
+     - name: Install Node.js
+       uses: actions/setup-node@v3
+       with:
+        node-version: '20'
+
+     - name: Install dependencies and build Next.js app
+       run: |
+          npm install
+          npm run build
+       working-directory: app/next-client-app
