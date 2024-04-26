@@ -19,6 +19,7 @@ python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
+psycopg2 = "^2.9.9"
 
 
 [tool.poetry.group.test.dependencies]

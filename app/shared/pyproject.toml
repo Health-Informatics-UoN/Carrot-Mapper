@@ -9,7 +9,21 @@ license = "MIT"
 python = "^3.11"
 django = "4.2"
 psycopg2-binary = "^2.9.9"
+azure-storage-queue = "^12.9.0"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+psycopg2 = "^2.9.9"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.1.1"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+pythonpath = ["."]

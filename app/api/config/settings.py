@@ -41,8 +41,10 @@ DEBUG = os.getenv("DEBUG", "False") in ["True", 1]
 ALLOWED_HOSTS = [
     x.strip()[1:-1] for x in os.environ.get("ALLOWED_HOSTS")[1:-1].split(",")
 ]
-SECURE_SSL_REDIRECT = True
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# We need this for Azure App Service
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
 # Application definition
@@ -56,6 +58,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "extra_views",
+    "api",
     "mapping",
     "data",
     "rest_framework",
@@ -82,7 +85,7 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-ROOT_URLCONF = "api.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -96,13 +99,13 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
-                "api.react.react",
+                "config.react.react",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "api.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
