@@ -25,7 +25,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Name",
     accessorKey: "dataset",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Name" sortName="dataset" />
     ),
     enableHiding: true,
   },
@@ -33,7 +33,11 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Dataset",
     accessorKey: "parent_dataset",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Dataset" />
+      <DataTableColumnHeader
+        column={column}
+        title="Dataset"
+        sortName="parent_dataset"
+      />
     ),
     enableHiding: true,
   },
@@ -49,7 +53,11 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Uploaded",
     accessorKey: "created_at",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Uploaded" />
+      <DataTableColumnHeader
+        column={column}
+        title="Uploaded"
+        sortName="created_at"
+      />
     ),
     enableHiding: false,
     enableSorting: true,

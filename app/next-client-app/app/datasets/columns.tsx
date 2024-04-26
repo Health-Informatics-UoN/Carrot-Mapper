@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
+import { archiveDataSets } from "@/api/datasets";
+import { EyeNoneIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 
 export const columns: ColumnDef<DataSetResult>[] = [
   {
@@ -94,7 +96,15 @@ export const columns: ColumnDef<DataSetResult>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const dataset = row.original;
+      const { id, hidden } = row.original;
+
+      const handleArchive = async () => {
+        try {
+          await archiveDataSets(id, !hidden);
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
       return (
         <DropdownMenu>
@@ -106,7 +116,14 @@ export const columns: ColumnDef<DataSetResult>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Details</DropdownMenuItem>
-            <DropdownMenuItem>Archive</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleArchive}>
+              {hidden ? "Unarchive" : "Archive"}
+              {hidden ? (
+                <EyeOpenIcon className="ml-auto" />
+              ) : (
+                <EyeNoneIcon className="ml-auto" />
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Copy Dataset's name</DropdownMenuItem>
           </DropdownMenuContent>

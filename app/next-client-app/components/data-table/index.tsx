@@ -2,14 +2,10 @@
 
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -52,10 +48,6 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const searchParam = useSearchParams();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -63,22 +55,15 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
+    manualFiltering: true,
+    manualPagination: true,
+    manualSorting: true,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
-      sorting,
-      columnFilters,
       columnVisibility,
     },
   });
-
-  const pageSize = 10;
-  const totalPages = Math.ceil(count / pageSize);
-  const pages = Array.from(Array(totalPages), (_, index) => index + 1);
 
   return (
     <div>
@@ -88,7 +73,7 @@ export function DataTable<TData, TValue>({
           onChange={(event) => {
             const param = event.currentTarget.value;
             navigateWithSearchParam(
-              `${filter}__contains`,
+              `${filter}__icontains`,
               param,
               router,
               searchParam,

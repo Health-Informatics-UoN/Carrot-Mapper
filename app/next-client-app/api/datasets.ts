@@ -1,3 +1,5 @@
+"use server";
+import { revalidatePath } from "next/cache";
 import request from "./request";
 
 const fetchKeys = {
@@ -9,7 +11,7 @@ const fetchKeys = {
 };
 
 export async function getDataSets(
-  filterName: string | undefined
+  filterName: string | undefined,
 ): Promise<DataSet> {
   try {
     return await request<DataSet>(fetchKeys.list(filterName));
@@ -17,4 +19,15 @@ export async function getDataSets(
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
   }
+}
+
+export async function archiveDataSets(id: number, hidden: boolean) {
+  await request(fetchKeys.archive(id), {
+    method: "PATCH",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify({ hidden: hidden }),
+  });
+  revalidatePath("/datasets/");
 }
