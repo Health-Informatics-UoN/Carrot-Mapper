@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
+from mapping.permissions import has_editorship, is_admin, is_az_function_user
+from mapping.services_rules import analyse_concepts, get_mapping_rules_json
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 from shared.data.models import (
@@ -27,9 +29,6 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-
-from .permissions import has_editorship, is_admin, is_az_function_user
-from .services_rules import analyse_concepts, get_mapping_rules_json
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -115,6 +114,47 @@ class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
         fields = "__all__"
+
+
+class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serializer for the ScanReportViewV2, for version 2.
+    Args:
+        self: The instance of the class.
+        data: The data to be validated.
+    Returns:
+        dict: The validated data for the scan report.
+    Raises:
+        serializers.ValidationError: If the request context is missing.
+        PermissionDenied: If the user does not have the required permissions.
+        NotFound: If the parent dataset is not found.
+    """
+
+    parent_dataset = serializers.SerializerMethodField()
+    data_partner = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ScanReport
+        fields = (
+            "id",
+            "name",
+            "dataset",
+            "parent_dataset",
+            "data_partner",
+            "status",
+            "created_at",
+            "hidden",
+        )
+
+    def get_parent_dataset(self, obj):
+        return obj.parent_dataset.name if obj.parent_dataset else None
+
+    def get_data_partner(self, obj):
+        return (
+            obj.parent_dataset.data_partner.name
+            if obj.parent_dataset.data_partner
+            else None
+        )
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
