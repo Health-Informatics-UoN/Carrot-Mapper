@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
+import { archiveDataSets } from "@/api/datasets";
+import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
 
 export const columns: ColumnDef<DataSetResult>[] = [
   {
@@ -35,7 +37,7 @@ export const columns: ColumnDef<DataSetResult>[] = [
         aria-label="Select row"
       />
     ),
-    enableSorting: false,
+    enableSorting: true,
     enableHiding: false,
   },
   {
@@ -44,6 +46,7 @@ export const columns: ColumnDef<DataSetResult>[] = [
       <DataTableColumnHeader column={column} title="ID" />
     ),
     enableHiding: false,
+    enableSorting: true,
   },
   {
     accessorKey: "name",
@@ -94,7 +97,15 @@ export const columns: ColumnDef<DataSetResult>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const dataset = row.original;
+      const { id, hidden } = row.original;
+
+      const handleArchive = async () => {
+        try {
+          await archiveDataSets(id, !hidden);
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
       return (
         <DropdownMenu>
@@ -104,11 +115,22 @@ export const columns: ColumnDef<DataSetResult>[] = [
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>Details</DropdownMenuItem>
-            <DropdownMenuItem>Archive</DropdownMenuItem>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={handleArchive}>
+              {hidden ? "Unarchive" : "Archive"}
+              {hidden ? (
+                <EyeOpenIcon className="ml-auto" />
+              ) : (
+                <EyeNoneIcon className="ml-auto" />
+              )}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Copy Dataset's name</DropdownMenuItem>
+            <DropdownMenuItem>
+              Details <Pencil2Icon className="ml-auto" />
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Copy Name</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
