@@ -58,7 +58,6 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     manualFiltering: true,
-    manualPagination: true,
     manualSorting: true,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
@@ -77,7 +76,7 @@ export function DataTable<TData, TValue>({
               `${filter}__icontains`,
               param,
               router,
-              searchParam,
+              searchParam
             );
           }}
           className="max-w-sm"
@@ -130,7 +129,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
