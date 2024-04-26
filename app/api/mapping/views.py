@@ -37,6 +37,7 @@ from shared.data.models import (
     ScanReportField,
     ScanReportTable,
 )
+from shared.services.azurequeue import add_message
 
 from .forms import ScanReportAssertionForm, ScanReportForm
 from .permissions import has_editorship, has_viewership, is_admin
@@ -269,23 +270,8 @@ class ScanReportFormView(FormView):
                 form.cleaned_data.get("data_dictionary_file").open()
             )
 
-        print("Azure Dictionary >>> ", azure_dict)
-
-        queue_message = json.dumps(azure_dict)
-        message_bytes = queue_message.encode("ascii")
-        base64_bytes = base64.b64encode(message_bytes)
-        base64_message = base64_bytes.decode("ascii")
-
-        print("VIEWS.PY QUEUE MESSAGE >>> ", queue_message)
-
-        # Check if this env should be using Upload Only, and send it the right queue.
-        queue_name = os.environ.get("UPLOAD_QUEUE_NAME")
-
-        queue = QueueClient.from_connection_string(
-            conn_str=os.environ.get("STORAGE_CONN_STRING"),
-            queue_name=queue_name,
-        )
-        queue.send_message(base64_message)
+        # send to the upload queue
+        add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
         return super().form_valid(form)
 
