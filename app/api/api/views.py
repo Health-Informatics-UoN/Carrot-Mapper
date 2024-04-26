@@ -587,6 +587,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             "http://localhost:7071/api/orchestrators/RulesOrchestrator", json=msg
         )
         response.raise_for_status()
+        # TODO: Get the job ID fom the response for now, but we need to save it.
 
         return Response(serializer.data)
 
