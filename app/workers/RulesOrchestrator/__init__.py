@@ -5,6 +5,7 @@ import azure.durable_functions as df
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
+from shared_code.logger import logger
 
 django.setup()
 
@@ -30,12 +31,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # Get concepts number
     concepts_count = find_existing_concepts_count(table_id)
-    print(f"🌳 concepts found: {concepts_count}")
+    logger.info(f"Concepts found: {concepts_count}")
 
-    # Paginate, but ensure we have at least 1 task
-    # TODO: make a max number of tasks though.
-    # TODO: Move page_size to an environment variable.
-    page_size = 1000
+    # Paginate, but ensure we have at least 1 task.
+    page_size = os.environ.get("PAGE_SIZE", 1000)
     num_pages = max((concepts_count + page_size - 1) // page_size, 1)
 
     # Fan out
