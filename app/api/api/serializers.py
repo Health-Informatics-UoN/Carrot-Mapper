@@ -143,6 +143,7 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
             "data_partner",
             "status",
             "created_at",
+            "hidden",
         )
 
     def get_parent_dataset(self, obj):

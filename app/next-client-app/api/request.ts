@@ -15,9 +15,11 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
   // Auth with Django session
   const cookieStore = cookies();
   const session = cookieStore.get("sessionid")?.value;
+  const csrftoken = cookieStore.get("csrftoken")?.value;
 
   const headers: HeadersInit = {
-    Cookie: `sessionid=${session}`,
+    Cookie: `sessionid=${session}; csrftoken=${csrftoken}`,
+    "X-CSRFToken": csrftoken ?? "",
     ...(options.headers || {}),
   };
 
