@@ -30,12 +30,11 @@ export function DataTablePagination<TData>({
 
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "10");
-
+  const [currentPageSize, setCurrentPageSize] = useState(pageSize);
   const numberOfPages = Math.max(
     Math.ceil(count / (pageSize ? pageSize : 10)),
-    1
+    1,
   );
-  const [currentPageSize, setCurrentPageSize] = useState(pageSize);
 
   useEffect(() => {
     navigateWithSearchParam("page_size", currentPageSize, router, searchParams);

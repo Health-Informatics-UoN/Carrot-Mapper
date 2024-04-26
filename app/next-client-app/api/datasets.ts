@@ -11,7 +11,7 @@ const fetchKeys = {
 };
 
 export async function getDataSets(
-  filterName: string | undefined
+  filterName: string | undefined,
 ): Promise<DataSet> {
   try {
     return await request<DataSet>(fetchKeys.list(filterName));

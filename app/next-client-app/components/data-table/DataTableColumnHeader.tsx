@@ -21,11 +21,13 @@ interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>;
   title: string;
+  sortName?: string;
 }
 
 export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
+  sortName = "",
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   const router = useRouter();
@@ -37,11 +39,15 @@ export function DataTableColumnHeader<TData, TValue>({
 
   function getColumnSortState(): { sorted: boolean; type: string | null } {
     const ordering = searchParams.get("ordering");
-    if (ordering && (ordering === column.id || ordering === `-${column.id}`)) {
+    if (ordering && (ordering === sortName || ordering === `-${sortName}`)) {
       return { sorted: true, type: ordering.startsWith("-") ? "desc" : "asc" };
     }
     return { sorted: false, type: null };
   }
+
+  const sortColumn = (sortName: string) => {
+    navigateWithSearchParam("ordering", sortName, router, searchParams);
+  };
 
   return (
     <div className={cn("flex items-center space-x-2", className)}>
@@ -65,29 +71,11 @@ export function DataTableColumnHeader<TData, TValue>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
-          <DropdownMenuItem
-            onClick={() =>
-              navigateWithSearchParam(
-                "ordering",
-                `${column.id}`,
-                router,
-                searchParams,
-              )
-            }
-          >
+          <DropdownMenuItem onClick={() => sortColumn(sortName)}>
             <ArrowUpIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
             Asc
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() =>
-              navigateWithSearchParam(
-                "ordering",
-                `-${column.id}`,
-                router,
-                searchParams,
-              )
-            }
-          >
+          <DropdownMenuItem onClick={() => sortColumn(`-${sortName}`)}>
             <ArrowDownIcon className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
             Desc
           </DropdownMenuItem>

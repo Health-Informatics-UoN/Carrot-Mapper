@@ -3,7 +3,7 @@ const nextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      allowedOrigins: [process.env.BACKEND_URL],
+      allowedOrigins: [process.env.BACKEND_ORIGIN],
     },
   },
 };
