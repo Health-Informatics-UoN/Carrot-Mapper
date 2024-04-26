@@ -28,15 +28,15 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     table_id = msg.get("table_id")
 
-    # we don't delete rules in the function anymore, the webapp does that.
-
     # Get concepts number
     concepts_count = find_existing_concepts_count(table_id)
+    print(f"🌳 concepts found: {concepts_count}")
 
+    # Paginate, but ensure we have at least 1 task
+    # TODO: make a max number of tasks though.
+    # TODO: Move page_size to an environment variable.
     page_size = 1000
-
-    # Paginate
-    num_pages = (concepts_count + page_size - 1) // page_size
+    num_pages = max((concepts_count + page_size - 1) // page_size, 1)
 
     # Fan out
     tasks = [
