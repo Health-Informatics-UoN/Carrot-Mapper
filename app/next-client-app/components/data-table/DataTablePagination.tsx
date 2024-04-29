@@ -33,7 +33,7 @@ export function DataTablePagination<TData>({
   const [currentPageSize, setCurrentPageSize] = useState(pageSize);
   const numberOfPages = Math.max(
     Math.ceil(count / (pageSize ? pageSize : 10)),
-    1,
+    1
   );
 
   useEffect(() => {
@@ -79,8 +79,8 @@ export function DataTablePagination<TData>({
         <div className="flex items-center space-x-2">
           <Button
             aria-label="Go to first page"
-            variant="outline"
-            className="hidden size-8 p-0 lg:flex text-white bg-[#475da7]"
+            variant="default"
+            className="hidden size-8 p-0 lg:flex text-white"
             onClick={() => navigateToPage(1)}
             disabled={canNotGoToPreviousPage()}
           >
@@ -88,9 +88,9 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to previous page"
-            variant="outline"
+            variant="default"
             size="icon"
-            className="size-8 text-white bg-[#475da7]"
+            className="size-8 text-white"
             onClick={() => navigateToPage(currentPage - 1)}
             disabled={canNotGoToPreviousPage()}
           >
@@ -98,9 +98,9 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to next page"
-            variant="outline"
+            variant="default"
             size="icon"
-            className="size-8 text-white bg-[#475da7]"
+            className="size-8 text-white"
             onClick={() => navigateToPage(currentPage + 1)}
             disabled={canNotGoToNextPage()}
           >
@@ -108,9 +108,9 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to last page"
-            variant="outline"
+            variant="default"
             size="icon"
-            className="hidden size-8 lg:flex text-white bg-[#475da7]"
+            className="hidden size-8 lg:flex text-white"
             onClick={() => navigateToPage(numberOfPages)}
             disabled={canNotGoToNextPage()}
           >

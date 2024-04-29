@@ -39,7 +39,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
         <Link href="/scanreports/create">
-          <Button size="lg" className="text-md bg-[#475da7]">
+          <Button size="lg" className="text-md">
             New Scan Report
           </Button>
         </Link>

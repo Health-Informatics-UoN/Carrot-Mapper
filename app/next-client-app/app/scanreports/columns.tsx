@@ -95,7 +95,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}/mapping_rules/`}>
-          <Button className="bg-[#475da7]">Rules</Button>
+          <Button>Rules</Button>
         </Link>
       );
     },
