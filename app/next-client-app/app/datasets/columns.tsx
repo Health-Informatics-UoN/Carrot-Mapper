@@ -121,11 +121,16 @@ export const columns: ColumnDef<DataSetResult>[] = [
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Copy Name</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(row.original.name)}
+            >
+              Copy Dataset's Name
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );
     },
     header: "Actions",
+    enableHiding: false,
   },
 ];
