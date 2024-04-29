@@ -12,9 +12,9 @@ const fetchKeys = {
 
 export async function getDataSets(
   filterName: string | undefined
-): Promise<DataSet> {
+): Promise<DataSetPage> {
   try {
-    return await request<DataSet>(fetchKeys.list(filterName));
+    return await request<DataSetPage>(fetchKeys.list(filterName));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };

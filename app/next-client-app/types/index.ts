@@ -14,24 +14,24 @@ interface ScanReport {
   results: ScanReportResult[];
 }
 
-interface DataSet {
+interface DataSetPage {
   count: number;
   next: string | null;
   previous: string | null;
-  results: DataSetResult[];
+  results: DataSet[];
 }
 
-interface DataSetResult {
+interface DataSet {
   id: number;
   name: string;
   hidden: boolean;
   visibility: string;
   created_at: string;
-  data_partner: DataPartnerData;
+  data_partner: DataPartner;
   admins: string[];
 }
 
-interface DataPartnerData {
+interface DataPartner {
   id: number;
   name: string;
   created_at: string;

@@ -15,7 +15,7 @@ import {
 import { archiveDataSets } from "@/api/datasets";
 import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
 
-export const columns: ColumnDef<DataSetResult>[] = [
+export const columns: ColumnDef<DataSet>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
