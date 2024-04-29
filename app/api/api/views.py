@@ -418,11 +418,12 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
 
     serializer_class = DatasetAndDataPartnerViewSerializer
     pagination_class = CustomPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     filterset_fields = {
         "id": ["in"],
-        "data_partner": ["in", "exact"],
         "hidden": ["in", "exact"],
+        "name": ["in", "icontains"],
     }
 
     def get_queryset(self):

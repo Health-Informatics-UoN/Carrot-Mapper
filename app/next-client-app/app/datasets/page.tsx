@@ -67,7 +67,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               columns={columns}
               data={dataset.results}
               count={dataset.count}
-              filter="dataset"
+              filter="name"
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -75,7 +75,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               columns={columns}
               data={dataset.results}
               count={dataset.count}
-              filter="dataset"
+              filter="name"
             />
           </TabsContent>
         </Tabs>
