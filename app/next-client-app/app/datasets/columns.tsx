@@ -19,7 +19,7 @@ export const columns: ColumnDef<DataSetResult>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
+      <DataTableColumnHeader column={column} title="ID" sortName="id" />
     ),
     enableHiding: false,
     enableSorting: true,
@@ -27,32 +27,47 @@ export const columns: ColumnDef<DataSetResult>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Name" sortName="name" />
     ),
     enableHiding: true,
+    enableSorting: true,
   },
   {
     id: "Data Partner",
     accessorKey: "data_partner",
     accessorFn: (row) => row.data_partner.name,
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Data Partner" />
+      <DataTableColumnHeader
+        column={column}
+        title="Data Partner"
+        sortName="data_partner"
+      />
     ),
     enableHiding: true,
+    enableSorting: true,
   },
   {
     accessorKey: "visibility",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Visibility" />
+      <DataTableColumnHeader
+        column={column}
+        title="Visibility"
+        sortName="visibility"
+      />
     ),
     enableHiding: true,
+    enableSorting: true,
   },
 
   {
     id: "Creation Date",
     accessorKey: "created_at",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Creation Date" />
+      <DataTableColumnHeader
+        column={column}
+        title="Creation Date"
+        sortName="created_at"
+      />
     ),
     enableHiding: true,
     enableSorting: true,
