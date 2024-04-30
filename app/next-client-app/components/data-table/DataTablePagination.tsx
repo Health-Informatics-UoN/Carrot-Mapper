@@ -79,8 +79,7 @@ export function DataTablePagination<TData>({
         <div className="flex items-center space-x-2">
           <Button
             aria-label="Go to first page"
-            variant="default"
-            className="hidden size-8 p-0 lg:flex text-white"
+            className="hidden size-8 p-0 lg:flex"
             onClick={() => navigateToPage(1)}
             disabled={canNotGoToPreviousPage()}
           >
@@ -88,9 +87,8 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to previous page"
-            variant="default"
             size="icon"
-            className="size-8 text-white"
+            className="size-8"
             onClick={() => navigateToPage(currentPage - 1)}
             disabled={canNotGoToPreviousPage()}
           >
@@ -98,9 +96,8 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to next page"
-            variant="default"
             size="icon"
-            className="size-8 text-white"
+            className="size-8"
             onClick={() => navigateToPage(currentPage + 1)}
             disabled={canNotGoToNextPage()}
           >
@@ -108,9 +105,8 @@ export function DataTablePagination<TData>({
           </Button>
           <Button
             aria-label="Go to last page"
-            variant="default"
             size="icon"
-            className="hidden size-8 lg:flex text-white"
+            className="hidden size-8 lg:flex"
             onClick={() => navigateToPage(numberOfPages)}
             disabled={canNotGoToNextPage()}
           >
