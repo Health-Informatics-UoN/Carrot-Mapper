@@ -3,16 +3,20 @@ import { revalidatePath } from "next/cache";
 import request from "./request";
 
 const fetchKeys = {
-  list: (filterName?: string) =>
-    filterName ? `v2/scanreports/?${filterName}` : "v2/scanreports",
+  list: (filter?: string) =>
+    filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
   archive: (id: number) => `scanreports/${id}/`,
 };
 
 export async function getScanReports(
-  filterName: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReport> {
   try {
-    return await request<ScanReport>(fetchKeys.list(filterName));
+    return await request<ScanReport>(
+      fetchKeys.list(
+        filter?.includes("hidden") ? filter : `${filter}&hidden=false`,
+      ),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
