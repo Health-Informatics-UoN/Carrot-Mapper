@@ -425,7 +425,7 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
         "hidden": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    ordering = ("-created_at")
+    ordering = "-created_at"
 
     def get_queryset(self):
         """
