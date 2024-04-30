@@ -4,12 +4,14 @@ import request from "./request";
 
 const fetchKeys = {
   list: (filterName?: string) =>
-    filterName ? `v2/scanreports/?${filterName}` : "v2/scanreports",
+    filterName
+      ? `v2/scanreports/?hidden=false&${filterName}`
+      : "v2/scanreports",
   archive: (id: number) => `scanreports/${id}/`,
 };
 
 export async function getScanReports(
-  filterName: string | undefined,
+  filterName: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.list(filterName));
