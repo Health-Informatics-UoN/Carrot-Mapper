@@ -5,7 +5,7 @@ import request from "./request";
 const fetchKeys = {
   list: (filterName?: string) =>
     filterName
-      ? `datasets_data_partners/?hidden=false&${filterName}`
+      ? `datasets_data_partners/?${filterName}`
       : "datasets_data_partners/",
   archive: (id: number) => `datasets/update/${id}/`,
 };
