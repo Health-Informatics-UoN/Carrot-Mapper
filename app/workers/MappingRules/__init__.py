@@ -18,7 +18,7 @@ def main(msg: Dict[str, Any]):
     Refreshes mapping rules for a ScanReportTable.
 
     Args:
-        - msg (func.QueueMessage): The message received from the queue.
+        - msg (Dict[str, Any]): The message received from the orchestrator.
 
     Return:
         - None

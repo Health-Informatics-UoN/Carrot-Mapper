@@ -310,7 +310,7 @@ def main(msg: Dict[str, str]):
     Runs the create concepts processes.
 
     Args:
-        msg (func.QueueMessage): The message received from the queue.
+        msg (Dict[str, str]): The message received from the orchestrator.
     """
     data_dictionary_blob = msg.pop("data_dictionary_blob")
     table_id = msg.pop("table_id")

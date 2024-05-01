@@ -14,13 +14,16 @@ from shared.services.rules import find_existing_concepts_count
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
     """
-    Orchestration.
+    Orchestrates the creation of concepts and mapping rules for a given table.
 
-    Remarks:
-        - Call CreateConcepts
-        - Get the number of existing concepts count
-        - Paginate it...
-        - Then fan out by giving MappingRules a page number
+    Args:
+        context (DurableOrchestrationContext): The durable orchestration context.
+
+    Returns:
+        List: A list containing the result of creating concepts and the results of mapping rules.
+
+    Raises:
+        None
     """
 
     # CreateConcepts
