@@ -4,15 +4,15 @@ import request from "./request";
 
 const fetchKeys = {
   list: (filter?: string) =>
-    filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
-  archive: (id: number) => `scanreports/${id}/`,
+    filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
+  archive: (id: number) => `datasets/update/${id}/`,
 };
 
-export async function getScanReports(
+export async function getDataSets(
   filter: string | undefined,
-): Promise<ScanReport> {
+): Promise<DataSetPage> {
   try {
-    return await request<ScanReport>(
+    return await request<DataSetPage>(
       fetchKeys.list(
         filter?.includes("hidden") ? filter : `${filter}&hidden=false`,
       ),
@@ -23,7 +23,7 @@ export async function getScanReports(
   }
 }
 
-export async function archiveScanReports(id: number, hidden: boolean) {
+export async function archiveDataSets(id: number, hidden: boolean) {
   await request(fetchKeys.archive(id), {
     method: "PATCH",
     headers: {
@@ -31,5 +31,5 @@ export async function archiveScanReports(id: number, hidden: boolean) {
     },
     body: JSON.stringify({ hidden: hidden }),
   });
-  revalidatePath("/scanreports/");
+  revalidatePath("/datasets/");
 }

@@ -2,14 +2,10 @@
 
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -52,46 +48,35 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const searchParam = useSearchParams();
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
   const table = useReactTable({
     data,
     columns,
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
+    manualFiltering: true,
+    manualSorting: true,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
-      sorting,
-      columnFilters,
       columnVisibility,
     },
   });
 
-  const pageSize = 10;
-  const totalPages = Math.ceil(count / pageSize);
-  const pages = Array.from(Array(totalPages), (_, index) => index + 1);
-
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex justify-between my-4">
         <Input
           placeholder={`Filter by ${filter}...`}
           onChange={(event) => {
             const param = event.currentTarget.value;
             navigateWithSearchParam(
-              `${filter}__contains`,
+              `${filter}__icontains`,
               param,
               router,
-              searchParam,
+              searchParam
             );
           }}
           className="max-w-sm"
@@ -131,6 +116,7 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <div></div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -143,7 +129,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -165,7 +151,7 @@ export function DataTable<TData, TValue>({
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </div>
                     </TableCell>
