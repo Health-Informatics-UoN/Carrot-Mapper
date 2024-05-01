@@ -14,11 +14,21 @@ import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
 
 interface DataSetListProps {
-  searchParams?: { [key: string]: string | undefined } | {};
+  searchParams?: {
+    hidden?: boolean;
+    page_size: number;
+  };
 }
 
 export default async function DataSets({ searchParams }: DataSetListProps) {
-  const query = objToQuery(searchParams ?? {});
+  const defaults = {
+    hidden: false,
+    page_size: 10,
+  };
+
+  const customSearchParams = { ...defaults, ...searchParams };
+
+  const query = objToQuery(customSearchParams);
   const dataset = await getDataSets(query);
 
   return (

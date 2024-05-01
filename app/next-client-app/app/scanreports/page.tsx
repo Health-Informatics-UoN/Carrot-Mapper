@@ -14,13 +14,23 @@ import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
 
 interface ScanReportsProps {
-  searchParams?: { [key: string]: string | undefined } | {};
+  searchParams?: {
+    hidden?: boolean;
+    page_size: number;
+  };
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
-  const query = objToQuery(searchParams ?? {});
-  const scanReports = await getScanReports(query);
+  const defaults = {
+    hidden: false,
+    page_size: 10,
+  };
 
+  const customSearchParams = { ...defaults, ...searchParams };
+
+  const query = objToQuery(customSearchParams);
+  const scanReports = await getScanReports(query);
+  console.log(scanReports);
   return (
     <div className="pt-10 px-16">
       <div>

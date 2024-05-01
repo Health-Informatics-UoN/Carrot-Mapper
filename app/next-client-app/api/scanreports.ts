@@ -9,14 +9,10 @@ const fetchKeys = {
 };
 
 export async function getScanReports(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
-    return await request<ScanReport>(
-      fetchKeys.list(
-        filter?.includes("hidden") ? filter : `${filter}&hidden=false`,
-      ),
-    );
+    return await request<ScanReport>(fetchKeys.list(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };

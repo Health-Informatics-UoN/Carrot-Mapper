@@ -5,7 +5,7 @@ export function navigateWithSearchParam(
   paramName: string,
   param: string | number,
   router: AppRouterInstance,
-  searchParams: ReadonlyURLSearchParams,
+  searchParams: ReadonlyURLSearchParams
 ) {
   const currentParams = new URLSearchParams(Array.from(searchParams.entries()));
   if (param) {
@@ -18,15 +18,21 @@ export function navigateWithSearchParam(
 }
 
 // Build query string for filtering and sorting
-export function objToQuery(obj: { [key: string]: string }): string {
+export function objToQuery(obj: {
+  hidden?: boolean;
+  page_size: number;
+}): string {
   if (Object.keys(obj).length === 0) return "";
   let query = "";
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
-      if (query.length > 0) {
-        query += "&";
+      const value = obj[key as keyof typeof obj];
+      if (value !== undefined) {
+        if (query.length > 0) {
+          query += "&";
+        }
+        query += `${key}=${encodeURIComponent(value)}`;
       }
-      query += `${key}=${encodeURIComponent(obj[key])}`;
     }
   }
   return query;
