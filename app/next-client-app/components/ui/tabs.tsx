@@ -14,8 +14,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-12 items-center justify-center rounded-md bg-slate-200 p-1 text-slate-700 dark:bg-slate-800 dark:text-slate-400",
-      className,
+      "inline-flex h-12 items-center justify-center rounded-md bg-carrot-50 p-1 text-carrot-700 dark:bg-carrot-800 dark:text-carrot-400",
+      className
     )}
     {...props}
   />
@@ -29,8 +29,8 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 h-full w-full text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-[#475da7] data-[state=active]:text-white data-[state=active]:shadow-sm dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300 dark:data-[state=active]:bg-slate-950 dark:data-[state=active]:text-slate-50",
-      className,
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 h-full w-full text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carrot-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-carrot-900 data-[state=active]:text-carrot-50 data-[state=active]:shadow-sm data-[state=inactive]:text-carrot-900 dark:ring-offset-carrot-950 dark:focus-visible:ring-carrot-300 dark:data-[state=active]:bg-carrot-950 dark:data-[state=active]:text-carrot-50",
+      className
     )}
     {...props}
   />
@@ -44,8 +44,8 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 dark:ring-offset-slate-950 dark:focus-visible:ring-slate-300",
-      className,
+      "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-carrot-950 focus-visible:ring-offset-2 dark:ring-offset-carrot-950 dark:focus-visible:ring-carrot-300",
+      className
     )}
     {...props}
   />
