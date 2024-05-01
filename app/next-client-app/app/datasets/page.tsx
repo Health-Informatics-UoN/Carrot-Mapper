@@ -5,21 +5,21 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { columns } from "./columns";
 import { Button } from "@/components/ui/button";
-import { getScanReports } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
+import { columns } from "./columns";
+import { getDataSets } from "@/api/datasets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
 
-interface ScanReportsProps {
+interface DataSetListProps {
   searchParams?: { [key: string]: string | undefined } | {};
 }
 
-export default async function ScanReports({ searchParams }: ScanReportsProps) {
+export default async function DataSets({ searchParams }: DataSetListProps) {
   const query = objToQuery(searchParams ?? {});
-  const scanReports = await getScanReports(query);
+  const dataset = await getDataSets(query);
 
   return (
     <div className="pt-10 px-16">
@@ -31,16 +31,16 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
+              <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
       <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold">Scan Reports</h1>
-        <Link href="/scanreports/create">
+        <h1 className="text-4xl font-semibold">Dataset List</h1>
+        <Link href="/">
           <Button size="lg" className="text-md">
-            New Scan Report
+            New Dataset
           </Button>
         </Link>
       </div>
@@ -56,26 +56,26 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
         >
           <TabsList className="grid w-25 grid-cols-2">
             <a href="?hidden=false" className="h-full w-full">
-              <TabsTrigger value="active">Active Reports</TabsTrigger>
+              <TabsTrigger value="active">Active Datasets</TabsTrigger>
             </a>
             <a href="?hidden=true" className="h-full w-full">
-              <TabsTrigger value="archived">Archived Reports</TabsTrigger>
+              <TabsTrigger value="archived">Archived Datasets</TabsTrigger>
             </a>
           </TabsList>
           <TabsContent value="active">
             <DataTable
               columns={columns}
-              data={scanReports.results}
-              count={scanReports.count}
-              filter="dataset"
+              data={dataset.results}
+              count={dataset.count}
+              filter="name"
             />
           </TabsContent>
           <TabsContent value="archived">
             <DataTable
               columns={columns}
-              data={scanReports.results}
-              count={scanReports.count}
-              filter="dataset"
+              data={dataset.results}
+              count={dataset.count}
+              filter="name"
             />
           </TabsContent>
         </Tabs>
