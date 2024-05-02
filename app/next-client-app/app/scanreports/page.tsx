@@ -12,6 +12,7 @@ import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 interface ScanReportsProps {
   searchParams?: {
@@ -50,6 +51,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
         <Link href="/scanreports/create" prefetch={false}>
           <Button size="lg" className="text-md">
             New Scan Report
+            <Plus className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </div>

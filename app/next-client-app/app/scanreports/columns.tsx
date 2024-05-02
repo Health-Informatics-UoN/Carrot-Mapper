@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ChevronRight } from "lucide-react";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -146,7 +147,10 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
-          <Button>Rules</Button>
+          <Button variant={"outline"}>
+            Rules
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </Link>
       );
     },
