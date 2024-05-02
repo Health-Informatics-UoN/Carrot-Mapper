@@ -22,6 +22,14 @@ import { archiveScanReports } from "@/api/scanreports";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
+    id: "id",
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="id" sortName="id" />
+    ),
+    enableHiding: true,
+  },
+  {
     id: "Name",
     accessorKey: "dataset",
     header: ({ column }) => (
