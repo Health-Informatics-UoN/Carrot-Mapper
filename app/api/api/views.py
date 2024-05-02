@@ -363,6 +363,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     filterset_fields = {"hidden": ["exact"], "dataset": ["in", "icontains"]}
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     pagination_class = CustomPagination
+    ordering = "-created_at"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
