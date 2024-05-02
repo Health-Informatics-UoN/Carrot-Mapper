@@ -3,7 +3,7 @@ name: Build and Deploy to Azure - ccom
 on:
   push:
     branches:
-      - feat/649/fix-next-indeployment
+      - master
   workflow_dispatch:
 
 env:
@@ -74,9 +74,6 @@ jobs:
 
   build-and-publish-next-app:
     runs-on: ubuntu-latest
-    environment: dev
-    env:
-      BACKEND_ORIGIN: ${{ secrets.BACKEND_ORIGIN }}
 
     steps:
       - uses: actions/checkout@v3
@@ -177,80 +174,80 @@ jobs:
           package: ${{ github.workspace }}/frontendwebapp
 
   # Deploy Workers Test
-  # deploy-workers-test:
-  #   runs-on: ubuntu-latest
-  #   needs: deploy-workers-dev
-  #   environment: test
+  deploy-workers-test:
+    runs-on: ubuntu-latest
+    needs: deploy-workers-dev
+    environment: test
 
-  #   steps:
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: functionsapp
-  #         name: functionsapp
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          path: functionsapp
+          name: functionsapp
 
-  #     - name: 'Run Azure Functions Action'
-  #       uses: Azure/functions-action@v1.3.2
-  #       id: fa
-  #       with:
-  #         app-name: 'ccom-funcs-test'
-  #         slot-name: 'production'
-  #         package: ${{ github.workspace }}/functionsapp
-  #         publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1.3.2
+        id: fa
+        with:
+          app-name: 'ccom-funcs-test'
+          slot-name: 'production'
+          package: ${{ github.workspace }}/functionsapp
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
-  # # Deploy Web App Test
-  # deploy-web-test:
-  #   runs-on: ubuntu-latest
-  #   needs: [deploy-web-dev, deploy-workers-test]
-  #   environment:
-  #     name: 'test'
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  # Deploy Web App Test
+  deploy-web-test:
+    runs-on: ubuntu-latest
+    needs: [deploy-web-dev, deploy-workers-test]
+    environment:
+      name: 'test'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #   steps:
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: 'ccom-test'
-  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+    steps:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'ccom-test'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
-  # # Deploy Workers Production
-  # deploy-workers-production:
-  #   runs-on: ubuntu-latest
-  #   needs: deploy-workers-test
-  #   environment: production
+  # Deploy Workers Production
+  deploy-workers-production:
+    runs-on: ubuntu-latest
+    needs: deploy-workers-test
+    environment: production
 
-  #   steps:
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         path: functionsapp
-  #         name: functionsapp
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          path: functionsapp
+          name: functionsapp
 
-  #     - name: 'Run Azure Functions Action'
-  #       uses: Azure/functions-action@v1.3.2
-  #       id: fa
-  #       with:
-  #         app-name: 'ccom-funcs-prod'
-  #         slot-name: 'production'
-  #         package: ${{ github.workspace }}/functionsapp
-  #         publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
+      - name: 'Run Azure Functions Action'
+        uses: Azure/functions-action@v1.3.2
+        id: fa
+        with:
+          app-name: 'ccom-funcs-prod'
+          slot-name: 'production'
+          package: ${{ github.workspace }}/functionsapp
+          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
-  # # Deploy Web App Production
-  # deploy-web-production:
-  #   runs-on: ubuntu-latest
-  #   needs: [deploy-web-test, deploy-workers-production]
-  #   environment:
-  #     name: 'production'
-  #     url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+  # Deploy Web App Production
+  deploy-web-production:
+    runs-on: ubuntu-latest
+    needs: [deploy-web-test, deploy-workers-production]
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
-  #   steps:
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: 'ccom'
-  #         slot-name: 'production'
-  #         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-  #         images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
+    steps:
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'ccom'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
