@@ -74,6 +74,7 @@ jobs:
 
   build-and-publish-next-app:
     runs-on: ubuntu-latest
+    environment: dev
 
     steps:
       - uses: actions/checkout@v3
