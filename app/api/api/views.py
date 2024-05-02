@@ -589,7 +589,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             "table_id": instance.id,
             "data_dictionary_blob": data_dictionary_name,
         }
-        base_url = f"{settings.AZ_URL}/api/orchestrators/"
+        base_url = f"{settings.AZ_URL}"
         trigger = (
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
