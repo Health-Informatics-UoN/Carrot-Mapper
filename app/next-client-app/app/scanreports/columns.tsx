@@ -99,15 +99,16 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const statusMapping = {
-        BLOCKED: { text: "Blocked", color: "red-500" },
-        COMPLET: { text: "Mapping Complete", color: "text-green-500" },
-        INPRO25: { text: "Mapping 25%", color: "text-orange-100" },
-        INPRO50: { text: "Mapping 50%", color: "text-orange-100" },
+        BLOCKED: { text: "Blocked", color: "text-red-900" },
+        COMPLET: { text: "Mapping Complete", color: "text-green-600" },
+        INPRO25: { text: "Mapping 25%", color: "text-orange-300" },
+        INPRO50: { text: "Mapping 50%", color: "text-orange-400" },
         INPRO75: { text: "Mapping 75%", color: "text-orange-500" },
-        UPCOMPL: { text: "Upload Complete", color: "text-green-500" },
+        UPCOMPL: { text: "Upload Complete", color: "text-blue-800" },
         UPFAILE: { text: "Upload Failed", color: "text-red-500" },
-        UPINPRO: { text: "Upload in Progress", color: "text-orange-700" },
+        UPINPRO: { text: "Upload in Progress", color: "text-orange-600" },
       };
+
       const { id, status } = row.original;
       const statusInfo = statusMapping[status as keyof typeof statusMapping];
       const textColorClassName = `${statusInfo.color} w-[180px]`;
