@@ -19,6 +19,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
 import { archiveScanReports } from "@/api/scanreports";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -91,7 +98,31 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     ),
     enableHiding: false,
     cell: ({ row }) => {
-      return "TBD";
+      const statusMapping = {
+        BLOCKED: { text: "Blocked", color: "green" },
+        COMPLET: { text: "Mapping Complete", color: "green" },
+        INPRO25: { text: "Mapping 25%", color: "blue" },
+        INPRO50: { text: "Mapping 50%", color: "blue" },
+        INPRO75: { text: "Mapping 75%", color: "blue" },
+        UPCOMPL: { text: "Upload Complete", color: "blue" },
+        UPFAILE: { text: "Upload Failed", color: "blue" },
+        UPINPRO: { text: "Upload in Progress", color: "blue" },
+      };
+      const { status } = row.original;
+      return (
+        <Select value={status}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(statusMapping).map(([value, { text, color }]) => (
+              <SelectItem key={value} value={value} style={{ color }}>
+                {text}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
     },
   },
   {
