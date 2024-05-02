@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict
 
-import azure.durable_functions as df
+import azure.durable_functions as df  # type: ignore
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
@@ -30,14 +30,14 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     msg: Dict[str, Any] = context.get_input()
     result = yield context.call_activity("CreateConcepts", msg)
 
-    table_id = msg.get("table_id")
+    table_id = msg.pop("table_id")
 
     # Get concepts number
     concepts_count = find_existing_concepts_count(table_id)
     logger.info(f"Concepts found: {concepts_count}")
 
     # Paginate, but ensure we have at least 1 task.
-    page_size = os.environ.get("PAGE_SIZE", 1000)
+    page_size = int(os.environ.get("PAGE_SIZE", "1000"))
     num_pages = max((concepts_count + page_size - 1) // page_size, 1)
 
     # Fan out

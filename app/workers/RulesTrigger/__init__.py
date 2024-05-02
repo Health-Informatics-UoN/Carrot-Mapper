@@ -1,6 +1,6 @@
 import logging
 
-import azure.durable_functions as df
+import azure.durable_functions as df  # type: ignore
 import azure.functions as func
 
 
