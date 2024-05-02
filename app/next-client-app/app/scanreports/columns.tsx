@@ -102,7 +102,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     cell: ({ row }) => {
       const id = row.original.id;
       return (
-        <Link href={`/scanreports/${id}/mapping_rules/`}>
+        <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
           <Button>Rules</Button>
         </Link>
       );
@@ -144,6 +144,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             <Link
               href={`/scanreports/${id}/details/`}
               style={{ textDecoration: "none", color: "black" }}
+              prefetch={false}
             >
               <DropdownMenuItem>
                 Details <Pencil2Icon className="ml-auto" />
@@ -153,6 +154,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             <Link
               href={`/scanreports/${id}/assertions/`}
               style={{ textDecoration: "none", color: "black" }}
+              prefetch={false}
             >
               <DropdownMenuItem>
                 Assertions <ExclamationTriangleIcon className="ml-auto" />
