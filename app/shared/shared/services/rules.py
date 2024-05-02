@@ -102,16 +102,18 @@ def find_existing_concepts_count(table_id: int) -> int:
     """
     # Count the number of ScanReportConcepts associated with the table_id
     concept_count = (
-        ScanReportValue.objects.filter(scan_report_field__scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        ScanReportValue.objects.filter(
+            scan_report_field__scan_report_table=table_id, concepts__isnull=False
+        )
         .distinct()
         .count()
     )
 
     # Count the number of ScanReportConcepts associated with the table_id's fields
     concept_count += (
-        ScanReportField.objects.filter(scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        ScanReportField.objects.filter(
+            scan_report_table=table_id, concepts__isnull=False
+        )
         .distinct()
         .count()
     )
