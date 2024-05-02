@@ -3,7 +3,7 @@ name: Build and Deploy to Azure - ccom
 on:
   push:
     branches:
-      - master
+      - feat/649/fix-next-indeployment
   workflow_dispatch:
 
 env:
