@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Any, Dict
 
 import azure.functions as func
 from shared_code.logger import logger
@@ -12,21 +13,23 @@ django.setup()
 from shared.services.rules import refresh_mapping_rules
 
 
-def main(msg: func.QueueMessage):
+def main(msg: Dict[str, Any]):
     """
     Refreshes mapping rules for a ScanReportTable.
 
     Args:
-        - msg (func.QueueMessage): The message received from the queue.
+        - msg (Dict[str, Any]): The message received from the orchestrator.
 
     Return:
         - None
     """
-    message_body = json.loads(msg.get_body().decode("utf-8"))
-    table_id = message_body.get("table_id")
-    logger.info(f"Generating mapping rules for table: {table_id}")
+    table_id = msg.pop("table_id")
+    page = msg.pop("page_num")
+    page_size = msg.pop("page_size")
 
-    refresh_mapping_rules(table_id)
+    logger.info(f"Generating mapping rules for table: {table_id}, page: {page}")
+
+    refresh_mapping_rules(table_id, page, page_size)
     logger.info(f"Finished mapping rules for table: {table_id}")
 
     return
