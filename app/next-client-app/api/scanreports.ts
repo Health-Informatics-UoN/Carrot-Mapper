@@ -5,7 +5,7 @@ import request from "./request";
 const fetchKeys = {
   list: (filter?: string) =>
     filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
-  archive: (id: number) => `scanreports/${id}/`,
+  update: (id: number) => `scanreports/${id}/`,
 };
 
 export async function getScanReports(
@@ -23,13 +23,13 @@ export async function getScanReports(
   }
 }
 
-export async function archiveScanReports(id: number, hidden: boolean) {
-  await request(fetchKeys.archive(id), {
+export async function updateScanReport(id: number, field: string, value: any) {
+  await request(fetchKeys.update(id), {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
     },
-    body: JSON.stringify({ hidden: hidden }),
+    body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
 }

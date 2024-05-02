@@ -18,7 +18,7 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { archiveScanReports } from "@/api/scanreports";
+import { updateScanReport } from "@/api/scanreports";
 import {
   Select,
   SelectContent,
@@ -99,24 +99,35 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const statusMapping = {
-        BLOCKED: { text: "Blocked", color: "green" },
-        COMPLET: { text: "Mapping Complete", color: "green" },
-        INPRO25: { text: "Mapping 25%", color: "blue" },
-        INPRO50: { text: "Mapping 50%", color: "blue" },
-        INPRO75: { text: "Mapping 75%", color: "blue" },
-        UPCOMPL: { text: "Upload Complete", color: "blue" },
-        UPFAILE: { text: "Upload Failed", color: "blue" },
-        UPINPRO: { text: "Upload in Progress", color: "blue" },
+        BLOCKED: { text: "Blocked", color: "red-500" },
+        COMPLET: { text: "Mapping Complete", color: "text-green-500" },
+        INPRO25: { text: "Mapping 25%", color: "text-orange-100" },
+        INPRO50: { text: "Mapping 50%", color: "text-orange-100" },
+        INPRO75: { text: "Mapping 75%", color: "text-orange-500" },
+        UPCOMPL: { text: "Upload Complete", color: "text-green-500" },
+        UPFAILE: { text: "Upload Failed", color: "text-red-500" },
+        UPINPRO: { text: "Upload in Progress", color: "text-orange-700" },
       };
-      const { status } = row.original;
+      const { id, status } = row.original;
+      const statusInfo = statusMapping[status as keyof typeof statusMapping];
+      const textColorClassName = `${statusInfo.color} w-[180px]`;
+
+      const handleChangeStatus = async (value: string) => {
+        try {
+          await updateScanReport(id, "status", value);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
       return (
-        <Select value={status}>
-          <SelectTrigger className="w-[180px]">
+        <Select value={status} onValueChange={handleChangeStatus}>
+          <SelectTrigger className={textColorClassName}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(statusMapping).map(([value, { text, color }]) => (
-              <SelectItem key={value} value={value} style={{ color }}>
+              <SelectItem key={value} value={value}>
                 {text}
               </SelectItem>
             ))}
@@ -149,7 +160,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
 
       const handleArchive = async () => {
         try {
-          await archiveScanReports(id, !hidden);
+          await updateScanReport(id, "hidden", !hidden);
         } catch (error) {
           console.error(error);
         }
