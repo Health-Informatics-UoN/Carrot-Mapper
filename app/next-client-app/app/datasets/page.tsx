@@ -38,11 +38,6 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
       </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Dataset List</h1>
-        <Link href="/">
-          <Button size="lg" className="text-md">
-            New Dataset
-          </Button>
-        </Link>
       </div>
       <div className="my-5">
         <Tabs
