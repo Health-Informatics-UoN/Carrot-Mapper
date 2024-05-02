@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Any
 
@@ -587,8 +588,11 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             "data_dictionary_blob": data_dictionary_name,
         }
         orchestrator_url = f"{settings.AZ_FUNCTIONS_URL}/api/orchestrators/{settings.AZ_FUNCTIONS_RULES_NAME}"
-        response = requests.post(orchestrator_url, json=msg)
-        response.raise_for_status()
+        try:
+            response = requests.post(orchestrator_url, json=msg)
+            response.raise_for_status()
+        except request.exceptions.HTTPError as e:
+            logging.error(f"HTTP Trigger failed: {e}")
 
         # TODO: The worker_id can be used for status, but we need to save it somewhere.
         # resp_json = response.json()
