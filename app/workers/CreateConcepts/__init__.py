@@ -322,5 +322,3 @@ def main(msg: Dict[str, str]):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     asyncio.run(_handle_table(table, vocab_dictionary))
-
-    return
