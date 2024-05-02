@@ -14,11 +14,20 @@ import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
 
 interface ScanReportsProps {
-  searchParams?: { [key: string]: string | undefined } | {};
+  searchParams?: {
+    hidden?: boolean;
+    page_size?: number;
+  };
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
-  const query = objToQuery(searchParams ?? {});
+  const defaultParams = {
+    hidden: false,
+    page_size: 10,
+  };
+  const combinedParams = { ...defaultParams, ...searchParams };
+
+  const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
 
   return (
