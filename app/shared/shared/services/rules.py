@@ -67,8 +67,7 @@ def _find_existing_concepts(
 
     values = (
         ScanReportValue.objects.all()
-        .filter(scan_report_field__scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        .filter(scan_report_field__scan_report_table=table_id, concepts__isnull=False)
         .distinct()
         .order_by("id")[offset : offset + page_size]
     )
@@ -77,8 +76,7 @@ def _find_existing_concepts(
     # that have at least one concept added to them
     fields = (
         ScanReportField.objects.all()
-        .filter(scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        .filter(scan_report_table=table_id, concepts__isnull=False)
         .distinct()
         .order_by("id")[offset : offset + page_size]
     )
