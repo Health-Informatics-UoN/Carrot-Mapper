@@ -12,11 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 
 interface DataSetListProps {
-  searchParams?: { [key: string]: string | undefined } | {};
+  searchParams?: FilterParameters;
 }
 
 export default async function DataSets({ searchParams }: DataSetListProps) {
-  const query = objToQuery(searchParams ?? {});
+  const defaultParams = {
+    hidden: false,
+    page_size: 10,
+  };
+  const combinedParams = { ...defaultParams, ...searchParams };
+
+  const query = objToQuery(combinedParams);
   const dataset = await getDataSets(query);
 
   return (

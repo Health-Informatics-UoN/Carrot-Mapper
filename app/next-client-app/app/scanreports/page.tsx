@@ -15,10 +15,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 
 interface ScanReportsProps {
-  searchParams?: {
-    hidden?: boolean;
-    page_size?: number;
-  };
+  searchParams?: FilterParameters;
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
