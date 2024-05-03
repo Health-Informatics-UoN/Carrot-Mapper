@@ -510,12 +510,15 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "name": ["in", "exact"],
+        "scan_report": ["in", "exact"], 
+        "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
+    
+    ordering = "-created_at"
 
     def get_permissions(self):
         if self.request.method == "DELETE":

@@ -20,7 +20,8 @@ export function navigateWithSearchParam(
 // Build query string for filtering and sorting
 export function objToQuery(obj: {
   hidden?: boolean;
-  page_size: number;
+  page_size?: number;
+  scan_report?: string;
 }): string {
   if (Object.keys(obj).length === 0) return "";
   let query = "";

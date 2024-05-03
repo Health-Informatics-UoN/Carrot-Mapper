@@ -14,6 +14,15 @@ interface ScanReport {
   results: ScanReportResult[];
 }
 
+interface ScanReportTable {
+  id: number;
+  created_at: Date;
+  updated_at: Date;
+  name: string;
+  scan_report: number;
+  person_id: number | null;
+  date_event: number | null;
+}
 interface DataSetPage {
   count: number;
   next: string | null;

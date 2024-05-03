@@ -69,7 +69,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex justify-between my-4">
         <Input
-          placeholder={`Filter by ${filter}...`}
+          placeholder={`Filter by ${filter} ...`}
           onChange={(event) => {
             const param = event.currentTarget.value;
             navigateWithSearchParam(
