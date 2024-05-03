@@ -34,7 +34,7 @@ m_date_field_mapper = {
 }
 
 
-def _delete_mapping_rules(table_id: int) -> None:
+def delete_mapping_rules(table_id: int) -> None:
     """
     Delete existing mapping rules related to a Scan Report Table.
 
@@ -49,33 +49,36 @@ def _delete_mapping_rules(table_id: int) -> None:
     rules.delete()
 
 
-def _find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
+def _find_existing_concepts(
+    table_id: int, page: int, page_size: int
+) -> List[ScanReportConcept]:
     """
     Get ScanReportConcepts associated to a table.
 
     Args:
         - table_id (int): Id of the ScanReportTable to filter by.
+        - page (int): Page to get
+        - page_size (int): Page size to get
 
     Returns:
         - A list of ScanReportConcept attached to the Table Id.
     """
+    offset = page * page_size
 
     values = (
         ScanReportValue.objects.all()
-        .filter(scan_report_field__scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        .filter(scan_report_field__scan_report_table=table_id, concepts__isnull=False)
         .distinct()
-        .order_by("id")
+        .order_by("id")[offset : offset + page_size]
     )
 
     # find ScanReportField associated to this table_id
     # that have at least one concept added to them
     fields = (
         ScanReportField.objects.all()
-        .filter(scan_report_table=table_id)
-        .filter(concepts__isnull=False)
+        .filter(scan_report_table=table_id, concepts__isnull=False)
         .distinct()
-        .order_by("id")
+        .order_by("id")[offset : offset + page_size]
     )
 
     # retrieve all value concepts
@@ -83,6 +86,37 @@ def _find_existing_concepts(table_id: int) -> List[ScanReportConcept]:
     # retrieve all field concepts
     all_concepts += [concept for obj in fields for concept in obj.concepts.all()]
     return all_concepts
+
+
+def find_existing_concepts_count(table_id: int) -> int:
+    """
+    Get the count of ScanReportConcepts associated with a table.
+
+    Args:
+        - table_id (int): Id of the ScanReportTable to filter by.
+
+    Returns:
+        - The count of ScanReportConcepts attached to the Table Id.
+    """
+    # Count the number of ScanReportConcepts associated with the table_id
+    concept_count = (
+        ScanReportValue.objects.filter(
+            scan_report_field__scan_report_table=table_id, concepts__isnull=False
+        )
+        .distinct()
+        .count()
+    )
+
+    # Count the number of ScanReportConcepts associated with the table_id's fields
+    concept_count += (
+        ScanReportField.objects.filter(
+            scan_report_table=table_id, concepts__isnull=False
+        )
+        .distinct()
+        .count()
+    )
+
+    return concept_count
 
 
 def _validate_person_id_and_date(source_table: ScanReportTable):
@@ -354,7 +388,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     return True
 
 
-def refresh_mapping_rules(table_id: int) -> None:
+def refresh_mapping_rules(table_id: int, page: int, page_size: int) -> None:
     """
     Refreshes the Mapping Rules for a given Scan Report Table.
 
@@ -366,9 +400,8 @@ def refresh_mapping_rules(table_id: int) -> None:
     Returns:
         - None
     """
-    _delete_mapping_rules(table_id)
 
-    concepts = _find_existing_concepts(table_id)
+    concepts = _find_existing_concepts(table_id, page, page_size)
 
     nconcepts = 0
     nbadconcepts = 0

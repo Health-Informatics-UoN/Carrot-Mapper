@@ -1,6 +1,8 @@
+import logging
 import os
 from typing import Any
 
+import requests
 from api.paginations import CustomPagination
 from api.serializers import (
     ClassificationSystemSerializer,
@@ -39,6 +41,7 @@ from api.serializers import (
     VocabularySerializer,
 )
 from azure.storage.blob import BlobServiceClient
+from config import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -79,7 +82,7 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-from shared.services.azurequeue import add_message
+from shared.services.rules import delete_mapping_rules
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -570,6 +573,9 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
+        # Delete the current mapping rules
+        delete_mapping_rules(instance.id)
+
         # Map the table
         scan_report_instance = instance.scan_report
         data_dictionary_name = (
@@ -578,13 +584,22 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             else None
         )
 
-        # Send to queue
-        azure_dict = {
+        # Send to functions
+        msg = {
             "scan_report_id": scan_report_instance.id,
             "table_id": instance.id,
             "data_dictionary_blob": data_dictionary_name,
         }
-        add_message(os.environ.get("CREATE_CONCEPTS_QUEUE_NAME"), azure_dict)
+        orchestrator_url = f"{settings.AZ_FUNCTIONS_URL}/api/orchestrators/{settings.AZ_FUNCTIONS_RULES_NAME}"
+        try:
+            response = requests.post(orchestrator_url, json=msg)
+            response.raise_for_status()
+        except request.exceptions.HTTPError as e:
+            logging.error(f"HTTP Trigger failed: {e}")
+
+        # TODO: The worker_id can be used for status, but we need to save it somewhere.
+        # resp_json = response.json()
+        # worker_id = resp_json.get("id")
 
         return Response(serializer.data)
 
