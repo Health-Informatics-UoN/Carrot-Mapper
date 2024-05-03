@@ -53,11 +53,11 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               : "active"
           }
         >
-          <TabsList className="grid w-25 grid-cols-2">
-            <a href="?hidden=false" className="h-full w-full">
+          <TabsList>
+            <a href="?hidden=false" className="h-full">
               <TabsTrigger value="active">Active Datasets</TabsTrigger>
             </a>
-            <a href="?hidden=true" className="h-full w-full">
+            <a href="?hidden=true" className="h-full">
               <TabsTrigger value="archived">Archived Datasets</TabsTrigger>
             </a>
           </TabsList>

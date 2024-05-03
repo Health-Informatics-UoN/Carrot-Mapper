@@ -62,11 +62,11 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               : "active"
           }
         >
-          <TabsList className="grid w-25 grid-cols-2">
-            <a href="?hidden=false" className="h-full w-full">
+          <TabsList className="">
+            <a href="?hidden=false" className="h-full">
               <TabsTrigger value="active">Active Reports</TabsTrigger>
             </a>
-            <a href="?hidden=true" className="h-full w-full">
+            <a href="?hidden=true" className="h-full">
               <TabsTrigger value="archived">Archived Reports</TabsTrigger>
             </a>
           </TabsList>
