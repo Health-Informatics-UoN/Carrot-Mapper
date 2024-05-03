@@ -114,7 +114,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
 
       const { id, status } = row.original;
       const statusInfo = statusMapping[status as keyof typeof statusMapping];
-      const textColorClassName = `${statusInfo.color} w-[180px]`;
+      const textColorClassName = statusInfo?.color ?? "text-black";
 
       const handleChangeStatus = async (value: string) => {
         try {
@@ -126,7 +126,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
 
       return (
         <Select value={status} onValueChange={handleChangeStatus}>
-          <SelectTrigger className={textColorClassName}>
+          <SelectTrigger className={`${textColorClassName} w-[180px]`}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
