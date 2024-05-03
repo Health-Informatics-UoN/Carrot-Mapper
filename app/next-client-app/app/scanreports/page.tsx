@@ -30,7 +30,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
 
   const query = objToQuery(customSearchParams);
   const scanReports = await getScanReports(query);
-  console.log(scanReports);
+
   return (
     <div className="pt-10 px-16">
       <div>
@@ -64,7 +64,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               : "active"
           }
         >
-          <TabsList className="grid w-25 grid-cols-2">
+          <TabsList className="w-1/2 h-1/2 sm:w-1/4 flex flex-col sm:flex-row">
             <a href="?hidden=false" className="h-full w-full">
               <TabsTrigger value="active">Active Reports</TabsTrigger>
             </a>

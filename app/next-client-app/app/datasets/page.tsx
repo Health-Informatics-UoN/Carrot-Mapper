@@ -64,7 +64,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               : "active"
           }
         >
-          <TabsList className="grid w-25 grid-cols-2">
+          <TabsList className="w-1/2 h-1/2 sm:w-1/4 flex flex-col sm:flex-row">
             <a href="?hidden=false" className="h-full w-full">
               <TabsTrigger value="active">Active Datasets</TabsTrigger>
             </a>
