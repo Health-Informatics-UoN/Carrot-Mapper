@@ -64,6 +64,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       <DataTableColumnHeader column={column} title="Data Partner" />
     ),
     enableHiding: true,
+    enableSorting: false,
   },
   {
     id: "Uploaded",
@@ -98,6 +99,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     enableHiding: false,
+    enableSorting: false,
     cell: ({ row }) => {
       const statusMapping = {
         BLOCKED: { text: "Blocked", color: "text-red-900" },
@@ -144,7 +146,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: "",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.id;
+      const { id } = row.original;
       return (
         <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
           <Button variant={"outline"}>
