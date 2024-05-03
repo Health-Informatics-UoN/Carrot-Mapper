@@ -302,7 +302,7 @@ async def _handle_table(
     reuse_existing_value_concepts(table_values)
 
 
-def main(msg: func.QueueMessage):
+def main(msg: Dict[str, str]):
     """
     Processes a queue message.
     Unwraps the message content
@@ -310,9 +310,10 @@ def main(msg: func.QueueMessage):
     Runs the create concepts processes.
 
     Args:
-        msg (func.QueueMessage): The message received from the queue.
+        msg (Dict[str, str]): The message received from the orchestrator.
     """
-    _, data_dictionary_blob, _, table_id = helpers.unwrap_message(msg)
+    data_dictionary_blob = msg.pop("data_dictionary_blob")
+    table_id = msg.pop("table_id")
 
     # get the table
     table = get_scan_report_table(table_id)
@@ -321,11 +322,3 @@ def main(msg: func.QueueMessage):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     asyncio.run(_handle_table(table, vocab_dictionary))
-
-    # send to MappingRules queue
-    message = {
-        "table_id": table_id,
-    }
-    add_message(os.environ.get("MAPPING_RULES_QUEUE_NAME"), message)
-
-    return
