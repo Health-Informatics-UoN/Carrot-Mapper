@@ -129,7 +129,10 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="hover:cursor-pointer"
-                  onClick={() => router.push(`${(row.original as any).id}`)}
+                  // TODO: Once we are only routing to Nextjs urls, we can do this better.
+                  onClick={() =>
+                    (window.location.href = `${window.location.pathname}${(row.original as any).id}`)
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
