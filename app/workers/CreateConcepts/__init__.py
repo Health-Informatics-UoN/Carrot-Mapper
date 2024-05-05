@@ -36,16 +36,19 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[ScanReportConce
     for concept in table_values:
         if concept["concept_id"] != -1:
             if isinstance(concept["concept_id"], list):
-                concepts.extend(
-                    db.create_concept(concept_id, concept["id"], "scanreportvalue")
-                    for concept_id in concept["concept_id"]
-                )
+                for concept_id in concept["concept_id"]:
+                    concept_instance = db.create_concept(
+                        concept_id, concept["id"], "scanreportvalue"
+                    )
+                    if concept_instance is not None:
+                        concepts.append(concept_instance)
             else:
-                concepts.append(
-                    db.create_concept(
+                if (
+                    concept_instance := db.create_concept(
                         concept["concept_id"], concept["id"], "scanreportvalue"
                     )
-                )
+                ) is not None:
+                    concepts.append(concept_instance)
 
     return concepts
 
@@ -285,12 +288,14 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
     # Bulk create Concepts in batches
     logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
 
-    batch_size = 1000
-    while True:
-        if batch := list(islice(concepts, batch_size)):
-            ScanReportConcept.objects.bulk_create(batch, batch_size)
-        else:
-            break
+    ScanReportConcept.objects.bulk_create(concepts)
+
+    # batch_size = 1000
+    # while True:
+    #     if batch := list(islice(concepts, batch_size)):
+    #         ScanReportConcept.objects.bulk_create(batch, batch_size)
+    #     else:
+    #         break
     logger.info("Create concepts all finished")
 
     # handle reuse of concepts
