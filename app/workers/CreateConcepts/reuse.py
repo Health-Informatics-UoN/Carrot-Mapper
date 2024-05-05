@@ -279,6 +279,7 @@ def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
         existing_field_name_to_field_and_concept_id_map,
         content_type,
     ):
+        # TODO: Should now be bulk_create
         post_scan_report_concepts(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
@@ -331,6 +332,7 @@ def select_concepts_to_post(
                 f"Found existing {'field' if content_type == 'scanreportfield' else 'value'} with id: {existing_content_id} "
                 f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 'scanreportfield' else 'value'} id: {new_content_detail['id']}"
             )
+            # TODO: Can return models now.
             # Create ScanReportConcept entry for copying over the concept
             concept_entry = create_concept(
                 concept_id, str(new_content_detail["id"]), content_type, "R"
