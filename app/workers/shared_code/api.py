@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import warnings
 from enum import Enum
 from typing import Any, Dict, List, Literal
 
@@ -241,6 +242,11 @@ def get_scan_report_table(id: str) -> Dict[str, Any]:
         Exception: requests.HTTPError: If the request fails.
         Exception: KeyError: If the Scan Report Table for the ID is not found.
     """
+    warnings.warn(
+        "This function is deprecated and will be removed very soon.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     response = requests.get(url=f"{API_URL}scanreporttables/?id={id}", headers=HEADERS)
     response.raise_for_status()
 
