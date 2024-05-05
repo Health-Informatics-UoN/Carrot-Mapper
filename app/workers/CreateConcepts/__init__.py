@@ -10,8 +10,6 @@ from shared_code.api import (
 )
 from shared_code.logger import logger
 
-from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
 
@@ -19,6 +17,8 @@ django.setup()
 
 from shared.data.models import ScanReportConcept, ScanReportTable
 from shared_code import db
+
+from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
 
 def _create_concepts(table_values: List[Dict[str, Any]]) -> List[ScanReportConcept]:

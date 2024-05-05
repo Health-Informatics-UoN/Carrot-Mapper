@@ -1,13 +1,13 @@
 from typing import Any, Dict, List, Literal
 
-from shared_code import helpers, omop_helpers
+from shared.data.models import ScanReportConcept
+from shared_code import db, helpers, omop_helpers
 from shared_code.api import (
     get_scan_report_active_concepts,
     get_scan_report_fields,
     get_scan_report_values,
     post_scan_report_concepts,
 )
-from shared_code.helpers import create_concept
 from shared_code.logger import logger
 
 """
@@ -175,7 +175,7 @@ def reuse_existing_value_concepts(new_values_map) -> None:
         value_details_to_value_and_concept_id_map,
         content_type,
     ):
-        post_scan_report_concepts(concepts_to_post)
+        ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
@@ -279,8 +279,7 @@ def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
         existing_field_name_to_field_and_concept_id_map,
         content_type,
     ):
-        # TODO: Should now be bulk_create
-        post_scan_report_concepts(concepts_to_post)
+        ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
 
 
@@ -288,7 +287,7 @@ def select_concepts_to_post(
     new_content_details: List[Dict[str, str]],
     details_to_id_and_concept_id_map: List[Dict[str, str]],
     content_type: Literal["scanreportfield", "scanreportvalue"],
-) -> List[Dict[str, Any]]:
+) -> List[ScanReportConcept]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
     Content_type controls whether this is handling fields or values.
@@ -312,7 +311,7 @@ def select_concepts_to_post(
     Raises:
         Exception:  ValueError: A content_type other than scanreportfield or scanreportvalue was provided.
     """
-    concepts_to_post = []
+    concepts_to_post: List[ScanReportConcept] = []
 
     for new_content_detail in new_content_details:
         if content_type == "scanreportfield":
@@ -332,12 +331,10 @@ def select_concepts_to_post(
                 f"Found existing {'field' if content_type == 'scanreportfield' else 'value'} with id: {existing_content_id} "
                 f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 'scanreportfield' else 'value'} id: {new_content_detail['id']}"
             )
-            # TODO: Can return models now.
-            # Create ScanReportConcept entry for copying over the concept
-            concept_entry = create_concept(
+            if concept_entry := db.create_concept(
                 concept_id, str(new_content_detail["id"]), content_type, "R"
-            )
-            concepts_to_post.append(concept_entry)
+            ):
+                concepts_to_post.append(concept_entry)
         except KeyError:
             continue
 
