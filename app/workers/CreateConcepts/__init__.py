@@ -290,12 +290,6 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
 
     ScanReportConcept.objects.bulk_create(concepts)
 
-    # batch_size = 1000
-    # while True:
-    #     if batch := list(islice(concepts, batch_size)):
-    #         ScanReportConcept.objects.bulk_create(batch, batch_size)
-    #     else:
-    #         break
     logger.info("Create concepts all finished")
 
     # handle reuse of concepts
