@@ -18,6 +18,7 @@
     "bootstrap": "^5.3.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "date-fns": "^3.6.0",
     "lucide-react": "^0.367.0",
     "next": "14.1.4",
     "next-themes": "^0.3.0",
