@@ -112,37 +112,6 @@ def post_scan_report_field_entries(
     return fields_response_content
 
 
-def post_scan_report_concepts(concepts: List[str]) -> None:
-    """
-    POST Concepts to the API.
-
-    Works by paginating the concepts first.
-
-    Args:
-        concepts (List[str]): A list of the concepts to POST
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    paginated_concepts_to_post = helpers.paginate(concepts)
-    responses = []
-    concept_response_content = []
-    for concepts_to_post_item in paginated_concepts_to_post:
-        response = requests.post(
-            url=f"{API_URL}scanreportconcepts/",
-            headers=HEADERS,
-            data=json.dumps(concepts_to_post_item),
-        )
-        response.raise_for_status()
-        logger.info(
-            f"CONCEPTS SAVE STATUS >>> " f"{response.status_code} " f"{response.reason}"
-        )
-        responses.append(response.json())
-    concept_content = helpers.flatten_list(responses)
-
-    concept_response_content += concept_content
-
-
 def get_scan_report_fields(field_ids: List[str]) -> List[Dict[str, Any]]:
     """
     Gets ScanReportFields that match any of the given Ids.
@@ -226,34 +195,6 @@ def get_scan_report_active_concepts(
     )
     response.raise_for_status()
     return response.json()
-
-
-def get_scan_report_table(id: str) -> Dict[str, Any]:
-    """
-    Get a ScanReportTable for a given Id.
-
-    Args:
-        id (str): The Table Id to get.
-
-    Returns:
-        A ScanReportTable for the given Id.
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-        Exception: KeyError: If the Scan Report Table for the ID is not found.
-    """
-    warnings.warn(
-        "This function is deprecated and will be removed very soon.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    response = requests.get(url=f"{API_URL}scanreporttables/?id={id}", headers=HEADERS)
-    response.raise_for_status()
-
-    if scan_report_tables := response.json():
-        return scan_report_tables[0]
-    else:
-        raise KeyError("ScanReportTable not found for the given ID.")
 
 
 def get_scan_report_values(ids: str) -> List[Dict[str, Any]]:

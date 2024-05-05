@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal
+from typing import Dict, List, Literal
 
 from shared.data.models import ScanReportConcept
 from shared_code import db, helpers, omop_helpers
@@ -6,7 +6,6 @@ from shared_code.api import (
     get_scan_report_active_concepts,
     get_scan_report_fields,
     get_scan_report_values,
-    post_scan_report_concepts,
 )
 from shared_code.logger import logger
 
