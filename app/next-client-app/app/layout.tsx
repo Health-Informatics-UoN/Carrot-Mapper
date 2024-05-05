@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import type { Metadata } from "next";
 import BootstrapClient from "@/components/BootstrapClient";
 import { Navbar } from "@/components/Navbar";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "CaRROT-Mapper",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <Navbar />
         {children}
         <BootstrapClient />
+        <Toaster />
       </body>
     </html>
   );
