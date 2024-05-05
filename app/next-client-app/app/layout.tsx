@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import type { Metadata } from "next";
 import BootstrapClient from "@/components/BootstrapClient";
 import { Navbar } from "@/components/Navbar";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "CaRROT-Mapper",
