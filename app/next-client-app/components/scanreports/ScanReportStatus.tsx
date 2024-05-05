@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ApiError } from "@/lib/api/error";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
 
@@ -34,8 +35,9 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
         `Scan Report ${row.original.dataset} status has changed to ${statusMapping[newStatus].text}.`,
       );
     } catch (error) {
+      const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Scan Report ${row.original.dataset} status change has failed.`,
+        `Scan Report ${row.original.dataset} status change has failed: ${errorObj.detail}.`,
       );
       console.error(error);
     }

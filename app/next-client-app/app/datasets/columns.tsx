@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { archiveDataSets } from "@/api/datasets";
 import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/error";
 
 export const columns: ColumnDef<DataSet>[] = [
   {
@@ -91,9 +93,15 @@ export const columns: ColumnDef<DataSet>[] = [
       const { id, hidden } = row.original;
 
       const handleArchive = async () => {
+        const message = hidden ? "Unarchive" : "Archive";
         try {
           await archiveDataSets(id, !hidden);
+          toast.success(`${message} ${row.original.name}.`);
         } catch (error) {
+          const errorObj = JSON.parse((error as ApiError).message);
+          toast.error(
+            `${message} ${row.original.name} has failed: ${errorObj.detail}`,
+          );
           console.error(error);
         }
       };
