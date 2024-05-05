@@ -96,7 +96,7 @@ export const columns: ColumnDef<DataSet>[] = [
         const message = hidden ? "Unarchive" : "Archive";
         try {
           await archiveDataSets(id, !hidden);
-          toast.success(`${message} ${row.original.name}.`);
+          toast.success(`${message} ${row.original.name} succeeded.`);
         } catch (error) {
           const errorObj = JSON.parse((error as ApiError).message);
           toast.error(

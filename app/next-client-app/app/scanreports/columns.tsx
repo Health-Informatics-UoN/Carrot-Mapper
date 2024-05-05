@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/select";
 import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/error";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -131,9 +133,15 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       const { id, hidden } = row.original;
 
       const handleArchive = async () => {
+        const message = hidden ? "Unarchive" : "Archive";
         try {
           await updateScanReport(id, "hidden", !hidden);
+          toast.success(`${message} ${row.original.dataset} succeeded.`);
         } catch (error) {
+          const errorObj = JSON.parse((error as ApiError).message);
+          toast.error(
+            `${message} ${row.original.dataset} has failed: ${errorObj.detail}`,
+          );
           console.error(error);
         }
       };
