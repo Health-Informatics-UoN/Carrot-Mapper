@@ -1,24 +1,28 @@
-import asyncio
 import os
 from collections import defaultdict
+from itertools import islice
 from typing import Any, Dict, List
 
-import azure.functions as func
-from shared.services.azurequeue import add_message
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import (
     get_concept_vocabs,
     get_scan_report_fields_by_table,
-    get_scan_report_table,
     get_scan_report_values_filter_scan_report_table,
-    post_chunks,
 )
 from shared_code.logger import logger
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
+import django
 
-def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+django.setup()
+
+from shared.data.models import ScanReportConcept, ScanReportTable
+from shared_code import db
+
+
+def _create_concepts(table_values: List[Dict[str, Any]]) -> List[ScanReportConcept]:
     """
     Generate Concept entries ready for POSTing from a list of values.
 
@@ -28,22 +32,22 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[Dict[str, Any]]
     Returns:
         List[Dict[str, Any]]: List of Concept dictionaries.
     """
-    concept_id_data = []
+    concepts: List[ScanReportConcept] = []
     for concept in table_values:
         if concept["concept_id"] != -1:
             if isinstance(concept["concept_id"], list):
-                concept_id_data.extend(
-                    helpers.create_concept(concept_id, concept["id"], "scanreportvalue")
+                concepts.extend(
+                    db.create_concept(concept_id, concept["id"], "scanreportvalue")
                     for concept_id in concept["concept_id"]
                 )
             else:
-                concept_id_data.append(
-                    helpers.create_concept(
+                concepts.append(
+                    db.create_concept(
                         concept["concept_id"], concept["id"], "scanreportvalue"
                     )
                 )
 
-    return concept_id_data
+    return concepts
 
 
 def _handle_concepts(
@@ -244,9 +248,7 @@ def _update_entries_with_standard_concepts(
             relevant_entry["concept_id"] = standard_concepts
 
 
-async def _handle_table(
-    table: Dict[str, Any], vocab: Dict[str, Dict[str, str]]
-) -> None:
+def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> None:
     """
     Handles Concept Creation on a table.
 
@@ -260,13 +262,12 @@ async def _handle_table(
     Returns:
         None
     """
-    table_values = get_scan_report_values_filter_scan_report_table(table["id"])
-    table_fields = get_scan_report_fields_by_table(table["id"])
+    # TODO: Replace with db
+    table_values = get_scan_report_values_filter_scan_report_table(table.pk)
+    table_fields = get_scan_report_fields_by_table(table.pk)
 
     # Add vocab id to each entry from the vocab dict
-    helpers.add_vocabulary_id_to_entries(
-        table_values, vocab, table_fields, table["name"]
-    )
+    helpers.add_vocabulary_id_to_entries(table_values, vocab, table_fields, table.name)
 
     # group table_values by their vocabulary_id, for example:
     # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
@@ -281,21 +282,16 @@ async def _handle_table(
     # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
     concepts = _create_concepts(table_values)
 
-    # Chunk the SRConcept data ready for upload, and then upload via the endpoint.
-    logger.info(f"POST {len(concepts)} concepts to table {table['name']}")
+    # Bulk create Concepts in batches
+    logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
 
-    chunked_concept_id_data = helpers.perform_chunking(concepts)
-    logger.debug(f"chunked concepts list len: {len(chunked_concept_id_data)}")
-
-    await post_chunks(
-        chunked_concept_id_data,
-        "scanreportconcepts",
-        "concept",
-        table_name=table["name"],
-        scan_report_id=table["scan_report"],
-    )
-
-    logger.info("POST concepts all finished")
+    batch_size = 1000
+    while True:
+        if batch := list(islice(concepts, batch_size)):
+            ScanReportConcept.objects.bulk_create(batch, batch_size)
+        else:
+            break
+    logger.info("Create concepts all finished")
 
     # handle reuse of concepts
     reuse_existing_field_concepts(table_fields)
@@ -316,9 +312,9 @@ def main(msg: Dict[str, str]):
     table_id = msg.pop("table_id")
 
     # get the table
-    table = get_scan_report_table(table_id)
+    table = ScanReportTable.objects.get(pk=table_id)
 
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    asyncio.run(_handle_table(table, vocab_dictionary))
+    _handle_table(table, vocab_dictionary)
