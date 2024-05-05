@@ -1,6 +1,5 @@
 import os
 from collections import defaultdict
-from itertools import islice
 from typing import Any, Dict, List
 
 from shared_code import blob_parser, helpers, omop_helpers
@@ -285,7 +284,7 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
     # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
     concepts = _create_concepts(table_values)
 
-    # Bulk create Concepts in batches
+    # Bulk create Concepts
     logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
 
     ScanReportConcept.objects.bulk_create(concepts)
