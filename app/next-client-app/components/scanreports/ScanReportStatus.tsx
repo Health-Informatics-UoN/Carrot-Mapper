@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Row } from "@tanstack/react-table";
+import { toast } from "sonner";
 
 export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
   const statusMapping = {
@@ -19,16 +20,23 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
     UPFAILE: { text: "Upload Failed", color: "text-red-500" },
     UPINPRO: { text: "Upload in Progress", color: "text-orange-600" },
   };
+  type StatusKey = keyof typeof statusMapping;
 
   const { id, status } = row.original;
+  // Safely extract the color
   const statusInfo = statusMapping[status as keyof typeof statusMapping];
   const textColorClassName = statusInfo?.color ?? "text-black";
 
-  const handleChangeStatus = async (value: string) => {
+  const handleChangeStatus = async (newStatus: StatusKey) => {
     try {
-      await updateScanReport(id, "status", value);
+      await updateScanReport(id, "status", newStatus);
+      toast.success(
+        `Scan Report ${row.original.dataset} status has changed to ${statusMapping[newStatus].text}.`,
+      );
     } catch (error) {
-      // do toast
+      toast.error(
+        `Scan Report ${row.original.dataset} status change has failed.`,
+      );
       console.error(error);
     }
   };
