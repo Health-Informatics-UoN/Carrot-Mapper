@@ -34,6 +34,7 @@ from api.serializers import (
     ScanReportFieldListSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
+    ScanReportTableListSerializerV2,
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
@@ -604,6 +605,25 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         # worker_id = resp_json.get("id")
 
         return Response(serializer.data)
+
+
+class ScanReportTableViewSetV2(ScanReportTableViewSet):
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "scan_report": ["in", "exact"],
+        "name": ["in", "exact"],
+        "id": ["in", "exact"],
+    }
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportTableListSerializerV2
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportTableEditSerializer
+        return super().get_serializer_class()
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
