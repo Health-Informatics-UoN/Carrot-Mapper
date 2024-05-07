@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import request from "./request";
+import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (filter?: string) =>

@@ -184,5 +184,6 @@ SESSION_COOKIE_AGE = 86400  # session length is 24 hours
 NEXTJS_URL = os.environ.get("NEXTJS_URL", "http://localhost:3000")
 
 # Azure Functions
-AZ_FUNCTIONS_URL = os.environ.get("AZ_FUNCTIONS_URL", "http://localhost:7071")
-AZ_FUNCTIONS_RULES_NAME = os.environ.get("AZ_FUNCTIONS_RULES_NAME", "RulesOrchestrator")
+AZ_URL = os.environ.get("AZ_URL", "http://localhost:7071")
+AZ_RULES_NAME = os.environ.get("AZ_RULES_NAME", "RulesOrchestrator")
+AZ_RULES_KEY = os.environ.get("AZ_RULES_KEY", "")

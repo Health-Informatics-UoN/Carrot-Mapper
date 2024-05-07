@@ -17,22 +17,6 @@ const config = {
         "2xl": "1400px",
       },
     },
-    colors: {
-      // Still keep the slate color palette for now, in case the new installed components are not yet styled in carrot color palette
-      slate: {
-        50: "#eff6ff",
-        100: "#dbeafe",
-        200: "#bfdbfe",
-        300: "#93c5fd",
-        400: "#60a5fa",
-        500: "#3b82f6",
-        600: "#2563eb",
-        700: "#1d4ed8",
-        800: "#1e40af",
-        900: "#475da7",
-        950: "#172554",
-      },
-    },
     extend: {
       keyframes: {
         "accordion-down": {

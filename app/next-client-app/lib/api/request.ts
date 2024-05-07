@@ -20,6 +20,7 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
   const headers: HeadersInit = {
     Cookie: `sessionid=${session}; csrftoken=${csrftoken}`,
     "X-CSRFToken": csrftoken ?? "",
+    Referer: process.env.BACKEND_URL ?? "",
     ...(options.headers || {}),
   };
 
