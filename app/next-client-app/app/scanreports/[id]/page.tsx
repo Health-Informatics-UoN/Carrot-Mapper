@@ -79,9 +79,10 @@ export default async function ScanReportsTable({ params: { id } }: Props) {
       <div>
         <DataTable
           columns={columns}
-          data={scanReportsTables}
-          count={10}
+          data={scanReportsTables.results}
+          count={scanReportsTables.count}
           filter="name"
+          linkPrefix="/tables/"
         />
       </div>
     </div>

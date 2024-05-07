@@ -3,23 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<ScanReportTable>[] = [
+export const columns: ColumnDef<ScanReportTablesResult>[] = [
   {
     id: "Name",
     accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="name" />
     ),
-    cell: ({ row }) => {
-      const id = row.original.id;
-      const scan_report = row.original.scan_report;
-      return (
-        <Link href={`/scanreports/${scan_report}/tables/${id}`}>
-          <button>{row.original.name}</button>
-        </Link>
-      );
-    },
     enableHiding: true,
     enableSorting: true,
   },
@@ -48,5 +40,18 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     ),
     enableHiding: true,
     enableSorting: true,
+  },
+  {
+    id: "edit",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const scan_report = row.original.scan_report;
+      return (
+        <Link href={`/scanreports/${scan_report}/tables/${id}/update`}>
+          <Button>Edit Table</Button>
+        </Link>
+      );
+    },
   },
 ];
