@@ -27,6 +27,14 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="dataset" />
     ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <Link href={`/scanreports/${id}`} prefetch={false}>
+          <button>{row.original.dataset}</button>
+        </Link>
+      );
+    },
     enableHiding: true,
   },
   {

@@ -6,14 +6,19 @@ from revproxy.views import ProxyView
 urlpatterns = [
     # /scanreports/ and escape any further paths
     re_path(
-        r"^scanreports/(?P<path>(?![\d/]).*)$",
-        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports"),
-        name="scan-report-list",
+         r"^scanreports/(?P<path>(?!create)(?![\d/]).*)$",
+         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports"),
+         name="scan-report-list",
     ),
     re_path(
         r"^scanreports/(?P<path>\d+)$",
-        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports"),
         name="scan-report-detail",
+    ),
+    re_path(
+        r"^scanreports/(?P<scanreportID>\d+)/tables/(?P<tableID>\d+)$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports"),
+        name="scan-report-table-detail",
     ),
     re_path(
         "datasets/?(?P<path>.*)$",

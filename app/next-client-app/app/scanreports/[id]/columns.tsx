@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
+import Link from "next/link";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -10,6 +11,15 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="name" />
     ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      const scan_report = row.original.scan_report;
+      return (
+        <Link href={`/scanreports/${scan_report}/tables/${id}`}>
+          <button>{row.original.name}</button>
+        </Link>
+      );
+    },
     enableHiding: true,
     enableSorting: true,
   },
