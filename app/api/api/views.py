@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Any
+from urllib.parse import urljoin
 
 import requests
 from api.paginations import CustomPagination
@@ -366,6 +367,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     filterset_fields = {"hidden": ["exact"], "dataset": ["in", "icontains"]}
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     pagination_class = CustomPagination
+    ordering = "-created_at"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -587,9 +589,12 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
             "table_id": instance.id,
             "data_dictionary_blob": data_dictionary_name,
         }
-        orchestrator_url = f"{settings.AZ_FUNCTIONS_URL}/api/orchestrators/{settings.AZ_FUNCTIONS_RULES_NAME}"
+        base_url = f"{settings.AZ_URL}"
+        trigger = (
+            f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
+        )
         try:
-            response = requests.post(orchestrator_url, json=msg)
+            response = requests.post(urljoin(base_url, trigger), json=msg)
             response.raise_for_status()
         except request.exceptions.HTTPError as e:
             logging.error(f"HTTP Trigger failed: {e}")

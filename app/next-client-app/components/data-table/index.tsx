@@ -18,8 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import React from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,10 +27,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
-import { navigateWithSearchParam } from "@/lib/client-utils";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
+import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -47,7 +46,6 @@ export function DataTable<TData, TValue>({
   filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
-  const searchParam = useSearchParams();
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -68,26 +66,13 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        <Input
-          placeholder={`Filter by ${filter}...`}
-          onChange={(event) => {
-            const param = event.currentTarget.value;
-            navigateWithSearchParam(
-              `${filter}__icontains`,
-              param,
-              router,
-              searchParam
-            );
-          }}
-          className="max-w-sm"
-        />
+        <DataTableFilter filter={filter} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               aria-label="Toggle columns"
               variant="outline"
-              size="sm"
-              className="ml-auto hidden h-8 lg:flex"
+              className="ml-auto hidden lg:flex"
             >
               <MixerHorizontalIcon className="mr-2 size-4" />
               View
@@ -129,7 +114,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -144,14 +129,17 @@ export function DataTable<TData, TValue>({
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className="hover:cursor-pointer"
-                  onClick={() => router.push(`${(row.original as any).id}`)}
+                  // TODO: Once we are only routing to Nextjs urls, we can do this better.
+                  onClick={() =>
+                    (window.location.href = `${window.location.pathname}${(row.original as any).id}`)
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </div>
                     </TableCell>
