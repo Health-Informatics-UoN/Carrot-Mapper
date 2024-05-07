@@ -74,6 +74,9 @@ jobs:
 
   build-and-publish-next-app:
     runs-on: ubuntu-latest
+    environment: dev
+    env:
+      BACKEND_ORIGIN: ${{ secrets.BACKEND_ORIGIN }}
 
     steps:
       - uses: actions/checkout@v3
