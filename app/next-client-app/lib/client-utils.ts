@@ -17,8 +17,15 @@ export function navigateWithSearchParam(
   router.push(`?${queryString}`, { scroll: false });
 }
 
-// Build query string for filtering and sorting
-export function objToQuery(obj: { [key: string]: string }): string {
+/**
+ * Converts an object into a query string.
+ *
+ * Iterates over the object properties, encoding and combining with '&' to form a query string.
+ *
+ * @param obj - The object to be converted into a query string.
+ * @returns A string representing the query.
+ */
+export function objToQuery(obj: { [key: string]: any }): string {
   if (Object.keys(obj).length === 0) return "";
   let query = "";
   for (let key in obj) {

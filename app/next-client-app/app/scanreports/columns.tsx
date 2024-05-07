@@ -18,9 +18,22 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { archiveScanReports } from "@/api/scanreports";
+import { updateScanReport } from "@/api/scanreports";
+import { ChevronRight } from "lucide-react";
+import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/error";
+import { format } from "date-fns/format";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
+  {
+    id: "id",
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="id" sortName="id" />
+    ),
+    enableHiding: true,
+  },
   {
     id: "Name",
     accessorKey: "dataset",
@@ -48,6 +61,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       <DataTableColumnHeader column={column} title="Data Partner" />
     ),
     enableHiding: true,
+    enableSorting: false,
   },
   {
     id: "Uploaded",
@@ -63,16 +77,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     enableSorting: true,
     cell: ({ row }) => {
       const date = new Date(row.original.created_at);
-      const options: any = {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-        hour: "numeric",
-        minute: "numeric",
-        hour12: true,
-      };
-      const formattedDate = date.toLocaleDateString("en-US", options);
-      return formattedDate;
+      return format(date, "MMM dd, yyyy h:mm a");
     },
   },
   {
@@ -82,8 +87,9 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       <DataTableColumnHeader column={column} title="Status" />
     ),
     enableHiding: false,
+    enableSorting: false,
     cell: ({ row }) => {
-      return "TBD";
+      return <ScanReportStatus row={row} />;
     },
   },
   {
@@ -92,10 +98,13 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: "",
     enableHiding: false,
     cell: ({ row }) => {
-      const id = row.original.id;
+      const { id } = row.original;
       return (
-        <Link href={`/scanreports/${id}/mapping_rules/`}>
-          <Button>Rules</Button>
+        <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
+          <Button variant={"outline"}>
+            Rules
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </Link>
       );
     },
@@ -109,9 +118,15 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       const { id, hidden } = row.original;
 
       const handleArchive = async () => {
+        const message = hidden ? "Unarchive" : "Archive";
         try {
-          await archiveScanReports(id, !hidden);
+          await updateScanReport(id, "hidden", !hidden);
+          toast.success(`${message} ${row.original.dataset} succeeded.`);
         } catch (error) {
+          const errorObj = JSON.parse((error as ApiError).message);
+          toast.error(
+            `${message} ${row.original.dataset} has failed: ${errorObj.detail}`,
+          );
           console.error(error);
         }
       };
@@ -136,6 +151,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             <Link
               href={`/scanreports/${id}/details/`}
               style={{ textDecoration: "none", color: "black" }}
+              prefetch={false}
             >
               <DropdownMenuItem>
                 Details <Pencil2Icon className="ml-auto" />
@@ -145,6 +161,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             <Link
               href={`/scanreports/${id}/assertions/`}
               style={{ textDecoration: "none", color: "black" }}
+              prefetch={false}
             >
               <DropdownMenuItem>
                 Assertions <ExclamationTriangleIcon className="ml-auto" />

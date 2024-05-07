@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { navigateWithSearchParam } from "@/lib/client-utils";
@@ -30,16 +29,11 @@ export function DataTablePagination<TData>({
 
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? "10");
-  const [currentPageSize, setCurrentPageSize] = useState(pageSize);
-  const numberOfPages = Math.max(
-    Math.ceil(count / (pageSize ? pageSize : 10)),
-    1
-  );
+  const numberOfPages = Math.max(Math.ceil(count / (pageSize || 10)), 1);
 
-  useEffect(() => {
-    navigateWithSearchParam("page_size", currentPageSize, router, searchParams);
-    if (currentPage > numberOfPages) navigateToPage(numberOfPages);
-  }, [currentPageSize, numberOfPages]);
+  const changePageSize = (size: number) => {
+    navigateWithSearchParam("page_size", size, router, searchParams);
+  };
 
   const navigateToPage = (param: number) => {
     navigateWithSearchParam("p", param, router, searchParams);
@@ -55,14 +49,14 @@ export function DataTablePagination<TData>({
     <div className="flex w-full flex-col-reverse items-center justify-end gap-4 overflow-auto p-1 sm:flex-row sm:gap-8">
       <div className="flex flex-col-reverse items-center gap-4 sm:flex-row sm:gap-6 lg:gap-8">
         <div className="flex items-center space-x-2">
-          <p className="text-sm mt-3 font-medium">Rows per page</p>
+          <p className="whitespace-nowrap text-sm font-medium">Rows per page</p>
           <Select
             onValueChange={(value) => {
-              setCurrentPageSize(Number(value));
+              changePageSize(Number(value));
             }}
           >
             <SelectTrigger className="h-8 w-[4.5rem]">
-              <SelectValue placeholder={currentPageSize} />
+              <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {pageSizeOptions.map((pageSize) => (

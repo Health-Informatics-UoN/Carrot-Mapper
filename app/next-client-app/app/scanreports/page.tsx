@@ -12,13 +12,20 @@ import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
+import { Plus } from "lucide-react";
 
 interface ScanReportsProps {
-  searchParams?: { [key: string]: string | undefined } | {};
+  searchParams?: FilterParameters;
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
-  const query = objToQuery(searchParams ?? {});
+  const defaultParams = {
+    hidden: false,
+    page_size: 10,
+  };
+  const combinedParams = { ...defaultParams, ...searchParams };
+
+  const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
 
   return (
@@ -38,9 +45,10 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
-        <Link href="/scanreports/create">
+        <Link href="/scanreports/create" prefetch={false}>
           <Button size="lg" className="text-md">
             New Scan Report
+            <Plus className="ml-2 h-4 w-4" />
           </Button>
         </Link>
       </div>
@@ -54,11 +62,11 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               : "active"
           }
         >
-          <TabsList className="grid w-25 grid-cols-2">
-            <a href="?hidden=false" className="h-full w-full">
+          <TabsList className="">
+            <a href="?hidden=false" className="h-full">
               <TabsTrigger value="active">Active Reports</TabsTrigger>
             </a>
-            <a href="?hidden=true" className="h-full w-full">
+            <a href="?hidden=true" className="h-full">
               <TabsTrigger value="archived">Archived Reports</TabsTrigger>
             </a>
           </TabsList>
