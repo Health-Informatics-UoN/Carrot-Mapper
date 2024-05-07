@@ -284,6 +284,7 @@ class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSeriali
 class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
 
     date_event = serializers.SerializerMethodField()
+    person_id = serializers.SerializerMethodField()
 
     def validate(self, data):
         if request := self.context.get("request"):
@@ -307,6 +308,8 @@ class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSeria
     def get_date_event(self, obj):
         return obj.date_event.name if obj.date_event else None
 
+    def get_person_id(self, obj):
+        return obj.person_id.name if obj.person_id else None
     class Meta:
         model = ScanReportTable
         fields = "__all__"

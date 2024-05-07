@@ -5,20 +5,20 @@ import request from "@/lib/api/request";
 const fetchKeys = {
   list: (filter?: string) =>
     filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
-  tables: (filter?: string) => `scanreporttables/?${filter}`,
+  tables: (filter?: string) => `v2/scanreporttables/?${filter}`,
   update: (id: number) => `scanreports/${id}/`,
 };
 
 export async function getScanReportsTables(
   filter: string | undefined
-): Promise<ScanReportTable[]> {
+): Promise<ScanReportTables> {
   try {
     console.log(filter, typeof filter);
-    return await request<ScanReportTable[]>(fetchKeys.tables(filter));
+    return await request<ScanReportTables>(fetchKeys.tables(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     console.log(error);
-    return [];
+    return { count: 0, next: null, previous: null, results: [] };
   }
 }
 
