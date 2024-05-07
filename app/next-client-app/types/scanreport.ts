@@ -13,3 +13,13 @@ interface ScanReport {
   previous: string | null;
   results: ScanReportResult[];
 }
+
+interface ScanReportTable {
+  id: number;
+  created_at: Date;
+  updated_at: Date;
+  name: string;
+  scan_report: number;
+  person_id: number | null;
+  date_event: number | null;
+}

@@ -5,9 +5,8 @@ import request from "@/lib/api/request";
 const fetchKeys = {
   list: (filter?: string) =>
     filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
-  tables: (filter?: string) =>
-    `scanreporttables/?${filter}&scan_report__in=&name__in=&name__icontains=&id__in=&id=`,
-  archive: (id: number) => `scanreports/${id}/`,
+  tables: (filter?: string) => `scanreporttables/?${filter}`,
+  update: (id: number) => `scanreports/${id}/`,
 };
 
 export async function getScanReportsTables(
