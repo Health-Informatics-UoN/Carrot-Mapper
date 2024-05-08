@@ -34,6 +34,7 @@ from api.serializers import (
     ScanReportFieldListSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
+    ScanReportTableListSerializerV2,
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
@@ -515,12 +516,15 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
         "scan_report": ["in", "exact"],
-        "name": ["in", "exact"],
+        "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
+
+    ordering = "-created_at"
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -604,6 +608,28 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         # worker_id = resp_json.get("id")
 
         return Response(serializer.data)
+
+
+class ScanReportTableViewSetV2(ScanReportTableViewSet):
+    filterset_fields = {
+        "scan_report": ["in", "exact"],
+        "name": ["in", "icontains"],
+        "id": ["in", "exact"],
+    }
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "person_id", "date_event"]
+    pagination_class = CustomPagination
+
+    ordering = "-created_at"
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportTableListSerializerV2
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportTableEditSerializer
+        return super().get_serializer_class()
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):

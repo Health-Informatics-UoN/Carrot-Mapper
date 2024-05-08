@@ -45,11 +45,15 @@ router.register(
 router.register(
     r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
 )
+router.register(
+    r"v2/scanreporttables",
+    views.ScanReportTableViewSetV2,
+    basename="v2scanreporttables",
+)
 
 router.register(
     r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
 )
-
 router.register(
     r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
 )
