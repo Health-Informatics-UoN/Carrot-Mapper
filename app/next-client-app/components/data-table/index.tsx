@@ -37,6 +37,11 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   count: number;
   filter: string;
+  linkPrefix?: string;
+}
+
+function UrlBuider(id: string, prefix: string = "") {
+  return `${prefix}${id}/`;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,6 +49,7 @@ export function DataTable<TData, TValue>({
   data,
   count,
   filter,
+  linkPrefix = "",
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -114,7 +120,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -131,7 +137,12 @@ export function DataTable<TData, TValue>({
                   className="hover:cursor-pointer"
                   // TODO: Once we are only routing to Nextjs urls, we can do this better.
                   onClick={() =>
-                    (window.location.href = `${window.location.pathname}${(row.original as any).id}`)
+                    router.push(
+                      UrlBuider(
+                        (row.original as any).id,
+                        `${window.location.pathname}${linkPrefix}`
+                      )
+                    )
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -139,7 +150,7 @@ export function DataTable<TData, TValue>({
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </div>
                     </TableCell>

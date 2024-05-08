@@ -281,6 +281,41 @@ class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         fields = "__all__"
 
 
+class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+
+    date_event = serializers.SerializerMethodField()
+    person_id = serializers.SerializerMethodField()
+
+    def validate(self, data):
+        if request := self.context.get("request"):
+            if sr := data.get("scan_report"):
+                if not (
+                    is_az_function_user(request.user)
+                    or is_admin(sr, request)
+                    or has_editorship(sr, request)
+                ):
+                    raise PermissionDenied(
+                        "You must have editor or admin privileges on the scan report to edit its tables.",
+                    )
+            else:
+                raise NotFound("Could not find the scan report for this table.")
+        else:
+            raise serializers.ValidationError(
+                "Missing request context. Unable to validate scan report table."
+            )
+        return super().validate(data)
+
+    def get_date_event(self, obj):
+        return obj.date_event.name if obj.date_event else None
+
+    def get_person_id(self, obj):
+        return obj.person_id.name if obj.person_id else None
+
+    class Meta:
+        model = ScanReportTable
+        fields = "__all__"
+
+
 class ScanReportTableEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportTable
