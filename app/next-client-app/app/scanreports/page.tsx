@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
 interface ScanReportsProps {
   searchParams?: FilterParameters;
@@ -27,6 +28,8 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
 
   const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
+
+  const filter = <DataTableFilter filter="dataset" filterText="name" />;
 
   return (
     <div className="pt-10 px-16">
@@ -75,8 +78,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter="dataset"
-              filterText="name"
+              Filter={filter}
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -84,8 +86,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter="dataset"
-              filterText="name"
+              Filter={filter}
             />
           </TabsContent>
         </Tabs>

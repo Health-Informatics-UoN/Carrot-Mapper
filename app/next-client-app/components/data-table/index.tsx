@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -36,7 +36,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   count: number;
   linkPrefix?: string;
-  Filter?: React.ComponentType;
+  Filter?: ReactNode;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
@@ -71,7 +71,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        {Filter && <Filter />}
+        {Filter}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

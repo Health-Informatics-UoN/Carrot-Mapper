@@ -10,6 +10,7 @@ import { columns } from "./columns";
 import { getDataSets } from "@/api/datasets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
+import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;
@@ -24,6 +25,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
 
   const query = objToQuery(combinedParams);
   const dataset = await getDataSets(query);
+  const filter = <DataTableFilter filter="name" />;
 
   return (
     <div className="pt-10 px-16">
@@ -66,7 +68,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               columns={columns}
               data={dataset.results}
               count={dataset.count}
-              filter="name"
+              Filter={filter}
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -74,7 +76,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               columns={columns}
               data={dataset.results}
               count={dataset.count}
-              filter="name"
+              Filter={filter}
             />
           </TabsContent>
         </Tabs>

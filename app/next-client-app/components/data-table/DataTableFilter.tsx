@@ -1,14 +1,20 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
 import { navigateWithSearchParam } from "@/lib/client-utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
+/**
+ * A default table filter.
+ * @returns
+ */
 export function DataTableFilter({
   filter,
   filterText,
 }: {
   filter: string;
-  filterText: string;
+  filterText?: string;
 }) {
   const router = useRouter();
   const searchParam = useSearchParams();
@@ -38,7 +44,7 @@ export function DataTableFilter({
 
   return (
     <Input
-      placeholder={`Filter by ${filterText}...`}
+      placeholder={`Filter by ${filterText ?? filter}...`}
       onChange={handleFilter}
       className="max-w-sm"
     />
