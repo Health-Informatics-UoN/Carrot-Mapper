@@ -37,7 +37,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   count: number;
   filter: string;
-  linkPrefix: string;
+  linkPrefix?: string;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
@@ -49,7 +49,7 @@ export function DataTable<TData, TValue>({
   data,
   count,
   filter,
-  linkPrefix,
+  linkPrefix = "",
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =

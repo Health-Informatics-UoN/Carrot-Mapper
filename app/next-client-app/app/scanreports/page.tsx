@@ -76,7 +76,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               data={scanReports.results}
               count={scanReports.count}
               filter="dataset"
-              linkPrefix=""
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -85,7 +84,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               data={scanReports.results}
               count={scanReports.count}
               filter="dataset"
-              linkPrefix=""
             />
           </TabsContent>
         </Tabs>
