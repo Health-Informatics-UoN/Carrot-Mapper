@@ -3,7 +3,13 @@ import { navigateWithSearchParam } from "@/lib/client-utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
-export function DataTableFilter({ filter }: { filter: string }) {
+export function DataTableFilter({
+  filter,
+  filterText,
+}: {
+  filter: string;
+  filterText: string;
+}) {
   const router = useRouter();
   const searchParam = useSearchParams();
 
@@ -32,7 +38,7 @@ export function DataTableFilter({ filter }: { filter: string }) {
 
   return (
     <Input
-      placeholder={`Filter by ${filter}...`}
+      placeholder={`Filter by ${filterText}...`}
       onChange={handleFilter}
       className="max-w-sm"
     />

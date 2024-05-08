@@ -27,7 +27,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
@@ -37,6 +36,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   count: number;
   filter: string;
+  filterText?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -44,8 +44,8 @@ export function DataTable<TData, TValue>({
   data,
   count,
   filter,
+  filterText,
 }: DataTableProps<TData, TValue>) {
-  const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
@@ -66,7 +66,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        <DataTableFilter filter={filter} />
+        <DataTableFilter filter={filter} filterText={filterText ?? filter} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
