@@ -29,16 +29,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   count: number;
-  filter: string;
-  filterText?: string;
   linkPrefix?: string;
+  Filter?: React.ComponentType;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
@@ -49,9 +47,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   count,
-  filter,
-  filterText,
   linkPrefix = "",
+  Filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -74,7 +71,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        <DataTableFilter filter={filter} filterText={filterText ?? filter} />
+        {Filter && <Filter />}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
