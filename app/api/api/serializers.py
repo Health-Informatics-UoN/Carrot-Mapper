@@ -310,6 +310,7 @@ class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSeria
 
     def get_person_id(self, obj):
         return obj.person_id.name if obj.person_id else None
+    
     class Meta:
         model = ScanReportTable
         fields = "__all__"

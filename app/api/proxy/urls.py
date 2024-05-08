@@ -11,9 +11,9 @@ urlpatterns = [
         name="scan-report-detail",
     ),
     re_path(
-    r"^scanreports/(?P<path>\d+)$",
-    ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
-    name="scan-report-detail",
+        r"^scanreports/(?P<path>\d+)$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-detail",
     ),
     re_path(
         r"^datasets/(?P<path>(?![\d/]).*)$",
