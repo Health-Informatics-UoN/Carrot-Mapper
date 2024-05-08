@@ -611,13 +611,16 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportTableViewSetV2(ScanReportTableViewSet):
-    filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "scan_report": ["in", "exact"],
-        "name": ["in", "exact"],
+        "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
+    
+    ordering = "-created_at"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:

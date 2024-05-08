@@ -16,16 +16,20 @@ type Props = {
   params: {
     id: string;
   };
+  searchParams?: FilterParameters;
 };
 
-export default async function ScanReportsTable({ params: { id } }: Props) {
-  const defaults = {
+export default async function ScanReportsTable({
+  params: { id },
+  searchParams,
+}: Props) {
+  const defaultParams = {
     scan_report: id,
   };
 
-  const customSearchParams = { ...defaults };
+  const combinedParams = { ...defaultParams, ...searchParams };
 
-  const query = objToQuery(customSearchParams);
+  const query = objToQuery(combinedParams);
   const scanReportsTables = await getScanReportsTables(query);
   const scanReportsName = await getScanReportName(id);
 
