@@ -30,6 +30,7 @@ import {
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -52,6 +53,7 @@ export function DataTable<TData, TValue>({
   filterText,
   linkPrefix = "",
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
