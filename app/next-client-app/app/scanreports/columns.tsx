@@ -40,6 +40,14 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="dataset" />
     ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <Link href={`/scanreports/${id}`} prefetch={false}>
+          <button>{row.original.dataset}</button>
+        </Link>
+      );
+    },
     enableHiding: true,
   },
   {
@@ -165,6 +173,15 @@ export const columns: ColumnDef<ScanReportResult>[] = [
             >
               <DropdownMenuItem>
                 Assertions <ExclamationTriangleIcon className="ml-auto" />
+              </DropdownMenuItem>
+            </Link>
+            <DropdownMenuSeparator />
+            <Link
+              href={`/scanreports/${id}/`}
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <DropdownMenuItem>
+                Tables <ExclamationTriangleIcon className="ml-auto" />
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
