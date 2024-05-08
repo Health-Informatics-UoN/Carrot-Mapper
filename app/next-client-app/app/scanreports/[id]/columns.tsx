@@ -45,8 +45,7 @@ export const columns: ColumnDef<ScanReportTablesResult>[] = [
     id: "edit",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const id = row.original.id;
-      const scan_report = row.original.scan_report;
+      const { id, scan_report } = row.original;
       return (
         <Link href={`/scanreports/${scan_report}/tables/${id}/update`}>
           <Button>Edit Table</Button>
