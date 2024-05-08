@@ -519,11 +519,11 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
-        "scan_report": ["in", "exact"], 
+        "scan_report": ["in", "exact"],
         "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
-    
+
     ordering = "-created_at"
 
     def get_permissions(self):
@@ -619,7 +619,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
-    
+
     ordering = "-created_at"
 
     def get_serializer_class(self):
