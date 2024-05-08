@@ -14,7 +14,6 @@ export async function getScanReportsTables(
   filter: string | undefined
 ): Promise<ScanReportTables> {
   try {
-    console.log(filter, typeof filter);
     return await request<ScanReportTables>(fetchKeys.tables(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
