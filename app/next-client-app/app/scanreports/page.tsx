@@ -48,12 +48,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
-        <Link href="/scanreports/create" prefetch={false}>
-          <Button size="lg" className="text-md">
-            New Scan Report
-            <Plus className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
       </div>
       <div className="my-5">
         <Tabs
