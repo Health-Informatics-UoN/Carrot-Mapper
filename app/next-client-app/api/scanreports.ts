@@ -33,7 +33,7 @@ export async function getScanReports(
   }
 }
 
-export async function getScanReportName(id: string): Promise<ScanReportResult> {
+export async function getScanReport(id: string): Promise<ScanReportResult> {
   try {
     return await request<ScanReportResult>(fetchKeys.scanReport(id));
   } catch (error) {

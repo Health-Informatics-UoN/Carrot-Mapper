@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { columns } from "./columns";
-import { getScanReportName, getScanReportsTables } from "@/api/scanreports";
+import { getScanReport, getScanReportsTables } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 
@@ -31,7 +31,7 @@ export default async function ScanReportsTable({
 
   const query = objToQuery(combinedParams);
   const scanReportsTables = await getScanReportsTables(query);
-  const scanReportsName = await getScanReportName(id);
+  const scanReportsName = await getScanReport(id);
 
   return (
     <div className="pt-10 px-16">

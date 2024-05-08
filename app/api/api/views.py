@@ -620,8 +620,6 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
 
-    ordering = "-created_at"
-
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
