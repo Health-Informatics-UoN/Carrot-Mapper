@@ -71,7 +71,10 @@ export default async function ScanReportsTable({
           </Link>
         </div>
         <div className="flex gap-2">
-          <Button size="lg" className="text-md">
+          <Button
+            size="lg"
+            className="text-md bg-carrot-secondary hover:bg-carrot-secondary-50"
+          >
             {/* need to config the api */}
             <a href={`api/scanreports/${id}/download/`} download>
               Download Scan Report File
