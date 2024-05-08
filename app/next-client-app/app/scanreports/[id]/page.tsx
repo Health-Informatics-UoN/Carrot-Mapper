@@ -59,28 +59,30 @@ export default async function ScanReportsTable({
       </div>
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
-          <Link href="/">
+          <Link href={`/scanreports/${id}/details/`}>
             <Button size="lg" className="text-md">
               Scan Report Details
             </Button>
           </Link>
-          <Link href="/">
+          <Link href={`/scanreports/${id}/mapping_rules/`}>
             <Button size="lg" className="text-md">
               Rules
             </Button>
           </Link>
         </div>
         <div className="flex gap-2">
-          <Link href="/">
-            <Button size="lg" className="text-md">
+          <Button size="lg" className="text-md">
+            {/* need to config the api */}
+            <a href={`api/scanreports/${id}/download/`} download>
               Download Scan Report File
-            </Button>
-          </Link>
-          <Link href="/">
-            <Button size="lg" className="text-md">
-              Download Scan Report Dictionary
-            </Button>
-          </Link>
+            </a>
+          </Button>
+          <Button size="lg" className="text-md">
+            {/* need to config the api */}
+            <a href={`api/scanreports/${id}/download/`} download>
+              Download Data Dictionary File
+            </a>
+          </Button>
         </div>
       </div>
       <div>
