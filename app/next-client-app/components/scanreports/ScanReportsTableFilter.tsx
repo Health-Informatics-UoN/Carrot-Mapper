@@ -21,11 +21,22 @@ export function ScanReportsTableFilter({
   const router = useRouter();
   const searchParam = useSearchParams();
 
-  const [selectedOptions, setOptions] = useState<FilterOption[]>([]);
+  const [selectedOptions, setOptions] = useState<FilterOption[]>();
 
   useEffect(() => {
     handleFacetsFilter(selectedOptions);
   }, [selectedOptions]);
+
+  useEffect(() => {
+    const statusParam = searchParam.get("status");
+    if (statusParam) {
+      const statusValues = statusParam.split(",");
+      const filteredOptions = statusOptions.filter((option) =>
+        statusValues.includes(option.value),
+      );
+      setOptions(filteredOptions);
+    }
+  }, []);
 
   const handleFilter = useDebouncedCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,29 +63,29 @@ export function ScanReportsTableFilter({
 
   const handleSelectOption = (option: FilterOption) => {
     setOptions((prevValues) => {
-      const isSelected = selectedOptions.some(
+      const isSelected = selectedOptions?.some(
         (item) => item.value === option.value,
       );
 
       if (isSelected) {
-        return prevValues.filter((item) => item.value !== option.value);
+        return prevValues?.filter((item) => item.value !== option.value);
       } else {
-        return [...prevValues, option];
+        return [...(prevValues || []), option];
       }
     });
   };
 
-  const handleFacetsFilter = (options: FilterOption[]) => {
+  const handleFacetsFilter = (options?: FilterOption[]) => {
     navigateWithSearchParam(
       "status__in",
-      options.map((option) => option.value),
+      options?.map((option) => option.value) || "",
       router,
       searchParam,
     );
   };
 
   // TODO: Move this out to a constants or something else please
-  const statusMapping = [
+  const statusOptions = [
     { label: "Blocked", value: "BLOCKED", color: "text-red-900" },
     { label: "Mapping Complete", value: "COMPLET", color: "text-green-600" },
     { label: "Mapping 25%", value: "INPRO25", color: "text-orange-300" },
@@ -95,7 +106,7 @@ export function ScanReportsTableFilter({
 
       <FacetsFilter
         title="Status"
-        options={statusMapping}
+        options={statusOptions}
         filterFunction={handleFacetsFilter}
         selectedOptions={selectedOptions}
         handleSelect={handleSelectOption}

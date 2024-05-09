@@ -26,7 +26,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   title?: string;
   options: FilterOption[];
   filterFunction?: any;
-  selectedOptions: FilterOption[];
+  selectedOptions?: FilterOption[];
   handleSelect: any;
   handleClear: any;
 }
@@ -44,27 +44,27 @@ export function FacetsFilter<TData, TValue>({
         <Button variant="outline" className="">
           <PlusCircledIcon className="mr-2 size-4" />
           {title}
-          {selectedOptions.length > 0 && (
+          {selectedOptions && selectedOptions?.length > 0 && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
               <Badge
                 variant="secondary"
                 className="rounded-sm px-1 font-normal lg:hidden"
               >
-                {selectedOptions.length}
+                {selectedOptions?.length}
               </Badge>
               <div className="hidden space-x-1 lg:flex">
-                {selectedOptions.length > 2 ? (
+                {selectedOptions?.length > 2 ? (
                   <Badge
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {selectedOptions.length} selected
+                    {selectedOptions?.length} selected
                   </Badge>
                 ) : (
                   options
                     .filter((option) =>
-                      selectedOptions.some(
+                      selectedOptions?.some(
                         (selectedOption) =>
                           selectedOption.value === option.value,
                       ),
@@ -91,7 +91,7 @@ export function FacetsFilter<TData, TValue>({
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selectedOptions.some(
+                const isSelected = selectedOptions?.some(
                   (selectedOption) => selectedOption.value === option.value,
                 );
 
@@ -121,7 +121,7 @@ export function FacetsFilter<TData, TValue>({
                 );
               })}
             </CommandGroup>
-            {selectedOptions.length > 0 && (
+            {selectedOptions && selectedOptions?.length > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup>
