@@ -42,6 +42,7 @@ export function ScanReportsTableFilter({
     300,
   );
 
+  // TODO: Move this out to a constants or something else please
   const statusMapping = [
     { label: "Blocked", value: "BLOCKED", color: "text-red-900" },
     { label: "Mapping Complete", value: "COMPLET", color: "text-green-600" },
