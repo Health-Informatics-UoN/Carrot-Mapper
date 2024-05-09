@@ -89,23 +89,26 @@ export function ScanReportsTableFilter({
   };
 
   return (
-    <div className="flex">
+    <div className="flex w-full">
       <Input
         placeholder={`Filter by ${filterText}...`}
         onChange={handleFilter}
-        className="max-w-sm"
+        className="max-w-xs mr-4"
       />
 
-      <FacetsFilter
-        title="Status"
-        options={statusOptions}
-        selectedOptions={selectedOptions}
-        handleSelect={handleSelectOption}
-        handleClear={() => (setOptions([]), handleFacetsFilter())}
-      />
+      <div className="max-sm:hidden">
+        <FacetsFilter
+          title="Status"
+          options={statusOptions}
+          selectedOptions={selectedOptions}
+          handleSelect={handleSelectOption}
+          handleClear={() => (setOptions([]), handleFacetsFilter())}
+        />
+      </div>
+      <div className="flex-grow"></div>
 
       <Link href="/scanreports/create" prefetch={false}>
-        <Button variant={"outline"} className="">
+        <Button variant={"outline"} className="ml-auto mr-4">
           New Scan Report
           <Plus className="ml-2 h-4 w-4" />
         </Button>
