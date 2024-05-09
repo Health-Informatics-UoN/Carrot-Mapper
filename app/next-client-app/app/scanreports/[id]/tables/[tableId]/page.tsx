@@ -16,18 +16,18 @@ import {
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 
-type Props = {
+interface ScanReportsFieldProps {
   params: {
     id: string;
     tableId: string;
   };
   searchParams?: FilterParameters;
-};
+}
 
 export default async function ScanReportsField({
   params: { id, tableId },
   searchParams,
-}: Props) {
+}: ScanReportsFieldProps) {
   const defaultParams = {
     scan_report_table: tableId,
   };
@@ -93,7 +93,7 @@ export default async function ScanReportsField({
           columns={columns}
           data={scanReportsTables.results}
           count={scanReportsTables.count}
-          filter="name"
+          filter={{ name: "field", value: "name" }}
           linkPrefix="/tables/"
         />
       </div>

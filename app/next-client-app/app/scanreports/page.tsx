@@ -27,6 +27,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
 
   const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
+  const filter = { name: "dataset", value: "dataset" };
 
   return (
     <div className="pt-10 px-16">
@@ -75,7 +76,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter="dataset"
+              filter={filter}
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -83,7 +84,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter="dataset"
+              filter={filter}
             />
           </TabsContent>
         </Tabs>

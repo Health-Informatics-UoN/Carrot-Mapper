@@ -12,17 +12,17 @@ import { getScanReport, getScanReportsTables } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 
-type Props = {
+interface ScanReportsTableProps {
   params: {
     id: string;
   };
   searchParams?: FilterParameters;
-};
+}
 
 export default async function ScanReportsTable({
   params: { id },
   searchParams,
-}: Props) {
+}: ScanReportsTableProps) {
   const defaultParams = {
     scan_report: id,
   };
@@ -32,6 +32,7 @@ export default async function ScanReportsTable({
   const query = objToQuery(combinedParams);
   const scanReportsTables = await getScanReportsTables(query);
   const scanReportsName = await getScanReport(id);
+  const filter = { name: "name", value: "name" };
 
   return (
     <div className="pt-10 px-16">
@@ -93,7 +94,7 @@ export default async function ScanReportsTable({
           columns={columns}
           data={scanReportsTables.results}
           count={scanReportsTables.count}
-          filter="name"
+          filter={filter}
           linkPrefix="/tables/"
         />
       </div>
