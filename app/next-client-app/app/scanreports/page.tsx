@@ -6,13 +6,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { columns } from "./columns";
-import { Button } from "@/components/ui/button";
 import { getScanReports } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
-import Link from "next/link";
-import { Plus } from "lucide-react";
 import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTableFilter";
 
 interface ScanReportsProps {

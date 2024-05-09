@@ -36,7 +36,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   count: number;
   linkPrefix?: string;
-  Filter?: ReactNode;
+  Filter?: JSX.Element;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
