@@ -23,7 +23,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
     page_size: 10,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
-  console.log(searchParams);
 
   const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
