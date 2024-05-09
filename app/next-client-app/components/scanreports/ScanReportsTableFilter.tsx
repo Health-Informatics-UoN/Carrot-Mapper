@@ -4,6 +4,7 @@ import { FacetsFilter } from "@/components/scanreports/FacetsFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { navigateWithSearchParam } from "@/lib/client-utils";
+import { FilterOption } from "@/types/filter";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -42,8 +43,7 @@ export function ScanReportsTableFilter({
     300,
   );
 
-  const handleFacetsFilter = (options) => {
-    console.log(options);
+  const handleFacetsFilter = (options: FilterOption[]) => {
     navigateWithSearchParam(
       "status__in",
       options.map((option) => option.value),

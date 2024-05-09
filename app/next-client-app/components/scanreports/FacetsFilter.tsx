@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
+import { FilterOption } from "@/types/filter";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -22,15 +23,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 
-export interface Option {
-  label: string;
-  value: string;
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
 interface DataTableFacetedFilterProps<TData, TValue> {
   title?: string;
-  options: Option[];
+  options: FilterOption[];
   filterFunction?: any;
 }
 
@@ -39,13 +34,13 @@ export function FacetsFilter<TData, TValue>({
   options,
   filterFunction,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const [selectedOptions, setValues] = useState<Option[]>([]);
+  const [selectedOptions, setValues] = useState<FilterOption[]>([]);
 
   useEffect(() => {
     filterFunction(selectedOptions);
   }, [selectedOptions]);
 
-  const handleSelect = (option: Option) => {
+  const handleSelect = (option: FilterOption) => {
     setValues((prevValues) => {
       const isSelected = selectedOptions.some(
         (item) => item.value === option.value,

@@ -3,7 +3,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 
 export function navigateWithSearchParam(
   paramName: string,
-  param: string | number | [],
+  param: string | number | string[],
   router: AppRouterInstance,
   searchParams: ReadonlyURLSearchParams,
 ) {
