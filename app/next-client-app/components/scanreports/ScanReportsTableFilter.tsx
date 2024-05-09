@@ -8,6 +8,7 @@ import { FilterOption } from "@/types/filter";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 export function ScanReportsTableFilter({
@@ -19,6 +20,26 @@ export function ScanReportsTableFilter({
 }) {
   const router = useRouter();
   const searchParam = useSearchParams();
+
+  const [selectedOptions, setOptions] = useState<FilterOption[]>([]);
+
+  const handleSelect = (option: FilterOption) => {
+    setOptions((prevValues) => {
+      const isSelected = selectedOptions.some(
+        (item) => item.value === option.value,
+      );
+
+      if (isSelected) {
+        return prevValues.filter((item) => item.value !== option.value);
+      } else {
+        return [...prevValues, option];
+      }
+    });
+  };
+
+  useEffect(() => {
+    handleFacetsFilter(selectedOptions);
+  }, [selectedOptions]);
 
   const handleFilter = useDebouncedCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,6 +97,9 @@ export function ScanReportsTableFilter({
         title="Status"
         options={statusMapping}
         filterFunction={handleFacetsFilter}
+        selectedOptions={selectedOptions}
+        handleSelect={handleSelect}
+        handleClear={() => setOptions([])}
       />
 
       <Link href="/scanreports/create" prefetch={false}>

@@ -21,39 +21,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { useEffect, useState } from "react";
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   title?: string;
   options: FilterOption[];
   filterFunction?: any;
+  selectedOptions: FilterOption[];
+  handleSelect: any;
+  handleClear: any;
 }
 
 export function FacetsFilter<TData, TValue>({
   title,
   options,
-  filterFunction,
+  selectedOptions,
+  handleSelect,
+  handleClear,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const [selectedOptions, setValues] = useState<FilterOption[]>([]);
-
-  useEffect(() => {
-    filterFunction(selectedOptions);
-  }, [selectedOptions]);
-
-  const handleSelect = (option: FilterOption) => {
-    setValues((prevValues) => {
-      const isSelected = selectedOptions.some(
-        (item) => item.value === option.value,
-      );
-
-      if (isSelected) {
-        return prevValues.filter((item) => item.value !== option.value);
-      } else {
-        return [...prevValues, option];
-      }
-    });
-  };
-
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -142,7 +126,7 @@ export function FacetsFilter<TData, TValue>({
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
-                    onSelect={() => setValues([])}
+                    onSelect={handleClear}
                     className="justify-center text-center"
                   >
                     Clear filters
