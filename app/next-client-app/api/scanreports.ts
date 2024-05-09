@@ -12,9 +12,9 @@ const fetchKeys = {
 
 export async function getScanReportsTables(
   filter: string | undefined
-): Promise<ScanReportTables> {
+): Promise<ScanReport> {
   try {
-    return await request<ScanReportTables>(fetchKeys.tables(filter));
+    return await request<ScanReport>(fetchKeys.tables(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     console.log(error);
@@ -33,9 +33,9 @@ export async function getScanReports(
   }
 }
 
-export async function getScanReport(id: string): Promise<ScanReportResult> {
+export async function getScanReport(id: string): Promise<ScanReportList> {
   try {
-    return await request<ScanReportResult>(fetchKeys.scanReport(id));
+    return await request<ScanReportList>(fetchKeys.scanReport(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return {

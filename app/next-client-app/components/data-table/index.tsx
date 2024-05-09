@@ -32,9 +32,12 @@ import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<
+  TData extends ScanReportList | ScanReportTable | ScanReportField,
+  TValue
+> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  data: ScanReportList[] | ScanReportTable[] | ScanReportField[];
   count: number;
   filter: string;
   linkPrefix?: string;
@@ -44,7 +47,10 @@ function UrlBuider(id: string, prefix: string = "") {
   return `${prefix}${id}/`;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<
+  TData extends ScanReportList | ScanReportTable | ScanReportField,
+  TValue
+>({
   columns,
   data,
   count,

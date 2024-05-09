@@ -5,7 +5,7 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<ScanReportTablesResult>[] = [
+export const columns: ColumnDef<ScanReportTable>[] = [
   {
     id: "Name",
     accessorKey: "name",

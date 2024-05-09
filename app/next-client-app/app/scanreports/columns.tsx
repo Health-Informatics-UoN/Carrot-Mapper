@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
 import { format } from "date-fns/format";
 
-export const columns: ColumnDef<ScanReportResult>[] = [
+export const columns: ColumnDef<ScanReportList>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -133,7 +133,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
         } catch (error) {
           const errorObj = JSON.parse((error as ApiError).message);
           toast.error(
-            `${message} ${row.original.dataset} has failed: ${errorObj.detail}`,
+            `${message} ${row.original.dataset} has failed: ${errorObj.detail}`
           );
           console.error(error);
         }
