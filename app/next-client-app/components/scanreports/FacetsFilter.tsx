@@ -123,9 +123,9 @@ export function FacetsFilter<TData, TValue>({
                   >
                     <div
                       className={cn(
-                        "mr-2 flex size-4 items-center justify-center rounded-sm border border-primary",
+                        "mr-2 flex size-4 items-center justify-center rounded-sm border border-carrot",
                         isSelected
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-carrot text-white"
                           : "opacity-50 [&_svg]:invisible",
                       )}
                     >
