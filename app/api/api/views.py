@@ -365,7 +365,11 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     """
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = {"hidden": ["exact"], "dataset": ["in", "icontains"]}
+    filterset_fields = {
+        "hidden": ["exact"],
+        "dataset": ["in", "icontains"],
+        "status": ["in"],
+    }
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     pagination_class = CustomPagination
     ordering = "-created_at"
