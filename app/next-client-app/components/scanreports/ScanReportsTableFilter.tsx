@@ -101,7 +101,7 @@ export function ScanReportsTableFilter({
         options={statusOptions}
         selectedOptions={selectedOptions}
         handleSelect={handleSelectOption}
-        handleClear={() => setOptions([])}
+        handleClear={() => (setOptions([]), handleFacetsFilter())}
       />
 
       <Link href="/scanreports/create" prefetch={false}>
