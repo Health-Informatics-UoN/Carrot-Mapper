@@ -60,7 +60,7 @@ export const columns: ColumnDef<ScanReportField>[] = [
     cell: ({ row }) => {
       const { id } = row.original;
       return (
-        <Link href={`${window.location.pathname}fields/${id}/update`}>
+        <Link href={`fields/${id}/update`}>
           <Button>Edit Field</Button>
         </Link>
       );
