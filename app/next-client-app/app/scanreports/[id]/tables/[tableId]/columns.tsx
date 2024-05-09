@@ -54,4 +54,16 @@ export const columns: ColumnDef<ScanReportField>[] = [
     enableHiding: true,
     enableSorting: true,
   },
+  {
+    id: "edit",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
+    cell: ({ row }) => {
+      const { id } = row.original;
+      return (
+        <Link href={`${window.location.pathname}fields/${id}/update`}>
+          <Button>Edit Field</Button>
+        </Link>
+      );
+    },
+  },
 ];
