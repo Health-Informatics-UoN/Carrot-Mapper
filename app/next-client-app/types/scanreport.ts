@@ -47,3 +47,16 @@ interface ScanReportField {
   field_description: string | null;
   scan_report_table: number;
 }
+
+interface Concept {
+  concept_id: number;
+  concept_name: string;
+  domain_id: string;
+  vocabulary_id: string;
+  concept_class_id: string;
+  standard_concept: string | null;
+  concept_code: string;
+  valid_start_date: Date;
+  valid_end_date: Date;
+  invalid_reason: string;
+}
