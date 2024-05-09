@@ -14,7 +14,7 @@ import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTabl
 import { FilterParameters } from "@/types/filter";
 
 interface ScanReportsProps {
-  searchParams?: FilterParameters;
+  searchParams?: { status__in: string } & FilterParameters;
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
