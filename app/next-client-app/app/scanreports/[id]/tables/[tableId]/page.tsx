@@ -8,7 +8,11 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { columns } from "./columns";
-import { getScanReport, getScanReportFields } from "@/api/scanreports";
+import {
+  getScanReport,
+  getScanReportFields,
+  getScanReportTable,
+} from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 
@@ -33,6 +37,8 @@ export default async function ScanReportsField({
   const query = objToQuery(combinedParams);
   const scanReportsTables = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
+  const tableName = await getScanReportTable(tableId);
+
   return (
     <div className="pt-10 px-16">
       <div>
@@ -54,7 +60,7 @@ export default async function ScanReportsField({
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}`}>
-                {tableId}
+                {tableName.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
@@ -65,12 +71,12 @@ export default async function ScanReportsField({
       </div>
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
-          <Link href="/">
+          <Link href={`/scanreports/${id}/details/`}>
             <Button size="lg" className="text-md">
               Scan Report Details
             </Button>
           </Link>
-          <Link href="/">
+          <Link href={`/scanreports/${id}/mapping_rules/`}>
             <Button size="lg" className="text-md">
               Rules
             </Button>
