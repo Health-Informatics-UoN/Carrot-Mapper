@@ -24,10 +24,7 @@ export function ScanReportsTableFilter({
 
   const [selectedOptions, setOptions] = useState<FilterOption[]>();
 
-  useEffect(() => {
-    handleFacetsFilter(selectedOptions);
-  }, [selectedOptions]);
-
+  // Runs on load to populate the selectedOptions from params
   useEffect(() => {
     const statusParam = searchParam.get("status__in");
     if (statusParam) {
@@ -63,21 +60,26 @@ export function ScanReportsTableFilter({
   );
 
   const handleSelectOption = (option: FilterOption) => {
-    setOptions((prevOptions) => {
-      const isSelected = prevOptions?.some(
+    const updatedOptions = selectedOptions ? [...selectedOptions] : [];
+    const isSelected = updatedOptions.some(
+      (item) => item.value === option.value,
+    );
+
+    if (isSelected) {
+      // Remove if it's already selected
+      const index = updatedOptions.findIndex(
         (item) => item.value === option.value,
       );
+      updatedOptions.splice(index, 1);
+    } else {
+      updatedOptions.push(option);
+    }
 
-      if (isSelected) {
-        return prevOptions?.filter((item) => item.value !== option.value);
-      } else {
-        return [...(prevOptions || []), option];
-      }
-    });
+    setOptions(updatedOptions);
+    handleFacetsFilter(updatedOptions);
   };
 
   const handleFacetsFilter = (options?: FilterOption[]) => {
-    console.log("welp");
     navigateWithSearchParam(
       "status__in",
       options?.map((option) => option.value) || "",
