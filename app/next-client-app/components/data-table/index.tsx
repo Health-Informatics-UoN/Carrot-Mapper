@@ -34,12 +34,12 @@ import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
 interface DataTableProps<
   TData extends ScanReportList | ScanReportTable | ScanReportField,
-  TValue
+  TValue,
 > {
   columns: ColumnDef<TData, TValue>[];
   data: ScanReportList[] | ScanReportTable[] | ScanReportField[];
   count: number;
-  filter: string;
+  filter: { name: string; value: string };
   linkPrefix?: string;
 }
 
@@ -49,7 +49,7 @@ function UrlBuider(id: string, prefix: string = "") {
 
 export function DataTable<
   TData extends ScanReportList | ScanReportTable | ScanReportField,
-  TValue
+  TValue,
 >({
   columns,
   data,
@@ -126,7 +126,7 @@ export function DataTable<
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -146,8 +146,8 @@ export function DataTable<
                     router.push(
                       UrlBuider(
                         (row.original as any).id,
-                        `${window.location.pathname}${linkPrefix}`
-                      )
+                        `${window.location.pathname}${linkPrefix}`,
+                      ),
                     )
                   }
                 >
@@ -156,7 +156,7 @@ export function DataTable<
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </div>
                     </TableCell>

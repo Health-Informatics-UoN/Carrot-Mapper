@@ -1,16 +1,16 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
     id: "Name",
     accessorKey: "name",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" sortName="name" />
+      <DataTableColumnHeader column={column} title="Field" sortName="name" />
     ),
     enableHiding: true,
     enableSorting: true,
@@ -53,5 +53,20 @@ export const columns: ColumnDef<ScanReportField>[] = [
     ),
     enableHiding: true,
     enableSorting: true,
+  },
+  {
+    id: "Edit",
+    accessorKey: "edit",
+    header: "",
+    enableHiding: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      const { id } = row.original;
+      return (
+        <Link href={`fields/${id}/update/`} prefetch={false}>
+          <Button>Edit Field</Button>
+        </Link>
+      );
+    },
   },
 ];
