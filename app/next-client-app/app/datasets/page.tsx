@@ -11,6 +11,7 @@ import { getDataSets } from "@/api/datasets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { FilterParameters } from "@/types/filter";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;
