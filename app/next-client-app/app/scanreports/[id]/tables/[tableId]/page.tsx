@@ -81,7 +81,7 @@ export default async function ScanReportsField({
               Rules
             </Button>
           </Link>
-          <Link href={`update/`}>
+          <Link href={`/scanreports/${id}/tables/${tableId}/update`}>
             <Button size="lg" className="text-md">
               Edit Table
             </Button>
