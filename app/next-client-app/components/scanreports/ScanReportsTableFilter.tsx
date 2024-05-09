@@ -42,6 +42,16 @@ export function ScanReportsTableFilter({
     300,
   );
 
+  const handleFacetsFilter = (options) => {
+    console.log(options);
+    navigateWithSearchParam(
+      "status__in",
+      options.map((option) => option.value),
+      router,
+      searchParam,
+    );
+  };
+
   // TODO: Move this out to a constants or something else please
   const statusMapping = [
     { label: "Blocked", value: "BLOCKED", color: "text-red-900" },
@@ -62,7 +72,11 @@ export function ScanReportsTableFilter({
         className="max-w-sm"
       />
 
-      <FacetsFilter title="Status" options={statusMapping} />
+      <FacetsFilter
+        title="Status"
+        options={statusMapping}
+        filterFunction={handleFacetsFilter}
+      />
 
       <Link href="/scanreports/create" prefetch={false}>
         <Button variant={"outline"} className="">

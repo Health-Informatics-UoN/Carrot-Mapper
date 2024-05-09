@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
-import type { Column } from "@tanstack/react-table";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -21,35 +20,41 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface Option {
   label: string;
   value: string;
   icon?: React.ComponentType<{ className?: string }>;
-  withCount?: boolean;
 }
 
 interface DataTableFacetedFilterProps<TData, TValue> {
-  column?: Column<TData, TValue>;
   title?: string;
   options: Option[];
+  filterFunction?: any;
 }
 
 export function FacetsFilter<TData, TValue>({
   title,
   options,
+  filterFunction,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const [selectedValues, setValues] = useState<string[]>([]);
+  const [selectedOptions, setValues] = useState<Option[]>([]);
+
+  useEffect(() => {
+    filterFunction(selectedOptions);
+  }, [selectedOptions]);
 
   const handleSelect = (option: Option) => {
     setValues((prevValues) => {
-      const isSelected = prevValues.includes(option.value);
+      const isSelected = selectedOptions.some(
+        (item) => item.value === option.value,
+      );
 
       if (isSelected) {
-        return prevValues.filter((value) => value !== option.value);
+        return prevValues.filter((item) => item.value !== option.value);
       } else {
-        return [...prevValues, option.value];
+        return [...prevValues, option];
       }
     });
   };
@@ -60,26 +65,31 @@ export function FacetsFilter<TData, TValue>({
         <Button variant="outline" className="">
           <PlusCircledIcon className="mr-2 size-4" />
           {title}
-          {selectedValues.length > 0 && (
+          {selectedOptions.length > 0 && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
               <Badge
                 variant="secondary"
                 className="rounded-sm px-1 font-normal lg:hidden"
               >
-                {selectedValues.length}
+                {selectedOptions.length}
               </Badge>
               <div className="hidden space-x-1 lg:flex">
-                {selectedValues.length > 2 ? (
+                {selectedOptions.length > 2 ? (
                   <Badge
                     variant="secondary"
                     className="rounded-sm px-1 font-normal"
                   >
-                    {selectedValues.length} selected
+                    {selectedOptions.length} selected
                   </Badge>
                 ) : (
                   options
-                    .filter((option) => selectedValues.includes(option.value))
+                    .filter((option) =>
+                      selectedOptions.some(
+                        (selectedOption) =>
+                          selectedOption.value === option.value,
+                      ),
+                    )
                     .map((option) => (
                       <Badge
                         variant="secondary"
@@ -102,7 +112,9 @@ export function FacetsFilter<TData, TValue>({
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selectedValues.includes(option.value);
+                const isSelected = selectedOptions.some(
+                  (selectedOption) => selectedOption.value === option.value,
+                );
 
                 return (
                   <CommandItem
@@ -130,7 +142,7 @@ export function FacetsFilter<TData, TValue>({
                 );
               })}
             </CommandGroup>
-            {selectedValues.length > 0 && (
+            {selectedOptions.length > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup>
