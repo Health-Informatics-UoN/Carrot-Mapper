@@ -11,6 +11,7 @@ import { columns } from "./columns";
 import { getScanReportName, getScanReportsTables } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
+import { FilterParameters } from "@/types/filter";
 
 type Props = {
   params: {
