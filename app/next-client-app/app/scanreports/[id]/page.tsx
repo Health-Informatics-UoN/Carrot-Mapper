@@ -12,6 +12,7 @@ import { getScanReportName, getScanReportsTables } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
+import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 
 type Props = {
   params: {
@@ -33,6 +34,7 @@ export default async function ScanReportsTable({
   const query = objToQuery(combinedParams);
   const scanReportsTables = await getScanReportsTables(query);
   const scanReportsName = await getScanReportName(id);
+  const filter = <DataTableFilter filter="name" />;
 
   return (
     <div className="pt-10 px-16">
@@ -91,7 +93,7 @@ export default async function ScanReportsTable({
           columns={columns}
           data={scanReportsTables.results}
           count={scanReportsTables.count}
-          filter="name"
+          Filter={filter}
           linkPrefix="/tables/"
         />
       </div>
