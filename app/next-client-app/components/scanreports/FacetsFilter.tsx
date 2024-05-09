@@ -25,10 +25,9 @@ import { Separator } from "@/components/ui/separator";
 interface DataTableFacetedFilterProps<TData, TValue> {
   title?: string;
   options: FilterOption[];
-  filterFunction?: any;
   selectedOptions?: FilterOption[];
-  handleSelect: any;
-  handleClear: any;
+  handleSelect: (option: FilterOption) => void;
+  handleClear: () => void;
 }
 
 export function FacetsFilter<TData, TValue>({

@@ -96,7 +96,6 @@ export function ScanReportsTableFilter({
       <FacetsFilter
         title="Status"
         options={statusOptions}
-        filterFunction={handleFacetsFilter}
         selectedOptions={selectedOptions}
         handleSelect={handleSelectOption}
         handleClear={() => setOptions([])}
