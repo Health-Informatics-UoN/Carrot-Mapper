@@ -32,6 +32,7 @@ from api.serializers import (
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
+    ScanReportFieldListSerializerV2,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -636,7 +637,6 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "exact"],
-        "id": ["in", "exact"],
     }
 
     def get_permissions(self):
@@ -671,7 +671,23 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
-
+class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
+    filterset_fields = {
+        "scan_report_table": ["in", "exact"],
+        "name": ["in", "icontains"],
+    }
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "description_column", "type_column"]
+    pagination_class = CustomPagination
+    
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportFieldListSerializerV2
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportFieldEditSerializer
+        return super().get_serializer_class()
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
