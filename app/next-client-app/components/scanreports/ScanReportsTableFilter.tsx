@@ -3,6 +3,7 @@
 import { FacetsFilter } from "@/components/scanreports/FacetsFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { statusOptions } from "@/constants/scanReportStatus";
 import { navigateWithSearchParam } from "@/lib/client-utils";
 import { FilterOption } from "@/types/filter";
 import { Plus } from "lucide-react";
@@ -83,18 +84,6 @@ export function ScanReportsTableFilter({
       searchParam,
     );
   };
-
-  // TODO: Move this out to a constants or something else please
-  const statusOptions = [
-    { label: "Blocked", value: "BLOCKED", color: "text-red-900" },
-    { label: "Mapping Complete", value: "COMPLET", color: "text-green-600" },
-    { label: "Mapping 25%", value: "INPRO25", color: "text-orange-300" },
-    { label: "Mapping 50%", value: "INPRO50", color: "text-orange-400" },
-    { label: "Mapping 75%", value: "INPRO75", color: "text-orange-500" },
-    { label: "Upload Complete", value: "UPCOMPL", color: "text-blue-800" },
-    { label: "Upload Failed", value: "UPFAILE", color: "text-red-500" },
-    { label: "Upload in Progress", value: "UPINPRO", color: "text-orange-600" },
-  ];
 
   return (
     <div className="flex">
