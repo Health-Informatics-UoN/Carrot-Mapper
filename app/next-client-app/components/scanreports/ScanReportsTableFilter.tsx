@@ -23,20 +23,6 @@ export function ScanReportsTableFilter({
 
   const [selectedOptions, setOptions] = useState<FilterOption[]>([]);
 
-  const handleSelect = (option: FilterOption) => {
-    setOptions((prevValues) => {
-      const isSelected = selectedOptions.some(
-        (item) => item.value === option.value,
-      );
-
-      if (isSelected) {
-        return prevValues.filter((item) => item.value !== option.value);
-      } else {
-        return [...prevValues, option];
-      }
-    });
-  };
-
   useEffect(() => {
     handleFacetsFilter(selectedOptions);
   }, [selectedOptions]);
@@ -63,6 +49,20 @@ export function ScanReportsTableFilter({
     },
     300,
   );
+
+  const handleSelectOption = (option: FilterOption) => {
+    setOptions((prevValues) => {
+      const isSelected = selectedOptions.some(
+        (item) => item.value === option.value,
+      );
+
+      if (isSelected) {
+        return prevValues.filter((item) => item.value !== option.value);
+      } else {
+        return [...prevValues, option];
+      }
+    });
+  };
 
   const handleFacetsFilter = (options: FilterOption[]) => {
     navigateWithSearchParam(
@@ -98,7 +98,7 @@ export function ScanReportsTableFilter({
         options={statusMapping}
         filterFunction={handleFacetsFilter}
         selectedOptions={selectedOptions}
-        handleSelect={handleSelect}
+        handleSelect={handleSelectOption}
         handleClear={() => setOptions([])}
       />
 
