@@ -29,7 +29,7 @@ export function ScanReportsTableFilter({
   }, [selectedOptions]);
 
   useEffect(() => {
-    const statusParam = searchParam.get("status");
+    const statusParam = searchParam.get("status__in");
     if (statusParam) {
       const statusValues = statusParam.split(",");
       const filteredOptions = statusOptions.filter((option) =>
@@ -63,20 +63,21 @@ export function ScanReportsTableFilter({
   );
 
   const handleSelectOption = (option: FilterOption) => {
-    setOptions((prevValues) => {
-      const isSelected = selectedOptions?.some(
+    setOptions((prevOptions) => {
+      const isSelected = prevOptions?.some(
         (item) => item.value === option.value,
       );
 
       if (isSelected) {
-        return prevValues?.filter((item) => item.value !== option.value);
+        return prevOptions?.filter((item) => item.value !== option.value);
       } else {
-        return [...(prevValues || []), option];
+        return [...(prevOptions || []), option];
       }
     });
   };
 
   const handleFacetsFilter = (options?: FilterOption[]) => {
+    console.log("welp");
     navigateWithSearchParam(
       "status__in",
       options?.map((option) => option.value) || "",
