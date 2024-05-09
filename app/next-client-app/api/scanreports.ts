@@ -10,6 +10,7 @@ const fetchKeys = {
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  validateConcept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
 };
 
 export async function getScanReportsTables(
@@ -89,4 +90,26 @@ export async function updateScanReport(id: number, field: string, value: any) {
     body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
+}
+
+export async function validateConceptCode(
+  conceptCode: number
+): Promise<Concept> {
+  try {
+    return await request<Concept>(fetchKeys.validateConcept(conceptCode));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return {
+      concept_id: 0,
+      concept_name: "",
+      domain_id: "",
+      vocabulary_id: "",
+      concept_class_id: "",
+      standard_concept: null,
+      concept_code: "",
+      valid_start_date: new Date(),
+      valid_end_date: new Date(),
+      invalid_reason: "",
+    };
+  }
 }

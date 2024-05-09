@@ -10,7 +10,7 @@ import { ApiError } from "@/lib/api/error";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
+export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
   const statusMapping = {
     BLOCKED: { text: "Blocked", color: "text-red-900" },
     COMPLET: { text: "Mapping Complete", color: "text-green-600" },
@@ -32,12 +32,12 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
     try {
       await updateScanReport(id, "status", newStatus);
       toast.success(
-        `Scan Report ${row.original.dataset} status has changed to ${statusMapping[newStatus].text}.`,
+        `Scan Report ${row.original.dataset} status has changed to ${statusMapping[newStatus].text}.`
       );
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Scan Report ${row.original.dataset} status change has failed: ${errorObj.detail}.`,
+        `Scan Report ${row.original.dataset} status change has failed: ${errorObj.detail}.`
       );
       console.error(error);
     }
