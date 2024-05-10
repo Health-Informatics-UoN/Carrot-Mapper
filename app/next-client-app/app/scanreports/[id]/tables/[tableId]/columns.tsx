@@ -10,6 +10,7 @@ import * as Yup from "yup";
 import { validateConceptCode } from "@/api/scanreports";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
+import AddConcept from "./add-concept";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -64,54 +65,8 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const validationSchema = Yup.object().shape({
-        concept: Yup.number()
-          .required("Field is required")
-          .min(1, "Add a valid number"),
-      });
-
-      const handleSubmit = async (conceptCode: number) => {
-        try {
-          const concept = await validateConceptCode(conceptCode);
-          if (concept.concept_id !== 0) {
-          }
-          toast.error("No concept matches this concept code!");
-        } catch (error) {
-          const errorObj = JSON.parse((error as ApiError).message);
-          toast.error(`Adding concept failed! Error: ${errorObj.detail}`);
-          console.error(error);
-        }
-      };
-
-      return (
-        <Formik
-          initialValues={{ concept: "" }}
-          validationSchema={validationSchema}
-          onSubmit={(data, actions) => {
-            handleSubmit(Number(data.concept));
-            actions.resetForm();
-          }}
-        >
-          {({ values, handleChange, handleSubmit, errors, touched }) => (
-            <Form onSubmit={handleSubmit}>
-              <div className="flex gap-2 w-3/4">
-                <div className="flex-none">
-                  <Input
-                    type="number"
-                    name="concept"
-                    value={values.concept}
-                    onChange={handleChange}
-                  />
-                  {errors.concept && touched.concept ? (
-                    <p style={{ color: "red" }}>{errors.concept}</p>
-                  ) : null}
-                </div>{" "}
-                <Button type="submit">Add</Button>
-              </div>
-            </Form>
-          )}
-        </Formik>
-      );
+      const { scan_report_table } = row.original as ScanReportField;
+      return <AddConcept tableId={scan_report_table.toString()} />;
     },
   },
   {
