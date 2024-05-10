@@ -135,13 +135,12 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                   className="hover:cursor-pointer"
                   // TODO: Once we are only routing to Nextjs urls, we can do this better.
+                  // Do not change this unless every table is only ever redirecting to Next urls.
                   onClick={() =>
-                    router.push(
-                      UrlBuider(
-                        (row.original as any).id,
-                        `${window.location.pathname}${linkPrefix}`,
-                      ),
-                    )
+                    (window.location.href = UrlBuider(
+                      (row.original as any).id,
+                      `${window.location.pathname}${linkPrefix}`,
+                    ))
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
