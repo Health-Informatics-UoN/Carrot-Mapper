@@ -11,6 +11,11 @@ const fetchKeys = {
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
   validateConcept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
+  omopField: () => "omopfields/",
+  omopTable: () => "omoptables/",
+  omopTableCheck: (table: string) => `omoptables/${table}/`,
+  conceptFilter: (filter?: string) => `omop/conceptsfilter/?${filter}`,
+  postConcept: () => "scanreportconcepts/",
 };
 
 export async function getScanReportsTables(
@@ -110,6 +115,75 @@ export async function validateConceptCode(
       valid_start_date: new Date(),
       valid_end_date: new Date(),
       invalid_reason: "",
+    };
+  }
+}
+
+export async function getOmopField(): Promise<OmopField[]> {
+  try {
+    return await request<OmopField[]>(fetchKeys.omopField());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getOmopTable(): Promise<OmopTable[]> {
+  try {
+    return await request<OmopTable[]>(fetchKeys.omopTable());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getOmopTableCheck(table: string): Promise<OmopTable> {
+  try {
+    return await request<OmopTable>(fetchKeys.omopTableCheck(table));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return {
+      id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      table: "",
+    };
+  }
+}
+
+export async function getConceptFilter(
+  filter: string | undefined
+): Promise<ConceptFilter[]> {
+  try {
+    return await request<ConceptFilter[]>(fetchKeys.fields(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function postConcept(data: {}): Promise<PostConceptResponse> {
+  try {
+    return await request<PostConceptResponse>(fetchKeys.postConcept(), {
+      method: "POST",
+      body: data,
+    });
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return {
+      id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      nlp_entity: null,
+      nlp_entity_type: null,
+      nlp_confidence: null,
+      nlp_vocabulary: null,
+      nlp_concept_code: null,
+      nlp_processed_string: null,
+      object_id: 0,
+      creation_type: "",
+      concept: 0,
+      content_type: 0,
     };
   }
 }
