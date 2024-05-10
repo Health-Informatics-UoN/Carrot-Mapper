@@ -6,16 +6,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { columns } from "./columns";
-import { Button } from "@/components/ui/button";
 import { getScanReports } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
-import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTableFilter";
+import { FilterParameters } from "@/types/filter";
 
 interface ScanReportsProps {
-  searchParams?: FilterParameters;
+  searchParams?: { status__in: string } & FilterParameters;
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
@@ -28,6 +27,8 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
   const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
   const filter = { name: "dataset", value: "dataset" };
+
+  const filter = <ScanReportsTableFilter filter="dataset" filterText="name" />;
 
   return (
     <div className="pt-10 px-16">
@@ -46,12 +47,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
-        <Link href="/scanreports/create" prefetch={false}>
-          <Button size="lg" className="text-md">
-            New Scan Report
-            <Plus className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
       </div>
       <div className="my-5">
         <Tabs
@@ -76,7 +71,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter={filter}
+              Filter={filter}
             />
           </TabsContent>
           <TabsContent value="archived">
@@ -84,7 +79,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               columns={columns}
               data={scanReports.results}
               count={scanReports.count}
-              filter={filter}
+              Filter={filter}
             />
           </TabsContent>
         </Tabs>
