@@ -219,6 +219,7 @@ def get_scan_report_values(ids: str) -> List[Dict[str, Any]]:
     return response.json()
 
 
+# TODO: Delete me
 def get_scan_report_values_filter_scan_report_table(id: str) -> List[Dict[str, Any]]:
     """
     Get Scan Report Values - filtered by Scan Report Table
