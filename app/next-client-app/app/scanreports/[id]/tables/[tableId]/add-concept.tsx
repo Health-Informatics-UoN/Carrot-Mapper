@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api/error";
+import { mapConceptToOmopField } from "@/lib/concept-utils";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
 
@@ -14,11 +15,21 @@ export default function AddConcept({ tableId }: { tableId: string }) {
   const handleSubmit = async (conceptCode: number) => {
     try {
       const concept = await validateConceptCode(conceptCode);
-      const domain = concept?.domain_id.toLocaleLowerCase();
+      const domain = concept?.domain_id.toLowerCase();
       const table = await getScanReportTable(tableId);
       const fields = await getOmopField();
-      // check if concept exists
+      const destination_field = await mapConceptToOmopField(
+        tableId,
+        fields,
+        domain + "_source_concept_id"
+      );
+      console.log(domain);
+      console.log(destination_field);
+      if (destination_field == undefined) {
+        toast.error("Could not find a destination field for this concept");
+      }
       if (concept.concept_id) {
+        // check if concept exists
         // set the error message depending on which value is missing
         if (!table.person_id || !table.date_event) {
           let message;
@@ -35,8 +46,7 @@ export default function AddConcept({ tableId }: { tableId: string }) {
       // if concept does not exist, display error
       toast.error("No concept matches this concept code!");
     } catch (error) {
-      const errorObj = JSON.parse((error as ApiError).message);
-      toast.error(`Adding concept failed! Error: ${errorObj.detail}`);
+      toast.error(error as any);
       console.error(error);
     }
   };
