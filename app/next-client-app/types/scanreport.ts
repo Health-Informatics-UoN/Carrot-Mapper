@@ -2,8 +2,10 @@ interface ScanReport {
   count: number;
   next: string | null;
   previous: string | null;
-  results: ScanReportList[] | ScanReportTable[] | ScanReportField[];
+  results: ScanReportResult[];
 }
+
+type ScanReportResult = ScanReportList | ScanReportTable | ScanReportField;
 
 interface ScanReportList {
   id: number;

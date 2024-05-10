@@ -15,6 +15,8 @@ import {
 } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
+import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { FilterParameters } from "@/types/filter";
 
 interface ScanReportsFieldProps {
   params: {
@@ -38,6 +40,7 @@ export default async function ScanReportsField({
   const scanReportsTables = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
+  const filter = <DataTableFilter filter="name" filterText="field" />;
 
   return (
     <div className="pt-10 px-16">
@@ -93,7 +96,7 @@ export default async function ScanReportsField({
           columns={columns}
           data={scanReportsTables.results}
           count={scanReportsTables.count}
-          filter={{ name: "field", value: "name" }}
+          Filter={filter}
           linkPrefix="/tables/"
         />
       </div>

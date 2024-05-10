@@ -11,7 +11,7 @@ import { validateConceptCode } from "@/api/scanreports";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
 
-export const columns: ColumnDef<ScanReportField>[] = [
+export const columns: ColumnDef<ScanReportResult>[] = [
   {
     id: "Name",
     accessorKey: "name",

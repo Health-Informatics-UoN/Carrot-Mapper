@@ -96,7 +96,7 @@ export default async function ScanReportsTable({
           columns={columns}
           data={scanReportsTables.results}
           count={scanReportsTables.count}
-          filter="name"
+          Filter={filter}
           linkPrefix="/tables/"
         />
       </div>

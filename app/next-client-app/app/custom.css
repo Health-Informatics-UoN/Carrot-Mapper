@@ -28,12 +28,15 @@
   --co-connect-tertiary: white;
 }
 
+.bg-co-connect {
+  background: var(--co-connect-tertiary);
+}
+
 /* increase the font-size of the nav bar*/
 .navbar {
   font-size: 22px;
   box-shadow: 0 0 0.4rem rgb(0 0 0 / 10%), 0 0.4rem 0.4rem rgb(0 0 0 / 20%);
 }
-
 
 /* increase the gap between the brand and the first link to pages in the nav bar */
 .navbar .navbar-brand {

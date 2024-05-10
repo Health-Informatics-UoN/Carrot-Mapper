@@ -11,8 +11,8 @@ import { ApiError } from "@/lib/api/error";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
-  const { id, status } = row.original;
+export function ScanReportStatus({ row }: { row: Row<ScanReportResult> }) {
+  const { id, status, dataset } = row.original as ScanReportList;
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
@@ -23,12 +23,12 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
       const newStatusText =
         statusOptions.find((option) => option.value === newStatus)?.label ?? "";
       toast.success(
-        `Scan Report ${row.original.dataset} status has changed to ${newStatusText}.`,
+        `Scan Report ${dataset} status has changed to ${newStatusText}.`,
       );
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Scan Report ${row.original.dataset} status change has failed: ${errorObj.detail}.`
+        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`,
       );
       console.error(error);
     }

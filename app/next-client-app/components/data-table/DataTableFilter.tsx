@@ -24,7 +24,7 @@ export function DataTableFilter({
       const query = event.target.value;
       if (query.length > 2) {
         navigateWithSearchParam(
-          `${filter.value}__icontains`,
+          `${filter}__icontains`,
           query,
           router,
           searchParam,
@@ -32,7 +32,7 @@ export function DataTableFilter({
       } else if (query.length === 0) {
         // Handle resetting the filter
         navigateWithSearchParam(
-          `${filter.value}__icontains`,
+          `${filter}__icontains`,
           "",
           router,
           searchParam,

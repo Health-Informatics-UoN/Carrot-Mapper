@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
 import { format } from "date-fns/format";
 
-export const columns: ColumnDef<ScanReportList>[] = [
+export const columns: ColumnDef<ScanReportResult>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -44,7 +44,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset}</button>
+          <button>{(row.original as ScanReportList).dataset}</button>
         </Link>
       );
     },
@@ -123,18 +123,16 @@ export const columns: ColumnDef<ScanReportList>[] = [
     header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const { id, hidden } = row.original;
+      const { id, hidden, dataset } = row.original as ScanReportList;
 
       const handleArchive = async () => {
         const message = hidden ? "Unarchive" : "Archive";
         try {
           await updateScanReport(id, "hidden", !hidden);
-          toast.success(`${message} ${row.original.dataset} succeeded.`);
+          toast.success(`${message} ${dataset} succeeded.`);
         } catch (error) {
           const errorObj = JSON.parse((error as ApiError).message);
-          toast.error(
-            `${message} ${row.original.dataset} has failed: ${errorObj.detail}`
-          );
+          toast.error(`${message} ${dataset} has failed: ${errorObj.detail}`);
           console.error(error);
         }
       };

@@ -5,7 +5,7 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export const columns: ColumnDef<ScanReportTable>[] = [
+export const columns: ColumnDef<ScanReportResult>[] = [
   {
     id: "Name",
     accessorKey: "name",
@@ -45,7 +45,7 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     id: "edit",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { id, scan_report } = row.original;
+      const { id, scan_report } = row.original as ScanReportTable;
       return (
         <Link href={`/scanreports/${scan_report}/tables/${id}/update`}>
           <Button>Edit Table</Button>
