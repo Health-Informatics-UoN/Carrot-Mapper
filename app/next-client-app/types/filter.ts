@@ -1,9 +1,15 @@
 /**
  * Interface for list view parameters.
  */
-interface FilterParameters {
+export interface FilterParameters {
   hidden?: boolean;
   page_size?: number;
   p?: number;
   ordering?: string;
+}
+
+export interface FilterOption {
+  label: string;
+  value: string;
+  icon?: React.ComponentType<{ className?: string }>;
 }

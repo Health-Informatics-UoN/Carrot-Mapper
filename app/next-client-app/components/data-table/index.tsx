@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,17 +27,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   count: number;
-  filter: string;
   linkPrefix?: string;
+  Filter?: JSX.Element;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
@@ -48,8 +47,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   count,
-  filter,
   linkPrefix = "",
+  Filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -72,7 +71,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        <DataTableFilter filter={filter} />
+        {Filter}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -120,7 +119,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -140,8 +139,8 @@ export function DataTable<TData, TValue>({
                     router.push(
                       UrlBuider(
                         (row.original as any).id,
-                        `${window.location.pathname}${linkPrefix}`
-                      )
+                        `${window.location.pathname}${linkPrefix}`,
+                      ),
                     )
                   }
                 >
@@ -150,7 +149,7 @@ export function DataTable<TData, TValue>({
                       <div onClick={(e) => e.stopPropagation()}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </div>
                     </TableCell>
