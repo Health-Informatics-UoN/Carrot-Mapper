@@ -2,12 +2,10 @@ import os
 from collections import defaultdict
 from typing import Any, Dict, List
 
+from CreateConcepts.models import ScanReportValueDict
+from django.db.models.query import QuerySet
 from shared_code import blob_parser, helpers, omop_helpers
-from shared_code.api import (
-    get_concept_vocabs,
-    get_scan_report_fields_by_table,
-    get_scan_report_values_filter_scan_report_table,
-)
+from shared_code.api import get_concept_vocabs, get_scan_report_fields_by_table
 from shared_code.logger import logger
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
@@ -15,13 +13,15 @@ import django
 
 django.setup()
 
-from shared.data.models import ScanReportConcept, ScanReportTable
+from shared.data.models import ScanReportConcept, ScanReportTable, ScanReportValue
 from shared_code import db
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
 
-def _create_concepts(table_values: List[Dict[str, Any]]) -> List[ScanReportConcept]:
+def _create_concepts(
+    table_values: List[ScanReportValueDict],
+) -> List[ScanReportConcept]:
     """
     Generate Concept entries ready for POSTing from a list of values.
 
@@ -53,7 +53,7 @@ def _create_concepts(table_values: List[Dict[str, Any]]) -> List[ScanReportConce
 
 
 def _handle_concepts(
-    entries_grouped_by_vocab: defaultdict[str, List[Dict[str, Any]]]
+    entries_grouped_by_vocab: defaultdict[str | None, List[ScanReportValueDict]]
 ) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
@@ -84,7 +84,7 @@ def _handle_concepts(
             _process_concepts_for_vocab(vocab, value)
 
 
-def _set_defaults_for_none_vocab(entries: List[Dict[str, Any]]) -> None:
+def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
     """
     Set default values for entries with none vocabulary.
 
@@ -100,7 +100,7 @@ def _set_defaults_for_none_vocab(entries: List[Dict[str, Any]]) -> None:
         entry["standard_concept"] = None
 
 
-def _process_concepts_for_vocab(vocab: str, entries: List[Dict[str, Any]]) -> None:
+def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) -> None:
     """
     Process concepts for a specific vocabulary.
 
@@ -125,7 +125,7 @@ def _process_concepts_for_vocab(vocab: str, entries: List[Dict[str, Any]]) -> No
     _batch_process_non_standard_concepts(entries)
 
 
-def _paginate_values(entries: List[Dict[str, Any]]) -> List[List[str]]:
+def _paginate_values(entries: List[ScanReportValueDict]) -> List[List[str]]:
     """
     Paginate values for processing.
 
@@ -162,7 +162,7 @@ def _fetch_concepts_for_vocab(
 
 
 def _match_concepts_to_entries(
-    entries: List[Dict[str, Any]], concept_vocab_content: List[Dict[str, Any]]
+    entries: List[ScanReportValueDict], concept_vocab_content: List[Dict[str, Any]]
 ) -> None:
     """
     Match concepts to entries.
@@ -191,7 +191,7 @@ def _match_concepts_to_entries(
                 break
 
 
-def _batch_process_non_standard_concepts(entries: List[Dict[str, Any]]) -> None:
+def _batch_process_non_standard_concepts(entries: List[ScanReportValueDict]) -> None:
     """
     Batch process non-standard concepts.
 
@@ -217,7 +217,7 @@ def _batch_process_non_standard_concepts(entries: List[Dict[str, Any]]) -> None:
 
 
 def _update_entries_with_standard_concepts(
-    entries: List[Dict[str, Any]], standard_concepts_map: Dict[str, Any]
+    entries: List[ScanReportValueDict], standard_concepts_map: Dict[str, Any]
 ) -> None:
     """
     Update entries with standard concepts.
@@ -265,16 +265,19 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
         None
     """
     # TODO: Replace with db
-    table_values = get_scan_report_values_filter_scan_report_table(table.pk)
+    table_values = ScanReportValue.objects.filter(
+        scan_report_field__scan_report_table=table.pk
+    ).all()
+    table_dicts = convert_to_typed_dict(table_values)
     table_fields = get_scan_report_fields_by_table(table.pk)
 
     # Add vocab id to each entry from the vocab dict
-    helpers.add_vocabulary_id_to_entries(table_values, vocab, table_fields, table.name)
+    helpers.add_vocabulary_id_to_entries(table_dicts, vocab, table_fields, table.name)
 
     # group table_values by their vocabulary_id, for example:
     # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
     entries_grouped_by_vocab = defaultdict(list)
-    for entry in table_values:
+    for entry in table_dicts:
         entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
 
     _handle_concepts(entries_grouped_by_vocab)
@@ -282,7 +285,7 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
 
     # Remember that entries_grouped_by_vocab is just a view into table values
     # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
-    concepts = _create_concepts(table_values)
+    concepts = _create_concepts(table_dicts)
 
     # Bulk create Concepts
     logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
@@ -316,3 +319,19 @@ def main(msg: Dict[str, str]):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     _handle_table(table, vocab_dictionary)
+
+
+def convert_to_typed_dict(
+    table_values: QuerySet[ScanReportValue],
+) -> List[ScanReportValueDict]:
+    return [
+        {
+            "id": value.pk,
+            "scan_report_field": value.scan_report_field,
+            "value": value.value,
+            "frequency": value.frequency,
+            "concept_id": value.conceptID,
+            "value_description": value.value_description,
+        }
+        for value in table_values
+    ]
