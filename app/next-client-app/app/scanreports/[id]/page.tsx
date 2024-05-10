@@ -80,14 +80,14 @@ export default async function ScanReportsTable({
           <Button variant={"outline"}>
             {/* need to config the api */}
             <a href={`api/scanreports/${id}/download/`} download>
-              Download Scan Report File
+              Export Scan Report
             </a>
             <Download className="ml-2 size-4" />
           </Button>
           <Button variant={"outline"}>
             {/* need to config the api */}
             <a href={`api/scanreports/${id}/download/`} download>
-              Download Data Dictionary File
+              Export Data Dictionary
             </a>
             <Download className="ml-2 size-4" />
           </Button>
