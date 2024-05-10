@@ -9,14 +9,10 @@ const fetchKeys = {
 };
 
 export async function getDataSets(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<DataSetPage> {
   try {
-    return await request<DataSetPage>(
-      fetchKeys.list(
-        filter?.includes("hidden") ? filter : `${filter}&hidden=false`,
-      ),
-    );
+    return await request<DataSetPage>(fetchKeys.list(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };

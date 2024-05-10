@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,23 +27,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   count: number;
-  filter: string;
+  linkPrefix?: string;
+  Filter?: JSX.Element;
+}
+
+function UrlBuider(id: string, prefix: string = "") {
+  return `${prefix}${id}/`;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   count,
-  filter,
+  linkPrefix = "",
+  Filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -66,7 +71,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex justify-between my-4">
-        <DataTableFilter filter={filter} />
+        {Filter}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -131,7 +136,12 @@ export function DataTable<TData, TValue>({
                   className="hover:cursor-pointer"
                   // TODO: Once we are only routing to Nextjs urls, we can do this better.
                   onClick={() =>
-                    (window.location.href = `${window.location.pathname}${(row.original as any).id}`)
+                    router.push(
+                      UrlBuider(
+                        (row.original as any).id,
+                        `${window.location.pathname}${linkPrefix}`,
+                      ),
+                    )
                   }
                 >
                   {row.getVisibleCells().map((cell) => (

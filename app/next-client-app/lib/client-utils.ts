@@ -3,7 +3,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 
 export function navigateWithSearchParam(
   paramName: string,
-  param: string | number,
+  param: string | number | string[],
   router: AppRouterInstance,
   searchParams: ReadonlyURLSearchParams,
 ) {
@@ -30,10 +30,13 @@ export function objToQuery(obj: { [key: string]: any }): string {
   let query = "";
   for (let key in obj) {
     if (obj.hasOwnProperty(key)) {
-      if (query.length > 0) {
-        query += "&";
+      const value = obj[key as keyof typeof obj];
+      if (value !== undefined) {
+        if (query.length > 0) {
+          query += "&";
+        }
+        query += `${key}=${encodeURIComponent(value)}`;
       }
-      query += `${key}=${encodeURIComponent(obj[key])}`;
     }
   }
   return query;
