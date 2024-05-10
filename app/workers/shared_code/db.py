@@ -1,12 +1,11 @@
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, Union
 
 from django.contrib.contenttypes.models import ContentType
 from shared.data.models import ScanReportConcept
-from shared.data.omop import Concept
 
 
 def create_concept(
-    concept_id: str,
+    concept_id: Union[str, int],
     object_id: str,
     content_type: Literal["scanreportfield", "scanreportvalue"],
     creation_type: Literal["V", "R"] = "V",
