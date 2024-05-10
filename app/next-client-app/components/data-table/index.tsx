@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React from "react";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,10 +27,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from "next/navigation";
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<
   TData extends ScanReportList | ScanReportTable | ScanReportField,
@@ -39,8 +38,8 @@ interface DataTableProps<
   columns: ColumnDef<TData, TValue>[];
   data: ScanReportList[] | ScanReportTable[] | ScanReportField[];
   count: number;
-  filter: { name: string; value: string };
   linkPrefix?: string;
+  Filter?: JSX.Element;
 }
 
 function UrlBuider(id: string, prefix: string = "") {
@@ -54,8 +53,8 @@ export function DataTable<
   columns,
   data,
   count,
-  filter,
   linkPrefix = "",
+  Filter,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -78,7 +77,7 @@ export function DataTable<
   return (
     <div>
       <div className="flex justify-between my-4">
-        <DataTableFilter filter={filter} />
+        {Filter}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
