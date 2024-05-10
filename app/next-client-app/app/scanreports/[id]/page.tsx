@@ -13,6 +13,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { BookText, ChevronRight, Download } from "lucide-react";
 
 type Props = {
   params: {
@@ -63,10 +64,16 @@ export default async function ScanReportsTable({
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
           <Link href={`/scanreports/${id}/details/`}>
-            <Button>Scan Report Details</Button>
+            <Button>
+              Scan Report Details
+              <BookText className="ml-2 size-4" />
+            </Button>
           </Link>
           <Link href={`/scanreports/${id}/mapping_rules/`}>
-            <Button>Rules</Button>
+            <Button>
+              Rules
+              <ChevronRight className="ml-2 size-4" />
+            </Button>
           </Link>
         </div>
         <div className="flex gap-2">
@@ -75,12 +82,14 @@ export default async function ScanReportsTable({
             <a href={`api/scanreports/${id}/download/`} download>
               Download Scan Report File
             </a>
+            <Download className="ml-2 size-4" />
           </Button>
           <Button variant={"outline"}>
             {/* need to config the api */}
             <a href={`api/scanreports/${id}/download/`} download>
               Download Data Dictionary File
             </a>
+            <Download className="ml-2 size-4" />
           </Button>
         </div>
       </div>
