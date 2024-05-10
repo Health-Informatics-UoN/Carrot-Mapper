@@ -7,6 +7,9 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import { Input } from "@/components/ui/input";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
+import { validateConceptCode } from "@/api/scanreports";
+import { toast } from "sonner";
+import { ApiError } from "@/lib/api/error";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
@@ -67,8 +70,17 @@ export const columns: ColumnDef<ScanReportField>[] = [
           .min(1, "Add a valid number"),
       });
 
-      const handleSubmit = async (value, actions) => {
-        actions.setSubmitting(true);
+      const handleSubmit = async (conceptCode: number) => {
+        try {
+          const concept = await validateConceptCode(conceptCode);
+          if (concept.concept_id !== 0) {
+          }
+          toast.error("No concept matches this concept code!");
+        } catch (error) {
+          const errorObj = JSON.parse((error as ApiError).message);
+          toast.error(`Adding concept failed! Error: ${errorObj.detail}`);
+          console.error(error);
+        }
       };
 
       return (
@@ -76,7 +88,7 @@ export const columns: ColumnDef<ScanReportField>[] = [
           initialValues={{ concept: "" }}
           validationSchema={validationSchema}
           onSubmit={(data, actions) => {
-            handleSubmit(data, actions);
+            handleSubmit(Number(data.concept));
             actions.resetForm();
           }}
         >
