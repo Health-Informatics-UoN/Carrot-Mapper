@@ -78,19 +78,18 @@ export default async function ScanReportsTable({
         </div>
         <div className="flex gap-2">
           <Button variant={"outline"}>
-            {/* need to config the api */}
-            <a href={`api/scanreports/${id}/download/`} download>
+            <a href={`/api/scanreports/${id}/download/`} download>
               Export Scan Report
             </a>
             <Download className="ml-2 size-4" />
           </Button>
-          <Button variant={"outline"}>
-            {/* need to config the api */}
-            <a href={`api/scanreports/${id}/download/`} download>
+          {/* TODO: This has been broken #459, needs API fixes. */}
+          {/* <Button variant={"outline"}>
+            <a href={`/api/scanreports/${id}/download/`} download>
               Export Data Dictionary
             </a>
             <Download className="ml-2 size-4" />
-          </Button>
+          </Button> */}
         </div>
       </div>
       <div>
