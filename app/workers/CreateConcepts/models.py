@@ -10,3 +10,8 @@ class ScanReportValueDict(TypedDict):
     value_description: Optional[str]
     vocabulary_id: NotRequired[Optional[str]]
     standard_concept: NotRequired[Optional[str]]
+
+
+class ScanReportFieldDict(TypedDict):
+    id: str
+    name: str

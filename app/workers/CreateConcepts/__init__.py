@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 from typing import Any, Dict, List
 
-from CreateConcepts.models import ScanReportValueDict
+from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from django.db.models.query import QuerySet
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.api import get_concept_vocabs, get_scan_report_fields_by_table
@@ -13,7 +13,12 @@ import django
 
 django.setup()
 
-from shared.data.models import ScanReportConcept, ScanReportTable, ScanReportValue
+from shared.data.models import (
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
+)
 from shared_code import db
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
@@ -264,20 +269,21 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
     Returns:
         None
     """
-    # TODO: Replace with db
-    table_values = ScanReportValue.objects.filter(
+    sr_values = ScanReportValue.objects.filter(
         scan_report_field__scan_report_table=table.pk
     ).all()
-    table_dicts = convert_to_typed_dict(table_values)
-    table_fields = get_scan_report_fields_by_table(table.pk)
+    table_values = convert_to_typed_dict(sr_values)
+
+    sr_fields = ScanReportField.objects.filter(scan_report_table=table.pk).all()
+    table_fields = convert(sr_fields)
 
     # Add vocab id to each entry from the vocab dict
-    helpers.add_vocabulary_id_to_entries(table_dicts, vocab, table_fields, table.name)
+    helpers.add_vocabulary_id_to_entries(table_values, vocab, table_fields, table.name)
 
     # group table_values by their vocabulary_id, for example:
     # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
     entries_grouped_by_vocab = defaultdict(list)
-    for entry in table_dicts:
+    for entry in table_values:
         entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
 
     _handle_concepts(entries_grouped_by_vocab)
@@ -285,7 +291,7 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
 
     # Remember that entries_grouped_by_vocab is just a view into table values
     # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
-    concepts = _create_concepts(table_dicts)
+    concepts = _create_concepts(table_values)
 
     # Bulk create Concepts
     logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
@@ -338,3 +344,7 @@ def convert_to_typed_dict(
         }
         for value in table_values
     ]
+
+
+def convert(fields: QuerySet[ScanReportField]) -> List[ScanReportFieldDict]:
+    return [{"id": field.pk, "name": field.name} for field in fields]
