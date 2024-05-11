@@ -3,7 +3,7 @@ import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import azure.functions as func
-from CreateConcepts.models import ScanReportValueDict
+from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from shared_code.logger import logger
 
 
@@ -203,7 +203,7 @@ def get_by_concept_id(list_of_dicts: List[ScanReportValueDict], concept_id: str)
 def add_vocabulary_id_to_entries(
     table_values: List[ScanReportValueDict],
     vocab: Dict[str, Any],
-    fieldids_to_names: List[Dict[str, Any]],
+    fieldids_to_names: List[ScanReportFieldDict],
     table_name: str,
 ):
     """
