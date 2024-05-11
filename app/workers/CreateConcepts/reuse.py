@@ -1,5 +1,6 @@
 from typing import Dict, List, Literal
 
+from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from shared.data.models import ScanReportConcept
 from shared_code import db, helpers, omop_helpers
 from shared_code.api import (
@@ -23,7 +24,7 @@ This can then include refactoring these into smaller functions, and remove the d
 """
 
 
-def reuse_existing_value_concepts(new_values_map) -> None:
+def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
@@ -178,7 +179,7 @@ def reuse_existing_value_concepts(new_values_map) -> None:
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
 
 
-def reuse_existing_field_concepts(new_fields_map: List[Dict[str, str]]) -> None:
+def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
