@@ -3,7 +3,7 @@ import json
 import os
 import warnings
 from enum import Enum
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Union
 
 import httpx
 import requests
@@ -243,7 +243,7 @@ def get_scan_report_values_filter_scan_report_table(id: str) -> List[Dict[str, A
 
 
 def get_concept_vocabs(
-    vocab_ids: List[str], concept_codes: List[str]
+    vocab_ids: Union[List[str], str], concept_codes: Union[List[str], str]
 ) -> List[Dict[str, Any]]:
     """
     Get OMOP Concepts for a list of vocabulary Ids, and concept codes.
