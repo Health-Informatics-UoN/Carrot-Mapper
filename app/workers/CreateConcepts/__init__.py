@@ -318,7 +318,10 @@ def main(msg: Dict[str, str]):
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    _handle_table(table, vocab_dictionary)
+    if vocab_dictionary is None:
+        raise ValueError("vocab_dictionary is None.")
+    else:
+        _handle_table(table, vocab_dictionary)
 
 
 def convert_to_typed_dict(
