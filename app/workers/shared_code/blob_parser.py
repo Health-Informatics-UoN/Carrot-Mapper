@@ -5,7 +5,7 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
 
 import openpyxl
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient  # type: ignore
 
 logger = logging.getLogger("test_logger")
 
