@@ -62,6 +62,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
     existing_values_filtered_by_id = []
+    # todo: db
     for ids in existing_paginated_value_ids:
         ids_to_get = ",".join(map(str, ids))
         values = get_scan_report_values(ids_to_get)
@@ -82,6 +83,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     existing_field_ids = {
         item["scan_report_field"] for item in existing_values_filtered_by_id
     }
+    # Todo: db
     existing_fields = get_scan_report_fields(existing_field_ids)
     logger.debug(
         f"ids and names of existing fields associated to values with concepts in "
@@ -195,7 +197,7 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     """
     logger.info("reuse_existing_field_concepts")
     content_type = "scanreportfield"
-
+    # todo: db
     existing_field_concepts = get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing field ids to scan report concepts
