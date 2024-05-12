@@ -144,28 +144,6 @@ def get_scan_report_fields(field_ids: List[str]) -> List[Dict[str, Any]]:
     return helpers.flatten_list(existing_fields)
 
 
-def get_scan_report_fields_by_table(id: str) -> List[Dict[str, Any]]:
-    """
-    Retrieve scan report fields by table ID.
-
-    Args:
-        id (str): The ID of the table.
-
-    Returns:
-        List[Dict[str, Any]]: A list of dictionaries containing the fields of the scan report table.
-
-    Raises:
-        requests.HTTPError: If the request fails.
-
-    """
-    response = requests.get(
-        url=f"{API_URL}scanreportfields/?scan_report_table__in={id}&fields=id,name",
-        headers=HEADERS,
-    )
-    response.raise_for_status()
-    return response.json()
-
-
 def get_scan_report_active_concepts(
     content_type: Literal["scanreportfield", "scanreportvalue"]
 ) -> List[Dict[str, Any]]:
@@ -215,60 +193,6 @@ def get_scan_report_values(ids: str) -> List[Dict[str, Any]]:
         headers=HEADERS,
     )
     response.raise_for_status()
-    return response.json()
-
-
-# TODO: Delete me
-def get_scan_report_values_filter_scan_report_table(id: str) -> List[Dict[str, Any]]:
-    """
-    Get Scan Report Values - filtered by Scan Report Table
-
-    Args:
-        id (str): ID of the Scan Report to filter by.
-
-    Returns:
-        A list of ScanReportValues (List[Dict[str, Any]])
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    response = requests.get(
-        url=f"{API_URL}scanreportvaluesfilterscanreporttable/?scan_report_table"
-        f"={id}",
-        headers=HEADERS,
-    )
-    response.raise_for_status()
-    return response.json()
-
-
-def get_concept_vocabs(
-    vocab_ids: Union[List[str], str], concept_codes: Union[List[str], str]
-) -> List[Dict[str, Any]]:
-    """
-    Get OMOP Concepts for a list of vocabulary Ids, and concept codes.
-
-    Args:
-        vocab_ids (List[str]): The list of vocab Ids to filter by.
-        concept_codes (List[str]): The list of concept codes to filter by.
-
-    Returns:
-        A list of Concepts matching the criteria.
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    response = requests.get(
-        f"{API_URL}omop/conceptsfilter/?concept_code__in="
-        f"{concept_codes}&vocabulary_id__in"
-        f"={vocab_ids}",
-        headers=HEADERS,
-    )
-    response.raise_for_status()
-    logger.debug(
-        f"CONCEPTS GET BY VOCAB STATUS >>> "
-        f"{response.status_code} "
-        f"{response.reason}"
-    )
     return response.json()
 
 
