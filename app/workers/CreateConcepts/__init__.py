@@ -5,7 +5,6 @@ from typing import Any, Dict, List
 from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from django.db.models.query import QuerySet
 from shared_code import blob_parser, helpers, omop_helpers
-from shared_code.api import get_concept_vocabs, get_scan_report_fields_by_table
 from shared_code.logger import logger
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
@@ -19,6 +18,7 @@ from shared.data.models import (
     ScanReportTable,
     ScanReportValue,
 )
+from shared.data.omop import Concept
 from shared_code import db
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
@@ -118,6 +118,7 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
 
     """
     logger.info(f"begin {vocab}")
+    # TODO: Probably don't need to paginate any more though?
     paginated_values = _paginate_values(entries)
     concept_vocab_content = _fetch_concepts_for_vocab(vocab, paginated_values)
 
@@ -147,7 +148,7 @@ def _paginate_values(entries: List[ScanReportValueDict]) -> List[List[str]]:
 
 def _fetch_concepts_for_vocab(
     vocab: str, paginated_values: List[List[str]]
-) -> List[Dict[str, Any]]:
+) -> List[Concept]:
     """
     Fetch concepts for a specific vocabulary.
 
@@ -159,15 +160,17 @@ def _fetch_concepts_for_vocab(
         List[Dict[str, Any]]: A list of dictionaries representing the fetched concepts.
 
     """
-    concept_vocab_response = [
-        get_concept_vocabs(vocab, ",".join(page_of_values))
-        for page_of_values in paginated_values
-    ]
-    return helpers.flatten_list(concept_vocab_response)
+    concept_vocab_response: List[Concept] = []
+    for i in paginated_values:
+        concepts = Concept.objects.filter(
+            concept_code__in=",".join(i), vocabulary_id__in=vocab
+        ).all()
+        concept_vocab_response.extend(concepts)
+    return concept_vocab_response
 
 
 def _match_concepts_to_entries(
-    entries: List[ScanReportValueDict], concept_vocab_content: List[Dict[str, Any]]
+    entries: List[ScanReportValueDict], concept_vocab_content: List[Concept]
 ) -> None:
     """
     Match concepts to entries.
@@ -189,9 +192,9 @@ def _match_concepts_to_entries(
         entry["concept_id"] = -1
         entry["standard_concept"] = None
         for returned_concept in concept_vocab_content:
-            if str(entry["value"]) == str(returned_concept["concept_code"]):
-                entry["concept_id"] = str(returned_concept["concept_id"])
-                entry["standard_concept"] = str(returned_concept["standard_concept"])
+            if str(entry["value"]) == str(returned_concept.concept_code):
+                entry["concept_id"] = str(returned_concept.concept_id)
+                entry["standard_concept"] = str(returned_concept.standard_concept)
                 # exit inner loop early if we find a concept for this entry
                 break
 
