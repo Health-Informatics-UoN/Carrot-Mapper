@@ -1,13 +1,9 @@
 from typing import Dict, List, Literal
 
 from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
-from shared.data.models import ScanReportConcept
+from django.contrib.contenttypes.models import ContentType
+from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
 from shared_code import db, helpers, omop_helpers
-from shared_code.api import (
-    get_scan_report_active_concepts,
-    get_scan_report_fields,
-    get_scan_report_values,
-)
 from shared_code.logger import logger
 
 """
@@ -34,16 +30,24 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         new_fields_map (Dict[str, str]): A map of field names to Ids.
     """
     logger.info("reuse_existing_value_concepts")
-    content_type = "scanreportvalue"
+    content_type_str = "scanreportvalue"
 
     # Gets all scan report concepts that are for the type value
     # (or content type which should be value) and in "active" SRs
-    existing_value_concepts = get_scan_report_active_concepts(content_type)
+    content_type = ContentType.objects.get(model=content_type_str)
+    value_ids = ScanReportValue.objects.filter(
+        scan_report_field__scan_report_table__scan_report__hidden=False,
+        scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+        scan_report_field__scan_report_table__scan_report__status="COMPLET",
+    ).values_list("id", flat=True)
+    existing_value_concepts = ScanReportConcept.objects.filter(
+        content_type=content_type, object_id__in=value_ids
+    ).all()
 
     # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
     existing_value_id_to_concept_map = {
-        str(element.get("object_id", None)): str(element.get("concept", None))
+        str(element.object_id): str(element.concept)
         for element in existing_value_concepts
     }
     logger.debug(
@@ -54,22 +58,18 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     # get details of existing selected values, for the purpose of matching against
     # new values
     existing_paginated_value_ids = helpers.paginate(
-        [value["object_id"] for value in existing_value_concepts],
+        [value.object_id for value in existing_value_concepts],
         omop_helpers.max_chars_for_get,
     )
     logger.debug(f"{existing_paginated_value_ids=}")
 
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
-    existing_values_filtered_by_id = []
-    # todo: db
+    existing_values_filtered_by_id: List[ScanReportValue] = []
     for ids in existing_paginated_value_ids:
         ids_to_get = ",".join(map(str, ids))
-        values = get_scan_report_values(ids_to_get)
-        existing_values_filtered_by_id.append(values)
-    existing_values_filtered_by_id = helpers.flatten_list(
-        existing_values_filtered_by_id
-    )
+        values = ScanReportValue.objects.filter(pk_in=ids_to_get).all()
+        existing_values_filtered_by_id.extend(values)
     logger.debug("existing_values_filtered_by_id")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
@@ -81,17 +81,16 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
 
     # get field ids from values and use to get scan report fields' details
     existing_field_ids = {
-        item["scan_report_field"] for item in existing_values_filtered_by_id
+        item.scan_report_field for item in existing_values_filtered_by_id
     }
-    # Todo: db
-    existing_fields = get_scan_report_fields(existing_field_ids)
+    existing_fields = ScanReportField.objects.filter(pk__in=existing_field_ids).all()
     logger.debug(
         f"ids and names of existing fields associated to values with concepts in "
         f"active SRs: {existing_fields}"
     )
 
     existing_field_id_to_name_map = {
-        str(field["id"]): field["name"] for field in existing_fields
+        str(field.pk): field.name for field in existing_fields
     }
     logger.debug(f"{existing_field_id_to_name_map=}")
 
@@ -99,13 +98,11 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     # existing SRValue with a SRConcept in an active SR.
     existing_mappings_to_consider = [
         {
-            "name": value["value"],
-            "concept": existing_value_id_to_concept_map[str(value["id"])],
-            "id": value["id"],
-            "description": value["value_description"],
-            "field_name": existing_field_id_to_name_map[
-                str(value["scan_report_field"])
-            ],
+            "name": value.value,
+            "concept": existing_value_id_to_concept_map[str(value.pk)],
+            "id": value.pk,
+            "description": value.value_description,
+            "field_name": existing_field_id_to_name_map[str(value.scan_report_field)],
         }
         for value in existing_values_filtered_by_id
     ]
@@ -113,10 +110,10 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     # Now handle the newly-added values in a similar manner
     logger.debug("new_paginated_field_ids")
     new_field_ids = [value["scan_report_field"] for value in new_values_map]
-    new_fields = get_scan_report_fields(new_field_ids)
+    new_fields = ScanReportField.objects.filter(pk__in=new_field_ids).all()
     logger.debug(f"fields of newly generated values: {new_fields}")
 
-    new_fields_to_name_map = {str(field["id"]): field["name"] for field in new_fields}
+    new_fields_to_name_map = {str(field.pk): field.name for field in new_fields}
 
     new_values_full_details = [
         {
@@ -175,7 +172,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_values_full_details,
         value_details_to_value_and_concept_id_map,
-        content_type,
+        content_type_str,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
@@ -196,14 +193,22 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
         None
     """
     logger.info("reuse_existing_field_concepts")
-    content_type = "scanreportfield"
-    # todo: db
-    existing_field_concepts = get_scan_report_active_concepts(content_type)
+    content_type_str = "scanreportfield"
+
+    content_type = ContentType.objects.get(model=content_type_str)
+    field_ids = ScanReportField.objects.filter(
+        scan_report_table__scan_report__hidden=False,
+        scan_report_table__scan_report__parent_dataset__hidden=False,
+        scan_report_table__scan_report__status="COMPLET",
+    ).values_list("id", flat=True)
+    existing_field_concepts = ScanReportConcept.objects.filter(
+        content_type=content_type, object_id__in=field_ids
+    ).all()
 
     # create dictionary that maps existing field ids to scan report concepts
     # from the list of existing scan report concepts from active SRs
     existing_field_id_to_concept_map = {
-        str(element.get("object_id", None)): str(element.get("concept", None))
+        str(element.object_id): str(element.concept)
         for element in existing_field_concepts
     }
     logger.debug(
@@ -213,8 +218,8 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
 
     # get details of existing selected fields, for the purpose of matching against
     # new fields
-    existing_field_ids = {item["object_id"] for item in existing_field_concepts}
-    existing_fields = get_scan_report_fields(existing_field_ids)
+    existing_field_ids = {item.object_id for item in existing_field_concepts}
+    existing_fields = ScanReportField.objects.filter(pk__in=existing_field_ids).all()
     logger.debug(
         f"ids and names of existing fields with concepts in active SRs:"
         f" {existing_fields}"
@@ -224,9 +229,9 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     # existing SRField with a SRConcept in an active SR.
     existing_mappings_to_consider = [
         {
-            "name": field["name"],
-            "concept": existing_field_id_to_concept_map[str(field["id"])],
-            "id": field["id"],
+            "name": field.name,
+            "concept": existing_field_id_to_concept_map[str(field.pk)],
+            "id": field.pk,
         }
         for field in existing_fields
     ]
@@ -279,7 +284,7 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_fields_full_details,
         existing_field_name_to_field_and_concept_id_map,
-        content_type,
+        content_type_str,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
