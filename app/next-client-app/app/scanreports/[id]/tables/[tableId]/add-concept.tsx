@@ -1,8 +1,10 @@
 import {
+  getContentType,
   getOmopField,
   getOmopTable,
   getOmopTableCheck,
   getScanReportTable,
+  postConcept,
   validateConceptCode,
 } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ import { ApiError } from "@/lib/api/error";
 import { mapConceptToOmopField } from "@/lib/concept-utils";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
+import { objToQuery } from "@/lib/client-utils";
 
 const m_allowed_tables = [
   "person",
@@ -22,7 +25,19 @@ const m_allowed_tables = [
   "specimen",
 ];
 
-export default function AddConcept({ tableId }: { tableId: string }) {
+export default function AddConcept({
+  tableId,
+  source_field,
+}: {
+  tableId: string;
+  source_field: number;
+}) {
+  const defaultParams = {
+    type_name: "scanreportfield",
+  };
+  const params = { ...defaultParams };
+  const query = objToQuery(params);
+
   const handleSubmit = async (conceptCode: number) => {
     try {
       const concept = await validateConceptCode(conceptCode);
@@ -35,6 +50,7 @@ export default function AddConcept({ tableId }: { tableId: string }) {
         domain,
         domain + "_source_concept_id"
       );
+      const contentType = await getContentType(query);
       // set the error message depending on which value is missing
       if (!table.person_id || !table.date_event) {
         let message;
@@ -62,6 +78,15 @@ export default function AddConcept({ tableId }: { tableId: string }) {
         }
       }
 
+      const data = {
+        concept: concept.concept_id,
+        object_id: source_field,
+        content_type: contentType.content_type_id,
+        creation_type: "M",
+      };
+
+      const response = await postConcept(JSON.stringify(data));
+      console.log(response); // return the empty object/value = 0
       // if concept does not exist, display error
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);

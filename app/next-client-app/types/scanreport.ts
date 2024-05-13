@@ -91,6 +91,17 @@ interface ConceptFilter {
   invalid_reason: string;
 }
 
+interface PostData {
+  concept: string;
+  object_id: number;
+  content_type: string;
+  creation_type: string;
+}
+
+interface ContentType {
+  content_type_id: number;
+}
+
 interface PostConceptResponse {
   id: number;
   created_at: Date;

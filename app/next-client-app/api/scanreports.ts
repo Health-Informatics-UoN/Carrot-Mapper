@@ -15,6 +15,7 @@ const fetchKeys = {
   omopTable: () => "omoptables/",
   omopTableCheck: (table: number) => `omoptables/${table}/`,
   conceptFilter: (filter?: string) => `omop/conceptsfilter/?${filter}`,
+  typeName: (filter?: string) => `contenttypeid?${filter}`,
   postConcept: () => "scanreportconcepts/",
 };
 
@@ -162,14 +163,29 @@ export async function getConceptFilter(
   }
 }
 
+export async function getContentType(
+  filter: string | undefined
+): Promise<ContentType> {
+  try {
+    return await request<ContentType>(fetchKeys.typeName(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { content_type_id: 0 };
+  }
+}
+
 export async function postConcept(data: {}): Promise<PostConceptResponse> {
   try {
     return await request<PostConceptResponse>(fetchKeys.postConcept(), {
+      // The postConcept method is: postConcept: () => "scanreportconcepts/",
       method: "POST",
-      body: data,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to post data:", error);
     return {
       id: 0,
       created_at: new Date(),
