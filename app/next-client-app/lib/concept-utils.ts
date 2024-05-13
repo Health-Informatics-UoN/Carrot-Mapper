@@ -1,19 +1,14 @@
-import {
-  getOmopField,
-  getOmopTable,
-  getScanReportTable,
-  validateConceptCode,
-} from "@/api/scanreports";
+import { getOmopTable } from "@/api/scanreports";
 
 //function to map concept domain to an omop field
 export const mapConceptToOmopField = async (
-  tableId: string,
+  table: ScanReportTable,
   fields: OmopField[],
-  domain: string
+  domain: string,
+  combinedDomain: string
 ): Promise<any> => {
   // cached values
-  let omopTables: OmopTable[] = [];
-  const table = await getScanReportTable(tableId);
+  let omopTables: OmopTable[];
   // mapping function which is returned by this function
   //if omop table is not specified
   if (!table) {
@@ -26,10 +21,7 @@ export const mapConceptToOmopField = async (
     // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
     const m_allowed_tables = [] as any; // Declare the variable m_allowed_tables
     let omopTables: OmopTable[] = []; // Declare and initialize omopTables as an empty array
-
-    if (!omopTables) {
-      omopTables = await getOmopTable();
-    }
+    omopTables = await getOmopTable();
     // find correct field to return
     let mappedTables = mappedFields.map((field) => ({
       table: omopTables.find((t) => t.id == field.table),
@@ -42,13 +34,12 @@ export const mapConceptToOmopField = async (
     }));
     return mappedTables.find((val) => val.isAllowed == true)?.field;
   }
-  if (!omopTables) {
-    omopTables = await getOmopTable();
-  }
+
+  omopTables = await getOmopTable();
   // find omop field with specified table and domain
-  let mappedTable = omopTables.find((t) => t.id == Number(tableId));
+  let mappedTable = omopTables.find((t) => t.table == domain);
   const mappedField = fields.find(
-    (f) => f.table == (mappedTable?.id ?? "") && f.field == domain
+    (f) => f.table == (mappedTable?.id ?? "") && f.field == combinedDomain
   );
   return mappedField;
 };

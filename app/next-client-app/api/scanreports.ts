@@ -13,7 +13,7 @@ const fetchKeys = {
   validateConcept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
   omopField: () => "omopfields/",
   omopTable: () => "omoptables/",
-  omopTableCheck: (table: string) => `omoptables/${table}/`,
+  omopTableCheck: (table: number) => `omoptables/${table}/`,
   conceptFilter: (filter?: string) => `omop/conceptsfilter/?${filter}`,
   postConcept: () => "scanreportconcepts/",
 };
@@ -137,7 +137,7 @@ export async function getOmopTable(): Promise<OmopTable[]> {
   }
 }
 
-export async function getOmopTableCheck(table: string): Promise<OmopTable> {
+export async function getOmopTableCheck(table: number): Promise<OmopTable> {
   try {
     return await request<OmopTable>(fetchKeys.omopTableCheck(table));
   } catch (error) {
