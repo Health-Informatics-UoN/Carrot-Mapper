@@ -177,12 +177,11 @@ export async function getContentType(
 export async function postConcept(data: {}): Promise<PostConceptResponse> {
   try {
     return await request<PostConceptResponse>(fetchKeys.postConcept(), {
-      // The postConcept method is: postConcept: () => "scanreportconcepts/",
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(data),
+      body: data as BodyInit,
     });
   } catch (error) {
     console.warn("Failed to post data:", error);
