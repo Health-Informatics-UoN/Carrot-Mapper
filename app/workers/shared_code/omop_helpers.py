@@ -5,7 +5,7 @@ from collections import OrderedDict, defaultdict
 from typing import List
 
 import requests
-from shared_code import helpers
+from shared.data.omop import Concept, ConceptRelationship
 from shared_code.models import ScanReportValueDict
 
 api_url = os.environ.get("APP_URL", "") + "api/"
@@ -41,63 +41,35 @@ def find_standard_concept_batch(source_concepts: List[ScanReportValueDict]):
     if len(source_concepts) == 0:
         return {}
 
-    # Paginate the source concepts
-    # TODO: remove pagination
-    paginated_source_concepts = helpers.paginate(
-        (str(source_concept["concept_id"]) for source_concept in source_concepts),
-        max_chars=max_chars_for_get,
-    )
-
     # Get "Maps to" relations of all source concepts supplied
-    concept_relations_response = []
-    for page in paginated_source_concepts:
-        page_of_concept_ids_to_get = ",".join(map(str, page))
-        # TODO: db
-        get_concept_relations_response = requests.get(
-            url=f"{api_url}omop/conceptrelationshipfilter/?concept_id_1__in="
-            + f"{page_of_concept_ids_to_get}&relationship_id=Maps to",
-            headers=api_header,
-        )
-        concept_relations_response.append(get_concept_relations_response.json())
-    concept_relations = helpers.flatten_list(concept_relations_response)
+    concept_ids = [concept["concept_id"] for concept in source_concepts]
+    concept_relationships = ConceptRelationship.objects.filter(
+        relationship_id="Maps to", concept_id_1__in=concept_ids
+    ).all()
 
     # Find those concepts with a "trail" to follow, that is, those which have
     # differing concept_id_1/2.
     filtered_concept_relations = list(
         filter(
-            lambda concept_relation: concept_relation["concept_id_2"]
-            != concept_relation["concept_id_1"],
-            concept_relations,
+            lambda concept_relation: concept_relation.concept_id_2
+            != concept_relation.concept_id_1,
+            concept_relationships,
         )
     )
-    # TODO: remove pagination
-    paginated_concept_id_2s = helpers.paginate(
-        (str(relation["concept_id_2"]) for relation in filtered_concept_relations),
-        max_chars=max_chars_for_get,
-    )
-    # Send all of those to conceptfilter again to check they are standard.
-    concepts = []
-    for page in paginated_concept_id_2s:
-        concept_id_2s_to_get = ",".join(map(str, page))
-        # TODO: db
-        get_concepts = requests.get(
-            url=f"{api_url}omop/conceptsfilter/?concept_id__in={concept_id_2s_to_get}",
-            headers=api_header,
-        )
-        concepts.append(get_concepts.json())
-    concepts = helpers.flatten_list(concepts)
-    logger.debug("concepts got")
 
-    concept_details = {a["concept_id"]: a["standard_concept"] for a in concepts}
+    # Send all of those to conceptfilter again to check they are standard.
+    concept_id_2s = [relation.concept_id_2 for relation in filtered_concept_relations]
+    concepts = Concept.objects.filter(concept_id__in=concept_id_2s).all()
+    concept_details = {a.concept_id: a.standard_concept for a in concepts}
+
+    logger.debug("concepts got")
 
     # Filter by those concepts relationships where the second concept_id is standard
     # Now combine the pairs so that each pair is of type tuple(str, list(str))
     combined_pairs = defaultdict(list)
     for relationship in filtered_concept_relations:
-        if concept_details[relationship["concept_id_2"]] == "S":
-            combined_pairs[relationship["concept_id_1"]].append(
-                relationship["concept_id_2"]
-            )
+        if concept_details[relationship.concept_id_2] == "S":
+            combined_pairs[relationship.concept_id_1].append(relationship.concept_id_2)
 
     # Remove duplicates from within each entry, by converting each to an Ordered Dict
     # (the keys of which must be unique, and will preserve the order if that's
