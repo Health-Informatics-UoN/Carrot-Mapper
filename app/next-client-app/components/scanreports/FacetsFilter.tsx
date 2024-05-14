@@ -72,7 +72,7 @@ export function FacetsFilter<TData, TValue>({
                       <Badge
                         variant="secondary"
                         key={option.value}
-                        className="rounded-sm px-1 font-normal"
+                        className={`${option.color} rounded-sm px-1 font-normal`}
                       >
                         {option.label}
                       </Badge>

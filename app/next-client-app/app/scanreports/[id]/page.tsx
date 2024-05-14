@@ -13,6 +13,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import { BookText, ChevronRight, Download } from "lucide-react";
 
 interface ScanReportsTableProps {
   params: {
@@ -63,32 +64,32 @@ export default async function ScanReportsTable({
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
           <Link href={`/scanreports/${id}/details/`}>
-            <Button size="lg" className="text-md">
+            <Button>
               Scan Report Details
+              <BookText className="ml-2 size-4" />
             </Button>
           </Link>
           <Link href={`/scanreports/${id}/mapping_rules/`}>
-            <Button size="lg" className="text-md">
+            <Button>
               Rules
+              <ChevronRight className="ml-2 size-4" />
             </Button>
           </Link>
         </div>
         <div className="flex gap-2">
-          <Button
-            size="lg"
-            className="text-md bg-carrot-secondary hover:bg-carrot-secondary-50"
-          >
-            {/* need to config the api */}
-            <a href={`api/scanreports/${id}/download/`} download>
-              Download Scan Report File
+          <Button variant={"outline"}>
+            <a href={`/api/scanreports/${id}/download/`} download>
+              Export Scan Report
             </a>
+            <Download className="ml-2 size-4" />
           </Button>
-          <Button size="lg" className="text-md">
-            {/* need to config the api */}
-            <a href={`api/scanreports/${id}/download/`} download>
-              Download Data Dictionary File
+          {/* TODO: This has been broken #459, needs API fixes. */}
+          {/* <Button variant={"outline"}>
+            <a href={`/api/scanreports/${id}/download/`} download>
+              Export Data Dictionary
             </a>
-          </Button>
+            <Download className="ml-2 size-4" />
+          </Button> */}
         </div>
       </div>
       <div>
@@ -97,7 +98,7 @@ export default async function ScanReportsTable({
           data={scanReportsTables.results}
           count={scanReportsTables.count}
           Filter={filter}
-          linkPrefix="/tables/"
+          linkPrefix="tables/"
         />
       </div>
     </div>
