@@ -3,8 +3,8 @@ import os
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import azure.functions as func
-from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from shared_code.logger import logger
+from shared_code.models import ScanReportFieldDict, ScanReportValueDict
 
 
 def unwrap_message(msg: func.QueueMessage) -> Tuple[str, str, str, str]:
