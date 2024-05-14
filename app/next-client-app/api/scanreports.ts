@@ -10,17 +10,12 @@ const fetchKeys = {
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
-  validateConcept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
-  omopField: () => "omopfields/",
-  omopTable: () => "omoptables/",
-  omopTableCheck: (table: number) => `omoptables/${table}/`,
-  conceptFilter: (filter?: string) => `omop/conceptsfilter/?${filter}`,
-  typeName: (filter?: string) => `contenttypeid?${filter}`,
-  postConcept: () => "scanreportconcepts/",
+  scanreportConcept: (id: number) =>
+    `/scanreportconceptsfilter/?object_id=${id}`,
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.tables(filter));
@@ -32,7 +27,7 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.list(filter));
@@ -43,7 +38,7 @@ export async function getScanReports(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.fields(filter));
@@ -98,107 +93,13 @@ export async function updateScanReport(id: number, field: string, value: any) {
   revalidatePath("/scanreports/");
 }
 
-export async function validateConceptCode(
-  conceptCode: number
-): Promise<Concept> {
+export async function getScanReportConcept(
+  id: number,
+): Promise<ScanReportConcept[]> {
   try {
-    return await request<Concept>(fetchKeys.validateConcept(conceptCode));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return {
-      concept_id: 0,
-      concept_name: "",
-      domain_id: "",
-      vocabulary_id: "",
-      concept_class_id: "",
-      standard_concept: null,
-      concept_code: "",
-      valid_start_date: new Date(),
-      valid_end_date: new Date(),
-      invalid_reason: "",
-    };
-  }
-}
-
-export async function getOmopField(): Promise<OmopField[]> {
-  try {
-    return await request<OmopField[]>(fetchKeys.omopField());
+    return await request<ScanReportConcept[]>(fetchKeys.scanreportConcept(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
-  }
-}
-
-export async function getOmopTable(): Promise<OmopTable[]> {
-  try {
-    return await request<OmopTable[]>(fetchKeys.omopTable());
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
-export async function getOmopTableCheck(table: number): Promise<OmopTable> {
-  try {
-    return await request<OmopTable>(fetchKeys.omopTableCheck(table));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      table: "",
-    };
-  }
-}
-
-export async function getConceptFilter(
-  filter: string | undefined
-): Promise<ConceptFilter[]> {
-  try {
-    return await request<ConceptFilter[]>(fetchKeys.fields(filter));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
-export async function getContentType(
-  filter: string | undefined
-): Promise<ContentType> {
-  try {
-    return await request<ContentType>(fetchKeys.typeName(filter));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return { content_type_id: 0 };
-  }
-}
-
-export async function postConcept(data: {}): Promise<PostConceptResponse> {
-  try {
-    return await request<PostConceptResponse>(fetchKeys.postConcept(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: data as BodyInit,
-    });
-  } catch (error) {
-    console.warn("Failed to post data:", error);
-    return {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      nlp_entity: null,
-      nlp_entity_type: null,
-      nlp_confidence: null,
-      nlp_vocabulary: null,
-      nlp_concept_code: null,
-      nlp_processed_string: null,
-      object_id: 0,
-      creation_type: "",
-      concept: 0,
-      content_type: 0,
-    };
   }
 }

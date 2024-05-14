@@ -4,12 +4,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import { Input } from "@/components/ui/input";
-import { Form, Formik } from "formik";
-import * as Yup from "yup";
-import { validateConceptCode } from "@/api/scanreports";
-import { toast } from "sonner";
-import { ApiError } from "@/lib/api/error";
 import AddConcept from "./add-concept";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
@@ -65,10 +59,8 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const { id, scan_report_table } = row.original as ScanReportField;
-      return (
-        <AddConcept tableId={scan_report_table.toString()} source_field={id} />
-      );
+      const { scan_report_table, id } = row.original as ScanReportField;
+      return <AddConcept id={id} tableId={scan_report_table.toString()} />;
     },
   },
   {
