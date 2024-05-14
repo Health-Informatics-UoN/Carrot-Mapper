@@ -36,6 +36,11 @@ export const mapConceptToOmopField = () => {
       }));
       return mappedTables.find((val) => val.isAllowed == true)?.field;
     }
+    // if there are more than 1 fields that match the domain
+    // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
+    const m_allowed_tables = [] as any; // Declare the variable m_allowed_tables
+    let omopTables: OmopTable[] = []; // Declare and initialize omopTables as an empty array
+
     if (!omopTables) {
       omopTables = await getOmopTables();
     }
