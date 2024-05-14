@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from django.contrib.contenttypes.models import ContentType
 from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
@@ -61,6 +61,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
 
     # get details of existing selected values, for the purpose of matching against
     # new values
+    # TODO: Don't need to paginate any of this anymore.
     existing_paginated_value_ids = helpers.paginate(
         [value.object_id for value in existing_value_concepts],
         omop_helpers.max_chars_for_get,
@@ -70,6 +71,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     # for each list in paginated ids, get scanreport values that match any of the given
     # ids (those with an associated concept)
     existing_values_filtered_by_id: List[ScanReportValue] = []
+    # TODO: So don't need to then paginate this.
     for ids in existing_paginated_value_ids:
         ids_to_get = ",".join(map(str, ids))
         values = ScanReportValue.objects.filter(pk_in=ids_to_get).all()
@@ -296,7 +298,17 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
 
 def select_concepts_to_post(
     new_content_details: List[Dict[str, str]],
-    details_to_id_and_concept_id_map: Dict[str, Tuple[str, str]],
+    details_to_id_and_concept_id_map: Union[
+        Dict[str, Tuple[str, str]],
+        Dict[
+            Tuple[
+                str,
+                str,
+                str,
+            ],
+            Tuple[str, str],
+        ],
+    ],
     content_type: ScanReportConceptContentType,
 ) -> List[ScanReportConcept]:
     """
@@ -328,6 +340,7 @@ def select_concepts_to_post(
         if content_type == ScanReportConceptContentType.FIELD:
             key = str(new_content_detail["name"])
         elif content_type == ScanReportConceptContentType.VALUE:
+            # TODO: Pick a single strategy here
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -336,6 +349,7 @@ def select_concepts_to_post(
         else:
             raise ValueError(f"Unsupported content_type: {content_type}")
 
+        # think this is using the key / typing errors here as a feature.
         try:
             existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
             logger.info(

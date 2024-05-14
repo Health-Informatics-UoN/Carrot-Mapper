@@ -2,9 +2,11 @@ import logging
 import os
 import time
 from collections import OrderedDict, defaultdict
+from typing import List
 
 import requests
 from shared_code import helpers
+from shared_code.models import ScanReportValueDict
 
 api_url = os.environ.get("APP_URL", "") + "api/"
 api_header = {"Authorization": "Token {}".format(os.environ.get("AZ_FUNCTION_KEY"))}
@@ -13,7 +15,7 @@ logger = logging.getLogger("test_logger")
 max_chars_for_get = 2000
 
 
-def find_standard_concept_batch(source_concepts: list):
+def find_standard_concept_batch(source_concepts: List[ScanReportValueDict]):
     """
     Given a list of dictionaries, each of which contains a 'concept_id' entry,
     return a dictionary mapping from the original concept_ids to all standard
@@ -40,6 +42,7 @@ def find_standard_concept_batch(source_concepts: list):
         return {}
 
     # Paginate the source concepts
+    # TODO: remove pagination
     paginated_source_concepts = helpers.paginate(
         (str(source_concept["concept_id"]) for source_concept in source_concepts),
         max_chars=max_chars_for_get,
@@ -49,6 +52,7 @@ def find_standard_concept_batch(source_concepts: list):
     concept_relations_response = []
     for page in paginated_source_concepts:
         page_of_concept_ids_to_get = ",".join(map(str, page))
+        # TODO: db
         get_concept_relations_response = requests.get(
             url=f"{api_url}omop/conceptrelationshipfilter/?concept_id_1__in="
             + f"{page_of_concept_ids_to_get}&relationship_id=Maps to",
@@ -66,7 +70,7 @@ def find_standard_concept_batch(source_concepts: list):
             concept_relations,
         )
     )
-
+    # TODO: remove pagination
     paginated_concept_id_2s = helpers.paginate(
         (str(relation["concept_id_2"]) for relation in filtered_concept_relations),
         max_chars=max_chars_for_get,
@@ -75,6 +79,7 @@ def find_standard_concept_batch(source_concepts: list):
     concepts = []
     for page in paginated_concept_id_2s:
         concept_id_2s_to_get = ",".join(map(str, page))
+        # TODO: db
         get_concepts = requests.get(
             url=f"{api_url}omop/conceptsfilter/?concept_id__in={concept_id_2s_to_get}",
             headers=api_header,
