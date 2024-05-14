@@ -91,7 +91,7 @@ interface ConceptFilter {
   invalid_reason: string;
 }
 
-interface PostConceptResponse {
+interface ScanReportConcept {
   id: number;
   created_at: Date;
   updated_at: Date;
@@ -103,6 +103,18 @@ interface PostConceptResponse {
   nlp_processed_string: string | null;
   object_id: number;
   creation_type: string;
-  concept: number;
+  concept: Concept | number;
   content_type: number;
+}
+
+interface AddMappingRuleResponse {
+  id: number;
+  created_at: Date;
+  updated_at: Date;
+  approved: boolean;
+  scan_report: number;
+  omop_field: number;
+  source_table: any;
+  source_field: number;
+  concept: number;
 }

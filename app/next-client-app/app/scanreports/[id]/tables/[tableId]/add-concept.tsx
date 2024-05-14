@@ -1,43 +1,116 @@
-import {
-  getOmopField,
-  getOmopTable,
-  getScanReportTable,
-  validateConceptCode,
-} from "@/api/scanreports";
+import { getConcept, getConceptFilter, postConcept } from "@/api/concepts";
+import { getOmopFields, getOmopTable } from "@/api/omop";
+import { getScanReportConcept, getScanReportTable } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { m_allowed_tables } from "@/constants/concepts";
 import { ApiError } from "@/lib/api/error";
+import { mapConceptToOmopField, saveMappingRules } from "@/lib/concept-utils";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
 
-export default function AddConcept({ tableId }: { tableId: string }) {
+interface AddConceptProps {
+  id: number;
+  tableId: string;
+}
+
+export default function AddConcept({ id, tableId }: AddConceptProps) {
+  const handleError = (error: any, message: string) => {
+    const errorObj = JSON.parse((error as ApiError).message);
+    toast.error(`${message} Error: ${errorObj.detail}`);
+    console.error(error);
+  };
+
   const handleSubmit = async (conceptCode: number) => {
     try {
-      const concept = await validateConceptCode(conceptCode);
-      const domain = concept?.domain_id.toLocaleLowerCase();
       const table = await getScanReportTable(tableId);
-      const fields = await getOmopField();
-      // check if concept exists
-      if (concept.concept_id) {
-        // set the error message depending on which value is missing
-        if (!table.person_id || !table.date_event) {
-          let message;
-          if (!table.person_id && !table.date_event) {
-            message = "Please set the person_id and a date_event on the table ";
-          } else if (!table.person_id) {
-            message = "Please set the person_id on the table ";
-          } else {
-            message = "Please set the date_event on the table ";
-          }
-          toast.error(message);
+      const concept = await getConcept(conceptCode);
+      const domain = concept?.domain_id.toLocaleLowerCase() ?? "";
+      const fields = await getOmopFields();
+
+      // set the error message depending on which value is missing
+      if (!table.person_id || !table.date_event) {
+        let message;
+        if (!table.person_id && !table.date_event) {
+          message = "Please set the person_id and a date_event on the table ";
+        } else if (!table.person_id) {
+          message = "Please set the person_id on the table ";
+        } else {
+          message = "Please set the date_event on the table ";
         }
+        toast.error(message);
+        return;
       }
-      // if concept does not exist, display error
-      toast.error("No concept matches this concept code!");
+
+      // check if concept exists
+      if (!concept.concept_id) {
+        toast.error(
+          `Concept id ${conceptCode} does not exist in our database.`,
+        );
+        return;
+      }
+
+      // check if concept has valid destination field
+      const cachedOmopFunction = mapConceptToOmopField();
+      const destination_field = await cachedOmopFunction(
+        fields,
+        domain + "_source_concept_id",
+      );
+      if (!destination_field) {
+        toast.error("Could not find a destination field for this concept");
+        return;
+      }
+
+      // check concepts omop table has been implemented
+      const omopTable = await getOmopTable(destination_field.table.toString());
+      if (!m_allowed_tables.includes(omopTable.table)) {
+        toast.error(
+          `Concept ${concept.concept_id} (${concept.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`,
+        );
+        return;
+      }
+
+      try {
+        // create scan report concept
+        await postConcept({
+          concept: conceptCode,
+          object_id: id,
+          content_type: "scanreportfield",
+          creation_type: "M",
+        });
+        let scanreportconcepts = await getScanReportConcept(id);
+        console.log(scanreportconcepts);
+        if (scanreportconcepts.length > 0) {
+          const conceptIds = scanreportconcepts.map((value) => value.concept);
+          const conceptFilters = await getConceptFilter(conceptIds.join());
+
+          // save new concepts to state
+          const scanreport_concepts = scanreportconcepts.map((element) => ({
+            ...element,
+            concept: conceptFilters.find(
+              (con) => con.concept_id == element.concept,
+            ),
+          }));
+          toast.success("ConceptId linked to the value");
+
+          // create mapping rules for new concept
+          const scan_report_concept = scanreport_concepts.filter(
+            (con) => con.concept?.concept_id == conceptCode,
+          )[0];
+          try {
+            await saveMappingRules(scan_report_concept as any, table);
+            toast.success("Mapping Rules created");
+          } catch (error) {
+            handleError(error, "Could not create mapping rules");
+          }
+        } else {
+          toast.error("Could not find the concepts");
+        }
+      } catch (error) {
+        handleError(error, "Unable to link Concept id to value");
+      }
     } catch (error) {
-      const errorObj = JSON.parse((error as ApiError).message);
-      toast.error(`Adding concept failed! Error: ${errorObj.detail}`);
-      console.error(error);
+      handleError(error, "Adding concept failed!");
     }
   };
 
