@@ -60,22 +60,10 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     )
 
     # get details of existing selected values, for the purpose of matching against
-    # new values
-    # TODO: Don't need to paginate any of this anymore.
-    existing_paginated_value_ids = helpers.paginate(
-        [value.object_id for value in existing_value_concepts],
-        omop_helpers.max_chars_for_get,
-    )
-    logger.debug(f"{existing_paginated_value_ids=}")
-
-    # for each list in paginated ids, get scanreport values that match any of the given
-    # ids (those with an associated concept)
-    existing_values_filtered_by_id: List[ScanReportValue] = []
-    # TODO: So don't need to then paginate this.
-    for ids in existing_paginated_value_ids:
-        ids_to_get = ",".join(map(str, ids))
-        values = ScanReportValue.objects.filter(pk_in=ids_to_get).all()
-        existing_values_filtered_by_id.extend(values)
+    existing_value_ids = [value.object_id for value in existing_value_concepts]
+    existing_values_filtered_by_id = ScanReportValue.objects.filter(
+        pk_in=existing_value_ids
+    ).all()
     logger.debug("existing_values_filtered_by_id")
 
     # existing_values_filtered_by_id now contains the id,value,value_dec,
