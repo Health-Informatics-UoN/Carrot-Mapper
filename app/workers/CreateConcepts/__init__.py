@@ -124,9 +124,7 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
 
     """
     logger.info(f"begin {vocab}")
-    # TODO: Probably don't need to paginate any more though?
-    paginated_values = _paginate_values(entries)
-    concept_vocab_content = _fetch_concepts_for_vocab(vocab, paginated_values)
+    concept_vocab_content = _get_concepts_for_vocab(vocab, entries)
 
     logger.debug(
         f"Attempting to match {len(concept_vocab_content)} concepts to "
@@ -137,23 +135,8 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
     _batch_process_non_standard_concepts(entries)
 
 
-def _paginate_values(entries: List[ScanReportValueDict]) -> List[List[str]]:
-    """
-    Paginate values for processing.
-
-    Args:
-        entries (List[Dict[str, Any]]): A list of dictionaries representing the entries.
-
-    Returns:
-        List[List[str]]: A paginated list of values.
-
-    """
-    values = [str(entry["value"]) for entry in entries]
-    return helpers.paginate(values, max_chars=omop_helpers.max_chars_for_get)
-
-
-def _fetch_concepts_for_vocab(
-    vocab: str, paginated_values: List[List[str]]
+def _get_concepts_for_vocab(
+    vocab: str, entries: List[ScanReportValueDict]
 ) -> List[Concept]:
     """
     Fetch concepts for a specific vocabulary.
@@ -167,9 +150,9 @@ def _fetch_concepts_for_vocab(
 
     """
     concept_vocab_response: List[Concept] = []
-    for i in paginated_values:
+    for i in entries:
         concepts = Concept.objects.filter(
-            concept_code__in=",".join(i), vocabulary_id__in=vocab
+            concept_code__in=i["value"], vocabulary_id__in=vocab
         ).all()
         concept_vocab_response.extend(concepts)
     return concept_vocab_response
