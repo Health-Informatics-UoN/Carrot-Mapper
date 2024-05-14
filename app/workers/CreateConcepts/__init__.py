@@ -2,10 +2,14 @@ import os
 from collections import defaultdict
 from typing import Any, Dict, List
 
-from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from django.db.models.query import QuerySet
 from shared_code import blob_parser, helpers, omop_helpers
 from shared_code.logger import logger
+from shared_code.models import (
+    ScanReportConceptContentType,
+    ScanReportFieldDict,
+    ScanReportValueDict,
+)
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
@@ -42,14 +46,16 @@ def _create_concepts(
             if isinstance(concept["concept_id"], list):
                 for concept_id in concept["concept_id"]:
                     concept_instance = db.create_concept(
-                        concept_id, concept["id"], "scanreportvalue"
+                        concept_id, concept["id"], ScanReportConceptContentType.VALUE
                     )
                     if concept_instance is not None:
                         concepts.append(concept_instance)
             else:
                 if (
                     concept_instance := db.create_concept(
-                        concept["concept_id"], concept["id"], "scanreportvalue"
+                        concept["concept_id"],
+                        concept["id"],
+                        ScanReportConceptContentType.VALUE,
                     )
                 ) is not None:
                     concepts.append(concept_instance)
