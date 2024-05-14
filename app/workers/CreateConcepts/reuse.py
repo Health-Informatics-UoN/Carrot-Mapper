@@ -1,10 +1,14 @@
-from typing import Dict, List, Literal
+from typing import Dict, List, Tuple
 
-from CreateConcepts.models import ScanReportFieldDict, ScanReportValueDict
 from django.contrib.contenttypes.models import ContentType
 from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
 from shared_code import db, helpers, omop_helpers
 from shared_code.logger import logger
+from shared_code.models import (
+    ScanReportConceptContentType,
+    ScanReportFieldDict,
+    ScanReportValueDict,
+)
 
 """
 Functions for finding, mapping, and creation of reusable Scan Report Concepts.
@@ -30,11 +34,11 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         new_fields_map (Dict[str, str]): A map of field names to Ids.
     """
     logger.info("reuse_existing_value_concepts")
-    content_type_str = "scanreportvalue"
+    content_type_enum = ScanReportConceptContentType.VALUE
 
     # Gets all scan report concepts that are for the type value
     # (or content type which should be value) and in "active" SRs
-    content_type = ContentType.objects.get(model=content_type_str)
+    content_type = ContentType.objects.get(model=content_type_enum.value)
     value_ids = ScanReportValue.objects.filter(
         scan_report_field__scan_report_table__scan_report__hidden=False,
         scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
@@ -172,7 +176,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_values_full_details,
         value_details_to_value_and_concept_id_map,
-        content_type_str,
+        content_type_enum,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
@@ -193,9 +197,9 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
         None
     """
     logger.info("reuse_existing_field_concepts")
-    content_type_str = "scanreportfield"
+    content_type_enum = ScanReportConceptContentType.FIELD
 
-    content_type = ContentType.objects.get(model=content_type_str)
+    content_type = ContentType.objects.get(model=content_type_enum.value)
     field_ids = ScanReportField.objects.filter(
         scan_report_table__scan_report__hidden=False,
         scan_report_table__scan_report__parent_dataset__hidden=False,
@@ -284,7 +288,7 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_fields_full_details,
         existing_field_name_to_field_and_concept_id_map,
-        content_type_str,
+        content_type_enum,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
@@ -292,8 +296,8 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
 
 def select_concepts_to_post(
     new_content_details: List[Dict[str, str]],
-    details_to_id_and_concept_id_map: List[Dict[str, str]],
-    content_type: Literal["scanreportfield", "scanreportvalue"],
+    details_to_id_and_concept_id_map: Dict[str, Tuple[str, str]],
+    content_type: ScanReportConceptContentType,
 ) -> List[ScanReportConcept]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
@@ -321,9 +325,9 @@ def select_concepts_to_post(
     concepts_to_post: List[ScanReportConcept] = []
 
     for new_content_detail in new_content_details:
-        if content_type == "scanreportfield":
+        if content_type == ScanReportConceptContentType.FIELD:
             key = str(new_content_detail["name"])
-        elif content_type == "scanreportvalue":
+        elif content_type == ScanReportConceptContentType.VALUE:
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -335,8 +339,8 @@ def select_concepts_to_post(
         try:
             existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
             logger.info(
-                f"Found existing {'field' if content_type == 'scanreportfield' else 'value'} with id: {existing_content_id} "
-                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == 'scanreportfield' else 'value'} id: {new_content_detail['id']}"
+                f"Found existing {'field' if content_type == ScanReportConceptContentType.FIELD else 'value'} with id: {existing_content_id} "
+                f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == ScanReportConceptContentType.FIELD else 'value'} id: {new_content_detail['id']}"
             )
             if concept_entry := db.create_concept(
                 concept_id, str(new_content_detail["id"]), content_type, "R"
