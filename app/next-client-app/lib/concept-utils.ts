@@ -4,28 +4,33 @@ import { m_allowed_tables } from "@/constants/concepts";
 
 //function to map concept domain to an omop field
 export const mapConceptToOmopField = () => {
-  // cached values
   let omopTables: OmopTable[] | null = null;
+  // This const will return a function which will receive three params, and one is optional
+  // This optional one is the name of the omop table (check api/omoptables/ to confirm), so it should have the name omop_table_name: string, not table (misleading)
+  // This optional one also maybe not nessessary because we didn't pass it anyway in add_concept.tsx, so it will not be there by any means. And because of the reason on line 44, I suggest we can remove it, line 19 and lines 45-54
+  return async (
+    fields: OmopField[],
+    domain: string,
+    omop_table_name?: string
+  ) => {
+    // If omop_table_name is not provided (which will not be anyway), the function filters fields to get those that match the provided domain
 
-  // mapping function which is returned by this function
-  return async (fields: OmopField[], domain: string, table?: any) => {
-    //if omop table is not specified
-    if (!table) {
+    if (!omop_table_name) {
+      // This condition is confusing and misleading, I suggest to remove it
       // get omop fields that match specified domain
       const mappedFields = fields.filter((field) => field.field == domain);
       if (mappedFields.length < 2) {
-        return mappedFields[0];
+        return mappedFields[0]; // The code last time still worked, even though it had some errors, becasue it stopped here
       }
-      // if there are more than 1 fields that match the domain
-      // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
+      //  If there are multiple matching fields, it retrieves OMOP tables data
       if (!omopTables) {
         omopTables = await getOmopTables();
       }
-      // find correct field to return
+      // finds the field whose table is included in the m_allowed_tables list, which we will do again in the next step of add_conept.tsx, but we need it here.
       let mappedTables: {
         table: OmopTable | null;
         field: OmopField;
-        isAllowed?: any;
+        isAllowed?: boolean; // Add this one here only for the purpose of filter the field whose table is included in the m_allowed_tables list or not
       }[] = mappedFields.map((field) => ({
         table: omopTables?.find((t) => t.id == field.table) ?? null,
         field: field,
@@ -34,22 +39,19 @@ export const mapConceptToOmopField = () => {
         ...val,
         isAllowed: m_allowed_tables.includes(val.table?.table ?? ""),
       }));
-      return mappedTables.find((val) => val.isAllowed == true)?.field;
+      return mappedTables.find((val) => val.isAllowed == true)?.field; // Return the valid field
     }
-    // if there are more than 1 fields that match the domain
-    // if omopTables hasn't previously been retrieved retreive it, otherwise, use cached version
-    const m_allowed_tables = [] as any; // Declare the variable m_allowed_tables
-    let omopTables: OmopTable[] = []; // Declare and initialize omopTables as an empty array
-
+    // If omop_table_name is provided, which will not happen (so we can remove the code below, I suppose), the function retrieves OMOP tables data ...
     if (!omopTables) {
       omopTables = await getOmopTables();
     }
-    // find omop field with specified table and domain
-    let mappedTable = omopTables.find((t) => t.table == table) ?? null;
+    // ... then finds the field that matches both the provided omop_table_name and passed domain
+    let mappedTable =
+      omopTables.find((t) => t.table == omop_table_name) ?? null;
     const mappedField = fields.find(
-      (f) => f.table == mappedTable?.id && f.field == domain,
+      (f) => f.table == mappedTable?.id && f.field == domain
     );
-    return mappedField;
+    return mappedField; // return the matching field
   };
 };
 
@@ -57,7 +59,7 @@ export const mapConceptToOmopField = () => {
 export const saveMappingRules = async (
   scan_report_concept: ScanReportConcept,
   // scan_report_value,
-  table: ScanReportTable,
+  table: ScanReportTable
 ) => {
   const domain = (
     scan_report_concept.concept as Concept
@@ -81,7 +83,7 @@ export const saveMappingRules = async (
   };
   const destination_field = await cachedOmopFunction(
     fields,
-    domain + "_source_concept_id",
+    domain + "_source_concept_id"
   );
   // if a destination field can't be found for concept domain, return error
   if (destination_field == undefined) {
@@ -100,7 +102,7 @@ export const saveMappingRules = async (
   //person_id
   data.omop_field = fields.filter(
     (field) =>
-      field.field == "person_id" && field.table == destination_field.table,
+      field.field == "person_id" && field.table == destination_field.table
   )[0].id;
   data.source_field = table.person_id;
   promises.push(await AddMappingRule(data));
@@ -112,7 +114,7 @@ export const saveMappingRules = async (
   date_omop_fields.forEach(async (element: any) => {
     data.omop_field = fields.filter(
       (field) =>
-        field.field == element && field.table == destination_field.table,
+        field.field == element && field.table == destination_field.table
     )[0].id;
     promises.push(await AddMappingRule(data));
   });
@@ -142,7 +144,7 @@ export const saveMappingRules = async (
     tempOmopField = await cachedOmopFunction(
       fields,
       "value_as_number",
-      "measurement",
+      "measurement"
     );
     data.omop_field = tempOmopField?.id;
     promises.push(await AddMappingRule(data));
