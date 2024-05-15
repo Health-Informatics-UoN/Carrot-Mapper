@@ -46,6 +46,7 @@ interface ScanReportField {
   classification_system: string | null;
   pass_from_source: boolean;
   concept_id: number;
+  concepts?: Concept[];
   field_description: string | null;
   scan_report_table: number;
 }

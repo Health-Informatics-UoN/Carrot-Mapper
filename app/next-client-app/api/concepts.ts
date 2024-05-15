@@ -1,5 +1,6 @@
 "use server";
 import request from "@/lib/api/request";
+import { revalidatePath } from "next/cache";
 
 const fetchKeys = {
   concept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
@@ -33,7 +34,7 @@ export async function getConcept(conceptCode: number): Promise<Concept> {
 }
 
 export async function getScanReportConcept(
-  id: number
+  id: number,
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(fetchKeys.scanreportConcept(id));
@@ -44,7 +45,7 @@ export async function getScanReportConcept(
 }
 
 export async function getConceptFilter(
-  filter: string
+  filter: string,
 ): Promise<ConceptFilter[]> {
   try {
     return await request<ConceptFilter[]>(fetchKeys.conceptFilter(filter));
@@ -55,11 +56,11 @@ export async function getConceptFilter(
 }
 
 export async function getContentTypeId(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<{ content_type_id: number }> {
   try {
     return await request<{ content_type_id: number }>(
-      fetchKeys.typeName(filter)
+      fetchKeys.typeName(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -69,13 +70,15 @@ export async function getContentTypeId(
 
 export async function postConcept(data: {}): Promise<ScanReportConcept> {
   try {
-    return await request<ScanReportConcept>(fetchKeys.postConcept(), {
+    const response = await request<ScanReportConcept>(fetchKeys.postConcept(), {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
       body: JSON.stringify(data),
     });
+    revalidatePath("");
+    return response;
   } catch (error) {
     console.warn("Failed to fetch data.");
     return {

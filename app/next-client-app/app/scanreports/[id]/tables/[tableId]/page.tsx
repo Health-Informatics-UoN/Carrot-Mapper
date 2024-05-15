@@ -10,6 +10,7 @@ import Link from "next/link";
 import { columns } from "./columns";
 import {
   getScanReport,
+  getScanReportConcept,
   getScanReportFields,
   getScanReportTable,
 } from "@/api/scanreports";
@@ -17,6 +18,8 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
+import { getConceptFilter } from "@/api/concepts";
+import { addConceptsToResults } from "@/lib/concept-utils";
 
 interface ScanReportsFieldProps {
   params: {
@@ -41,6 +44,19 @@ export default async function ScanReportsField({
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const filter = <DataTableFilter filter="name" filterText="field" />;
+  const scanReportsConcepts = await getScanReportConcept(
+    `object_id__in=${scanReportsTables.results
+      .map((item) => item.id)
+      .join(",")}`,
+  );
+  const conceptsFilter = await getConceptFilter(
+    scanReportsConcepts.map((item) => item.concept).join(","),
+  );
+  const scanReportsResult = addConceptsToResults(
+    scanReportsTables.results,
+    scanReportsConcepts,
+    conceptsFilter,
+  );
 
   return (
     <div className="pt-10 px-16">
@@ -94,7 +110,7 @@ export default async function ScanReportsField({
       <div>
         <DataTable
           columns={columns}
-          data={scanReportsTables.results}
+          data={scanReportsResult}
           count={scanReportsTables.count}
           Filter={filter}
           linkPrefix="fields/"

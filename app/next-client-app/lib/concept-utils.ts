@@ -11,7 +11,7 @@ export const mapConceptToOmopField = () => {
   return async (
     fields: OmopField[],
     domain: string,
-    omop_table_name?: string
+    omop_table_name?: string,
   ) => {
     // If omop_table_name is not provided (which will not be anyway), the function filters fields to get those that match the provided domain
 
@@ -49,7 +49,7 @@ export const mapConceptToOmopField = () => {
     let mappedTable =
       omopTables.find((t) => t.table == omop_table_name) ?? null;
     const mappedField = fields.find(
-      (f) => f.table == mappedTable?.id && f.field == domain
+      (f) => f.table == mappedTable?.id && f.field == domain,
     );
     return mappedField; // return the matching field
   };
@@ -59,7 +59,7 @@ export const mapConceptToOmopField = () => {
 export const saveMappingRules = async (
   scan_report_concept: ScanReportConcept,
   // scan_report_value,
-  table: ScanReportTable
+  table: ScanReportTable,
 ) => {
   const domain = (
     scan_report_concept.concept as Concept
@@ -83,7 +83,7 @@ export const saveMappingRules = async (
   };
   const destination_field = await cachedOmopFunction(
     fields,
-    domain + "_source_concept_id"
+    domain + "_source_concept_id",
   );
   // if a destination field can't be found for concept domain, return error
   if (destination_field == undefined) {
@@ -102,7 +102,7 @@ export const saveMappingRules = async (
   //person_id
   data.omop_field = fields.filter(
     (field) =>
-      field.field == "person_id" && field.table == destination_field.table
+      field.field == "person_id" && field.table == destination_field.table,
   )[0].id;
   data.source_field = table.person_id;
   promises.push(await AddMappingRule(data));
@@ -114,7 +114,7 @@ export const saveMappingRules = async (
   date_omop_fields.forEach(async (element: any) => {
     data.omop_field = fields.filter(
       (field) =>
-        field.field == element && field.table == destination_field.table
+        field.field == element && field.table == destination_field.table,
     )[0].id;
     promises.push(await AddMappingRule(data));
   });
@@ -144,11 +144,32 @@ export const saveMappingRules = async (
     tempOmopField = await cachedOmopFunction(
       fields,
       "value_as_number",
-      "measurement"
+      "measurement",
     );
     data.omop_field = tempOmopField?.id;
     promises.push(await AddMappingRule(data));
   }
   // when all requests have finished, return
   return promises;
+};
+
+// Method to add concepts to a scanreport result
+export const addConceptsToResults = (
+  scanReportsResult: ScanReportResult[],
+  scanReportsConcepts: ScanReportConcept[],
+  concepts: ConceptFilter[],
+): ScanReportResult[] => {
+  for (const result of scanReportsResult) {
+    (result as ScanReportField).concepts = [];
+    for (const concept of scanReportsConcepts) {
+      if (concept.object_id === result.id) {
+        for (const conceptItem of concepts) {
+          if (conceptItem.concept_id === concept.concept) {
+            (result as ScanReportField).concepts?.push(conceptItem);
+          }
+        }
+      }
+    }
+  }
+  return scanReportsResult;
 };
