@@ -8,8 +8,7 @@ const fetchKeys = {
   postConcept: () => "scanreportconcepts/",
   scanreportConcept: (id: number) =>
     `/scanreportconceptsfilter/?object_id=${id}`,
-  contentTypeId: (contentType: string) =>
-    `/contenttypeid?type_name=${contentType}`,
+  typeName: (filter?: string) => `contenttypeid?${filter}`,
   mappingrule: "mappingrules/",
 };
 
@@ -34,7 +33,7 @@ export async function getConcept(conceptCode: number): Promise<Concept> {
 }
 
 export async function getScanReportConcept(
-  id: number,
+  id: number
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(fetchKeys.scanreportConcept(id));
@@ -45,7 +44,7 @@ export async function getScanReportConcept(
 }
 
 export async function getConceptFilter(
-  filter: string,
+  filter: string
 ): Promise<ConceptFilter[]> {
   try {
     return await request<ConceptFilter[]>(fetchKeys.conceptFilter(filter));
@@ -56,11 +55,11 @@ export async function getConceptFilter(
 }
 
 export async function getContentTypeId(
-  contentType: string,
+  filter: string | undefined
 ): Promise<{ content_type_id: number }> {
   try {
     return await request<{ content_type_id: number }>(
-      fetchKeys.contentTypeId(contentType),
+      fetchKeys.typeName(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
