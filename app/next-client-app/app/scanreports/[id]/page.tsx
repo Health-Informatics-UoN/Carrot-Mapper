@@ -8,12 +8,17 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { columns } from "./columns";
-import { getScanReport, getScanReportsTables } from "@/api/scanreports";
+import {
+  downloadScanReport,
+  getScanReport,
+  getScanReportsTables,
+} from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { BookText, ChevronRight, Download } from "lucide-react";
+import { DownloadButton } from "@/components/scanreports/DownloadScanReport";
 
 interface ScanReportsTableProps {
   params: {
@@ -77,12 +82,7 @@ export default async function ScanReportsTable({
           </Link>
         </div>
         <div className="flex gap-2">
-          <Button variant={"outline"}>
-            <a href={`/api/scanreports/${id}/download/`} download>
-              Export Scan Report
-            </a>
-            <Download className="ml-2 size-4" />
-          </Button>
+          <DownloadButton scanReportId={id} />
           {/* TODO: This has been broken #459, needs API fixes. */}
           {/* <Button variant={"outline"}>
             <a href={`/api/scanreports/${id}/download/`} download>

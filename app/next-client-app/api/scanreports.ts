@@ -11,10 +11,11 @@ const fetchKeys = {
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
   scanreportConcept: (filter?: string) => `scanreportconceptsfilter/?${filter}`,
+  downloadReport: (id: string) => `scanreports/${id}/download/`,
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.tables(filter));
@@ -25,7 +26,7 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.list(filter));
@@ -36,7 +37,7 @@ export async function getScanReports(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.fields(filter));
@@ -92,14 +93,25 @@ export async function updateScanReport(id: number, field: string, value: any) {
 }
 
 export async function getScanReportConcept(
-  filter: string,
+  filter: string
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcept(filter),
+      fetchKeys.scanreportConcept(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
+  }
+}
+
+export async function downloadScanReport(id: string): Promise<Blob> {
+  try {
+    return await request<Blob>(fetchKeys.downloadReport(id), {
+      download: true,
+    });
+  } catch (error) {
+    console.warn("Failed to download data.");
+    throw error;
   }
 }
