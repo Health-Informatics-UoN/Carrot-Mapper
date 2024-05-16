@@ -35,7 +35,7 @@ export async function getConcept(conceptCode: number): Promise<Concept> {
 }
 
 export async function getScanReportConcept(
-  id: number,
+  id: number
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(fetchKeys.scanreportConcept(id));
@@ -55,11 +55,11 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
 }
 
 export async function getContentTypeId(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<{ content_type_id: number }> {
   try {
     return await request<{ content_type_id: number }>(
-      fetchKeys.typeName(filter),
+      fetchKeys.typeName(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
