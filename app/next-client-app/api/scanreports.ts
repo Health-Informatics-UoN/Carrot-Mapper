@@ -14,7 +14,7 @@ const fetchKeys = {
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.tables(filter));
@@ -25,7 +25,7 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.list(filter));
@@ -36,7 +36,7 @@ export async function getScanReports(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.fields(filter));
@@ -92,11 +92,11 @@ export async function updateScanReport(id: number, field: string, value: any) {
 }
 
 export async function getScanReportConcept(
-  filter: string,
+  filter: string
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcept(filter),
+      fetchKeys.scanreportConcept(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");

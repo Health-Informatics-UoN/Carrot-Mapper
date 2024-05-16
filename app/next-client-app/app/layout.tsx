@@ -22,7 +22,16 @@ export default function RootLayout({
         <Navbar />
         {children}
         <BootstrapClient />
-        <Toaster />
+        <Toaster
+          toastOptions={{
+            classNames: {
+              error: "bg-red-700 text-white",
+              success: "bg-green-700 text-white",
+              warning: "text-yellow-400",
+              info: "bg-blue-400",
+            },
+          }}
+        />
       </body>
     </html>
   );
