@@ -21,14 +21,12 @@ interface AddConceptProps {
 }
 
 export default function AddConcept({ id, tableId }: AddConceptProps) {
-  const TypeNameParam = {
+  const typeNameQuery = objToQuery({
     type_name: "scanreportfield",
-  };
-  const typeNameQuery = objToQuery(TypeNameParam);
-  const ObjectParam = {
+  });
+  const objectQuery = objToQuery({
     object_id: id,
-  };
-  const objectQuery = objToQuery(ObjectParam);
+  });
 
   const handleError = (error: any, message: string) => {
     const errorObj = JSON.parse((error as ApiError).message);
