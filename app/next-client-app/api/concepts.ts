@@ -79,7 +79,7 @@ export async function addConcept(data: {}): Promise<ScanReportConcept> {
     revalidatePath("");
     return response;
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to create concept.");
     return {
       id: 0,
       created_at: new Date(),
@@ -118,7 +118,7 @@ export async function AddMappingRule(data: {}): Promise<AddMappingRuleResponse> 
       body: JSON.stringify(data),
     });
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to add mapping rules.");
     return {
       id: 0,
       created_at: new Date(),
