@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import AddConcept from "./add-concept";
-import { Concepts } from "./concepts";
+import { ConceptTags } from "./concept-tags";
+import { Pencil } from "lucide-react";
 
 export const columns: ColumnDef<ScanReportResult>[] = [
   {
@@ -45,19 +46,14 @@ export const columns: ColumnDef<ScanReportResult>[] = [
   },
   {
     id: "Concepts",
-    accessorKey: "concept_id",
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Concepts"
-        sortName="concept_id"
-      />
+      <DataTableColumnHeader column={column} title="Concepts" />
     ),
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original as ScanReportField;
-      return <Concepts concepts={concepts ?? []} />;
+      return <ConceptTags concepts={concepts ?? []} />;
     },
   },
   {
@@ -70,14 +66,15 @@ export const columns: ColumnDef<ScanReportResult>[] = [
   },
   {
     id: "edit",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Edit" />
-    ),
+    header: "",
     cell: ({ row }) => {
       const { id } = row.original;
       return (
         <Link href={`fields/${id}/update`}>
-          <Button>Edit Field</Button>
+          <Button variant={"secondary"}>
+            Edit Field
+            <Pencil className="ml-2 size-4" />
+          </Button>
         </Link>
       );
     },

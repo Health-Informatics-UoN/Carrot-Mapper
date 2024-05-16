@@ -1,8 +1,8 @@
 import {
   getConcept,
-  getConceptFilter,
+  getConceptFilters,
   getContentTypeId,
-  postConcept,
+  addConcept,
 } from "@/api/concepts";
 import { getOmopFields, getOmopTable } from "@/api/omop";
 import { getScanReportConcept, getScanReportTable } from "@/api/scanreports";
@@ -60,7 +60,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       // check if concept exists
       if (!concept.concept_id) {
         toast.error(
-          `Concept id ${conceptCode} does not exist in our database.`
+          `Concept id ${conceptCode} does not exist in our database.`,
         );
         return;
       }
@@ -69,7 +69,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const cachedOmopFunction = mapConceptToOmopField();
       const destination_field = await cachedOmopFunction(
         fields,
-        domain + "_source_concept_id"
+        domain + "_source_concept_id",
       );
       if (!destination_field) {
         toast.error("Could not find a destination field for this concept");
@@ -80,14 +80,14 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const omopTable = await getOmopTable(destination_field.table.toString());
       if (!m_allowed_tables.includes(omopTable.table)) {
         toast.error(
-          `Concept ${concept.concept_id} (${concept.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`
+          `Concept ${concept.concept_id} (${concept.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`,
         );
         return;
       }
 
       try {
         // create scan report concept
-        const response = await postConcept({
+        await addConcept({
           concept: conceptCode,
           object_id: id,
           content_type: "scanreportfield",
@@ -96,20 +96,20 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
         let scanreportconcepts = await getScanReportConcept(objectQuery);
         if (scanreportconcepts.length > 0) {
           const conceptIds = scanreportconcepts.map((value) => value.concept);
-          const conceptFilters = await getConceptFilter(conceptIds.join());
+          const conceptFilters = await getConceptFilters(conceptIds.join());
 
           // save new concepts to state
           const scanreport_concepts = scanreportconcepts.map((element) => ({
             ...element,
             concept: conceptFilters.find(
-              (con) => con.concept_id == element.concept
+              (con) => con.concept_id == element.concept,
             ),
           }));
           toast.success("ConceptId linked to the value");
 
           // create mapping rules for new concept
           const scan_report_concept = scanreport_concepts.filter(
-            (con) => con.concept?.concept_id == conceptCode
+            (con) => con.concept?.concept_id == conceptCode,
           )[0];
           try {
             await saveMappingRules(scan_report_concept as any, table);

@@ -157,19 +157,23 @@ export const saveMappingRules = async (
 export const addConceptsToResults = (
   scanReportsResult: ScanReportResult[],
   scanReportsConcepts: ScanReportConcept[],
-  concepts: ConceptFilter[],
-): ScanReportResult[] => {
+  concepts: Concept[],
+) => {
   for (const result of scanReportsResult) {
     (result as ScanReportField).concepts = [];
-    for (const concept of scanReportsConcepts) {
-      if (concept.object_id === result.id) {
-        for (const conceptItem of concepts) {
-          if (conceptItem.concept_id === concept.concept) {
-            (result as ScanReportField).concepts?.push(conceptItem);
-          }
+    scanReportsConcepts.map((scanreportconcept) => {
+      if (scanreportconcept.object_id === (result as ScanReportField).id) {
+        let concept = concepts.find(
+          (x) => x.concept_id === scanreportconcept.concept,
+        );
+        if (concept) {
+          (result as ScanReportField).concepts?.push({
+            ...concept,
+            scan_report_concept_id: scanreportconcept.id,
+          });
         }
       }
-    }
+    });
   }
   return scanReportsResult;
 };
