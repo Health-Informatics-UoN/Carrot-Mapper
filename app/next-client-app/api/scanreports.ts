@@ -8,10 +8,11 @@ const fetchKeys = {
   tables: (filter?: string) => `v2/scanreporttables/?${filter}`,
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  permissions: (id: number) => `scanreports/${id}/permissions/`,
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReportTables> {
   try {
     return await request<ScanReportTables>(fetchKeys.tables(filter));
@@ -23,13 +24,22 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReport> {
   try {
     return await request<ScanReport>(fetchKeys.list(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+export async function getScanReportPermissions(id: number): Promise<{}> {
+  try {
+    return await request<[]>(fetchKeys.permissions(id));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { permissions: [] };
   }
 }
 
