@@ -139,13 +139,14 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       {({ values, handleChange, handleSubmit }) => (
         <Form onSubmit={handleSubmit}>
           <div className="flex gap-2">
-            <div className="flex-none">
+            <div>
               <Input
                 type="number"
                 name="concept"
                 value={values.concept}
                 onChange={handleChange}
                 required
+                className="w-[180px]"
               />
             </div>
             <Button type="submit">Add</Button>
