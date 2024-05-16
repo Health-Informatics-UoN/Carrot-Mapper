@@ -1613,7 +1613,7 @@ description = "Carrot shared library"
 optional = false
 python-versions = "^3.11"
 files = []
-develop = true
+develop = false
 
 [package.dependencies]
 azure-storage-queue = "^12.9.0"
@@ -1843,4 +1843,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "58d1a4e0c73ac3a25424e956231da4b798eac489ae53f514be56b8237218d5c8"
+content-hash = "125a0fd23298d23daf6a24df79abb067df55f4c57aaffdd2de8a4749ad2b2bae"

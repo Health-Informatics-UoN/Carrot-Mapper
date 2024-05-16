@@ -14,11 +14,12 @@ requests = "^2.31.0"
 openpyxl = "^3.1.2"
 Resource = "^0.2.1"
 httpx = "^0.26.0"
-shared = {path = "../shared", develop = true}
+shared = {path = "../shared"}
 python-dotenv = "^1.0.1"
 azure-functions-durable = "^1.2.9"
 
 [tool.poetry.group.dev.dependencies]
+shared = {path = "../shared", develop = true}
 memory-profiler = "^0.61.0"
 psycopg2 = "^2.9.9"
 mypy = "^1.10.0"

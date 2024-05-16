@@ -40,6 +40,15 @@
   padding-right: 40px;
 }
 
+.bg-co-connect {
+  /*
+      make some snazy 90s-like theme for the nav bar
+      background:  linear-gradient(180deg,rgba(0,0,0,0) 0 66px, var(--co-connect-tertiary) 66px 100%),
+		 linear-gradient(110deg,white 0 40px, var(--co-connect-primary-light) 80px , var(--co-connect-primary) 200px 80%,var(--co-connect-secondary));
+   */
+  background: var(--co-connect-tertiary);
+}
+
 /* change the navbar link colors  and mouse-over actions */
 .nav-link {
   color: #3c3c3b !important;
