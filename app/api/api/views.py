@@ -1184,9 +1184,11 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 
 
 class ScanReportPermissionView(APIView):
+    """
+    API for permissions a user has on a specific scan report.
+    """
 
     def get(self, request, pk):
-
         permissions = get_user_permissions_on_scan_report(request, pk)
 
         return Response({"permissions": permissions}, status=status.HTTP_200_OK)
