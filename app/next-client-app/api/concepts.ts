@@ -6,7 +6,8 @@ const fetchKeys = {
   concept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
   conceptFilter: (filter: string) =>
     `omop/conceptsfilter/?concept_id__in=${filter}`,
-  postConcept: () => "scanreportconcepts/",
+  addConcept: "scanreportconcepts/",
+  deleteConcept: (conceptId: number) => `scanreportconcepts/${conceptId}`,
   scanreportConcept: (id: number) =>
     `/scanreportconceptsfilter/?object_id=${id}`,
   typeName: (filter?: string) => `contenttypeid?${filter}`,
@@ -44,11 +45,9 @@ export async function getScanReportConcept(
   }
 }
 
-export async function getConceptFilter(
-  filter: string,
-): Promise<ConceptFilter[]> {
+export async function getConceptFilters(filter: string): Promise<Concept[]> {
   try {
-    return await request<ConceptFilter[]>(fetchKeys.conceptFilter(filter));
+    return await request<Concept[]>(fetchKeys.conceptFilter(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
@@ -68,9 +67,9 @@ export async function getContentTypeId(
   }
 }
 
-export async function postConcept(data: {}): Promise<ScanReportConcept> {
+export async function addConcept(data: {}): Promise<ScanReportConcept> {
   try {
-    const response = await request<ScanReportConcept>(fetchKeys.postConcept(), {
+    const response = await request<ScanReportConcept>(fetchKeys.addConcept, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -99,9 +98,19 @@ export async function postConcept(data: {}): Promise<ScanReportConcept> {
   }
 }
 
+export async function deleteConcept(conceptId: number) {
+  await request(fetchKeys.deleteConcept(conceptId), {
+    method: "DELETE",
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
+  revalidatePath("");
+}
+
 export async function AddMappingRule(data: {}): Promise<AddMappingRuleResponse> {
   try {
-    return await request<AddMappingRuleResponse>(fetchKeys.postConcept(), {
+    return await request<AddMappingRuleResponse>(fetchKeys.mappingrule, {
       method: "POST",
       headers: {
         "Content-type": "application/json",

@@ -1,8 +1,8 @@
 import {
   getConcept,
-  getConceptFilter,
+  getConceptFilters,
   getContentTypeId,
-  postConcept,
+  addConcept,
 } from "@/api/concepts";
 import { getOmopFields, getOmopTable } from "@/api/omop";
 import { getScanReportConcept, getScanReportTable } from "@/api/scanreports";
@@ -87,7 +87,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
 
       try {
         // create scan report concept
-        const response = await postConcept({
+        await addConcept({
           concept: conceptCode,
           object_id: id,
           content_type: "scanreportfield",
@@ -96,7 +96,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
         let scanreportconcepts = await getScanReportConcept(objectQuery);
         if (scanreportconcepts.length > 0) {
           const conceptIds = scanreportconcepts.map((value) => value.concept);
-          const conceptFilters = await getConceptFilter(conceptIds.join());
+          const conceptFilters = await getConceptFilters(conceptIds.join());
 
           // save new concepts to state
           const scanreport_concepts = scanreportconcepts.map((element) => ({

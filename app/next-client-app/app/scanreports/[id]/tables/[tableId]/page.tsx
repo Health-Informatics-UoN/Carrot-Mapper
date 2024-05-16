@@ -18,7 +18,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
-import { getConceptFilter } from "@/api/concepts";
+import { getConceptFilters } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 
 interface ScanReportsFieldProps {
@@ -49,9 +49,12 @@ export default async function ScanReportsField({
       .map((item) => item.id)
       .join(",")}`,
   );
-  const conceptsFilter = await getConceptFilter(
-    scanReportsConcepts.map((item) => item.concept).join(","),
-  );
+  const conceptsFilter =
+    scanReportsConcepts.length > 0
+      ? await getConceptFilters(
+          scanReportsConcepts?.map((item) => item.concept).join(","),
+        )
+      : [];
   const scanReportsResult = addConceptsToResults(
     scanReportsTables.results,
     scanReportsConcepts,
