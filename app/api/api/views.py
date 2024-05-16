@@ -1185,10 +1185,8 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
 
 class ScanReportPermissionView(APIView):
 
-    def get(self, request, scan_report_id):
-        user = request.user
+    def get(self, request, pk):
 
-        # Logic to get the list of permissions for the user on the scan report
-        permissions = get_user_permissions_on_scan_report(user, scan_report_id)
+        permissions = get_user_permissions_on_scan_report(request, pk)
 
         return Response({"permissions": permissions}, status=status.HTTP_200_OK)

@@ -61,7 +61,7 @@ urlpatterns = [
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
     path(
-        "scan-reports/<int:pk>/permissions/",
+        "scanreports/<int:pk>/permissions/",
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
     ),
