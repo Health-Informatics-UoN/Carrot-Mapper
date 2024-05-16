@@ -694,6 +694,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
             return ScanReportFieldEditSerializer
         return super().get_serializer_class()
 
+
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
     queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
