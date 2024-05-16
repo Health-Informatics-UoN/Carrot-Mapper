@@ -305,3 +305,21 @@ class CanAdmin(permissions.BasePermission):
         if is_az_function_user(request.user):
             return True
         return is_admin(obj, request)
+
+
+def get_user_permissions_on_scan_report(request, scan_report_id):
+    try:
+        scan_report = ScanReport.objects.get(id=scan_report_id)
+        permissions = []
+
+        # Check permissions using the custom permission classes
+        if CanView().has_object_permission(request, None, scan_report):
+            permissions.append("CanView")
+        if CanEdit().has_object_permission(request, None, scan_report):
+            permissions.append("CanEdit")
+        if CanAdmin().has_object_permission(request, None, scan_report):
+            permissions.append("CanAdmin")
+
+        return permissions
+    except ScanReport.DoesNotExist:
+        return []

@@ -50,7 +50,13 @@ from django.core.exceptions import PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from mapping.permissions import CanAdmin, CanEdit, CanView, CanViewProject
+from mapping.permissions import (
+    CanAdmin,
+    CanEdit,
+    CanView,
+    CanViewProject,
+    get_user_permissions_on_scan_report,
+)
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -1175,3 +1181,14 @@ class DownloadScanReportViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = f'attachment; filename="{blob_name}"'
 
         return response
+
+
+class ScanReportPermissionView(APIView):
+
+    def get(self, request, scan_report_id):
+        user = request.user
+
+        # Logic to get the list of permissions for the user on the scan report
+        permissions = get_user_permissions_on_scan_report(user, scan_report_id)
+
+        return Response({"permissions": permissions}, status=status.HTTP_200_OK)

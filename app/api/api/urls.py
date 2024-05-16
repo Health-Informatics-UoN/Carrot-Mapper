@@ -60,6 +60,11 @@ urlpatterns = [
         r"scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
+    path(
+        "scan-reports/<int:pk>/permissions/",
+        views.ScanReportPermissionView.as_view(),
+        name="scan-report-permissions",
+    ),
     path("projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
         "projects/<int:pk>/",
