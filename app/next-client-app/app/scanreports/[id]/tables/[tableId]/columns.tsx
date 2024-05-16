@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import AddConcept from "./add-concept";
-import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
 import { Concepts } from "./concepts";
 
 export const columns: ColumnDef<ScanReportResult>[] = [

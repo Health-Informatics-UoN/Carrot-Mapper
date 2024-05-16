@@ -60,7 +60,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       // check if concept exists
       if (!concept.concept_id) {
         toast.error(
-          `Concept id ${conceptCode} does not exist in our database.`,
+          `Concept id ${conceptCode} does not exist in our database.`
         );
         return;
       }
@@ -69,7 +69,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const cachedOmopFunction = mapConceptToOmopField();
       const destination_field = await cachedOmopFunction(
         fields,
-        domain + "_source_concept_id",
+        domain + "_source_concept_id"
       );
       if (!destination_field) {
         toast.error("Could not find a destination field for this concept");
@@ -80,7 +80,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const omopTable = await getOmopTable(destination_field.table.toString());
       if (!m_allowed_tables.includes(omopTable.table)) {
         toast.error(
-          `Concept ${concept.concept_id} (${concept.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`,
+          `Concept ${concept.concept_id} (${concept.concept_name}) is from table '${omopTable.table}' which is not implemented yet.`
         );
         return;
       }
@@ -102,14 +102,14 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
           const scanreport_concepts = scanreportconcepts.map((element) => ({
             ...element,
             concept: conceptFilters.find(
-              (con) => con.concept_id == element.concept,
+              (con) => con.concept_id == element.concept
             ),
           }));
           toast.success("ConceptId linked to the value");
 
           // create mapping rules for new concept
           const scan_report_concept = scanreport_concepts.filter(
-            (con) => con.concept?.concept_id == conceptCode,
+            (con) => con.concept?.concept_id == conceptCode
           )[0];
           try {
             await saveMappingRules(scan_report_concept as any, table);
@@ -139,13 +139,14 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       {({ values, handleChange, handleSubmit }) => (
         <Form onSubmit={handleSubmit}>
           <div className="flex gap-2">
-            <div className="flex-none">
+            <div>
               <Input
                 type="number"
                 name="concept"
                 value={values.concept}
                 onChange={handleChange}
                 required
+                className="w-[180px]"
               />
             </div>
             <Button type="submit">Add</Button>
