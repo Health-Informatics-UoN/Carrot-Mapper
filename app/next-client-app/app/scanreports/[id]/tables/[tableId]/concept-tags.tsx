@@ -9,7 +9,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
   const handleDelete = async (conceptId: number) => {
     try {
       await deleteConcept(conceptId);
-      toast.error("Concept Id Deleted");
+      toast.success("Concept Id Deleted");
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
