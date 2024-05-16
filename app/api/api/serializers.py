@@ -353,6 +353,7 @@ class ScanReportFieldListSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         model = ScanReportField
         fields = "__all__"
 
+
 class ScanReportFieldListSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
     name = serializers.CharField(
         max_length=512, allow_blank=True, trim_whitespace=False
@@ -383,6 +384,7 @@ class ScanReportFieldListSerializerV2(DynamicFieldsMixin, serializers.ModelSeria
     class Meta:
         model = ScanReportField
         fields = "__all__"
+
 
 class ScanReportFieldEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     name = serializers.CharField(
