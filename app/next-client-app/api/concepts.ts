@@ -8,8 +8,8 @@ const fetchKeys = {
     `omop/conceptsfilter/?concept_id__in=${filter}`,
   addConcept: "scanreportconcepts/",
   deleteConcept: (conceptId: number) => `scanreportconcepts/${conceptId}`,
-  scanreportConcept: (id: number) =>
-    `/scanreportconceptsfilter/?object_id=${id}`,
+  scanreportConcepts: (filter?: string) =>
+    `scanreportconceptsfilter/?${filter}`,
   typeName: (filter?: string) => `contenttypeid?${filter}`,
   mappingrule: "mappingrules/",
 };
@@ -34,11 +34,13 @@ export async function getConcept(conceptCode: number): Promise<Concept> {
   }
 }
 
-export async function getScanReportConcept(
-  id: number
+export async function getScanReportConcepts(
+  filter: string,
 ): Promise<ScanReportConcept[]> {
   try {
-    return await request<ScanReportConcept[]>(fetchKeys.scanreportConcept(id));
+    return await request<ScanReportConcept[]>(
+      fetchKeys.scanreportConcepts(filter),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
@@ -55,11 +57,11 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
 }
 
 export async function getContentTypeId(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<{ content_type_id: number }> {
   try {
     return await request<{ content_type_id: number }>(
-      fetchKeys.typeName(filter)
+      fetchKeys.typeName(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");

@@ -10,7 +10,6 @@ import Link from "next/link";
 import { columns } from "./columns";
 import {
   getScanReport,
-  getScanReportConcept,
   getScanReportFields,
   getScanReportTable,
 } from "@/api/scanreports";
@@ -18,7 +17,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
-import { getConceptFilters } from "@/api/concepts";
+import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 
 interface ScanReportsFieldProps {
@@ -35,6 +34,7 @@ export default async function ScanReportsField({
 }: ScanReportsFieldProps) {
   const defaultParams = {
     scan_report_table: tableId,
+    page_size: 20,
   };
 
   const combinedParams = { ...defaultParams, ...searchParams };
@@ -44,7 +44,7 @@ export default async function ScanReportsField({
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const filter = <DataTableFilter filter="name" filterText="field" />;
-  const scanReportsConcepts = await getScanReportConcept(
+  const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsTables.results
       .map((item) => item.id)
       .join(",")}`,

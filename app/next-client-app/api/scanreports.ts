@@ -10,14 +10,15 @@ const fetchKeys = {
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
-  scanreportConcept: (filter?: string) => `scanreportconceptsfilter/?${filter}`,
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined
-): Promise<ScanReport> {
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportTable>> {
   try {
-    return await request<ScanReport>(fetchKeys.tables(filter));
+    return await request<PaginatedResponse<ScanReportTable>>(
+      fetchKeys.tables(filter),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
@@ -25,10 +26,12 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined
-): Promise<ScanReport> {
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportList>> {
   try {
-    return await request<ScanReport>(fetchKeys.list(filter));
+    return await request<PaginatedResponse<ScanReportList>>(
+      fetchKeys.list(filter),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
@@ -36,10 +39,12 @@ export async function getScanReports(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined
-): Promise<ScanReport> {
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportField>> {
   try {
-    return await request<ScanReport>(fetchKeys.fields(filter));
+    return await request<PaginatedResponse<ScanReportField>>(
+      fetchKeys.fields(filter),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
@@ -89,17 +94,4 @@ export async function updateScanReport(id: number, field: string, value: any) {
     body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
-}
-
-export async function getScanReportConcept(
-  filter: string
-): Promise<ScanReportConcept[]> {
-  try {
-    return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcept(filter)
-    );
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
 }

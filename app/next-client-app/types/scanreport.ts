@@ -1,12 +1,3 @@
-interface ScanReport {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: ScanReportResult[];
-}
-
-type ScanReportResult = ScanReportList | ScanReportTable | ScanReportField;
-
 interface ScanReportList {
   id: number;
   dataset: string;

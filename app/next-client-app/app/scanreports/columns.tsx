@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
 import { format } from "date-fns/format";
 
-export const columns: ColumnDef<ScanReportResult>[] = [
+export const columns: ColumnDef<ScanReportList>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -44,7 +44,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{(row.original as ScanReportList).dataset}</button>
+          <button>{row.original.dataset}</button>
         </Link>
       );
     },
@@ -123,7 +123,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const { id, hidden, dataset } = row.original as ScanReportList;
+      const { id, hidden, dataset } = row.original;
 
       const handleArchive = async () => {
         const message = hidden ? "Unarchive" : "Archive";

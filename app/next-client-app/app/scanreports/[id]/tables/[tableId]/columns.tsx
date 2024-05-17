@@ -8,7 +8,7 @@ import AddConcept from "./add-concept";
 import { ConceptTags } from "./concept-tags";
 import { Pencil } from "lucide-react";
 
-export const columns: ColumnDef<ScanReportResult>[] = [
+export const columns: ColumnDef<ScanReportField>[] = [
   {
     id: "Name",
     accessorKey: "name",
@@ -52,7 +52,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { concepts } = row.original as ScanReportField;
+      const { concepts } = row.original;
       return <ConceptTags concepts={concepts ?? []} />;
     },
   },
@@ -60,7 +60,7 @@ export const columns: ColumnDef<ScanReportResult>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const { scan_report_table, id } = row.original as ScanReportField;
+      const { scan_report_table, id } = row.original;
       return <AddConcept id={id} tableId={scan_report_table.toString()} />;
     },
   },
