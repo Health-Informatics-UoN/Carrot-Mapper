@@ -10,6 +10,7 @@ const fetchKeys = {
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  tableValues: (id: string) => `scanreporttables/${id}/`,
 };
 
 export async function getScanReportsTables(
@@ -81,6 +82,23 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
       created_at: new Date(),
       updated_at: new Date(),
       date_event: "",
+    };
+  }
+}
+
+export async function getTableValues(id: string): Promise<ScanReportTable> {
+  try {
+    return await request<ScanReportTable>(fetchKeys.tableValues(id));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return {
+      id: 0,
+      name: "",
+      scan_report: 0,
+      person_id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      date_event: 0,
     };
   }
 }

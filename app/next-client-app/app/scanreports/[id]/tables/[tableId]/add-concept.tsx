@@ -1,7 +1,6 @@
 import {
   getConcept,
   getConceptFilters,
-  getContentTypeId,
   addConcept,
   getScanReportConcepts,
 } from "@/api/concepts";
@@ -22,14 +21,12 @@ interface AddConceptProps {
 }
 
 export default function AddConcept({ id, tableId }: AddConceptProps) {
-  const TypeNameParam = {
+  const typeNameQuery = objToQuery({
     type_name: "scanreportfield",
-  };
-  const typeNameQuery = objToQuery(TypeNameParam);
-  const ObjectParam = {
+  });
+  const objectQuery = objToQuery({
     object_id: id,
-  };
-  const objectQuery = objToQuery(ObjectParam);
+  });
 
   const handleError = (error: any, message: string) => {
     const errorObj = JSON.parse((error as ApiError).message);
@@ -43,7 +40,6 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const concept = await getConcept(conceptCode);
       const domain = concept?.domain_id.toLocaleLowerCase() ?? "";
       const fields = await getOmopFields();
-      const contentType = await getContentTypeId(typeNameQuery);
       // set the error message depending on which value is missing
       if (!table.person_id || !table.date_event) {
         let message;

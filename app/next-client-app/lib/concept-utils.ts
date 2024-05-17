@@ -1,6 +1,8 @@
 import { AddMappingRule, getContentTypeId } from "@/api/concepts";
 import { getOmopFields, getOmopTable, getOmopTables } from "@/api/omop";
 import { m_allowed_tables } from "@/constants/concepts";
+import { objToQuery } from "./client-utils";
+import { getTableValues } from "@/api/scanreports";
 
 //function to map concept domain to an omop field
 export const mapConceptToOmopField = () => {
@@ -61,10 +63,15 @@ export const saveMappingRules = async (
   // scan_report_value,
   table: ScanReportTable,
 ) => {
+  // Get the number values of person_id and date_event from v1 scanreporttables API
+  const tableValues = await getTableValues(table.id.toString());
   const domain = (
     scan_report_concept.concept as Concept
   ).domain_id.toLowerCase();
   const fields = await getOmopFields();
+  const typeNameQuery = objToQuery({
+    type_name: "scanreportfield",
+  });
   const cachedOmopFunction = mapConceptToOmopField();
   const m_date_field_mapper = {
     person: ["birth_datetime"],
@@ -104,10 +111,10 @@ export const saveMappingRules = async (
     (field) =>
       field.field == "person_id" && field.table == destination_field.table,
   )[0].id;
-  data.source_field = table.person_id;
+  data.source_field = tableValues.person_id;
   promises.push(await AddMappingRule(data));
   //date_event
-  data.source_field = table.date_event;
+  data.source_field = tableValues.date_event;
   const omopTable = await getOmopTable(destination_field.table.toString());
   const date_omop_fields =
     m_date_field_mapper[omopTable.table as keyof typeof m_date_field_mapper];
@@ -120,7 +127,7 @@ export const saveMappingRules = async (
   });
 
   // Get the content_type_id for the scan_report_field
-  const { content_type_id } = await getContentTypeId("scanreportfield");
+  const { content_type_id } = await getContentTypeId(typeNameQuery);
 
   // set source field depending on content type
   if (scan_report_concept.content_type == content_type_id) {
