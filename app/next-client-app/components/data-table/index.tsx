@@ -69,9 +69,10 @@ export function DataTable<TData, TValue>({
   });
 
   const handleRowClick = (id: string) => {
+    const location = window.location.pathname;
     window.location.href = UrlBuider(
       id,
-      `${window.location.pathname}${linkPrefix}`,
+      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`,
     );
   };
 
