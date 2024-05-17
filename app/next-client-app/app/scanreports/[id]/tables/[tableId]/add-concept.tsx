@@ -1,9 +1,4 @@
-import {
-  getConcept,
-  getConceptFilters,
-  getContentTypeId,
-  addConcept,
-} from "@/api/concepts";
+import { getConcept, getConceptFilters, addConcept } from "@/api/concepts";
 import { getOmopFields, getOmopTable } from "@/api/omop";
 import { getScanReportConcept, getScanReportTable } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
@@ -40,7 +35,6 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       const concept = await getConcept(conceptCode);
       const domain = concept?.domain_id.toLocaleLowerCase() ?? "";
       const fields = await getOmopFields();
-      const contentType = await getContentTypeId(typeNameQuery);
       // set the error message depending on which value is missing
       if (!table.person_id || !table.date_event) {
         let message;
