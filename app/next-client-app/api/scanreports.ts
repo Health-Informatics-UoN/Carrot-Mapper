@@ -34,9 +34,14 @@ export async function getScanReports(
   }
 }
 
+/**
+ * Get the current users permissions for a Scan Report.
+ * @param id The Id of the Scan Report
+ * @returns A object with a list of the users permissions.
+ */
 export async function getScanReportPermissions(id: number): Promise<{}> {
   try {
-    return await request<[]>(fetchKeys.permissions(id));
+    return await request<PermissionsResponse>(fetchKeys.permissions(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { permissions: [] };
