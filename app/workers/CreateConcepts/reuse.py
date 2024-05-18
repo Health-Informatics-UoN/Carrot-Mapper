@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple, Union
 
 from django.contrib.contenttypes.models import ContentType
 from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
-from shared_code import db, helpers, omop_helpers
+from shared_code import db
 from shared_code.logger import logger
 from shared_code.models import (
     ScanReportConceptContentType,
