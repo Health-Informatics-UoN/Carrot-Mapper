@@ -9,7 +9,7 @@ class ScanReportConceptContentType(Enum):
 
 class ScanReportValueDict(TypedDict):
     id: str
-    scan_report_field: Dict[str, Any]
+    scan_report_field: Dict[str, str]
     value: str
     frequency: int
     concept_id: Union[str, int]

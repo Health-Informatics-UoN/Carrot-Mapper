@@ -227,12 +227,12 @@ def add_vocabulary_id_to_entries(
     for value in table_values:
         vocab_id = None
         if vocab and vocab.get(table_name):
-            scan_report_field = value.get("scan_report_field")
+            scan_report_field = value["scan_report_field"]
             if field := next(
                 (
                     field
                     for field in fieldids_to_names
-                    if field["id"] == scan_report_field
+                    if field["id"] == scan_report_field["id"]
                 ),
                 None,
             ):
