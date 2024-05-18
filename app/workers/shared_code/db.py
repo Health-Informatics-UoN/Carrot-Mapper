@@ -1,5 +1,5 @@
 from collections import OrderedDict, defaultdict
-from typing import List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
@@ -20,7 +20,9 @@ def create_concept(
     creation_type: Literal["V", "R"] = "V",
 ) -> Optional[ScanReportConcept]:
     """
-    Creates a new ScanReportConcept
+    Creates a new ScanReportConcept.
+
+    Checks if the ScanReportConcept already exists, and returns None if it does.
 
     Args:
         - concept_id (str): The Id of the Concept to create.
@@ -29,7 +31,7 @@ def create_concept(
         - creation_type (Literal["R", "V"], optional): The Creation Type value of the Concept.
 
     Returns:
-        Dict[str, Any]: A Concept as a dictionary.
+        Optional[ScanReportConcept]: model.
     """
     # Check:
     content_type_model = ContentType.objects.get(model=content_type.value)
@@ -93,9 +95,11 @@ def serialize_scan_report_fields(
     return [{"id": field.pk, "name": field.name} for field in fields]
 
 
-def find_standard_concept_batch(source_concepts: List[ScanReportValueDict]):
+def find_standard_concept_batch(
+    source_concepts: List[ScanReportValueDict],
+) -> Union[defaultdict[Any, List], Dict]:
     """
-    Given a list of dictionaries, each of which contains a 'concept_id' entry,
+    Given a list of ScanReportValueDict, each of which contains a 'concept_id' entry,
     return a dictionary mapping from the original concept_ids to all standard
     concepts it maps to via ConceptRelationship.
 
