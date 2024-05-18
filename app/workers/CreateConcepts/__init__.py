@@ -2,8 +2,7 @@ import os
 from collections import defaultdict
 from typing import Any, Dict, List
 
-from django.db.models.query import QuerySet
-from shared_code import blob_parser, helpers, omop_helpers
+from shared_code import blob_parser, helpers
 from shared_code.logger import logger
 from shared_code.models import (
     ScanReportConceptContentType,
@@ -13,6 +12,7 @@ from shared_code.models import (
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
+from django.db.models.query import QuerySet
 
 django.setup()
 
@@ -207,9 +207,7 @@ def _batch_process_non_standard_concepts(entries: List[ScanReportValueDict]) -> 
         f"finished selecting nonstandard concepts - selected "
         f"{len(nonstandard_entries)}"
     )
-    batched_standard_concepts_map = omop_helpers.find_standard_concept_batch(
-        nonstandard_entries
-    )
+    batched_standard_concepts_map = db.find_standard_concept_batch(nonstandard_entries)
     _update_entries_with_standard_concepts(entries, batched_standard_concepts_map)
 
 
