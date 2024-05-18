@@ -263,10 +263,10 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
         scan_report_field__scan_report_table=table.pk
     ).all()
     # need to convert to dictionaries as the function is mutating these models.
-    table_values = convert_to_typed_dict(sr_values)
+    table_values = db.serialize_scan_report_values(sr_values)
 
     sr_fields = ScanReportField.objects.filter(scan_report_table=table.pk).all()
-    table_fields = convert(sr_fields)
+    table_fields = db.serialize_scan_report_fields(sr_fields)
 
     # Add vocab id to each entry from the vocab dict
     helpers.add_vocabulary_id_to_entries(table_values, vocab, table_fields, table.name)
@@ -319,26 +319,3 @@ def main(msg: Dict[str, str]):
         raise ValueError("vocab_dictionary is None.")
     else:
         _handle_table(table, vocab_dictionary)
-
-
-def convert_to_typed_dict(
-    table_values: QuerySet[ScanReportValue],
-) -> List[ScanReportValueDict]:
-    return [
-        {
-            "id": value.pk,
-            "scan_report_field": {
-                "id": value.scan_report_field.pk,
-                "name": value.scan_report_field.name,
-            },
-            "value": value.value,
-            "frequency": value.frequency,
-            "concept_id": value.conceptID,
-            "value_description": value.value_description,
-        }
-        for value in table_values
-    ]
-
-
-def convert(fields: QuerySet[ScanReportField]) -> List[ScanReportFieldDict]:
-    return [{"id": field.pk, "name": field.name} for field in fields]
