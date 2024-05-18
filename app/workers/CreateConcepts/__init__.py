@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from shared_code import blob_parser, helpers
 from shared_code.logger import logger
@@ -240,7 +240,9 @@ def _update_entries_with_standard_concepts(
             relevant_entry["concept_id"] = standard_concepts
 
 
-def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> None:
+def _handle_table(
+    table: ScanReportTable, vocab: Union[Dict[str, Dict[str, str]], None]
+) -> None:
     """
     Handles Concept Creation on a table.
 
@@ -310,7 +312,4 @@ def main(msg: Dict[str, str]):
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    if vocab_dictionary is None:
-        raise ValueError("vocab_dictionary is None.")
-    else:
-        _handle_table(table, vocab_dictionary)
+    _handle_table(table, vocab_dictionary)
