@@ -96,14 +96,16 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
             "concept": existing_value_id_to_concept_map[str(value.pk)],
             "id": value.pk,
             "description": value.value_description,
-            "field_name": existing_field_id_to_name_map[str(value.scan_report_field)],
+            "field_name": existing_field_id_to_name_map[
+                str(value.scan_report_field.id)
+            ],
         }
         for value in existing_values_filtered_by_id
     ]
 
     # Now handle the newly-added values in a similar manner
     logger.debug("new_paginated_field_ids")
-    new_field_ids = [value["scan_report_field"].id for value in new_values_map]
+    new_field_ids = [value["scan_report_field"]["id"] for value in new_values_map]
     new_fields = ScanReportField.objects.filter(id__in=new_field_ids).all()
     logger.debug(f"fields of newly generated values: {new_fields}")
 
@@ -113,7 +115,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         {
             "name": value["value"],
             "description": value["value_description"],
-            "field_name": new_fields_to_name_map[str(value["scan_report_field"].id)],
+            "field_name": new_fields_to_name_map[str(value["scan_report_field"]["id"])],
             "id": value["id"],
         }
         for value in new_values_map

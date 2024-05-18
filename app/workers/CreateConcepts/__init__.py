@@ -262,6 +262,7 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
     sr_values = ScanReportValue.objects.filter(
         scan_report_field__scan_report_table=table.pk
     ).all()
+    # need to convert to dictionaries as the function is mutating these models.
     table_values = convert_to_typed_dict(sr_values)
 
     sr_fields = ScanReportField.objects.filter(scan_report_table=table.pk).all()
@@ -326,7 +327,10 @@ def convert_to_typed_dict(
     return [
         {
             "id": value.pk,
-            "scan_report_field": value.scan_report_field,
+            "scan_report_field": {
+                "id": value.scan_report_field.pk,
+                "name": value.scan_report_field.name,
+            },
             "value": value.value,
             "frequency": value.frequency,
             "concept_id": value.conceptID,

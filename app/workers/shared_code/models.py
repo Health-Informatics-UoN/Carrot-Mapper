@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import NotRequired, Optional, TypedDict, Union
+from typing import Any, Dict, NotRequired, Optional, TypedDict, Union
 
 
 class ScanReportConceptContentType(Enum):
@@ -9,7 +9,7 @@ class ScanReportConceptContentType(Enum):
 
 class ScanReportValueDict(TypedDict):
     id: str
-    scan_report_field: int
+    scan_report_field: Dict[str, Any]
     value: str
     frequency: int
     concept_id: Union[str, int]
