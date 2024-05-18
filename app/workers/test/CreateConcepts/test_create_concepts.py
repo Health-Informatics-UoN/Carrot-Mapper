@@ -5,15 +5,16 @@ from CreateConcepts import (
     _set_defaults_for_none_vocab,
     _update_entries_with_standard_concepts,
 )
+from shared.data.omop import Concept
 
 
 def test__create_concepts():
     # Arrange
     table_values = [
-        {"concept_id": 1, "id": "A"},
-        {"concept_id": [2, 3], "id": "B"},
-        {"concept_id": -1, "id": "C"},
-        {"concept_id": 4, "id": "D"},
+        {"concept_id": 1, "id": 1},
+        {"concept_id": [2, 3], "id": 2},
+        {"concept_id": -1, "id": 3},
+        {"concept_id": 4, "id": 4},
     ]
 
     # Act
@@ -21,32 +22,17 @@ def test__create_concepts():
 
     # Assert
     expected_result = [
-        {
-            "concept": 1,
-            "object_id": "A",
-            "content_type": "scanreportvalue",
-            "creation_type": "V",
-        },
-        {
-            "concept": 2,
-            "object_id": "B",
-            "content_type": "scanreportvalue",
-            "creation_type": "V",
-        },
-        {
-            "concept": 3,
-            "object_id": "B",
-            "content_type": "scanreportvalue",
-            "creation_type": "V",
-        },
-        {
-            "concept": 4,
-            "object_id": "D",
-            "content_type": "scanreportvalue",
-            "creation_type": "V",
-        },
+        {"concept_id": 1, "object_id": 1, "creation_type": "V"},
+        {"concept_id": 2, "object_id": 2, "creation_type": "V"},
+        {"concept_id": 3, "object_id": 2, "creation_type": "V"},
+        {"concept_id": 4, "object_id": 4, "creation_type": "V"},
     ]
-    assert result == expected_result
+
+    assert len(result) == len(expected_result)
+    for res, exp in zip(result, expected_result):
+        assert res.concept_id == exp["concept_id"]
+        assert res.object_id == exp["object_id"]
+        assert res.creation_type == exp["creation_type"]
 
 
 def test__set_defaults_for_none_vocab():
@@ -66,9 +52,7 @@ def test__match_concepts_to_entries():
         {"value": 1, "concept_id": 1, "standard_concept": "standard 1"},
         {"value": 2, "concept_id": 1, "standard_concept": "standard 2"},
     ]
-    vocab = [
-        {"concept_code": 2, "concept_id": "200", "standard_concept": "New Standard"}
-    ]
+    vocab = [Concept(concept_code=2, concept_id="200", standard_concept="S")]
 
     # Act
     _match_concepts_to_entries(entries, vocab)
@@ -76,7 +60,7 @@ def test__match_concepts_to_entries():
     # Assert
     assert entries == [
         {"value": 1, "concept_id": -1, "standard_concept": None},
-        {"value": 2, "concept_id": "200", "standard_concept": "New Standard"},
+        {"value": 2, "concept_id": "200", "standard_concept": "S"},
     ]
 
 
