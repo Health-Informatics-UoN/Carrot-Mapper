@@ -325,12 +325,12 @@ def select_concepts_to_post(
         Exception:  ValueError: A content_type other than scanreportfield or scanreportvalue was provided.
     """
     concepts_to_post: List[ScanReportConcept] = []
+    key: Union[str, Tuple[str, str, str]]
 
     for new_content_detail in new_content_details:
         if content_type == ScanReportConceptContentType.FIELD:
             key = str(new_content_detail["name"])
         elif content_type == ScanReportConceptContentType.VALUE:
-            # TODO: Pick a single strategy here
             key = (
                 str(new_content_detail["name"]),
                 str(new_content_detail["description"]),
@@ -339,9 +339,8 @@ def select_concepts_to_post(
         else:
             raise ValueError(f"Unsupported content_type: {content_type}")
 
-        # think this is using the key / typing errors here as a feature.
         try:
-            existing_content_id, concept_id = details_to_id_and_concept_id_map[key]
+            existing_content_id, concept_id = details_to_id_and_concept_id_map[key]  # type: ignore
             logger.info(
                 f"Found existing {'field' if content_type == ScanReportConceptContentType.FIELD else 'value'} with id: {existing_content_id} "
                 f"with existing concept mapping: {concept_id} which matches new {'field' if content_type == ScanReportConceptContentType.FIELD else 'value'} id: {new_content_detail['id']}"
