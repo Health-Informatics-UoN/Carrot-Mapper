@@ -2,11 +2,11 @@ import asyncio
 import json
 import os
 from enum import Enum
-from typing import Any, Dict, List, Literal, Union
+from typing import Dict, List
 
 import httpx
 import requests
-from shared_code import helpers, omop_helpers
+from shared_code import helpers
 from shared_code.logger import logger
 
 # Code for making request to the API
@@ -109,91 +109,6 @@ def post_scan_report_field_entries(
 
     logger.info("POST fields all finished")
     return fields_response_content
-
-
-def get_scan_report_fields(field_ids: List[str]) -> List[Dict[str, Any]]:
-    """
-    Gets ScanReportFields that match any of the given Ids.
-
-    Works by paginating the fields first.
-
-    Args:
-        field_ids (List[str]): The given Ids to get.
-
-    Returns:
-        List of ScanReportFields (List[Dict[str, Any]]) matching the Ids.
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    paginated_existing_field_ids = helpers.paginate(
-        field_ids, omop_helpers.max_chars_for_get
-    )
-
-    # for each list in paginated ids, get scanreport fields that match any of the given
-    # ids (those with an associated concept)
-    existing_fields = []
-    for ids in paginated_existing_field_ids:
-        ids_to_get = ",".join(map(str, ids))
-        response = requests.get(
-            url=f"{API_URL}scanreportfields/?id__in={ids_to_get}&fields=id,name",
-            headers=HEADERS,
-        )
-        response.raise_for_status()
-        existing_fields.append(response.json())
-    return helpers.flatten_list(existing_fields)
-
-
-def get_scan_report_active_concepts(
-    content_type: Literal["scanreportfield", "scanreportvalue"]
-) -> List[Dict[str, Any]]:
-    """
-    Get ScanReportConcepts that have the given content_type and are
-    in ScanReports that are "active".
-    Active is:
-    - Not hidden
-    - With unhidden parent dataset
-    - Marked with status "Mapping Complete"
-
-    Args:
-        content_type (Literal["scanreportfield", "scanreportvalue"]): The `django_content_type` to filter by.
-        Represents `ScanReportField`, or `ScanReportValue`
-
-    Returns:
-        A list of ScanReportConcepts matching the criteria.
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    response = requests.get(
-        url=f"{API_URL}scanreportactiveconceptfilter/?content_type="
-        f"{content_type}&fields=id,object_id,concept",
-        headers=HEADERS,
-    )
-    response.raise_for_status()
-    return response.json()
-
-
-def get_scan_report_values(ids: str) -> List[Dict[str, Any]]:
-    """
-    Get ScanReportValues for Scan Reports.
-
-    Args:
-        ids (str): A string of Scan Report Ids to filter by.
-
-    Returns:
-        A list of ScanReportValues (List[Dict[str, Any]])
-
-    Raises:
-        Exception: requests.HTTPError: If the request fails.
-    """
-    response = requests.get(
-        url=f"{API_URL}scanreportvalues/?id__in={ids}&fields=id,value,scan_report_field,"
-        f"value_description",
-        headers=HEADERS,
-    )
-    response.raise_for_status()
-    return response.json()
 
 
 async def post_chunks(
