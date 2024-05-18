@@ -2,10 +2,15 @@ from collections import OrderedDict, defaultdict
 from typing import List, Literal, Optional, Union
 
 from django.contrib.contenttypes.models import ContentType
-from shared.data.models import ScanReportConcept
+from django.db.models.query import QuerySet
+from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
 from shared.data.omop import Concept, ConceptRelationship
 from shared_code.logger import logger
-from shared_code.models import ScanReportConceptContentType, ScanReportValueDict
+from shared_code.models import (
+    ScanReportConceptContentType,
+    ScanReportFieldDict,
+    ScanReportValueDict,
+)
 
 
 def create_concept(
@@ -43,6 +48,49 @@ def create_concept(
         content_type=content_type_model,
         creation_type=creation_type,
     )
+
+
+def serialize_scan_report_values(
+    table_values: QuerySet[ScanReportValue],
+) -> List[ScanReportValueDict]:
+    """
+    Serializes a list of Scan Report Values to a list of typed dictionaries.
+
+    Args:
+        - fields (QuerySet[ScanReportValue]): QuerySet of Scan Report Values to serialize.
+
+    Returns:
+        - A list of the serialized Scan Report Values into typed dictionaries.
+    """
+    return [
+        {
+            "id": value.pk,
+            "scan_report_field": {
+                "id": value.scan_report_field.pk,
+                "name": value.scan_report_field.name,
+            },
+            "value": value.value,
+            "frequency": value.frequency,
+            "concept_id": value.conceptID,
+            "value_description": value.value_description,
+        }
+        for value in table_values
+    ]
+
+
+def serialize_scan_report_fields(
+    fields: QuerySet[ScanReportField],
+) -> List[ScanReportFieldDict]:
+    """
+    Serializes a list of Scan Report Fields to a list of typed dictionaries.
+
+    Args:
+        - fields (QuerySet[ScanReportField]): QuerySet of Scan Report Fields to serialize.
+
+    Returns:
+        - A list of the serialized Scan Report Fields into typed dictionaries.
+    """
+    return [{"id": field.pk, "name": field.name} for field in fields]
 
 
 def find_standard_concept_batch(source_concepts: List[ScanReportValueDict]):
