@@ -203,7 +203,6 @@ def get_by_concept_id(list_of_dicts: List[ScanReportValueDict], concept_id: str)
 def add_vocabulary_id_to_entries(
     table_values: List[ScanReportValueDict],
     vocab: Union[Dict[str, Any], None],
-    fieldids_to_names: List[ScanReportFieldDict],
     table_name: str,
 ):
     """
@@ -216,9 +215,8 @@ def add_vocabulary_id_to_entries(
     'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
     Args:
-        posted_values (list[dict]): List of dictionaries of previously posted values.
+        posted_values (list[ScanReportValueDict]): List of Scan Report Value of previously posted values.
         vocab (Dict[str, Any]): Dict mapping table names to dictionaries of field names and vocab IDs.
-        fieldids_to_names (List[Dict[str, Any]): List of field IDs to field names.
         table_name (str): The current table name.
 
     Returns:
@@ -228,16 +226,7 @@ def add_vocabulary_id_to_entries(
         vocab_id = None
         if vocab and vocab.get(table_name):
             scan_report_field = value["scan_report_field"]
-            if field := next(
-                (
-                    field
-                    for field in fieldids_to_names
-                    if field["id"] == scan_report_field["id"]
-                ),
-                None,
-            ):
-                field_name = field["name"]
-                vocab_id = vocab[table_name].get(field_name)
+            vocab_id = vocab[table_name].get(scan_report_field["name"])
         value["vocabulary_id"] = vocab_id
 
 

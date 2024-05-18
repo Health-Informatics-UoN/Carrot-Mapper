@@ -120,7 +120,7 @@ def find_standard_concept_batch(
     """
     logger.debug("find_standard_concept_batch()")
     # Exit early rather than having to handle this case in later code.
-    if len(source_concepts) == 0:
+    if not source_concepts:
         return {}
 
     # Get "Maps to" relations of all source concepts supplied

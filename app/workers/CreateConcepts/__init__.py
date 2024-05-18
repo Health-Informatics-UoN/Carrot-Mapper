@@ -266,7 +266,7 @@ def _handle_table(
     table_fields = db.serialize_scan_report_fields(sr_fields)
 
     # Add vocab id to each entry from the vocab dict
-    helpers.add_vocabulary_id_to_entries(table_values, vocab, table_fields, table.name)
+    helpers.add_vocabulary_id_to_entries(table_values, vocab, table.name)
 
     # group table_values by their vocabulary_id, for example:
     # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
