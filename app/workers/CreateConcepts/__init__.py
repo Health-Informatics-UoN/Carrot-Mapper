@@ -30,10 +30,10 @@ def _create_concepts(
     Generate Concept entries ready for creating from a list of values.
 
     Args:
-        table_values (List[ScanReportValueDict]): List of values to create concepts from.
+        - table_values (List[ScanReportValueDict]): List of values to create concepts from.
 
     Returns:
-        List[Dict[ScanReportConcept]]: List of Scan Report Concepts.
+        - List[ScanReportConcept]: List of Scan Report Concepts.
     """
     concepts: List[ScanReportConcept] = []
     for concept in table_values:
@@ -77,10 +77,10 @@ def _handle_concepts(
     int or str, or a list of such.
 
     Args:
-        entries_grouped_by_vocab: (defaultdict[str, List[ScanReportValueDict]): Entries grouped by Vocab.
+        - entries_grouped_by_vocab: (defaultdict[str, List[ScanReportValueDict]): Entries grouped by Vocab.
 
     Returns:
-        None
+        - None
     """
     for vocab, value in entries_grouped_by_vocab.items():
         if vocab is None:
@@ -95,10 +95,10 @@ def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
     Set default values for entries with none vocabulary.
 
     Args:
-        entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries.
+        - entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries.
 
     Returns:
-        None
+        - None
 
     """
     for entry in entries:
@@ -111,11 +111,11 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
     Process concepts for a specific vocabulary.
 
     Args:
-        vocab (str): The vocabulary to process concepts for.
-        entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
+        - vocab (str): The vocabulary to process concepts for.
+        - entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
 
     Returns:
-        None
+        - None
 
     """
     logger.info(f"begin {vocab}")
@@ -137,20 +137,20 @@ def _get_concepts_for_vocab(
     Get Concepts for a specific vocabulary.
 
     Args:
-        vocab (str): The vocabulary to get concepts for.
-        entries (List[ScanReportValueDict]): The list of Scan Report Values to filter by.
+        - vocab (str): The vocabulary to get concepts for.
+        - entries (List[ScanReportValueDict]): The list of Scan Report Values to filter by.
 
     Returns:
-        List[Concept]: A list of Concepts matching the requirements.
+        - List[Concept]: A list of Concepts matching the filter.
 
     """
-    concept_vocab_response: List[Concept] = []
-    for i in entries:
-        concepts = Concept.objects.filter(
-            concept_code__in=i["value"], vocabulary_id__in=vocab
-        ).all()
-        concept_vocab_response.extend(concepts)
-    return concept_vocab_response
+    concept_codes = [entry["value"] for entry in entries]
+
+    concepts = Concept.objects.filter(
+        concept_code__in=concept_codes, vocabulary_id=vocab
+    ).all()
+
+    return list(concepts)
 
 
 def _match_concepts_to_entries(
@@ -165,11 +165,11 @@ def _match_concepts_to_entries(
         concept_id and standard_concept with those values
 
     Args:
-        entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
-        concept_vocab_content (List[Concept]): A list of Concepts of the vocabulary content.
+        - entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
+        - concept_vocab_content (List[Concept]): A list of Concepts of the vocabulary content.
 
     Returns:
-        None
+        - None
 
     """
     for entry in entries:
@@ -188,10 +188,10 @@ def _batch_process_non_standard_concepts(entries: List[ScanReportValueDict]) -> 
     Batch process non-standard concepts.
 
     Args:
-        entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
+        - entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
 
     Returns:
-        None
+        - None
     """
     nonstandard_entries = [
         entry
@@ -218,14 +218,14 @@ def _update_entries_with_standard_concepts(
         relevant entry from entries[vocab].
 
     Args:
-        entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
-        standard_concepts_map (Dict[str, Any]): A dictionary mapping non-standard concepts to standard concepts.
+        - entries (List[ScanReportValueDict]): A list of Scan Report Value dictionaries representing the entries.
+        - standard_concepts_map (Dict[str, Any]): A dictionary mapping non-standard concepts to standard concepts.
 
     Returns:
-        None
+        - None
 
     Raises:
-        RuntimeWarning: If the relevant entry's concept ID is None.
+        - RuntimeWarning: If the relevant entry's concept ID is None.
     """
     for nonstandard_concept, standard_concepts in standard_concepts_map.items():
         relevant_entry = helpers.get_by_concept_id(entries, nonstandard_concept)
@@ -248,11 +248,11 @@ def _handle_table(table: ScanReportTable, vocab: Dict[str, Dict[str, str]]) -> N
         Works by transforming table_values, then generating concepts from them.
 
     Args:
-        table (ScanReportTable): Table object to create for.
-        vocab (Dict[str, Dict[str, str]]): Vocab dictionary.
+        - table (ScanReportTable): Table object to create for.
+        - vocab (Dict[str, Dict[str, str]]): Vocab dictionary.
 
     Returns:
-        None
+        - None
     """
     sr_values = ScanReportValue.objects.filter(
         scan_report_field__scan_report_table=table.pk
@@ -299,7 +299,7 @@ def main(msg: Dict[str, str]):
     Runs the create concepts processes.
 
     Args:
-        msg (Dict[str, str]): The message received from the orchestrator.
+        - msg (Dict[str, str]): The message received from the orchestrator.
     """
     data_dictionary_blob = msg.pop("data_dictionary_blob")
     table_id = msg.pop("table_id")
