@@ -1,5 +1,5 @@
 import pytest
-from CreateConcepts import (
+from RulesConceptsActivity import (
     _create_concepts,
     _match_concepts_to_entries,
     _set_defaults_for_none_vocab,
