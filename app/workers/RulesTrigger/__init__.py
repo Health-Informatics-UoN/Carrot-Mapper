@@ -2,12 +2,11 @@ import json
 import logging
 import uuid
 
-import azure.durable_functions as df  # type: ignore
 import azure.functions as func
 
 
 async def main(
-    req: func.HttpRequest, msg: func.Out[func.QueueMessage], starter: str
+    req: func.HttpRequest, msg: func.Out[str], starter: str
 ) -> func.HttpResponse:
 
     msg_body = req.get_json()
@@ -20,6 +19,7 @@ async def main(
 
     logging.info(f"Queued message with instance ID = '{instance_id}'.")
 
+    # TODO: Can be used to provide the status of the instance.
     status_url = f"{req.url.rstrip('/')}/status/{instance_id}"
     return func.HttpResponse(
         json.dumps({"instanceId": instance_id, "statusQueryGetUri": status_url}),
