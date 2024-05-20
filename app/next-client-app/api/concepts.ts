@@ -6,7 +6,7 @@ const fetchKeys = {
   concept: (conceptCode: number) => `omop/concepts/${conceptCode}/`,
   conceptFilter: (filter: string) =>
     `omop/conceptsfilter/?concept_id__in=${filter}`,
-  addConcept: "scanreportconcepts/",
+  addConcept: "v2/scanreportconcept/",
   deleteConcept: (conceptId: number) => `scanreportconcepts/${conceptId}`,
   scanreportConcepts: (filter?: string) =>
     `scanreportconceptsfilter/?${filter}`,
@@ -79,26 +79,6 @@ export async function addConcept(data: {}): Promise<ScanReportConcept> {
   });
   revalidatePath("");
   return response;
-  // try {
-  //   return response;
-  // } catch (error) {
-  //   console.warn("Failed to create concept.");
-  //   return {
-  //     id: 0,
-  //     created_at: new Date(),
-  //     updated_at: new Date(),
-  //     nlp_entity: null,
-  //     nlp_entity_type: null,
-  //     nlp_confidence: null,
-  //     nlp_vocabulary: null,
-  //     nlp_concept_code: null,
-  //     nlp_processed_string: null,
-  //     object_id: 0,
-  //     creation_type: "",
-  //     concept: 0,
-  //     content_type: 0,
-  //   };
-  // }
 }
 
 export async function deleteConcept(conceptId: number) {
