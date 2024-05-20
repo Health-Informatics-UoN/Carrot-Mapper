@@ -21,9 +21,6 @@ interface AddConceptProps {
 }
 
 export default function AddConcept({ id, tableId }: AddConceptProps) {
-  const typeNameQuery = objToQuery({
-    type_name: "scanreportfield",
-  });
   const objectQuery = objToQuery({
     object_id: id,
   });
