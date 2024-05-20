@@ -713,6 +713,66 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         body = request.data
+        if not isinstance(body, list):
+            # Extract the content_type
+            content_type_str = body.pop("content_type", None)
+            content_type = ContentType.objects.get(model=content_type_str)
+            body["content_type"] = content_type.id
+
+            concept = ScanReportConcept.objects.filter(
+                concept=body["concept"],
+                object_id=body["object_id"],
+                content_type=content_type,
+            )
+            if concept.count() > 0:
+                print("Can't add multiple concepts of the same id to the same object")
+                response = JsonResponse(
+                    {
+                        "status_code": 403,
+                        "ok": False,
+                        "statusText": "Can't add multiple concepts of the same id to the same object",
+                    }
+                )
+                response.status_code = 403
+                return response
+        else:
+            # for each item in the list, identify any existing SRConcepts that clash, and block their creation
+            # this method may be quite slow as it has to wait for each query
+            filtered = []
+            for item in body:
+                # Extract the content_type
+                content_type_str = item.pop("content_type", None)
+                content_type = ContentType.objects.get(model=content_type_str)
+                item["content_type"] = content_type.id
+
+                concept = ScanReportConcept.objects.filter(
+                    concept=item["concept"],
+                    object_id=item["object_id"],
+                    content_type=content_type,
+                )
+                if concept.count() == 0:
+                    filtered.append(item)
+            body = filtered
+
+        serializer = self.get_serializer(data=body, many=isinstance(body, list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
+    """
+    Version V2.
+    """
+
+    queryset = ScanReportConcept.objects.all()
+    serializer_class = ScanReportConceptSerializer
+
+    def create(self, request, *args, **kwargs):
+        body = request.data
 
         # Extract the content_type
         content_type_str = body.pop("content_type", None)
