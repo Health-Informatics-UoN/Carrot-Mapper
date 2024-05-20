@@ -47,7 +47,7 @@ from azure.storage.blob import BlobServiceClient
 from config import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -61,6 +61,7 @@ from mapping.permissions import (
 )
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
@@ -92,7 +93,11 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-from shared.services.rules import delete_mapping_rules
+from shared.services.rules import (
+    _find_destination_table,
+    _save_mapping_rules,
+    delete_mapping_rules,
+)
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -708,75 +713,69 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         body = request.data
-        if not isinstance(body, list):
-            # Extract the content_type
-            content_type_str = body.pop("content_type", None)
-            content_type = ContentType.objects.get(model=content_type_str)
-            body["content_type"] = content_type.id
 
-            # validate person_id date event is set on table
-            table = ScanReportTable.objects.get(pk=body.pop("table_id", None))
-            if not (table.person_id or table.date_event):
-                # TODO: be more specific about which is set, and which isn't.
-                return Response(
-                    "Please set the person_id and a date_event on the table", status=400
-                )
+        # Extract the content_type
+        content_type_str = body.pop("content_type", None)
+        content_type = ContentType.objects.get(model=content_type_str)
+        body["content_type"] = content_type.id
 
-            # validate that the concept exists.
-            concept_id = body.get("concept", None)
-            try:
-                concept = Concept.objects.get(pk=concept_id)
-            except Exception:
-                return Response(
-                    f"Concept id {concept_id} does not exist in our database",
-                    status=404,
-                )
+        # validate person_id and date event are set on table
+        table_id = body.pop("table_id", None)
+        try:
+            table = ScanReportTable.objects.get(pk=table_id)
+        except ObjectDoesNotExist as e:
+            raise NotFound("Table with the provided ID does not exist.") from e
 
-            # validate that the destination_table is okay.
-            services_rules.find_destination_table2(concept)
-
-            # Validate that multiple concepts are not being added.
-            sr_concept = ScanReportConcept.objects.filter(
-                concept=body["concept"],
-                object_id=body["object_id"],
-                content_type=content_type,
+        if not table.person_id and not table.date_event:
+            raise ValidationError(
+                "Please set both person_id and date_event on the table"
             )
-            if sr_concept.count() > 0:
-                print("Can't add multiple concepts of the same id to the same object")
-                response = JsonResponse(
-                    {
-                        "status_code": 400,
-                        "ok": False,
-                        "detail": "Can't add multiple concepts of the same id to the same object",
-                    }
-                )
-                response.status_code = 400
-                return response
-        else:
-            # for each item in the list, identify any existing SRConcepts that clash, and block their creation
-            # this method may be quite slow as it has to wait for each query
-            filtered = []
-            for item in body:
-                # Extract the content_type
-                content_type_str = item.pop("content_type", None)
-                content_type = ContentType.objects.get(model=content_type_str)
-                item["content_type"] = content_type.id
+        elif not table.person_id:
+            raise ValidationError("Please set the person_id on the table")
+        elif not table.date_event:
+            raise ValidationError("Please set the date_event on the table")
 
-                sr_concept = ScanReportConcept.objects.filter(
-                    concept=item["concept"],
-                    object_id=item["object_id"],
-                    content_type=content_type,
-                )
-                if sr_concept.count() == 0:
-                    filtered.append(item)
-            body = filtered
+        # validate that the concept exists.
+        concept_id = body.get("concept", None)
+        try:
+            concept = Concept.objects.get(pk=concept_id)
+        except ObjectDoesNotExist as e:
+            raise NotFound(
+                f"Concept id {concept_id} does not exist in our database."
+            ) from e
+
+        # validate the destination_table
+        destination_table = _find_destination_table(concept)
+        if destination_table is None:
+            return Response(
+                {
+                    "detail": "The destination table could not be found or has not been implemented."
+                },
+                status=400,
+            )
+
+        # Validate that multiple concepts are not being added.
+        sr_concept = ScanReportConcept.objects.filter(
+            concept=body["concept"],
+            object_id=body["object_id"],
+            content_type=content_type,
+        )
+        if sr_concept.count() > 0:
+            return Response(
+                {
+                    "detail": "Can't add multiple concepts of the same id to the same object"
+                },
+                status=400,
+            )
 
         serializer = self.get_serializer(data=body, many=isinstance(body, list))
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        # create a mapping rule here also
-        # TODO: save mapping rules needs the model created by perform_create
-        # services_rules.save_mapping_rules(sr)
+
+        model = serializer.instance
+        saved = _save_mapping_rules(model)
+        if not saved:
+            return Response({"detail": "Rule could not be saved."})
 
         headers = self.get_success_headers(serializer.data)
         return Response(
