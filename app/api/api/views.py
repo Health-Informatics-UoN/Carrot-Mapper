@@ -51,7 +51,6 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from mapping import services_rules
 from mapping.permissions import (
     CanAdmin,
     CanEdit,
@@ -61,7 +60,6 @@ from mapping.permissions import (
 )
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
-from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.renderers import JSONRenderer
@@ -783,26 +781,37 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         table_id = body.pop("table_id", None)
         try:
             table = ScanReportTable.objects.get(pk=table_id)
-        except ObjectDoesNotExist as e:
-            raise NotFound("Table with the provided ID does not exist.") from e
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Table with the provided ID does not exist."},
+                status=400,
+            )
 
         if not table.person_id and not table.date_event:
-            raise ValidationError(
-                "Please set both person_id and date_event on the table"
+            return Response(
+                {"detail": "Please set both person_id and date_event on the table."},
+                status=400,
             )
         elif not table.person_id:
-            raise ValidationError("Please set the person_id on the table")
+            return Response(
+                {"detail": "Please set the person_id on the table."},
+                status=400,
+            )
         elif not table.date_event:
-            raise ValidationError("Please set the date_event on the table")
+            return Response(
+                {"detail": "Please set the date_event on the table."},
+                status=400,
+            )
 
         # validate that the concept exists.
         concept_id = body.get("concept", None)
         try:
             concept = Concept.objects.get(pk=concept_id)
-        except ObjectDoesNotExist as e:
-            raise NotFound(
-                f"Concept id {concept_id} does not exist in our database."
-            ) from e
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": f"Concept id {concept_id} does not exist in our database."},
+                status=400,
+            )
 
         # validate the destination_table
         destination_table = _find_destination_table(concept)
