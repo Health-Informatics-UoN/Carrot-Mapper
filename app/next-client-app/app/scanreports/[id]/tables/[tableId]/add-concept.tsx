@@ -1,16 +1,7 @@
-import {
-  getConcept,
-  getConceptFilters,
-  addConcept,
-  getScanReportConcepts,
-} from "@/api/concepts";
-import { getOmopFields, getOmopTable } from "@/api/omop";
-import { getScanReportTable } from "@/api/scanreports";
+import { addConcept } from "@/api/concepts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { m_allowed_tables } from "@/constants/concepts";
 import { ApiError } from "@/lib/api/error";
-import { mapConceptToOmopField, saveMappingRules } from "@/lib/concept-utils";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
 import { objToQuery } from "@/lib/client-utils";
@@ -26,8 +17,18 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
   });
 
   const handleError = (error: any, message: string) => {
-    const errorObj = JSON.parse((error as ApiError).message);
-    toast.error(`${message} Error: ${errorObj.detail}`);
+    if (error instanceof ApiError) {
+      try {
+        const errorObj = JSON.parse(error.message);
+        toast.error(`${message} Error: ${errorObj.detail}`);
+      } catch {
+        toast.error(`${message} Error: ${error.message}`);
+      }
+    } else {
+      toast.error(
+        `${message} Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
     console.error(error);
   };
 
