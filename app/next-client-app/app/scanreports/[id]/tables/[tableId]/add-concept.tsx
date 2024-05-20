@@ -149,12 +149,13 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
           <div className="flex gap-2">
             <div>
               <Input
-                type="number"
+                type="text"
                 name="concept"
                 value={values.concept}
                 onChange={handleChange}
                 required
                 className="w-[180px]"
+                pattern="\d*"
               />
             </div>
             <Button type="submit">Add</Button>
