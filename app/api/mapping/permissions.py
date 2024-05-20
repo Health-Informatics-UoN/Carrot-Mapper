@@ -305,3 +305,31 @@ class CanAdmin(permissions.BasePermission):
         if is_az_function_user(request.user):
             return True
         return is_admin(obj, request)
+
+
+def get_user_permissions_on_scan_report(request, scan_report_id):
+    """
+    Retrieve the list of permissions a user has on a specific scan report.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing the authenticated user.
+        scan_report_id (int): The primary key of the scan report.
+
+    Returns:
+        list: A list of permission strings the user has on the scan report.
+              Returns an empty list if the scan report does not exist or if the user has no permissions.
+    """
+    try:
+        scan_report = ScanReport.objects.get(id=scan_report_id)
+        permissions = []
+
+        if CanView().has_object_permission(request, None, scan_report):
+            permissions.append("CanView")
+        if CanEdit().has_object_permission(request, None, scan_report):
+            permissions.append("CanEdit")
+        if CanAdmin().has_object_permission(request, None, scan_report):
+            permissions.append("CanAdmin")
+
+        return permissions
+    except ScanReport.DoesNotExist:
+        return []

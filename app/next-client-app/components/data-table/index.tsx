@@ -68,6 +68,14 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const handleRowClick = (id: string) => {
+    const location = window.location.pathname;
+    window.location.href = UrlBuider(
+      id,
+      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`,
+    );
+  };
+
   return (
     <div>
       <div className="flex justify-between my-4">
@@ -136,16 +144,22 @@ export function DataTable<TData, TValue>({
                   className="hover:cursor-pointer"
                   // TODO: Once we are only routing to Nextjs urls, we can do this better.
                   // Do not change this unless every table is only ever redirecting to Next urls.
-                  onClick={() =>
-                    (window.location.href = UrlBuider(
-                      (row.original as any).id,
-                      `${window.location.pathname}${linkPrefix}`,
-                    ))
-                  }
+                  onClick={() => handleRowClick((row.original as any).id)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      <div onClick={(e) => e.stopPropagation()}>
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (
+                            typeof cell.getValue() === "string" ||
+                            typeof cell.getValue() === "number"
+                          ) {
+                            handleRowClick((row.original as any).id);
+                          }
+                        }}
+                        className="inline-block"
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext(),

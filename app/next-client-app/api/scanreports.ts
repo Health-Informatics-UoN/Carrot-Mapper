@@ -10,6 +10,7 @@ const fetchKeys = {
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  permissions: (id: number) => `scanreports/${id}/permissions/`,
   tableValues: (id: string) => `scanreporttables/${id}/`,
 };
 
@@ -36,6 +37,20 @@ export async function getScanReports(
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+/**
+ * Get the current users permissions for a Scan Report.
+ * @param id The Id of the Scan Report
+ * @returns A object with a list of the users permissions.
+ */
+export async function getScanReportPermissions(id: number): Promise<{}> {
+  try {
+    return await request<PermissionsResponse>(fetchKeys.permissions(id));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { permissions: [] };
   }
 }
 
