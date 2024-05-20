@@ -179,6 +179,37 @@ def find_destination_table(request, concept):
     return destination_table
 
 
+def find_destination_table2(concept: Concept):
+    domain = concept.domain_id.lower()
+    # get the omop field for the source_concept_id for this domain
+    omop_field = get_omop_field(f"{domain}_source_concept_id")
+    if omop_field is None:
+        # cannot find the destination field.
+        raise ValueError(
+            "Something up with this concept, '{domain}_source_concept_id' does not exist, or is from a table that is not allowed"
+        )
+        # if request is not None:
+        #     messages.error(
+        #         request,
+        #         f"Something up with this concept, '{domain}_source_concept_id' does not exist, or is from a table that is not allowed.",
+        #     )
+        # return None
+    # start looking up what table we're looking at
+    destination_table = omop_field.table
+
+    if destination_table.table not in m_allowed_tables:
+        # te table has not been implemented yet.
+        raise ValueError(
+            "Concept {concept.concept_id} ({concept.concept_name}) is from table '{destination_table.table}' which is not implemented yet."
+        )
+        # messages.error(
+        #     request,
+        #     f"Concept {concept.concept_id} ({concept.concept_name}) is from table '{destination_table.table}' which is not implemented yet.",
+        # )
+        # return None
+    return destination_table
+
+
 def validate_person_id_and_date(request, source_table):
     """
     Before creating any rules, we need to make sure the person_id and date_event

@@ -51,6 +51,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from mapping import services_rules
 from mapping.permissions import (
     CanAdmin,
     CanEdit,
@@ -713,21 +714,43 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
             content_type = ContentType.objects.get(model=content_type_str)
             body["content_type"] = content_type.id
 
-            concept = ScanReportConcept.objects.filter(
+            # validate person_id date event is set on table
+            table = ScanReportTable.objects.get(pk=body.pop("table_id", None))
+            if not (table.person_id or table.date_event):
+                # TODO: be more specific about which is set, and which isn't.
+                return Response(
+                    "Please set the person_id and a date_event on the table", status=400
+                )
+
+            # validate that the concept exists.
+            concept_id = body.get("concept", None)
+            try:
+                concept = Concept.objects.get(pk=concept_id)
+            except Exception:
+                return Response(
+                    f"Concept id {concept_id} does not exist in our database",
+                    status=404,
+                )
+
+            # validate that the destination_table is okay.
+            services_rules.find_destination_table2(concept)
+
+            # Validate that multiple concepts are not being added.
+            sr_concept = ScanReportConcept.objects.filter(
                 concept=body["concept"],
                 object_id=body["object_id"],
                 content_type=content_type,
             )
-            if concept.count() > 0:
+            if sr_concept.count() > 0:
                 print("Can't add multiple concepts of the same id to the same object")
                 response = JsonResponse(
                     {
-                        "status_code": 403,
+                        "status_code": 400,
                         "ok": False,
-                        "statusText": "Can't add multiple concepts of the same id to the same object",
+                        "detail": "Can't add multiple concepts of the same id to the same object",
                     }
                 )
-                response.status_code = 403
+                response.status_code = 400
                 return response
         else:
             # for each item in the list, identify any existing SRConcepts that clash, and block their creation
@@ -739,18 +762,22 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
                 content_type = ContentType.objects.get(model=content_type_str)
                 item["content_type"] = content_type.id
 
-                concept = ScanReportConcept.objects.filter(
+                sr_concept = ScanReportConcept.objects.filter(
                     concept=item["concept"],
                     object_id=item["object_id"],
                     content_type=content_type,
                 )
-                if concept.count() == 0:
+                if sr_concept.count() == 0:
                     filtered.append(item)
             body = filtered
 
         serializer = self.get_serializer(data=body, many=isinstance(body, list))
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        # create a mapping rule here also
+        # TODO: save mapping rules needs the model created by perform_create
+        # services_rules.save_mapping_rules(sr)
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
