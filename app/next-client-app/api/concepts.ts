@@ -70,34 +70,35 @@ export async function getContentTypeId(
 }
 
 export async function addConcept(data: {}): Promise<ScanReportConcept> {
-  try {
-    const response = await request<ScanReportConcept>(fetchKeys.addConcept, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    revalidatePath("");
-    return response;
-  } catch (error) {
-    console.warn("Failed to create concept.");
-    return {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      nlp_entity: null,
-      nlp_entity_type: null,
-      nlp_confidence: null,
-      nlp_vocabulary: null,
-      nlp_concept_code: null,
-      nlp_processed_string: null,
-      object_id: 0,
-      creation_type: "",
-      concept: 0,
-      content_type: 0,
-    };
-  }
+  const response = await request<ScanReportConcept>(fetchKeys.addConcept, {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  revalidatePath("");
+  return response;
+  // try {
+  //   return response;
+  // } catch (error) {
+  //   console.warn("Failed to create concept.");
+  //   return {
+  //     id: 0,
+  //     created_at: new Date(),
+  //     updated_at: new Date(),
+  //     nlp_entity: null,
+  //     nlp_entity_type: null,
+  //     nlp_confidence: null,
+  //     nlp_vocabulary: null,
+  //     nlp_concept_code: null,
+  //     nlp_processed_string: null,
+  //     object_id: 0,
+  //     creation_type: "",
+  //     concept: 0,
+  //     content_type: 0,
+  //   };
+  // }
 }
 
 export async function deleteConcept(conceptId: number) {
