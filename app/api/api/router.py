@@ -95,6 +95,11 @@ router.register(
     r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"
 )
 router.register(
+    r"v2/scanreportconcept",
+    views.ScanReportConceptViewSetV2,
+    basename="v2scanreportconcept",
+)
+router.register(
     r"scanreportconceptsfilter",
     views.ScanReportConceptFilterViewSet,
     basename="scanreportconceptsfilter",
