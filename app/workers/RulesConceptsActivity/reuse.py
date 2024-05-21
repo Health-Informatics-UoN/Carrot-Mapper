@@ -34,19 +34,9 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         new_fields_map (Dict[str, str]): A map of field names to Ids.
     """
     logger.info("reuse_existing_value_concepts")
-    content_type_enum = ScanReportConceptContentType.VALUE
+    content_type = ScanReportConceptContentType.VALUE
 
-    # Gets all scan report concepts that are for the type value
-    # (or content type which should be value) and in "active" SRs
-    content_type = ContentType.objects.get(model=content_type_enum.value)
-    value_ids = ScanReportValue.objects.filter(
-        scan_report_field__scan_report_table__scan_report__hidden=False,
-        scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-        scan_report_field__scan_report_table__scan_report__status="COMPLET",
-    ).values_list("id", flat=True)
-    existing_value_concepts = ScanReportConcept.objects.filter(
-        content_type=content_type, object_id__in=value_ids
-    ).all()
+    existing_value_concepts = db.get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing value ids to scan report concepts
     # from the list of existing scan report concepts
@@ -168,7 +158,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_values_full_details,
         value_details_to_value_and_concept_id_map,
-        content_type_enum,
+        content_type,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
@@ -189,17 +179,9 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
         None
     """
     logger.info("reuse_existing_field_concepts")
-    content_type_enum = ScanReportConceptContentType.FIELD
+    content_type = ScanReportConceptContentType.FIELD
 
-    content_type = ContentType.objects.get(model=content_type_enum.value)
-    field_ids = ScanReportField.objects.filter(
-        scan_report_table__scan_report__hidden=False,
-        scan_report_table__scan_report__parent_dataset__hidden=False,
-        scan_report_table__scan_report__status="COMPLET",
-    ).values_list("id", flat=True)
-    existing_field_concepts = ScanReportConcept.objects.filter(
-        content_type=content_type, object_id__in=field_ids
-    ).all()
+    existing_field_concepts = db.get_scan_report_active_concepts(content_type)
 
     # create dictionary that maps existing field ids to scan report concepts
     # from the list of existing scan report concepts from active SRs
@@ -280,7 +262,7 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     if concepts_to_post := select_concepts_to_post(
         new_fields_full_details,
         existing_field_name_to_field_and_concept_id_map,
-        content_type_enum,
+        content_type,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
