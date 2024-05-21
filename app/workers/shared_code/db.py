@@ -127,6 +127,31 @@ def serialize_scan_report_fields(
     return [{"id": field.pk, "name": field.name} for field in fields]
 
 
+def get_scan_report_active_concepts(
+    content_type: ScanReportConceptContentType,
+) -> QuerySet[ScanReportConcept]:
+    """
+    Gets Scan Report Concepts for the given `content_type` and in `active` SRs
+
+    Args:
+        - content_type (ScanReportConceptContentType): The content_type to filter by.
+
+    Returns:
+        - QuerySet[ScanReportConcept]: The list of Scan Report Concepts.
+    """
+    content_type_model = ContentType.objects.get(model=content_type.value)
+
+    value_ids = ScanReportValue.objects.filter(
+        scan_report_field__scan_report_table__scan_report__hidden=False,
+        scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+        scan_report_field__scan_report_table__scan_report__status="COMPLET",
+    ).values_list("id", flat=True)
+
+    return ScanReportConcept.objects.filter(
+        content_type=content_type_model, object_id__in=value_ids
+    ).all()
+
+
 def find_standard_concept_batch(
     source_concepts: List[ScanReportValueDict],
 ) -> Union[defaultdict[Any, List], Dict]:
