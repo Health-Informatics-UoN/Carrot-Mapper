@@ -19,10 +19,8 @@ async def main(
 
     logging.info(f"Queued message with instance ID = '{instance_id}'.")
 
-    # TODO: Can be used to provide the status of the instance.
-    status_url = f"{req.url.rstrip('/')}/status/{instance_id}"
     return func.HttpResponse(
-        json.dumps({"instanceId": instance_id, "statusQueryGetUri": status_url}),
+        json.dumps({"instanceId": instance_id}),
         status_code=202,
         mimetype="application/json",
     )
