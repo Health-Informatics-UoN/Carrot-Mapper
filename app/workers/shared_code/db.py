@@ -52,6 +52,38 @@ def create_concept(
     )
 
 
+def get_scan_report_values(id: int) -> List[ScanReportValueDict]:
+    """
+    Get serialized Scan Report Values for a given Scan Report Table.
+
+    Args:
+        - table_id (int): The table_id to filter by.
+
+    Returns:
+        - List[ScanReportValue]: A list of serialized Scan Report Value dictionaries.
+
+    """
+    sr_values = ScanReportValue.objects.filter(
+        scan_report_field__scan_report_table=id
+    ).all()
+    return serialize_scan_report_values(sr_values)
+
+
+def get_scan_report_fields(table_id: int) -> List[ScanReportFieldDict]:
+    """
+    Get serialized Scan Report Fields for a given Scan Report Table.
+
+    Args:
+        - table_id (int): The table_id to filter by.
+
+    Returns:
+        - List[ScanReportFieldDict]: A list of serialized Scan Report Field dictionaries.
+
+    """
+    sr_fields = ScanReportField.objects.filter(scan_report_table=table_id).all()
+    return serialize_scan_report_fields(sr_fields)
+
+
 def serialize_scan_report_values(
     table_values: QuerySet[ScanReportValue],
 ) -> List[ScanReportValueDict]:
