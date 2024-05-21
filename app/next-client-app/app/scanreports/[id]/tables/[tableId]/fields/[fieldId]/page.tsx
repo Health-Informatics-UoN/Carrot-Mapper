@@ -49,7 +49,6 @@ export default async function ScanReportsValue({
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const fieldName = await getScanReportField(fieldId);
-  console.log(fieldName);
   const filter = <DataTableFilter filter="value" filterText="value" />;
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results

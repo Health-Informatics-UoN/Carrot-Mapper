@@ -1,4 +1,5 @@
 import { addConcept } from "@/api/concepts";
+import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api/error";
@@ -6,11 +7,11 @@ import { Form, Formik } from "formik";
 import { toast } from "sonner";
 
 interface AddConceptProps {
-  id: number;
-  tableId: string;
+  valueId: number;
+  fieldId: string;
 }
 
-export default function AddConcept({ id, tableId }: AddConceptProps) {
+export default function AddConcept({ valueId, fieldId }: AddConceptProps) {
   const handleError = (error: any, message: string) => {
     if (error instanceof ApiError) {
       try {
@@ -31,12 +32,13 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
 
   const handleSubmit = async (conceptCode: number) => {
     try {
+      const fieldObj = await getScanReportField(fieldId);
       await addConcept({
         concept: conceptCode,
-        object_id: id,
+        object_id: valueId,
         content_type: "scanreportvalue",
         creation_type: "M",
-        table_id: tableId,
+        table_id: fieldObj.scan_report_table,
       });
       toast.success("ConceptId linked to the value");
     } catch (error) {

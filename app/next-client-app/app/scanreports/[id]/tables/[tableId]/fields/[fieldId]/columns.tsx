@@ -57,9 +57,8 @@ export const columns: ColumnDef<ScanReportValue>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      // TODO: is this one correct????
       const { scan_report_field, id } = row.original;
-      return <AddConcept id={id} tableId={scan_report_field.toString()} />;
+      return <AddConcept valueId={id} fieldId={scan_report_field.toString()} />;
     },
   },
 ];
