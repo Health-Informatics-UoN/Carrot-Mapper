@@ -37,4 +37,5 @@ interface Concept {
   valid_end_date: Date;
   invalid_reason: string;
   scan_report_concept_id?: number;
+  creation_type: string;
 }
