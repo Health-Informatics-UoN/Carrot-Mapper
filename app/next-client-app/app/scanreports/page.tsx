@@ -26,7 +26,6 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
 
   const query = objToQuery(combinedParams);
   const scanReports = await getScanReports(query);
-
   const filter = <ScanReportsTableFilter filter="dataset" filterText="name" />;
 
   return (

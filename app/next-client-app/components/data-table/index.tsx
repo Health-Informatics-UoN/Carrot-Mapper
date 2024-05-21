@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { ReactNode } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ interface DataTableProps<TData, TValue> {
   Filter?: JSX.Element;
 }
 
-function UrlBuider(id: string, prefix: string = "") {
+function UrlBuilder(id: string, prefix: string = "") {
   return `${prefix}${id}/`;
 }
 
@@ -70,9 +70,9 @@ export function DataTable<TData, TValue>({
 
   const handleRowClick = (id: string) => {
     const location = window.location.pathname;
-    window.location.href = UrlBuider(
+    window.location.href = UrlBuilder(
       id,
-      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`,
+      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`
     );
   };
 
@@ -127,7 +127,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -162,7 +162,7 @@ export function DataTable<TData, TValue>({
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext(),
+                          cell.getContext()
                         )}
                       </div>
                     </TableCell>
