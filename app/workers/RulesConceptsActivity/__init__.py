@@ -11,12 +11,7 @@ import django
 
 django.setup()
 
-from shared.data.models import (
-    ScanReportConcept,
-    ScanReportField,
-    ScanReportTable,
-    ScanReportValue,
-)
+from shared.data.models import ScanReportConcept, ScanReportTable
 from shared.data.omop import Concept
 from shared_code import db
 
