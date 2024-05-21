@@ -58,12 +58,10 @@ def _create_concepts(
     return concepts
 
 
-def _handle_concepts(
-    entries_grouped_by_vocab: defaultdict[str | None, List[ScanReportValueDict]]
-) -> None:
+def _transform_concepts(table_values: List[ScanReportValueDict]) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
-    Transforms the defaultdict inplace.
+    Transforms the values in place.
 
     For the case when vocab is None, set it to defaults.
 
@@ -77,11 +75,17 @@ def _handle_concepts(
     int or str, or a list of such.
 
     Args:
-        - entries_grouped_by_vocab: (defaultdict[str, List[ScanReportValueDict]): Entries grouped by Vocab.
+        - table_values: List[ScanReportValueDict]: List of Scan Report Values.
 
     Returns:
         - None
     """
+    # group table_values by their vocabulary_id, for example:
+    # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
+    entries_grouped_by_vocab = defaultdict(list)
+    for entry in table_values:
+        entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
+
     for vocab, value in entries_grouped_by_vocab.items():
         if vocab is None:
             # Set to defaults, and skip all the remaining processing that a vocab would require
@@ -256,34 +260,19 @@ def _handle_table(
     Returns:
         - None
     """
-    sr_values = ScanReportValue.objects.filter(
-        scan_report_field__scan_report_table=table.pk
-    ).all()
-    # need to convert to dictionaries as the function is mutating these models.
-    table_values = db.serialize_scan_report_values(sr_values)
-
-    sr_fields = ScanReportField.objects.filter(scan_report_table=table.pk).all()
-    table_fields = db.serialize_scan_report_fields(sr_fields)
+    table_values = db.get_scan_report_values(table.pk)
+    table_fields = db.get_scan_report_fields(table.pk)
 
     # Add vocab id to each entry from the vocab dict
     helpers.add_vocabulary_id_to_entries(table_values, vocab, table.name)
 
-    # group table_values by their vocabulary_id, for example:
-    # ['LOINC': [ {'id': 512, 'value': '46457-8', ... 'vocabulary_id': 'LOINC' }]],
-    entries_grouped_by_vocab = defaultdict(list)
-    for entry in table_values:
-        entries_grouped_by_vocab[entry["vocabulary_id"]].append(entry)
-
-    _handle_concepts(entries_grouped_by_vocab)
+    _transform_concepts(table_values)
     logger.debug("finished standard concepts lookup")
 
-    # Remember that entries_grouped_by_vocab is just a view into table values
-    # so changes to entries_grouped_by_vocab above are reflected when we access table_values.
     concepts = _create_concepts(table_values)
 
     # Bulk create Concepts
     logger.info(f"Creating {len(concepts)} concepts for table {table.name}")
-
     ScanReportConcept.objects.bulk_create(concepts)
 
     logger.info("Create concepts all finished")
