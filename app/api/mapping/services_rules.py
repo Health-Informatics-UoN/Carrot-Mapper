@@ -567,7 +567,8 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
                 "rule_id": rule_scan_report_concept_id,
                 "omop_term": concept_name,
                 "destination_table": destination_table,
-                "domain": destination_field,
+                "domain": scan_report_concept.concept.domain_id,
+                "destination_field": destination_field,
                 "source_table": source_table,
                 "source_field": source_field,
                 "term_mapping": term_mapping,
@@ -627,7 +628,7 @@ def get_mapping_rules_json(structural_mapping_rules):
             cdm[table_name][_id] = {}
 
         # make a new mapping spec for the destination table
-        destination_field = rule["domain"].field
+        destination_field = rule["destination_field"].field
         cdm[table_name][_id][destination_field] = {
             "source_table": rule["source_table"].name.replace("\ufeff", ""),
             "source_field": rule["source_field"].name.replace("\ufeff", ""),
@@ -710,7 +711,7 @@ def download_mapping_rules_as_csv(request, qs):
     for content in output:
         # replace the django model objects with string names
         content["destination_table"] = content["destination_table"].table
-        content["domain"] = content["domain"].field
+        content["domain"] = content["domain"]
         content["source_table"] = content["source_table"].name
         content["source_field"] = content["source_field"].name
 
