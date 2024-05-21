@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { ApiError } from "@/lib/api/error";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
-import { objToQuery } from "@/lib/client-utils";
 
 interface AddConceptProps {
   id: number;
@@ -12,10 +11,6 @@ interface AddConceptProps {
 }
 
 export default function AddConcept({ id, tableId }: AddConceptProps) {
-  const objectQuery = objToQuery({
-    object_id: id,
-  });
-
   const handleError = (error: any, message: string) => {
     if (error instanceof ApiError) {
       try {
@@ -26,7 +21,9 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       }
     } else {
       toast.error(
-        `${message} Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `${message} Error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
     console.error(error);

@@ -11,15 +11,14 @@ const fetchKeys = {
   tableName: (id: string) => `v2/scanreporttables/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
   permissions: (id: number) => `scanreports/${id}/permissions/`,
-  tableValues: (id: string) => `scanreporttables/${id}/`,
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<PaginatedResponse<ScanReportTable>> {
   try {
     return await request<PaginatedResponse<ScanReportTable>>(
-      fetchKeys.tables(filter),
+      fetchKeys.tables(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -28,11 +27,11 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<PaginatedResponse<ScanReportList>> {
   try {
     return await request<PaginatedResponse<ScanReportList>>(
-      fetchKeys.list(filter),
+      fetchKeys.list(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -55,11 +54,11 @@ export async function getScanReportPermissions(id: number): Promise<{}> {
 }
 
 export async function getScanReportFields(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<PaginatedResponse<ScanReportField>> {
   try {
     return await request<PaginatedResponse<ScanReportField>>(
-      fetchKeys.fields(filter),
+      fetchKeys.fields(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -97,23 +96,6 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
       created_at: new Date(),
       updated_at: new Date(),
       date_event: "",
-    };
-  }
-}
-
-export async function getTableValues(id: string): Promise<ScanReportTable> {
-  try {
-    return await request<ScanReportTable>(fetchKeys.tableValues(id));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      name: "",
-      scan_report: 0,
-      person_id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      date_event: 0,
     };
   }
 }
