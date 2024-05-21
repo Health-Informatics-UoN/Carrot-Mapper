@@ -912,9 +912,13 @@ class RulesList(viewsets.ModelViewSet):
                 "name": rule["destination_table"].table,
             }
 
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
             rule["domain"] = {
-                "id": int(str(rule["domain"])),
-                "name": rule["domain"].field,
+                "name": rule["domain"],
             }
 
             rule["source_table"] = {
