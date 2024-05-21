@@ -47,18 +47,18 @@ export default async function ScanReportsField({
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsTables.results
       .map((item) => item.id)
-      .join(",")}`,
+      .join(",")}`
   );
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(","),
+          scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
   const scanReportsResult = addConceptsToResults(
     scanReportsTables.results,
     scanReportsConcepts,
-    conceptsFilter,
+    conceptsFilter
   );
 
   return (
@@ -81,7 +81,7 @@ export default async function ScanReportsField({
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}`}>
+              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
                 {tableName.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
