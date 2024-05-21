@@ -34,7 +34,7 @@ export default function AddConcept({ id, tableId }: AddConceptProps) {
       await addConcept({
         concept: conceptCode,
         object_id: id,
-        content_type: "scanreportfield",
+        content_type: "scanreportvalue",
         creation_type: "M",
         table_id: tableId,
       });

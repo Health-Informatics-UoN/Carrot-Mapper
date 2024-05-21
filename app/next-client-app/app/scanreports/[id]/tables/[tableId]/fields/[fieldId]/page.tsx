@@ -49,6 +49,7 @@ export default async function ScanReportsValue({
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const fieldName = await getScanReportField(fieldId);
+  console.log(fieldName);
   const filter = <DataTableFilter filter="value" filterText="value" />;
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results
@@ -125,6 +126,7 @@ export default async function ScanReportsValue({
         </div>
       </div>
       <div>
+        {/* TODO: Disable on click row here */}
         <DataTable
           columns={columns}
           data={scanReportsResult}
