@@ -128,6 +128,7 @@ export default async function ScanReportsValue({
           data={scanReportsResult}
           count={scanReportsValues.count}
           Filter={filter}
+          clickableRow={false}
         />
       </div>
     </div>
