@@ -40,12 +40,12 @@ export default async function ScanReportsField({
   const combinedParams = { ...defaultParams, ...searchParams };
 
   const query = objToQuery(combinedParams);
-  const scanReportsTables = await getScanReportFields(query);
+  const scanReportsFields = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const filter = <DataTableFilter filter="name" filterText="field" />;
   const scanReportsConcepts = await getScanReportConcepts(
-    `object_id__in=${scanReportsTables.results
+    `object_id__in=${scanReportsFields.results
       .map((item) => item.id)
       .join(",")}`
   );
@@ -56,7 +56,7 @@ export default async function ScanReportsField({
         )
       : [];
   const scanReportsResult = addConceptsToResults(
-    scanReportsTables.results,
+    scanReportsFields.results,
     scanReportsConcepts,
     conceptsFilter
   );
@@ -114,7 +114,7 @@ export default async function ScanReportsField({
         <DataTable
           columns={columns}
           data={scanReportsResult}
-          count={scanReportsTables.count}
+          count={scanReportsFields.count}
           Filter={filter}
           linkPrefix="fields/"
         />

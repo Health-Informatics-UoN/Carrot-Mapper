@@ -15,6 +15,7 @@ export const addConceptsToResults = (
           result.concepts?.push({
             ...concept,
             scan_report_concept_id: scanreportconcept.id,
+            creation_type: scanreportconcept.creation_type,
           });
         }
       }
