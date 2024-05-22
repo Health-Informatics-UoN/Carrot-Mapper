@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import AddConcept from "./add-concept";
-import { ConceptTags } from "./concept-tags";
+import { ConceptTags } from "@/components/concepts/concept-tags";
 
 export const columns: ColumnDef<ScanReportValue>[] = [
   {

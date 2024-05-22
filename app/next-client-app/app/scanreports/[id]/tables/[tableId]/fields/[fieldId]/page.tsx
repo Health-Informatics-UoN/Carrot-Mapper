@@ -122,7 +122,6 @@ export default async function ScanReportsValue({
         </div>
       </div>
       <div>
-        {/* TODO: Disable on click row here */}
         <DataTable
           columns={columns}
           data={scanReportsResult}

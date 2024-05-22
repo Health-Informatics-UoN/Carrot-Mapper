@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import AddConcept from "./add-concept";
-import { ConceptTags } from "./concept-tags";
 import { Pencil } from "lucide-react";
+import { ConceptTags } from "@/components/concepts/concept-tags";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
