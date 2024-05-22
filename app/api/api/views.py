@@ -785,23 +785,23 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             return Response(
                 {"detail": "Table with the provided ID does not exist."},
-                status=400,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         if not table.person_id and not table.date_event:
             return Response(
                 {"detail": "Please set both person_id and date_event on the table."},
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         elif not table.person_id:
             return Response(
                 {"detail": "Please set the person_id on the table."},
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
         elif not table.date_event:
             return Response(
                 {"detail": "Please set the date_event on the table."},
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # validate that the concept exists.
@@ -811,7 +811,7 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         except ObjectDoesNotExist:
             return Response(
                 {"detail": f"Concept id {concept_id} does not exist in our database."},
-                status=400,
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # validate the destination_table
@@ -821,7 +821,7 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
                 {
                     "detail": "The destination table could not be found or has not been implemented."
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Validate that multiple concepts are not being added.
@@ -835,7 +835,7 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
                 {
                     "detail": "Can't add multiple concepts of the same id to the same object"
                 },
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(data=body, many=isinstance(body, list))
@@ -845,7 +845,10 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         model = serializer.instance
         saved = _save_mapping_rules(model)
         if not saved:
-            return Response({"detail": "Rule could not be saved."})
+            return Response(
+                {"detail": "Rule could not be saved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         headers = self.get_success_headers(serializer.data)
         return Response(
