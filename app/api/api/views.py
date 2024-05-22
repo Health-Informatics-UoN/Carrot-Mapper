@@ -844,7 +844,10 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         model = serializer.instance
         saved = _save_mapping_rules(model)
         if not saved:
-            return Response({"detail": "Rule could not be saved."}, status=status.HTTP_400_BAD_REQUEST,)
+            return Response(
+                {"detail": "Rule could not be saved."},
+                status=status.HTTP_400_BAD_REQUEST,
+                )
 
         headers = self.get_success_headers(serializer.data)
         return Response(
