@@ -13,7 +13,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Unable to delete Concept id from value Error: ${errorObj.detail}`,
+        `Unable to delete Concept id from value Error: ${errorObj.detail}`
       );
       console.error(error);
     }
@@ -22,12 +22,22 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
   return concepts && concepts?.length > 0 ? (
     <div className="flex flex-col items-start w-[250px]">
       {concepts.map((concept) => (
-        <Badge className="bg-carrot hover:bg-carrot" key={concept.concept_code}>
-          <p className="px-[2px] py-2">{`${concept.concept_id} ${concept.concept_name}`}</p>
+        <Badge
+          className={`${
+            concept.creation_type === "V"
+              ? "bg-carrot-vocab hover:bg-carrot-vocab"
+              : concept.creation_type === "M"
+              ? "bg-carrot-manual hover:bg-carrot-manual"
+              : concept.creation_type === "R"
+              ? "bg-carrot-reuse hover:bg-carrot-reuse"
+              : ""
+          }`}
+          key={concept.concept_code}
+        >
+          <p className="px-3 py-2">{`${concept.concept_id} ${concept.concept_name} (${concept.creation_type})`}</p>
           <Button
             size="icon"
             variant="ghost"
-            className="hover:bg-carrot hover:text-white"
             onClick={async () =>
               await handleDelete(concept.scan_report_concept_id ?? 0)
             }
