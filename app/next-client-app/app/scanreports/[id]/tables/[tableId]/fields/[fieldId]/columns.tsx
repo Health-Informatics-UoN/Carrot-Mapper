@@ -2,8 +2,8 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import AddConcept from "./add-concept";
 import { ConceptTags } from "@/components/concepts/concept-tags";
+import AddConcept from "@/components/concepts/add-concept";
 
 export const columns: ColumnDef<ScanReportValue>[] = [
   {
@@ -58,7 +58,13 @@ export const columns: ColumnDef<ScanReportValue>[] = [
     header: "",
     cell: ({ row }) => {
       const { scan_report_field, id } = row.original;
-      return <AddConcept valueId={id} fieldId={scan_report_field.toString()} />;
+      return (
+        <AddConcept
+          rowId={id}
+          parentId={scan_report_field.toString()}
+          location="SR-Values"
+        />
+      );
     },
   },
 ];

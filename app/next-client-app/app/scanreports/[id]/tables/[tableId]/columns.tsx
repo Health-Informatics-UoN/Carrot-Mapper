@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import AddConcept from "./add-concept";
 import { Pencil } from "lucide-react";
 import { ConceptTags } from "@/components/concepts/concept-tags";
+import AddConcept from "@/components/concepts/add-concept";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
@@ -61,7 +61,13 @@ export const columns: ColumnDef<ScanReportField>[] = [
     header: "",
     cell: ({ row }) => {
       const { scan_report_table, id } = row.original;
-      return <AddConcept id={id} tableId={scan_report_table.toString()} />;
+      return (
+        <AddConcept
+          rowId={id}
+          parentId={scan_report_table.toString()}
+          location="SR-Fields"
+        />
+      );
     },
   },
   {
