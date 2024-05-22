@@ -847,7 +847,7 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
             return Response(
                 {"detail": "Rule could not be saved."},
                 status=status.HTTP_400_BAD_REQUEST,
-                )
+            )
 
         headers = self.get_success_headers(serializer.data)
         return Response(
