@@ -173,15 +173,6 @@ export const columns: ColumnDef<ScanReportList>[] = [
                 Assertions <ExclamationTriangleIcon className="ml-auto" />
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuSeparator />
-            <Link
-              href={`/scanreports/${id}/`}
-              style={{ textDecoration: "none", color: "black" }}
-            >
-              <DropdownMenuItem>
-                Tables <ExclamationTriangleIcon className="ml-auto" />
-              </DropdownMenuItem>
-            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );
