@@ -71,11 +71,13 @@ export function DataTable<TData, TValue>({
   });
 
   const handleRowClick = (id: string) => {
-    const location = window.location.pathname;
-    window.location.href = UrlBuilder(
-      id,
-      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`
-    );
+    let location = window.location.pathname;
+    // the test method of the regular expression object to check if location contains "datasets/" followed by one or more digits.
+    // If it does, it sets location to "/scanreports/"
+    if (/datasets\/\d+/.test(location)) {
+      location = "/scanreports/";
+    }
+    window.location.href = UrlBuilder(id, `${location}${linkPrefix}`);
   };
 
   return (
