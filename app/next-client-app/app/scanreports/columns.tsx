@@ -164,11 +164,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
               </DropdownMenuItem>
             </Link>
             <DropdownMenuSeparator />
-            <Link
-              href={`/scanreports/${id}/assertions/`}
-              style={{ textDecoration: "none", color: "black" }}
-              prefetch={false}
-            >
+            <Link href={`/scanreports/${id}/assertions/`} prefetch={false}>
               <DropdownMenuItem>
                 Assertions <ExclamationTriangleIcon className="ml-auto" />
               </DropdownMenuItem>
