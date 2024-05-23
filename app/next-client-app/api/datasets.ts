@@ -6,6 +6,7 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
+  dataPartners: () => "datapartners/",
   archive: (id: number) => `datasets/update/${id}/`,
 };
 
@@ -37,6 +38,15 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
       admins: [],
       editors: [],
     };
+  }
+}
+
+export async function getDataPartners(): Promise<DataPartner[]> {
+  try {
+    return request<DataPartner[]>(fetchKeys.dataPartners());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
   }
 }
 
