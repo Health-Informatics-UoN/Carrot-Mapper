@@ -6,7 +6,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getDataSet } from "@/api/datasets";
-import DatasetForm from "./dataset-form";
+import { DatasetDetailsForm } from "@/components/datasets/DatasetDetailsForm";
 
 interface DataSetListProps {
   params: {
@@ -17,8 +17,8 @@ interface DataSetListProps {
 export default async function ScanReports({
   params: { id },
 }: DataSetListProps) {
-  const datasetName = await getDataSet(id);
-  console.log(datasetName);
+  const dataset = await getDataSet(id);
+
   return (
     <div className="pt-10 px-16">
       <div>
@@ -34,7 +34,7 @@ export default async function ScanReports({
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/datasets/${id}/`}>
-                {datasetName.name}
+                {dataset.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
@@ -49,8 +49,8 @@ export default async function ScanReports({
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Details Page - Dataset #{id}</h1>
       </div>
-      <div>
-        <DatasetForm datasetId={id} />
+      <div className="mt-5">
+        <DatasetDetailsForm dataset={dataset} />
       </div>
     </div>
   );
