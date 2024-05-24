@@ -23,7 +23,17 @@ interface DataSetSRList {
   visibility: string;
   hidden: boolean | null;
   data_partner: number;
-  viewers: [];
-  admins: [];
-  editors: [];
+  viewers: number[];
+  admins: number[];
+  editors: number[];
+}
+
+interface Projects {
+  name: string;
+  members: [];
+}
+
+interface Users {
+  id: number;
+  username: string;
 }
