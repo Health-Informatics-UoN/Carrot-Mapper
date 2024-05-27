@@ -32,6 +32,7 @@ from api.serializers import (
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
+    ScanReportFieldListSerializerV2,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -46,7 +47,7 @@ from azure.storage.blob import BlobServiceClient
 from config import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -90,7 +91,11 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-from shared.services.rules import delete_mapping_rules
+from shared.services.rules import (
+    _find_destination_table,
+    _save_mapping_rules,
+    delete_mapping_rules,
+)
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -630,8 +635,6 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
 
-    ordering = "-created_at"
-
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
@@ -648,7 +651,6 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "exact"],
-        "id": ["in", "exact"],
     }
 
     def get_permissions(self):
@@ -682,6 +684,25 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
+    filterset_fields = {
+        "scan_report_table": ["in", "exact"],
+        "name": ["in", "icontains"],
+    }
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name", "description_column", "type_column"]
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportFieldListSerializerV2
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportFieldEditSerializer
+        return super().get_serializer_class()
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
@@ -734,6 +755,100 @@ class ScanReportConceptViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=body, many=isinstance(body, list))
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
+    """
+    Version V2.
+    """
+
+    queryset = ScanReportConcept.objects.all()
+    serializer_class = ScanReportConceptSerializer
+
+    def create(self, request, *args, **kwargs):
+        body = request.data
+
+        # Extract the content_type
+        content_type_str = body.pop("content_type", None)
+        content_type = ContentType.objects.get(model=content_type_str)
+        body["content_type"] = content_type.id
+
+        # validate person_id and date event are set on table
+        table_id = body.pop("table_id", None)
+        try:
+            table = ScanReportTable.objects.get(pk=table_id)
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Table with the provided ID does not exist."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not table.person_id and not table.date_event:
+            return Response(
+                {"detail": "Please set both person_id and date_event on the table."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif not table.person_id:
+            return Response(
+                {"detail": "Please set the person_id on the table."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        elif not table.date_event:
+            return Response(
+                {"detail": "Please set the date_event on the table."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # validate that the concept exists.
+        concept_id = body.get("concept", None)
+        try:
+            concept = Concept.objects.get(pk=concept_id)
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": f"Concept id {concept_id} does not exist in our database."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # validate the destination_table
+        destination_table = _find_destination_table(concept)
+        if destination_table is None:
+            return Response(
+                {
+                    "detail": "The destination table could not be found or has not been implemented."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Validate that multiple concepts are not being added.
+        sr_concept = ScanReportConcept.objects.filter(
+            concept=body["concept"],
+            object_id=body["object_id"],
+            content_type=content_type,
+        )
+        if sr_concept.count() > 0:
+            return Response(
+                {
+                    "detail": "Can't add multiple concepts of the same id to the same object"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(data=body, many=isinstance(body, list))
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        model = serializer.instance
+        saved = _save_mapping_rules(model)
+        if not saved:
+            return Response(
+                {"detail": "Rule could not be saved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers

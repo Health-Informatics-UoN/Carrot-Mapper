@@ -33,7 +33,18 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
   });
 
   if (!response.ok) {
-    const errorMessage = await response.text();
+    let errorMessage = "An error occurred";
+
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      try {
+        const errorResponse = await response.json();
+        errorMessage = errorResponse.detail || errorMessage;
+      } catch (error) {
+        errorMessage = "Failed to parse error response";
+      }
+    }
+
     throw new ApiError(errorMessage, response.status);
   }
 

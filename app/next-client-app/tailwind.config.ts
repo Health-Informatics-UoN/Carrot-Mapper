@@ -46,6 +46,13 @@ const config = {
       colors: {
         carrot: {
           DEFAULT: "#475da7",
+          secondary: {
+            DEFAULT: "#3db28c",
+            50: "#51c19e",
+          },
+          vocab: "#BEA9DF",
+          reuse: "#3db28c",
+          manual: "#3C579E",
           50: "#eff6ff",
           100: "#dbeafe",
           200: "#bfdbfe",

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 
-export const columns: ColumnDef<ScanReportTablesResult>[] = [
+export const columns: ColumnDef<ScanReportTable>[] = [
   {
     id: "Name",
     accessorKey: "name",
