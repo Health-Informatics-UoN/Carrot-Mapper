@@ -98,14 +98,15 @@ def test_get_by_concept_id():
 
 def test_add_vocabulary_id_to_entries():
     # Arrange
-    values = [{"scan_report_field": 2}]
+    values = [{"scan_report_field": {"id": 2, "name": "field name"}}]
     vocab = {"table 1": {"field name": "LOINC"}}
-    fields = [{"id": 2, "name": "field name"}]
     table_name = "table 1"
 
     # Act
-    helpers.add_vocabulary_id_to_entries(values, vocab, fields, table_name)
+    helpers.add_vocabulary_id_to_entries(values, vocab, table_name)
 
     # Assert
-    expected = [{"scan_report_field": 2, "vocabulary_id": "LOINC"}]
+    expected = [
+        {"scan_report_field": {"id": 2, "name": "field name"}, "vocabulary_id": "LOINC"}
+    ]
     assert values == expected

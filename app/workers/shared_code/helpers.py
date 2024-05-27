@@ -1,9 +1,10 @@
 import json
 import os
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import azure.functions as func
 from shared_code.logger import logger
+from shared_code.models import ScanReportFieldDict, ScanReportValueDict
 
 
 def unwrap_message(msg: func.QueueMessage) -> Tuple[str, str, str, str]:
@@ -89,17 +90,14 @@ def default_zero(value):
     return round(value or 0.0, 2)
 
 
-def handle_max_chars(max_chars: Optional[int] = None):
-    if not max_chars:
-        max_chars = (
-            int(os.environ.get("PAGE_MAX_CHARS"))
-            if os.environ.get("PAGE_MAX_CHARS")
-            else 10000
-        )
+def handle_max_chars(max_chars: Optional[int] = None) -> int:
+    if max_chars is None:
+        max_chars_str = os.environ.get("PAGE_MAX_CHARS")
+        max_chars = int(max_chars_str) if max_chars_str else 10000
     return max_chars
 
 
-def perform_chunking(entries_to_post: List[Dict]) -> List[List[Dict]]:
+def perform_chunking(entries_to_post: List[Dict]) -> List[List[List[Dict]]]:
     """
     Splits a list of dictionaries into chunks.
 
@@ -122,12 +120,11 @@ def perform_chunking(entries_to_post: List[Dict]) -> List[List[Dict]]:
 
     """
     max_chars = handle_max_chars()
-    chunk_size = (
-        int(os.environ.get("CHUNK_SIZE")) if os.environ.get("CHUNK_SIZE") else 6
-    )
+    chunk_size_str = os.environ.get("CHUNK_SIZE")
+    chunk_size = int(chunk_size_str) if chunk_size_str else 6
 
     chunked_entries_to_post = []
-    this_page = []
+    this_page: List[Dict] = []
     this_chunk = []
     page_no = 0
     for entry in entries_to_post:
@@ -173,7 +170,7 @@ def paginate(entries: List[str], max_chars: Optional[int] = None) -> List[List[s
     max_chars = handle_max_chars(max_chars)
 
     paginated_entries = []
-    this_page = []
+    this_page: List[str] = []
     for entry in entries:
         # If the current page won't be overfull, add the entry to the current page
         if len(json.dumps(this_page)) + len(json.dumps(entry)) < max_chars:
@@ -192,7 +189,7 @@ def paginate(entries: List[str], max_chars: Optional[int] = None) -> List[List[s
     return paginated_entries
 
 
-def get_by_concept_id(list_of_dicts: List[Dict[str, Any]], concept_id: str):
+def get_by_concept_id(list_of_dicts: List[ScanReportValueDict], concept_id: str):
     """
     Given a list of dicts, return the dict from the list which
     contains the concept_id supplied
@@ -204,9 +201,8 @@ def get_by_concept_id(list_of_dicts: List[Dict[str, Any]], concept_id: str):
 
 
 def add_vocabulary_id_to_entries(
-    table_values: List[Dict[str, Any]],
-    vocab: Dict[str, Any],
-    fieldids_to_names: List[Dict[str, Any]],
+    table_values: List[ScanReportValueDict],
+    vocab: Union[Dict[str, Any], None],
     table_name: str,
 ):
     """
@@ -219,9 +215,8 @@ def add_vocabulary_id_to_entries(
     'value_description': None, 'scan_report_field': 80, 'vocabulary_id': 'LOINC'}]
 
     Args:
-        posted_values (list[dict]): List of dictionaries of previously posted values.
+        posted_values (list[ScanReportValueDict]): List of Scan Report Value of previously posted values.
         vocab (Dict[str, Any]): Dict mapping table names to dictionaries of field names and vocab IDs.
-        fieldids_to_names (List[Dict[str, Any]): List of field IDs to field names.
         table_name (str): The current table name.
 
     Returns:
@@ -230,17 +225,8 @@ def add_vocabulary_id_to_entries(
     for value in table_values:
         vocab_id = None
         if vocab and vocab.get(table_name):
-            scan_report_field = value.get("scan_report_field")
-            if field := next(
-                (
-                    field
-                    for field in fieldids_to_names
-                    if field["id"] == scan_report_field
-                ),
-                None,
-            ):
-                field_name = field["name"]
-                vocab_id = vocab[table_name].get(field_name)
+            scan_report_field = value["scan_report_field"]
+            vocab_id = vocab[table_name].get(scan_report_field["name"])
         value["vocabulary_id"] = vocab_id
 
 

@@ -5,7 +5,6 @@
       "name": "msg",
       "type": "activityTrigger",
       "direction": "in",
-      "queueName": "%MAPPING_RULES_QUEUE_NAME%",
       "connection": "STORAGE_CONN_STRING"
     }
   ]

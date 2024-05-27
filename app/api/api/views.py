@@ -615,7 +615,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
         # TODO: The worker_id can be used for status, but we need to save it somewhere.
         # resp_json = response.json()
-        # worker_id = resp_json.get("id")
+        # worker_id = resp_json.get("instanceId")
 
         return Response(serializer.data)
 
