@@ -13,6 +13,13 @@
       ]
     },
     {
+      "type": "queue",
+      "direction": "out",
+      "name": "msg",
+      "queueName": "%RULES_QUEUE_NAME%",
+      "connection": "STORAGE_CONN_STRING"
+    },
+    {
       "name": "$return",
       "type": "http",
       "direction": "out"

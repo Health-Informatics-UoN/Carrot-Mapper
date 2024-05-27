@@ -621,7 +621,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
         # TODO: The worker_id can be used for status, but we need to save it somewhere.
         # resp_json = response.json()
-        # worker_id = resp_json.get("id")
+        # worker_id = resp_json.get("instanceId")
 
         return Response(serializer.data)
 
@@ -1028,9 +1028,13 @@ class RulesList(viewsets.ModelViewSet):
                 "name": rule["destination_table"].table,
             }
 
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
             rule["domain"] = {
-                "id": int(str(rule["domain"])),
-                "name": rule["domain"].field,
+                "name": rule["domain"],
             }
 
             rule["source_table"] = {
