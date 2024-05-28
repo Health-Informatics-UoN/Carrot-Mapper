@@ -52,7 +52,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
             }`}
             key={concept.concept_code}
           >
-            <p className="pl-2 pr-1 py-2">{`${concept.concept_id} ${concept.concept_name} (${concept.creation_type})`}</p>
+            <p className="pl-2 pr-1 py-1">{`${concept.concept_id} ${concept.concept_name} (${concept.creation_type})`}</p>
             <Button
               size="icon"
               variant="ghost"

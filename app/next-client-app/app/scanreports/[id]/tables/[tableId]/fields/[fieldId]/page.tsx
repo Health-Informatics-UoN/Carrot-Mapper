@@ -18,7 +18,7 @@ import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 import { columns } from "./columns";
-import { ButtonsRow } from "../../../../../../../components/scanreports/ButtonsRow";
+import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 
 interface ScanReportsFieldProps {
   params: {
