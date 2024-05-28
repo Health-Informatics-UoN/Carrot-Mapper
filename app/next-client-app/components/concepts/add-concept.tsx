@@ -49,7 +49,7 @@ export default function AddConcept({
         creation_type: "M",
         table_id: fieldObj ? fieldObj.scan_report_table : parentId,
       });
-      toast.success("ConceptId linked to the value");
+      toast.success("OMOP Concept successfully added");
     } catch (error) {
       handleError(error, "Adding concept failed!");
     }
