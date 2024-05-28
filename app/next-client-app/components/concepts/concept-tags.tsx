@@ -24,6 +24,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
     <div className="flex flex-col items-start w-[250px]">
       {concepts.map((concept) => (
         <a
+          key={concept.concept_code}
           data-tooltip-id="badge-tooltip"
           data-tooltip-content={`${concept.concept_id} ${
             concept.concept_name
