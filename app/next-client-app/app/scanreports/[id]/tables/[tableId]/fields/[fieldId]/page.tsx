@@ -5,8 +5,6 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import {
   getScanReport,
   getScanReportField,
@@ -20,6 +18,7 @@ import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 import { columns } from "./columns";
+import { ButtonsRow } from "../../../../../../../components/scanreports/ButtonsRow";
 
 interface ScanReportsFieldProps {
   params: {
@@ -102,25 +101,7 @@ export default async function ScanReportsValue({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Values</h1>
       </div>
-      <div className="flex justify-between mt-3 flex-col sm:flex-row">
-        <div className="flex gap-2">
-          <Link href={`/scanreports/${id}/details/`}>
-            <Button size="lg" className="text-md">
-              Scan Report Details
-            </Button>
-          </Link>
-          <Link href={`/scanreports/${id}/mapping_rules/`}>
-            <Button size="lg" className="text-md">
-              Rules
-            </Button>
-          </Link>
-          <Link href={`/scanreports/${id}/tables/${tableId}/update`}>
-            <Button size="lg" className="text-md">
-              Edit Table
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <ButtonsRow scanreportId={id} tableId={tableId} />
       <div>
         <DataTable
           columns={columns}
