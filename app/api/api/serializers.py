@@ -427,6 +427,7 @@ class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         model = ScanReportValue
         fields = "__all__"
 
+
 class ScanReportValueViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
     value = serializers.CharField(
         max_length=128, allow_blank=True, trim_whitespace=False
