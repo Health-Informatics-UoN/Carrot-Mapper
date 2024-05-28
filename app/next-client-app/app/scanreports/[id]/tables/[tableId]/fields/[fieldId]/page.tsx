@@ -36,7 +36,7 @@ export default async function ScanReportsValue({
 }: ScanReportsFieldProps) {
   const defaultParams = {
     scan_report_field: fieldId,
-    page_size: 20,
+    page_size: 25,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
 
