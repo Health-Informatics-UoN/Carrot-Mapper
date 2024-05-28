@@ -37,17 +37,23 @@ export default function AddConcept({
 
   const handleSubmit = async (conceptCode: number) => {
     try {
-      let fieldObj;
-      if (location === "SR-Values") {
-        fieldObj = await getScanReportField(parentId);
-      }
+      const determineContentType = (location: string) => {
+        return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
+      };
+
+      const determineTableId = async (location: string, parentId: string) => {
+        if (location === "SR-Values") {
+          const field = await getScanReportField(parentId);
+          return field.scan_report_table;
+        }
+        return parentId;
+      };
       await addConcept({
         concept: conceptCode,
         object_id: rowId,
-        content_type:
-          location === "SR-Values" ? "scanreportvalue" : "scanreportfield",
+        content_type: determineContentType(location),
         creation_type: "M",
-        table_id: fieldObj ? fieldObj.scan_report_table : parentId,
+        table_id: await determineTableId(location, parentId),
       });
       toast.success("OMOP Concept successfully added");
     } catch (error) {
