@@ -28,7 +28,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
 
     # CreateConcepts
     msg: Dict[str, Any] = context.get_input()
-    result = yield context.call_activity("CreateConcepts", msg)
+    result = yield context.call_activity("RulesConceptsActivity", msg)
 
     table_id = msg.pop("table_id")
 
@@ -43,7 +43,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     # Fan out
     tasks = [
         context.call_activity(
-            "MappingRules",
+            "RulesGenerationActivity",
             {"table_id": table_id, "page_num": page_num, "page_size": page_size},
         )
         for page_num in range(num_pages)

@@ -1,8 +1,6 @@
-import json
 import os
 from typing import Any, Dict
 
-import azure.functions as func
 from shared_code.logger import logger
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
