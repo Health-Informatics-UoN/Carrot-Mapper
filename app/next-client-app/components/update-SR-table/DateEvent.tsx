@@ -1,7 +1,6 @@
 "use client";
 
-import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
-import { FilterOption } from "@/types/filter";
+import { CheckIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -21,12 +19,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { ShortFields } from "./UpdateForm";
+import { CalendarRange } from "lucide-react";
 
 interface DateEventProps<TData, TValue> {
   title?: string;
-  options: DataPartner[];
-  selectedOption?: DataPartner;
-  handleSelect: (option: DataPartner) => void;
+  options: ShortFields[];
+  selectedOption?: ShortFields;
+  handleSelect: (option: ShortFields) => void;
 }
 
 export function DateEvent<TData, TValue>({
@@ -38,13 +38,13 @@ export function DateEvent<TData, TValue>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="">
-          <PlusCircledIcon className="mr-2 size-4" />
+        <Button variant="outline" className="text-lg h-15">
+          <CalendarRange className="mr-2 size-5" />
           {title}
           {selectedOption && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
-              <Badge className="bg-carrot">
+              <Badge className="bg-carrot text-lg">
                 {" "}
                 {options
                   .filter((option) => selectedOption.name === option.name)
@@ -58,7 +58,7 @@ export function DateEvent<TData, TValue>({
       </PopoverTrigger>
       <PopoverContent className="w-[12.5rem] p-0" align="start">
         <Command>
-          <CommandInput placeholder={title} />
+          <CommandInput placeholder={title} className="text-lg" />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
@@ -72,15 +72,15 @@ export function DateEvent<TData, TValue>({
                   >
                     <div
                       className={cn(
-                        "mr-2 flex w-4 h-4 items-center justify-center rounded-full border border-carrot",
+                        "mr-2 flex w-5 h-5 items-center justify-center rounded-full border border-carrot",
                         isSelected
                           ? "bg-carrot text-white"
                           : "opacity-50 [&_svg]:invisible"
                       )}
                     >
-                      <CheckIcon className="size-4" aria-hidden="true" />
+                      <CheckIcon aria-hidden="true" />
                     </div>
-                    <span>{option.name}</span>
+                    <span className="text-lg">{option.name}</span>
                   </CommandItem>
                 );
               })}

@@ -7,57 +7,41 @@ import {
 } from "@/components/ui/breadcrumb";
 import {
   getScanReport,
-  getScanReportField,
+  getScanReportFields,
   getScanReportTable,
-  getScanReportValues,
 } from "@/api/scanreports";
-import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import { FilterParameters } from "@/types/filter";
-import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
-import { addConceptsToResults } from "@/lib/concept-utils";
-import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { AlertCircleIcon } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
+import { UpdateForm } from "@/components/update-SR-table/UpdateForm";
 
-interface ScanReportsFieldProps {
+interface UpdateTableProps {
   params: {
     id: string;
     tableId: string;
-    fieldId: string;
   };
-  searchParams?: FilterParameters;
 }
 
-export default async function ScanReportsValue({
-  params: { id, tableId, fieldId },
-  searchParams,
-}: ScanReportsFieldProps) {
+export default async function UpdateTable({
+  params: { id, tableId },
+}: UpdateTableProps) {
   const defaultParams = {
-    scan_report_field: fieldId,
-    page_size: 25,
+    scan_report_table: tableId,
+    fields: "name,id",
   };
-  const combinedParams = { ...defaultParams, ...searchParams };
+  const combinedParams = { ...defaultParams };
 
   const query = objToQuery(combinedParams);
 
-  const scanReportsValues = await getScanReportValues(query);
-  const scanReportsName = await getScanReport(id);
-  const tableName = await getScanReportTable(tableId);
-  const fieldName = await getScanReportField(fieldId);
-  const filter = <DataTableFilter filter="value" filterText="value" />;
-  const scanReportsConcepts = await getScanReportConcepts(
-    `object_id__in=${scanReportsValues.results
-      .map((item) => item.id)
-      .join(",")}`
+  const scanReportsFields = await getScanReportFields(query);
+  const shortenFields = scanReportsFields.results.map(
+    (item: ScanReportField) => ({
+      id: item.id,
+      name: item.name,
+    })
   );
-  const conceptsFilter =
-    scanReportsConcepts.length > 0
-      ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
-        )
-      : [];
+  const scanReportsName = await getScanReport(id);
+  const table = await getScanReportTable(tableId);
 
   return (
     <div className="pt-10 px-16">
@@ -80,7 +64,7 @@ export default async function ScanReportsValue({
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {tableName.name}
+                {table.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
@@ -97,7 +81,7 @@ export default async function ScanReportsValue({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Update Table</h1>
       </div>
-      <Alert className="flex items-center gap-3 bg-carrot-600 text-white mt-4">
+      <Alert className="flex items-center gap-3 bg-carrot text-white mt-4 w-1/2">
         <div>
           <AlertCircleIcon />
         </div>
@@ -111,6 +95,9 @@ export default async function ScanReportsValue({
           <br />
         </div>
       </Alert>
+      <div>
+        <UpdateForm scanreportFields={shortenFields} scanreportTable={table} />
+      </div>
     </div>
   );
 }
