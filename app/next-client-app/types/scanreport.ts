@@ -57,3 +57,15 @@ interface ScanReportConcept {
   concept: Concept | number;
   content_type: number;
 }
+
+interface ScanReportValue {
+  id: number;
+  value: string;
+  created_at: string;
+  updated_at: string;
+  frequency: number;
+  conceptID: number;
+  value_description: string;
+  scan_report_field: number;
+  concepts?: Concept[];
+}

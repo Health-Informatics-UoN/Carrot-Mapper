@@ -1,6 +1,7 @@
 import "./globals.css";
 import "./custom.css";
 import "bootstrap/dist/css/bootstrap.css";
+import "react-tooltip/dist/react-tooltip.css";
 import type { Metadata } from "next";
 import BootstrapClient from "@/components/BootstrapClient";
 import { Navbar } from "@/components/Navbar";

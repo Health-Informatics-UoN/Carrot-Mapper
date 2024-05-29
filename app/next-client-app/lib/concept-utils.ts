@@ -1,6 +1,8 @@
 // Method to add concepts to a scanreport result
-export const addConceptsToResults = (
-  scanReportsResult: ScanReportField[],
+export const addConceptsToResults = <
+  T extends { id: number; concepts?: Concept[] }
+>(
+  scanReportsResult: T[],
   scanReportsConcepts: ScanReportConcept[],
   concepts: Concept[]
 ) => {

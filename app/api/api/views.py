@@ -38,6 +38,7 @@ from api.serializers import (
     ScanReportTableListSerializerV2,
     ScanReportValueEditSerializer,
     ScanReportValueViewSerializer,
+    ScanReportValueViewSerializerV2,
     ScanReportViewSerializer,
     ScanReportViewSerializerV2,
     UserSerializer,
@@ -1106,6 +1107,25 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class ScanReportValueViewSetV2(ScanReportValueViewSet):
+    filterset_fields = {
+        "scan_report_field": ["in", "exact"],
+        "value": ["in", "icontains"],
+    }
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["value", "value_description", "frequency"]
+    pagination_class = CustomPagination
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ScanReportValueViewSerializerV2
+        if self.request.method in ["PUT", "PATCH", "DELETE"]:
+            # use the edit serialiser when the user tries to alter the scan report
+            return ScanReportValueEditSerializer
+        return super().get_serializer_class()
 
 
 class ScanReportFilterViewSet(viewsets.ModelViewSet):

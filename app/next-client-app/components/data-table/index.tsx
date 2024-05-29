@@ -37,6 +37,7 @@ interface DataTableProps<TData, TValue> {
   count: number;
   linkPrefix?: string;
   Filter?: JSX.Element;
+  clickableRow?: boolean;
 }
 
 function UrlBuilder(id: string, prefix: string = "") {
@@ -49,6 +50,7 @@ export function DataTable<TData, TValue>({
   count,
   linkPrefix = "",
   Filter,
+  clickableRow = true,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -141,21 +143,27 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="hover:cursor-pointer"
+                  className={clickableRow ? "hover:cursor-pointer" : ""}
                   // TODO: Once we are only routing to Nextjs urls, we can do this better.
                   // Do not change this unless every table is only ever redirecting to Next urls.
-                  onClick={() => handleRowClick((row.original as any).id)}
+                  onClick={
+                    clickableRow
+                      ? () => handleRowClick((row.original as any).id)
+                      : undefined
+                  }
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       <div
                         onClick={(e) => {
-                          e.stopPropagation();
-                          if (
-                            typeof cell.getValue() === "string" ||
-                            typeof cell.getValue() === "number"
-                          ) {
-                            handleRowClick((row.original as any).id);
+                          if (clickableRow) {
+                            e.stopPropagation();
+                            if (
+                              typeof cell.getValue() === "string" ||
+                              typeof cell.getValue() === "number"
+                            ) {
+                              handleRowClick((row.original as any).id);
+                            }
                           }
                         }}
                         className="inline-block"
