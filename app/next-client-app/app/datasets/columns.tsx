@@ -17,6 +17,7 @@ import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
 import { format } from "date-fns/format";
+import Link from "next/link";
 
 export const columns: ColumnDef<DataSet>[] = [
   {
@@ -92,7 +93,7 @@ export const columns: ColumnDef<DataSet>[] = [
         } catch (error) {
           const errorObj = JSON.parse((error as ApiError).message);
           toast.error(
-            `${message} ${row.original.name} has failed: ${errorObj.detail}`,
+            `${message} ${row.original.name} has failed: ${errorObj.detail}`
           );
           console.error(error);
         }
@@ -116,10 +117,11 @@ export const columns: ColumnDef<DataSet>[] = [
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              Details <Pencil2Icon className="ml-auto" />
-            </DropdownMenuItem>
-
+            <Link href={`/datasets/${id}/details/`} prefetch={false}>
+              <DropdownMenuItem>
+                Details <Pencil2Icon className="ml-auto" />
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(row.original.name)}
