@@ -381,6 +381,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
         "status": ["in"],
+        "parent_dataset": ["exact"],
     }
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     pagination_class = CustomPagination

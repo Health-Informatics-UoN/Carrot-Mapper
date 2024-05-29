@@ -1,10 +1,3 @@
-interface DataSetPage {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: DataSet[];
-}
-
 interface DataSet {
   id: number;
   name: string;
@@ -20,4 +13,17 @@ interface DataPartner {
   name: string;
   created_at: string;
   updated_at: string;
+}
+
+interface DataSetSRList {
+  id: number;
+  created_at: Date;
+  updated_at: Date;
+  name: string;
+  visibility: string;
+  hidden: boolean | null;
+  data_partner: number;
+  viewers: [];
+  admins: [];
+  editors: [];
 }

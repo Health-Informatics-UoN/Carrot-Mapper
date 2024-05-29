@@ -31,6 +31,11 @@ urlpatterns = [
         name="datasets-list",
     ),
     re_path(
+        r"^datasets/(?P<path>\d+)/?$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/datasets"),
+        name="datasets-scanreports-list",
+    ),
+    re_path(
         "_next/(?P<path>.*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
     ),
