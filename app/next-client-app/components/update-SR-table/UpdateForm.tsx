@@ -8,21 +8,15 @@ import {
 } from "@/api/datasets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { statusOptions } from "@/constants/scanReportStatus";
-import { navigateWithSearchParam, objToQuery } from "@/lib/client-utils";
-import { FilterOption } from "@/types/filter";
-import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import { PartnersFacetsFilter } from "./PartnersFacetsFilter";
-import { UsersFacetsFilter } from "./UsersFacetsFilter";
-import { ProjectFacetsFilter } from "./ProjectFacetsFilter";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { PersonID } from "./PersonID";
+import { DateEvent } from "./DateEvent";
 
-export function DatasetDetailsForm({ dataset }: { dataset: DataSetSRList }) {
+export function UpdateForm({ dataset }: { dataset: DataSetSRList }) {
   // const queryParams = {
   //   datasets: dataset.id,
   // };
@@ -207,7 +201,7 @@ export function DatasetDetailsForm({ dataset }: { dataset: DataSetSRList }) {
         <Label>{visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}</Label>
       </div>
       <div className="max-sm:hidden">
-        <PartnersFacetsFilter
+        <PersonID
           title="Change Data Partner"
           options={dataPartners}
           selectedOption={selectedPartner}
@@ -215,27 +209,11 @@ export function DatasetDetailsForm({ dataset }: { dataset: DataSetSRList }) {
         />
       </div>
       <div className="max-sm:hidden">
-        <UsersFacetsFilter
+        <DateEvent
           title="Change/Add Users as Editors"
           options={users}
           selectedOptions={selectedEditors}
           handleSelect={handleSelectEditors}
-        />
-      </div>
-      <div className="max-sm:hidden">
-        <UsersFacetsFilter
-          title="Change/Add Users as Admins"
-          options={users}
-          selectedOptions={selectedAdmins}
-          handleSelect={handleSelectAdmins}
-        />
-      </div>
-      <div className="max-sm:hidden">
-        <ProjectFacetsFilter
-          title="Change/Add Project"
-          options={projects}
-          selectedOptions={selectedProjects}
-          handleSelect={handleSelectProject}
         />
       </div>
       <Button

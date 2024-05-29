@@ -22,56 +22,36 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
-interface ProjectFacetedFilterProps<TData, TValue> {
+interface DateEventProps<TData, TValue> {
   title?: string;
-  options: Projects[];
-  selectedOptions?: Projects[];
-  handleSelect: (option: Projects) => void;
+  options: DataPartner[];
+  selectedOption?: DataPartner;
+  handleSelect: (option: DataPartner) => void;
 }
 
-export function ProjectFacetsFilter<TData, TValue>({
+export function DateEvent<TData, TValue>({
   title,
   options,
-  selectedOptions,
+  selectedOption,
   handleSelect,
-}: ProjectFacetedFilterProps<TData, TValue>) {
+}: DateEventProps<TData, TValue>) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="">
           <PlusCircledIcon className="mr-2 size-4" />
           {title}
-          {selectedOptions && selectedOptions?.length > 0 && (
+          {selectedOption && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
-              <Badge
-                variant="secondary"
-                className="rounded-sm px-1 font-normal lg:hidden"
-              >
-                {selectedOptions?.length}
+              <Badge className="bg-carrot">
+                {" "}
+                {options
+                  .filter((option) => selectedOption.name === option.name)
+                  .map((option, index) => (
+                    <div key={index}>{option.name}</div>
+                  ))}
               </Badge>
-              <div className="hidden space-x-1 lg:flex">
-                {selectedOptions?.length > 2 ? (
-                  <Badge
-                    variant="secondary"
-                    className="rounded-sm px-1 font-normal"
-                  >
-                    {selectedOptions?.length} selected
-                  </Badge>
-                ) : (
-                  options
-                    .filter((option) =>
-                      selectedOptions?.some(
-                        (selectedOption) => selectedOption.name === option.name
-                      )
-                    )
-                    .map((option) => (
-                      <Badge className="bg-carrot" key={option.name}>
-                        {option.name}
-                      </Badge>
-                    ))
-                )}
-              </div>
             </>
           )}
         </Button>
@@ -83,18 +63,16 @@ export function ProjectFacetsFilter<TData, TValue>({
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selectedOptions?.some(
-                  (selectedOption) => selectedOption.name === option.name
-                );
+                const isSelected = selectedOption?.name === option.name;
 
                 return (
                   <CommandItem
-                    key={option.name}
+                    key={option.id}
                     onSelect={() => handleSelect(option)}
                   >
                     <div
                       className={cn(
-                        "mr-2 flex size-4 items-center justify-center rounded-sm border border-carrot",
+                        "mr-2 flex w-4 h-4 items-center justify-center rounded-full border border-carrot",
                         isSelected
                           ? "bg-carrot text-white"
                           : "opacity-50 [&_svg]:invisible"

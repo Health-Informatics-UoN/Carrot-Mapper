@@ -22,57 +22,36 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
-interface UsersFacetedFilterProps<TData, TValue> {
+interface PersonIDProps<TData, TValue> {
   title?: string;
-  options: Users[];
-  selectedOptions?: Users[];
-  handleSelect: (option: Users) => void;
+  options: DataPartner[];
+  selectedOption?: DataPartner;
+  handleSelect: (option: DataPartner) => void;
 }
 
-export function UsersFacetsFilter<TData, TValue>({
+export function PersonID<TData, TValue>({
   title,
   options,
-  selectedOptions,
+  selectedOption,
   handleSelect,
-}: UsersFacetedFilterProps<TData, TValue>) {
+}: PersonIDProps<TData, TValue>) {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="">
           <PlusCircledIcon className="mr-2 size-4" />
           {title}
-          {selectedOptions && selectedOptions?.length > 0 && (
+          {selectedOption && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
-              <Badge
-                variant="secondary"
-                className="rounded-sm px-1 font-normal lg:hidden"
-              >
-                {selectedOptions?.length}
+              <Badge className="bg-carrot">
+                {" "}
+                {options
+                  .filter((option) => selectedOption.name === option.name)
+                  .map((option, index) => (
+                    <div key={index}>{option.name}</div>
+                  ))}
               </Badge>
-              <div className="hidden space-x-1 lg:flex">
-                {selectedOptions?.length > 2 ? (
-                  <Badge
-                    variant="secondary"
-                    className="rounded-sm px-1 font-normal"
-                  >
-                    {selectedOptions?.length} selected
-                  </Badge>
-                ) : (
-                  options
-                    .filter((option) =>
-                      selectedOptions?.some(
-                        (selectedOption) =>
-                          selectedOption.username === option.username
-                      )
-                    )
-                    .map((option) => (
-                      <Badge className="bg-carrot" key={option.id}>
-                        {option.username}
-                      </Badge>
-                    ))
-                )}
-              </div>
             </>
           )}
         </Button>
@@ -84,10 +63,7 @@ export function UsersFacetsFilter<TData, TValue>({
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
-                const isSelected = selectedOptions?.some(
-                  (selectedOption) =>
-                    selectedOption.username === option.username
-                );
+                const isSelected = selectedOption?.name === option.name;
 
                 return (
                   <CommandItem
@@ -96,7 +72,7 @@ export function UsersFacetsFilter<TData, TValue>({
                   >
                     <div
                       className={cn(
-                        "mr-2 flex size-4 items-center justify-center rounded-sm border border-carrot",
+                        "mr-2 flex w-4 h-4 items-center justify-center rounded-full border border-carrot",
                         isSelected
                           ? "bg-carrot text-white"
                           : "opacity-50 [&_svg]:invisible"
@@ -104,7 +80,7 @@ export function UsersFacetsFilter<TData, TValue>({
                     >
                       <CheckIcon className="size-4" aria-hidden="true" />
                     </div>
-                    <span>{option.username}</span>
+                    <span>{option.name}</span>
                   </CommandItem>
                 );
               })}
