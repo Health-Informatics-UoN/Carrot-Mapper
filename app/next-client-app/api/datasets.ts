@@ -6,6 +6,10 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
+  project: (filter: string) => `projects/?${filter}/`,
+  dataPartners: () => "datapartners/",
+  users: () => "usersfilter/?is_active=true",
+  projects: () => "projects/",
   archive: (id: number) => `datasets/update/${id}/`,
 };
 
@@ -37,6 +41,42 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
       admins: [],
       editors: [],
     };
+  }
+}
+
+export async function getDataPartners(): Promise<DataPartner[]> {
+  try {
+    return request<DataPartner[]>(fetchKeys.dataPartners());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getDataUsers(): Promise<Users[]> {
+  try {
+    return request<Users[]>(fetchKeys.users());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getProjects(): Promise<Projects[]> {
+  try {
+    return request<Projects[]>(fetchKeys.projects());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getDatasetProject(filter: string): Promise<Projects[]> {
+  try {
+    return request<Projects[]>(fetchKeys.project(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
   }
 }
 
