@@ -1,18 +1,7 @@
 "use client";
 
-import {
-  getDataPartners,
-  getDataUsers,
-  getDatasetProject,
-  getProjects,
-} from "@/api/datasets";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useDebouncedCallback } from "use-debounce";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { PersonID } from "./PersonID";
 import { DateEvent } from "./DateEvent";
 import { getScanReportField } from "@/api/scanreports";
