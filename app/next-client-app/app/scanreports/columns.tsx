@@ -163,12 +163,6 @@ export const columns: ColumnDef<ScanReportList>[] = [
                 Details <Pencil2Icon className="ml-auto" />
               </DropdownMenuItem>
             </Link>
-            <DropdownMenuSeparator />
-            <Link href={`/scanreports/${id}/assertions/`} prefetch={false}>
-              <DropdownMenuItem>
-                Assertions <ExclamationTriangleIcon className="ml-auto" />
-              </DropdownMenuItem>
-            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       );
