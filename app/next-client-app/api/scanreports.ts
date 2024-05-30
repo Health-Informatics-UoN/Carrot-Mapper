@@ -12,6 +12,7 @@ const fetchKeys = {
   tableName: (id: string) => `scanreporttables/${id}/`,
   fieldName: (id: string) => `scanreportfields/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  updateTable: (id: number) => `scanreporttables/${id}/`,
   permissions: (id: number) => `scanreports/${id}/permissions/`,
 };
 
@@ -154,4 +155,25 @@ export async function updateScanReport(id: number, field: string, value: any) {
     body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
+}
+
+export async function updateScanReportTable(
+  id: number,
+  field_1: string,
+  value_1: number | null,
+  field_2: string,
+  value_2: number | null
+) {
+  try {
+    await request(fetchKeys.updateTable(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({ [field_1]: value_1, [field_2]: value_2 }),
+    });
+    revalidatePath("");
+  } catch (error) {
+    console.error(error, "hello");
+  }
 }
