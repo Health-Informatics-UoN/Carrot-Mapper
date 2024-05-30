@@ -8,7 +8,6 @@ import { getScanReportField, updateScanReportTable } from "@/api/scanreports";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/error";
-import { Form, Formik } from "formik";
 
 export interface ShortFields {
   id: number | null;
@@ -70,7 +69,8 @@ export function UpdateForm({
     console.error(error);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     try {
       await updateScanReportTable(
         scanreportTable.id,
@@ -86,40 +86,31 @@ export function UpdateForm({
   };
 
   return (
-    <Formik
-      initialValues={{}}
-      onSubmit={() => {
-        handleSubmit();
-      }}
-    >
-      {({ handleSubmit }) => (
-        <Form onSubmit={handleSubmit}>
-          <div className="flex flex-col sm:flex-row mt-5 gap-3">
-            <div>
-              <PersonID
-                title="Person ID"
-                options={scanreportFields}
-                selectedOption={selectedPersonID}
-                handleSelect={handleSelectPersonID}
-              />
-            </div>
-            <div>
-              <DateEvent
-                title="Date Event"
-                options={scanreportFields}
-                selectedOption={selectedDateEvent}
-                handleSelect={handleSelectDateEvent}
-              />
-            </div>
-          </div>
-          <Button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-carrot text-white text-lg rounded"
-          >
-            Save <Save className="ml-2" />
-          </Button>
-        </Form>
-      )}
-    </Formik>
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-col sm:flex-row mt-5 gap-3">
+        <div>
+          <PersonID
+            title="Person ID"
+            options={scanreportFields}
+            selectedOption={selectedPersonID}
+            handleSelect={handleSelectPersonID}
+          />
+        </div>
+        <div>
+          <DateEvent
+            title="Date Event"
+            options={scanreportFields}
+            selectedOption={selectedDateEvent}
+            handleSelect={handleSelectDateEvent}
+          />
+        </div>
+      </div>
+      <Button
+        type="submit"
+        className="mt-4 px-4 py-2 bg-carrot text-white text-lg rounded"
+      >
+        Save <Save className="ml-2" />
+      </Button>
+    </form>
   );
 }

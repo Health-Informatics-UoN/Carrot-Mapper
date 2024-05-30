@@ -174,6 +174,6 @@ export async function updateScanReportTable(
     });
     revalidatePath("");
   } catch (error) {
-    console.error(error, "hello");
+    console.error(error);
   }
 }
