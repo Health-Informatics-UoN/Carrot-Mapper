@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import request from "@/lib/api/request";
+import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (filter?: string) =>
@@ -162,7 +163,8 @@ export async function updateScanReportTable(
   field_1: string,
   value_1: number | null,
   field_2: string,
-  value_2: number | null
+  value_2: number | null,
+  scanreportID: number
 ) {
   try {
     await request(fetchKeys.updateTable(id), {
@@ -172,8 +174,8 @@ export async function updateScanReportTable(
       },
       body: JSON.stringify({ [field_1]: value_1, [field_2]: value_2 }),
     });
-    revalidatePath("");
   } catch (error) {
     console.error(error);
   }
+  redirect(`/scanreports/${scanreportID.toString()}/`);
 }

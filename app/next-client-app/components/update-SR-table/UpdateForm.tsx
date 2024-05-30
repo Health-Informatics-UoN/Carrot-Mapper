@@ -77,17 +77,18 @@ export function UpdateForm({
         "person_id",
         selectedPersonID?.id || null,
         "date_event",
-        selectedDateEvent?.id || null
+        selectedDateEvent?.id || null,
+        scanreportTable.scan_report
       );
-      toast.success(`Update table succeeded.`);
+      toast.success("Update table successful!");
     } catch (error) {
-      handleError(error, "Update table failed");
+      handleError(error, "Update table failed.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex flex-col sm:flex-row mt-5 gap-3">
+      <div className="flex flex-col sm:flex-row mt-4 gap-3">
         <div>
           <PersonID
             title="Person ID"
