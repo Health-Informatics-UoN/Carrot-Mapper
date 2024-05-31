@@ -5,9 +5,11 @@ import { BookText, ChevronRight, Pencil } from "lucide-react";
 export function ButtonsRow({
   scanreportId,
   tableId,
+  permissions,
 }: {
   scanreportId: string;
   tableId: string;
+  permissions: string[];
 }) {
   return (
     <div className="flex justify-between mt-3 flex-col sm:flex-row">
@@ -27,11 +29,19 @@ export function ButtonsRow({
       </div>
       <div className="flex gap-2">
         {" "}
-        <Link href={`/scanreports/${scanreportId}/tables/${tableId}/update`}>
-          <Button variant="outline">
-            Edit Table <Pencil className="ml-2 size-4" />
+        {permissions.includes("CanEdit") || permissions.includes("CanAdmin") ? (
+          <Link href={`/scanreports/${scanreportId}/tables/${tableId}/update`}>
+            <Button variant="outline">
+              Edit Table
+              <Pencil className="ml-2 size-4" />
+            </Button>
+          </Link>
+        ) : (
+          <Button variant="outline" disabled>
+            Edit Table
+            <Pencil className="ml-2 size-4" />
           </Button>
-        </Link>
+        )}
       </div>
     </div>
   );

@@ -94,7 +94,11 @@ export default async function ScanReportsField({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Fields</h1>
       </div>
-      <ButtonsRow scanreportId={id} tableId={tableId} />
+      <ButtonsRow
+        scanreportId={id}
+        tableId={tableId}
+        permissions={permissions.permissions}
+      />
       <div>
         <DataTable
           columns={columns}
