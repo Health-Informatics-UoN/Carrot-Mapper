@@ -14,7 +14,7 @@ const fetchKeys = {
   fieldName: (id: string) => `scanreportfields/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
-  permissions: (id: number) => `scanreports/${id}/permissions/`,
+  permissions: (id: string) => `scanreports/${id}/permissions/`,
 };
 
 export async function getScanReportsTables(
@@ -48,7 +48,9 @@ export async function getScanReports(
  * @param id The Id of the Scan Report
  * @returns A object with a list of the users permissions.
  */
-export async function getScanReportPermissions(id: number): Promise<{}> {
+export async function getScanReportPermissions(
+  id: string
+): Promise<{ permissions: string[] }> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
   } catch (error) {

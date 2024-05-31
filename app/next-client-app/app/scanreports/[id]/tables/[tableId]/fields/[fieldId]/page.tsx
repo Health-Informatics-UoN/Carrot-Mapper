@@ -8,6 +8,7 @@ import {
 import {
   getScanReport,
   getScanReportField,
+  getScanReportPermissions,
   getScanReportTable,
   getScanReportValues,
 } from "@/api/scanreports";
@@ -38,14 +39,15 @@ export default async function ScanReportsValue({
     page_size: 25,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
+
+  const filter = <DataTableFilter filter="value" filterText="value" />;
 
   const scanReportsValues = await getScanReportValues(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const fieldName = await getScanReportField(fieldId);
-  const filter = <DataTableFilter filter="value" filterText="value" />;
+  const permissions = await getScanReportPermissions(id);
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results
       .map((item) => item.id)
@@ -60,7 +62,8 @@ export default async function ScanReportsValue({
   const scanReportsResult = addConceptsToResults(
     scanReportsValues.results,
     scanReportsConcepts,
-    conceptsFilter
+    conceptsFilter,
+    permissions
   );
 
   return (

@@ -38,6 +38,7 @@ interface ScanReportField {
   pass_from_source: boolean;
   concept_id: number;
   concepts?: Concept[];
+  permissions?: string[];
   field_description: string | null;
   scan_report_table: number;
 }
@@ -68,4 +69,5 @@ interface ScanReportValue {
   value_description: string;
   scan_report_field: number;
   concepts?: Concept[];
+  permissions?: string[];
 }

@@ -74,14 +74,19 @@ export const columns: ColumnDef<ScanReportField>[] = [
     id: "edit",
     header: "",
     cell: ({ row }) => {
-      const { id } = row.original;
-      return (
+      const { id, permissions } = row.original;
+      return permissions?.includes("CanE") ? (
         <Link href={`fields/${id}/update`}>
           <Button variant={"secondary"}>
             Edit Field
             <Pencil className="ml-2 size-4" />
           </Button>
         </Link>
+      ) : (
+        <Button variant={"secondary"} disabled>
+          Edit Field
+          <Pencil className="ml-2 size-4" />
+        </Button>
       );
     },
   },
