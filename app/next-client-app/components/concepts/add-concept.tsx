@@ -10,12 +10,14 @@ interface AddConceptProps {
   rowId: number;
   parentId: string;
   location: string;
+  disabled: boolean;
 }
 
 export default function AddConcept({
   rowId,
   parentId,
   location,
+  disabled,
 }: AddConceptProps) {
   const handleError = (error: any, message: string) => {
     if (error instanceof ApiError) {
@@ -83,7 +85,9 @@ export default function AddConcept({
                 pattern="\d*"
               />
             </div>
-            <Button type="submit">Add</Button>
+            <Button type="submit" disabled={disabled}>
+              Add
+            </Button>
           </div>
         </Form>
       )}

@@ -60,12 +60,17 @@ export const columns: ColumnDef<ScanReportField>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const { scan_report_table, id } = row.original;
+      const { scan_report_table, id, permissions } = row.original;
       return (
         <AddConcept
           rowId={id}
           parentId={scan_report_table.toString()}
           location="SR-Fields"
+          disabled={
+            permissions.includes("CanEdit") || permissions.includes("CanAdmin")
+              ? false
+              : true
+          }
         />
       );
     },
@@ -75,7 +80,8 @@ export const columns: ColumnDef<ScanReportField>[] = [
     header: "",
     cell: ({ row }) => {
       const { id, permissions } = row.original;
-      return permissions?.includes("CanEdit") ? (
+      return permissions.includes("CanEdit") ||
+        permissions.includes("CanAdmin") ? (
         <Link href={`fields/${id}/update`}>
           <Button variant={"secondary"}>
             Edit Field

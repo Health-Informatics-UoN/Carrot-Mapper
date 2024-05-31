@@ -115,6 +115,7 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
       created_at: new Date(),
       updated_at: new Date(),
       date_event: "",
+      permissions: [],
     };
   }
 }
@@ -145,6 +146,7 @@ export async function getScanReportField(id: string): Promise<ScanReportField> {
       concept_id: 0,
       field_description: null,
       scan_report_table: 0,
+      permissions: [],
     };
   }
 }

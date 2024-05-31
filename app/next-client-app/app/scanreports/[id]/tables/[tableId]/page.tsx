@@ -63,7 +63,6 @@ export default async function ScanReportsField({
     conceptsFilter,
     permissions
   );
-  console.log(scanReportsResult);
 
   return (
     <div className="pt-10 px-16">

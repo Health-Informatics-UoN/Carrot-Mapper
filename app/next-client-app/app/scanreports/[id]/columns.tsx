@@ -46,14 +46,20 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     id: "edit",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { id, scan_report } = row.original;
-      return (
+      const { id, scan_report, permissions } = row.original;
+      return permissions.includes("CanEdit") ||
+        permissions.includes("CanAdmin") ? (
         <Link href={`/scanreports/${scan_report}/tables/${id}/update`}>
           <Button variant={"secondary"}>
             Edit
             <Pencil className="ml-2 size-4" />
           </Button>
         </Link>
+      ) : (
+        <Button variant={"secondary"} disabled>
+          Edit
+          <Pencil className="ml-2 size-4" />
+        </Button>
       );
     },
   },

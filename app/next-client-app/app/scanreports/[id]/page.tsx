@@ -8,7 +8,11 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { columns } from "./columns";
-import { getScanReport, getScanReportsTables } from "@/api/scanreports";
+import {
+  getScanReport,
+  getScanReportPermissions,
+  getScanReportsTables,
+} from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
@@ -31,11 +35,16 @@ export default async function ScanReportsTable({
   };
 
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
-  const scanReportsTables = await getScanReportsTables(query);
   const filter = <DataTableFilter filter="name" />;
+
+  const scanReportsTables = await getScanReportsTables(query);
   const scanReportsName = await getScanReport(id);
+  const permissions = await getScanReportPermissions(id);
+  const scanReportsResult = scanReportsTables.results.map((table) => {
+    table.permissions = permissions.permissions;
+    return table;
+  });
 
   return (
     <div className="pt-10 px-16">
@@ -95,7 +104,7 @@ export default async function ScanReportsTable({
       <div>
         <DataTable
           columns={columns}
-          data={scanReportsTables.results}
+          data={scanReportsResult}
           count={scanReportsTables.count}
           Filter={filter}
           linkPrefix="tables/"
