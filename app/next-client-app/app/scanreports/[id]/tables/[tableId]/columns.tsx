@@ -75,7 +75,7 @@ export const columns: ColumnDef<ScanReportField>[] = [
     header: "",
     cell: ({ row }) => {
       const { id, permissions } = row.original;
-      return permissions?.includes("CanE") ? (
+      return permissions?.includes("CanEdit") ? (
         <Link href={`fields/${id}/update`}>
           <Button variant={"secondary"}>
             Edit Field
