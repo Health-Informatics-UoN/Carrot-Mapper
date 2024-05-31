@@ -177,5 +177,5 @@ export async function updateScanReportTable(
   } catch (error) {
     console.error(error);
   }
-  redirect(`/scanreports/${scanreportID.toString()}/`);
+  redirect(`/scanreports/${scanreportID}/`);
 }
