@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import request from "@/lib/api/request";
+import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (filter?: string) =>
@@ -9,9 +10,10 @@ const fetchKeys = {
   fields: (filter?: string) => `v2/scanreportfields/?${filter}`,
   values: (filter?: string) => `v2/scanreportvalues/?${filter}`,
   scanReport: (id: string) => `v2/scanreports/${id}/`,
-  tableName: (id: string) => `v2/scanreporttables/${id}/`,
+  tableName: (id: string) => `scanreporttables/${id}/`,
   fieldName: (id: string) => `scanreportfields/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
+  updateTable: (id: number) => `scanreporttables/${id}/`,
   permissions: (id: number) => `scanreports/${id}/permissions/`,
 };
 
@@ -154,4 +156,26 @@ export async function updateScanReport(id: number, field: string, value: any) {
     body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
+}
+
+export async function updateScanReportTable(
+  id: number,
+  field_1: string,
+  value_1: number | null,
+  field_2: string,
+  value_2: number | null,
+  scanreportID: number
+) {
+  try {
+    await request(fetchKeys.updateTable(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({ [field_1]: value_1, [field_2]: value_2 }),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+  redirect(`/scanreports/${scanreportID}/`);
 }

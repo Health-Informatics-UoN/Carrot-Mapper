@@ -20,7 +20,7 @@ import { addConceptsToResults } from "@/lib/concept-utils";
 import { columns } from "./columns";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 
-interface ScanReportsFieldProps {
+interface ScanReportsValueProps {
   params: {
     id: string;
     tableId: string;
@@ -32,7 +32,7 @@ interface ScanReportsFieldProps {
 export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
-}: ScanReportsFieldProps) {
+}: ScanReportsValueProps) {
   const defaultParams = {
     scan_report_field: fieldId,
     page_size: 25,
