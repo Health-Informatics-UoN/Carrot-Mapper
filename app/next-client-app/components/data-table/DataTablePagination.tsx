@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { navigateWithSearchParam } from "@/lib/client-utils";
-import { useEffect } from "react";
 
 interface DataTablePaginationProps<TData> {
   count: number;
@@ -32,7 +31,7 @@ export function DataTablePagination<TData>({
 
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
-  const numberOfPages = Math.ceil(count / pageSize);
+  const numberOfPages = Math.max(Math.ceil(count / (pageSize || 10)), 1);
 
   if (currentPage > numberOfPages) {
     navigateWithSearchParam(
