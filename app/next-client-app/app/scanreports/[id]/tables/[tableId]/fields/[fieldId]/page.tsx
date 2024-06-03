@@ -33,13 +33,13 @@ export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
 }: ScanReportsValueProps) {
+  const defaultPageSize = 30;
   const defaultParams = {
     scan_report_field: fieldId,
+    page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const defaultPageSize = 25;
-
   const scanReportsValues = await getScanReportValues(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);

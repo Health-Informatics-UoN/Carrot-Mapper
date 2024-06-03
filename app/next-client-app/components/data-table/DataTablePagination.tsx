@@ -18,20 +18,20 @@ import { useEffect } from "react";
 
 interface DataTablePaginationProps<TData> {
   count: number;
-  defaultPageSize?: number;
+  defaultPageSize?: 10 | 20 | 30 | 40 | 50;
   pageSizeOptions?: number[];
 }
 
 export function DataTablePagination<TData>({
   count,
-  defaultPageSize,
+  defaultPageSize = 10,
   pageSizeOptions = [10, 20, 30, 40, 50],
 }: DataTablePaginationProps<TData>) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentPage = Number(searchParams.get("p") ?? "1");
-  const pageSize = Number(searchParams.get("page_size") ?? 10);
+  const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
   const numberOfPages = Math.ceil(count / pageSize);
 
   if (currentPage > numberOfPages) {
@@ -42,11 +42,8 @@ export function DataTablePagination<TData>({
       searchParams
     );
   }
-  useEffect(() => {
-    changePageSize(defaultPageSize || 10);
-  }, []);
 
-  const changePageSize = async (size: number) => {
+  const changePageSize = (size: number) => {
     navigateWithSearchParam("page_size", size, router, searchParams);
   };
 
