@@ -14,8 +14,8 @@ interface ScanReportTable {
   updated_at: Date;
   name: string;
   scan_report: number;
-  person_id: string;
-  date_event: string;
+  person_id: string | null;
+  date_event: string | null;
   permissions: string[];
 }
 

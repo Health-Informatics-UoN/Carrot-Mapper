@@ -32,12 +32,16 @@ export function UpdateForm({
         const personId = await getScanReportField(scanreportTable.person_id);
         const dateEvent = await getScanReportField(scanreportTable.date_event);
         setPersonID({
-          id: parseInt(scanreportTable.person_id),
-          name: personId.name,
+          id: scanreportTable.person_id
+            ? parseInt(scanreportTable.person_id)
+            : null,
+          name: personId?.name ?? null,
         });
         setDateEvent({
-          id: parseInt(scanreportTable.date_event),
-          name: dateEvent.name,
+          id: scanreportTable.date_event
+            ? parseInt(scanreportTable.date_event)
+            : null,
+          name: dateEvent?.name ?? null,
         });
       } catch (error) {
         console.error(error);

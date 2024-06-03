@@ -95,7 +95,7 @@ export default async function ScanReportsValue({
               <BreadcrumbLink
                 href={`/scanreports/${id}/tables/${tableId}/fields/${fieldId}/`}
               >
-                {fieldName.name}
+                {fieldName?.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>

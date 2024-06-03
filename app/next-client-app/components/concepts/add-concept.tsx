@@ -46,7 +46,7 @@ export default function AddConcept({
       const determineTableId = async (location: string, parentId: string) => {
         if (location === "SR-Values") {
           const field = await getScanReportField(parentId);
-          return field.scan_report_table;
+          return field?.scan_report_table;
         }
         return parentId;
       };
