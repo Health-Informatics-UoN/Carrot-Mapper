@@ -83,20 +83,22 @@ export default async function UpdateTable({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Update Table</h1>
       </div>
-      <Alert className="flex items-center gap-3 bg-carrot text-white mt-4 w-1/2">
-        <div>
-          <AlertCircleIcon />
-        </div>
-        <div>
-          {" "}
-          Mapping Rules cannot be generated without the Person ID and Date Event
-          being set.
-          <br />
-          Once you set these, Mapping Rules will be generated for all Concepts
-          currently associated to the table.
-          <br />
-        </div>
-      </Alert>
+      {(table.date_event === null || table.person_id === null) && (
+        <Alert className="flex items-center gap-3 bg-carrot text-white mt-4 w-1/2">
+          <div>
+            <AlertCircleIcon />
+          </div>
+          <div>
+            {" "}
+            Mapping Rules cannot be generated without the Person ID and Date
+            Event being set.
+            <br />
+            Once you set these, Mapping Rules will be generated for all Concepts
+            currently associated to the table.
+            <br />
+          </div>
+        </Alert>
+      )}
       <div>
         <UpdateForm
           scanreportFields={shortenFields}
