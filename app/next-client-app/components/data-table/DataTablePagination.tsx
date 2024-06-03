@@ -32,18 +32,22 @@ export function DataTablePagination<TData>({
 
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? 10);
-  const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
+  const numberOfPages = Math.ceil(count / pageSize);
 
+  if (currentPage > numberOfPages) {
+    navigateWithSearchParam(
+      "p",
+      Math.ceil(count / pageSize),
+      router,
+      searchParams
+    );
+  }
   useEffect(() => {
     changePageSize(defaultPageSize || 10);
   }, []);
 
   const changePageSize = async (size: number) => {
-    await navigateWithSearchParam("page_size", size, router, searchParams);
-    console.log(searchParams.get("page_size"));
-    if (currentPage > numberOfPages) {
-      navigateWithSearchParam("p", numberOfPages, router, searchParams);
-    }
+    navigateWithSearchParam("page_size", size, router, searchParams);
   };
 
   const navigateToPage = (param: number) => {
