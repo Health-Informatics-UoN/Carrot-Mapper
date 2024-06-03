@@ -50,7 +50,7 @@ export async function getScanReports(
  */
 export async function getScanReportPermissions(
   id: string
-): Promise<{ permissions: string[] }> {
+): Promise<PermissionsResponse> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
   } catch (error) {
