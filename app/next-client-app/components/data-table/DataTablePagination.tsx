@@ -31,7 +31,7 @@ export function DataTablePagination<TData>({
 
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
-  const numberOfPages = Math.max(Math.ceil(count / (pageSize || 10)), 1);
+  const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
 
   if (currentPage > numberOfPages) {
     navigateWithSearchParam(
