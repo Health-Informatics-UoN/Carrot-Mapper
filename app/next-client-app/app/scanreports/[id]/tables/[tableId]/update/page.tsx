@@ -8,6 +8,7 @@ import {
 import {
   getScanReport,
   getScanReportFields,
+  getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
@@ -42,6 +43,7 @@ export default async function UpdateTable({
   );
   const scanReportsName = await getScanReport(id);
   const table = await getScanReportTable(tableId);
+  const permissions = await getScanReportPermissions(id);
 
   return (
     <div className="pt-10 px-16">
@@ -96,7 +98,11 @@ export default async function UpdateTable({
         </div>
       </Alert>
       <div>
-        <UpdateForm scanreportFields={shortenFields} scanreportTable={table} />
+        <UpdateForm
+          scanreportFields={shortenFields}
+          scanreportTable={table}
+          permissions={permissions.permissions}
+        />
       </div>
     </div>
   );
