@@ -38,6 +38,7 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
+  defaultPageSize?: number;
 }
 
 function UrlBuilder(id: string, prefix: string = "") {
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   linkPrefix = "",
   Filter,
   clickableRow = true,
+  defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -196,7 +198,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-center space-x-2 py-4">
-        <DataTablePagination count={count} />
+        <DataTablePagination count={count} defaultPageSize={defaultPageSize} />
       </div>
     </div>
   );

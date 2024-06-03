@@ -14,25 +14,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { navigateWithSearchParam } from "@/lib/client-utils";
+import { useEffect } from "react";
 
 interface DataTablePaginationProps<TData> {
   count: number;
+  defaultPageSize?: number;
   pageSizeOptions?: number[];
 }
 
 export function DataTablePagination<TData>({
   count,
+  defaultPageSize,
   pageSizeOptions = [10, 20, 30, 40, 50],
 }: DataTablePaginationProps<TData>) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const currentPage = Number(searchParams.get("p") ?? "1");
-  const pageSize = Number(searchParams.get("page_size") ?? "10");
-  const numberOfPages = Math.max(Math.ceil(count / (pageSize || 10)), 1);
+  const pageSize = Number(searchParams.get("page_size") ?? 10);
+  const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
 
-  const changePageSize = (size: number) => {
-    navigateWithSearchParam("page_size", size, router, searchParams);
+  useEffect(() => {
+    changePageSize(defaultPageSize || 10);
+  }, []);
+
+  const changePageSize = async (size: number) => {
+    await navigateWithSearchParam("page_size", size, router, searchParams);
+    console.log(searchParams.get("page_size"));
+    if (currentPage > numberOfPages) {
+      navigateWithSearchParam("p", numberOfPages, router, searchParams);
+    }
   };
 
   const navigateToPage = (param: number) => {
