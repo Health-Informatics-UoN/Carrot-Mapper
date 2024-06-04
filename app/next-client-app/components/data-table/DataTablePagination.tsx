@@ -33,6 +33,11 @@ export function DataTablePagination<TData>({
   const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
   const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
 
+  // Notice:
+  // The condition below avoids the parent page to break when users change the page size to a larger number which making the app couldn't find the data with the according p and page_size params in query URL.
+  // If the user actually does this "rarely-happened" action, they will see a "No results" page, then be pushed back to the first page with the page size they have chosen. An Error about Router in the console will also appear.
+  // The more effective fix can be adding some logics in the API endpoint getting the data, but it also means that we need to change many other API endpoints as well. So it may not be desirable.
+
   if (currentPage > numberOfPages) {
     navigateWithSearchParam(
       "p",
