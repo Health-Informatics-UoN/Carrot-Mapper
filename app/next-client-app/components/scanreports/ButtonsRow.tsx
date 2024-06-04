@@ -9,7 +9,7 @@ export function ButtonsRow({
 }: {
   scanreportId: string;
   tableId: string;
-  permissions: string[];
+  permissions: Permission[];
 }) {
   return (
     <div className="flex justify-between mt-3 flex-col sm:flex-row">

@@ -21,7 +21,7 @@ export function UpdateForm({
 }: {
   scanreportFields: ShortFields[];
   scanreportTable: ScanReportTable;
-  permissions: string[];
+  permissions: Permission[];
 }) {
   const [selectedPersonID, setPersonID] = useState<ShortFields>();
   const [selectedDateEvent, setDateEvent] = useState<ShortFields>();

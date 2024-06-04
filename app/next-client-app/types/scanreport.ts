@@ -16,7 +16,7 @@ interface ScanReportTable {
   scan_report: number;
   person_id: string | null;
   date_event: string | null;
-  permissions: string[];
+  permissions: Permission[];
 }
 
 interface ScanReportField {
@@ -39,7 +39,7 @@ interface ScanReportField {
   pass_from_source: boolean;
   concept_id: number;
   concepts?: Concept[];
-  permissions: string[];
+  permissions: Permission[];
   field_description: string | null;
   scan_report_table: number;
 }
@@ -70,5 +70,5 @@ interface ScanReportValue {
   value_description: string;
   scan_report_field: number;
   concepts?: Concept[];
-  permissions: string[];
+  permissions: Permission[];
 }
