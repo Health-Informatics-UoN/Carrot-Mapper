@@ -8,8 +8,8 @@ import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "CaRROT-Mapper",
-  description: "CaRROT-Mapper",
+  title: "Carrot Mapper",
+  description: "Convenient And Reusable Rapid Omop Transformer",
 };
 
 export default function RootLayout({
