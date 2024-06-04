@@ -65,7 +65,7 @@ export function Navbar() {
             <li className="nav-item">
               <a
                 className="nav-link"
-                href="https://hdruk.github.io/CaRROT-Docs/"
+                href="https://carrot4omop.ac.uk"
                 target="_blank"
               >
                 Documentation
