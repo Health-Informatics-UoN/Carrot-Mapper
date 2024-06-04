@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import { Pencil } from "lucide-react";
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
+import { EditButton } from "@/components/scanreports/EditButton";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
@@ -78,20 +76,7 @@ export const columns: ColumnDef<ScanReportField>[] = [
     header: "",
     cell: ({ row }) => {
       const { id, permissions } = row.original;
-      return permissions.includes("CanEdit") ||
-        permissions.includes("CanAdmin") ? (
-        <Link href={`fields/${id}/update`}>
-          <Button variant={"secondary"}>
-            Edit Field
-            <Pencil className="ml-2 size-4" />
-          </Button>
-        </Link>
-      ) : (
-        <Button variant={"secondary"} disabled>
-          Edit Field
-          <Pencil className="ml-2 size-4" />
-        </Button>
-      );
+      return <EditButton fieldID={id} type="field" permissions={permissions} />;
     },
   },
 ];

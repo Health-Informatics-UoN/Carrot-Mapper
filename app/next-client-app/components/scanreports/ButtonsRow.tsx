@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { BookText, ChevronRight, Pencil } from "lucide-react";
+import { EditButton } from "./EditButton";
 
 export function ButtonsRow({
   scanreportId,
   tableId,
   permissions,
 }: {
-  scanreportId: string;
-  tableId: string;
+  scanreportId: number;
+  tableId: number;
   permissions: Permission[];
 }) {
   return (
@@ -27,21 +28,13 @@ export function ButtonsRow({
           </Button>
         </Link>
       </div>
-      <div className="flex gap-2">
-        {" "}
-        {permissions.includes("CanEdit") || permissions.includes("CanAdmin") ? (
-          <Link href={`/scanreports/${scanreportId}/tables/${tableId}/update`}>
-            <Button variant="outline">
-              Edit Table
-              <Pencil className="ml-2 size-4" />
-            </Button>
-          </Link>
-        ) : (
-          <Button variant="outline" disabled>
-            Edit Table
-            <Pencil className="ml-2 size-4" />
-          </Button>
-        )}
+      <div>
+        <EditButton
+          scanreportId={scanreportId}
+          tableId={tableId}
+          type="table-row"
+          permissions={permissions}
+        />
       </div>
     </div>
   );
