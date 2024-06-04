@@ -23,6 +23,9 @@ export function UpdateForm({
   scanreportTable: ScanReportTable;
   permissions: Permission[];
 }) {
+  const canEdit =
+    permissions.includes("CanEdit") || permissions.includes("CanAdmin");
+
   const [selectedPersonID, setPersonID] = useState<ShortFields>();
   const [selectedDateEvent, setDateEvent] = useState<ShortFields>();
 
@@ -115,11 +118,7 @@ export function UpdateForm({
       <Button
         type="submit"
         className="mt-4 px-4 py-2 bg-carrot text-white text-lg rounded"
-        disabled={
-          permissions.includes("CanEdit") || permissions.includes("CanAdmin")
-            ? false
-            : true
-        }
+        disabled={canEdit ? false : true}
       >
         Save <Save className="ml-2" />
       </Button>

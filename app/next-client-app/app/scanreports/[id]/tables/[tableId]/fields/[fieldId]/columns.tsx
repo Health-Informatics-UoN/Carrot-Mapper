@@ -58,16 +58,14 @@ export const columns: ColumnDef<ScanReportValue>[] = [
     header: "",
     cell: ({ row }) => {
       const { scan_report_field, id, permissions } = row.original;
+      const canEdit =
+        permissions.includes("CanEdit") || permissions.includes("CanAdmin");
       return (
         <AddConcept
           rowId={id}
           parentId={scan_report_field.toString()}
           location="SR-Values"
-          disabled={
-            permissions.includes("CanEdit") || permissions.includes("CanAdmin")
-              ? false
-              : true
-          }
+          disabled={canEdit ? false : true}
         />
       );
     },
