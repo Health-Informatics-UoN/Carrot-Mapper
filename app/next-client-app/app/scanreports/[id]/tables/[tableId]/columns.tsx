@@ -1,12 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import { Pencil } from "lucide-react";
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
+import { EditButton } from "@/components/scanreports/EditButton";
 
 export const columns: ColumnDef<ScanReportField>[] = [
   {
@@ -60,12 +58,15 @@ export const columns: ColumnDef<ScanReportField>[] = [
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const { scan_report_table, id } = row.original;
+      const { scan_report_table, id, permissions } = row.original;
+      const canEdit =
+        permissions.includes("CanEdit") || permissions.includes("CanAdmin");
       return (
         <AddConcept
           rowId={id}
           parentId={scan_report_table.toString()}
           location="SR-Fields"
+          disabled={canEdit ? false : true}
         />
       );
     },
@@ -74,15 +75,8 @@ export const columns: ColumnDef<ScanReportField>[] = [
     id: "edit",
     header: "",
     cell: ({ row }) => {
-      const { id } = row.original;
-      return (
-        <Link href={`fields/${id}/update`}>
-          <Button variant={"secondary"}>
-            Edit Field
-            <Pencil className="ml-2 size-4" />
-          </Button>
-        </Link>
-      );
+      const { id, permissions } = row.original;
+      return <EditButton fieldID={id} type="field" permissions={permissions} />;
     },
   },
 ];

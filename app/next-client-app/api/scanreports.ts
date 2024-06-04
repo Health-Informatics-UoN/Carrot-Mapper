@@ -11,10 +11,10 @@ const fetchKeys = {
   values: (filter?: string) => `v2/scanreportvalues/?${filter}`,
   scanReport: (id: string) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `scanreporttables/${id}/`,
-  fieldName: (id: string) => `scanreportfields/${id}/`,
+  fieldName: (id: string | null) => `scanreportfields/${id}/`,
   update: (id: number) => `scanreports/${id}/`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
-  permissions: (id: number) => `scanreports/${id}/permissions/`,
+  permissions: (id: string) => `scanreports/${id}/permissions/`,
 };
 
 export async function getScanReportsTables(
@@ -48,7 +48,9 @@ export async function getScanReports(
  * @param id The Id of the Scan Report
  * @returns A object with a list of the users permissions.
  */
-export async function getScanReportPermissions(id: number): Promise<{}> {
+export async function getScanReportPermissions(
+  id: string
+): Promise<PermissionsResponse> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
   } catch (error) {
@@ -113,37 +115,23 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
       created_at: new Date(),
       updated_at: new Date(),
       date_event: "",
+      permissions: [],
     };
   }
 }
 
-export async function getScanReportField(id: string): Promise<ScanReportField> {
+export async function getScanReportField(
+  id: string | null
+): Promise<ScanReportField | null> {
+  if (id === null) {
+    return null;
+  }
+
   try {
     return await request<ScanReportField>(fetchKeys.fieldName(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      name: "",
-      description_column: "",
-      created_at: new Date(),
-      updated_at: new Date(),
-      type_column: "",
-      max_length: 0,
-      nrows: 0,
-      nrows_checked: 0,
-      fraction_empty: "",
-      nunique_values: 0,
-      fraction_unique: "",
-      ignore_column: null,
-      is_patient_id: false,
-      is_ignore: false,
-      classification_system: null,
-      pass_from_source: false,
-      concept_id: 0,
-      field_description: null,
-      scan_report_table: 0,
-    };
+    return null;
   }
 }
 

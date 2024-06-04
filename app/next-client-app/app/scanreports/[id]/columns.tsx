@@ -2,9 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { EditButton } from "@/components/scanreports/EditButton";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -46,14 +44,14 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     id: "edit",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { id, scan_report } = row.original;
+      const { id, scan_report, permissions } = row.original;
       return (
-        <Link href={`/scanreports/${scan_report}/tables/${id}/update`}>
-          <Button variant={"secondary"}>
-            Edit
-            <Pencil className="ml-2 size-4" />
-          </Button>
-        </Link>
+        <EditButton
+          scanreportId={scan_report}
+          tableId={id}
+          type="table"
+          permissions={permissions}
+        />
       );
     },
   },

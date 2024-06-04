@@ -17,10 +17,15 @@ export interface ShortFields {
 export function UpdateForm({
   scanreportFields,
   scanreportTable,
+  permissions,
 }: {
   scanreportFields: ShortFields[];
   scanreportTable: ScanReportTable;
+  permissions: Permission[];
 }) {
+  const canEdit =
+    permissions.includes("CanEdit") || permissions.includes("CanAdmin");
+
   const [selectedPersonID, setPersonID] = useState<ShortFields>();
   const [selectedDateEvent, setDateEvent] = useState<ShortFields>();
 
@@ -30,12 +35,16 @@ export function UpdateForm({
         const personId = await getScanReportField(scanreportTable.person_id);
         const dateEvent = await getScanReportField(scanreportTable.date_event);
         setPersonID({
-          id: parseInt(scanreportTable.person_id),
-          name: personId.name,
+          id: scanreportTable.person_id
+            ? parseInt(scanreportTable.person_id)
+            : null,
+          name: personId?.name ?? null,
         });
         setDateEvent({
-          id: parseInt(scanreportTable.date_event),
-          name: dateEvent.name,
+          id: scanreportTable.date_event
+            ? parseInt(scanreportTable.date_event)
+            : null,
+          name: dateEvent?.name ?? null,
         });
       } catch (error) {
         console.error(error);
@@ -109,6 +118,7 @@ export function UpdateForm({
       <Button
         type="submit"
         className="mt-4 px-4 py-2 bg-carrot text-white text-lg rounded"
+        disabled={canEdit ? false : true}
       >
         Save <Save className="ml-2" />
       </Button>
