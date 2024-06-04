@@ -9,6 +9,7 @@ import { columns } from "./columns";
 import {
   getScanReport,
   getScanReportFields,
+  getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
@@ -37,12 +38,14 @@ export default async function ScanReportsField({
   };
 
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
+  const filter = <DataTableFilter filter="name" filterText="field" />;
+
   const scanReportsFields = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
-  const filter = <DataTableFilter filter="name" filterText="field" />;
+  const permissions = await getScanReportPermissions(id);
+
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsFields.results
       .map((item) => item.id)
@@ -57,7 +60,8 @@ export default async function ScanReportsField({
   const scanReportsResult = addConceptsToResults(
     scanReportsFields.results,
     scanReportsConcepts,
-    conceptsFilter
+    conceptsFilter,
+    permissions
   );
 
   return (
@@ -90,7 +94,11 @@ export default async function ScanReportsField({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Fields</h1>
       </div>
-      <ButtonsRow scanreportId={id} tableId={tableId} />
+      <ButtonsRow
+        scanreportId={parseInt(id)}
+        tableId={parseInt(tableId)}
+        permissions={permissions.permissions}
+      />
       <div>
         <DataTable
           columns={columns}
