@@ -105,8 +105,8 @@ export default async function ScanReportsValue({
         <h1 className="text-4xl font-semibold">Values</h1>
       </div>
       <ButtonsRow
-        scanreportId={id}
-        tableId={tableId}
+        scanreportId={parseInt(id)}
+        tableId={parseInt(tableId)}
         permissions={permissions.permissions}
       />
       <div>
