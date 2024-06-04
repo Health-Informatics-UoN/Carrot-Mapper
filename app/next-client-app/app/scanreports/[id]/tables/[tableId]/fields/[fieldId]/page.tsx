@@ -34,9 +34,10 @@ export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
 }: ScanReportsValueProps) {
+  const defaultPageSize = 30;
   const defaultParams = {
     scan_report_field: fieldId,
-    page_size: 25,
+    page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
@@ -116,6 +117,7 @@ export default async function ScanReportsValue({
           count={scanReportsValues.count}
           Filter={filter}
           clickableRow={false}
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>

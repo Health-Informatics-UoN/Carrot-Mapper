@@ -32,11 +32,11 @@ export default async function ScanReportsField({
   params: { id, tableId },
   searchParams,
 }: ScanReportsFieldProps) {
+  const defaultPageSize = 20;
   const defaultParams = {
     scan_report_table: tableId,
-    page_size: 20,
+    page_size: defaultPageSize,
   };
-
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
   const filter = <DataTableFilter filter="name" filterText="field" />;
@@ -106,6 +106,7 @@ export default async function ScanReportsField({
           count={scanReportsFields.count}
           Filter={filter}
           linkPrefix="fields/"
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>
