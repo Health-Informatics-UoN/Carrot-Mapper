@@ -473,6 +473,12 @@ class ScanReportConceptSerializer(DynamicFieldsMixin, serializers.ModelSerialize
         fields = "__all__"
 
 
+class ScanReportConceptSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ScanReportConcept
+        fields = "__all__"
+
+
 class ClassificationSystemSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ClassificationSystem
