@@ -29,7 +29,6 @@ from api.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
     ScanReportConceptSerializer,
-    ScanReportConceptSerializerV2,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
@@ -770,7 +769,7 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
     """
 
     queryset = ScanReportConcept.objects.all()
-    serializer_class = ScanReportConceptSerializerV2
+    serializer_class = ScanReportConceptSerializer
 
     def create(self, request, *args, **kwargs):
         body = request.data
