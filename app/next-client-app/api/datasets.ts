@@ -41,7 +41,7 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
 }
 
 export async function archiveDataSets(id: number, hidden: boolean) {
-  await request(fetchKeys.archive(id), {
+  const response = await request(fetchKeys.archive(id), {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
@@ -49,4 +49,5 @@ export async function archiveDataSets(id: number, hidden: boolean) {
     body: JSON.stringify({ hidden: hidden }),
   });
   revalidatePath("/datasets/");
+  return response;
 }

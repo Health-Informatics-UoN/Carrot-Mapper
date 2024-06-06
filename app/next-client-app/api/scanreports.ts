@@ -136,7 +136,7 @@ export async function getScanReportField(
 }
 
 export async function updateScanReport(id: number, field: string, value: any) {
-  await request(fetchKeys.update(id), {
+  const response = await request(fetchKeys.update(id), {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
@@ -144,6 +144,7 @@ export async function updateScanReport(id: number, field: string, value: any) {
     body: JSON.stringify({ [field]: value }),
   });
   revalidatePath("/scanreports/");
+  return response;
 }
 
 export async function updateScanReportTable(

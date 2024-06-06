@@ -33,8 +33,8 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
   }
 }
 
-export async function addConcept(data: {}): Promise<ScanReportConcept> {
-  const response = await request<ScanReportConcept>(fetchKeys.addConcept, {
+export async function addConcept(data: {}) {
+  const response = await request(fetchKeys.addConcept, {
     method: "POST",
     headers: {
       "Content-type": "application/json",
