@@ -13,6 +13,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getDataSet } from "@/api/datasets";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface DataSetListProps {
   params: {
@@ -63,7 +65,15 @@ export default async function ScanReports({
           Scan Reports in Dataset #{id}
         </h1>
       </div>
-      <div className="my-5">
+      <div>
+        {" "}
+        <Link href={`/datasets/${id}/details/`}>
+          <Button size="lg" className="text-md mt-3">
+            Dataset Details
+          </Button>
+        </Link>
+      </div>
+      <div className="my-3">
         <Tabs
           defaultValue={
             (searchParams as any)?.hidden
