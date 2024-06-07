@@ -14,7 +14,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { navigateWithSearchParam } from "@/lib/client-utils";
-import { useEffect } from "react";
 
 interface DataTablePaginationProps<TData> {
   count: number;
@@ -33,21 +32,6 @@ export function DataTablePagination<TData>({
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
   const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
-
-  // Notice:
-  // The condition below avoids the parent page to break when users change the page size to a larger number
-  // which making the app couldn't find the data with the according p and page_size params in query URL.
-  // If the user actually does this "rarely-happened" action, they will see a "No results" page,
-  // then be pushed back to the first page with the page size they have chosen.
-  // The more effective fix can be adding some logics in the API endpoint getting the data,
-  // but it also means that we need to change many other API endpoints as well. So it may not be desirable.
-
-  // Using useEffect here to prevent an error about Router on the console
-  useEffect(() => {
-    if (currentPage > numberOfPages) {
-      navigateWithSearchParam("p", numberOfPages, router, searchParams);
-    }
-  }, [currentPage, numberOfPages, pageSize]);
 
   const changePageSize = (size: number) => {
     navigateWithSearchParam("page_size", size, router, searchParams);
