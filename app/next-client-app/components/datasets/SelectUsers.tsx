@@ -1,8 +1,6 @@
 "use client";
 
-import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
-import { FilterOption } from "@/types/filter";
-
+import { CheckIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +11,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -21,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { ContactRound } from "lucide-react";
 
 interface UsersProps<TData, TValue> {
   title?: string;
@@ -39,7 +37,7 @@ export function SelectUsers<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="">
-          <PlusCircledIcon className="mr-2 size-4" />
+          <ContactRound className="mr-2 size-4" />
           {title}
           {selectedOptions && selectedOptions?.length > 0 && (
             <>
