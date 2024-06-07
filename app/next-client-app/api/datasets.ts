@@ -10,7 +10,7 @@ const fetchKeys = {
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
   projects: () => "projects/",
-  archive: (id: number) => `datasets/update/${id}/`,
+  updateDataset: (id: number) => `datasets/update/${id}/`,
 };
 
 export async function getDataSets(
@@ -81,7 +81,7 @@ export async function getDatasetProject(filter: string): Promise<Projects[]> {
 }
 
 export async function archiveDataSets(id: number, hidden: boolean) {
-  await request(fetchKeys.archive(id), {
+  await request(fetchKeys.updateDataset(id), {
     method: "PATCH",
     headers: {
       "Content-type": "application/json",
@@ -89,4 +89,34 @@ export async function archiveDataSets(id: number, hidden: boolean) {
     body: JSON.stringify({ hidden: hidden }),
   });
   revalidatePath("/datasets/");
+}
+
+export async function updateDatasetDetails(
+  id: number,
+  name: string,
+  visibility: string,
+  data_partner: number,
+  admins: number[],
+  editors: number[]
+  // projects: number[]
+) {
+  try {
+    await request(fetchKeys.updateDataset(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        visibility: visibility,
+        data_partner: data_partner,
+        admins: admins,
+        editors: editors,
+        // projects: projects,
+      }),
+    });
+  } catch (error) {
+    console.error(error);
+  }
+  revalidatePath(`/datasets/${id}/details/`);
 }
