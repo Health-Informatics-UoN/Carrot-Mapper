@@ -15,14 +15,18 @@ export const HandleArchive = async ({
 }) => {
   const message = hidden ? "Unarchive" : "Archive";
   let response;
-  if (type === "datasets") {
-    response = await archiveDataSets(id, !hidden);
-  } else if (type === "scanreports") {
-    response = await updateScanReport(id, "hidden", !hidden);
+
+  switch (type) {
+    case "datasets":
+      response = await archiveDataSets(id, !hidden);
+      break;
+    case "scanreports":
+      response = await updateScanReport(id, "hidden", !hidden);
+      break;
   }
 
-  if (typeof response === "string" && response.includes("Error:")) {
-    toast.error(`${message} ${ObjName} failed. ${response}`);
+  if (!response.success && response.error !== undefined) {
+    toast.error(`${message} ${ObjName} failed. ${response.error}`);
   } else {
     toast.success(`${message} ${ObjName} succeeded.`);
   }
