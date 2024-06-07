@@ -18,9 +18,10 @@ interface ScanReportsProps {
 }
 
 export default async function ScanReports({ searchParams }: ScanReportsProps) {
+  const defaultPageSize = 10;
   const defaultParams = {
     hidden: false,
-    page_size: 10,
+    page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
 
@@ -78,6 +79,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               data={scanReports.results}
               count={scanReports.count}
               Filter={filter}
+              defaultPageSize={defaultPageSize}
             />
           </TabsContent>
         </Tabs>

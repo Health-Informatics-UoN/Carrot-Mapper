@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/error";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
+import { Tooltip } from "react-tooltip";
 
 export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
   const handleDelete = async (conceptId: number) => {
@@ -22,29 +23,47 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
   return concepts && concepts?.length > 0 ? (
     <div className="flex flex-col items-start w-[250px]">
       {concepts.map((concept) => (
-        <Badge
-          className={`${
+        <a
+          key={concept.concept_code}
+          data-tooltip-id="badge-tooltip"
+          data-tooltip-content={`${concept.concept_id} ${
+            concept.concept_name
+          } ${
             concept.creation_type === "V"
-              ? "bg-carrot-vocab hover:bg-carrot-vocab"
+              ? "(built from a OMOP vocabulary)"
               : concept.creation_type === "M"
-              ? "bg-carrot-manual hover:bg-carrot-manual"
+              ? "(added manually)"
               : concept.creation_type === "R"
-              ? "bg-carrot-reuse hover:bg-carrot-reuse"
+              ? "(added though mapping reuse)"
               : ""
           }`}
-          key={concept.concept_code}
+          data-tooltip-place="top"
         >
-          <p className="pl-2 pr-1 py-2">{`${concept.concept_id} ${concept.concept_name} (${concept.creation_type})`}</p>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={async () =>
-              await handleDelete(concept.scan_report_concept_id ?? 0)
-            }
+          <Tooltip id="badge-tooltip" />
+          <Badge
+            className={`${
+              concept.creation_type === "V"
+                ? "bg-carrot-vocab hover:bg-carrot-vocab"
+                : concept.creation_type === "M"
+                ? "bg-carrot-manual hover:bg-carrot-manual"
+                : concept.creation_type === "R"
+                ? "bg-carrot-reuse hover:bg-carrot-reuse"
+                : ""
+            }`}
+            key={concept.concept_code}
           >
-            <Cross2Icon />
-          </Button>
-        </Badge>
+            <p className="pl-2 pr-1 py-1">{`${concept.concept_id} ${concept.concept_name} (${concept.creation_type})`}</p>
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={async () =>
+                await handleDelete(concept.scan_report_concept_id ?? 0)
+              }
+            >
+              <Cross2Icon />
+            </Button>
+          </Badge>
+        </a>
       ))}
     </div>
   ) : (

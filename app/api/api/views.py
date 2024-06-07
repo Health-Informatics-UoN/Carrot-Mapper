@@ -622,7 +622,7 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
 
         # TODO: The worker_id can be used for status, but we need to save it somewhere.
         # resp_json = response.json()
-        # worker_id = resp_json.get("id")
+        # worker_id = resp_json.get("instanceId")
 
         return Response(serializer.data)
 
@@ -1029,9 +1029,13 @@ class RulesList(viewsets.ModelViewSet):
                 "name": rule["destination_table"].table,
             }
 
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
             rule["domain"] = {
-                "id": int(str(rule["domain"])),
-                "name": rule["domain"].field,
+                "name": rule["domain"],
             }
 
             rule["source_table"] = {
@@ -1105,6 +1109,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+
 class ScanReportValueViewSetV2(ScanReportValueViewSet):
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
@@ -1113,7 +1118,7 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["value", "value_description", "frequency"]
     pagination_class = CustomPagination
-    
+
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
@@ -1122,6 +1127,7 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportValueEditSerializer
         return super().get_serializer_class()
+
 
 class ScanReportFilterViewSet(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()

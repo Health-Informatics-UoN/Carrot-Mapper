@@ -5,12 +5,11 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { columns } from "./columns";
 import {
   getScanReport,
   getScanReportFields,
+  getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
@@ -19,6 +18,7 @@ import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
+import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 
 interface ScanReportsFieldProps {
   params: {
@@ -32,18 +32,20 @@ export default async function ScanReportsField({
   params: { id, tableId },
   searchParams,
 }: ScanReportsFieldProps) {
+  const defaultPageSize = 20;
   const defaultParams = {
     scan_report_table: tableId,
-    page_size: 20,
+    page_size: defaultPageSize,
   };
-
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
+  const filter = <DataTableFilter filter="name" filterText="field" />;
+
   const scanReportsFields = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
-  const filter = <DataTableFilter filter="name" filterText="field" />;
+  const permissions = await getScanReportPermissions(id);
+
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsFields.results
       .map((item) => item.id)
@@ -58,7 +60,8 @@ export default async function ScanReportsField({
   const scanReportsResult = addConceptsToResults(
     scanReportsFields.results,
     scanReportsConcepts,
-    conceptsFilter
+    conceptsFilter,
+    permissions
   );
 
   return (
@@ -91,25 +94,11 @@ export default async function ScanReportsField({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Fields</h1>
       </div>
-      <div className="flex justify-between mt-3 flex-col sm:flex-row">
-        <div className="flex gap-2">
-          <Link href={`/scanreports/${id}/details/`}>
-            <Button size="lg" className="text-md">
-              Scan Report Details
-            </Button>
-          </Link>
-          <Link href={`/scanreports/${id}/mapping_rules/`}>
-            <Button size="lg" className="text-md">
-              Rules
-            </Button>
-          </Link>
-          <Link href={`/scanreports/${id}/tables/${tableId}/update`}>
-            <Button size="lg" className="text-md">
-              Edit Table
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <ButtonsRow
+        scanreportId={parseInt(id)}
+        tableId={parseInt(tableId)}
+        permissions={permissions.permissions}
+      />
       <div>
         <DataTable
           columns={columns}
@@ -117,6 +106,7 @@ export default async function ScanReportsField({
           count={scanReportsFields.count}
           Filter={filter}
           linkPrefix="fields/"
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>

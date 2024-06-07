@@ -38,6 +38,7 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
+  defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
 function UrlBuilder(id: string, prefix: string = "") {
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   linkPrefix = "",
   Filter,
   clickableRow = true,
+  defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
@@ -77,7 +79,10 @@ export function DataTable<TData, TValue>({
     if (/datasets\/\d+/.test(location)) {
       location = "/scanreports/";
     }
-    window.location.href = UrlBuilder(id, `${location}${linkPrefix}`);
+    window.location.href = UrlBuilder(
+      id,
+      `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`
+    );
   };
 
   return (
@@ -193,7 +198,7 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-center space-x-2 py-4">
-        <DataTablePagination count={count} />
+        <DataTablePagination count={count} defaultPageSize={defaultPageSize} />
       </div>
     </div>
   );

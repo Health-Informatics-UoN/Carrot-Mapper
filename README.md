@@ -1,47 +1,21 @@
-### Table of Contents
-1. [Introduction](#introduction)
-1. [Getting Started](#getting-started)
-1. [Custom Styling](#custom-styling)
-   1. [CSS](#css)
-   2. [JavaScript](#javascript)
-
 # Introduction
-This repository contains information and code for the CaRROT-Mapper system. This is a containerised 
-Django/React webapp and associated Azure Functions which facilitates the generation of rules mapping
-datasets to the OMOP standard through manual and automated means.
 
-# Getting Started <a name="getting-started"></a>
+This repository contains information and code for the Carrot Mapper system. This is a containerised Django/React webapp and associated Azure Functions, which facilitates the generation of rules mapping datasets to the OMOP standard through manual and automated means.
 
-See the Developer Quickstart at the [CaRROT documentation](https://hdruk.github.io/CaRROT-Docs/CaRROT-Mapper/quickstart-webapp/).
+## Documentation
 
-# Custom Styling <a name="custom-styling"></a>
+Visit our [documentation site](https://carrot4omop.ac.uk/).
 
-The folder `api/static/` contains static folders that can be used to store custom `css` and `javascript`. Files contained within are then made publically accessable, i.e. viewable by the frontend code, for example:
-```html
-<img src="{% static 'images/coconnect-logo.png' %}"...>
-```
+Visit our public roadmap for [Carrot Mapper](https://github.com/orgs/Health-Informatics-UoN/projects/18).
 
-## CSS
+## Bugs/Requests
 
-Styling of elements and the modification of Bootstrap elements can be made in `api/static/style/custom.css`.
+Please use the [GitHub issue tracker](https://github.com/Health-Informatics-UoN/Carrot-Mapper/issues) to submit bugs or request features.
 
-For example, to change the background style of the navbar..:
-```css
-/* make some snazy 90s-like theme for the nav bar */
-.bg-co-connect {
-    background:  linear-gradient(180deg,rgba(0,0,0,0) 0 96px, var(--co-connect-tertiary) 96px 100%),
-		 linear-gradient(110deg,white 0 90px, var(--co-connect-primary-light) 150px , var(--co-connect-primary) 400px 80%,var(--co-connect-secondary));
-}
+## Development
 
-/* change the navbar link colors  and mouse-over actions */
-.nav-link{
-	color:white !important;
-    }
-.nav-link:hover{
-    color:rgba(256,256,256,0.5) !important;
-}
-```
+Visit our Developer Quickstart at the [Carrot documentation](https://carrot4omop.ac.uk/Carrot-Mapper/quickstart-webapp).
 
+## Contributing
 
-## JavaScript
-Any `js`, e.g. `jquery` ajax calls can be inserted in `api/static/javascript/custom.js`.
+Contributions to Carrot Mapper are welcome and highly appreciated. However, before you jump right into it, please engage with the [Github issue tracker](https://github.com/Health-Informatics-UoN/Carrot-Mapper/issues), and follow our [contribution guidelines](https://github.com/Health-Informatics-UoN/Carrot-Mapper/blob/master/CONTRIBUTING.md) for a smooth experience.
