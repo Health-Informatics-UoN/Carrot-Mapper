@@ -38,8 +38,8 @@ export default function AddConcept({
         creation_type: "M",
         table_id: await determineTableId(location, parentId),
       });
-      if (typeof response === "string" && response.includes("Error:")) {
-        toast.error(`Adding concept failed. ${response}`);
+      if (!response.success && response.error !== undefined) {
+        toast.error(`Adding concept failed. ${response.error}`);
       } else {
         toast.success(`OMOP Concept successfully added.`);
       }
