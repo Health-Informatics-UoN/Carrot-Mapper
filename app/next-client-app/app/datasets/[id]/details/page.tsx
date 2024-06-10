@@ -49,7 +49,7 @@ export default async function ScanReports({
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Details Page - Dataset #{id}</h1>
       </div>
-      <div className="mt-5">
+      <div className="mt-4">
         <DatasetDetailsForm dataset={dataset} />
       </div>
     </div>
