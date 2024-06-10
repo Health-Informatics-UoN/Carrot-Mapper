@@ -12,18 +12,15 @@ import {
   DotsHorizontalIcon,
   EyeNoneIcon,
   EyeOpenIcon,
-  ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { updateScanReport } from "@/api/scanreports";
 import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
-import { toast } from "sonner";
-import { ApiError } from "@/lib/api/error";
 import { format } from "date-fns/format";
+import { HandleArchive } from "@/components/HandleArchive";
 
 export const columns: ColumnDef<ScanReportList>[] = [
   {
@@ -125,18 +122,6 @@ export const columns: ColumnDef<ScanReportList>[] = [
     cell: ({ row }) => {
       const { id, hidden, dataset } = row.original;
 
-      const handleArchive = async () => {
-        const message = hidden ? "Unarchive" : "Archive";
-        try {
-          await updateScanReport(id, "hidden", !hidden);
-          toast.success(`${message} ${dataset} succeeded.`);
-        } catch (error) {
-          const errorObj = JSON.parse((error as ApiError).message);
-          toast.error(`${message} ${dataset} has failed: ${errorObj.detail}`);
-          console.error(error);
-        }
-      };
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -145,7 +130,16 @@ export const columns: ColumnDef<ScanReportList>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem onClick={handleArchive}>
+            <DropdownMenuItem
+              onClick={() =>
+                HandleArchive({
+                  id: id,
+                  hidden: hidden,
+                  ObjName: dataset,
+                  type: "scanreports",
+                })
+              }
+            >
               {hidden ? "Unarchive" : "Archive"}
               {hidden ? (
                 <EyeOpenIcon className="ml-auto" />
