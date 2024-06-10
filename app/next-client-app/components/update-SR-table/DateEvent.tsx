@@ -56,7 +56,7 @@ export function DateEvent<TData, TValue>({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[12.5rem] p-0" align="start">
+      <PopoverContent className="w-[50vw] p-0" align="start">
         <Command>
           <CommandInput placeholder={title} className="text-lg" />
           <CommandList>
