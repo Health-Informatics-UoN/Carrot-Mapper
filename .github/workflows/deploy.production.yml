@@ -1,10 +1,8 @@
-name: Build and Deploy to Dev and Test
+name: Deploy to Production
 
 on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+  release:
+    types: [released]
 
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: './app/workers'
@@ -115,11 +113,11 @@ jobs:
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/.next/standalone
           name: frontendwebapp
 
-  # Deploy Workers Dev
-  deploy-workers-dev:
+  # Deploy Workers Production
+  deploy-workers-production:
     runs-on: ubuntu-latest
-    needs: [build-and-publish-workers, build-and-publish-web]
-    environment: dev
+    needs: build-and-publish-workers
+    environment: production
 
     steps:
       - name: Download artifact from build job
@@ -132,78 +130,17 @@ jobs:
         uses: Azure/functions-action@v1.5.1
         id: fa
         with:
-          app-name: 'ccom-funcs-dev'
+          app-name: 'ccom-funcs-prod'
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
           publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
 
-  # Deploy Web App Dev
-  deploy-web-dev:
+  # Deploy Web App Production
+  deploy-web-production:
     runs-on: ubuntu-latest
-    needs: [build-and-publish-web, deploy-workers-dev]
+    needs: [build-and-publish-web, deploy-workers-production]
     environment:
-      name: 'dev'
-      url: ${{ steps.deploy-web-dev.outputs.webapp-url }}
-
-    steps:
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'ccom-dev'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
-
-  # Deploy Next.js Client App Dev
-  deploy-next-dev:
-    runs-on: ubuntu-latest
-    needs: [build-and-publish-next-app, deploy-web-dev]
-    environment: dev
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          path: frontendwebapp
-          name: frontendwebapp
-
-      - name: Deploy to Azure WebApp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'ccom-next-dev'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_NEXT_PUBLISH_PROFILE }}
-          package: ${{ github.workspace }}/frontendwebapp
-
-  # Deploy Workers Test
-  deploy-workers-test:
-    runs-on: ubuntu-latest
-    needs: deploy-workers-dev
-    environment: test
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          path: functionsapp
-          name: functionsapp
-
-      - name: 'Run Azure Functions Action'
-        uses: Azure/functions-action@v1.5.1
-        id: fa
-        with:
-          app-name: 'ccom-funcs-test'
-          slot-name: 'production'
-          package: ${{ github.workspace }}/functionsapp
-          publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
-
-  # Deploy Web App Test
-  deploy-web-test:
-    runs-on: ubuntu-latest
-    needs: [deploy-web-dev, deploy-workers-test]
-    environment:
-      name: 'test'
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -211,15 +148,16 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-test'
+          app-name: 'ccom'
+          slot-name: 'production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
-  # Deploy Next.js Client App Test
-  deploy-next-test:
+  # Deploy Next.js Client App Production
+  deploy-next-production:
     runs-on: ubuntu-latest
-    needs: [deploy-next-dev, deploy-web-test]
-    environment: test
+    needs: [build-and-publish-next-app, deploy-web-production]
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
@@ -233,6 +171,6 @@ jobs:
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-next-test'
+          app-name: 'ccom-next'
           publish-profile: ${{ secrets.AZURE_WEBAPP_NEXT_PUBLISH_PROFILE }}
           package: ${{ github.workspace }}/frontendwebapp
