@@ -97,7 +97,7 @@ export function UpdateForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="flex flex-col sm:flex-row mt-4 gap-3">
+      <div className="flex flex-col mt-4 gap-3">
         <div>
           <PersonID
             title="Person ID"
