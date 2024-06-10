@@ -24,9 +24,9 @@ export const HandleArchive = async ({
       response = await updateScanReport(id, "hidden", !hidden);
       break;
   }
-
-  if (!response.success && response.error !== undefined) {
-    toast.error(`${message} ${ObjName} failed. ${response.error}`);
+  // Because the response only returned when there is an error
+  if (response) {
+    toast.error(`${message} ${ObjName} failed. ${response.errorMessage}`);
   } else {
     toast.success(`${message} ${ObjName} succeeded.`);
   }

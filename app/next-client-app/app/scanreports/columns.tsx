@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
-import { HandleArchive } from "@/components/scanreports/HandleArchive";
+import { HandleArchive } from "@/components/HandleArchive";
 
 export const columns: ColumnDef<ScanReportList>[] = [
   {

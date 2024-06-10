@@ -15,7 +15,7 @@ import {
 import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
 import { format } from "date-fns/format";
 import Link from "next/link";
-import { HandleArchive } from "@/components/scanreports/HandleArchive";
+import { HandleArchive } from "@/components/HandleArchive";
 
 export const columns: ColumnDef<DataSet>[] = [
   {

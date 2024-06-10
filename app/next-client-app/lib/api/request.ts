@@ -40,11 +40,11 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
       try {
         const errorResponse = await response.json();
         errorMessage = errorResponse.detail || errorMessage;
-        return { success: false, error: errorResponse.detail };
       } catch (error) {
         errorMessage = "Failed to parse error response";
       }
     }
+    throw new ApiError(errorMessage, response.status);
   }
 
   if (options.download) {

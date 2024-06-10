@@ -41,13 +41,17 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
 }
 
 export async function archiveDataSets(id: number, hidden: boolean) {
-  const response = await request(fetchKeys.archive(id), {
-    method: "PATCH",
-    headers: {
-      "Content-type": "application/json",
-    },
-    body: JSON.stringify({ hidden: hidden }),
-  });
-  revalidatePath("/datasets/");
-  return response;
+  try {
+    await request(fetchKeys.archive(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({ hidden: hidden }),
+    });
+    revalidatePath("/datasets/");
+  } catch (error: any) {
+    // Only return a response when there is an error
+    return { errorMessage: error.message };
+  }
 }

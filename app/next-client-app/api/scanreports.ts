@@ -136,15 +136,19 @@ export async function getScanReportField(
 }
 
 export async function updateScanReport(id: number, field: string, value: any) {
-  const response = await request(fetchKeys.update(id), {
-    method: "PATCH",
-    headers: {
-      "Content-type": "application/json",
-    },
-    body: JSON.stringify({ [field]: value }),
-  });
-  revalidatePath("/scanreports/");
-  return response;
+  try {
+    await request(fetchKeys.update(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({ [field]: value }),
+    });
+    revalidatePath("/scanreports/");
+  } catch (error: any) {
+    // Only return a response when there is an error
+    return { errorMessage: error.message };
+  }
 }
 
 export async function updateScanReportTable(
