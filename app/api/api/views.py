@@ -402,12 +402,12 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
     def perform_destroy(self, instance):
         try:
-            delete_blob(instance.name, "scanreports")
+            delete_blob(instance.name, "scan-reports")
         except Exception as e:
             raise Exception(f"Error deleting scan report: {e}")
         if instance.data_dictionary:
             try:
-                delete_blob(instance.data_dictionary, "data-dictionaries")
+                delete_blob(instance.data_dictionary.name, "data-dictionaries")
             except Exception as e:
                 raise Exception(f"Error deleting data dictionary: {e}")
         instance.delete()
