@@ -5,8 +5,13 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getDataSet } from "@/api/datasets";
-import { DatasetDetailsForm } from "@/components/datasets/DatasetDetailsForm";
+import {
+  getDataPartners,
+  getDataSet,
+  getDataUsers,
+  getProjects,
+} from "@/api/datasets";
+import { DatasetFormikForm } from "@/components/datasets/DatasetFormikForm";
 
 interface DataSetListProps {
   params: {
@@ -18,6 +23,9 @@ export default async function ScanReports({
   params: { id },
 }: DataSetListProps) {
   const dataset = await getDataSet(id);
+  const partners = await getDataPartners();
+  const users = await getDataUsers();
+  const projects = await getProjects();
 
   return (
     <div className="pt-10 px-16">
@@ -50,7 +58,12 @@ export default async function ScanReports({
         <h1 className="text-4xl font-semibold">Details Page - Dataset #{id}</h1>
       </div>
       <div className="mt-4">
-        <DatasetDetailsForm dataset={dataset} />
+        <DatasetFormikForm
+          dataset={dataset}
+          dataPartners={partners}
+          users={users}
+          projects={projects}
+        />
       </div>
     </div>
   );

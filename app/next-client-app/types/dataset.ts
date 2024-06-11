@@ -28,6 +28,7 @@ interface DataSetSRList {
   editors: number[];
 }
 interface Projects {
+  id: number;
   name: string;
   members: [];
 }
