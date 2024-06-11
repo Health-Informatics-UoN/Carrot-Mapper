@@ -2,7 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.1.01-dev
+## v2.2.01-dev
+## New features
+
+### Improvements
+
+### Bugfixes
+
+## v2.2.00
 ### New features
 
 ### Improvements
