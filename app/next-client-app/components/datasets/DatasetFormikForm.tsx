@@ -21,7 +21,7 @@ interface FormData {
   dataPartner: number;
   editors: number[];
   admins: number[];
-  // other fields...
+  projects: number[];
 }
 
 export function DatasetFormikForm({
@@ -50,18 +50,19 @@ export function DatasetFormikForm({
   const initialAdmins = users.filter((user) =>
     dataset.admins.includes(user.id)
   );
+  const initialProject = projects.find((project) =>
+    project.datasets?.includes(dataset.id)
+  );
+  if (!initialProject) {
+    throw new Error("Initial project not found");
+  }
   const initialPartnersFilter = FormDataFilterPartners(initialPartner);
   const initialEditorsFilter = FormDataFilterUsers(initialEditors);
   const initialAdminsFilter = FormDataFilterUsers(initialAdmins);
-
+  const initialProjectFilter = FormDataFilterProjects(initialProject);
   const handleSubmit = async (data: FormData) => {
     try {
-      console.log("Dataset ID:", dataset.id);
-      console.log("Name:", data.name);
-      console.log("Visibility:", data.visibility);
-      console.log("Data Partner:", data.dataPartner);
-      console.log("Editors:", data.editors || []);
-      console.log("Admins:", data.admins || []);
+      console.log(data.projects || []);
       await updateDatasetDetails(
         dataset.id,
         data.name,
@@ -69,7 +70,6 @@ export function DatasetFormikForm({
         data.dataPartner,
         data.admins || [],
         data.editors || []
-        // selectedProjects?.map(project => project.id)
       );
       toast.success("Update Dataset successful!");
     } catch (error) {
@@ -85,7 +85,7 @@ export function DatasetFormikForm({
         editors: initialEditorsFilter.map((editor) => editor.value),
         dataPartner: initialPartnersFilter[0].value,
         admins: initialAdminsFilter.map((admin) => admin.value),
-        projects: 1, // need help here
+        projects: initialProjectFilter.map((project) => project.value),
       }}
       onSubmit={(data) => {
         handleSubmit(data);

@@ -30,7 +30,10 @@ interface DataSetSRList {
 interface Projects {
   id: number;
   name: string;
-  members: [];
+  members: number[];
+  created_at: Date;
+  updated_at: Date;
+  datasets: number[];
 }
 
 interface Users {

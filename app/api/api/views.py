@@ -210,6 +210,19 @@ class ProjectListView(ListAPIView):
         return Project.objects.all()
 
 
+class ProjectDatasetView(viewsets.ModelViewSet):
+    permission_classes = []
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"name": ["in", "exact"], "datasets": ["in", "exact"] }
+    queryset = Project.objects.all()
+    
+    def get_serializer_class(self):
+        if self.request.method in ["GET", "POST"]:
+            # use the view serialiser if on GET requests
+            return ProjectSerializer
+        return super().get_serializer_class()
+    
+    
 class ProjectRetrieveView(RetrieveAPIView):
     """
     API view to retrieve a single project.

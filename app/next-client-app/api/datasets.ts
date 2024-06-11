@@ -6,10 +6,9 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
-  project: (filter: string) => `projects/?${filter}/`,
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
-  projects: () => "projects/",
+  projects: () => "projectdataset/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
 };
 
@@ -71,18 +70,9 @@ export async function getProjects(): Promise<Projects[]> {
   }
 }
 
-export async function getDatasetProject(filter: string): Promise<Projects[]> {
-  try {
-    return request<Projects[]>(fetchKeys.project(filter));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
 export async function archiveDataSets(id: number, hidden: boolean) {
   try {
-    await request(fetchKeys.archive(id), {
+    await request(fetchKeys.updateDataset(id), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",

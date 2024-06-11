@@ -13,7 +13,7 @@ export const FormDataFilterPartners = (input: DataPartner[] | DataPartner) => {
   }));
 };
 
-export const FormDataFilterProjects = (input: Projects[]) => {
+export const FormDataFilterProjects = (input: Projects[] | Projects) => {
   const array = Array.isArray(input) ? input : [input];
   return array.map((user) => ({
     value: user.id,
