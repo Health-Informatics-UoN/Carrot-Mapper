@@ -1,7 +1,8 @@
+import csv
 import os
 from io import StringIO
+
 from azure.storage.blob import BlobServiceClient
-import csv
 from django.http.response import HttpResponse
 
 
@@ -46,3 +47,24 @@ def download_data_dictionary_blob(blob_name, container="data-dictionaries"):
     response["Content-Disposition"] = f'attachment; filename="{blob_name}"'
 
     return response
+
+
+def delete_blob(blob_name: str, container: str) -> bool:
+    """
+    Deletes a blob from the specified container.
+
+    Args:
+        blob_name (str): The name of the blob to delete.
+        container (str): The name of the container where the blob is stored.
+
+    Returns:
+        bool: True if the blob was successfully deleted.
+    """
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
+    container_client = blob_service_client.get_container_client(container)
+    blob_dict_client = container_client.get_blob_client(blob_name)
+    # Delete the blob
+    blob_dict_client.delete_blob()
+    return True

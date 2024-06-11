@@ -33,16 +33,20 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
   }
 }
 
-export async function addConcept(data: {}): Promise<ScanReportConcept> {
-  const response = await request<ScanReportConcept>(fetchKeys.addConcept, {
-    method: "POST",
-    headers: {
-      "Content-type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  revalidatePath("");
-  return response;
+export async function addConcept(data: {}) {
+  try {
+    await request(fetchKeys.addConcept, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    revalidatePath("");
+  } catch (error: any) {
+    // Only return a response when there is an error
+    return { errorMessage: error.message };
+  }
 }
 
 export async function deleteConcept(conceptId: number) {

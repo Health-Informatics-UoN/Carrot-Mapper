@@ -59,6 +59,7 @@ from mapping.permissions import (
     CanViewProject,
     get_user_permissions_on_scan_report,
 )
+from mapping.services import delete_blob
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -390,7 +391,26 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             return ScanReportViewSerializerV2
+        if self.request.method in ["DELETE"]:
+            return ScanReportEditSerializer
         return super().get_serializer_class()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        try:
+            delete_blob(instance.name, "scanreports")
+        except Exception as e:
+            raise Exception(f"Error deleting scan report: {e}")
+        if instance.data_dictionary:
+            try:
+                delete_blob(instance.data_dictionary, "data-dictionaries")
+            except Exception as e:
+                raise Exception(f"Error deleting data dictionary: {e}")
+        instance.delete()
 
 
 class DatasetListView(generics.ListAPIView):
