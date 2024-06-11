@@ -392,30 +392,21 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         if self.request.method in ["GET", "POST"]:
             return ScanReportViewSerializerV2
         if self.request.method in ["DELETE"]:
-            return ScanReportTableEditSerializer
+            return ScanReportEditSerializer
         return super().get_serializer_class()
 
-    def destroy(self, request, pk):
+    def perform_destroy(self, pk):
         instance = self.get_object()
-        required_permissions = ["CanView", "CanEdit", "CanAdmin"]
-        permissions = get_user_permissions_on_scan_report(request, pk)
-        if not all(permission in permissions for permission in required_permissions):
-            raise PermissionDenied
         try:
             delete_blob(instance.name, "scanreports")
         except Exception as e:
-            return Response(
-                {"detail": f"Error deleting scanreport: {e}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        try:
-            delete_blob(instance.data_dictionary, "data-dictionaries")
-        except Exception as e:
-            return Response(
-                {"detail": f"Error deleting data dictionary: {e}"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        instance.delete()
+            raise Exception(f"Error deleting scan report: {e}")
+        if instance.data_dictionary:
+            try:
+                delete_blob(instance.data_dictionary, "data-dictionaries")
+            except Exception as e:
+                raise Exception(f"Error deleting data dictionary: {e}")
+        self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
