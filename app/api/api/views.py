@@ -395,8 +395,12 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
             return ScanReportEditSerializer
         return super().get_serializer_class()
 
-    def perform_destroy(self, pk):
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
         try:
             delete_blob(instance.name, "scanreports")
         except Exception as e:
@@ -406,8 +410,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
                 delete_blob(instance.data_dictionary, "data-dictionaries")
             except Exception as e:
                 raise Exception(f"Error deleting data dictionary: {e}")
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        instance.delete()
 
 
 class DatasetListView(generics.ListAPIView):
