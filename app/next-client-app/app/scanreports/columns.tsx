@@ -34,6 +34,7 @@ import { useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { deleteScanReport } from "@/api/scanreports";
 import { toast } from "sonner";
+import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 export const columns: ColumnDef<ScanReportList>[] = [
   {
@@ -134,57 +135,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const { id, hidden, dataset } = row.original;
-      const [isDeleteDialogOpen, setDeleteDialogOpen] =
-        useState<boolean>(false);
-
-      const DeleteDialog = () => {
-        const handleDelete = async () => {
-          const response = await deleteScanReport(id);
-          if (response) {
-            toast.error(
-              `Failed to delete Scan Report! ${response.errorMessage}`,
-            );
-          } else {
-            toast.success("Scan Report successfully deleted");
-          }
-          setDeleteDialogOpen(false);
-        };
-
-        return (
-          <Dialog
-            open={isDeleteDialogOpen}
-            onOpenChange={() => setDeleteDialogOpen(false)}
-          >
-            <DialogContent>
-              <DialogHeader className="text-start">
-                <DialogTitle>Delete Scan Report</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete this Scan Report? This will:
-                </DialogDescription>
-                <ul className="text-gray-800 list-disc pl-4 pt-2">
-                  <li>Delete the Scan Report</li>
-                  <li>Delete the Scan Report file, and data dictionary</li>
-                  <li>
-                    Delete the rules, and will not allow them to be reused
-                  </li>
-                  <li>
-                    If any rules have been reused in any other Scan Reports,
-                    they will not be deleted
-                  </li>
-                </ul>
-              </DialogHeader>
-              <DialogFooter className="flex-col space-y-2 sm:space-y-0 sm:space-x-2">
-                <Button variant="destructive" onClick={handleDelete}>
-                  Delete
-                </Button>
-                <DialogClose asChild>
-                  <Button className="bg-black text-white">Cancel</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        );
-      };
+      const [isOpen, setOpen] = useState<boolean>(false);
 
       return (
         <>
@@ -223,12 +174,12 @@ export const columns: ColumnDef<ScanReportList>[] = [
                 </DropdownMenuItem>
               </Link>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)}>
+              <DropdownMenuItem onClick={() => setOpen(true)}>
                 Delete <TrashIcon className="ml-auto" />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <DeleteDialog />
+          <DeleteDialog id={id} isOpen={isOpen} setOpen={setOpen} />
         </>
       );
     },

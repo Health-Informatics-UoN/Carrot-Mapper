@@ -18,6 +18,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { BookText, ChevronRight, Download } from "lucide-react";
+import { TrashIcon } from "@radix-ui/react-icons";
+import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 interface ScanReportsTableProps {
   params: {
@@ -92,6 +94,13 @@ export default async function ScanReportsTable({
             </a>
             <Download className="ml-2 size-4" />
           </Button>
+          <DeleteDialog id={Number(id)} details>
+            <Button variant={"outline"} className="text-red-400">
+              Delete Scan Report
+              <TrashIcon className="ml-2 size-4" />
+            </Button>
+          </DeleteDialog>
+
           {/* TODO: This has been broken #459, needs API fixes. */}
           {/* <Button variant={"outline"}>
             <a href={`/api/scanreports/${id}/download/`} download>
