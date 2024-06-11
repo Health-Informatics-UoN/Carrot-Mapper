@@ -29,12 +29,15 @@ export function DatasetFormikForm({
   dataPartners,
   projects,
   users,
+  permissions,
 }: {
   dataset: DataSetSRList;
   dataPartners: DataPartner[];
   users: Users[];
   projects: Projects[];
+  permissions: Permission[];
 }) {
+  const canUpdate = permissions.includes("CanAdmin");
   const userOptions = FormDataFilterUsers(users);
   const partnerOptions = FormDataFilterPartners(dataPartners);
   const projectOptions = FormDataFilterProjects(projects);
@@ -163,6 +166,7 @@ export function DatasetFormikForm({
               <Button
                 type="submit"
                 className="px-4 py-2 bg-carrot text-white rounded"
+                disabled={!canUpdate}
               >
                 Save <Save className="ml-2" />
               </Button>

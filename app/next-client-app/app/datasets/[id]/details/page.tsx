@@ -9,6 +9,7 @@ import {
   getDataPartners,
   getDataSet,
   getDataUsers,
+  getDatasetPermissions,
   getProjects,
 } from "@/api/datasets";
 import { DatasetFormikForm } from "@/components/datasets/DatasetFormikForm";
@@ -26,6 +27,7 @@ export default async function ScanReports({
   const partners = await getDataPartners();
   const users = await getDataUsers();
   const projects = await getProjects();
+  const permissions = await getDatasetPermissions(id);
 
   return (
     <div className="pt-10 px-16">
@@ -63,6 +65,7 @@ export default async function ScanReports({
           dataPartners={partners}
           users={users}
           projects={projects}
+          permissions={permissions.permissions}
         />
       </div>
     </div>

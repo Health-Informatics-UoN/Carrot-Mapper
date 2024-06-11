@@ -65,6 +65,11 @@ urlpatterns = [
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
     ),
+    path(
+        "dataset/<int:pk>/permissions/",
+        views.DatasetPermissionView.as_view(),
+        name="dataset-permissions",
+    ),
     path("projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
         "projects/<int:pk>/",

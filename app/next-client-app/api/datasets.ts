@@ -10,6 +10,7 @@ const fetchKeys = {
   users: () => "usersfilter/?is_active=true",
   projects: () => "projectdataset/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
+  permissions: (id: string) => `dataset/${id}/permissions/`,
 };
 
 export async function getDataSets(
@@ -114,4 +115,15 @@ export async function updateDatasetDetails(
     console.error(error);
   }
   revalidatePath(`/datasets/${id}/details/`);
+}
+
+export async function getDatasetPermissions(
+  id: string
+): Promise<PermissionsResponse> {
+  try {
+    return await request<PermissionsResponse>(fetchKeys.permissions(id));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { permissions: [] };
+  }
 }
