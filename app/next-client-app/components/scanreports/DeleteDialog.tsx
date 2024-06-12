@@ -35,7 +35,7 @@ const DeleteDialog = ({
   const handleDelete = async () => {
     const response = await deleteScanReport(id);
     if (response) {
-      toast.error(`Failed to delete the Scan Report! ${response.errorMessage}`);
+      toast.error(`Failed to delete the Scan Report: ${response.errorMessage}`);
     } else {
       toast.success("Scan Report successfully deleted");
     }
