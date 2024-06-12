@@ -3,7 +3,7 @@
 import { updateDatasetDetails } from "@/api/datasets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save } from "lucide-react";
+import { InfoIcon, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -14,6 +14,8 @@ import {
   FormDataFilterProjects,
   FormDataFilterUsers,
 } from "./FormikUtils";
+import { Tooltip } from "react-tooltip";
+import { Tooltips } from "../Tooltips";
 
 interface FormData {
   name: string;
@@ -98,7 +100,15 @@ export function DatasetFormikForm({
         <Form className="w-full" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex items-center space-x-3">
-              <h3> Name:</h3>
+              <h3 className="flex">
+                {" "}
+                Name
+                <Tooltips
+                  content="Name of the dataset."
+                  id={dataset.id}
+                  name="name"
+                />
+              </h3>
               <Input
                 placeholder={dataset.name}
                 onChange={handleChange}
@@ -108,7 +118,14 @@ export function DatasetFormikForm({
               />
             </div>
             <div className="flex items-center space-x-3">
-              <h3> Visibility:</h3>
+              <h3 className="flex">
+                Visibility
+                <Tooltips
+                  content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them."
+                  id={dataset.id}
+                  name="visibility"
+                />
+              </h3>
               <Switch
                 onCheckedChange={(checked) =>
                   handleChange({
@@ -126,7 +143,14 @@ export function DatasetFormikForm({
               </Label>
             </div>
             <div className="flex flex-col gap-2">
-              <h3> Data Partner:</h3>
+              <h3 className="flex">
+                Data Partner{" "}
+                <Tooltips
+                  content="The data partner that owns the dataset."
+                  id={dataset.id}
+                  name="data-partner"
+                />
+              </h3>
               <FormikSelect
                 options={partnerOptions}
                 name="dataPartner"
@@ -136,7 +160,15 @@ export function DatasetFormikForm({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h3> Editors:</h3>
+              <h3 className="flex">
+                {" "}
+                Editors
+                <Tooltips
+                  content="All Dataset admins also have Dataset editor permissions. Dataset admins and editors also have Scan Report editor permissions."
+                  id={dataset.id}
+                  name="editors"
+                />
+              </h3>
               <FormikSelect
                 options={userOptions}
                 name="editors"
@@ -146,7 +178,15 @@ export function DatasetFormikForm({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h3> Admins:</h3>
+              <h3 className="flex">
+                {" "}
+                Admins
+                <Tooltips
+                  content="As the creator of this Dataset, you will automatically be one of its admins. Dataset admins and editors also have Scan Report editor permissions."
+                  id={dataset.id}
+                  name="admins"
+                />
+              </h3>
               <FormikSelect
                 options={userOptions}
                 name="admins"
@@ -156,7 +196,15 @@ export function DatasetFormikForm({
               />
             </div>
             <div className="flex flex-col gap-2">
-              <h3> Project:</h3>
+              <h3 className="flex">
+                {" "}
+                Project
+                <Tooltips
+                  content="The project that the dataset belongs to"
+                  id={dataset.id}
+                  name="project"
+                />
+              </h3>
               <FormikSelect
                 options={projectOptions}
                 name="projects"
