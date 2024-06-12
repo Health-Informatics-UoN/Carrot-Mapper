@@ -9,7 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EyeNoneIcon, EyeOpenIcon, Pencil2Icon } from "@radix-ui/react-icons";
@@ -92,6 +91,11 @@ export const columns: ColumnDef<DataSet>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <Link href={`/datasets/${id}/details/`} prefetch={false}>
+              <DropdownMenuItem>
+                Details <Pencil2Icon className="ml-auto" />
+              </DropdownMenuItem>
+            </Link>
             <DropdownMenuItem
               onClick={() =>
                 HandleArchive({
@@ -109,13 +113,6 @@ export const columns: ColumnDef<DataSet>[] = [
                 <EyeNoneIcon className="ml-auto" />
               )}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <Link href={`/datasets/${id}/details/`} prefetch={false}>
-              <DropdownMenuItem>
-                Details <Pencil2Icon className="ml-auto" />
-              </DropdownMenuItem>
-            </Link>
-            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(row.original.name)}
             >
