@@ -134,6 +134,15 @@ export const columns: ColumnDef<ScanReportList>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+              <Link
+                href={`/scanreports/${id}/details/`}
+                style={{ textDecoration: "none", color: "black" }}
+                prefetch={false}
+              >
+                <DropdownMenuItem>
+                  Details <Pencil2Icon className="ml-auto" />
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem
                 onClick={() =>
                   HandleArchive({
@@ -151,15 +160,6 @@ export const columns: ColumnDef<ScanReportList>[] = [
                   <EyeNoneIcon className="ml-auto" />
                 )}
               </DropdownMenuItem>
-              <Link
-                href={`/scanreports/${id}/details/`}
-                style={{ textDecoration: "none", color: "black" }}
-                prefetch={false}
-              >
-                <DropdownMenuItem>
-                  Details <Pencil2Icon className="ml-auto" />
-                </DropdownMenuItem>
-              </Link>
               <DropdownMenuItem onClick={() => setOpen(true)}>
                 Delete <TrashIcon className="ml-auto" />
               </DropdownMenuItem>
