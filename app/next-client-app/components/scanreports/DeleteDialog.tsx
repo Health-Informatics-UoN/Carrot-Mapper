@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 
 interface DeleteDialogProps {
   id: number;
-  details?: boolean;
+  redirect?: boolean;
   isOpen?: boolean;
   setOpen?: (isOpen: boolean) => void;
   children?: ReactNode | ReactNode[];
@@ -25,7 +25,7 @@ interface DeleteDialogProps {
 
 const DeleteDialog = ({
   id,
-  details = false,
+  redirect = false,
   isOpen,
   setOpen = () => {},
   children,
@@ -40,7 +40,7 @@ const DeleteDialog = ({
       toast.success("Scan Report successfully deleted");
     }
     setOpen(false);
-    if (details) router.push("/scanreports/");
+    if (redirect) router.push("/scanreports/");
   };
 
   return (

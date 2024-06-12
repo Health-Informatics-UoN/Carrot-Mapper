@@ -94,7 +94,7 @@ export default async function ScanReportsTable({
             </a>
             <Download className="ml-2 size-4" />
           </Button>
-          <DeleteDialog id={Number(id)} details>
+          <DeleteDialog id={Number(id)} redirect>
             <Button variant={"outline"} className="text-red-400">
               Delete Scan Report
               <TrashIcon className="ml-2 size-4" />

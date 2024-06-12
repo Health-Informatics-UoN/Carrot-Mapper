@@ -22,18 +22,7 @@ import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useState } from "react";
-import { DialogDescription } from "@radix-ui/react-dialog";
-import { deleteScanReport } from "@/api/scanreports";
-import { toast } from "sonner";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 export const columns: ColumnDef<ScanReportList>[] = [
