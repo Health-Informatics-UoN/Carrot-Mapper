@@ -55,8 +55,8 @@ export function DatasetFormikForm({
   const initialAdmins = users.filter((user) =>
     dataset.admins.includes(user.id)
   );
-  const initialProject = projects.find((project) =>
-    project.datasets?.includes(dataset.id)
+  const initialProject = projects.filter((project) =>
+    dataset.projects.includes(project.id)
   );
   if (!initialProject) {
     throw new Error("Initial project not found");
@@ -67,14 +67,15 @@ export function DatasetFormikForm({
   const initialProjectFilter = FormDataFilterProjects(initialProject);
   const handleSubmit = async (data: FormData) => {
     try {
-      console.log(data.projects || []);
+      console.log(data.projects);
       await updateDatasetDetails(
         dataset.id,
         data.name,
         data.visibility,
         data.dataPartner,
         data.admins || [],
-        data.editors || []
+        data.editors || [],
+        data.projects || []
       );
       toast.success("Update Dataset successful!");
     } catch (error) {
