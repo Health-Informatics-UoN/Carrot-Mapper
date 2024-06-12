@@ -36,6 +36,7 @@ export default async function ScanReportsField({
   const defaultParams = {
     scan_report_table: tableId,
     page_size: defaultPageSize,
+    ordering: "name",
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
