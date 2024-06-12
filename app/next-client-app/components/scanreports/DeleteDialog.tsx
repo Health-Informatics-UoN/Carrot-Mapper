@@ -35,7 +35,7 @@ const DeleteDialog = ({
   const handleDelete = async () => {
     const response = await deleteScanReport(id);
     if (response) {
-      toast.error(`Failed to delete Scan Report! ${response.errorMessage}`);
+      toast.error(`Failed to delete the Scan Report! ${response.errorMessage}`);
     } else {
       toast.success("Scan Report successfully deleted");
     }
@@ -54,11 +54,13 @@ const DeleteDialog = ({
           </DialogDescription>
           <ul className="text-gray-500 list-disc pl-4 pt-2">
             <li>Delete the Scan Report</li>
-            <li>Delete the Scan Report file, and data dictionary</li>
-            <li>Delete the rules, and will not allow them to be reused</li>
+            <li>Delete the Scan Report file and data dictionary</li>
             <li>
-              If any rules have been reused in any other Scan Reports, they will
-              not be deleted
+              Delete the mapping rules and will not enable them to be reused
+            </li>
+            <li>
+              If any mapping rules have already been reused in other Scan
+              Reports, they will not be deleted
             </li>
           </ul>
         </DialogHeader>
