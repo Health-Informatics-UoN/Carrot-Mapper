@@ -26,14 +26,12 @@ interface DataSetSRList {
   viewers: number[];
   admins: number[];
   editors: number[];
+  projects: number[];
 }
 interface Projects {
   id: number;
   name: string;
   members: number[];
-  created_at: Date;
-  updated_at: Date;
-  datasets: number[];
 }
 
 interface Users {

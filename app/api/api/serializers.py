@@ -199,7 +199,19 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Dataset
-        fields = "__all__"
+        fields = (
+            "id",
+            "name",
+            "data_partner",
+            "admins",
+            "visibility",
+            "created_at",
+            "hidden",
+            "updated_at",
+            "projects",
+            "viewers",
+            "editors"
+        )
 
 
 class DatasetAndDataPartnerViewSerializer(
@@ -521,7 +533,7 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "members"]
+        fields = ["id", "name", "members"]
 
 
 class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):

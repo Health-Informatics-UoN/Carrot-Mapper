@@ -8,7 +8,7 @@ const fetchKeys = {
   dataset: (id: string) => `datasets/${id}/`,
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
-  projects: () => "projectdataset/",
+  projects: () => "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
   permissions: (id: string) => `dataset/${id}/permissions/`,
 };
@@ -40,6 +40,7 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
       viewers: [],
       admins: [],
       editors: [],
+      projects: [],
     };
   }
 }
@@ -93,8 +94,8 @@ export async function updateDatasetDetails(
   visibility: string,
   data_partner: number,
   admins: number[],
-  editors: number[]
-  // projects: number[]
+  editors: number[],
+  projects: number[]
 ) {
   try {
     await request(fetchKeys.updateDataset(id), {
@@ -108,7 +109,7 @@ export async function updateDatasetDetails(
         data_partner: data_partner,
         admins: admins,
         editors: editors,
-        // projects: projects,
+        projects: projects,
       }),
     });
   } catch (error) {
