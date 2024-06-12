@@ -51,7 +51,6 @@ const CustomSelect = ({
       className="w-full"
       isDisabled={isDisabled}
       components={animatedComponents}
-      closeMenuOnSelect={false}
       styles={{
         multiValueLabel: (base) => ({
           ...base,

@@ -15,6 +15,7 @@ import { FilterParameters } from "@/types/filter";
 import { getDataSet } from "@/api/datasets";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { BookText } from "lucide-react";
 
 interface DataSetListProps {
   params: {
@@ -68,8 +69,8 @@ export default async function ScanReports({
       <div>
         {" "}
         <Link href={`/datasets/${id}/details/`}>
-          <Button size="lg" className="text-md mt-3">
-            Dataset Details
+          <Button className="mt-3">
+            Dataset Details <BookText className="ml-2 size-4" />
           </Button>
         </Link>
       </div>
