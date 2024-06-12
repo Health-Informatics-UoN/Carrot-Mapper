@@ -716,6 +716,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
+    ordering = "name"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -1096,6 +1097,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         "value": ["in", "exact"],
         "id": ["in", "exact"],
     }
+    ordering = "id"
 
     def get_permissions(self):
         if self.request.method == "DELETE":
