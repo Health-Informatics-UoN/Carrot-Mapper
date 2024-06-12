@@ -96,13 +96,15 @@ export function DatasetFormikForm({
     >
       {({ values, handleChange, handleSubmit }) => (
         <Form className="w-full" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 text-lg">
             <div className="flex items-center space-x-3">
               <h3> Name:</h3>
               <Input
                 placeholder={dataset.name}
                 onChange={handleChange}
                 name="name"
+                disabled={!canUpdate}
+                className="text-lg text-carrot"
               />
             </div>
             <div className="flex items-center space-x-3">
@@ -117,8 +119,9 @@ export function DatasetFormikForm({
                   })
                 }
                 defaultChecked={dataset.visibility === "PUBLIC" ? true : false}
+                disabled={!canUpdate}
               />
-              <Label>
+              <Label className="text-lg">
                 {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
               </Label>
             </div>
@@ -127,9 +130,9 @@ export function DatasetFormikForm({
               <FormikSelect
                 options={partnerOptions}
                 name="dataPartner"
-                placeholder=""
-                label="Data Partner"
+                placeholder="Choose an Data Partner"
                 isMulti={false}
+                isDisabled={!canUpdate}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -138,8 +141,8 @@ export function DatasetFormikForm({
                 options={userOptions}
                 name="editors"
                 placeholder="Choose an editor"
-                label="Editors"
                 isMulti={true}
+                isDisabled={!canUpdate}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -148,8 +151,8 @@ export function DatasetFormikForm({
                 options={userOptions}
                 name="admins"
                 placeholder="Choose an admin"
-                label="Admins"
                 isMulti={true}
+                isDisabled={!canUpdate}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -158,8 +161,8 @@ export function DatasetFormikForm({
                 options={projectOptions}
                 name="projects"
                 placeholder="Choose a project"
-                label="Projects"
                 isMulti={true}
+                isDisabled={!canUpdate}
               />
             </div>
             <div>
