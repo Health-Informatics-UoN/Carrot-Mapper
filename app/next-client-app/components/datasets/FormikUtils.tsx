@@ -1,22 +1,18 @@
-export const FormDataFilterUsers = (array: Users[]) => {
-  return array.map((user) => ({
-    value: user.id,
-    label: user.username,
+export const FormDataFilter = <
+  T extends { id: number; name?: string; username?: string }
+>(
+  input: T[] | T
+) => {
+  const array = Array.isArray(input) ? input : [input];
+  return array.map((item) => ({
+    value: item.id,
+    label: item.username || item.name,
   }));
 };
 
-export const FormDataFilterPartners = (input: DataPartner[] | DataPartner) => {
-  const array = Array.isArray(input) ? input : [input];
-  return array.map((user) => ({
-    value: user.id,
-    label: user.name,
-  }));
-};
-
-export const FormDataFilterProjects = (input: Projects[] | Projects) => {
-  const array = Array.isArray(input) ? input : [input];
-  return array.map((user) => ({
-    value: user.id,
-    label: user.name,
-  }));
-};
+export const FindAndFormat = <
+  T extends { id: number; name?: string; username?: string }
+>(
+  data: T[],
+  ids: number[]
+) => FormDataFilter<T>(data.filter((item) => ids.includes(item.id)));

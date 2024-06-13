@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import request from "@/lib/api/request";
+import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (filter?: string) =>
@@ -112,10 +113,10 @@ export async function updateDatasetDetails(
         projects: projects,
       }),
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
-  revalidatePath(`/datasets/${id}/details/`);
+  redirect(`/datasets/${id}/`);
 }
 
 export async function getDatasetPermissions(

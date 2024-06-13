@@ -5,7 +5,7 @@ import config from "@/tailwind.config";
 
 type Option = Object & {
   value: number;
-  label: string;
+  label: string | undefined;
 };
 
 const CustomSelect = ({

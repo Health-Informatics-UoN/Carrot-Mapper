@@ -3,18 +3,13 @@
 import { updateDatasetDetails } from "@/api/datasets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InfoIcon, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
 import { FormikSelect } from "./FormikSelect";
-import {
-  FormDataFilterPartners,
-  FormDataFilterProjects,
-  FormDataFilterUsers,
-} from "./FormikUtils";
-import { Tooltip } from "react-tooltip";
+import { FindAndFormat, FormDataFilter } from "./FormikUtils";
 import { Tooltips } from "../Tooltips";
 
 interface FormData {
@@ -40,46 +35,37 @@ export function DatasetFormikForm({
   permissions: Permission[];
 }) {
   const canUpdate = permissions.includes("CanAdmin");
-  const userOptions = FormDataFilterUsers(users);
-  const partnerOptions = FormDataFilterPartners(dataPartners);
-  const projectOptions = FormDataFilterProjects(projects);
+  // Making options suitable for React Select
+  const userOptions = FormDataFilter<Users>(users);
+  const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
+  const projectOptions = FormDataFilter<Projects>(projects);
+  // Fin the intial data partner which is required when adding Dataset
   const initialPartner = dataPartners.find(
     (partner) => dataset.data_partner === partner.id
+  )!;
+  // Find and make initial data suitable for React select
+  const initialPartnerFilter = FormDataFilter<DataPartner>(initialPartner);
+  const initialEditorsFilter = FindAndFormat<Users>(users, dataset.editors);
+  const initialAdminsFilter = FindAndFormat<Users>(users, dataset.admins);
+  const initialProjectFilter = FindAndFormat<Projects>(
+    projects,
+    dataset.projects
   );
-  if (!initialPartner) {
-    throw new Error("Initial partner not found");
-  }
-  const initialEditors = users.filter((user) =>
-    dataset.editors.includes(user.id)
-  );
-  const initialAdmins = users.filter((user) =>
-    dataset.admins.includes(user.id)
-  );
-  const initialProject = projects.filter((project) =>
-    dataset.projects.includes(project.id)
-  );
-  if (!initialProject) {
-    throw new Error("Initial project not found");
-  }
-  const initialPartnersFilter = FormDataFilterPartners(initialPartner);
-  const initialEditorsFilter = FormDataFilterUsers(initialEditors);
-  const initialAdminsFilter = FormDataFilterUsers(initialAdmins);
-  const initialProjectFilter = FormDataFilterProjects(initialProject);
+
   const handleSubmit = async (data: FormData) => {
-    try {
-      console.log(data.projects);
-      await updateDatasetDetails(
-        dataset.id,
-        data.name,
-        data.visibility,
-        data.dataPartner,
-        data.admins || [],
-        data.editors || [],
-        data.projects || []
-      );
+    const response = await updateDatasetDetails(
+      dataset.id,
+      data.name,
+      data.visibility,
+      data.dataPartner,
+      data.admins || [],
+      data.editors || [],
+      data.projects || []
+    );
+    if (response) {
+      toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
+    } else {
       toast.success("Update Dataset successful!");
-    } catch (error) {
-      toast.error("Update Dataset failed");
     }
   };
 
@@ -89,7 +75,7 @@ export function DatasetFormikForm({
         name: dataset.name,
         visibility: dataset.visibility,
         editors: initialEditorsFilter.map((editor) => editor.value),
-        dataPartner: initialPartnersFilter[0].value,
+        dataPartner: initialPartnerFilter[0].value,
         admins: initialAdminsFilter.map((admin) => admin.value),
         projects: initialProjectFilter.map((project) => project.value),
       }}
