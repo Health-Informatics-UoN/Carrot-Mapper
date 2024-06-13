@@ -334,6 +334,7 @@ def get_user_permissions_on_dataset(request, dataset_id):
     except Dataset.DoesNotExist:
         return []
 
+
 def get_user_permissions_on_scan_report(request, scan_report_id):
     """
     Retrieve the list of permissions a user has on a specific scan report.

@@ -541,11 +541,9 @@ class DatasetUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
-    
+
     def get_serializer_context(self):
-        return {
-            "projects": self.request.data.get('projects')
-        }
+        return {"projects": self.request.data.get("projects")}
 
 
 class DatasetDeleteView(generics.DestroyAPIView):
@@ -1360,7 +1358,7 @@ class ScanReportPermissionView(APIView):
         permissions = get_user_permissions_on_scan_report(request, pk)
 
         return Response({"permissions": permissions}, status=status.HTTP_200_OK)
-    
+
 
 class DatasetPermissionView(APIView):
     """

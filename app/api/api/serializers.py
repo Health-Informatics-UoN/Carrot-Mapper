@@ -210,7 +210,7 @@ class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
             "updated_at",
             "projects",
             "viewers",
-            "editors"
+            "editors",
         )
 
 
@@ -262,13 +262,14 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                     "You must be an admin to change this field."
                 )
         return admins
-    
+
     def save(self, **kwargs):
         projects = self.context["projects"]
-        
+
         if self.instance is not None:
             self.instance = self.update(self.instance, self.validated_data)
             return self.instance
+
         dataset = Dataset.objects.create(**self.validated_data, projects=projects)    
         return dataset
 
@@ -285,7 +286,7 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
             "updated_at",
             "projects",
             "viewers",
-            "editors"
+            "editors",
         )
 
 
