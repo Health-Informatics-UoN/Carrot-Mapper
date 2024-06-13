@@ -217,7 +217,7 @@ export function DatasetFormikForm({
             <div>
               <Button
                 type="submit"
-                className="px-4 py-2 bg-carrot text-white rounded"
+                className="px-4 py-2 bg-carrot text-white rounded text-lg"
                 disabled={!canUpdate}
               >
                 Save <Save className="ml-2" />

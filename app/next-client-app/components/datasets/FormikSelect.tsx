@@ -1,6 +1,7 @@
 import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
+import config from "@/tailwind.config";
 
 type Option = Object & {
   value: number;
@@ -55,18 +56,19 @@ const CustomSelect = ({
         multiValueLabel: (base) => ({
           ...base,
           fontSize: "17px",
-          backgroundColor: "#475da7",
+          backgroundColor: `${config.theme.extend.colors.carrot.DEFAULT}`, // Can't import directly "carrot" color here
           color: "white",
         }),
         multiValueRemove: (base) => ({
-          backgroundColor: "#475da7",
+          ...base,
+          backgroundColor: `${config.theme.extend.colors.carrot.DEFAULT}`,
           color: "white",
           fontSize: "17px",
         }),
         singleValue: (base) => ({
           ...base,
           fontSize: "17px",
-          color: "#475da7",
+          color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
     />
