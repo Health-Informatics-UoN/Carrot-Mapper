@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -143,6 +144,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
                   Details <Pencil2Icon className="ml-auto" />
                 </DropdownMenuItem>
               </Link>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() =>
                   HandleArchive({
@@ -160,6 +162,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
                   <EyeNoneIcon className="ml-auto" />
                 )}
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setOpen(true)}>
                 Delete <TrashIcon className="ml-auto" />
               </DropdownMenuItem>
