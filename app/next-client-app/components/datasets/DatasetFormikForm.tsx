@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
 import { toast } from "sonner";
-import { FormikSelect } from "./FormikSelect";
-import { FindAndFormat, FormDataFilter } from "./FormikUtils";
+import { FindAndFormat, FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
+import { FormikSelect } from "../form-components/FormikSelect";
 
 interface FormData {
   name: string;

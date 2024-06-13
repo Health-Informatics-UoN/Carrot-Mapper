@@ -20,7 +20,7 @@ interface DataSetListProps {
   };
 }
 
-export default async function ScanReports({
+export default async function DatasetDetails({
   params: { id },
 }: DataSetListProps) {
   const dataset = await getDataSet(id);
