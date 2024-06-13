@@ -1,10 +1,11 @@
-// Method to add concepts to a scanreport result
+// Method to add concepts and permissions to a scanreport result
 export const addConceptsToResults = <
-  T extends { id: number; concepts?: Concept[] }
+  T extends { id: number; concepts?: Concept[]; permissions: Permission[] }
 >(
   scanReportsResult: T[],
   scanReportsConcepts: ScanReportConcept[],
-  concepts: Concept[]
+  concepts: Concept[],
+  permissions: { permissions: Permission[] }
 ) => {
   for (const result of scanReportsResult) {
     result.concepts = [];
@@ -22,6 +23,7 @@ export const addConceptsToResults = <
         }
       }
     });
+    result.permissions = permissions.permissions;
   }
   return scanReportsResult;
 };

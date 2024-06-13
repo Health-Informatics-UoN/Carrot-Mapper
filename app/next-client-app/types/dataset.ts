@@ -26,4 +26,15 @@ interface DataSetSRList {
   viewers: number[];
   admins: number[];
   editors: number[];
+  projects: number[];
+}
+interface Projects {
+  id: number;
+  name: string;
+  members: number[];
+}
+
+interface Users {
+  id: number;
+  username: string;
 }

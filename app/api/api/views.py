@@ -58,7 +58,9 @@ from mapping.permissions import (
     CanView,
     CanViewProject,
     get_user_permissions_on_scan_report,
+    get_user_permissions_on_dataset,
 )
+from mapping.services import delete_blob
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -390,7 +392,26 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             return ScanReportViewSerializerV2
+        if self.request.method in ["DELETE"]:
+            return ScanReportEditSerializer
         return super().get_serializer_class()
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
+        try:
+            delete_blob(instance.name, "scan-reports")
+        except Exception as e:
+            raise Exception(f"Error deleting scan report: {e}")
+        if instance.data_dictionary:
+            try:
+                delete_blob(instance.data_dictionary.name, "data-dictionaries")
+            except Exception as e:
+                raise Exception(f"Error deleting data dictionary: {e}")
+        instance.delete()
 
 
 class DatasetListView(generics.ListAPIView):
@@ -520,6 +541,9 @@ class DatasetUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
+
+    def get_serializer_context(self):
+        return {"projects": self.request.data.get("projects")}
 
 
 class DatasetDeleteView(generics.DestroyAPIView):
@@ -696,6 +720,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
+    ordering = "name"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -1076,6 +1101,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         "value": ["in", "exact"],
         "id": ["in", "exact"],
     }
+    ordering = "id"
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -1330,5 +1356,16 @@ class ScanReportPermissionView(APIView):
 
     def get(self, request, pk):
         permissions = get_user_permissions_on_scan_report(request, pk)
+
+        return Response({"permissions": permissions}, status=status.HTTP_200_OK)
+
+
+class DatasetPermissionView(APIView):
+    """
+    API for permissions a user has on a specific dataset.
+    """
+
+    def get(self, request, pk):
+        permissions = get_user_permissions_on_dataset(request, pk)
 
         return Response({"permissions": permissions}, status=status.HTTP_200_OK)

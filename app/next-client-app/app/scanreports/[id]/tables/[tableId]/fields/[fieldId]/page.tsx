@@ -8,6 +8,7 @@ import {
 import {
   getScanReport,
   getScanReportField,
+  getScanReportPermissions,
   getScanReportTable,
   getScanReportValues,
 } from "@/api/scanreports";
@@ -33,19 +34,21 @@ export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
 }: ScanReportsValueProps) {
+  const defaultPageSize = 30;
   const defaultParams = {
     scan_report_field: fieldId,
-    page_size: 25,
+    page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
+
+  const filter = <DataTableFilter filter="value" filterText="value" />;
 
   const scanReportsValues = await getScanReportValues(query);
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const fieldName = await getScanReportField(fieldId);
-  const filter = <DataTableFilter filter="value" filterText="value" />;
+  const permissions = await getScanReportPermissions(id);
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results
       .map((item) => item.id)
@@ -60,7 +63,8 @@ export default async function ScanReportsValue({
   const scanReportsResult = addConceptsToResults(
     scanReportsValues.results,
     scanReportsConcepts,
-    conceptsFilter
+    conceptsFilter,
+    permissions
   );
 
   return (
@@ -92,7 +96,7 @@ export default async function ScanReportsValue({
               <BreadcrumbLink
                 href={`/scanreports/${id}/tables/${tableId}/fields/${fieldId}/`}
               >
-                {fieldName.name}
+                {fieldName?.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
@@ -101,7 +105,11 @@ export default async function ScanReportsValue({
       <div className="mt-3">
         <h1 className="text-4xl font-semibold">Values</h1>
       </div>
-      <ButtonsRow scanreportId={id} tableId={tableId} />
+      <ButtonsRow
+        scanreportId={parseInt(id)}
+        tableId={parseInt(tableId)}
+        permissions={permissions.permissions}
+      />
       <div>
         <DataTable
           columns={columns}
@@ -109,6 +117,7 @@ export default async function ScanReportsValue({
           count={scanReportsValues.count}
           Filter={filter}
           clickableRow={false}
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>

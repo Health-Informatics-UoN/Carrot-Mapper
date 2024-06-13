@@ -44,7 +44,6 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
         errorMessage = "Failed to parse error response";
       }
     }
-
     throw new ApiError(errorMessage, response.status);
   }
 

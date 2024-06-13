@@ -8,12 +8,18 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { columns } from "./columns";
-import { getScanReport, getScanReportsTables } from "@/api/scanreports";
+import {
+  getScanReport,
+  getScanReportPermissions,
+  getScanReportsTables,
+} from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { BookText, ChevronRight, Download } from "lucide-react";
+import { TrashIcon } from "@radix-ui/react-icons";
+import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 interface ScanReportsTableProps {
   params: {
@@ -31,11 +37,16 @@ export default async function ScanReportsTable({
   };
 
   const combinedParams = { ...defaultParams, ...searchParams };
-
   const query = objToQuery(combinedParams);
-  const scanReportsTables = await getScanReportsTables(query);
   const filter = <DataTableFilter filter="name" />;
+
+  const scanReportsTables = await getScanReportsTables(query);
   const scanReportsName = await getScanReport(id);
+  const permissions = await getScanReportPermissions(id);
+  const scanReportsResult = scanReportsTables.results.map((table) => {
+    table.permissions = permissions.permissions;
+    return table;
+  });
 
   return (
     <div className="pt-10 px-16">
@@ -83,6 +94,13 @@ export default async function ScanReportsTable({
             </a>
             <Download className="ml-2 size-4" />
           </Button>
+          <DeleteDialog id={Number(id)} redirect>
+            <Button variant={"outline"} className="text-red-400">
+              Delete Scan Report
+              <TrashIcon className="ml-2 size-4" />
+            </Button>
+          </DeleteDialog>
+
           {/* TODO: This has been broken #459, needs API fixes. */}
           {/* <Button variant={"outline"}>
             <a href={`/api/scanreports/${id}/download/`} download>
@@ -95,7 +113,7 @@ export default async function ScanReportsTable({
       <div>
         <DataTable
           columns={columns}
-          data={scanReportsTables.results}
+          data={scanReportsResult}
           count={scanReportsTables.count}
           Filter={filter}
           linkPrefix="tables/"
