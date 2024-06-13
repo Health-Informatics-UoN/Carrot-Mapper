@@ -269,8 +269,7 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         if self.instance is not None:
             self.instance = self.update(self.instance, self.validated_data)
             return self.instance
-
-        dataset = Dataset.objects.create(**self.validated_data, projects=projects)    
+        dataset = Dataset.objects.create(**self.validated_data, projects=projects) 
         return dataset
 
     class Meta:
