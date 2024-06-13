@@ -5,16 +5,12 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  getDataPartners,
-  getDataSet,
-  getDataUsers,
-  getDatasetPermissions,
-  getProjects,
-} from "@/api/datasets";
-import { DatasetFormikForm } from "@/components/datasets/DatasetFormikForm";
+import { getDataPartners } from "@/api/datasets";
+import { NewSRForm } from "../../../components/scanreports/NewSRForm";
 
 export default async function ScanReports() {
+  const partners = await getDataPartners();
+
   return (
     <div className="pt-10 px-16">
       <div>
@@ -39,7 +35,9 @@ export default async function ScanReports() {
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">New Scan Report</h1>
       </div>
-      <div className="mt-4"></div>
+      <div className="mt-4">
+        <NewSRForm dataPartners={partners} />
+      </div>
     </div>
   );
 }
