@@ -151,7 +151,7 @@ export function DatasetFormikForm({
                 {" "}
                 Editors
                 <Tooltips
-                  content="All Dataset admins also have Dataset editor permissions. Dataset admins and editors also have Scan Report editor permissions."
+                  content="Dataset editors also have Scan Report editor permissions."
                   id={dataset.id}
                   name="editors"
                 />
@@ -169,7 +169,7 @@ export function DatasetFormikForm({
                 {" "}
                 Admins
                 <Tooltips
-                  content="As the creator of this Dataset, you will automatically be one of its admins. Dataset admins and editors also have Scan Report editor permissions."
+                  content="All Dataset admins also have Dataset editor permissions. Dataset admins also have Scan Report editor permissions."
                   id={dataset.id}
                   name="admins"
                 />
