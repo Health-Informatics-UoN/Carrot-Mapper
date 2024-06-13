@@ -24,7 +24,7 @@ interface DataSetListProps {
   searchParams?: { status__in: string } & FilterParameters;
 }
 
-export default async function ScanReports({
+export default async function DatasetSRList({
   params: { id },
   searchParams,
 }: DataSetListProps) {
