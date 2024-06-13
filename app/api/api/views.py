@@ -541,6 +541,11 @@ class DatasetUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
+    
+    def get_serializer_context(self):
+        return {
+            "projects": self.request.data.get('projects')
+        }
 
 
 class DatasetDeleteView(generics.DestroyAPIView):

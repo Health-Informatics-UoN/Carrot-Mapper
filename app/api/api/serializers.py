@@ -262,10 +262,31 @@ class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                     "You must be an admin to change this field."
                 )
         return admins
+    
+    def save(self, **kwargs):
+        projects = self.context["projects"]
+        
+        if self.instance is not None:
+            self.instance = self.update(self.instance, self.validated_data)
+            return self.instance
+        dataset = Dataset.objects.create(**self.validated_data, projects=projects)    
+        return dataset
 
     class Meta:
         model = Dataset
-        fields = "__all__"
+        fields = (
+            "id",
+            "name",
+            "data_partner",
+            "admins",
+            "visibility",
+            "created_at",
+            "hidden",
+            "updated_at",
+            "projects",
+            "viewers",
+            "editors"
+        )
 
 
 class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
