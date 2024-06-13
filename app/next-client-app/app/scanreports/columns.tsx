@@ -4,7 +4,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -12,6 +11,7 @@ import {
   DotsHorizontalIcon,
   EyeNoneIcon,
   EyeOpenIcon,
+  TrashIcon,
 } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -21,6 +21,8 @@ import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
+import { useState } from "react";
+import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 export const columns: ColumnDef<ScanReportList>[] = [
   {
@@ -121,44 +123,50 @@ export const columns: ColumnDef<ScanReportList>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const { id, hidden, dataset } = row.original;
+      const [isOpen, setOpen] = useState<boolean>(false);
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <DotsHorizontalIcon className="size-4" aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() =>
-                HandleArchive({
-                  id: id,
-                  hidden: hidden,
-                  ObjName: dataset,
-                  type: "scanreports",
-                })
-              }
-            >
-              {hidden ? "Unarchive" : "Archive"}
-              {hidden ? (
-                <EyeOpenIcon className="ml-auto" />
-              ) : (
-                <EyeNoneIcon className="ml-auto" />
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <Link
-              href={`/scanreports/${id}/details/`}
-              style={{ textDecoration: "none", color: "black" }}
-              prefetch={false}
-            >
-              <DropdownMenuItem>
-                Details <Pencil2Icon className="ml-auto" />
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <DotsHorizontalIcon className="size-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <Link
+                href={`/scanreports/${id}/details/`}
+                style={{ textDecoration: "none", color: "black" }}
+                prefetch={false}
+              >
+                <DropdownMenuItem>
+                  Details <Pencil2Icon className="ml-auto" />
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuItem
+                onClick={() =>
+                  HandleArchive({
+                    id: id,
+                    hidden: hidden,
+                    ObjName: dataset,
+                    type: "scanreports",
+                  })
+                }
+              >
+                {hidden ? "Unarchive" : "Archive"}
+                {hidden ? (
+                  <EyeOpenIcon className="ml-auto" />
+                ) : (
+                  <EyeNoneIcon className="ml-auto" />
+                )}
               </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={() => setOpen(true)}>
+                Delete <TrashIcon className="ml-auto" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DeleteDialog id={id} isOpen={isOpen} setOpen={setOpen} />
+        </>
       );
     },
   },

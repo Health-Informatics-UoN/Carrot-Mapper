@@ -403,12 +403,12 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
     def perform_destroy(self, instance):
         try:
-            delete_blob(instance.name, "scanreports")
+            delete_blob(instance.name, "scan-reports")
         except Exception as e:
             raise Exception(f"Error deleting scan report: {e}")
         if instance.data_dictionary:
             try:
-                delete_blob(instance.data_dictionary, "data-dictionaries")
+                delete_blob(instance.data_dictionary.name, "data-dictionaries")
             except Exception as e:
                 raise Exception(f"Error deleting data dictionary: {e}")
         instance.delete()
@@ -722,6 +722,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
+    ordering = "name"
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -1102,6 +1103,7 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         "value": ["in", "exact"],
         "id": ["in", "exact"],
     }
+    ordering = "id"
 
     def get_permissions(self):
         if self.request.method == "DELETE":
