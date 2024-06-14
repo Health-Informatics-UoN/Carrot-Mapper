@@ -5,19 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  FieldInputProps,
-  Form,
-  Formik,
-  useField,
-  useFormikContext,
-} from "formik";
+import { Form, Formik } from "formik";
 import { toast } from "sonner";
-import { FindAndFormat, FormDataFilter } from "../form-components/FormikUtils";
+import { FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
-import { useEffect } from "react";
-import { getDataSetList, getDataUsers, getProjects } from "@/api/datasets";
+import { FormikSelectDataset } from "../form-components/FormikSelectDataset";
+import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 
 interface FormData {
   name: string;
@@ -31,94 +25,6 @@ interface FormData {
 type FormValues = {
   dataPartner: number;
   dataset: number;
-};
-
-async function fetchDataset(dataPartner: string) {
-  const datasets = await getDataSetList(dataPartner);
-  return datasets.map((dataset) => ({
-    value: dataset.id,
-    label: dataset.name,
-  }));
-}
-
-async function fetchProjectMembers(dataset: string) {
-  const projects = await getProjects(dataset);
-  const users = await getDataUsers();
-  const membersIds = new Set<number>();
-
-  projects.forEach((project) => {
-    project.members.forEach((memberId) => {
-      membersIds.add(memberId);
-    });
-  });
-  const membersArray = Array.from(membersIds);
-  return FindAndFormat<Users>(users, membersArray);
-}
-
-const DatasetField = (props: FieldInputProps<any>) => {
-  const {
-    values: { dataPartner },
-    setFieldValue,
-  } = useFormikContext<FormValues>();
-  const [field, meta] = useField(props);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (dataPartner !== 0) {
-        const dataset = await fetchDataset(dataPartner.toString());
-        setFieldValue(props.name, dataset);
-      }
-    };
-    fetchData();
-  }, [dataPartner, setFieldValue, props.name]);
-
-  return (
-    <>
-      <FormikSelect
-        {...field}
-        name={props.name}
-        options={field.value}
-        placeholder="Choose a dataset"
-        isMulti={false}
-        isDisabled={dataPartner === 0}
-      />
-      {meta.touched && meta.error ? <div>{meta.error}</div> : null}
-    </>
-  );
-};
-
-const EditorsField = (props: FieldInputProps<any>) => {
-  const {
-    values: { dataset },
-    setFieldValue,
-  } = useFormikContext<FormValues>();
-  const [field, meta] = useField(props);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (dataset !== 0) {
-        const projectMembers = await fetchProjectMembers(dataset.toString());
-        setFieldValue(props.name, projectMembers);
-      } else {
-        setFieldValue(props.name, []); // Reset the editors field when dataset is 0
-      }
-    };
-    fetchData();
-  }, [dataset, setFieldValue, props.name]);
-
-  return (
-    <>
-      <FormikSelect
-        {...field}
-        name={props.name}
-        options={field.value}
-        placeholder="Choose editors"
-        isMulti={true}
-        isDisabled={dataset === 0}
-      />
-      {meta.touched && meta.error ? <div>{meta.error}</div> : null}
-    </>
-  );
 };
 
 export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
@@ -147,6 +53,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
         dataset: 0,
         editors: 0,
         visibility: "PUBLIC",
+        name: "",
       }}
       onSubmit={(data) => {
         // handleSubmit(data);
@@ -167,7 +74,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <FormikSelect
                 options={partnerOptions}
                 name="dataPartner"
-                placeholder="Choose an Data Partner"
+                placeholder="Choose a Data Partner"
                 isMulti={false}
                 isDisabled={false}
               />
@@ -182,16 +89,11 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                   name="dataset"
                 /> */}
               </h3>
-              <DatasetField
+              <FormikSelectDataset
                 name="dataset"
-                value={dataPartners}
-                onChange={handleChange}
-                onBlur={(e: { target: { value: any } }) => {
-                  const value = e.target.value;
-                  if (!value) {
-                    alert("Dataset field cannot be empty");
-                  }
-                }}
+                placeholder="Choose a Dataset"
+                isMulti={false}
+                isDisabled={values.dataPartner === 0}
               />
             </div>
             <div className="flex items-center space-x-3">
@@ -228,19 +130,14 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                   name="editors"
                 /> */}
               </h3>
-              {/* <EditorsField
+              <FormikSelectEditors
                 name="editors"
-                value={dataPartners}
-                onChange={handleChange}
-                onBlur={(e: { target: { value: any } }) => {
-                  const value = e.target.value;
-                  if (!value) {
-                    alert("Editors field cannot be empty");
-                  }
-                }}
-              /> */}
+                placeholder="Choose Editors"
+                isMulti={true}
+                isDisabled={values.dataset === 0}
+              />
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 Scan Report Name
@@ -254,6 +151,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 onChange={handleChange}
                 name="name"
                 className="text-lg text-carrot"
+                required
               />
             </div>
             <div>
