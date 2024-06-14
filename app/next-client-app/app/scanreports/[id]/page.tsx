@@ -80,7 +80,7 @@ export default async function ScanReportsTable({
               <BookText className="ml-2 size-4" />
             </Button>
           </Link>
-          <Link href={`/scanreports/${id}/mapping_rules/`}>
+          <Link href={`/scanreports/${id}/mapping_rules/?page_size=30`}>
             <Button>
               Rules
               <ChevronRight className="ml-2 size-4" />
