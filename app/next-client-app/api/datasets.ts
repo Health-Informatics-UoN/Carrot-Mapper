@@ -76,9 +76,9 @@ export async function getDataUsers(): Promise<User[]> {
   }
 }
 
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(dataset?: string): Promise<Project[]> {
   try {
-    return request<Project[]>(fetchKeys.projects());
+    return request<Project[]>(fetchKeys.projects(dataset));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];

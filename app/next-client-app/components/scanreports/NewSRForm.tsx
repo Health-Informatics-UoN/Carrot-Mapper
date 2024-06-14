@@ -65,11 +65,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 Data Partner{" "}
-                {/* <Tooltips
-                  content="The data partner that owns the dataset."
-                  id={dataset.id}
-                  name="data-partner"
-                /> */}
+                <Tooltips content="The data partner that owns the dataset." />
               </h3>
               <FormikSelect
                 options={partnerOptions}
@@ -83,11 +79,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Dataset
-                {/* <Tooltips
-                  content="The dataset that belongs to the above data partner"
-                  id={dataset.id}
-                  name="dataset"
-                /> */}
+                <Tooltips content="The dataset that belongs to the above data partner" />
               </h3>
               <FormikSelectDataset
                 name="dataset"
@@ -99,11 +91,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
             <div className="flex items-center space-x-3">
               <h3 className="flex">
                 Visibility
-                {/* <Tooltips
-                  content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them."
-                  id={dataset.id}
-                  name="visibility"
-                /> */}
+                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
               </h3>
               <Switch
                 onCheckedChange={(checked) =>
@@ -124,11 +112,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Editors
-                {/* <Tooltips
-                  content="Members of the projects where the dataset belongs to. Can only be chosen after dataset is set"
-                  id={dataset.id}
-                  name="editors"
-                /> */}
+                <Tooltips content="Members of the projects where the dataset belongs to. Can only be chosen after dataset is set" />
               </h3>
               <FormikSelectEditors
                 name="editors"
@@ -141,11 +125,33 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Scan Report Name
-                {/* <Tooltips
-                  content="Name of the new scan report"
-                  id={dataset.id}
-                  name="name"
-                /> */}
+                <Tooltips content="Name of the new scan report" />
+              </h3>
+              <Input
+                onChange={handleChange}
+                name="name"
+                className="text-lg text-carrot"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="flex">
+                {" "}
+                WhiteRabbit ScanReport
+                <Tooltips content="Scan report that was generated form White Rabbit" />
+              </h3>
+              <Input
+                onChange={handleChange}
+                name="name"
+                className="text-lg text-carrot"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <h3 className="flex">
+                {" "}
+                Data Dictionary
+                <Tooltips content="Data dictionary" />
               </h3>
               <Input
                 onChange={handleChange}
