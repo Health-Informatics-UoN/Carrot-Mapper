@@ -65,6 +65,11 @@ urlpatterns = [
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
     ),
+    path(
+        "scanreports/<int:pk>/mapping_rules/",
+        views.StructuralMappingTableAPIView.as_view(),
+        name="tables-structural-mapping",
+    ),
     path("projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
         "projects/<int:pk>/",
