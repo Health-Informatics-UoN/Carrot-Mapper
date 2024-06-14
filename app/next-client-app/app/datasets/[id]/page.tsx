@@ -13,6 +13,9 @@ import { objToQuery } from "@/lib/client-utils";
 import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getDataSet } from "@/api/datasets";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { BookText } from "lucide-react";
 
 interface DataSetListProps {
   params: {
@@ -21,7 +24,7 @@ interface DataSetListProps {
   searchParams?: { status__in: string } & FilterParameters;
 }
 
-export default async function ScanReports({
+export default async function DatasetSRList({
   params: { id },
   searchParams,
 }: DataSetListProps) {
@@ -63,7 +66,15 @@ export default async function ScanReports({
           Scan Reports in Dataset #{id}
         </h1>
       </div>
-      <div className="my-5">
+      <div>
+        {" "}
+        <Link href={`/datasets/${id}/details/`}>
+          <Button className="mt-3">
+            Dataset Details <BookText className="ml-2 size-4" />
+          </Button>
+        </Link>
+      </div>
+      <div className="my-3">
         <Tabs
           defaultValue={
             (searchParams as any)?.hidden
