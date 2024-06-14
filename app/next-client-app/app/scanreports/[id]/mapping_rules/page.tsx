@@ -29,7 +29,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { DownloadBtn } from "./get-file";
+import { GetFile } from "./get-file";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -104,8 +105,15 @@ export default async function ScanReportsMappingRules({
                 <BarChartHorizontalBig className="ml-2 size-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <></>
+            <DialogContent className="max-w-[1200px]">
+              <ScrollArea className="w-[1000px] h-[400px]">
+                <GetFile
+                  name="Download Map Diagram"
+                  data={diagram}
+                  variant="diagram"
+                  type="image/svg+xml"
+                />
+              </ScrollArea>
             </DialogContent>
           </Dialog>
           <DropdownMenu>
@@ -116,9 +124,10 @@ export default async function ScanReportsMappingRules({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px]">
               <DropdownMenuItem>
-                <DownloadBtn
+                <GetFile
                   name="Download Map Diagram"
                   data={diagram}
+                  variant="button"
                   type="image/svg+xml"
                 />
                 <DropdownMenuShortcut>
@@ -126,9 +135,10 @@ export default async function ScanReportsMappingRules({
                 </DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <DownloadBtn
+                <GetFile
                   name="Download Mapping JSON"
                   data={json}
+                  variant="button"
                   type="application/json"
                 />
                 <DropdownMenuShortcut>
@@ -136,9 +146,10 @@ export default async function ScanReportsMappingRules({
                 </DropdownMenuShortcut>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <DownloadBtn
+                <GetFile
                   name="Download Mapping CSV"
                   data={csv}
+                  variant="button"
                   type="text/csv"
                 />
                 <DropdownMenuShortcut>

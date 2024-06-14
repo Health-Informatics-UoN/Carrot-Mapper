@@ -1,14 +1,17 @@
 "use client";
 
+import { Loading } from "@/components/ui/loading-indicator";
 import { useEffect, useState } from "react";
 
-interface DownloadBtnProps {
+interface GetFileProps {
   name: string;
   data: string;
+  variant: "button" | "diagram";
   type: "image/svg+xml" | "application/json" | "text/csv";
 }
 
-export function DownloadBtn({ name, data, type }: DownloadBtnProps) {
+export function GetFile({ name, data, variant, type }: GetFileProps) {
+  const [svgContent, setSvgContent] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -20,6 +23,7 @@ export function DownloadBtn({ name, data, type }: DownloadBtnProps) {
         const svgElement = diagram.getElementsByTagName("svg")[0];
         if (svgElement) {
           const svgString = svgElement.outerHTML;
+          setSvgContent(svgString);
           blob = new Blob([svgString], { type: type });
         } else {
           console.error("Invalid SVG data");
@@ -43,12 +47,18 @@ export function DownloadBtn({ name, data, type }: DownloadBtnProps) {
 
   return (
     <div>
-      {downloadUrl ? (
-        <a href={downloadUrl} download={name}>
-          {name}
-        </a>
+      {variant === "button" ? (
+        downloadUrl ? (
+          <a href={downloadUrl} download={name}>
+            {name}
+          </a>
+        ) : (
+          <Loading text="Loading action..." />
+        )
+      ) : svgContent ? (
+        <div dangerouslySetInnerHTML={{ __html: svgContent }} />
       ) : (
-        <p>Loading...</p>
+        <Loading text="Loading diagram..." />
       )}
     </div>
   );
