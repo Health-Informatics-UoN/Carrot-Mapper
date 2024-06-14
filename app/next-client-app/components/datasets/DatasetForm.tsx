@@ -21,7 +21,7 @@ interface FormData {
   projects: number[];
 }
 
-export function DatasetFormikForm({
+export function DatasetForm({
   dataset,
   dataPartners,
   projects,
@@ -30,38 +30,38 @@ export function DatasetFormikForm({
 }: {
   dataset: DataSetSRList;
   dataPartners: DataPartner[];
-  users: Users[];
-  projects: Projects[];
+  users: User[];
+  projects: Project[];
   permissions: Permission[];
 }) {
   const canUpdate = permissions.includes("CanAdmin");
   // Making options suitable for React Select
-  const userOptions = FormDataFilter<Users>(users);
+  const userOptions = FormDataFilter<User>(users);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
-  const projectOptions = FormDataFilter<Projects>(projects);
+  const projectOptions = FormDataFilter<Project>(projects);
   // Fin the intial data partner which is required when adding Dataset
   const initialPartner = dataPartners.find(
     (partner) => dataset.data_partner === partner.id
   )!;
   // Find and make initial data suitable for React select
   const initialPartnerFilter = FormDataFilter<DataPartner>(initialPartner);
-  const initialEditorsFilter = FindAndFormat<Users>(users, dataset.editors);
-  const initialAdminsFilter = FindAndFormat<Users>(users, dataset.admins);
-  const initialProjectFilter = FindAndFormat<Projects>(
+  const initialEditorsFilter = FindAndFormat<User>(users, dataset.editors);
+  const initialAdminsFilter = FindAndFormat<User>(users, dataset.admins);
+  const initialProjectFilter = FindAndFormat<Project>(
     projects,
     dataset.projects
   );
 
   const handleSubmit = async (data: FormData) => {
-    const response = await updateDatasetDetails(
-      dataset.id,
-      data.name,
-      data.visibility,
-      data.dataPartner,
-      data.admins || [],
-      data.editors || [],
-      data.projects || []
-    );
+    const submittingData = {
+      name: data.name,
+      visibility: data.visibility,
+      data_partner: data.dataPartner,
+      admins: data.admins || [],
+      editors: data.editors || [],
+      projects: data.projects || [],
+    };
+    const response = await updateDatasetDetails(dataset.id, submittingData);
     if (response) {
       toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
     } else {
@@ -90,11 +90,7 @@ export function DatasetFormikForm({
               <h3 className="flex">
                 {" "}
                 Name
-                <Tooltips
-                  content="Name of the dataset."
-                  id={dataset.id}
-                  name="name"
-                />
+                <Tooltips content="Name of the dataset." />
               </h3>
               <Input
                 placeholder={dataset.name}
@@ -107,11 +103,7 @@ export function DatasetFormikForm({
             <div className="flex items-center space-x-3">
               <h3 className="flex">
                 Visibility
-                <Tooltips
-                  content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them."
-                  id={dataset.id}
-                  name="visibility"
-                />
+                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
               </h3>
               <Switch
                 onCheckedChange={(checked) =>
@@ -132,11 +124,7 @@ export function DatasetFormikForm({
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 Data Partner{" "}
-                <Tooltips
-                  content="The data partner that owns the dataset."
-                  id={dataset.id}
-                  name="data-partner"
-                />
+                <Tooltips content="The data partner that owns the dataset." />
               </h3>
               <FormikSelect
                 options={partnerOptions}
@@ -150,11 +138,7 @@ export function DatasetFormikForm({
               <h3 className="flex">
                 {" "}
                 Editors
-                <Tooltips
-                  content="Dataset editors also have Scan Report editor permissions."
-                  id={dataset.id}
-                  name="editors"
-                />
+                <Tooltips content="Dataset editors also have Scan Report editor permissions." />
               </h3>
               <FormikSelect
                 options={userOptions}
@@ -168,11 +152,7 @@ export function DatasetFormikForm({
               <h3 className="flex">
                 {" "}
                 Admins
-                <Tooltips
-                  content="All Dataset admins also have Dataset editor permissions. Dataset admins also have Scan Report editor permissions."
-                  id={dataset.id}
-                  name="admins"
-                />
+                <Tooltips content="All Dataset admins also have Dataset editor permissions. Dataset admins also have Scan Report editor permissions." />
               </h3>
               <FormikSelect
                 options={userOptions}
@@ -186,11 +166,7 @@ export function DatasetFormikForm({
               <h3 className="flex">
                 {" "}
                 Project
-                <Tooltips
-                  content="The project that the dataset belongs to"
-                  id={dataset.id}
-                  name="project"
-                />
+                <Tooltips content="The project that the dataset belongs to." />
               </h3>
               <FormikSelect
                 options={projectOptions}

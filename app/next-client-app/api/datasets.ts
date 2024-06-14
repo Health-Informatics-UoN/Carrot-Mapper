@@ -67,18 +67,18 @@ export async function getDataPartners(): Promise<DataPartner[]> {
   }
 }
 
-export async function getDataUsers(): Promise<Users[]> {
+export async function getDataUsers(): Promise<User[]> {
   try {
-    return request<Users[]>(fetchKeys.users());
+    return request<User[]>(fetchKeys.users());
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
   }
 }
 
-export async function getProjects(dataset?: string): Promise<Projects[]> {
+export async function getProjects(): Promise<Project[]> {
   try {
-    return request<Projects[]>(fetchKeys.projects(dataset));
+    return request<Project[]>(fetchKeys.projects());
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
@@ -101,29 +101,14 @@ export async function archiveDataSets(id: number, hidden: boolean) {
   }
 }
 
-export async function updateDatasetDetails(
-  id: number,
-  name: string,
-  visibility: string,
-  data_partner: number,
-  admins: number[],
-  editors: number[],
-  projects: number[]
-) {
+export async function updateDatasetDetails(id: number, data: {}) {
   try {
     await request(fetchKeys.updateDataset(id), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({
-        name: name,
-        visibility: visibility,
-        data_partner: data_partner,
-        admins: admins,
-        editors: editors,
-        projects: projects,
-      }),
+      body: JSON.stringify(data),
     });
   } catch (error: any) {
     return { errorMessage: error.message };

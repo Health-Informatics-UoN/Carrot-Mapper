@@ -12,7 +12,7 @@ import {
   getDatasetPermissions,
   getProjects,
 } from "@/api/datasets";
-import { DatasetFormikForm } from "@/components/datasets/DatasetFormikForm";
+import { DatasetForm } from "@/components/datasets/DatasetForm";
 
 interface DataSetListProps {
   params: {
@@ -60,7 +60,7 @@ export default async function DatasetDetails({
         <h1 className="text-4xl font-semibold">Details Page - Dataset #{id}</h1>
       </div>
       <div className="mt-4">
-        <DatasetFormikForm
+        <DatasetForm
           dataset={dataset}
           dataPartners={partners}
           users={users}
