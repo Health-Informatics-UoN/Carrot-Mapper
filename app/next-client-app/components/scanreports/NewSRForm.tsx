@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Save } from "lucide-react";
+import { FileUp, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -12,6 +12,8 @@ import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
 import { FormikSelectDataset } from "../form-components/FormikSelectDataset";
 import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
+import { UploadSR } from "../form-components/UploadSR";
+import { UploadDataDict } from "../form-components/UploadDataDict";
 
 interface FormData {
   name: string;
@@ -88,26 +90,6 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 isDisabled={values.dataPartner === 0}
               />
             </div>
-            <div className="flex items-center space-x-3">
-              <h3 className="flex">
-                Visibility
-                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
-              </h3>
-              <Switch
-                onCheckedChange={(checked) =>
-                  handleChange({
-                    target: {
-                      name: "visibility",
-                      value: checked ? "PUBLIC" : "RESTRICTED",
-                    },
-                  })
-                }
-                defaultChecked
-              />
-              <Label className="text-lg">
-                {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
-              </Label>
-            </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
@@ -134,18 +116,33 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 required
               />
             </div>
+            <div className="flex items-center space-x-3">
+              <h3 className="flex">
+                Visibility
+                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
+              </h3>
+              <Switch
+                onCheckedChange={(checked) =>
+                  handleChange({
+                    target: {
+                      name: "visibility",
+                      value: checked ? "PUBLIC" : "RESTRICTED",
+                    },
+                  })
+                }
+                defaultChecked
+              />
+              <Label className="text-lg">
+                {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
+              </Label>
+            </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 WhiteRabbit ScanReport
                 <Tooltips content="Scan report that was generated form White Rabbit" />
               </h3>
-              <Input
-                onChange={handleChange}
-                name="name"
-                className="text-lg text-carrot"
-                required
-              />
+              <UploadSR />
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
@@ -153,20 +150,15 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 Data Dictionary
                 <Tooltips content="Data dictionary" />
               </h3>
-              <Input
-                onChange={handleChange}
-                name="name"
-                className="text-lg text-carrot"
-                required
-              />
+              <UploadDataDict />
             </div>
-            <div>
+            <div className="mb-5">
               <Button
                 type="submit"
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
                 // disabled={!canUpdate}
               >
-                Save <Save className="ml-2" />
+                Upload a new ScanReport <FileUp className="ml-2" />
               </Button>
             </div>
           </div>
