@@ -3,6 +3,7 @@ import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, Formik } from "formik";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface AddConceptProps {
@@ -18,7 +19,9 @@ export default function AddConcept({
   location,
   disabled,
 }: AddConceptProps) {
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (conceptCode: number) => {
+    setLoading(true);
     try {
       const determineContentType = (location: string) => {
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
@@ -46,6 +49,8 @@ export default function AddConcept({
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,8 +76,8 @@ export default function AddConcept({
                 pattern="\d*"
               />
             </div>
-            <Button type="submit" disabled={disabled}>
-              Add
+            <Button type="submit" disabled={disabled || loading}>
+              {loading ? "Adding... Please wait" : "Add"}
             </Button>
           </div>
         </Form>
