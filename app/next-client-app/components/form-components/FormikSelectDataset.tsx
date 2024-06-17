@@ -10,20 +10,49 @@ import {
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import config from "@/tailwind.config";
-import { getDataSetList } from "@/api/datasets";
+import { getDataSetList, getProjects } from "@/api/datasets";
 import { useEffect, useState } from "react";
 
-type Option = Object & {
+type Option = {
   value: number;
   label: string | undefined;
 };
 
-async function fetchDataset(dataPartner: string) {
+type GroupedOption = {
+  label: string;
+  options: Option[];
+};
+
+async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
   const datasets = await getDataSetList(dataPartner);
-  return datasets.map((dataset) => ({
-    value: dataset.id,
-    label: dataset.name,
-  }));
+  const projects = await getProjects();
+
+  // Creating grouped options of dataset
+  const projectMap = new Map<number, { label: string; options: Option[] }>();
+
+  datasets.forEach((dataset) => {
+    dataset.projects.forEach((projectId) => {
+      if (!projectMap.has(projectId)) {
+        // Getting the label of the group = name of the found projects
+        const projectGroup = projects.find(
+          (project) => project.id === projectId
+        );
+        projectMap.set(projectId, {
+          label: `Project: ${
+            projectGroup ? projectGroup.name : projectId.toString()
+          }`,
+          options: [],
+        });
+      }
+      // Getting the dataset options
+      projectMap.get(projectId)?.options.push({
+        value: dataset.id,
+        label: dataset.name,
+      });
+    });
+  });
+
+  return Array.from(projectMap.values());
 }
 
 const CustomSelect = ({
@@ -33,13 +62,15 @@ const CustomSelect = ({
   options,
   placeholder,
   isDisabled,
+  required,
 }: {
-  options?: Option[];
+  options?: GroupedOption[];
   placeholder: string;
   isMulti: boolean;
   field: FieldInputProps<any>;
   form: FormikProps<any>;
   isDisabled: boolean;
+  required?: boolean;
 }) => {
   const animatedComponents = makeAnimated();
   const onChange = (newValue: any, actionMeta: any) => {
@@ -51,13 +82,14 @@ const CustomSelect = ({
   };
 
   const selected = () => {
-    return options
-      ? options.filter((option: Option) =>
-          Array.isArray(field.value)
-            ? field.value.includes(option.value)
-            : field.value === option.value
-        )
+    const flattenedOptions = options
+      ? options.flatMap((group) => group.options)
       : [];
+    return flattenedOptions.filter((option: Option) =>
+      Array.isArray(field.value)
+        ? field.value.includes(option.value)
+        : field.value === option.value
+    );
   };
 
   return (
@@ -78,28 +110,29 @@ const CustomSelect = ({
           color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
+      required={required}
     />
   );
 };
 
 export const FormikSelectDataset = ({
-  options,
   name,
   placeholder,
   isMulti,
   isDisabled,
+  required,
 }: {
-  options?: Option[];
   name: string;
   placeholder: string;
   isMulti: boolean;
   isDisabled: boolean;
+  required?: boolean;
 }) => {
   const {
     values: { dataPartner },
   } = useFormikContext<FormikValues>();
 
-  const [datasets, setOptions] = useState<Option[]>([]);
+  const [datasets, setOptions] = useState<GroupedOption[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,6 +154,7 @@ export const FormikSelectDataset = ({
           options={datasets}
           placeholder={placeholder}
           isDisabled={isDisabled}
+          required={required}
         />
       )}
     </Field>

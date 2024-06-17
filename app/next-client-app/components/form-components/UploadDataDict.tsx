@@ -16,7 +16,8 @@ export function UploadDataDict() {
     });
   const acceptedFileItems = acceptedFiles.map((file) => (
     <p key={file.name} className="flex items-center text-carrot">
-      <CircleCheckBig className="mr-2" /> {file.name} - {file.size} bytes
+      <CircleCheckBig className="mr-2" /> {file.name} -{" "}
+      {(file.size / 1028).toFixed(2)} KB
     </p>
   ));
   const [uploading, setUpLoading] = useState(false);
@@ -50,7 +51,7 @@ export function UploadDataDict() {
       </div>
       <div className="flex gap-2 mt-2 items-center text-sm">
         <h4>Accepted file:</h4>
-        <p className="text-green">{acceptedFileItems}</p>
+        {acceptedFileItems}
       </div>
     </div>
   );

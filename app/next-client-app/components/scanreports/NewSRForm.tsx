@@ -75,26 +75,28 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 placeholder="Choose a Data Partner"
                 isMulti={false}
                 isDisabled={false}
+                required={true}
               />
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 Dataset
-                <Tooltips content="The dataset that belongs to the above data partner" />
+                <Tooltips content="The unarchived dataset that added to a project and belongs to the above data partner" />
               </h3>
               <FormikSelectDataset
                 name="dataset"
                 placeholder="Choose a Dataset"
                 isMulti={false}
                 isDisabled={values.dataPartner === 0}
+                required={true}
               />
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 Editors
-                <Tooltips content="Members of the projects where the dataset belongs to. Can only be chosen after dataset is set" />
+                <Tooltips content="Members of the projects where the dataset above belongs to. Can only be chosen after the dataset is selected." />
               </h3>
               <FormikSelectEditors
                 name="editors"
@@ -140,7 +142,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 WhiteRabbit ScanReport
-                <Tooltips content="Scan report that was generated form White Rabbit" />
+                <Tooltips content="Scan report that was generated from White Rabbit application" />
               </h3>
               <UploadSR />
             </div>
@@ -148,7 +150,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Data Dictionary
-                <Tooltips content="Data dictionary" />
+                <Tooltips content="Data dictionary...?" />
               </h3>
               <UploadDataDict />
             </div>
@@ -158,7 +160,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
                 // disabled={!canUpdate}
               >
-                Upload a new ScanReport <FileUp className="ml-2" />
+                Upload ScanReport <FileUp className="ml-2" />
               </Button>
             </div>
           </div>

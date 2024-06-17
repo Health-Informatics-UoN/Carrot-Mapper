@@ -15,6 +15,7 @@ const CustomSelect = ({
   options,
   placeholder,
   isDisabled,
+  required,
 }: {
   options: Option[];
   placeholder: string;
@@ -22,6 +23,7 @@ const CustomSelect = ({
   field: FieldInputProps<any>;
   form: FormikProps<any>;
   isDisabled: boolean;
+  required?: boolean;
 }) => {
   const animatedComponents = makeAnimated();
   const onChange = (newValue: any, actionMeta: any) => {
@@ -71,6 +73,7 @@ const CustomSelect = ({
           color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
+      required={required}
     />
   );
 };
@@ -81,12 +84,14 @@ export const FormikSelect = ({
   placeholder,
   isMulti,
   isDisabled,
+  required,
 }: {
   options: Option[];
   name: string;
   placeholder: string;
   isMulti: boolean;
   isDisabled: boolean;
+  required?: boolean;
 }) => {
   return (
     <Field name={name}>
@@ -98,6 +103,7 @@ export const FormikSelect = ({
           options={options}
           placeholder={placeholder}
           isDisabled={isDisabled}
+          required={required}
         />
       )}
     </Field>
