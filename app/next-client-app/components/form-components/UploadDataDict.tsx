@@ -1,18 +1,19 @@
-import { CircleCheckBig, Loader2, Upload } from "lucide-react";
-import React, { useCallback, useState } from "react";
+import { CircleCheckBig, Upload } from "lucide-react";
+import React from "react";
 import { useDropzone } from "react-dropzone";
 
-export function UploadDataDict() {
-  const onDrop = useCallback((acceptedFiles: any) => {
-    // Do something with the files
-  }, []);
+export const UploadDataDict = (props: any) => {
+  const { setFieldValue } = props;
+
   const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
     useDropzone({
       accept: {
         "text/csv": [".csv"],
       },
       maxFiles: 1,
-      onDrop,
+      onDrop: (acceptedFiles) => {
+        setFieldValue("Data_dict", acceptedFiles);
+      },
     });
   const acceptedFileItems = acceptedFiles.map((file) => (
     <p key={file.name} className="flex items-center text-carrot">
@@ -20,8 +21,6 @@ export function UploadDataDict() {
       {(file.size / 1028).toFixed(2)} KB
     </p>
   ));
-  const [uploading, setUpLoading] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div>
@@ -32,22 +31,11 @@ export function UploadDataDict() {
         })}
       >
         <input {...getInputProps()} />
-        {uploading || isLoading ? (
-          <>
-            {/*loading state*/}
-            <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
-            <p className="mt-2 text-sm text-slate-400">Uploading</p>
-          </>
-        ) : (
-          <>
-            <Upload className="w-10 10-10 text-carrot" />
-            <p className="mt-2 text-sm text-slate-400">
-              {" "}
-              Select a Data Dictionary (.csv) by clicking or dragging the file
-              here
-            </p>
-          </>
-        )}
+        <Upload className="w-10 10-10 text-carrot" />
+        <p className="mt-2 text-sm text-slate-400">
+          {" "}
+          Select a Data Dictionary (.csv) by clicking or dragging the file here
+        </p>
       </div>
       <div className="flex gap-2 mt-2 items-center text-sm">
         <h4>Accepted file:</h4>
@@ -55,4 +43,4 @@ export function UploadDataDict() {
       </div>
     </div>
   );
-}
+};

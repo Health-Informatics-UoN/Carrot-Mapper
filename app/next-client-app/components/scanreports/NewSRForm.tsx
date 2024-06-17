@@ -20,27 +20,26 @@ interface FormData {
   visibility: string;
   dataPartner: number;
   editors: number[];
-  admins: number[];
-  projects: number[];
-}
-
-type FormValues = {
-  dataPartner: number;
   dataset: number;
-};
+  WR_scanreport: File;
+  Data_dict: File;
+}
 
 export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
 
   const handleSubmit = async (data: FormData) => {
-    // const response = await updateDatasetDetails(
-    //   data.name,
-    //   data.visibility,
-    //   data.dataPartner,
-    //   data.admins || [],
-    //   data.editors || [],
-    //   data.projects || []
-    // );
+    const submittingData = {
+      name: data.name,
+      visibility: data.visibility,
+      data_partner: data.dataPartner,
+      dataset: data.dataset,
+      editors: data.editors || [],
+      whiteRabbit: data.WR_scanreport || [],
+      dataDict: data.Data_dict,
+    };
+    console.log(submittingData);
+    // const response = await updateDatasetDetails(dataset.id, submittingData);
     // if (response) {
     //   toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
     // } else {
@@ -53,15 +52,17 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
       initialValues={{
         dataPartner: 0,
         dataset: 0,
-        editors: 0,
+        editors: [],
         visibility: "PUBLIC",
         name: "",
+        WR_scanreport: new File([], ""),
+        Data_dict: new File([], ""),
       }}
       onSubmit={(data) => {
-        // handleSubmit(data);
+        handleSubmit(data);
       }}
     >
-      {({ values, handleChange, handleSubmit }) => (
+      {({ values, handleChange, handleSubmit, setFieldValue }) => (
         <Form className="w-full" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex flex-col gap-2">
@@ -141,10 +142,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
-                WhiteRabbit ScanReport
+                WhiteRabbit Scan Report
                 <Tooltips content="Scan report that was generated from White Rabbit application" />
               </h3>
-              <UploadSR />
+              <UploadSR setFieldValue={setFieldValue} />
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
@@ -152,7 +153,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 Data Dictionary
                 <Tooltips content="Data dictionary...?" />
               </h3>
-              <UploadDataDict />
+              <UploadDataDict setFieldValue={setFieldValue} />
             </div>
             <div className="mb-5">
               <Button
@@ -160,7 +161,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
                 // disabled={!canUpdate}
               >
-                Upload ScanReport <FileUp className="ml-2" />
+                Upload Scan Report <FileUp className="ml-2" />
               </Button>
             </div>
           </div>
