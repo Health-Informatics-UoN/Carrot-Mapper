@@ -14,7 +14,7 @@ export const UploadSR = (props: any) => {
       },
       maxFiles: 1,
       onDrop: (acceptedFiles) => {
-        setFieldValue("WR_scanreport", acceptedFiles);
+        setFieldValue("scan_report_file", acceptedFiles);
       },
     });
   const acceptedFileItems = acceptedFiles.map((file) => (

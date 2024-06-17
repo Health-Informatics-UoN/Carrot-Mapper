@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileUp, Save } from "lucide-react";
+import { FileUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -14,14 +14,14 @@ import { FormikSelectDataset } from "../form-components/FormikSelectDataset";
 import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { UploadSR } from "../form-components/UploadSR";
 import { UploadDataDict } from "../form-components/UploadDataDict";
+import { createScanReport } from "@/api/scanreports";
 
 interface FormData {
   name: string;
   visibility: string;
-  dataPartner: number;
   editors: number[];
   dataset: number;
-  WR_scanreport: File;
+  scan_report_file: File;
   Data_dict: File;
 }
 
@@ -29,22 +29,23 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
 
   const handleSubmit = async (data: FormData) => {
-    const submittingData = {
-      name: data.name,
-      visibility: data.visibility,
-      data_partner: data.dataPartner,
-      dataset: data.dataset,
-      editors: data.editors || [],
-      whiteRabbit: data.WR_scanreport || [],
-      dataDict: data.Data_dict,
-    };
-    console.log(submittingData);
-    // const response = await updateDatasetDetails(dataset.id, submittingData);
-    // if (response) {
-    //   toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
-    // } else {
-    //   toast.success("Update Dataset successful!");
-    // }
+    const formData = new FormData();
+    formData.append("dataset", data.name);
+    formData.append("visibility", data.visibility);
+    formData.append("parent_dataset", data.dataset.toString());
+    data.editors.forEach((editor) => {
+      formData.append(`editors`, editor.toString());
+    });
+    formData.append("scan_report_file", data.scan_report_file);
+    formData.append("data_dictionary_file", data.Data_dict);
+
+    const response = await createScanReport(formData);
+
+    if (response) {
+      toast.error(`Upload Scan Report failed. Error: ${response.errorMessage}`);
+    } else {
+      toast.success("New Scan Report is being uploaded");
+    }
   };
 
   return (
@@ -55,7 +56,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
         editors: [],
         visibility: "PUBLIC",
         name: "",
-        WR_scanreport: new File([], ""),
+        scan_report_file: new File([], ""),
         Data_dict: new File([], ""),
       }}
       onSubmit={(data) => {
