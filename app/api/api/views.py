@@ -99,6 +99,23 @@ from shared.services.rules import (
     _save_mapping_rules,
     delete_mapping_rules,
 )
+from django.views.generic.edit import FormView
+from .forms import ScanReportForm
+from django.urls import reverse_lazy
+from django.contrib import messages
+from .permissions import has_editorship, has_viewership, is_admin
+import random
+import string
+import datetime
+from azure.storage.blob import BlobServiceClient, ContentSettings
+from shared.services.azurequeue import add_message
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+
+
+def modify_filename(filename, dt, rand):
+    split_filename = os.path.splitext(str(filename))
+    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -553,6 +570,134 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
+
+
+@method_decorator(login_required, name="dispatch")
+class ScanReportCreateView(FormView):
+    form_class = ScanReportForm
+    template_name = "mapping/upload_scan_report.html"
+    success_url = reverse_lazy("scan-report-list")
+
+    def form_invalid(self, form):
+        storage = messages.get_messages(self.request)
+        for message in storage:
+            response = JsonResponse(
+                {
+                    "status_code": 422,
+                    "form-errors": form.errors,
+                    "ok": False,
+                    "statusText": str(message),
+                }
+            )
+            response.status_code = 422
+            return response
+        response = JsonResponse(
+            {
+                "status_code": 422,
+                "form-errors": form.errors,
+                "ok": False,
+                "statusText": "Could not process input.",
+            }
+        )
+        response.status_code = 422
+        return response
+
+    def form_valid(self, form):
+        # Check user has admin/editor rights on Scan Report parent dataset
+        parent_dataset = form.cleaned_data["parent_dataset"]
+        if not (
+            has_editorship(parent_dataset, self.request)
+            or is_admin(parent_dataset, self.request)
+        ):
+            messages.warning(
+                self.request,
+                "You do not have editor or administrator "
+                "permissions on this Dataset.",
+            )
+            return self.form_invalid(form)
+
+        # Create random alphanumeric to link scan report to data dictionary
+        # Create datetime stamp for scan report and data dictionary upload time
+        rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
+        print(dt, rand)
+        # Create an entry in ScanReport for the uploaded Scan Report
+        scan_report = ScanReport.objects.create(
+            dataset=form.cleaned_data["dataset"],
+            parent_dataset=parent_dataset,
+            name=modify_filename(form.cleaned_data.get("scan_report_file"), dt, rand),
+            visibility=form.cleaned_data["visibility"],
+        )
+
+        scan_report.author = self.request.user
+        scan_report.save()
+
+        # Add viewers to the scan report if specified
+        if sr_viewers := form.cleaned_data.get("viewers"):
+            scan_report.viewers.add(*sr_viewers)
+
+        # Add editors to the scan report if specified
+        if sr_editors := form.cleaned_data.get("editors"):
+            scan_report.editors.add(*sr_editors)
+
+        # Grab Azure storage credentials
+        blob_service_client = BlobServiceClient.from_connection_string(
+            os.getenv("STORAGE_CONN_STRING")
+        )
+
+        print("FILE >>> ", str(form.cleaned_data.get("scan_report_file")))
+        print("STRING TEST >>>> ", scan_report.name)
+
+        # If there's no data dictionary supplied, only upload the scan report
+        # Set data_dictionary_blob in Azure message to None
+        if form.cleaned_data.get("data_dictionary_file") is None:
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": "None",
+            }
+
+            blob_client = blob_service_client.get_blob_client(
+                container="scan-reports", blob=scan_report.name
+            )
+            blob_client.upload_blob(
+                form.cleaned_data.get("scan_report_file").open(),
+                content_settings=ContentSettings(
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ),
+            )
+            # setting content settings for downloading later
+        # Else upload the scan report and the data dictionary
+        else:
+            data_dictionary = DataDictionary.objects.create(
+                name=f"{os.path.splitext(str(form.cleaned_data.get('data_dictionary_file')))[0]}"
+                f"_{dt}{rand}.csv"
+            )
+            data_dictionary.save()
+            scan_report.data_dictionary = data_dictionary
+            scan_report.save()
+
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": data_dictionary.name,
+            }
+
+            blob_client = blob_service_client.get_blob_client(
+                container="scan-reports", blob=scan_report.name
+            )
+            blob_client.upload_blob(form.cleaned_data.get("scan_report_file").open())
+            blob_client = blob_service_client.get_blob_client(
+                container="data-dictionaries", blob=data_dictionary.name
+            )
+            blob_client.upload_blob(
+                form.cleaned_data.get("data_dictionary_file").open()
+            )
+
+        # send to the upload queue
+        add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
+
+        return super().form_valid(form)
 
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):

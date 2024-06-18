@@ -66,6 +66,11 @@ urlpatterns = [
         name="scan-report-permissions",
     ),
     path(
+        r"scanreports/create/",
+        views.ScanReportCreateView.as_view(),
+        name="scan-report-form",
+    ),
+    path(
         "dataset/<int:pk>/permissions/",
         views.DatasetPermissionView.as_view(),
         name="dataset-permissions",
