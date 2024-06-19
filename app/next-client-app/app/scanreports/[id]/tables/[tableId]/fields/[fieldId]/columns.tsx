@@ -6,7 +6,7 @@ import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 
 export const columns = (
-  addSR: (concept: ScanReportConcept) => void,
+  addSR: (concept: ScanReportConcept, c: Concept) => void,
   deleteSR: (id: number) => void,
 ): ColumnDef<ScanReportValue>[] => [
   {
@@ -70,8 +70,6 @@ export const columns = (
           location="SR-Values"
           disabled={canEdit ? false : true}
           addSR={addSR}
-          // loading={loading}
-          // setLoading={setLoading}
         />
       );
     },

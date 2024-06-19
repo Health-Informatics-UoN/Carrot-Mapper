@@ -1,12 +1,9 @@
 "use client";
 
 import { DataTable } from "@/components/data-table";
-import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 import { columns } from "./columns";
-import { FilterParameters } from "@/types/filter";
 import { useEffect, useState } from "react";
 
 interface ScanReportsValueProps {
@@ -25,11 +22,16 @@ export function DataTableTest({
   scanReportsCount,
 }: ScanReportsValueProps) {
   const [concepts, setConcepts] = useState(scanReportsConcepts);
+  const [conceptFilter, setConceptFilter] = useState(conceptsFilter);
 
   // necessary for pagination
   useEffect(() => {
     setConcepts(scanReportsConcepts);
   }, [scanReportsConcepts]);
+
+  useEffect(() => {
+    setConceptFilter(conceptsFilter);
+  }, [conceptsFilter]);
 
   const deleteConcept = (id: number) => {
     // filter it out.
@@ -37,10 +39,14 @@ export function DataTableTest({
     setConcepts(updatedConcepts);
   };
 
-  const addConcept = (newConcept: ScanReportConcept) => {
+  const addConcept = (newConcept: ScanReportConcept, newC: Concept) => {
     // merge it.
+
     const updatedConcepts = [...concepts, newConcept];
     setConcepts(updatedConcepts);
+
+    const updatedConcepts2 = [...conceptFilter, newC];
+    setConceptFilter(updatedConcepts2);
   };
 
   const defaultPageSize = 30;

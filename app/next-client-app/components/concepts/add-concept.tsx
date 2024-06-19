@@ -14,8 +14,7 @@ interface AddConceptProps {
   parentId: string;
   location: string;
   disabled: boolean;
-  addSR: (concept: ScanReportConcept) => void;
-  // updateRowConcepts: (rowId: number, concepts: any[]) => void;
+  addSR: (concept: ScanReportConcept, c: Concept) => void;
 }
 
 export default function AddConcept({
@@ -51,18 +50,6 @@ export default function AddConcept({
 
       if (response) {
         toast.error(`Adding concept failed. ${response.errorMessage}`);
-        // // Fetch updated concepts for the specific row
-        // const updatedConcepts = await getScanReportConcepts(
-        //   `object_id__in=${rowId}`
-        // );
-        // const updatedConceptsFiltered =
-        //   updatedConcepts.length > 0
-        //     ? await getConceptFilters(
-        //         updatedConcepts?.map((item) => item.concept).join(",")
-        //       )
-        //     : [];
-        // // Update the row concepts in the parent component
-        // updateRowConcepts(rowId, updatedConceptsFiltered);
       } else {
         const updatedConcepts = await getScanReportConcepts(
           `object_id=${rowId}`,
@@ -74,7 +61,7 @@ export default function AddConcept({
               )
             : [];
 
-        // addSR()
+        addSR(updatedConcepts[0], updatedConceptsFiltered[0]);
         toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {
