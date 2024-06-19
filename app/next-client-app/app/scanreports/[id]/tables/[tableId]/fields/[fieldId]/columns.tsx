@@ -5,7 +5,9 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 
-export const columns: ColumnDef<ScanReportValue>[] = [
+export const columns = (
+  updateRowConcepts: (rowId: number, concepts: any[]) => void
+): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
     accessorKey: "value",
@@ -65,7 +67,8 @@ export const columns: ColumnDef<ScanReportValue>[] = [
           rowId={id}
           parentId={scan_report_field.toString()}
           location="SR-Values"
-          disabled={canEdit ? false : true}
+          disabled={!canEdit}
+          updateRowConcepts={updateRowConcepts} // Pass the updateRowConcepts function
         />
       );
     },

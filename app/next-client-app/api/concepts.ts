@@ -35,14 +35,14 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
 
 export async function addConcept(data: {}) {
   try {
-    await request(fetchKeys.addConcept, {
+    const response = await request(fetchKeys.addConcept, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
       },
       body: JSON.stringify(data),
     });
-    revalidatePath("");
+    return response;
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };

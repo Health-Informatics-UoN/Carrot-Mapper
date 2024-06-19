@@ -1,9 +1,12 @@
-import { addConcept } from "@/api/concepts";
+import {
+  addConcept,
+  getConceptFilters,
+  getScanReportConcepts,
+} from "@/api/concepts";
 import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, Formik } from "formik";
-import { useState } from "react";
 import { toast } from "sonner";
 
 interface AddConceptProps {
@@ -11,6 +14,7 @@ interface AddConceptProps {
   parentId: string;
   location: string;
   disabled: boolean;
+  updateRowConcepts: (rowId: number, concepts: any[]) => void;
 }
 
 export default function AddConcept({
@@ -18,10 +22,9 @@ export default function AddConcept({
   parentId,
   location,
   disabled,
+  updateRowConcepts,
 }: AddConceptProps) {
-  const [loading, setLoading] = useState(false);
   const handleSubmit = async (conceptCode: number) => {
-    setLoading(true);
     try {
       const determineContentType = (location: string) => {
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
@@ -41,16 +44,26 @@ export default function AddConcept({
         creation_type: "M",
         table_id: await determineTableId(location, parentId),
       });
-      // Because the response only returned when there is an error
+
       if (response) {
-        toast.error(`Adding concept failed. ${response.errorMessage}`);
-      } else {
+        // Fetch updated concepts for the specific row
+        const updatedConcepts = await getScanReportConcepts(
+          `object_id__in=${rowId}`
+        );
+        const updatedConceptsFiltered =
+          updatedConcepts.length > 0
+            ? await getConceptFilters(
+                updatedConcepts?.map((item) => item.concept).join(",")
+              )
+            : [];
+        // Update the row concepts in the parent component
+        updateRowConcepts(rowId, updatedConceptsFiltered);
         toast.success(`OMOP Concept successfully added.`);
+      } else {
+        toast.error(`Adding concept failed. ${response.errorMessage}`);
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -76,8 +89,8 @@ export default function AddConcept({
                 pattern="\d*"
               />
             </div>
-            <Button type="submit" disabled={disabled || loading}>
-              {loading ? "Adding... Please wait" : "Add"}
+            <Button type="submit" disabled={disabled}>
+              Add
             </Button>
           </div>
         </Form>
