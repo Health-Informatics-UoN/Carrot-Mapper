@@ -42,7 +42,7 @@ export async function addConcept(data: {}) {
       },
       body: JSON.stringify(data),
     });
-    return response;
+    revalidatePath("");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };

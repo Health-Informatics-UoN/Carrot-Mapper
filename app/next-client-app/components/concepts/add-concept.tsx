@@ -14,7 +14,7 @@ interface AddConceptProps {
   parentId: string;
   location: string;
   disabled: boolean;
-  updateRowConcepts: (rowId: number, concepts: any[]) => void;
+  // updateRowConcepts: (rowId: number, concepts: any[]) => void;
 }
 
 export default function AddConcept({
@@ -22,9 +22,14 @@ export default function AddConcept({
   parentId,
   location,
   disabled,
-  updateRowConcepts,
-}: AddConceptProps) {
+  loading,
+  setLoading,
+}: AddConceptProps & {
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}) {
   const handleSubmit = async (conceptCode: number) => {
+    setLoading(true);
     try {
       const determineContentType = (location: string) => {
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
@@ -46,21 +51,21 @@ export default function AddConcept({
       });
 
       if (response) {
-        // Fetch updated concepts for the specific row
-        const updatedConcepts = await getScanReportConcepts(
-          `object_id__in=${rowId}`
-        );
-        const updatedConceptsFiltered =
-          updatedConcepts.length > 0
-            ? await getConceptFilters(
-                updatedConcepts?.map((item) => item.concept).join(",")
-              )
-            : [];
-        // Update the row concepts in the parent component
-        updateRowConcepts(rowId, updatedConceptsFiltered);
-        toast.success(`OMOP Concept successfully added.`);
-      } else {
         toast.error(`Adding concept failed. ${response.errorMessage}`);
+        // // Fetch updated concepts for the specific row
+        // const updatedConcepts = await getScanReportConcepts(
+        //   `object_id__in=${rowId}`
+        // );
+        // const updatedConceptsFiltered =
+        //   updatedConcepts.length > 0
+        //     ? await getConceptFilters(
+        //         updatedConcepts?.map((item) => item.concept).join(",")
+        //       )
+        //     : [];
+        // // Update the row concepts in the parent component
+        // updateRowConcepts(rowId, updatedConceptsFiltered);
+      } else {
+        toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);

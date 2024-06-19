@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -22,6 +21,7 @@ import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 import { columns } from "./columns";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
+import { DataTableTest } from "./data-table";
 
 interface ScanReportsValueProps {
   params: {
@@ -36,9 +36,6 @@ export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
 }: ScanReportsValueProps) {
-  const [scanReportsResult, setScanReportsResult] = useState<ScanReportValue[]>(
-    []
-  );
   const defaultPageSize = 30;
   const defaultParams = {
     scan_report_field: fieldId,
@@ -47,50 +44,23 @@ export default async function ScanReportsValue({
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
 
-  const filter = <DataTableFilter filter="value" filterText="value" />;
   const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
   const fieldName = await getScanReportField(fieldId);
   const permissions = await getScanReportPermissions(id);
   const scanReportsValues = await getScanReportValues(query);
-  useEffect(() => {
-    async function fetchData() {
-      const scanReportsConcepts = await getScanReportConcepts(
-        `object_id__in=${scanReportsValues.results
-          .map((item) => item.id)
-          .join(",")}`
-      );
-      const conceptsFilter =
-        scanReportsConcepts.length > 0
-          ? await getConceptFilters(
-              scanReportsConcepts?.map((item) => item.concept).join(",")
-            )
-          : [];
-      const scanReportsResult = addConceptsToResults(
-        scanReportsValues.results,
-        scanReportsConcepts,
-        conceptsFilter,
-        permissions
-      );
 
-      setScanReportsResult(scanReportsResult);
-    }
-    fetchData();
-  }, [query, id, tableId, fieldId, searchParams]);
-
-  const updateRowConcepts = (rowId: number, concepts: Concept[]) => {
-    setScanReportsResult((prevState) => {
-      return prevState.map((item) => {
-        if (item.id === rowId) {
-          return {
-            ...item,
-            concepts,
-          };
-        }
-        return item;
-      });
-    });
-  };
+  const scanReportsConcepts = await getScanReportConcepts(
+    `object_id__in=${scanReportsValues.results
+      .map((item) => item.id)
+      .join(",")}`
+  );
+  const conceptsFilter =
+    scanReportsConcepts.length > 0
+      ? await getConceptFilters(
+          scanReportsConcepts?.map((item) => item.concept).join(",")
+        )
+      : [];
 
   return (
     <div className="pt-10 px-16">
@@ -136,13 +106,12 @@ export default async function ScanReportsValue({
         permissions={permissions.permissions}
       />
       <div>
-        <DataTable
-          columns={columns(updateRowConcepts)} // Pass updateRowConcepts as a prop
-          data={scanReportsResult}
-          count={scanReportsValues.count}
-          Filter={filter}
-          clickableRow={false}
-          defaultPageSize={defaultPageSize}
+        <DataTableTest
+          scanReportsCount={scanReportsValues.count}
+          permissions={permissions}
+          scanReportsConcepts={scanReportsConcepts}
+          conceptsFilter={conceptsFilter}
+          scanReportsResults={scanReportsValues.results}
         />
       </div>
     </div>

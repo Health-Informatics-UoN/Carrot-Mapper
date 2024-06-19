@@ -6,7 +6,8 @@ import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 
 export const columns = (
-  updateRowConcepts: (rowId: number, concepts: any[]) => void
+  loading: boolean,
+  setLoading: (value: boolean) => void
 ): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
@@ -67,8 +68,9 @@ export const columns = (
           rowId={id}
           parentId={scan_report_field.toString()}
           location="SR-Values"
-          disabled={!canEdit}
-          updateRowConcepts={updateRowConcepts} // Pass the updateRowConcepts function
+          disabled={canEdit ? false : true}
+          loading={loading}
+          setLoading={setLoading}
         />
       );
     },
