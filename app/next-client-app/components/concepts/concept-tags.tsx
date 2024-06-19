@@ -6,15 +6,22 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { Tooltip } from "react-tooltip";
 
-export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
+export async function ConceptTags({
+  concepts,
+  deleteSR,
+}: {
+  concepts: Concept[];
+  deleteSR: any;
+}) {
   const handleDelete = async (conceptId: number) => {
     try {
       await deleteConcept(conceptId);
+      deleteSR(conceptId);
       toast.success("Concept Id Deleted");
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Unable to delete Concept id from value Error: ${errorObj.detail}`
+        `Unable to delete Concept id from value Error: ${errorObj.detail}`,
       );
       console.error(error);
     }
@@ -32,10 +39,10 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
             concept.creation_type === "V"
               ? "(built from a OMOP vocabulary)"
               : concept.creation_type === "M"
-              ? "(added manually)"
-              : concept.creation_type === "R"
-              ? "(added though mapping reuse)"
-              : ""
+                ? "(added manually)"
+                : concept.creation_type === "R"
+                  ? "(added though mapping reuse)"
+                  : ""
           }`}
           data-tooltip-place="top"
         >
@@ -45,10 +52,10 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
               concept.creation_type === "V"
                 ? "bg-carrot-vocab hover:bg-carrot-vocab"
                 : concept.creation_type === "M"
-                ? "bg-carrot-manual hover:bg-carrot-manual"
-                : concept.creation_type === "R"
-                ? "bg-carrot-reuse hover:bg-carrot-reuse"
-                : ""
+                  ? "bg-carrot-manual hover:bg-carrot-manual"
+                  : concept.creation_type === "R"
+                    ? "bg-carrot-reuse hover:bg-carrot-reuse"
+                    : ""
             }`}
             key={concept.concept_code}
           >

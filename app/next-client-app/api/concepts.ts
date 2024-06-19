@@ -12,11 +12,11 @@ const fetchKeys = {
 };
 
 export async function getScanReportConcepts(
-  filter: string
+  filter: string,
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcepts(filter)
+      fetchKeys.scanreportConcepts(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -42,7 +42,7 @@ export async function addConcept(data: {}) {
       },
       body: JSON.stringify(data),
     });
-    revalidatePath("");
+    // revalidatePath("");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
@@ -56,5 +56,5 @@ export async function deleteConcept(conceptId: number) {
       "Content-type": "application/json",
     },
   });
-  revalidatePath("");
+  // revalidatePath("");
 }

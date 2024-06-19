@@ -51,7 +51,7 @@ export const columns: ColumnDef<ScanReportField>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original;
-      return <ConceptTags concepts={concepts ?? []} />;
+      // return <ConceptTags concepts={concepts ?? []} />;
     },
   },
   {

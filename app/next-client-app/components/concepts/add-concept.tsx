@@ -14,6 +14,7 @@ interface AddConceptProps {
   parentId: string;
   location: string;
   disabled: boolean;
+  addSR: (concept: ScanReportConcept) => void;
   // updateRowConcepts: (rowId: number, concepts: any[]) => void;
 }
 
@@ -22,14 +23,12 @@ export default function AddConcept({
   parentId,
   location,
   disabled,
-  loading,
-  setLoading,
-}: AddConceptProps & {
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-}) {
+  addSR,
+  // loading,
+  // setLoading,
+}: AddConceptProps) {
   const handleSubmit = async (conceptCode: number) => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const determineContentType = (location: string) => {
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
@@ -65,12 +64,23 @@ export default function AddConcept({
         // // Update the row concepts in the parent component
         // updateRowConcepts(rowId, updatedConceptsFiltered);
       } else {
+        const updatedConcepts = await getScanReportConcepts(
+          `object_id=${rowId}`,
+        );
+        const updatedConceptsFiltered =
+          updatedConcepts.length > 0
+            ? await getConceptFilters(
+                updatedConcepts?.map((item) => item.concept).join(","),
+              )
+            : [];
+
+        // addSR()
         toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -96,8 +106,8 @@ export default function AddConcept({
                 pattern="\d*"
               />
             </div>
-            <Button type="submit" disabled={disabled || loading}>
-              {loading ? "Adding... Please wait" : "Add"}
+            <Button type="submit" disabled={disabled}>
+              Add
             </Button>
           </div>
         </Form>

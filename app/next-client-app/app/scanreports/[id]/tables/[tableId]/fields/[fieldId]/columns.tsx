@@ -6,8 +6,8 @@ import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 
 export const columns = (
-  loading: boolean,
-  setLoading: (value: boolean) => void
+  addSR: (concept: ScanReportConcept) => void,
+  deleteSR: (id: number) => void,
 ): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
@@ -53,7 +53,7 @@ export const columns = (
     enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original;
-      return <ConceptTags concepts={concepts ?? []} />;
+      return <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />;
     },
   },
   {
@@ -69,8 +69,9 @@ export const columns = (
           parentId={scan_report_field.toString()}
           location="SR-Values"
           disabled={canEdit ? false : true}
-          loading={loading}
-          setLoading={setLoading}
+          addSR={addSR}
+          // loading={loading}
+          // setLoading={setLoading}
         />
       );
     },

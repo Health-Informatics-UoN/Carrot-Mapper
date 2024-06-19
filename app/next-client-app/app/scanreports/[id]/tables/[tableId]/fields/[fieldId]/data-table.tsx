@@ -1,4 +1,5 @@
 "use client";
+
 import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
@@ -16,42 +17,42 @@ interface ScanReportsValueProps {
   scanReportsCount: number;
 }
 
-export async function DataTableTest({
+export function DataTableTest({
   scanReportsResults,
   scanReportsConcepts,
   conceptsFilter,
   permissions,
   scanReportsCount,
 }: ScanReportsValueProps) {
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  const [concepts, setConcepts] = useState(scanReportsConcepts);
+
+  const deleteConcept = (id: number) => {
+    // filter it out.
+    const updatedConcepts = concepts.filter((concept) => concept.id !== id);
+    setConcepts(updatedConcepts);
+  };
+
+  const addConcept = (newConcept: ScanReportConcept) => {
+    // merge it.
+    const updatedConcepts = [...concepts, newConcept];
+    setConcepts(updatedConcepts);
+  };
 
   const defaultPageSize = 30;
   const filter = <DataTableFilter filter="value" filterText="value" />;
 
   const scanReportsResult = addConceptsToResults(
     scanReportsResults,
-    scanReportsConcepts,
+    concepts,
     conceptsFilter,
-    permissions
+    permissions,
   );
 
-  // const updateRowConcepts = (rowId: number, concepts: Concept[]) => {
-  //   setScanReportsResult((prevState) => {
-  //     return prevState.map((item) => {
-  //       if (item.id === rowId) {
-  //         return {
-  //           ...item,
-  //           concepts,
-  //         };
-  //       }
-  //       return item;
-  //     });
-  //   });
-  // };
   return (
     <div>
       <DataTable
-        columns={columns(loading, setLoading)}
+        columns={columns(addConcept, deleteConcept)}
         data={scanReportsResult}
         count={scanReportsCount}
         Filter={filter}
