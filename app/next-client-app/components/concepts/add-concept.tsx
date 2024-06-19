@@ -69,6 +69,8 @@ export default function AddConcept({
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -94,8 +96,8 @@ export default function AddConcept({
                 pattern="\d*"
               />
             </div>
-            <Button type="submit" disabled={disabled}>
-              Add
+            <Button type="submit" disabled={disabled || loading}>
+              {loading ? "Adding... Please wait" : "Add"}
             </Button>
           </div>
         </Form>
