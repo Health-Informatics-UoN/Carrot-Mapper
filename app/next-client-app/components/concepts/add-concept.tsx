@@ -54,14 +54,18 @@ export default function AddConcept({
         const updatedConcepts = await getScanReportConcepts(
           `object_id=${rowId}`,
         );
-        const updatedConceptsFiltered =
-          updatedConcepts.length > 0
-            ? await getConceptFilters(
-                updatedConcepts?.map((item) => item.concept).join(","),
-              )
-            : [];
+        const updatedConceptsFiltered = await getConceptFilters(
+          updatedConcepts?.map((item) => item.concept).join(","),
+        );
+        const conceptFiltered = updatedConcepts.filter(
+          (c) => c.concept == conceptCode,
+        );
+        const updatedConceptsDoubleFiltered = updatedConceptsFiltered.filter(
+          (c) => c.concept_id == conceptCode,
+        )[0];
 
-        addSR(updatedConcepts[0], updatedConceptsFiltered[0]);
+        // TODO: update nameing - we need to filter by api or in code.
+        addSR(conceptFiltered[0], updatedConceptsDoubleFiltered);
         toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {

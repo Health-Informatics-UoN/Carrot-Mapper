@@ -21,6 +21,8 @@ export function DataTableTest({
   permissions,
   scanReportsCount,
 }: ScanReportsValueProps) {
+  // Set the Concepts in state, so we can mutate them individually.
+  // TODO: rename these
   const [concepts, setConcepts] = useState(scanReportsConcepts);
   const [conceptFilter, setConceptFilter] = useState(conceptsFilter);
 
@@ -49,6 +51,7 @@ export function DataTableTest({
     setConceptFilter(updatedConcepts2);
   };
 
+  // TODO: pass from the page props.
   const defaultPageSize = 30;
   const filter = <DataTableFilter filter="value" filterText="value" />;
 
