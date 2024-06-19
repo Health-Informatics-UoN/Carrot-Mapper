@@ -61,14 +61,16 @@ export const columns: ColumnDef<ScanReportField>[] = [
       const { scan_report_table, id, permissions } = row.original;
       const canEdit =
         permissions.includes("CanEdit") || permissions.includes("CanAdmin");
-      return (
-        <AddConcept
-          rowId={id}
-          parentId={scan_report_table.toString()}
-          location="SR-Fields"
-          disabled={canEdit ? false : true}
-        />
-      );
+      // return (
+      //   // <AddConcept
+      //   //   rowId={id}
+      //   //   parentId={scan_report_table.toString()}
+      //   //   location="SR-Fields"
+      //   //   disabled={canEdit ? false : true}
+      //   //   loading={loading}
+      //   //   setLoading={setLoading}
+      //   // />
+      // );
     },
   },
   {
