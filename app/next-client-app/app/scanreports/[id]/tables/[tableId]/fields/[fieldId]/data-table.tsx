@@ -24,8 +24,12 @@ export function DataTableTest({
   permissions,
   scanReportsCount,
 }: ScanReportsValueProps) {
-  // const [loading, setLoading] = useState(false);
   const [concepts, setConcepts] = useState(scanReportsConcepts);
+
+  // necessary for pagination
+  useEffect(() => {
+    setConcepts(scanReportsConcepts);
+  }, [scanReportsConcepts]);
 
   const deleteConcept = (id: number) => {
     // filter it out.
