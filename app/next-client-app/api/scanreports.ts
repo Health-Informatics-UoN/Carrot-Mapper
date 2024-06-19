@@ -15,7 +15,7 @@ const fetchKeys = {
   update: (id: number) => `scanreports/${id}/`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
   permissions: (id: string) => `scanreports/${id}/permissions/`,
-  createScanreport: "scanreports/create/",
+  createScanreport: "v2/scanreports/create/",
 };
 
 export async function getScanReportsTables(

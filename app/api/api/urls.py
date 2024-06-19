@@ -1,9 +1,18 @@
 from api import views
 from api.router import router
 from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+router1 = DefaultRouter()
+router1.register(
+    r"v2/scanreports/create",
+    views.ScanReportCreateViewSet,
+    basename="v2scanreportscreate",
+)
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("", include(router1.urls)),
     path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
     path(
         r"countprojects/<int:dataset>",
@@ -64,11 +73,6 @@ urlpatterns = [
         "scanreports/<int:pk>/permissions/",
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
-    ),
-    path(
-        r"scanreports/create/",
-        views.ScanReportCreateView.as_view(),
-        name="scan-report-form",
     ),
     path(
         "dataset/<int:pk>/permissions/",
