@@ -69,15 +69,13 @@ export const columns = (
       const canEdit =
         permissions.includes("CanEdit") || permissions.includes("CanAdmin");
       return (
-        <Suspense fallback={<>Loading</>}>
-          <AddConcept
-            rowId={id}
-            parentId={scan_report_field.toString()}
-            location="SR-Values"
-            disabled={canEdit ? false : true}
-            addSR={addSR}
-          />
-        </Suspense>
+        <AddConcept
+          rowId={id}
+          parentId={scan_report_field.toString()}
+          location="SR-Values"
+          disabled={canEdit ? false : true}
+          addSR={addSR}
+        />
       );
     },
   },
