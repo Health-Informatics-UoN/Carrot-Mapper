@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -13,13 +12,9 @@ import {
   getScanReportTable,
   getScanReportValues,
 } from "@/api/scanreports";
-import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
-import { addConceptsToResults } from "@/lib/concept-utils";
-import { columns } from "./columns";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { DataTableTest } from "./data-table";
 
@@ -53,12 +48,12 @@ export default async function ScanReportsValue({
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results
       .map((item) => item.id)
-      .join(",")}`
+      .join(",")}`,
   );
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
+          scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
 
