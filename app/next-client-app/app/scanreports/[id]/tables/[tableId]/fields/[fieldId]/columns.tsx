@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
+import { Suspense } from "react";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
@@ -53,7 +54,11 @@ export const columns = (
     enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original;
-      return <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />;
+      return (
+        <Suspense fallback={<>Loading</>}>
+          <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />
+        </Suspense>
+      );
     },
   },
   {
@@ -64,13 +69,15 @@ export const columns = (
       const canEdit =
         permissions.includes("CanEdit") || permissions.includes("CanAdmin");
       return (
-        <AddConcept
-          rowId={id}
-          parentId={scan_report_field.toString()}
-          location="SR-Values"
-          disabled={canEdit ? false : true}
-          addSR={addSR}
-        />
+        <Suspense fallback={<>Loading</>}>
+          <AddConcept
+            rowId={id}
+            parentId={scan_report_field.toString()}
+            location="SR-Values"
+            disabled={canEdit ? false : true}
+            addSR={addSR}
+          />
+        </Suspense>
       );
     },
   },
