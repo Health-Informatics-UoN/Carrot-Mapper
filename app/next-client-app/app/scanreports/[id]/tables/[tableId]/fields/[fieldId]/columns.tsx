@@ -1,8 +1,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
+import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 import { Suspense } from "react";
-import { ConceptTags } from "@/components/concepts/concept-tags";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
@@ -53,7 +54,9 @@ export const columns = (
     cell: ({ row }) => {
       const { concepts } = row.original;
       return (
-        <Suspense fallback={<div>Loading...</div>}>
+        // Just in case the concepts tags need more time to load some data
+        // --> showing skeleton having same width with the concept tag area
+        <Suspense fallback={<Skeleton className="h-5 w-[250px]" />}>
           <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />
         </Suspense>
       );

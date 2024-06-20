@@ -9,7 +9,7 @@ import { Tooltip } from "react-tooltip";
 const LazyBadge = lazy(() =>
   import("@/components/ui/badge").then((module) => ({ default: module.Badge }))
 );
-
+// Using react.memo and react.lazy to prevent loading unnecessary tags
 export const ConceptTags = React.memo(function ConceptTags({
   concepts,
   deleteSR,
