@@ -13,42 +13,44 @@ interface ScanReportsValueProps {
   permissions: PermissionsResponse;
   scanReportsCount: number;
 }
-// TODO: rename this
-export function DataTableTest({
+
+export function CustomDataTable({
   scanReportsResults,
   scanReportsConcepts,
   conceptsFilter,
   permissions,
   scanReportsCount,
 }: ScanReportsValueProps) {
-  // Set the Concepts in state, so we can mutate them individually.
-  // TODO: rename these
-  const [concepts, setConcepts] = useState(scanReportsConcepts);
-  const [conceptFilter, setConceptFilter] = useState(conceptsFilter);
+  // Set the needed Concepts and Concepts filter in state, so we can mutate them individually.
+  const [neededConcepts, setNeededConcepts] = useState(scanReportsConcepts);
+  const [neededConceptFilter, setNeededConceptFilter] =
+    useState(conceptsFilter);
 
-  // necessary for pagination
+  // Necessary for pagination
   useEffect(() => {
-    setConcepts(scanReportsConcepts);
+    setNeededConcepts(scanReportsConcepts);
   }, [scanReportsConcepts]);
 
   useEffect(() => {
-    setConceptFilter(conceptsFilter);
+    setNeededConceptFilter(conceptsFilter);
   }, [conceptsFilter]);
 
   const deleteConcept = (id: number) => {
     // filter it out.
-    const updatedConcepts = concepts.filter((concept) => concept.id !== id);
-    setConcepts(updatedConcepts);
+    const updatedConcepts = neededConcepts.filter(
+      (concept) => concept.id !== id
+    );
+    setNeededConcepts(updatedConcepts);
   };
 
-  const addConcept = (newConcept: ScanReportConcept, newC: Concept) => {
+  const addConcept = (newConcept: ScanReportConcept, newConFilter: Concept) => {
     // merge it.
 
-    const updatedConcepts = [...concepts, newConcept];
-    setConcepts(updatedConcepts);
+    const updatedConcepts = [...neededConcepts, newConcept];
+    setNeededConcepts(updatedConcepts);
 
-    const updatedConcepts2 = [...conceptFilter, newC];
-    setConceptFilter(updatedConcepts2);
+    const updatedConceptFilters = [...neededConceptFilter, newConFilter];
+    setNeededConceptFilter(updatedConceptFilters);
   };
 
   // TODO: pass from the page props.
@@ -57,8 +59,8 @@ export function DataTableTest({
 
   const scanReportsResult = addConceptsToResults(
     scanReportsResults,
-    concepts,
-    conceptsFilter,
+    neededConcepts,
+    neededConceptFilter,
     permissions
   );
 

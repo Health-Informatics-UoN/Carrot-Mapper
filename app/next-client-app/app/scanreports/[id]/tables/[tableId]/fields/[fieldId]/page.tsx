@@ -16,7 +16,7 @@ import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
-import { DataTableTest } from "./data-table";
+import { CustomDataTable } from "./CustomDataTable";
 
 interface ScanReportsValueProps {
   params: {
@@ -48,12 +48,12 @@ export default async function ScanReportsValue({
   const scanReportsConcepts = await getScanReportConcepts(
     `object_id__in=${scanReportsValues.results
       .map((item) => item.id)
-      .join(",")}`,
+      .join(",")}`
   );
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(","),
+          scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
 
@@ -101,7 +101,7 @@ export default async function ScanReportsValue({
         permissions={permissions.permissions}
       />
       <div>
-        <DataTableTest
+        <CustomDataTable
           scanReportsCount={scanReportsValues.count}
           permissions={permissions}
           scanReportsConcepts={scanReportsConcepts}
