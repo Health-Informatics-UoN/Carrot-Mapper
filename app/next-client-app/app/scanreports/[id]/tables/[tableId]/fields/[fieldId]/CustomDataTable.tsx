@@ -11,7 +11,7 @@ interface ScanReportsValueProps {
   scanReportsConcepts: ScanReportConcept[];
   conceptsFilter: Concept[];
   permissions: PermissionsResponse;
-  scanReportsCount: number;
+  count: number;
   defaultPageSize: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -20,7 +20,7 @@ export function CustomDataTable({
   scanReportsConcepts,
   conceptsFilter,
   permissions,
-  scanReportsCount,
+  count,
   defaultPageSize,
 }: ScanReportsValueProps) {
   const filter = <DataTableFilter filter="value" filterText="value" />;
@@ -69,7 +69,7 @@ export function CustomDataTable({
       <DataTable
         columns={columns(addConcept, deleteConcept)}
         data={scanReportsResult}
-        count={scanReportsCount}
+        count={count}
         Filter={filter}
         clickableRow={false}
         defaultPageSize={defaultPageSize}

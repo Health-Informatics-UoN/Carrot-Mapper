@@ -57,12 +57,6 @@ export default async function ScanReportsField({
           scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
-  const scanReportsResult = addConceptsToResults(
-    scanReportsFields.results,
-    scanReportsConcepts,
-    conceptsFilter,
-    permissions
-  );
 
   return (
     <div className="pt-10 px-16">
@@ -101,7 +95,7 @@ export default async function ScanReportsField({
       />
       <div>
         <CustomDataTable
-          scanReportsCount={scanReportsFields.count}
+          count={scanReportsFields.count}
           permissions={permissions}
           scanReportsConcepts={scanReportsConcepts}
           conceptsFilter={conceptsFilter}

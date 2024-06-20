@@ -102,7 +102,7 @@ export default async function ScanReportsValue({
       />
       <div>
         <CustomDataTable
-          scanReportsCount={scanReportsValues.count}
+          count={scanReportsValues.count}
           permissions={permissions}
           scanReportsConcepts={scanReportsConcepts}
           conceptsFilter={conceptsFilter}
