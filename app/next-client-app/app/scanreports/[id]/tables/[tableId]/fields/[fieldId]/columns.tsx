@@ -1,14 +1,12 @@
-"use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 import { Suspense } from "react";
+import { ConceptTags } from "@/components/concepts/concept-tags";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
-  deleteSR: (id: number) => void,
+  deleteSR: (id: number) => void
 ): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
@@ -55,7 +53,7 @@ export const columns = (
     cell: ({ row }) => {
       const { concepts } = row.original;
       return (
-        <Suspense fallback={<>Loading</>}>
+        <Suspense fallback={<div>Loading...</div>}>
           <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />
         </Suspense>
       );

@@ -13,7 +13,7 @@ interface ScanReportsValueProps {
   permissions: PermissionsResponse;
   scanReportsCount: number;
 }
-
+// TODO: rename this
 export function DataTableTest({
   scanReportsResults,
   scanReportsConcepts,
@@ -59,7 +59,7 @@ export function DataTableTest({
     scanReportsResults,
     concepts,
     conceptsFilter,
-    permissions,
+    permissions
   );
 
   return (

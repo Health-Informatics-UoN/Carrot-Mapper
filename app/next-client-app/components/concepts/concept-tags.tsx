@@ -1,12 +1,16 @@
+import React, { lazy } from "react";
 import { deleteConcept } from "@/api/concepts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/error";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { Tooltip } from "react-tooltip";
 
-export async function ConceptTags({
+const LazyBadge = lazy(() =>
+  import("@/components/ui/badge").then((module) => ({ default: module.Badge }))
+);
+
+export const ConceptTags = React.memo(function ConceptTags({
   concepts,
   deleteSR,
 }: {
@@ -21,13 +25,13 @@ export async function ConceptTags({
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Unable to delete Concept id from value Error: ${errorObj.detail}`,
+        `Unable to delete Concept id from value Error: ${errorObj.detail}`
       );
       console.error(error);
     }
   };
 
-  return concepts && concepts?.length > 0 ? (
+  return concepts && concepts.length > 0 ? (
     <div className="flex flex-col items-start w-[250px]">
       {concepts.map((concept) => (
         <a
@@ -39,23 +43,23 @@ export async function ConceptTags({
             concept.creation_type === "V"
               ? "(built from a OMOP vocabulary)"
               : concept.creation_type === "M"
-                ? "(added manually)"
-                : concept.creation_type === "R"
-                  ? "(added though mapping reuse)"
-                  : ""
+              ? "(added manually)"
+              : concept.creation_type === "R"
+              ? "(added though mapping reuse)"
+              : ""
           }`}
           data-tooltip-place="top"
         >
           <Tooltip id="badge-tooltip" />
-          <Badge
+          <LazyBadge
             className={`${
               concept.creation_type === "V"
                 ? "bg-carrot-vocab hover:bg-carrot-vocab"
                 : concept.creation_type === "M"
-                  ? "bg-carrot-manual hover:bg-carrot-manual"
-                  : concept.creation_type === "R"
-                    ? "bg-carrot-reuse hover:bg-carrot-reuse"
-                    : ""
+                ? "bg-carrot-manual hover:bg-carrot-manual"
+                : concept.creation_type === "R"
+                ? "bg-carrot-reuse hover:bg-carrot-reuse"
+                : ""
             }`}
             key={concept.concept_code}
           >
@@ -69,11 +73,11 @@ export async function ConceptTags({
             >
               <Cross2Icon />
             </Button>
-          </Badge>
+          </LazyBadge>
         </a>
       ))}
     </div>
   ) : (
     <></>
   );
-}
+});

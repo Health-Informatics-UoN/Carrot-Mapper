@@ -12,11 +12,11 @@ const fetchKeys = {
 };
 
 export async function getScanReportConcepts(
-  filter: string,
+  filter: string
 ): Promise<ScanReportConcept[]> {
   try {
     return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcepts(filter),
+      fetchKeys.scanreportConcepts(filter)
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -35,7 +35,7 @@ export async function getConceptFilters(filter: string): Promise<Concept[]> {
 
 export async function addConcept(data: {}) {
   try {
-    const response = await request(fetchKeys.addConcept, {
+    await request(fetchKeys.addConcept, {
       method: "POST",
       headers: {
         "Content-type": "application/json",
