@@ -5,8 +5,13 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
 import { EditButton } from "@/components/scanreports/EditButton";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export const columns: ColumnDef<ScanReportField>[] = [
+export const columns = (
+  addSR: (concept: ScanReportConcept, c: Concept) => void,
+  deleteSR: (id: number) => void
+): ColumnDef<ScanReportField>[] => [
   {
     id: "Name",
     accessorKey: "name",
@@ -51,7 +56,13 @@ export const columns: ColumnDef<ScanReportField>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original;
-      // return <ConceptTags concepts={concepts ?? []} />;
+      return (
+        // Just in case the concepts tags need more time to load some data
+        // --> showing skeleton having same width with the concept tag area
+        <Suspense fallback={<Skeleton className="h-5 w-[250px]" />}>
+          <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />
+        </Suspense>
+      );
     },
   },
   {
@@ -61,16 +72,15 @@ export const columns: ColumnDef<ScanReportField>[] = [
       const { scan_report_table, id, permissions } = row.original;
       const canEdit =
         permissions.includes("CanEdit") || permissions.includes("CanAdmin");
-      // return (
-      //   // <AddConcept
-      //   //   rowId={id}
-      //   //   parentId={scan_report_table.toString()}
-      //   //   location="SR-Fields"
-      //   //   disabled={canEdit ? false : true}
-      //   //   loading={loading}
-      //   //   setLoading={setLoading}
-      //   // />
-      // );
+      return (
+        <AddConcept
+          rowId={id}
+          parentId={scan_report_table.toString()}
+          location="SR-Values"
+          disabled={canEdit ? false : true}
+          addSR={addSR}
+        />
+      );
     },
   },
   {

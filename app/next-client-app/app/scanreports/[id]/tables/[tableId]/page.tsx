@@ -19,6 +19,7 @@ import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { addConceptsToResults } from "@/lib/concept-utils";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
+import { CustomDataTable } from "./CustomDataTable";
 
 interface ScanReportsFieldProps {
   params: {
@@ -39,7 +40,6 @@ export default async function ScanReportsField({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const filter = <DataTableFilter filter="name" filterText="field" />;
 
   const scanReportsFields = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
@@ -100,12 +100,12 @@ export default async function ScanReportsField({
         permissions={permissions.permissions}
       />
       <div>
-        <DataTable
-          columns={columns}
-          data={scanReportsResult}
-          count={scanReportsFields.count}
-          Filter={filter}
-          linkPrefix="fields/"
+        <CustomDataTable
+          scanReportsCount={scanReportsFields.count}
+          permissions={permissions}
+          scanReportsConcepts={scanReportsConcepts}
+          conceptsFilter={conceptsFilter}
+          scanReportsResults={scanReportsFields.results}
           defaultPageSize={defaultPageSize}
         />
       </div>
