@@ -16,7 +16,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
-import { CustomDataTable } from "./CustomDataTable";
+import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
+import { columns } from "./columns";
 
 interface ScanReportsValueProps {
   params: {
@@ -101,13 +102,17 @@ export default async function ScanReportsValue({
         permissions={permissions.permissions}
       />
       <div>
-        <CustomDataTable
+        <ConceptDataTable
           count={scanReportsValues.count}
           permissions={permissions}
           scanReportsConcepts={scanReportsConcepts}
           conceptsFilter={conceptsFilter}
-          scanReportsResults={scanReportsValues.results}
+          scanReportsData={scanReportsValues.results}
           defaultPageSize={defaultPageSize}
+          columns={columns}
+          clickable={false}
+          filterCol="value"
+          filterText="value "
         />
       </div>
     </div>

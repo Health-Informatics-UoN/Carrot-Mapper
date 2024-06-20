@@ -3,27 +3,41 @@
 import { DataTable } from "@/components/data-table";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { addConceptsToResults } from "@/lib/concept-utils";
-import { columns } from "./columns";
 import { useEffect, useState } from "react";
 
-interface ScanReportsValueProps {
-  scanReportsResults: ScanReportValue[];
+interface CustomDataTableProps<T> {
+  scanReportsData: T[];
   scanReportsConcepts: ScanReportConcept[];
   conceptsFilter: Concept[];
   permissions: PermissionsResponse;
   count: number;
   defaultPageSize: 10 | 20 | 30 | 40 | 50;
+  columns: (
+    addConcept: (newConcept: ScanReportConcept, newConFilter: Concept) => void,
+    deleteConcept: (id: number) => void
+  ) => any;
+  clickable?: boolean;
+  filterCol: string;
+  filterText: string;
+  linkPrefix?: string;
 }
 
-export function CustomDataTable({
-  scanReportsResults,
+export function ConceptDataTable<
+  T extends { id: number; concepts?: Concept[]; permissions: Permission[] }
+>({
+  scanReportsData,
   scanReportsConcepts,
   conceptsFilter,
   permissions,
   count,
   defaultPageSize,
-}: ScanReportsValueProps) {
-  const filter = <DataTableFilter filter="value" filterText="value" />;
+  columns,
+  clickable,
+  filterCol,
+  filterText,
+  linkPrefix,
+}: CustomDataTableProps<T>) {
+  const filter = <DataTableFilter filter={filterCol} filterText={filterText} />;
 
   // Set the needed Concepts and Concepts filter in state, so we can mutate them individually.
   const [neededConcepts, setNeededConcepts] = useState(scanReportsConcepts);
@@ -58,7 +72,7 @@ export function CustomDataTable({
   };
 
   const scanReportsResult = addConceptsToResults(
-    scanReportsResults,
+    scanReportsData,
     neededConcepts,
     neededConceptFilter,
     permissions
@@ -71,8 +85,9 @@ export function CustomDataTable({
         data={scanReportsResult}
         count={count}
         Filter={filter}
-        clickableRow={false}
+        clickableRow={clickable}
         defaultPageSize={defaultPageSize}
+        linkPrefix={linkPrefix}
       />
     </div>
   );

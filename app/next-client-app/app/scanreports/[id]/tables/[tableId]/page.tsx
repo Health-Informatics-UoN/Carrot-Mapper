@@ -12,14 +12,11 @@ import {
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
-import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
-import { addConceptsToResults } from "@/lib/concept-utils";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
-import { CustomDataTable } from "./CustomDataTable";
+import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 
 interface ScanReportsFieldProps {
   params: {
@@ -94,13 +91,17 @@ export default async function ScanReportsField({
         permissions={permissions.permissions}
       />
       <div>
-        <CustomDataTable
+        <ConceptDataTable
           count={scanReportsFields.count}
           permissions={permissions}
           scanReportsConcepts={scanReportsConcepts}
           conceptsFilter={conceptsFilter}
-          scanReportsResults={scanReportsFields.results}
+          scanReportsData={scanReportsFields.results}
           defaultPageSize={defaultPageSize}
+          columns={columns}
+          filterCol="name"
+          filterText="field "
+          linkPrefix="fields/"
         />
       </div>
     </div>
