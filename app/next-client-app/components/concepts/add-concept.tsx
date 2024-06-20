@@ -23,11 +23,8 @@ export default function AddConcept({
   location,
   disabled,
   addSR,
-  // loading,
-  // setLoading,
 }: AddConceptProps) {
   const handleSubmit = async (conceptCode: number) => {
-    // setLoading(true);
     try {
       const determineContentType = (location: string) => {
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
@@ -51,27 +48,23 @@ export default function AddConcept({
       if (response) {
         toast.error(`Adding concept failed. ${response.errorMessage}`);
       } else {
-        const updatedConcepts = await getScanReportConcepts(
-          `object_id=${rowId}`,
+        const newConcepts = await getScanReportConcepts(`object_id=${rowId}`);
+        const filteredConcepts = await getConceptFilters(
+          newConcepts?.map((item) => item.concept).join(",")
         );
-        const updatedConceptsFiltered = await getConceptFilters(
-          updatedConcepts?.map((item) => item.concept).join(","),
-        );
-        const conceptFiltered = updatedConcepts.filter(
-          (c) => c.concept == conceptCode,
-        );
-        const updatedConceptsDoubleFiltered = updatedConceptsFiltered.filter(
-          (c) => c.concept_id == conceptCode,
+        // Filter the concept and concept filter
+        const newConcept = newConcepts.filter(
+          (c) => c.concept == conceptCode
+        )[0];
+        const filteredConcept = filteredConcepts.filter(
+          (c) => c.concept_id == conceptCode
         )[0];
 
-        // TODO: update nameing - we need to filter by api or in code.
-        addSR(conceptFiltered[0], updatedConceptsDoubleFiltered);
+        addSR(newConcept, filteredConcept);
         toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {
       toast.error(`Adding concept failed. Error: Unknown error`);
-    } finally {
-      // setLoading(false);
     }
   };
 

@@ -42,8 +42,6 @@ export async function addConcept(data: {}) {
       },
       body: JSON.stringify(data),
     });
-    // Re-validate to prevent the newly added concepts can't be seen in the "next" pages (not page 1) that not be refreshed (or reloaded) before
-    // revalidatePath("");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };

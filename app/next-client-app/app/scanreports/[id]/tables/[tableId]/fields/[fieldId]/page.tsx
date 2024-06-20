@@ -107,6 +107,7 @@ export default async function ScanReportsValue({
           scanReportsConcepts={scanReportsConcepts}
           conceptsFilter={conceptsFilter}
           scanReportsResults={scanReportsValues.results}
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>
