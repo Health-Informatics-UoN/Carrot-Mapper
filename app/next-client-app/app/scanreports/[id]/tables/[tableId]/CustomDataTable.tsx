@@ -71,7 +71,7 @@ export function CustomDataTable({
         data={scanReportsResult}
         count={scanReportsCount}
         Filter={filter}
-        clickableRow={false}
+        linkPrefix="fields/"
         defaultPageSize={defaultPageSize}
       />
     </div>
