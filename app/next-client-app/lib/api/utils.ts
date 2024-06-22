@@ -1,4 +1,4 @@
-import request from "@/lib/api/request";
+import request from "./request";
 
 /**
  * Fetches all pages of paginated data from the specified url.
