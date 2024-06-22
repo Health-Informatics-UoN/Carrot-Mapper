@@ -6,8 +6,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import {
+  getAllScanReportFields,
   getScanReport,
-  getScanReportFields,
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
@@ -36,13 +36,11 @@ export default async function UpdateTable({
 
   const query = objToQuery(combinedParams);
 
-  const scanReportsFields = await getScanReportFields(query);
-  const shortenFields = scanReportsFields.results.map(
-    (item: ScanReportField) => ({
-      id: item.id,
-      name: item.name,
-    }),
-  );
+  const scanReportsFields = await getAllScanReportFields(query);
+  const shortenFields = scanReportsFields.map((item: ScanReportField) => ({
+    id: item.id,
+    name: item.name,
+  }));
   const scanReportsName = await getScanReport(id);
   const table = await getScanReportTable(tableId);
   const permissions = await getScanReportPermissions(id);
