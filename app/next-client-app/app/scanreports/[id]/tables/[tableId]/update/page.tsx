@@ -26,7 +26,7 @@ interface UpdateTableProps {
 export default async function UpdateTable({
   params: { id, tableId },
 }: UpdateTableProps) {
-  const defaultPageSize = 100;
+  const defaultPageSize = 50;
   const defaultParams = {
     scan_report_table: tableId,
     fields: "name,id",
