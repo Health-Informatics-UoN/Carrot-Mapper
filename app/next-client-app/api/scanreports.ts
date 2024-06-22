@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import request from "@/lib/api/request";
 import { redirect } from "next/navigation";
+import { fetchAllPages } from "@/lib/api/utils";
 
 const fetchKeys = {
   list: (filter?: string) =>
@@ -69,6 +70,17 @@ export async function getScanReportFields(
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+export async function getAllScanReportFields(
+  filter: string | undefined,
+): Promise<ScanReportField[]> {
+  try {
+    return await fetchAllPages<ScanReportField>(fetchKeys.fields(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
   }
 }
 
