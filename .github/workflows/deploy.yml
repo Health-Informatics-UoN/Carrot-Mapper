@@ -132,7 +132,7 @@ jobs:
         uses: Azure/functions-action@v1.5.1
         id: fa
         with:
-          app-name: 'ccom-funcs-dev'
+          app-name: ${{ secrets.AZURE_FUNCTIONS_NAME }}
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
           publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
@@ -150,7 +150,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-dev'
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
@@ -172,7 +172,7 @@ jobs:
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-next-dev'
+          app-name: ${{ secrets.AZURE_WEBAPP_NEXT_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_NEXT_PUBLISH_PROFILE }}
           package: ${{ github.workspace }}/frontendwebapp
 
@@ -193,7 +193,7 @@ jobs:
         uses: Azure/functions-action@v1.5.1
         id: fa
         with:
-          app-name: 'ccom-funcs-test'
+          app-name: ${{ secrets.AZURE_FUNCTIONS_NAME }}
           slot-name: 'production'
           package: ${{ github.workspace }}/functionsapp
           publish-profile: ${{ secrets.AZURE_FUNCAPP_PUBLISH_PROFILE  }}
@@ -211,7 +211,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-test'
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: 'ccomreg.azurecr.io/${{ secrets.REGISTRY_USERNAME_DEV }}/latest:${{ github.sha }}'
 
@@ -233,6 +233,6 @@ jobs:
       - name: Deploy to Azure WebApp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'ccom-next-test'
+          app-name: ${{ secrets.AZURE_WEBAPP_NEXT_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_NEXT_PUBLISH_PROFILE }}
           package: ${{ github.workspace }}/frontendwebapp
