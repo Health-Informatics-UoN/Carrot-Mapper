@@ -87,6 +87,12 @@
         {% endfor %}
     {% endif %}
     <br/>
+    {% if 'carrot.ac.uk' not in request.build_absolute_uri %}
+    <div class="alert alert-danger" role="alert">
+        <h1>Carrot has moved!</h1>
+        Please ensure you are using the <strong><a href="https://carrot.ac.uk">carrot.ac.uk</a></strong> domain, as features will not work on <strong>ccom.azurewebsites.net</strong>.
+    </div>
+    {% endif %}
     {% block body %}{% endblock %}
 </main>
 
