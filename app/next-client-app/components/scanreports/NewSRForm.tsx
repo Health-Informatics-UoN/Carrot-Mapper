@@ -34,7 +34,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
     formData.append("visibility", data.visibility);
     formData.append("parent_dataset", data.dataset.toString());
     data.editors.forEach((editor) => {
-      formData.append(`editors`, editor.toString());
+      formData.append("editors", editor.toString());
     });
     formData.append("scan_report_file", data.scan_report_file);
     formData.append("data_dictionary_file", data.Data_dict);

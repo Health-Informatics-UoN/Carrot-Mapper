@@ -41,7 +41,6 @@ from api.serializers import (
     ScanReportValueViewSerializerV2,
     ScanReportViewSerializer,
     ScanReportViewSerializerV2,
-    ScanReportCreateSerializer,
     UserSerializer,
     VocabularySerializer,
 )
@@ -571,11 +570,6 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
-
-
-class ScanReportCreateViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = ScanReportCreateSerializer
 
 
 @method_decorator(login_required, name="dispatch")
