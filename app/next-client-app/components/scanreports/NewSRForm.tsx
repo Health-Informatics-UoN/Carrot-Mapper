@@ -64,7 +64,11 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
       }}
     >
       {({ values, handleChange, handleSubmit, setFieldValue }) => (
-        <Form className="w-full" onSubmit={handleSubmit}>
+        <Form
+          className="w-full"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex flex-col gap-2">
               <h3 className="flex">

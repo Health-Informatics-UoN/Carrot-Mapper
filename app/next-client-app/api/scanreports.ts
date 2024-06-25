@@ -16,7 +16,7 @@ const fetchKeys = {
   update: (id: number) => `scanreports/${id}/`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
   permissions: (id: string) => `scanreports/${id}/permissions/`,
-  createScanreport: "scanreports/create/",
+  createScanreport: "v2/scanreports/",
 };
 
 export async function getScanReportsTables(
@@ -75,7 +75,7 @@ export async function getScanReportFields(
 }
 
 export async function getAllScanReportFields(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<ScanReportField[]> {
   try {
     return await fetchAllPages<ScanReportField>(fetchKeys.fields(filter));
