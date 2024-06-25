@@ -182,8 +182,9 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
 
 
 class ScanReportCreateSerializerV2(serializers.ModelSerializer):
-    parser_classes = [MultiPartParser, FormParser]
+
     scan_report_file = serializers.FileField(write_only=True)
+    data_dictionary_file = serializers.FileField(write_only=True)
 
     class Meta:
         model = ScanReport
@@ -193,37 +194,37 @@ class ScanReportCreateSerializerV2(serializers.ModelSerializer):
             "parent_dataset",
             "visibility",
             "scan_report_file",
+            "data_dictionary_file",
         )
 
-    def validate(self, data):
-        print("hello")
-        print(data)
-        if request := self.context.get("request"):
-            if ds := data.get("parent_dataset"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(ds, request)
-                    or has_editorship(ds, request)
-                ):
-                    raise PermissionDenied(
-                        "You must be an admin of the parent dataset to add a new scan report to it.",
-                    )
-            else:
-                raise NotFound("Could not find parent dataset.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report."
-            )
-        return super().validate(data)
+    # def validate(self, data):
+    #     print("hello")
+    #     print(data)
+    #     if request := self.context.get("request"):
+    #         if ds := data.get("parent_dataset"):
+    #             if not (
+    #                 is_az_function_user(request.user)
+    #                 or is_admin(ds, request)
+    #                 or has_editorship(ds, request)
+    #             ):
+    #                 raise PermissionDenied(
+    #                     "You must be an admin of the parent dataset to add a new scan report to it.",
+    #                 )
+    #         else:
+    #             raise NotFound("Could not find parent dataset.")
+    #     else:
+    #         raise serializers.ValidationError(
+    #             "Missing request context. Unable to validate scan report."
+    #         )
+    #     return super().validate(data)
 
-    # def validate_scan_report_file(self, value):
-    #     print("heelo again!", value)
-    #     # Implement your validation logic here
-    #     # For example, check file extension or file size
-    #     if not value.name.endswith(".xlsx"):
-    #         raise serializers.ValidationError("Only .xlsx files are allowed.")
-    #     # You can also access file size, content type, etc.
-    #     return value
+    def validate_scan_report_file(self, value):
+        print("Validating file:", value.name)
+        if not value.name.endswith(".xlsx"):
+            print("File validation failed")
+            raise serializers.ValidationError("Only .xlsx files are allowed.")
+        print("File validation passed")
+        return value
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):

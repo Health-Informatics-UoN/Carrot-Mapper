@@ -23,6 +23,7 @@ interface FormData {
   dataset: number;
   scan_report_file: File;
   Data_dict: File;
+  // image: File;
 }
 
 export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
@@ -58,6 +59,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
         name: "",
         scan_report_file: new File([], ""),
         Data_dict: new File([], ""),
+        // image: new File([], ""),
       }}
       onSubmit={(data) => {
         handleSubmit(data);
@@ -144,21 +146,50 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
               </Label>
             </div>
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 WhiteRabbit Scan Report
                 <Tooltips content="Scan report that was generated from White Rabbit application" />
               </h3>
               <UploadSR setFieldValue={setFieldValue} />
-            </div>
-            <div className="flex flex-col gap-2">
+            </div> */}
+            {/* <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
                 Data Dictionary
                 <Tooltips content="Data dictionary...?" />
               </h3>
               <UploadDataDict setFieldValue={setFieldValue} />
+            </div> */}
+            <div>
+              <h3>dict</h3>
+              <input
+                type="file"
+                name="Data_dict"
+                // set supported file types here,
+                // could also check again within formik validation or backend
+                onChange={(e) => {
+                  // Object is possibly null error w/o check
+                  if (e.currentTarget.files) {
+                    setFieldValue("Data_dict", e.currentTarget.files[0]);
+                  }
+                }}
+              />
+            </div>
+            <div>
+              <input
+                type="file"
+                name="scan_report_file"
+                // set supported file types here,
+                // could also check again within formik validation or backend
+                onChange={(e) => {
+                  // Object is possibly null error w/o check
+                  if (e.currentTarget.files) {
+                    setFieldValue("scan_report_file", e.currentTarget.files[0]);
+                  }
+                }}
+              />
             </div>
             <div className="mb-5">
               <Button
