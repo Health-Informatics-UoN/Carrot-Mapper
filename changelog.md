@@ -2,12 +2,25 @@
 
 Please append a line to the changelog for each change made.
 
-## v2.2.01-dev
+## v2.2.5
 ## New features
+- Carrot Mapper is now deployed on carrot.ac.uk
 
-### Improvements
+## v2.2.4
+## New features
+- Deploying to named infrastructure in Github workflows.
 
-### Bugfixes
+## v2.2.3
+## Bugfixes
+- Fix list of data fields showing all values in Table update.
+
+## v2.2.2
+## New features
+- Dataset Details implemented in Next.js
+
+## v2.2.1
+## New features
+- Delete Scan Report now available
 
 ## v2.2.00
 ### New features
