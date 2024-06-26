@@ -210,4 +210,5 @@ export async function createScanReport(data: FormData) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
   }
+  redirect(`/scanreports/`);
 }

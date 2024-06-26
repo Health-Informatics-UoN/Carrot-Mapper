@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
 from mapping.services_rules import analyse_concepts, get_mapping_rules_json
-from rest_framework import serializers, status
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound, PermissionDenied, ParseError
 from shared.data.models import (
     ClassificationSystem,
     DataDictionary,
@@ -36,8 +36,6 @@ import csv
 from io import BytesIO, StringIO
 import openpyxl
 from collections import Counter
-from django.core.exceptions import ValidationError
-from rest_framework.response import Response
 
 
 def modify_filename(filename, dt, rand):
@@ -190,26 +188,14 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             "data_dictionary_file",
         )
 
-    print(data_dictionary_file)
-
     def validate_data_dictionary_file(self, value):
         data_dictionary = value
 
         if str(data_dictionary) == "undefined":
-            print("no dict data file")
             return data_dictionary
 
         if not str(data_dictionary).endswith(".csv"):
-            print("not a csv file!!!!")
-            return Response(
-                {
-                    "You have attempted to upload a data dictionary "
-                    "which is not in CSV format. "
-                    "Please upload a .csv file."
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-            raise ValidationError(
+            raise ParseError(
                 "You have attempted to upload a data dictionary "
                 "which is not in CSV format. "
                 "Please upload a .csv file."
@@ -222,17 +208,14 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
         # Check first line for correct headers to columns
         header_line = next(csv_reader)
         if header_line != ["csv_file_name", "field_name", "code", "value"]:
-            print("first line failed")
-            errors.append(
-                ValidationError(
-                    f"Dictionary file has incorrect first line. "
-                    f"It must be ['csv_file_name', "
-                    f"'field_name', 'code', 'value'], but you "
-                    f"supplied {header_line}. If this error is "
-                    f"showing extra '' elements, this indicates "
-                    f"that another line has >4 elements, "
-                    f"which will need to be corrected."
-                )
+            raise ParseError(
+                f"Dictionary file has incorrect first line. "
+                f"It must be ['csv_file_name', "
+                f"'field_name', 'code', 'value'], but you "
+                f"supplied {header_line}. If this error is "
+                f"showing extra '' elements, this indicates "
+                f"that another line has >4 elements, "
+                f"which will need to be corrected."
             )
 
         # Check all rows have either 3 or 4 non-empty elements, and only the 4th can be empty.
@@ -242,7 +225,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             line_length_nonempty = len([element for element in line if element != ""])
             if line_length_nonempty not in [3, 4]:
                 errors.append(
-                    ValidationError(
+                    ParseError(
                         f"Dictionary has "
                         f"{line_length_nonempty} "
                         f"values in line {line_no} ({line}). "
@@ -254,7 +237,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             for element_no, element in enumerate(line[:3], start=1):
                 if element == "":
                     errors.append(
-                        ValidationError(
+                        ParseError(
                             f"Dictionary has an empty element "
                             f"in column {element_no} in line "
                             f"{line_no}. "
@@ -264,8 +247,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                     )
 
         if errors:
-            print("there are some errors")
-            raise ValidationError(errors)
+            raise ParseError(errors)
 
         return data_dictionary
 
@@ -301,7 +283,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
         # columns will be handled cleanly.
         if not source_headers[:10] == expected_headers:
             errors.append(
-                ValidationError(
+                ParseError(
                     f"Please check the following columns exist "
                     f"in the Scan Report (Field Overview sheet) "
                     f"in this order: "
@@ -312,7 +294,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                     f"You provided \n{source_headers[:10]}"
                 )
             )
-            raise ValidationError(errors)
+            raise ParseError(errors)
 
         # Check tables are correctly separated in FO - a single empty line between each
         # table
@@ -324,7 +306,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 and (cell_above.value != "" and cell_above.value is not None)
             ) or (cell.value == "" and cell_above.value == ""):
                 errors.append(
-                    ValidationError(
+                    ParseError(
                         f"At {cell}, tables in Field Overview "
                         f"table are not correctly separated by "
                         f"a single line. "
@@ -336,8 +318,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             cell_above = cell
 
         if errors:
-            print("there are some errors in run fast")
-            raise ValidationError(errors)
+            raise ParseError(errors)
 
         # Now that we're happy that the FO sheet is correctly formatted, we can move
         # on to comparing its contents to the sheets
@@ -363,14 +344,14 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             sheets_only = set(actual_sheetnames).difference(expected_sheetnames)
             fo_only = set(expected_sheetnames).difference(actual_sheetnames)
             errors.append(
-                ValidationError(
+                ParseError(
                     "Tables in Field Overview sheet do not "
                     "match the sheets supplied."
                 )
             )
             if sheets_only:
                 errors.append(
-                    ValidationError(
+                    ParseError(
                         f"{sheets_only} are sheets that do not "
                         f"have matching entries in first column "
                         f"of the Field Overview sheet. "
@@ -378,7 +359,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 )
             if fo_only:
                 errors.append(
-                    ValidationError(
+                    ParseError(
                         f"{fo_only} are table names in first "
                         f"column of Field Overview sheet but do "
                         f"not have matching sheets supplied."
@@ -386,8 +367,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 )
 
         if errors:
-            print("there are some errors in run fast 222")
-            raise ValidationError(errors)
+            raise ParseError(errors)
 
         # Loop over the rows, and for each table, once we reach the end of the table,
         # compare the fields provided with the fields in the associated sheet
@@ -414,7 +394,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 for field in count_table_sheet_fields:
                     if count_table_sheet_fields[field] > 1:
                         errors.append(
-                            ValidationError(
+                            ParseError(
                                 f"Sheet '{current_table_name}' "
                                 f"contains more than one field "
                                 f"with the name '{field}'. "
@@ -429,7 +409,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 for field in count_current_table_fields:
                     if count_current_table_fields[field] > 1:
                         errors.append(
-                            ValidationError(
+                            ParseError(
                                 f"Field Overview sheet contains "
                                 f"more than one field with the "
                                 f"name '{field}' against the "
@@ -447,7 +427,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                     )
                     fo_only = set(current_table_fields).difference(table_sheet_fields)
                     errors.append(
-                        ValidationError(
+                        ParseError(
                             f"Fields in Field Overview against "
                             f"table {current_table_name} do not "
                             f"match fields in the associated "
@@ -456,7 +436,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                     )
                     if sheet_only:
                         errors.append(
-                            ValidationError(
+                            ParseError(
                                 f"{sheet_only} exist in the "
                                 f"'{current_table_name}' sheet "
                                 f"but there are no matching "
@@ -469,7 +449,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                         )
                     if fo_only:
                         errors.append(
-                            ValidationError(
+                            ParseError(
                                 f"{fo_only} exist in second "
                                 f"column of Field Over"
                                 f"view sheet against the table "
@@ -493,8 +473,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             last_value = row[0].value
 
         if errors:
-            print("there are some errors in run fast 3333")
-            raise ValidationError(errors)
+            raise ParseError(errors)
 
         return True
 
@@ -502,8 +481,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
         scan_report = value
 
         if not str(scan_report).endswith(".xlsx"):
-            print("not a xlsx file")
-            raise ValidationError(
+            raise ParseError(
                 "You have attempted to upload a scan report which "
                 "is not in XLSX format. Please upload a .xlsx file."
             )
@@ -514,8 +492,8 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
 
         try:
             self.run_fast_consistency_checks(wb)
-        except ValidationError as e:
-            print("there are some errors in run fast 333311111")
+        except ParseError as e:
+            print("test test")
             raise e
 
         # If we've made it this far, the checks have passed
@@ -535,6 +513,23 @@ class ScanReportCreateSerializerNonFiles(
     visibility = serializers.ChoiceField(
         choices=VisibilityChoices.choices, required=True
     )
+
+    def validate(self, data):
+        if request := self.context.get("request"):
+            if ds := data.get("parent_dataset"):
+                if not (
+                    is_az_function_user(request.user)
+                    or is_admin(ds, request)
+                    or has_editorship(ds, request)
+                ):
+                    raise PermissionDenied(
+                        "You must be either an admin or an editor of the parent dataset to add a new scan report to it.",
+                    )
+            else:
+                raise NotFound("Could not find parent dataset.")
+        else:
+            raise NotFound("Missing request context. Unable to validate scan report.")
+        return super().validate(data)
 
     class Meta:
         model = ScanReport

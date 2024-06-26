@@ -157,12 +157,9 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <input
                   type="file"
                   name="scan_report_file"
-                  // set supported file types here,
                   accept=".xlsx"
                   required={true}
-                  // could also check again within formik validation or backend
                   onChange={(e) => {
-                    // Object is possibly null error w/o check
                     if (e.currentTarget.files) {
                       setFieldValue(
                         "scan_report_file",
@@ -183,11 +180,8 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <input
                   type="file"
                   name="Data_dict"
-                  // set supported file types here,
                   accept=".csv"
-                  // could also check again within formik validation or backend
                   onChange={(e) => {
-                    // Object is possibly null error w/o check
                     if (e.currentTarget.files) {
                       setFieldValue("Data_dict", e.currentTarget.files[0]);
                     }

@@ -426,17 +426,15 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.FILES)
         if not serializer.is_valid():
-            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        print("pass validation!!!!!")
 
-        non_file_serializer = ScanReportCreateSerializerNonFiles(data=request.data)
+        non_file_serializer = ScanReportCreateSerializerNonFiles(
+            data=request.data, context={"request": request}
+        )
         if not non_file_serializer.is_valid():
-            print(non_file_serializer.errors)
             return Response(
                 non_file_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        print("Non-file data passed validation!!!!!")
 
         self.perform_create(serializer, non_file_serializer)
         headers = self.get_success_headers(serializer.data)
@@ -447,6 +445,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     def perform_create(self, serializer, non_file_serializer):
         validatedFiles = serializer.validated_data
         validatedData = non_file_serializer.validated_data
+        # List all the validated data and files
         valid_data_dictionary_file = validatedFiles.get("data_dictionary_file")
         valid_scan_report_file = validatedFiles.get("scan_report_file")
         valid_visibility = validatedData.get("visibility")
@@ -454,26 +453,13 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         valid_dataset = validatedData.get("dataset")
         valid_parent_dataset = validatedData.get("parent_dataset")
 
-        parent_dataset = valid_parent_dataset
-
-        # if not (
-        #     has_editorship(parent_dataset, self.request)
-        #     or is_admin(parent_dataset, self.request)
-        # ):
-        #     return Response(
-        #         {
-        #             "You do not have editor or administrator "
-        #             "permissions on this Dataset."
-        #         },
-        #         status=status.HTTP_403_FORBIDDEN,
-        #     )
         rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
         dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
         print(dt, rand)
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             dataset=valid_dataset,
-            parent_dataset=parent_dataset,
+            parent_dataset=valid_parent_dataset,
             name=modify_filename(valid_scan_report_file, dt, rand),
             visibility=valid_visibility,
         )
