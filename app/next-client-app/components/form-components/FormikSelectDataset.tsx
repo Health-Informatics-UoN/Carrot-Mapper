@@ -27,29 +27,37 @@ async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
   const datasets = await getDataSetList(dataPartner);
   const projects = await getProjects();
 
-  // Creating grouped options of dataset
-  const projectMap = new Map<number, { label: string; options: Option[] }>();
+  // Initialize projectMap with all projects, ensuring each is represented
+  const projectMap = new Map<number, GroupedOption>();
+  projects.forEach((project) => {
+    projectMap.set(project.id, {
+      label: `Project: ${project.name}`,
+      options: [], // Initially empty, to be filled with datasets or a placeholder
+    });
+  });
 
+  // Process datasets, adding them to the appropriate project group in projectMap
   datasets.forEach((dataset) => {
     dataset.projects.forEach((projectId) => {
-      if (!projectMap.has(projectId)) {
-        // Getting the label of the group = name of the found projects
-        const projectGroup = projects.find(
-          (project) => project.id === projectId
-        );
-        projectMap.set(projectId, {
-          label: `Project: ${
-            projectGroup ? projectGroup.name : projectId.toString()
-          }`,
-          options: [],
+      const projectGroup = projectMap.get(projectId);
+      if (projectGroup) {
+        projectGroup.options.push({
+          value: dataset.id,
+          label: dataset.name,
         });
       }
-      // Getting the dataset options
-      projectMap.get(projectId)?.options.push({
-        value: dataset.id,
-        label: dataset.name,
-      });
     });
+  });
+
+  // Ensure all projects without datasets have a "None" option
+  projectMap.forEach((group, projectId) => {
+    if (group.options.length === 0) {
+      group.options.push({
+        value: 0, // A placeholder value for "None"
+        label:
+          "None in this Project. Please choose another Data Partner/Project or Create a new Dataset",
+      });
+    }
   });
 
   return Array.from(projectMap.values());
