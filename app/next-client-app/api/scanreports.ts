@@ -206,7 +206,6 @@ export async function createScanReport(data: FormData) {
       method: "POST",
       body: data,
     });
-    redirect("/scanreports/");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };

@@ -81,9 +81,4 @@ urlpatterns = [
         views.ProjectUpdateView.as_view(),
         name="projects_update",
     ),
-    path(
-        r"scanreports/create/",
-        views.ScanReportCreateView.as_view(),
-        name="scan-report-form",
-    ),
 ]
