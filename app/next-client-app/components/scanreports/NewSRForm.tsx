@@ -62,6 +62,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
         // image: new File([], ""),
       }}
       onSubmit={(data) => {
+        toast.info("Validating ...");
         handleSubmit(data);
       }}
     >
@@ -110,7 +111,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 name="editors"
                 placeholder="Choose Editors"
                 isMulti={true}
-                isDisabled={values.dataset === 0}
+                isDisabled={values.dataset === 0 || values.dataset === -1}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -168,6 +169,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 type="file"
                 name="Data_dict"
                 // set supported file types here,
+                accept=".csv"
                 // could also check again within formik validation or backend
                 onChange={(e) => {
                   // Object is possibly null error w/o check
@@ -182,6 +184,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 type="file"
                 name="scan_report_file"
                 // set supported file types here,
+                accept=".xlsx"
                 // could also check again within formik validation or backend
                 onChange={(e) => {
                   // Object is possibly null error w/o check
@@ -195,7 +198,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <Button
                 type="submit"
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
-                // disabled={!canUpdate}
+                disabled={values.dataset === 0 || values.dataset === -1}
               >
                 Upload Scan Report <FileUp className="ml-2" />
               </Button>

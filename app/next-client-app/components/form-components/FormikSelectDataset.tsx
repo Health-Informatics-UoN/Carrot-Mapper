@@ -53,7 +53,7 @@ async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
   projectMap.forEach((group, projectId) => {
     if (group.options.length === 0) {
       group.options.push({
-        value: 0, // A placeholder value for "None"
+        value: -1, // A placeholder value for "None"
         label:
           "None in this Project. Please choose another Data Partner or Create a new Dataset",
       });
@@ -87,6 +87,7 @@ const CustomSelect = ({
       : (newValue as Option).value;
 
     form.setFieldValue(field.name, selectedValues);
+    console.log(selectedValues);
   };
 
   const selected = () => {

@@ -101,13 +101,11 @@ const CustomSelect = ({
 };
 
 export const FormikSelectEditors = ({
-  options,
   name,
   placeholder,
   isMulti,
   isDisabled,
 }: {
-  options?: Option[];
   name: string;
   placeholder: string;
   isMulti: boolean;
@@ -121,7 +119,7 @@ export const FormikSelectEditors = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (dataset !== 0) {
+      if (dataset !== 0 && dataset !== -1) {
         const editors = await fetchProjectMembers(dataset.toString());
         setOptions(editors);
       }
