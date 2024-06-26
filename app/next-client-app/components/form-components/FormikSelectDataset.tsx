@@ -87,7 +87,6 @@ const CustomSelect = ({
       : (newValue as Option).value;
 
     form.setFieldValue(field.name, selectedValues);
-    console.log(selectedValues);
   };
 
   const selected = () => {
