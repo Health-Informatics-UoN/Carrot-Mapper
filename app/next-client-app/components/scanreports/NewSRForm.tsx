@@ -171,7 +171,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Data Dictionary
-                <Tooltips content="Data dictionary...?" />
+                <Tooltips content="Optional data dictionary to enable automatic OMOP mapping" />
               </h3>
               <div>
                 <Input
