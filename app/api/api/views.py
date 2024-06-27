@@ -424,10 +424,6 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         instance.delete()
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.FILES)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
         non_file_serializer = ScanReportCreateSerializerNonFiles(
             data=request.data, context={"request": request}
         )
@@ -436,10 +432,14 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
                 non_file_serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
-        self.perform_create(serializer, non_file_serializer)
-        headers = self.get_success_headers(serializer.data)
+        file_serializer = self.get_serializer(data=request.FILES)
+        if not file_serializer.is_valid():
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(file_serializer, non_file_serializer)
+        headers = self.get_success_headers(file_serializer.data)
         return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+            file_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
     def perform_create(self, serializer, non_file_serializer):

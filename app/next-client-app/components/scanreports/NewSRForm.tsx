@@ -87,7 +87,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <h3 className="flex">
                 {" "}
                 Dataset
-                <Tooltips content="The unarchived dataset that added to a project and belongs to the above data partner" />
+                <Tooltips content="The unarchived parent dataset that added to a project and belongs to the above data partner" />
               </h3>
               <FormikSelectDataset
                 name="dataset"

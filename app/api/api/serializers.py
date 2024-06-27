@@ -213,7 +213,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
                 f"It must be ['csv_file_name', "
                 f"'field_name', 'code', 'value'], but you "
                 f"supplied {header_line}. If this error is "
-                f"showing extra '' elements, this indicates "
+                f"showing extra elements, this indicates "
                 f"that another line has >4 elements, "
                 f"which will need to be corrected."
             )
@@ -307,7 +307,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
             ) or (cell.value == "" and cell_above.value == ""):
                 errors.append(
                     ParseError(
-                        f"At {cell}, tables in Field Overview "
+                        f"At the cell with value {cell.value}, tables in Field Overview "
                         f"table are not correctly separated by "
                         f"a single line. "
                         f"Note: There should be no separator "
