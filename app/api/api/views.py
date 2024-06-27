@@ -2,7 +2,6 @@ import logging
 import os
 from typing import Any
 from urllib.parse import urljoin
-from django.http import QueryDict
 from rest_framework.parsers import MultiPartParser, FormParser
 import requests
 from api.paginations import CustomPagination
