@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CircleCheckBig, FileUp, Upload } from "lucide-react";
+import { FileUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -13,7 +13,6 @@ import { FormikSelect } from "../form-components/FormikSelect";
 import { FormikSelectDataset } from "../form-components/FormikSelectDataset";
 import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
-import { useDropzone } from "react-dropzone";
 
 interface FormData {
   name: string;
@@ -26,37 +25,6 @@ interface FormData {
 
 export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
-
-  const {
-    getRootProps: getRootPropsSR,
-    getInputProps: getInputPropsSR,
-    acceptedFiles: acceptedFileSR,
-  } = useDropzone({
-    maxFiles: 1,
-    noDrag: true,
-  });
-  const {
-    getRootProps: getRootPropsDD,
-    getInputProps: getInputPropsDD,
-    acceptedFiles: acceptedFileDD,
-  } = useDropzone({
-    maxFiles: 1,
-    noDrag: true,
-  });
-
-  const acceptedSR = acceptedFileSR.map((file) => (
-    <p key={file.name} className="flex items-center text-carrot">
-      <CircleCheckBig className="mr-2" /> {file.name} -{" "}
-      {(file.size / 1028).toFixed(2)} KB
-    </p>
-  ));
-
-  const acceptedDD = acceptedFileDD.map((file) => (
-    <p key={file.name} className="flex items-center text-carrot">
-      <CircleCheckBig className="mr-2" /> {file.name} -{" "}
-      {(file.size / 1028).toFixed(2)} KB
-    </p>
-  ));
 
   const handleSubmit = async (data: FormData) => {
     const formData = new FormData();
@@ -182,37 +150,20 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <Tooltips content="Scan report that was generated from White Rabbit application" />
               </h3>
               <div>
-                <div
-                  {...getRootPropsSR({
-                    className:
-                      "border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex justify-center items-center flex-col",
-                  })}
-                >
-                  <input
-                    {...getInputPropsSR({
-                      onChange: (e) => {
-                        if (e.currentTarget.files) {
-                          setFieldValue(
-                            "scan_report_file",
-                            e.currentTarget.files[0]
-                          );
-                        }
-                      },
-                    })}
-                    type="file"
-                    name="scan_report_file"
-                    accept=".xlsx"
-                  />
-                  <Upload className="w-10 10-10 text-carrot" />
-                  <p className="mt-2 text-sm text-slate-400">
-                    {" "}
-                    Select a Scan Report file (.xlsx)
-                  </p>
-                </div>
-                <div className="flex gap-2 mt-2 items-center text-sm">
-                  <h4>Accepted file:</h4>
-                  {acceptedSR}
-                </div>
+                <Input
+                  type="file"
+                  name="scan_report_file"
+                  accept=".xlsx"
+                  required={true}
+                  onChange={(e) => {
+                    if (e.currentTarget.files) {
+                      setFieldValue(
+                        "scan_report_file",
+                        e.currentTarget.files[0]
+                      );
+                    }
+                  }}
+                />
               </div>
             </div>
 
@@ -223,34 +174,16 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <Tooltips content="Data dictionary...?" />
               </h3>
               <div>
-                <div
-                  {...getRootPropsDD({
-                    className:
-                      "border-dashed border-2 rounded-xl cursor-pointer bg-gray-50 py-8 flex justify-center items-center flex-col",
-                  })}
-                >
-                  <input
-                    {...getInputPropsDD({
-                      onChange: (e) => {
-                        if (e.currentTarget.files) {
-                          setFieldValue("Data_dict", e.currentTarget.files[0]);
-                        }
-                      },
-                    })}
-                    type="file"
-                    name="Data_dict"
-                    accept=".csv"
-                  />
-                  <Upload className="w-10 10-10 text-carrot" />
-                  <p className="mt-2 text-sm text-slate-400">
-                    {" "}
-                    Select a Data Dictionary (.csv)
-                  </p>
-                </div>
-                <div className="flex gap-2 mt-2 items-center text-sm">
-                  <h4>Accepted file:</h4>
-                  {acceptedDD}
-                </div>
+                <Input
+                  type="file"
+                  name="Data_dict"
+                  accept=".csv"
+                  onChange={(e) => {
+                    if (e.currentTarget.files) {
+                      setFieldValue("Data_dict", e.currentTarget.files[0]);
+                    }
+                  }}
+                />
               </div>
             </div>
             <div className="mb-5">
