@@ -493,7 +493,6 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
         try:
             self.run_fast_consistency_checks(wb)
         except ParseError as e:
-            print("test test")
             raise e
 
         # If we've made it this far, the checks have passed

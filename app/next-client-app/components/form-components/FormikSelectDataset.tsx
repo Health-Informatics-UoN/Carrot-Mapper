@@ -54,8 +54,7 @@ async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
     if (group.options.length === 0) {
       group.options.push({
         value: -1, // A placeholder value for "None"
-        label:
-          "None in this Project. Please choose another Data Partner or Create a new Dataset",
+        label: "--------------",
       });
     }
   });
