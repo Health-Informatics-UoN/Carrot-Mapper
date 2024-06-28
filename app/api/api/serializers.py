@@ -169,15 +169,10 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
     data_dictionary_file = serializers.FileField(
         write_only=True, required=False, allow_empty_file=True
     )
-    dataset = serializers.CharField(required=False)
 
     class Meta:
         model = ScanReport
         fields = (
-            "editors",
-            "dataset",
-            "parent_dataset",
-            "visibility",
             "scan_report_file",
             "data_dictionary_file",
         )
