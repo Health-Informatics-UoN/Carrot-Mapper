@@ -44,7 +44,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
 
     if (response) {
       setError(response.errorMessage);
-      toast.error("Create New Scan Report failed. Fix the error(s) first");
+      toast.error("Upload New Scan Report failed. Fix the error(s) first");
     } else {
       toast.success("New Scan Report is being uploaded");
       setError(null);
@@ -58,7 +58,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
           <div>
             <AlertTitle className="flex items-center">
               <AlertCircle className="h-4 w-4 mr-2" />
-              Upload Scan Report Failed. Error:
+              Upload New Scan Report Failed. Error:
             </AlertTitle>
             <AlertDescription>
               <ul>
@@ -95,7 +95,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <div className="flex flex-col gap-2">
                 <h3 className="flex">
                   Data Partner{" "}
-                  <Tooltips content="The data partner that owns the dataset." />
+                  <Tooltips content="The data partner that owns the parent dataset of the new scan report." />
                 </h3>
                 <FormikSelect
                   options={partnerOptions}
@@ -124,7 +124,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   Editors
-                  <Tooltips content="Members of the projects where the dataset above belongs to. Can only be chosen after the dataset is selected." />
+                  <Tooltips content="Members of the projects where the dataset above belongs to who then can edit the scan report. Can only be chosen after the parent dataset is selected." />
                 </h3>
                 <FormikSelectEditors
                   name="editors"
@@ -149,7 +149,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <div className="flex items-center space-x-3">
                 <h3 className="flex">
                   Visibility
-                  <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
+                  <Tooltips content="Setting the visibility of the new scan report" />
                 </h3>
                 <Switch
                   onCheckedChange={(checked) =>

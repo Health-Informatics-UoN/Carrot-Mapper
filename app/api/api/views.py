@@ -62,7 +62,7 @@ from mapping.permissions import (
     get_user_permissions_on_scan_report,
     get_user_permissions_on_dataset,
 )
-from mapping.services import delete_blob
+from mapping.services import delete_blob, modify_filename
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -106,11 +106,6 @@ import string
 import datetime
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from shared.services.azurequeue import add_message
-
-
-def modify_filename(filename, dt, rand):
-    split_filename = os.path.splitext(str(filename))
-    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -465,10 +460,6 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
         scan_report.author = self.request.user
         scan_report.save()
-
-        # # Add viewers to the scan report if specified
-        # if sr_viewers := request.data.get("viewers"):
-        #     scan_report.viewers.add(*sr_viewers)
 
         # Add editors to the scan report if specified
         if sr_editors := valid_editors:

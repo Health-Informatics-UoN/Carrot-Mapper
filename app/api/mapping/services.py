@@ -68,3 +68,8 @@ def delete_blob(blob_name: str, container: str) -> bool:
     # Delete the blob
     blob_dict_client.delete_blob()
     return True
+
+
+def modify_filename(filename: str, dt: str, rand: str) -> str:
+    split_filename = os.path.splitext(str(filename))
+    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"

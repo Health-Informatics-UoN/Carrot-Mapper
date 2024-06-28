@@ -505,6 +505,15 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
         choices=VisibilityChoices.choices, required=True
     )
 
+    class Meta:
+        model = ScanReport
+        fields = (
+            "editors",
+            "dataset",
+            "parent_dataset",
+            "visibility",
+        )
+
     def validate(self, data):
         if request := self.context.get("request"):
             if ds := data.get("parent_dataset"):
@@ -521,15 +530,6 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
         else:
             raise NotFound("Missing request context. Unable to validate scan report.")
         return super().validate(data)
-
-    class Meta:
-        model = ScanReport
-        fields = (
-            "editors",
-            "dataset",
-            "parent_dataset",
-            "visibility",
-        )
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
