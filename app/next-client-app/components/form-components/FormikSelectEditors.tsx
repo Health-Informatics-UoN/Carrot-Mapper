@@ -10,7 +10,7 @@ import {
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import config from "@/tailwind.config";
-import { getDataSetList, getDataUsers, getProjects } from "@/api/datasets";
+import { getDataUsers, getProjects } from "@/api/datasets";
 import { useEffect, useState } from "react";
 import { FindAndFormat } from "./FormikUtils";
 

@@ -10,7 +10,7 @@ import {
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import config from "@/tailwind.config";
-import { getDataSetList, getProjects } from "@/api/datasets";
+import { getDatasetList, getProjects } from "@/api/datasets";
 import { useEffect, useState } from "react";
 
 type Option = {
@@ -24,7 +24,7 @@ type GroupedOption = {
 };
 
 async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
-  const datasets = await getDataSetList(dataPartner);
+  const datasets = await getDatasetList(dataPartner);
   const projects = await getProjects();
 
   // Initialize projectMap with all projects, ensuring each is represented

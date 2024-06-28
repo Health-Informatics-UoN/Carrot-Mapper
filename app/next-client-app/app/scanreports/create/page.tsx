@@ -6,7 +6,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getDataPartners } from "@/api/datasets";
-import { NewSRForm } from "../../../components/scanreports/NewSRForm";
+import { NewSRForm } from "@/components/scanreports/NewSRForm";
 
 export default async function ScanReports() {
   const partners = await getDataPartners();

@@ -43,8 +43,8 @@ from api.serializers import (
     ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
-    ScanReportCreateSerializerFiles,
-    ScanReportCreateSerializerNonFiles,
+    ScanReportFilesSerializer,
+    ScanReportCreateSerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
@@ -400,7 +400,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         if self.request.method in ["GET"]:
             return ScanReportViewSerializerV2
         if self.request.method in ["POST"]:
-            return ScanReportCreateSerializerFiles
+            return ScanReportFilesSerializer
         if self.request.method in ["DELETE"]:
             return ScanReportEditSerializer
         return super().get_serializer_class()
@@ -423,7 +423,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         instance.delete()
 
     def create(self, request, *args, **kwargs):
-        non_file_serializer = ScanReportCreateSerializerNonFiles(
+        non_file_serializer = ScanReportCreateSerializer(
             data=request.data, context={"request": request}
         )
         if not non_file_serializer.is_valid():
@@ -454,7 +454,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
         rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
         dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
-        print(dt, rand)
+
         # Create an entry in ScanReport for the uploaded Scan Report
         scan_report = ScanReport.objects.create(
             dataset=valid_dataset,

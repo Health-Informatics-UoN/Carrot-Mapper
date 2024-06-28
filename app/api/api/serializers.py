@@ -37,11 +37,6 @@ import openpyxl
 from collections import Counter
 
 
-def modify_filename(filename, dt, rand):
-    split_filename = os.path.splitext(str(filename))
-    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
-
-
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = DataPartner
@@ -168,7 +163,7 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
         )
 
 
-class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     scan_report_file = serializers.FileField(write_only=True)
     data_dictionary_file = serializers.FileField(
@@ -498,9 +493,7 @@ class ScanReportCreateSerializerFiles(DynamicFieldsMixin, serializers.ModelSeria
         return scan_report
 
 
-class ScanReportCreateSerializerNonFiles(
-    DynamicFieldsMixin, serializers.ModelSerializer
-):
+class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     editors = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.all(), required=False
     )
