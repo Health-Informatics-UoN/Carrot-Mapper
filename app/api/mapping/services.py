@@ -2,8 +2,10 @@ import csv
 import os
 from io import StringIO
 
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContentSettings
 from django.http.response import HttpResponse
+from shared.services.azurequeue import add_message
+from typing import Optional
 
 
 def download_data_dictionary_blob(blob_name, container="data-dictionaries"):
@@ -73,3 +75,31 @@ def delete_blob(blob_name: str, container: str) -> bool:
 def modify_filename(filename: str, dt: str, rand: str) -> str:
     split_filename = os.path.splitext(str(filename))
     return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
+
+
+def upload_files(sr_id, sr_name, sr_file, dict_name, dict_file: Optional[any] = None):
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.getenv("STORAGE_CONN_STRING")
+    )
+    azure_dict = {
+        "scan_report_id": sr_id,
+        "scan_report_blob": sr_name,
+        "data_dictionary_blob": dict_name,
+    }
+
+    blob_client_sr = blob_service_client.get_blob_client(
+        container="scan-reports", blob=sr_name
+    )
+    blob_client_sr.upload_blob(
+        sr_file.open(),
+        content_settings=ContentSettings(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ),
+    )
+    if dict_file is not None:
+        blob_client_dict = blob_service_client.get_blob_client(
+            container="data-dictionaries", blob=dict_name
+        )
+        blob_client_dict.upload_blob(dict_file.open())
+    # send to the upload queue
+    add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)

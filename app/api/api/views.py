@@ -62,7 +62,7 @@ from mapping.permissions import (
     get_user_permissions_on_scan_report,
     get_user_permissions_on_dataset,
 )
-from mapping.services import delete_blob, modify_filename
+from mapping.services import delete_blob, modify_filename, upload_files
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -104,7 +104,7 @@ from shared.services.rules import (
 import random
 import string
 import datetime
-from azure.storage.blob import BlobServiceClient, ContentSettings
+from azure.storage.blob import BlobServiceClient
 from shared.services.azurequeue import add_message
 
 
@@ -465,34 +465,15 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         if sr_editors := valid_editors:
             scan_report.editors.add(*sr_editors)
 
-        # Grab Azure storage credentials
-        blob_service_client = BlobServiceClient.from_connection_string(
-            os.getenv("STORAGE_CONN_STRING")
-        )
-
         print("FILE >>> ", str(valid_scan_report_file))
         print("STRING TEST >>>> ", scan_report.name)
 
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
         if str(valid_data_dictionary_file) == "undefined":
-            azure_dict = {
-                "scan_report_id": scan_report.id,
-                "scan_report_blob": scan_report.name,
-                "data_dictionary_blob": "None",
-            }
-
-            blob_client = blob_service_client.get_blob_client(
-                container="scan-reports", blob=scan_report.name
+            upload_files(
+                scan_report.id, scan_report.name, valid_scan_report_file, "None"
             )
-            blob_client.upload_blob(
-                valid_scan_report_file.open(),
-                content_settings=ContentSettings(
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ),
-            )
-            # setting content settings for downloading later
-        # Else upload the scan report and the data dictionary
         else:
             data_dictionary = DataDictionary.objects.create(
                 name=f"{os.path.splitext(str(valid_data_dictionary_file))[0]}"
@@ -502,23 +483,13 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
             scan_report.data_dictionary = data_dictionary
             scan_report.save()
 
-            azure_dict = {
-                "scan_report_id": scan_report.id,
-                "scan_report_blob": scan_report.name,
-                "data_dictionary_blob": data_dictionary.name,
-            }
-
-            blob_client = blob_service_client.get_blob_client(
-                container="scan-reports", blob=scan_report.name
+            upload_files(
+                scan_report.id,
+                scan_report.name,
+                valid_scan_report_file,
+                data_dictionary.name,
+                valid_data_dictionary_file,
             )
-            blob_client.upload_blob(valid_scan_report_file.open())
-            blob_client = blob_service_client.get_blob_client(
-                container="data-dictionaries", blob=data_dictionary.name
-            )
-            blob_client.upload_blob(valid_data_dictionary_file.open())
-
-        # send to the upload queue
-        add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
 class DatasetListView(generics.ListAPIView):
