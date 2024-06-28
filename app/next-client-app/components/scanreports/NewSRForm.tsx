@@ -95,7 +95,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <div className="flex flex-col gap-2">
                 <h3 className="flex">
                   Data Partner{" "}
-                  <Tooltips content="The data partner that owns the parent dataset of the new scan report." />
+                  <Tooltips
+                    content="The Data Partner that owns the Dataset of the new Scan Report."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                  />
                 </h3>
                 <FormikSelect
                   options={partnerOptions}
@@ -110,7 +113,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   Dataset
-                  <Tooltips content="The unarchived parent dataset that added to a project and belongs to the above data partner" />
+                  <Tooltips
+                    content="The Dataset to add the new Scan Report to."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                  />
                 </h3>
                 <FormikSelectDataset
                   name="dataset"
@@ -124,7 +130,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   Editors
-                  <Tooltips content="Members of the projects where the dataset above belongs to who then can edit the scan report. Can only be chosen after the parent dataset is selected." />
+                  <Tooltips
+                    content="Dataset admins and editors also have Scan Report editor permissions."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#scan-report-roles"
+                  />
                 </h3>
                 <FormikSelectEditors
                   name="editors"
@@ -137,7 +146,7 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   Scan Report Name
-                  <Tooltips content="Name of the new scan report" />
+                  <Tooltips content="Name of the new Scan Report" />
                 </h3>
                 <Input
                   onChange={handleChange}
@@ -149,7 +158,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
               <div className="flex items-center space-x-3">
                 <h3 className="flex">
                   Visibility
-                  <Tooltips content="Setting the visibility of the new scan report" />
+                  <Tooltips
+                    content="Setting the visibility of the new Scan Report"
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                  />
                 </h3>
                 <Switch
                   onCheckedChange={(checked) =>
@@ -170,7 +182,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   WhiteRabbit Scan Report
-                  <Tooltips content="Scan report that was generated from White Rabbit application" />
+                  <Tooltips
+                    content="Scan Report file generated from White Rabbit application."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/uploading-scan-report/#the-scan-report-file-format"
+                  />
                 </h3>
                 <div>
                   <Input
@@ -194,7 +209,10 @@ export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
                 <h3 className="flex">
                   {" "}
                   Data Dictionary
-                  <Tooltips content="Optional data dictionary to enable automatic OMOP mapping" />
+                  <Tooltips
+                    content="Optional data dictionary to enable automatic OMOP mapping"
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/uploading-scan-report/#the-data-dictionary-file-format"
+                  />
                 </h3>
                 <div>
                   <Input
