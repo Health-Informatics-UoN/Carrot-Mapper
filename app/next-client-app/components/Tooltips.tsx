@@ -31,7 +31,6 @@ export function Tooltips({
                   href={link}
                   style={{ textDecoration: "underline" }}
                   target="_blank"
-                  rel="noopener noreferrer"
                 >
                   here
                 </a>
