@@ -29,7 +29,7 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-import os
+from openpyxl.workbook.workbook import Workbook
 from shared.data.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
 import csv
 from io import BytesIO, StringIO
@@ -245,11 +245,19 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
 
         return data_dictionary
 
-    def run_fast_consistency_checks(self, wb):
+    def run_fast_consistency_checks(self, wb: Workbook):
         """
-        Runs a number of consistency checks on the provided workbook. The aim is to
-        return quickly if there is an issue with the data, and provide feedback to the
-        user so they can fix the issue.
+        This function performs a series of consistency checks on the provided Excel workbook.
+        The checks are designed to quickly identify and provide feedback on common data issues,
+        enabling the user to correct them.
+
+        If any of these checks fail, one or a list of ParseError will be raised with a message detailing the issue.
+
+        Parameters:
+        wb (Workbook): The Excel workbook to check.
+
+        Returns:
+        True if all checks pass, otherwise raises a ParseError.
         """
         errors = []
         # Get the first sheet 'Field Overview'
