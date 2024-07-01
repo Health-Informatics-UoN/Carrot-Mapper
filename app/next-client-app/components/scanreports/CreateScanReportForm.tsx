@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, FileUp } from "lucide-react";
+import { AlertCircle, FileUp, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -15,6 +15,16 @@ import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { CreateDatasetForm } from "../datasets/CreateDatasetForm";
 
 interface FormData {
   name: string;
@@ -27,8 +37,10 @@ interface FormData {
 
 export function CreateScanReportForm({
   dataPartners,
+  projects,
 }: {
   dataPartners: DataPartner[];
+  projects: Project[];
 }) {
   const [error, setError] = useState<string | null>(null);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
@@ -114,13 +126,31 @@ export function CreateScanReportForm({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="flex">
+                <h3 className="flex items-center">
                   {" "}
                   Dataset
                   <Tooltips
                     content="The Dataset to add the new Scan Report to."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
+                  {values.dataPartner !== 0 && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="ml-4 flex">
+                          Create a New Dataset <Plus className="ml-2 h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="w-full h-[800px]">
+                        <DialogHeader>
+                          <DialogTitle>Create a New Dataset</DialogTitle>
+                        </DialogHeader>
+                        <CreateDatasetForm
+                          projectList={projects}
+                          dataPartnerID={values.dataPartner}
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </h3>
                 <FormikSelectDataset
                   name="dataset"
