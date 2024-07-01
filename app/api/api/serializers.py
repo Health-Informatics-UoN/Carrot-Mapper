@@ -252,7 +252,10 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
             wb (Workbook): The Excel workbook to check.
 
         Returns:
-            True if all checks pass, otherwise raises a ParseError.
+            True if all checks pass.
+
+        Raises:
+            ParseError: Validation checks have failed.
         """
         errors = []
         # Get the first sheet 'Field Overview'
