@@ -68,35 +68,6 @@ router.register(
     basename="v2scanreportvalues",
 )
 router.register(
-    r"scanreportfilter",
-    views.ScanReportFilterViewSet,
-    basename="scanreportfilter",
-)
-
-router.register(
-    r"scanreportactiveconceptfilter",
-    views.ScanReportActiveConceptFilterViewSet,
-    basename="scanreportactiveconceptfilter",
-)
-
-
-router.register(
-    r"scanreportvaluesfilterscanreport",
-    views.ScanReportValuesFilterViewSetScanReport,
-    basename="scanreportvaluesfilterscanreport",
-)
-router.register(
-    r"scanreportvaluesfilterscanreporttable",
-    views.ScanReportValuesFilterViewSetScanReportTable,
-    basename="scanreportvaluesfilterscanreporttable",
-)
-
-router.register(
-    r"scanreportvaluepks", views.ScanReportValuePKViewSet, basename="scanreportvaluepks"
-)
-
-
-router.register(
     r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"
 )
 router.register(
