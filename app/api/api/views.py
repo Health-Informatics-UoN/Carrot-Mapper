@@ -476,9 +476,6 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         if sr_editors := valid_editors:
             scan_report.editors.add(*sr_editors)
 
-        print("FILE >>> ", str(valid_scan_report_file))
-        print("STRING TEST >>>> ", scan_report.name)
-
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
         if str(valid_data_dictionary_file) == "undefined":
