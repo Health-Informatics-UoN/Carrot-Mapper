@@ -59,14 +59,15 @@ from mapping.permissions import (
     CanEdit,
     CanView,
     CanViewProject,
-    get_user_permissions_on_scan_report,
     get_user_permissions_on_dataset,
+    get_user_permissions_on_scan_report,
 )
 from mapping.services import delete_blob, modify_filename, upload_blob
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -194,7 +195,7 @@ class ProjectListView(ListAPIView):
     API view to show all projects' names.
     """
 
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"name": ["in", "exact"]}
 
@@ -253,13 +254,13 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -680,13 +681,13 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -792,13 +793,13 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -1216,13 +1217,13 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
