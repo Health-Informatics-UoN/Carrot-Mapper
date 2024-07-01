@@ -3,7 +3,7 @@ from rest_framework import filters
 from shared.data.models import VisibilityChoices
 
 
-class CanAccessScanReportFilterBackend(filters.BaseFilterBackend):
+class ScanReportAccessFilter(filters.BaseFilterBackend):
     """
     Filter that only allows users to see Scan Reports they are allowed to view, edit, or admin.
 
