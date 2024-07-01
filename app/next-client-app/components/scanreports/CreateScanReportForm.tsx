@@ -136,11 +136,11 @@ export function CreateScanReportForm({
                   {values.dataPartner !== 0 && (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button className="ml-4 flex">
+                        <Button className="ml-4 text-lg flex">
                           Create a New Dataset <Plus className="ml-2 h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="w-full h-[800px]">
+                      <DialogContent className="w-full">
                         <DialogHeader>
                           <DialogTitle>Create a New Dataset</DialogTitle>
                         </DialogHeader>
@@ -180,7 +180,7 @@ export function CreateScanReportForm({
                 <h3 className="flex">
                   {" "}
                   Scan Report Name
-                  <Tooltips content="Name of the new Scan Report" />
+                  <Tooltips content="Name of the new Scan Report." />
                 </h3>
                 <Input
                   onChange={handleChange}
@@ -193,7 +193,7 @@ export function CreateScanReportForm({
                 <h3 className="flex">
                   Visibility
                   <Tooltips
-                    content="Setting the visibility of the new Scan Report"
+                    content="Setting the visibility of the new Scan Report."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                 </h3>

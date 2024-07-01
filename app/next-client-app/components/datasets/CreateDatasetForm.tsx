@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, Plus } from "lucide-react";
+import { AlertCircle, SquarePlus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -10,10 +10,11 @@ import { toast } from "sonner";
 import { FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
-import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
+import { FormikSelectUsers } from "../form-components/FormikSelectUsers";
+import { createDataset } from "@/api/datasets";
 
 interface FormData {
   name: string;
@@ -38,14 +39,16 @@ export function CreateDatasetForm({
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (data: FormData) => {
-    const formData = new FormData();
-    formData.append("dataset", data.name);
-    formData.append("visibility", data.visibility);
-    data.editors.forEach((editor) => {
-      formData.append("editors", editor.toString());
-    });
+    const submittingData = {
+      name: data.name,
+      visibility: data.visibility,
+      data_partner: data.dataPartner,
+      admins: data.admins || [],
+      editors: data.editors || [],
+      projects: data.projects || [],
+    };
 
-    const response = await createScanReport(formData);
+    const response = await createDataset(submittingData);
 
     if (response) {
       setError(response.errorMessage);
@@ -150,7 +153,7 @@ export function CreateDatasetForm({
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#scan-report-roles"
                   />
                 </h3>
-                <FormikSelectEditors
+                <FormikSelectUsers
                   name="editors"
                   placeholder="Choose Editors"
                   isMulti={true}
@@ -166,7 +169,7 @@ export function CreateDatasetForm({
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#scan-report-roles"
                   />
                 </h3>
-                <FormikSelectEditors
+                <FormikSelectUsers
                   name="admins"
                   placeholder="Choose Admins"
                   isMulti={true}
@@ -177,7 +180,7 @@ export function CreateDatasetForm({
                 <h3 className="flex">
                   Visibility
                   <Tooltips
-                    content="Setting the visibility of the new Scan Report"
+                    content="Setting the visibility of the new Dataset."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                 </h3>
@@ -206,8 +209,8 @@ export function CreateDatasetForm({
                     values.projects === 0
                   }
                 >
-                  Add Dataset
-                  <Plus className="ml-2" />
+                  Create Dataset
+                  <SquarePlus className="ml-2" />
                 </Button>
               </div>
             </div>

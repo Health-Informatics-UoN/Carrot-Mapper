@@ -20,11 +20,13 @@ type Option = Object & {
 };
 
 async function fetchProjectMembers(selectedProjects: number[]) {
-  const projects = await getProjects();
-  // const filterProjects = projects.filter((project) => project.id === selectedProjects)
+  const allProjects = await getProjects();
+  const filterProjects = allProjects.filter((project) =>
+    selectedProjects.includes(project.id)
+  );
   const users = await getDataUsers();
   const membersIds = new Set<number>();
-  projects.forEach((project) => {
+  filterProjects.forEach((project) => {
     project.members.forEach((memberId) => {
       membersIds.add(memberId);
     });
