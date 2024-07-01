@@ -43,15 +43,19 @@ export default async function ScanReportsField({
   const tableName = await getScanReportTable(tableId);
   const permissions = await getScanReportPermissions(id);
 
-  const scanReportsConcepts = await getScanReportConcepts(
-    `object_id__in=${scanReportsFields.results
-      .map((item) => item.id)
-      .join(",")}`
-  );
+  const scanReportsConcepts =
+    scanReportsFields.count > 0
+      ? await getScanReportConcepts(
+          `object_id__in=${scanReportsFields.results
+            .map((item) => item.id)
+            .join(",")}`,
+        )
+      : [];
+
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
+          scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
 
