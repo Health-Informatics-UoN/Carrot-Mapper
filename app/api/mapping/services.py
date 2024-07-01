@@ -4,7 +4,6 @@ from io import StringIO
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from django.http.response import HttpResponse
-from shared.services.azurequeue import add_message
 from django.core.files.base import File
 
 
