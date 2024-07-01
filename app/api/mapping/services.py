@@ -2,8 +2,9 @@ import csv
 import os
 from io import StringIO
 
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, ContentSettings
 from django.http.response import HttpResponse
+from django.core.files.base import File
 
 
 def download_data_dictionary_blob(blob_name, container="data-dictionaries"):
@@ -68,3 +69,46 @@ def delete_blob(blob_name: str, container: str) -> bool:
     # Delete the blob
     blob_dict_client.delete_blob()
     return True
+
+
+def modify_filename(filename: str, dt: str, rand: str) -> str:
+    """
+    Modifies a filename by appending a date-time string and a random string to it.
+
+    Args:
+        filename (str): The original filename.
+        dt (str): The date-time string to append to the filename.
+        rand (str): The random string to append to the filename.
+
+    Returns:
+        str: The modified filename.
+    """
+    split_filename = os.path.splitext(str(filename))
+    return f"{split_filename[0]}_{dt}_{rand}{split_filename[1]}"
+
+
+def upload_blob(blob_name: str, container: str, file: File, content_type: str):
+    """
+    This function takes a file and uploads it to a specified container in Azure Blob Storage.
+    The file is stored with the provided blob name and content type.
+
+    Args:
+        blob_name (str): The name that will be assigned to the uploaded file in Azure Blob Storage.
+        container (str): The name of the Azure Blob Storage container where the file will be uploaded.
+        file (File): The file to be uploaded. This should be a file-like object (i.e., an object that has a `read()` method).
+        content_type (str): The MIME type of the file to be uploaded.
+
+    Returns:
+        None
+    """
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.getenv("STORAGE_CONN_STRING")
+    )
+
+    blob_client = blob_service_client.get_blob_client(
+        container=container, blob=blob_name
+    )
+    blob_client.upload_blob(
+        file.open(),
+        content_settings=ContentSettings(content_type=content_type),
+    )
