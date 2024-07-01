@@ -25,7 +25,11 @@ interface FormData {
   Data_dict: File;
 }
 
-export function NewSRForm({ dataPartners }: { dataPartners: DataPartner[] }) {
+export function CreateScanReportForm({
+  dataPartners,
+}: {
+  dataPartners: DataPartner[];
+}) {
   const [error, setError] = useState<string | null>(null);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
 

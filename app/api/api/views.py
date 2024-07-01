@@ -62,7 +62,7 @@ from mapping.permissions import (
     get_user_permissions_on_scan_report,
     get_user_permissions_on_dataset,
 )
-from mapping.services import delete_blob, modify_filename, upload_files
+from mapping.services import delete_blob, modify_filename, upload_blob
 from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -364,6 +364,17 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
             parent_dataset__project__members=self.request.user.id,
         ).distinct()
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
 
 class ScanReportListViewSetV2(ScanReportListViewSet):
     """
@@ -471,9 +482,19 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
         if str(valid_data_dictionary_file) == "undefined":
-            upload_files(
-                scan_report.id, scan_report.name, valid_scan_report_file, "None"
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": "None",
+            }
+
+            upload_blob(
+                scan_report.name,
+                "scan-reports",
+                valid_scan_report_file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+
         else:
             data_dictionary = DataDictionary.objects.create(
                 name=f"{os.path.splitext(str(valid_data_dictionary_file))[0]}"
@@ -483,13 +504,27 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
             scan_report.data_dictionary = data_dictionary
             scan_report.save()
 
-            upload_files(
-                scan_report.id,
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": data_dictionary.name,
+            }
+
+            upload_blob(
                 scan_report.name,
+                "scan-reports",
                 valid_scan_report_file,
-                data_dictionary.name,
-                valid_data_dictionary_file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+            upload_blob(
+                data_dictionary.name,
+                "data-dictionaries",
+                valid_data_dictionary_file,
+                "text/csv",
+            )
+
+        # send to the upload queue
+        add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
 class DatasetListView(generics.ListAPIView):

@@ -248,11 +248,11 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
 
         If any of these checks fail, one or a list of ParseError will be raised with a message detailing the issue.
 
-        Parameters:
-        wb (Workbook): The Excel workbook to check.
+        Args:
+            wb (Workbook): The Excel workbook to check.
 
         Returns:
-        True if all checks pass, otherwise raises a ParseError.
+            True if all checks pass, otherwise raises a ParseError.
         """
         errors = []
         # Get the first sheet 'Field Overview'
