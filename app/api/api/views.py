@@ -4,6 +4,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
+from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
     ClassificationSystemSerializer,
@@ -558,7 +559,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -658,7 +659,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
         "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
 
@@ -674,7 +675,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "exact"],
@@ -718,7 +719,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
@@ -1096,7 +1097,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
         "value": ["in", "exact"],
@@ -1142,7 +1143,7 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["value", "value_description", "frequency"]
     pagination_class = CustomPagination
 
