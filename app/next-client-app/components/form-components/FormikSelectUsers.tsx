@@ -19,8 +19,9 @@ type Option = Object & {
   label: string | undefined;
 };
 
-async function fetchProjectMembers() {
+async function fetchProjectMembers(selectedProjects: number[]) {
   const projects = await getProjects();
+  // const filterProjects = projects.filter((project) => project.id === selectedProjects)
   const users = await getDataUsers();
   const membersIds = new Set<number>();
   projects.forEach((project) => {
@@ -112,20 +113,20 @@ export const FormikSelectUsers = ({
   isDisabled: boolean;
 }) => {
   const {
-    values: { project },
+    values: { projects },
   } = useFormikContext<FormikValues>();
 
   const [editors, setOptions] = useState<Option[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (project !== 0) {
-        const editors = await fetchProjectMembers();
+      if (projects !== 0) {
+        const editors = await fetchProjectMembers(projects);
         setOptions(editors);
       }
     };
     fetchData();
-  }, [project]);
+  }, [projects]);
 
   return (
     <Field name={name}>

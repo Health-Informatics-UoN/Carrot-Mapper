@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, FileUp, Plus } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
-import { FormikSelectDataset } from "../form-components/FormikSelectDataset";
 import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -22,7 +21,7 @@ interface FormData {
   editors: number[];
   admins: number[];
   dataPartner: number;
-  project: number;
+  projects: number;
 }
 
 export function CreateDatasetForm({
@@ -83,7 +82,7 @@ export function CreateDatasetForm({
           admins: [],
           visibility: "PUBLIC",
           name: "",
-          project: 0,
+          projects: 0,
         }}
         onSubmit={(data) => {
           toast.info("Creating Dataset ...");
@@ -135,7 +134,7 @@ export function CreateDatasetForm({
                 </h3>
                 <FormikSelect
                   options={projectOptions}
-                  name="project"
+                  name="projects"
                   placeholder="Select Project"
                   isMulti={true}
                   isDisabled={false}
@@ -155,7 +154,7 @@ export function CreateDatasetForm({
                   name="editors"
                   placeholder="Choose Editors"
                   isMulti={true}
-                  isDisabled={values.project === 0}
+                  isDisabled={values.projects === 0}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -171,7 +170,7 @@ export function CreateDatasetForm({
                   name="admins"
                   placeholder="Choose Admins"
                   isMulti={true}
-                  isDisabled={values.project === 0}
+                  isDisabled={values.projects === 0}
                 />
               </div>
               <div className="flex items-center space-x-3">
@@ -204,7 +203,7 @@ export function CreateDatasetForm({
                   disabled={
                     values.dataPartner === 0 ||
                     values.name === "" ||
-                    values.project === 0
+                    values.projects === 0
                   }
                 >
                   Add Dataset
