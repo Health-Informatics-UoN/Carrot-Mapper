@@ -18,6 +18,7 @@ from api.serializers import (
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
+    DatasetViewSerializerV2,
     DomainSerializer,
     DrugStrengthSerializer,
     GetRulesAnalysis,
@@ -617,7 +618,7 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
 
 
 class DatasetCreateView(generics.CreateAPIView):
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
