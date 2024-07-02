@@ -80,6 +80,11 @@ router.register(
     views.ScanReportConceptFilterViewSet,
     basename="scanreportconceptsfilter",
 )
+router.register(
+    r"v2/scanreportconceptsfilter",
+    views.ScanReportConceptFilterViewSetV2,
+    basename="v2scanreportconceptsfilter",
+)
 
 router.register(
     r"classificationsystems",

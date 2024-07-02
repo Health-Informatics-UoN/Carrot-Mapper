@@ -1,8 +1,11 @@
+import datetime
 import logging
 import os
+import random
+import string
 from typing import Any
 from urllib.parse import urljoin
-from rest_framework.parsers import MultiPartParser, FormParser
+
 import requests
 from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
@@ -30,10 +33,12 @@ from api.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
     ScanReportConceptSerializer,
+    ScanReportCreateSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
     ScanReportFieldListSerializerV2,
+    ScanReportFilesSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -44,8 +49,6 @@ from api.serializers import (
     ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
-    ScanReportFilesSerializer,
-    ScanReportCreateSerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
@@ -68,6 +71,7 @@ from mapping.services_rules import get_mapping_rules_list
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -98,16 +102,12 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
+from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
     _save_mapping_rules,
     delete_mapping_rules,
 )
-import random
-import string
-import datetime
-from azure.storage.blob import BlobServiceClient
-from shared.services.azurequeue import add_message
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -997,6 +997,19 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
 class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "concept__concept_id": ["in", "exact"],
+        "object_id": ["in", "exact"],
+        "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
+    }
+
+
+class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportConcept.objects.all()
+    serializer_class = ScanReportConceptSerializer
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "concept__concept_id": ["in", "exact"],
