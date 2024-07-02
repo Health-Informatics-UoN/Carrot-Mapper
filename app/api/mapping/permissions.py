@@ -307,6 +307,34 @@ class CanAdmin(permissions.BasePermission):
         return is_admin(obj, request)
 
 
+def get_user_permissions_on_dataset(request, dataset_id):
+    """
+    Retrieve the list of permissions a user has on a specific dataset.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing the authenticated user.
+        dataset_id (int): The primary key of the dataset.
+
+    Returns:
+        list: A list of permission strings the user has on the dataset.
+              Returns an empty list if the datset does not exist or if the user has no permissions.
+    """
+    try:
+        dataset = Dataset.objects.get(id=dataset_id)
+        permissions = []
+
+        if CanView().has_object_permission(request, None, dataset):
+            permissions.append("CanView")
+        if CanEdit().has_object_permission(request, None, dataset):
+            permissions.append("CanEdit")
+        if CanAdmin().has_object_permission(request, None, dataset):
+            permissions.append("CanAdmin")
+
+        return permissions
+    except Dataset.DoesNotExist:
+        return []
+
+
 def get_user_permissions_on_scan_report(request, scan_report_id):
     """
     Retrieve the list of permissions a user has on a specific scan report.

@@ -38,7 +38,11 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
     if (contentType && contentType.includes("application/json")) {
       try {
         const errorResponse = await response.json();
-        errorMessage = errorResponse.detail || errorMessage;
+        if (Array.isArray(errorResponse)) {
+          errorMessage = errorResponse.join(" * ");
+        } else {
+          errorMessage = errorResponse.detail || errorMessage;
+        }
       } catch (error) {
         errorMessage = "Failed to parse error response";
       }

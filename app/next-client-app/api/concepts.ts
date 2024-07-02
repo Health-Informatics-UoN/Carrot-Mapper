@@ -42,7 +42,6 @@ export async function addConcept(data: {}) {
       },
       body: JSON.stringify(data),
     });
-    revalidatePath("");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
@@ -56,5 +55,4 @@ export async function deleteConcept(conceptId: number) {
       "Content-type": "application/json",
     },
   });
-  revalidatePath("");
 }

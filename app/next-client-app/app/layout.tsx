@@ -29,7 +29,7 @@ export default function RootLayout({
               error: "bg-red-700 text-white",
               success: "bg-green-700 text-white",
               warning: "text-yellow-400",
-              info: "bg-blue-400",
+              info: "bg-blue-800 text-white",
             },
           }}
         />

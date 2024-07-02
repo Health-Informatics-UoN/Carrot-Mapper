@@ -1,4 +1,8 @@
-import { addConcept } from "@/api/concepts";
+import {
+  addConcept,
+  getConceptFilters,
+  getScanReportConcepts,
+} from "@/api/concepts";
 import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +14,7 @@ interface AddConceptProps {
   parentId: string;
   location: string;
   disabled: boolean;
+  addSR: (concept: ScanReportConcept, c: Concept) => void;
 }
 
 export default function AddConcept({
@@ -17,6 +22,7 @@ export default function AddConcept({
   parentId,
   location,
   disabled,
+  addSR,
 }: AddConceptProps) {
   const handleSubmit = async (conceptCode: number) => {
     try {
@@ -38,10 +44,23 @@ export default function AddConcept({
         creation_type: "M",
         table_id: await determineTableId(location, parentId),
       });
-      // Because the response only returned when there is an error
+
       if (response) {
         toast.error(`Adding concept failed. ${response.errorMessage}`);
       } else {
+        const newConcepts = await getScanReportConcepts(`object_id=${rowId}`);
+        const filteredConcepts = await getConceptFilters(
+          newConcepts?.map((item) => item.concept).join(",")
+        );
+        // Filter the concept and concept filter
+        const newConcept = newConcepts.filter(
+          (c) => c.concept == conceptCode
+        )[0];
+        const filteredConcept = filteredConcepts.filter(
+          (c) => c.concept_id == conceptCode
+        )[0];
+
+        addSR(newConcept, filteredConcept);
         toast.success(`OMOP Concept successfully added.`);
       }
     } catch (error) {

@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
+
+// Local BACKEND_ORIGIN="127.0.0.1:8000"
+// Allows for multiple allowedOrigins in one environment
+const allowedOrigins = process.env.BACKEND_ORIGIN?.split(",");
+
 const nextConfig = {
   output: "standalone",
   experimental: {
     serverActions: {
-      allowedOrigins: [process.env.BACKEND_ORIGIN], // Using BACKEND_ORIGIN="127.0.0.1:8000" in .env of NextJS app worked for me locally, to implement PATCH method
+      allowedOrigins: allowedOrigins,
     },
   },
 };

@@ -1,15 +1,26 @@
+import React, { lazy } from "react";
 import { deleteConcept } from "@/api/concepts";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/error";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { toast } from "sonner";
 import { Tooltip } from "react-tooltip";
 
-export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
+const LazyBadge = lazy(() =>
+  import("@/components/ui/badge").then((module) => ({ default: module.Badge }))
+);
+// Using react.memo and react.lazy to prevent loading unnecessary tags
+export const ConceptTags = React.memo(function ConceptTags({
+  concepts,
+  deleteSR,
+}: {
+  concepts: Concept[];
+  deleteSR: any;
+}) {
   const handleDelete = async (conceptId: number) => {
     try {
       await deleteConcept(conceptId);
+      deleteSR(conceptId);
       toast.success("Concept Id Deleted");
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
@@ -20,7 +31,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
     }
   };
 
-  return concepts && concepts?.length > 0 ? (
+  return concepts && concepts.length > 0 ? (
     <div className="flex flex-col items-start w-[250px]">
       {concepts.map((concept) => (
         <a
@@ -40,7 +51,7 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
           data-tooltip-place="top"
         >
           <Tooltip id="badge-tooltip" />
-          <Badge
+          <LazyBadge
             className={`${
               concept.creation_type === "V"
                 ? "bg-carrot-vocab hover:bg-carrot-vocab"
@@ -62,11 +73,11 @@ export async function ConceptTags({ concepts }: { concepts: Concept[] }) {
             >
               <Cross2Icon />
             </Button>
-          </Badge>
+          </LazyBadge>
         </a>
       ))}
     </div>
   ) : (
     <></>
   );
-}
+});

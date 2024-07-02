@@ -1,6 +1,9 @@
+import datetime
 import json
 import logging
 import os
+import random
+import string
 from typing import Any
 from urllib.parse import urljoin
 
@@ -30,10 +33,12 @@ from api.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
     ScanReportConceptSerializer,
+    ScanReportCreateSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
     ScanReportFieldListSerializerV2,
+    ScanReportFilesSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -61,9 +66,10 @@ from mapping.permissions import (
     CanEdit,
     CanView,
     CanViewProject,
+    get_user_permissions_on_dataset,
     get_user_permissions_on_scan_report,
 )
-from mapping.services import delete_blob
+from mapping.services import delete_blob, modify_filename, upload_blob
 from mapping.services_rules import (
     download_mapping_rules,
     download_mapping_rules_as_csv,
@@ -73,6 +79,8 @@ from mapping.services_rules import (
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -102,6 +110,7 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
+from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
     _save_mapping_rules,
@@ -195,7 +204,7 @@ class ProjectListView(ListAPIView):
     API view to show all projects' names.
     """
 
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"name": ["in", "exact"]}
 
@@ -254,13 +263,13 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -386,6 +395,8 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     - Includes custom filtering, ordering, and pagination.
     """
 
+    parser_classes = [MultiPartParser, FormParser]
+
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = {
         "hidden": ["exact"],
@@ -397,9 +408,15 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     pagination_class = CustomPagination
     ordering = "-created_at"
 
+    def get_scan_report_file(self, request):
+        scan_report_file = request.data.get("scan_report_file", None)
+        return scan_report_file
+
     def get_serializer_class(self):
-        if self.request.method in ["GET", "POST"]:
+        if self.request.method in ["GET"]:
             return ScanReportViewSerializerV2
+        if self.request.method in ["POST"]:
+            return ScanReportFilesSerializer
         if self.request.method in ["DELETE"]:
             return ScanReportEditSerializer
         return super().get_serializer_class()
@@ -420,6 +437,101 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
             except Exception as e:
                 raise Exception(f"Error deleting data dictionary: {e}")
         instance.delete()
+
+    def create(self, request, *args, **kwargs):
+        non_file_serializer = ScanReportCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        if not non_file_serializer.is_valid():
+            return Response(
+                non_file_serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        file_serializer = self.get_serializer(data=request.FILES)
+        if not file_serializer.is_valid():
+            return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(file_serializer, non_file_serializer)
+        headers = self.get_success_headers(file_serializer.data)
+        return Response(
+            file_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def perform_create(self, serializer, non_file_serializer):
+        validatedFiles = serializer.validated_data
+        validatedData = non_file_serializer.validated_data
+        # List all the validated data and files
+        valid_data_dictionary_file = validatedFiles.get("data_dictionary_file")
+        valid_scan_report_file = validatedFiles.get("scan_report_file")
+        valid_visibility = validatedData.get("visibility")
+        valid_editors = validatedData.get("editors")
+        valid_dataset = validatedData.get("dataset")
+        valid_parent_dataset = validatedData.get("parent_dataset")
+
+        rand = "".join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        dt = "{:%Y%m%d-%H%M%S}".format(datetime.datetime.now())
+
+        # Create an entry in ScanReport for the uploaded Scan Report
+        scan_report = ScanReport.objects.create(
+            dataset=valid_dataset,
+            parent_dataset=valid_parent_dataset,
+            name=modify_filename(valid_scan_report_file, dt, rand),
+            visibility=valid_visibility,
+        )
+
+        scan_report.author = self.request.user
+        scan_report.save()
+
+        # Add editors to the scan report if specified
+        if sr_editors := valid_editors:
+            scan_report.editors.add(*sr_editors)
+
+        # If there's no data dictionary supplied, only upload the scan report
+        # Set data_dictionary_blob in Azure message to None
+        if str(valid_data_dictionary_file) == "undefined":
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": "None",
+            }
+
+            upload_blob(
+                scan_report.name,
+                "scan-reports",
+                valid_scan_report_file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+
+        else:
+            data_dictionary = DataDictionary.objects.create(
+                name=f"{os.path.splitext(str(valid_data_dictionary_file))[0]}"
+                f"_{dt}{rand}.csv"
+            )
+            data_dictionary.save()
+            scan_report.data_dictionary = data_dictionary
+            scan_report.save()
+
+            azure_dict = {
+                "scan_report_id": scan_report.id,
+                "scan_report_blob": scan_report.name,
+                "data_dictionary_blob": data_dictionary.name,
+            }
+
+            upload_blob(
+                scan_report.name,
+                "scan-reports",
+                valid_scan_report_file,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            upload_blob(
+                data_dictionary.name,
+                "data-dictionaries",
+                valid_data_dictionary_file,
+                "text/csv",
+            )
+
+        # send to the upload queue
+        add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
 class StructuralMappingTableAPIView(APIView):
@@ -595,6 +707,9 @@ class DatasetUpdateView(generics.UpdateAPIView):
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
 
+    def get_serializer_context(self):
+        return {"projects": self.request.data.get("projects")}
+
 
 class DatasetDeleteView(generics.DestroyAPIView):
     serializer_class = DatasetEditSerializer
@@ -620,13 +735,13 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -732,13 +847,13 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -1156,13 +1271,13 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -1406,5 +1521,16 @@ class ScanReportPermissionView(APIView):
 
     def get(self, request, pk):
         permissions = get_user_permissions_on_scan_report(request, pk)
+
+        return Response({"permissions": permissions}, status=status.HTTP_200_OK)
+
+
+class DatasetPermissionView(APIView):
+    """
+    API for permissions a user has on a specific dataset.
+    """
+
+    def get(self, request, pk):
+        permissions = get_user_permissions_on_dataset(request, pk)
 
         return Response({"permissions": permissions}, status=status.HTTP_200_OK)

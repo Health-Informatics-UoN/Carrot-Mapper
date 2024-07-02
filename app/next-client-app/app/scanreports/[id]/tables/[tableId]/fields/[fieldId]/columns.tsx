@@ -1,11 +1,15 @@
 "use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { ConceptTags } from "@/components/concepts/concept-tags";
 import AddConcept from "@/components/concepts/add-concept";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export const columns: ColumnDef<ScanReportValue>[] = [
+export const columns = (
+  addSR: (concept: ScanReportConcept, c: Concept) => void,
+  deleteSR: (id: number) => void
+): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
     accessorKey: "value",
@@ -50,7 +54,13 @@ export const columns: ColumnDef<ScanReportValue>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { concepts } = row.original;
-      return <ConceptTags concepts={concepts ?? []} />;
+      return (
+        // Just in case the concepts tags need more time to load some data
+        // --> showing skeleton having same width with the concept tag area
+        <Suspense fallback={<Skeleton className="h-5 w-[250px]" />}>
+          <ConceptTags concepts={concepts ?? []} deleteSR={deleteSR} />
+        </Suspense>
+      );
     },
   },
   {
@@ -66,6 +76,7 @@ export const columns: ColumnDef<ScanReportValue>[] = [
           parentId={scan_report_field.toString()}
           location="SR-Values"
           disabled={canEdit ? false : true}
+          addSR={addSR}
         />
       );
     },

@@ -66,6 +66,11 @@ urlpatterns = [
         name="scan-report-permissions",
     ),
     path(
+        "dataset/<int:pk>/permissions/",
+        views.DatasetPermissionView.as_view(),
+        name="dataset-permissions",
+    ),
+    path(
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableAPIView.as_view(),
         name="tables-structural-mapping",

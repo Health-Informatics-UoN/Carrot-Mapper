@@ -12,13 +12,11 @@ import {
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
-import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
-import { addConceptsToResults } from "@/lib/concept-utils";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
+import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 
 interface ScanReportsFieldProps {
   params: {
@@ -39,7 +37,6 @@ export default async function ScanReportsField({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const filter = <DataTableFilter filter="name" filterText="field" />;
 
   const scanReportsFields = await getScanReportFields(query);
   const scanReportsName = await getScanReport(id);
@@ -57,12 +54,6 @@ export default async function ScanReportsField({
           scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
-  const scanReportsResult = addConceptsToResults(
-    scanReportsFields.results,
-    scanReportsConcepts,
-    conceptsFilter,
-    permissions
-  );
 
   return (
     <div className="pt-10 px-16">
@@ -100,13 +91,17 @@ export default async function ScanReportsField({
         permissions={permissions.permissions}
       />
       <div>
-        <DataTable
-          columns={columns}
-          data={scanReportsResult}
+        <ConceptDataTable
           count={scanReportsFields.count}
-          Filter={filter}
-          linkPrefix="fields/"
+          permissions={permissions}
+          scanReportsConcepts={scanReportsConcepts}
+          conceptsFilter={conceptsFilter}
+          scanReportsData={scanReportsFields.results}
           defaultPageSize={defaultPageSize}
+          columns={columns}
+          filterCol="name"
+          filterText="field "
+          linkPrefix="fields/"
         />
       </div>
     </div>

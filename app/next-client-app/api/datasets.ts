@@ -1,12 +1,20 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import request from "@/lib/api/request";
+import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
-  archive: (id: number) => `datasets/update/${id}/`,
+  datasetList: (dataPartnerId: string) =>
+    `datasets/?data_partner=${dataPartnerId}&hidden=false`,
+  dataPartners: () => "datapartners/",
+  users: () => "usersfilter/?is_active=true",
+  projects: (dataset?: string) =>
+    dataset ? `projects/?dataset=${dataset}` : "projects/",
+  updateDataset: (id: number) => `datasets/update/${id}/`,
+  permissions: (id: string) => `dataset/${id}/permissions/`,
 };
 
 export async function getDataSets(
@@ -36,13 +44,50 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
       viewers: [],
       admins: [],
       editors: [],
+      projects: [],
     };
+  }
+}
+
+export async function getDatasetList(filter: string): Promise<DataSetSRList[]> {
+  try {
+    return await request<DataSetSRList>(fetchKeys.datasetList(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getDataPartners(): Promise<DataPartner[]> {
+  try {
+    return request<DataPartner[]>(fetchKeys.dataPartners());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getDataUsers(): Promise<User[]> {
+  try {
+    return request<User[]>(fetchKeys.users());
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
+export async function getProjects(dataset?: string): Promise<Project[]> {
+  try {
+    return request<Project[]>(fetchKeys.projects(dataset));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
   }
 }
 
 export async function archiveDataSets(id: number, hidden: boolean) {
   try {
-    await request(fetchKeys.archive(id), {
+    await request(fetchKeys.updateDataset(id), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
@@ -53,5 +98,31 @@ export async function archiveDataSets(id: number, hidden: boolean) {
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
+  }
+}
+
+export async function updateDatasetDetails(id: number, data: {}) {
+  try {
+    await request(fetchKeys.updateDataset(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (error: any) {
+    return { errorMessage: error.message };
+  }
+  redirect(`/datasets/${id}/`);
+}
+
+export async function getDatasetPermissions(
+  id: string
+): Promise<PermissionsResponse> {
+  try {
+    return await request<PermissionsResponse>(fetchKeys.permissions(id));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { permissions: [] };
   }
 }
