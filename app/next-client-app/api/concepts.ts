@@ -11,7 +11,7 @@ const fetchKeys = {
     `v2/scanreportconceptsfilter/?${filter}`,
 };
 
-export async function getScanReportConcepts(
+export async function getAllScanReportConcepts(
   filter: string | undefined,
 ): Promise<ScanReportConcept[]> {
   try {
