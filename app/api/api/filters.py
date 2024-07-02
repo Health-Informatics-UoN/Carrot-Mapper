@@ -40,6 +40,7 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
         dataset_viewers = f"{relationship}parent_dataset__viewers"
         dataset_editors = f"{relationship}parent_dataset__editors"
         dataset_admins = f"{relationship}parent_dataset__admins"
+        project_members = f"{relationship}parent_dataset__project__members"
 
         return queryset.filter(
             Q(
@@ -141,5 +142,7 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
                 **{dataset_visibility: VisibilityChoices.RESTRICTED},
                 **{dataset_viewers: request.user.id},
                 **{scan_report_visibility: VisibilityChoices.PUBLIC},
-            )
+            ),
+            # Must always be a member of the project.
+            **{project_members: request.user.id},
         ).distinct()
