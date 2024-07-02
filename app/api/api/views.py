@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
+from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
     ClassificationSystemSerializer,
@@ -723,7 +724,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -823,7 +824,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
         "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
 
@@ -839,7 +840,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "exact"],
@@ -883,7 +884,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
@@ -1060,53 +1061,6 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
-class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
-    """
-    This returns details of ScanReportConcepts that have the given content_type and are
-    in ScanReports that are "active" - that is, not hidden, with unhidden parent
-    dataset, and marked with status "Mapping Complete".
-    This is only retrievable by AZ_FUNCTION_USER.
-    """
-
-    serializer_class = ScanReportConceptSerializer
-    filter_backends = [DjangoFilterBackend]
-
-    def get_queryset(self):
-        if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
-            raise PermissionDenied(
-                "You do not have permission to access this resource."
-            )
-
-        content_type_str = self.request.GET["content_type"]
-        content_type = ContentType.objects.get(model=content_type_str)
-
-        if content_type_str == "scanreportfield":
-            # ScanReportField
-            # we have SRCs of content_type "field", grab all SRFields in active SRs,
-            # and then filter ScanReportConcepts by those object_ids
-            field_ids = ScanReportField.objects.filter(
-                scan_report_table__scan_report__hidden=False,
-                scan_report_table__scan_report__parent_dataset__hidden=False,
-                scan_report_table__scan_report__status="COMPLET",
-            ).values_list("id", flat=True)
-            return ScanReportConcept.objects.filter(
-                content_type=content_type, object_id__in=field_ids
-            )
-        elif content_type_str == "scanreportvalue":
-            # ScanReportValue
-            # we have SRCs of content_type "value", grab all SRValues in active SRs,
-            # and then filter ScanReportConcepts by those object_ids
-            value_ids = ScanReportValue.objects.filter(
-                scan_report_field__scan_report_table__scan_report__hidden=False,
-                scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-                scan_report_field__scan_report_table__scan_report__status="COMPLET",
-            ).values_list("id", flat=True)
-            return ScanReportConcept.objects.filter(
-                content_type=content_type, object_id__in=value_ids
-            )
-        return None
-
-
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()
     serializer_class = ClassificationSystemSerializer
@@ -1261,7 +1215,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
         "value": ["in", "exact"],
@@ -1307,7 +1261,7 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["value", "value_description", "frequency"]
     pagination_class = CustomPagination
 
@@ -1321,18 +1275,6 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         return super().get_serializer_class()
 
 
-class ScanReportFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = ScanReportViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "id": ["in", "exact"],
-        "status": ["in", "exact"],
-        "hidden": ["in", "exact"],
-        "parent_dataset__hidden": ["in", "exact"],
-    }
-
-
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
@@ -1343,17 +1285,6 @@ class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
             scan_report_field__scan_report_table__scan_report=self.request.GET[
                 "scan_report"
             ]
-        )
-
-
-class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["scan_report_field__scan_report_table"]
-
-    def get_queryset(self):
-        return ScanReportValue.objects.filter(
-            scan_report_field__scan_report_table=self.request.GET["scan_report_table"]
         )
 
 
@@ -1444,22 +1375,6 @@ class CountStatsScanReportTableField(APIView):
             }
             jsonrecords.append(scanreportfield_content)
         return Response(jsonrecords)
-
-
-# This custom ModelViewSet returns all ScanReportValues for a given ScanReport
-# It also removes all conceptIDs which == -1, leaving only those SRVs with a
-# concept_id which has been looked up with omop_helpers
-class ScanReportValuePKViewSet(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["scan_report_field__scan_report_table__scan_report"]
-
-    def get_queryset(self):
-        return ScanReportValue.objects.filter(
-            scan_report_field__scan_report_table__scan_report=self.request.GET[
-                "scan_report"
-            ]
-        ).exclude(conceptID=-1)
 
 
 class GetContentTypeID(APIView):
