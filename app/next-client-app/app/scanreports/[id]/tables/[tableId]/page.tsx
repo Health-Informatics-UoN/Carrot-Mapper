@@ -14,7 +14,10 @@ import {
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
-import { getConceptFilters, getAllScanReportConcepts } from "@/api/concepts";
+import {
+  getAllConceptsFiltered,
+  getAllScanReportConcepts,
+} from "@/api/concepts";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 
@@ -54,7 +57,7 @@ export default async function ScanReportsField({
 
   const conceptsFilter =
     scanReportsConcepts.length > 0
-      ? await getConceptFilters(
+      ? await getAllConceptsFiltered(
           scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];

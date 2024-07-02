@@ -1,6 +1,6 @@
 import {
   addConcept,
-  getConceptFilters,
+  getAllConceptsFiltered,
   getAllScanReportConcepts,
 } from "@/api/concepts";
 import { getScanReportField } from "@/api/scanreports";
@@ -51,7 +51,7 @@ export default function AddConcept({
         const newConcepts = await getAllScanReportConcepts(
           `object_id=${rowId}`,
         );
-        const filteredConcepts = await getConceptFilters(
+        const filteredConcepts = await getAllConceptsFiltered(
           newConcepts?.map((item) => item.concept).join(","),
         );
         // Filter the concept and concept filter

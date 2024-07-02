@@ -4,7 +4,7 @@ import { fetchAllPages } from "@/lib/api/utils";
 
 const fetchKeys = {
   conceptFilter: (filter: string) =>
-    `omop/conceptsfilter/?concept_id__in=${filter}`,
+    `v2/omop/conceptsfilter/?concept_id__in=${filter}`,
   addConcept: "v2/scanreportconcept/",
   deleteConcept: (conceptId: number) => `scanreportconcepts/${conceptId}`,
   scanreportConcepts: (filter?: string) =>
@@ -24,9 +24,11 @@ export async function getAllScanReportConcepts(
   }
 }
 
-export async function getConceptFilters(filter: string): Promise<Concept[]> {
+export async function getAllConceptsFiltered(
+  filter: string,
+): Promise<Concept[]> {
   try {
-    return await request<Concept[]>(fetchKeys.conceptFilter(filter));
+    return await fetchAllPages<Concept>(fetchKeys.conceptFilter(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
