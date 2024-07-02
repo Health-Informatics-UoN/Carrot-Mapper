@@ -112,11 +112,29 @@ export const columns: ColumnDef<MappingRule>[] = [
   },
   {
     id: "Creation Type",
-    accessorKey: "creation_type",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Creation Type" />
+      <DataTableColumnHeader
+        column={column}
+        title="Creation Type"
+        description="How the Mapping Rule has been created"
+        className="cursor-pointer"
+      />
     ),
     enableHiding: true,
     enableSorting: false,
+    cell: ({ row }) => {
+      const { creation_type } = row.original;
+
+      switch (creation_type) {
+        case "V":
+          return "Vocabulary";
+        case "M":
+          return "Manual";
+        case "R":
+          return "Reused";
+        default:
+          return "";
+      }
+    },
   },
 ];
