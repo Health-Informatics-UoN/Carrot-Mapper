@@ -560,7 +560,8 @@ class StructuralMappingTableAPIView(APIView):
             return view_mapping_rules(request, qs)
         else:
             return Response(
-                {"error": "not working right now!"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
     def get_queryset(self):
