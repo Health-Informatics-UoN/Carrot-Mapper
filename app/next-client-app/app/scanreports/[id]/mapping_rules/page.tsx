@@ -24,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { FilterParameters } from "@/types/filter";
 import { getScanReport } from "@/api/scanreports";
-import { getMapDiagram, getMappingRulesList } from "@/api/mapping-rules";
+import { getMappingRulesList } from "@/api/mapping-rules";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
@@ -53,9 +53,6 @@ export default async function ScanReportsMappingRules({
   const query = objToQuery(combinedParams);
   const scanReport = await getScanReport(id);
   const mappingRulesList = await getMappingRulesList(query);
-  const diagram = await getMapDiagram(id, query, "svg");
-  const json = await getMapDiagram(id, query, "json");
-  const csv = await getMapDiagram(id, query, "csv");
 
   return (
     <div className="pt-10 px-16">
@@ -109,7 +106,8 @@ export default async function ScanReportsMappingRules({
               <ScrollArea className="w-[1000px] h-[400px]">
                 <GetFile
                   name="Download Map Diagram"
-                  data={diagram}
+                  scanreportId={id}
+                  query={query}
                   variant="diagram"
                   type="image/svg+xml"
                 />
@@ -126,7 +124,8 @@ export default async function ScanReportsMappingRules({
               <DropdownMenuItem>
                 <GetFile
                   name="Download Map Diagram"
-                  data={diagram}
+                  scanreportId={id}
+                  query={query}
                   variant="button"
                   type="image/svg+xml"
                 />
@@ -137,7 +136,8 @@ export default async function ScanReportsMappingRules({
               <DropdownMenuItem>
                 <GetFile
                   name="Download Mapping JSON"
-                  data={json}
+                  scanreportId={id}
+                  query={query}
                   variant="button"
                   type="application/json"
                 />
@@ -148,7 +148,8 @@ export default async function ScanReportsMappingRules({
               <DropdownMenuItem>
                 <GetFile
                   name="Download Mapping CSV"
-                  data={csv}
+                  scanreportId={id}
+                  query={query}
                   variant="button"
                   type="text/csv"
                 />
