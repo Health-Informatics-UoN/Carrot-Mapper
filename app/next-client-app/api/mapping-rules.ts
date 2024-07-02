@@ -15,7 +15,7 @@ export async function getMappingRulesList(
       fetchKeys.mappingruleslist(filter),
     );
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to fetch mapping rules.");
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
