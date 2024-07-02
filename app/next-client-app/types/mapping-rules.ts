@@ -1,8 +1,3 @@
-interface MappingRulesList {
-  count: number;
-  results: MappingRule[];
-}
-
 interface MappingRule {
   rule_id: number;
   omop_term: string;
