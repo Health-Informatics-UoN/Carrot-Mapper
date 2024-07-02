@@ -1,3 +1,4 @@
+"use server";
 import request from "@/lib/api/request";
 
 const fetchKeys = {
@@ -8,12 +9,14 @@ const fetchKeys = {
 
 export async function getMappingRulesList(
   filter: string | undefined,
-): Promise<MappingRulesList> {
+): Promise<PaginatedResponse<MappingRule>> {
   try {
-    return await request<MappingRulesList>(fetchKeys.mappingruleslist(filter));
+    return await request<PaginatedResponse<MappingRule>>(
+      fetchKeys.mappingruleslist(filter),
+    );
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return { count: 0, results: [] };
+    return { count: 0, next: null, previous: null, results: [] };
   }
 }
 
