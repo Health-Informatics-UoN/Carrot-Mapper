@@ -126,6 +126,18 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     }
 
 
+class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
+    queryset = Concept.objects.all()
+    serializer_class = ConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    pagination_class = CustomPagination
+    filterset_fields = {
+        "concept_id": ["in", "exact"],
+        "concept_code": ["in", "exact"],
+        "vocabulary_id": ["in", "exact"],
+    }
+
+
 class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Vocabulary.objects.all()
     serializer_class = VocabularySerializer
