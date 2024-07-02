@@ -44,7 +44,7 @@ export default async function ScanReportsField({
   const permissions = await getScanReportPermissions(id);
 
   const scanReportsConcepts =
-    scanReportsFields.count > 0
+    scanReportsFields.results.length > 0
       ? await getScanReportConcepts(
           `object_id__in=${scanReportsFields.results
             .map((item) => item.id)

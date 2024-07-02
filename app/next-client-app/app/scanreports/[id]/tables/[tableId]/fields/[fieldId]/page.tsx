@@ -47,7 +47,7 @@ export default async function ScanReportsValue({
   const scanReportsValues = await getScanReportValues(query);
 
   const scanReportsConcepts =
-    scanReportsValues.count > 0
+    scanReportsValues.results.length > 0
       ? await getScanReportConcepts(
           `object_id__in=${scanReportsValues.results
             .map((item) => item.id)
