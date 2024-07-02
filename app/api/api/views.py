@@ -447,7 +447,6 @@ class StructuralMappingTableAPIView(APIView):
             qs = self.get_queryset()
             return view_mapping_rules(request, qs)
         else:
-            messages.error(request, "not working right now!")
             return Response(
                 {"error": "not working right now!"}, status=status.HTTP_400_BAD_REQUEST
             )
