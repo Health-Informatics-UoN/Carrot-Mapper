@@ -1,12 +1,36 @@
-import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
+import {
+  Field,
+  FieldInputProps,
+  FieldProps,
+  FormikProps,
+  FormikValues,
+  useField,
+  useFormikContext,
+} from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import config from "@/tailwind.config";
+import { getDataUsers, getProjects } from "@/api/datasets";
+import { useEffect, useState } from "react";
+import { FindAndFormat } from "./FormikUtils";
 
 type Option = Object & {
   value: number;
   label: string | undefined;
 };
+
+async function fetchProjectMembers(dataset: string) {
+  const projects = await getProjects(dataset);
+  const users = await getDataUsers();
+  const membersIds = new Set<number>();
+  projects.forEach((project) => {
+    project.members.forEach((memberId) => {
+      membersIds.add(memberId);
+    });
+  });
+  const membersArray = Array.from(membersIds);
+  return FindAndFormat(users, membersArray);
+}
 
 const CustomSelect = ({
   field,
@@ -15,15 +39,13 @@ const CustomSelect = ({
   options,
   placeholder,
   isDisabled,
-  required,
 }: {
-  options: Option[];
+  options?: Option[];
   placeholder: string;
   isMulti: boolean;
   field: FieldInputProps<any>;
   form: FormikProps<any>;
   isDisabled: boolean;
-  required?: boolean;
 }) => {
   const animatedComponents = makeAnimated();
   const onChange = (newValue: any, actionMeta: any) => {
@@ -33,6 +55,7 @@ const CustomSelect = ({
 
     form.setFieldValue(field.name, selectedValues);
   };
+
   const selected = () => {
     return options
       ? options.filter((option: Option) =>
@@ -73,26 +96,37 @@ const CustomSelect = ({
           color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
-      required={required}
     />
   );
 };
 
-export const FormikSelect = ({
-  options,
+export const FormikSelectEditors = ({
   name,
   placeholder,
   isMulti,
   isDisabled,
-  required,
 }: {
-  options: Option[];
   name: string;
   placeholder: string;
   isMulti: boolean;
   isDisabled: boolean;
-  required?: boolean;
 }) => {
+  const {
+    values: { dataset },
+  } = useFormikContext<FormikValues>();
+
+  const [editors, setOptions] = useState<Option[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (dataset !== 0 && dataset !== -1) {
+        const editors = await fetchProjectMembers(dataset.toString());
+        setOptions(editors);
+      }
+    };
+    fetchData();
+  }, [dataset]);
+
   return (
     <Field name={name}>
       {({ field, form }: FieldProps<any>) => (
@@ -100,10 +134,9 @@ export const FormikSelect = ({
           field={field}
           form={form}
           isMulti={isMulti}
-          options={options}
+          options={editors}
           placeholder={placeholder}
           isDisabled={isDisabled}
-          required={required}
         />
       )}
     </Field>

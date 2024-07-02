@@ -32,6 +32,7 @@ interface Project {
   id: number;
   name: string;
   members: number[];
+  datasets: number[];
 }
 
 interface User {

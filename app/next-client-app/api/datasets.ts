@@ -7,9 +7,12 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
+  datasetList: (dataPartnerId: string) =>
+    `datasets/?data_partner=${dataPartnerId}&hidden=false`,
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
-  projects: () => "projects/",
+  projects: (dataset?: string) =>
+    dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
   permissions: (id: string) => `dataset/${id}/permissions/`,
 };
@@ -46,6 +49,15 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
   }
 }
 
+export async function getDatasetList(filter: string): Promise<DataSetSRList[]> {
+  try {
+    return await request<DataSetSRList>(fetchKeys.datasetList(filter));
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
+  }
+}
+
 export async function getDataPartners(): Promise<DataPartner[]> {
   try {
     return request<DataPartner[]>(fetchKeys.dataPartners());
@@ -64,9 +76,9 @@ export async function getDataUsers(): Promise<User[]> {
   }
 }
 
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(dataset?: string): Promise<Project[]> {
   try {
-    return request<Project[]>(fetchKeys.projects());
+    return request<Project[]>(fetchKeys.projects(dataset));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
