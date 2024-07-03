@@ -132,6 +132,9 @@ export async function createDataset(data: {}) {
   try {
     await request(fetchKeys.createDataset, {
       method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
       body: JSON.stringify(data),
     });
   } catch (error: any) {
