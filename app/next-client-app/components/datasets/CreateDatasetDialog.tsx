@@ -29,7 +29,7 @@ export function CreateDatasetDialog({
     <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
       <DialogTrigger asChild>
         <Button variant={"outline"} className="ml-4 flex">
-          Create a New Dataset <Plus className="ml-2 h-4 w-4" />
+          New Dataset <Plus className="ml-2 h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full">
@@ -37,10 +37,10 @@ export function CreateDatasetDialog({
           <DialogTitle>Create a New Dataset</DialogTitle>
         </DialogHeader>
         {description && (
-          <DialogDescription>
+          <DialogDescription className="justify-center items-center text-center">
             {" "}
-            Data Partner is set as the choosen Data Partner in the previous
-            form.
+            Notice: Data Partner is set as the choosen Data Partner in the
+            previous form.
           </DialogDescription>
         )}
         <CreateDatasetForm

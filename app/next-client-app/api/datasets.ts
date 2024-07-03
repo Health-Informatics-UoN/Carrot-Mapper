@@ -137,7 +137,7 @@ export async function createDataset(data: {}) {
       },
       body: JSON.stringify(data),
     });
-    revalidatePath("/scanreports/create/");
+    revalidatePath("");
   } catch (error: any) {
     return { errorMessage: error.message };
   }

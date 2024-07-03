@@ -58,6 +58,7 @@ export function CreateDatasetForm({
       toast.success("New Dataset created!");
       setError(null);
       setDialogOpened(false);
+      window.location.reload();
     }
   };
 
