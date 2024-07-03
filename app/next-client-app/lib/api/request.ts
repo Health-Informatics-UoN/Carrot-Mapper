@@ -31,11 +31,10 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
     cache: options.cache,
     next: options.next,
   });
+  const contentType = response.headers.get("Content-Type");
 
   if (!response.ok) {
     let errorMessage = "An error occurred";
-
-    const contentType = response.headers.get("Content-Type");
     if (contentType && contentType.includes("application/json")) {
       try {
         const errorResponse = await response.json();
@@ -59,7 +58,10 @@ const request = async <T>(url: string, options: RequestOptions = {}) => {
     return {} as T;
   }
 
-  return response.json();
+  if (contentType && contentType.includes("application/json")) {
+    return response.json();
+  }
+  return response.text();
 };
 
 export default request;

@@ -1,9 +1,14 @@
+import datetime
+import json
 import logging
 import os
+import random
+import string
 from typing import Any
 from urllib.parse import urljoin
-from rest_framework.parsers import MultiPartParser, FormParser
+
 import requests
+from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
     ClassificationSystemSerializer,
@@ -30,10 +35,12 @@ from api.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
     ScanReportConceptSerializer,
+    ScanReportCreateSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
     ScanReportFieldListSerializerV2,
+    ScanReportFilesSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -44,30 +51,38 @@ from api.serializers import (
     ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
-    ScanReportFilesSerializer,
-    ScanReportCreateSerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
+from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
     CanEdit,
     CanView,
     CanViewProject,
-    get_user_permissions_on_scan_report,
     get_user_permissions_on_dataset,
+    get_user_permissions_on_scan_report,
 )
 from mapping.services import delete_blob, modify_filename, upload_blob
-from mapping.services_rules import get_mapping_rules_list
+from mapping.services_rules import (
+    download_mapping_rules,
+    download_mapping_rules_as_csv,
+    get_mapping_rules_list,
+    view_mapping_rules,
+)
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -97,16 +112,12 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
+from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
     _save_mapping_rules,
     delete_mapping_rules,
 )
-import random
-import string
-import datetime
-from azure.storage.blob import BlobServiceClient
-from shared.services.azurequeue import add_message
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -195,7 +206,7 @@ class ProjectListView(ListAPIView):
     API view to show all projects' names.
     """
 
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"name": ["in", "exact"]}
 
@@ -254,13 +265,13 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -525,6 +536,52 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
+class StructuralMappingTableAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            body = request.data
+        except ValueError:
+            body = {}
+        if (
+            request.POST.get("download_rules") is not None
+            or body.get("download_rules", None) is not None
+        ):
+            qs = self.get_queryset()
+            return download_mapping_rules(request, qs)
+        elif (
+            request.POST.get("download_rules_as_csv") is not None
+            or body.get("download_rules_as_csv", None) is not None
+        ):
+            qs = self.get_queryset()
+            return download_mapping_rules_as_csv(request, qs)
+        elif (
+            request.POST.get("get_svg") is not None
+            or body.get("get_svg", None) is not None
+        ):
+            qs = self.get_queryset()
+            return view_mapping_rules(request, qs)
+        else:
+            return Response(
+                {"error": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def get_queryset(self):
+        qs = MappingRule.objects.all()
+        search_term = self.kwargs.get("pk")
+
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
+        return qs
+
+
 class DatasetListView(generics.ListAPIView):
     """
     API view to show all datasets.
@@ -668,7 +725,7 @@ class DatasetDeleteView(generics.DestroyAPIView):
 
 class ScanReportTableViewSet(viewsets.ModelViewSet):
     queryset = ScanReportTable.objects.all()
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "event_date"]
     filterset_fields = {
         "scan_report": ["in", "exact"],
@@ -681,13 +738,13 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -768,7 +825,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
         "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
 
@@ -784,7 +841,7 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "exact"],
@@ -793,13 +850,13 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -828,7 +885,7 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
@@ -1005,53 +1062,6 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
-class ScanReportActiveConceptFilterViewSet(viewsets.ModelViewSet):
-    """
-    This returns details of ScanReportConcepts that have the given content_type and are
-    in ScanReports that are "active" - that is, not hidden, with unhidden parent
-    dataset, and marked with status "Mapping Complete".
-    This is only retrievable by AZ_FUNCTION_USER.
-    """
-
-    serializer_class = ScanReportConceptSerializer
-    filter_backends = [DjangoFilterBackend]
-
-    def get_queryset(self):
-        if self.request.user.username != os.getenv("AZ_FUNCTION_USER"):
-            raise PermissionDenied(
-                "You do not have permission to access this resource."
-            )
-
-        content_type_str = self.request.GET["content_type"]
-        content_type = ContentType.objects.get(model=content_type_str)
-
-        if content_type_str == "scanreportfield":
-            # ScanReportField
-            # we have SRCs of content_type "field", grab all SRFields in active SRs,
-            # and then filter ScanReportConcepts by those object_ids
-            field_ids = ScanReportField.objects.filter(
-                scan_report_table__scan_report__hidden=False,
-                scan_report_table__scan_report__parent_dataset__hidden=False,
-                scan_report_table__scan_report__status="COMPLET",
-            ).values_list("id", flat=True)
-            return ScanReportConcept.objects.filter(
-                content_type=content_type, object_id__in=field_ids
-            )
-        elif content_type_str == "scanreportvalue":
-            # ScanReportValue
-            # we have SRCs of content_type "value", grab all SRValues in active SRs,
-            # and then filter ScanReportConcepts by those object_ids
-            value_ids = ScanReportValue.objects.filter(
-                scan_report_field__scan_report_table__scan_report__hidden=False,
-                scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-                scan_report_field__scan_report_table__scan_report__status="COMPLET",
-            ).values_list("id", flat=True)
-            return ScanReportConcept.objects.filter(
-                content_type=content_type, object_id__in=value_ids
-            )
-        return None
-
-
 class ClassificationSystemViewSet(viewsets.ModelViewSet):
     queryset = ClassificationSystem.objects.all()
     serializer_class = ClassificationSystemSerializer
@@ -1206,7 +1216,7 @@ class MappingRuleFilterViewSet(viewsets.ModelViewSet):
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
     queryset = ScanReportValue.objects.all()
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
         "value": ["in", "exact"],
@@ -1217,13 +1227,13 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [CanView & CanAdmin]
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
             # user must be able to view and be either an editor or and admin
             # to edit a scan report
-            self.permission_classes = [CanView & (CanEdit | CanAdmin)]
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
         else:
-            self.permission_classes = [CanView | CanEdit | CanAdmin]
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
@@ -1252,7 +1262,7 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["value", "value_description", "frequency"]
     pagination_class = CustomPagination
 
@@ -1266,18 +1276,6 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         return super().get_serializer_class()
 
 
-class ScanReportFilterViewSet(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = ScanReportViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "id": ["in", "exact"],
-        "status": ["in", "exact"],
-        "hidden": ["in", "exact"],
-        "parent_dataset__hidden": ["in", "exact"],
-    }
-
-
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class = ScanReportValueViewSerializer
     filter_backends = [DjangoFilterBackend]
@@ -1288,17 +1286,6 @@ class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
             scan_report_field__scan_report_table__scan_report=self.request.GET[
                 "scan_report"
             ]
-        )
-
-
-class ScanReportValuesFilterViewSetScanReportTable(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["scan_report_field__scan_report_table"]
-
-    def get_queryset(self):
-        return ScanReportValue.objects.filter(
-            scan_report_field__scan_report_table=self.request.GET["scan_report_table"]
         )
 
 
@@ -1389,22 +1376,6 @@ class CountStatsScanReportTableField(APIView):
             }
             jsonrecords.append(scanreportfield_content)
         return Response(jsonrecords)
-
-
-# This custom ModelViewSet returns all ScanReportValues for a given ScanReport
-# It also removes all conceptIDs which == -1, leaving only those SRVs with a
-# concept_id which has been looked up with omop_helpers
-class ScanReportValuePKViewSet(viewsets.ModelViewSet):
-    serializer_class = ScanReportValueViewSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["scan_report_field__scan_report_table__scan_report"]
-
-    def get_queryset(self):
-        return ScanReportValue.objects.filter(
-            scan_report_field__scan_report_table__scan_report=self.request.GET[
-                "scan_report"
-            ]
-        ).exclude(conceptID=-1)
 
 
 class GetContentTypeID(APIView):

@@ -1,3 +1,5 @@
+import os
+
 from config import settings
 from django.urls import re_path
 from revproxy.views import ProxyView
@@ -50,3 +52,13 @@ urlpatterns = [
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
     ),
 ]
+
+# Conditionally enable this view until modals are complete
+if os.environ.get("ENABLE_MAPPING_RULES_PROXY", "False").lower() == "true":
+    urlpatterns.append(
+        re_path(
+            r"^scanreports/(?P<path>\d+/mapping_rules)/?$",
+            ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+            name="scan-report-mapping-rules",
+        ),
+    )
