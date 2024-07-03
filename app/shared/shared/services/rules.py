@@ -10,6 +10,7 @@ from shared.data.models import (
     ScanReportTable,
     ScanReportValue,
 )
+from shared.data.omop.concept import Concept
 
 # allowed tables
 m_allowed_tables = [
@@ -54,6 +55,8 @@ def _find_existing_concepts(
 ) -> List[ScanReportConcept]:
     """
     Get ScanReportConcepts associated to a table.
+
+    TODO: I need to accept page/page_size as optional values, and get all if they are not there.
 
     Args:
         - table_id (int): Id of the ScanReportTable to filter by.
@@ -254,9 +257,9 @@ def _get_date_rules(
     return date_rules
 
 
-def _find_destination_table(concept: ScanReportConcept) -> Optional[OmopTable]:
+def _find_destination_table(concept: Concept) -> Optional[OmopTable]:
     """
-    Get the destination table for a given ScanReportConcept
+    Get the destination table for a given Concept
 
     Args:
         - concept (ScanReportConcept): The Concept to get the table for.
