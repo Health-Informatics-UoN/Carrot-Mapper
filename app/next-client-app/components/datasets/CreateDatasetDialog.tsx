@@ -18,13 +18,16 @@ export function CreateDatasetDialog({
   projects,
   dataPartnerList,
   description,
+  setReloadDataset,
 }: {
   dataPartnerID?: number;
   projects: Project[];
   dataPartnerList?: DataPartner[];
   description?: boolean;
+  setReloadDataset: (reloadDataset: boolean) => void;
 }) {
   const [dialogOpened, setDialogOpened] = useState(false);
+
   return (
     <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
       <DialogTrigger asChild>
@@ -48,6 +51,7 @@ export function CreateDatasetDialog({
           dataPartnerID={dataPartnerID}
           dataPartnerList={dataPartnerList}
           setDialogOpened={setDialogOpened}
+          setReloadDataset={setReloadDataset}
         />
       </DialogContent>
     </Dialog>

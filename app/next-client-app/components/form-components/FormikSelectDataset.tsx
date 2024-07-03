@@ -128,12 +128,14 @@ export const FormikSelectDataset = ({
   isMulti,
   isDisabled,
   required,
+  reloadDataset,
 }: {
   name: string;
   placeholder: string;
   isMulti: boolean;
   isDisabled: boolean;
   required?: boolean;
+  reloadDataset?: boolean;
 }) => {
   const {
     values: { dataPartner },
@@ -143,13 +145,13 @@ export const FormikSelectDataset = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (dataPartner !== 0) {
+      if (dataPartner !== 0 || reloadDataset) {
         const dataset = await fetchDataset(dataPartner.toString());
         setOptions(dataset);
       }
     };
     fetchData();
-  }, [dataPartner]);
+  }, [dataPartner, reloadDataset]);
 
   return (
     <Field name={name}>

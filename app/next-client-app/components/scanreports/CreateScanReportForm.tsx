@@ -35,6 +35,7 @@ export function CreateScanReportForm({
 }) {
   const [error, setError] = useState<string | null>(null);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
+  const [reloadDataset, setReloadDataset] = useState(false);
 
   const handleSubmit = async (data: FormData) => {
     const formData = new FormData();
@@ -129,6 +130,7 @@ export function CreateScanReportForm({
                       projects={projects}
                       dataPartnerID={values.dataPartner}
                       description={true}
+                      setReloadDataset={setReloadDataset}
                     />
                   )}
                 </h3>
@@ -138,6 +140,7 @@ export function CreateScanReportForm({
                   isMulti={false}
                   isDisabled={values.dataPartner === 0}
                   required={true}
+                  reloadDataset={reloadDataset}
                 />
               </div>
               <div className="flex flex-col gap-2">
