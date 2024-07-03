@@ -1,10 +1,11 @@
+from datetime import datetime
+
 from django.core.management.base import BaseCommand
-from mapping.services_rules import (
+from mapping.services.services_rules import (
+    find_existing_scan_report_concepts,
     remove_mapping_rules,
     save_mapping_rules,
-    find_existing_scan_report_concepts,
 )
-from datetime import datetime
 
 
 class Command(BaseCommand):

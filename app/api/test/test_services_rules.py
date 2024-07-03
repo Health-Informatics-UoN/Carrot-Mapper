@@ -4,7 +4,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from mapping.services_rules import analyse_concepts
+from mapping.services.services_rules import analyse_concepts
 from rest_framework.authtoken.models import Token
 from shared.data.models import (
     DataPartner,
