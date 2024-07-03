@@ -10,7 +10,7 @@ from django.contrib import messages
 from django.db.models import Q
 from shared.data.models import ScanReportAssertion, ScanReportField, ScanReportValue
 
-from .services_rules import get_concept_from_concept_code
+from .rules import get_concept_from_concept_code
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

@@ -70,8 +70,8 @@ from mapping.permissions import (
     get_user_permissions_on_dataset,
     get_user_permissions_on_scan_report,
 )
-from mapping.services.services import delete_blob, modify_filename, upload_blob
-from mapping.services.services_rules import (
+from mapping.services.files import delete_blob, modify_filename, upload_blob
+from mapping.services.rules import (
     download_mapping_rules,
     download_mapping_rules_as_csv,
     get_mapping_rules_list,
