@@ -1,8 +1,12 @@
+import datetime
+import json
 import logging
 import os
+import random
+import string
 from typing import Any
 from urllib.parse import urljoin
-from rest_framework.parsers import MultiPartParser, FormParser
+
 import requests
 from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
@@ -30,10 +34,12 @@ from api.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
     ScanReportConceptSerializer,
+    ScanReportCreateSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportFieldListSerializer,
     ScanReportFieldListSerializerV2,
+    ScanReportFilesSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializer,
     ScanReportTableListSerializerV2,
@@ -44,16 +50,17 @@ from api.serializers import (
     ScanReportViewSerializerV2,
     UserSerializer,
     VocabularySerializer,
-    ScanReportFilesSerializer,
-    ScanReportCreateSerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
+from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
+from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -64,10 +71,16 @@ from mapping.permissions import (
     get_user_permissions_on_scan_report,
 )
 from mapping.services import delete_blob, modify_filename, upload_blob
-from mapping.services_rules import get_mapping_rules_list
+from mapping.services_rules import (
+    download_mapping_rules,
+    download_mapping_rules_as_csv,
+    get_mapping_rules_list,
+    view_mapping_rules,
+)
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -98,16 +111,12 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
+from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
     _save_mapping_rules,
     delete_mapping_rules,
 )
-import random
-import string
-import datetime
-from azure.storage.blob import BlobServiceClient
-from shared.services.azurequeue import add_message
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -524,6 +533,52 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
         # send to the upload queue
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
+
+
+class StructuralMappingTableAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            body = request.data
+        except ValueError:
+            body = {}
+        if (
+            request.POST.get("download_rules") is not None
+            or body.get("download_rules", None) is not None
+        ):
+            qs = self.get_queryset()
+            return download_mapping_rules(request, qs)
+        elif (
+            request.POST.get("download_rules_as_csv") is not None
+            or body.get("download_rules_as_csv", None) is not None
+        ):
+            qs = self.get_queryset()
+            return download_mapping_rules_as_csv(request, qs)
+        elif (
+            request.POST.get("get_svg") is not None
+            or body.get("get_svg", None) is not None
+        ):
+            qs = self.get_queryset()
+            return view_mapping_rules(request, qs)
+        else:
+            return Response(
+                {"error": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def get_queryset(self):
+        qs = MappingRule.objects.all()
+        search_term = self.kwargs.get("pk")
+
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
+        return qs
 
 
 class DatasetListView(generics.ListAPIView):

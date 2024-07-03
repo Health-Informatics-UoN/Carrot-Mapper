@@ -16,12 +16,19 @@ import { Column } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { navigateWithSearchParam } from "@/lib/client-utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 interface DataTableColumnHeaderProps<TData, TValue>
   extends React.HTMLAttributes<HTMLDivElement> {
   column: Column<TData, TValue>;
   title: string;
   sortName?: string;
+  description?: string;
 }
 
 export function DataTableColumnHeader<TData, TValue>({
@@ -29,12 +36,26 @@ export function DataTableColumnHeader<TData, TValue>({
   title,
   sortName = "",
   className,
+  description,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   if (!column.getCanSort()) {
-    return <div className={cn(className)}>{title}</div>;
+    return description ? (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(className)}>{title}</div>
+          </TooltipTrigger>
+          <TooltipContent className="bg-black text-white">
+            <p>{description}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    ) : (
+      <div className={cn(className)}>{title}</div>
+    );
   }
 
   function getColumnSortState(): { sorted: boolean; type: string | null } {
