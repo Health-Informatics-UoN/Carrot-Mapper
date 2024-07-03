@@ -7,11 +7,8 @@
         "NLP_API_KEY":"",
         "APP_URL":"http://localhost:8000/",
         "AZ_FUNCTION_KEY":"",
-        "SCAN_REPORT_QUEUE_NAME":"scanreports-local",
-        "NLP_QUEUE_NAME":"nlpqueue-local",
         "UPLOAD_QUEUE_NAME": "uploadreports-local",
-        "CREATE_CONCEPTS_QUEUE_NAME":"conceptqueue-local",
-        "MAPPING_RULES_QUEUE_NAME":"mapping-rules-queue-local",
+        "RULES_QUEUE_NAME": "rules-local",
         "PAGE_MAX_CHARS": "30000",
         "CHUNK_SIZE": "6"
     }
