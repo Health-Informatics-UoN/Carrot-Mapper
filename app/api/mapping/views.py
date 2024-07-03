@@ -421,29 +421,6 @@ def load_omop_fields(request):
     )
 
 
-# To be removed
-# Run NLP at the field level
-def run_nlp_field_level(request):
-    search_term = request.GET.get("search", None)
-    field = ScanReportField.objects.get(pk=search_term)
-    start_nlp_field_level(request, search_term=search_term)
-
-    return redirect("/fields/?search={}".format(field.scan_report_table.id))
-
-
-# To be removed
-# Run NLP for all fields/values within a table
-def run_nlp_table_level(request):
-    search_term = request.GET.get("search", None)
-    table = ScanReportTable.objects.get(pk=search_term)
-    fields = ScanReportField.objects.filter(scan_report_table=search_term)
-
-    for item in fields:
-        start_nlp_field_level(search_term=item.id)
-
-    return redirect("/tables/?search={}".format(table.id))
-
-
 @login_required
 def dataset_list_page(request):
     return render(request, "mapping/dataset_list.html")
