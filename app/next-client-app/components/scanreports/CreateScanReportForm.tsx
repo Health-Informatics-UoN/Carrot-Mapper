@@ -136,7 +136,7 @@ export function CreateScanReportForm({
                   {values.dataPartner !== 0 && (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button className="ml-4 text-lg flex">
+                        <Button className="ml-4 flex">
                           Create a New Dataset <Plus className="ml-2 h-4 w-4" />
                         </Button>
                       </DialogTrigger>

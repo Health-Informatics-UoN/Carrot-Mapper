@@ -92,7 +92,7 @@ export function CreateDatasetForm({
           handleSubmit(data);
         }}
       >
-        {({ values, handleChange, handleSubmit, setFieldValue }) => (
+        {({ values, handleChange, handleSubmit }) => (
           <Form className="w-full" onSubmit={handleSubmit}>
             <div className="flex flex-col gap-3 text-lg">
               {!dataPartnerID && (

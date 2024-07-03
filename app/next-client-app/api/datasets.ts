@@ -137,8 +137,8 @@ export async function createDataset(data: {}) {
       },
       body: JSON.stringify(data),
     });
+    revalidatePath("/scanreports/create/");
   } catch (error: any) {
     return { errorMessage: error.message };
   }
-  redirect(`/datasets/`);
 }
