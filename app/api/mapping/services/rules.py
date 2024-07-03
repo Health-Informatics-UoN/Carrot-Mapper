@@ -3,7 +3,6 @@ import io
 import json
 from datetime import date, datetime
 
-from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.http import HttpResponse
@@ -24,192 +23,9 @@ class NonStandardConceptMapsToSelf(Exception):
     pass
 
 
-# allowed tables
-m_allowed_tables = [
-    "person",
-    "measurement",
-    "condition_occurrence",
-    "observation",
-    "drug_exposure",
-    "procedure_occurrence",
-    "specimen",
-]
-
-# look up of date-events in all the allowed (destination) tables
-m_date_field_mapper = {
-    "person": ["birth_datetime"],
-    "condition_occurrence": ["condition_start_datetime", "condition_end_datetime"],
-    "measurement": ["measurement_datetime"],
-    "observation": ["observation_datetime"],
-    "drug_exposure": ["drug_exposure_start_datetime", "drug_exposure_end_datetime"],
-    "procedure_occurrence": ["procedure_datetime"],
-    "specimen": ["specimen_datetime"],
-}
-
-
-def find_date_event(source_table):
-    """
-    convienience function to return the source field of a date event
-    for a destination table from the current source table
-
-    Paramaters:
-      - source_table (ScanReportTable): object for the scan report table
-
-    Returns:
-      - ScanReportField : the source_field that has been marked as the date event
-    """
-    return source_table.date_event
-
-
-def find_person_id(source_table):
-    """
-    convenience function to return the person_id for a source table
-    Args:
-      - source_table (ScanReportTable)
-    Returns:
-      - person_id (ScanReportField)
-    """
-    return source_table.person_id
-
-
-def get_omop_field(destination_field, destination_table=None):
-    """
-    function to return the destination_field object, given lookup names
-    Args:
-      - destination_field (str) : the name of the destination field
-      - [optional] destination_table (str) : the name of destination table, if known
-    Returns:
-      - OmopField : the destination field object
-    """
-
-    # if we haven't specified the table name
-    if destination_table is None:
-        # look up the field from the "allowed_tables"
-        omop_field = OmopField.objects.filter(field=destination_field)
-
-        if len(omop_field) > 1:
-            return omop_field.filter(table__table__in=m_allowed_tables)[0]
-        elif len(omop_field) == 0:
-            return None
-        else:
-            return omop_field[0]
-
-    else:
-        # otherwise, if we know which table the field is in, use this to find the field
-        omop_field = OmopField.objects.filter(table__table=destination_table).get(
-            field=destination_field
-        )
-    return omop_field
-
-
-def get_person_id_rule(
-    request, scan_report, scan_report_concept, source_table, destination_table
-):
-    # look up what source_field for this table contains the person id
-    person_id_source_field = find_person_id(source_table)
-
-    # get the associated OmopField Object (aka destination_table::person_id)
-    person_id_omop_field = OmopField.objects.get(
-        table=destination_table, field="person_id"
-    )
-
-    # create a new 1-1 rule
-    rule_domain_person_id, created = MappingRule.objects.update_or_create(
-        scan_report=scan_report,
-        omop_field=person_id_omop_field,
-        source_field=person_id_source_field,
-        concept=scan_report_concept,
-        approved=True,
-    )
-    # return the rule mapping
-    return rule_domain_person_id
-
-
-def get_date_rules(
-    request, scan_report, scan_report_concept, source_table, destination_table
-):
-    # !todo - need some checks for this
-    date_event_source_field = find_date_event(source_table)
-
-    date_omop_fields = m_date_field_mapper[destination_table.table]
-    # loop over all returned
-    # most will return just one date event
-    # in the case of condition_occurrence, it returns start and end
-    date_rules = []
-    for date_omop_field in date_omop_fields:
-        # get the actual omop field object
-        date_event_omop_field = OmopField.objects.get(
-            table=destination_table, field=date_omop_field
-        )
-
-        # create a new 1-1 rule
-        rule_domain_date_event, created = MappingRule.objects.update_or_create(
-            scan_report=scan_report,
-            omop_field=date_event_omop_field,
-            source_field=date_event_source_field,
-            concept=scan_report_concept,
-            approved=True,
-        )
-
-        date_rules.append(rule_domain_date_event)
-
-    return date_rules
-
-
-def find_destination_table(request, concept):
-    domain = concept.domain_id.lower()
-    # get the omop field for the source_concept_id for this domain
-    omop_field = get_omop_field(f"{domain}_source_concept_id")
-    if omop_field is None:
-        if request is not None:
-            messages.error(
-                request,
-                f"Something up with this concept, '{domain}_source_concept_id' does not exist, or is from a table that is not allowed.",
-            )
-        return None
-    # start looking up what table we're looking at
-    destination_table = omop_field.table
-
-    if destination_table.table not in m_allowed_tables:
-        messages.error(
-            request,
-            f"Concept {concept.concept_id} ({concept.concept_name}) is from table '{destination_table.table}' which is not implemented yet.",
-        )
-        return None
-    return destination_table
-
-
-def validate_person_id_and_date(request, source_table):
-    """
-    Before creating any rules, we need to make sure the person_id and date_event
-    has been set
-    """
-
-    # find the date event first
-    person_id_source_field = find_person_id(source_table)
-
-    if person_id_source_field is None:
-        msg = f"No person_id set for this table {source_table}, cannot create rules."
-        if request:
-            messages.error(request, msg)
-        else:
-            print(msg)
-        return False
-
-    date_event_source_field = find_date_event(source_table)
-    if date_event_source_field is None:
-        msg = f"No date_event set for this table {source_table}, cannot create rules."
-        if request:
-            messages.error(msg)
-        else:
-            print(msg)
-        return False
-
-    return True
-
-
 def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
     """
+    TODO: If we delete nlp we can delete this.
     Given a concept_code and vocabularly id,
     return the source_concept and concept objects
 
@@ -259,6 +75,7 @@ def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept
 
 def find_standard_concept(source_concept):
     """
+    TODO: And this...
     Args:
       - source_concept(Concept): originally found, potentially non-standard concept
     Returns:
