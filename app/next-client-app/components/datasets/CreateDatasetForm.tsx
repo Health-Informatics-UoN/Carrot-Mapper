@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
-import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
 import { FormikSelectUsers } from "../form-components/FormikSelectUsers";
@@ -29,10 +28,12 @@ export function CreateDatasetForm({
   dataPartnerID,
   dataPartnerList,
   projectList,
+  setDialogOpened,
 }: {
   dataPartnerID?: number;
   dataPartnerList?: DataPartner[];
   projectList: Project[];
+  setDialogOpened: (dialogOpened: boolean) => void;
 }) {
   const partnerOptions = FormDataFilter<DataPartner>(dataPartnerList || []);
   const projectOptions = FormDataFilter<Project>(projectList || []);
@@ -56,6 +57,7 @@ export function CreateDatasetForm({
     } else {
       toast.success("New Dataset created!");
       setError(null);
+      setDialogOpened(false);
     }
   };
 

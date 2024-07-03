@@ -15,16 +15,7 @@ import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { CreateDatasetForm } from "../datasets/CreateDatasetForm";
+import { CreateDatasetDialog } from "../datasets/CreateDatasetDialog";
 
 interface FormData {
   name: string;
@@ -134,22 +125,11 @@ export function CreateScanReportForm({
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                   {values.dataPartner !== 0 && (
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="ml-4 flex">
-                          Create a New Dataset <Plus className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="w-full">
-                        <DialogHeader>
-                          <DialogTitle>Create a New Dataset</DialogTitle>
-                        </DialogHeader>
-                        <CreateDatasetForm
-                          projectList={projects}
-                          dataPartnerID={values.dataPartner}
-                        />
-                      </DialogContent>
-                    </Dialog>
+                    <CreateDatasetDialog
+                      projects={projects}
+                      dataPartnerID={values.dataPartner}
+                      description={true}
+                    />
                   )}
                 </h3>
                 <FormikSelectDataset
