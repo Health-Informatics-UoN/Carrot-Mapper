@@ -22,6 +22,7 @@ from api.serializers import (
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
+    DatasetViewSerializerV2,
     DomainSerializer,
     DrugStrengthSerializer,
     GetRulesAnalysis,
@@ -597,7 +598,7 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
@@ -705,7 +706,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     This view should return a single dataset from an id
     """
 
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
