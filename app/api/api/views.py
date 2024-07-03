@@ -53,14 +53,12 @@ from api.serializers import (
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
-from django.views.generic import ListView
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -72,10 +70,10 @@ from mapping.permissions import (
 )
 from mapping.services.files import delete_blob, modify_filename, upload_blob
 from mapping.services.rules import (
-    download_mapping_rules,
-    download_mapping_rules_as_csv,
+    get_mapping_rules_as_csv,
+    get_mapping_rules_json,
     get_mapping_rules_list,
-    view_mapping_rules,
+    make_dag,
 )
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -543,27 +541,50 @@ class StructuralMappingTableAPIView(APIView):
             body = {}
         if (
             request.POST.get("download_rules") is not None
-            or body.get("download_rules", None) is not None
+            or body.get("download_rules") is not None
         ):
-            qs = self.get_queryset()
-            return download_mapping_rules(request, qs)
+            return self._download_json()
         elif (
             request.POST.get("download_rules_as_csv") is not None
-            or body.get("download_rules_as_csv", None) is not None
+            or body.get("download_rules_as_csv") is not None
         ):
+            return self._download_csv()
+        elif request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
             qs = self.get_queryset()
-            return download_mapping_rules_as_csv(request, qs)
-        elif (
-            request.POST.get("get_svg") is not None
-            or body.get("get_svg", None) is not None
-        ):
-            qs = self.get_queryset()
-            return view_mapping_rules(request, qs)
+            output = get_mapping_rules_json(qs)
+
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
         else:
             return Response(
                 {"error": "Invalid request parameters"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    def _download_csv(self):
+        qs = self.get_queryset()
+        scan_report = qs[0].scan_report
+        return_type = "csv"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+        _buffer = get_mapping_rules_as_csv(qs)
+
+        response = HttpResponse(_buffer, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
+
+    def _download_json(self):
+        qs = self.get_queryset()
+        output = get_mapping_rules_json(qs)
+        scan_report = qs[0].scan_report
+        return_type = "json"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+
+        response = HttpResponse(
+            json.dumps(output, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
 
     def get_queryset(self):
         qs = MappingRule.objects.all()

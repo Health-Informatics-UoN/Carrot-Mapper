@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import os
@@ -6,7 +5,6 @@ import random
 import string
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
-from azure.storage.queue import QueueClient
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
@@ -42,11 +40,7 @@ from shared.services.azurequeue import add_message
 from .forms import ScanReportAssertionForm, ScanReportForm
 from .permissions import has_editorship, has_viewership, is_admin
 from .services.nlp import start_nlp_field_level
-from .services.rules import (
-    download_mapping_rules,
-    download_mapping_rules_as_csv,
-    view_mapping_rules,
-)
+from .services.rules import get_mapping_rules_as_csv, get_mapping_rules_json, make_dag
 
 
 @login_required
@@ -57,21 +51,19 @@ def home(request):
 @login_required
 def update_scanreport_table_page(request, sr, pk):
     try:
-        # Get the SR table
         sr_table = ScanReportTable.objects.get(id=pk)
-        # Determine if the user can edit the form
-        can_edit = False
-        if (
-            sr_table.scan_report.author.id == request.user.id
-            or sr_table.scan_report.editors.filter(id=request.user.id).exists()
-            or sr_table.scan_report.parent_dataset.editors.filter(
-                id=request.user.id
-            ).exists()
-            or sr_table.scan_report.parent_dataset.admins.filter(
-                id=request.user.id
-            ).exists()
-        ):
-            can_edit = True
+        can_edit = bool(
+            (
+                sr_table.scan_report.author.id == request.user.id
+                or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+                or sr_table.scan_report.parent_dataset.editors.filter(
+                    id=request.user.id
+                ).exists()
+                or sr_table.scan_report.parent_dataset.admins.filter(
+                    id=request.user.id
+                ).exists()
+            )
+        )
         # Set the page context
         context = {"can_edit": can_edit, "pk": pk}
         if (
@@ -107,25 +99,48 @@ class StructuralMappingTableListView(ListView):
             body = {}
         if (
             request.POST.get("download_rules") is not None
-            or body.get("download_rules", None) is not None
+            or body.get("download_rules") is not None
         ):
-            qs = self.get_queryset()
-            return download_mapping_rules(request, qs)
+            return self._download_json()
         elif (
             request.POST.get("download_rules_as_csv") is not None
-            or body.get("download_rules_as_csv", None) is not None
+            or body.get("download_rules_as_csv") is not None
         ):
+            return self._download_csv()
+        elif request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
             qs = self.get_queryset()
-            return download_mapping_rules_as_csv(request, qs)
-        elif (
-            request.POST.get("get_svg") is not None
-            or body.get("get_svg", None) is not None
-        ):
-            qs = self.get_queryset()
-            return view_mapping_rules(request, qs)
+            output = get_mapping_rules_json(qs)
+
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
         else:
             messages.error(request, "not working right now!")
             return redirect(request.path)
+
+    def _download_csv(self):
+        qs = self.get_queryset()
+        scan_report = qs[0].scan_report
+        return_type = "csv"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+        _buffer = get_mapping_rules_as_csv(qs)
+
+        response = HttpResponse(_buffer, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
+
+    def _download_json(self):
+        qs = self.get_queryset()
+        output = get_mapping_rules_json(qs)
+        scan_report = qs[0].scan_report
+        return_type = "json"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+
+        response = HttpResponse(
+            json.dumps(output, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
 
     def get_queryset(self):
         qs = super().get_queryset()

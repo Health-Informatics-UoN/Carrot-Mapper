@@ -1,11 +1,11 @@
 import csv
 import io
-import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
+from typing import Any
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from django.http import HttpResponse
+from django.db.models.query import QuerySet
 from graphviz import Digraph
 from shared.data.models import (
     MappingRule,
@@ -16,97 +16,21 @@ from shared.data.models import (
     ScanReportTable,
     ScanReportValue,
 )
-from shared.data.omop import Concept, ConceptAncestor, ConceptRelationship
+from shared.data.omop import Concept, ConceptAncestor
 
 
 class NonStandardConceptMapsToSelf(Exception):
     pass
 
 
-def get_concept_from_concept_code(concept_code, vocabulary_id, no_source_concept=False):
-    """
-    TODO: If we delete nlp we can delete this.
-    Given a concept_code and vocabularly id,
-    return the source_concept and concept objects
-
-    If the concept is a standard concept,
-    source_concept will be the same object
-
-    Parameters:
-      concept_code (str) : the concept code
-      vocabulary_id (str) : SNOMED etc.
-      no_source_concept (bool) : only return the concept
-    Returns:
-      tuple( source_concept(Concept), concept(Concept) )
-      OR
-      concept(Concept)
-    """
-
-    # NLP returns SNOMED as SNOWMEDCT_US
-    # This sets SNOWMEDCT_US to SNOWMED if this function is
-    # used within services_nlp.py
-    if vocabulary_id == "SNOMEDCT_US":
-        vocabulary_id = "SNOMED"
-
-    # It's RXNORM in NLP but RxNorm in OMOP db, so must convert
-    if vocabulary_id == "RXNORM":
-        vocabulary_id = "RxNorm"
-
-    # obtain the source_concept given the code and vocab
-    source_concept = Concept.objects.get(
-        concept_code=concept_code, vocabulary_id=vocabulary_id
-    )
-
-    # if the source_concept is standard
-    if source_concept.standard_concept == "S":
-        # the concept is the same as the source_concept
-        concept = source_concept
-    else:
-        # otherwise we need to look up
-        concept = find_standard_concept(source_concept)
-
-    if no_source_concept:
-        # only return the concept
-        return concept
-    else:
-        # return both as a tuple
-        return (source_concept, concept)
-
-
-def find_standard_concept(source_concept):
-    """
-    TODO: And this...
-    Args:
-      - source_concept(Concept): originally found, potentially non-standard concept
-    Returns:
-      - Concept: either the same object as input (if input is standard), or a newly found
-    """
-
-    # if is standard, return self
-    if source_concept.standard_concept == "S":
-        return source_concept
-
-    # find the concept relationship, of what this non-standard concept "Maps to"
-    concept_relation = ConceptRelationship.objects.get(
-        concept_id_1=source_concept.concept_id, relationship_id__contains="Maps to"
-    )
-
-    if concept_relation.concept_id_2 == concept_relation.concept_id_1:
-        raise NonStandardConceptMapsToSelf(
-            "For a non-standard concept "
-            "the concept_relation is mapping to itself "
-            "i.e. it cannot find an associated standard concept"
-        )
-
-    # look up the associated standard-concept
-    concept = Concept.objects.get(concept_id=concept_relation.concept_id_2)
-    return concept
-
-
-def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size=None):
+def get_mapping_rules_list(
+    mapping_rules: QuerySet[MappingRule],
+    page_number: int | None = None,
+    page_size: int | None = None,
+) -> list[dict[str, Any]]:
     """
     Args:
-        qs : queryset of all mapping rules
+        mapping_rules : queryset of all mapping rules
         page_number: if present, the number of the page to be returned under pagination
         page_size: if present, the size of the page to be returned under pagination (
           that is, when viewed on the mappingruleslist page. We don't supply
@@ -121,13 +45,11 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
     if page_number is not None:
         first_index = (page_number - 1) * page_size
         last_index = page_number * page_size
-        structural_mapping_rules = structural_mapping_rules[first_index:last_index]
+        mapping_rules = mapping_rules[first_index:last_index]
 
     # get all scan_report_concepts that are used
     # get the ids first so we can make a batch call
-    scan_report_concepts = list(
-        set([obj.concept_id for obj in structural_mapping_rules])
-    )
+    scan_report_concepts = list({obj.concept_id for obj in mapping_rules})
 
     nmapped_concepts = len(scan_report_concepts)
 
@@ -165,42 +87,42 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
     }
 
     # get all destination field ids
-    destination_fields = [obj.omop_field_id for obj in structural_mapping_rules]
+    destination_fields_ids = [obj.omop_field_id for obj in mapping_rules]
     # batch call
     destination_fields = {
-        obj.id: obj for obj in list(OmopField.objects.filter(pk__in=destination_fields))
+        obj.id: obj
+        for obj in list(OmopField.objects.filter(pk__in=destination_fields_ids))
     }
 
     # again with destination table
-    destination_tables = [obj.table_id for obj in destination_fields.values()]
+    destination_tables_ids = [obj.table_id for obj in destination_fields.values()]
     destination_tables = {
-        obj.id: obj for obj in list(OmopTable.objects.filter(pk__in=destination_tables))
+        obj.id: obj
+        for obj in list(OmopTable.objects.filter(pk__in=destination_tables_ids))
     }
 
     # and sources....
-    source_fields = [obj.source_field_id for obj in structural_mapping_rules]
+    source_fields_ids = [obj.source_field_id for obj in mapping_rules]
     source_fields = {
         obj.id: obj
-        for obj in list(ScanReportField.objects.filter(pk__in=source_fields))
+        for obj in list(ScanReportField.objects.filter(pk__in=source_fields_ids))
     }
-    source_tables = [obj.scan_report_table_id for obj in source_fields.values()]
+    source_tables_ids = [obj.scan_report_table_id for obj in source_fields.values()]
     source_tables = {
         obj.id: obj
-        for obj in list(ScanReportTable.objects.filter(pk__in=source_tables))
+        for obj in list(ScanReportTable.objects.filter(pk__in=source_tables_ids))
     }
 
     # Using select_related() means we can chain together querysets into one database
     # query rather than using multiple
-    structural_mapping_rules_sr_concepts = structural_mapping_rules.select_related(
-        "concept"
-    )
+    structural_mapping_rules_sr_concepts = mapping_rules.select_related("concept")
     # Generate rule.id to SRConcept.id map for all SRConcepts related to these rules.
     rule_to_srconcept_id_map = {
         obj.id: obj.concept.id for obj in structural_mapping_rules_sr_concepts
     }
 
-    structural_mapping_rules_sr_concepts_concepts = (
-        structural_mapping_rules.select_related("concept__concept")
+    structural_mapping_rules_sr_concepts_concepts = mapping_rules.select_related(
+        "concept__concept"
     )
     # Generate MappingRule.id to Concept.id map for all Concepts related to SRConcepts
     # related to these MappingRules.
@@ -223,7 +145,7 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
 
     # now loop over the rules to actually create the list version of the rules
     rules = []
-    for rule in structural_mapping_rules:
+    for rule in mapping_rules:
         # get the fields/tables from the loop up lists
         # the speed up comes from here as we dont need to keep hitting the DB to get this data
         # we've already cached it in these dictionaries by making a batch call
@@ -277,34 +199,36 @@ def get_mapping_rules_list(structural_mapping_rules, page_number=None, page_size
     return rules
 
 
-def get_mapping_rules_json(structural_mapping_rules):
+def get_mapping_rules_json(
+    mapping_rules: QuerySet[MappingRule],
+) -> dict[str, dict] | dict[str, Any]:
     """
     Args:
-        qs : queryset of all mapping rules
+        - mapping_rules (QuerySet) : queryset of all mapping rules
     Returns:
-        dict : formatted json that can be eaten by the TL-Tool
+        - dict : formatted json that can be eaten by the TL-Tool
     """
 
     # Return empty metadata and cdm if `structural_mapping_rules` is empty
-    if not structural_mapping_rules:
+    if not mapping_rules:
         return {"metadata": {}, "cdm": {}}
 
     # use the first_qs to get the scan_report dataset name
     # all qs items will be from the same scan_report
-    first_rule = structural_mapping_rules[0]
+    first_rule = mapping_rules[0]
 
     # build some metadata
     metadata = {
-        "date_created": datetime.utcnow().isoformat(),
+        "date_created": datetime.now(timezone.utc).isoformat(),
         "dataset": first_rule.scan_report.dataset,
     }
 
     # get the list of rules
     # this is the same list/function that is used
     # !NOTE: we could cache this to speed things up, as the page load will call this once already
-    all_rules = get_mapping_rules_list(structural_mapping_rules)
+    all_rules = get_mapping_rules_list(mapping_rules)
 
-    cdm = {}
+    cdm: dict[str, Any] = {}
     # loop over the list of rules
     for rule in all_rules:
         # get the rule id
@@ -343,33 +267,18 @@ def get_mapping_rules_json(structural_mapping_rules):
     return {"metadata": metadata, "cdm": cdm}
 
 
-def download_mapping_rules(request, qs):
-    # get the mapping rules
-    output = get_mapping_rules_json(qs)
-    # used the first qs item to get the scan_report name the qs is associated with
-    scan_report = qs[0].scan_report
-    # make a file name
-    return_type = "json"
-    fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
-    # return a response that downloads the json file
+def get_mapping_rules_as_csv(qs: QuerySet[MappingRule]) -> io.StringIO:
+    """
+    Gets Mapping Rules in csv format.
 
-    response = HttpResponse(
-        json.dumps(output, indent=6), content_type="application/json"
-    )
-    response["Content-Disposition"] = f'attachment; filename="{fname}"'
-    return response
+    Args:
+        - qs (QuerySet[MappingRule]) queryset of Mapping Rules.
 
-
-def download_mapping_rules_as_csv(request, qs):
+    Returns:
+        - Mapping rules as StringIO.
+    """
     # get the mapping rules as a list
     output = get_mapping_rules_list(qs)
-
-    # used the first qs item to get the scan_report name the qs is associated with
-    scan_report = qs[0].scan_report
-    # make a csv file name
-    return_type = "csv"
-    fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
-    # return a response that downloads the csv file
 
     # make a string buffer
     _buffer = io.StringIO()
@@ -438,30 +347,39 @@ def download_mapping_rules_as_csv(request, qs):
 
         # Lookup and extract concept
         if content["concept_id"]:
-            concept = Concept.objects.filter(concept_id=content["concept_id"]).first()
-            content["validity"] = (
-                concept.valid_start_date <= today < concept.valid_end_date
-            )
-            content["vocabulary"] = concept.vocabulary_id
-            content["concept"] = concept.standard_concept
-            content["class"] = concept.concept_class_id
+            if concept := Concept.objects.filter(
+                concept_id=content["concept_id"]
+            ).first():
+                content["validity"] = (
+                    concept.valid_start_date <= today < concept.valid_end_date
+                )
+                content["vocabulary"] = concept.vocabulary_id
+                content["concept"] = concept.standard_concept
+                content["class"] = concept.concept_class_id
 
         # extract and write the contents now
-        content = [str(content[x]) for x in headers]
-        writer.writerow(content)
+        content_out = [str(content[x]) for x in headers]
+        writer.writerow(content_out)
 
     # rewind the buffer and return the response
     _buffer.seek(0)
-    response = HttpResponse(_buffer, content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filename="{fname}"'
 
-    return response
+    return _buffer
 
 
-colorscheme = "gnbu9"
+def make_dag(
+    data: dict[str, dict[str, dict[str, dict[str, str]]]], colorscheme: str = "gnbu9"
+) -> str:
+    """
+    Create a DAG given data, and a coloscheme.
 
+    Args:
+        - data (dict): The data to create the DAG for.
+        - colorscheme (Optional[str]): The colorscheme of the DAG
 
-def make_dag(data, colorscheme="gnbu9"):
+    Returns:
+        - A DAG (str) representing the data and colorscheme.
+    """
     dot = Digraph(strict=True, format="svg")
     dot.attr(rankdir="RL")
     with dot.subgraph(name="cluster_0") as dest, dot.subgraph(name="cluster_1") as inp:
@@ -543,50 +461,16 @@ def make_dag(data, colorscheme="gnbu9"):
     return dot.pipe().decode("utf-8")
 
 
-# this is here as we should move it out of coconnect.tools
-def view_mapping_rules(request, qs):
-    # get the rules
-    output = get_mapping_rules_json(qs)
-    # use make dag svg image
-    svg = make_dag(output["cdm"])
-    # return a svg response
-    response = HttpResponse(svg, content_type="image/svg+xml")
-    return response
-
-
-def find_existing_scan_report_concepts(request, scan_report_id):
-    # find ScanReportValue associated to this scan_report_id
-    # that have at least one concept added to them
-    values = (
-        ScanReportValue.objects.all()
-        .filter(scan_report_field__scan_report_table__scan_report=scan_report_id)
-        .filter(concepts__isnull=False)
-        .distinct()
-        .order_by("id")
-    )
-
-    # find ScanReportField associated to this scan_report_id
-    # that have at least one concept added to them
-    fields = (
-        ScanReportField.objects.all()
-        .filter(scan_report_table__scan_report=scan_report_id)
-        .filter(concepts__isnull=False)
-        .distinct()
-        .order_by("id")
-    )
-
-    # retrieve all value concepts
-    all_concepts = [concept for obj in values for concept in obj.concepts.all()]
-    # retrieve all field concepts
-    all_concepts += [concept for obj in fields for concept in obj.concepts.all()]
-    return all_concepts
-
-
-def get_concept_details(h_concept_id):
+def get_concept_details(
+    h_concept_id: int,
+) -> tuple[str, QuerySet[MappingRule, dict[str, Any]]]:
     """
     Given a mapping rule and its descendant/ancestor concept id
     Find the source field/value that the descendant/ancestor is mapped to,
     Return the mapping rule name, the descendant/ancestor name, and the source fields/tables
+
+    Args:
+        - h_concept_id (int): The Id of the Concept to filter by.
     """
     # Get the descendant/ancestor concept name
     concept_name = Concept.objects.get(concept_id=h_concept_id).concept_name
@@ -614,12 +498,18 @@ def get_concept_details(h_concept_id):
     return (concept_name, source_ids)
 
 
-def analyse_concepts(scan_report_id):
+def analyse_concepts(scan_report_id: int) -> dict[str, list[Any]]:
     """
     Given a scan_report_id get all the mapping rules in that Scan Report.
     Get all the mapping rules from every other Scan Report and compare them against the current ones
     If there are any ancestors/descendants of the current mapping rules mapped in another Scan Report
     Find where those ancestors/descendants are mapped to
+
+    Args:
+        - scan_report_id (int): The Id of the Scan Report to analyse for.
+
+    Returns:
+        - ?
     """
 
     # Get mapping rules for current scan report
