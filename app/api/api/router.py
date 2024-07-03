@@ -8,6 +8,9 @@ router.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
 router.register(
     r"omop/conceptsfilter", views.ConceptFilterViewSet, basename="conceptsfilter"
 )
+router.register(
+    r"v2/omop/conceptsfilter", views.ConceptFilterViewSetV2, basename="v2conceptsfilter"
+)
 
 router.register(r"omop/vocabularies", views.VocabularyViewSet, basename="vocabularies")
 router.register(
@@ -79,6 +82,11 @@ router.register(
     r"scanreportconceptsfilter",
     views.ScanReportConceptFilterViewSet,
     basename="scanreportconceptsfilter",
+)
+router.register(
+    r"v2/scanreportconceptsfilter",
+    views.ScanReportConceptFilterViewSetV2,
+    basename="v2scanreportconceptsfilter",
 )
 
 router.register(

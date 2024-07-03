@@ -1,7 +1,7 @@
 import {
   addConcept,
-  getConceptFilters,
-  getScanReportConcepts,
+  getAllConceptsFiltered,
+  getAllScanReportConcepts,
 } from "@/api/concepts";
 import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
@@ -48,16 +48,18 @@ export default function AddConcept({
       if (response) {
         toast.error(`Adding concept failed. ${response.errorMessage}`);
       } else {
-        const newConcepts = await getScanReportConcepts(`object_id=${rowId}`);
-        const filteredConcepts = await getConceptFilters(
-          newConcepts?.map((item) => item.concept).join(",")
+        const newConcepts = await getAllScanReportConcepts(
+          `object_id=${rowId}`,
+        );
+        const filteredConcepts = await getAllConceptsFiltered(
+          newConcepts?.map((item) => item.concept).join(","),
         );
         // Filter the concept and concept filter
         const newConcept = newConcepts.filter(
-          (c) => c.concept == conceptCode
+          (c) => c.concept == conceptCode,
         )[0];
         const filteredConcept = filteredConcepts.filter(
-          (c) => c.concept_id == conceptCode
+          (c) => c.concept_id == conceptCode,
         )[0];
 
         addSR(newConcept, filteredConcept);
