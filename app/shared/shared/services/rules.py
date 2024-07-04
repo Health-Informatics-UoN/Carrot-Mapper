@@ -51,28 +51,31 @@ def delete_mapping_rules(table_id: int) -> None:
 
 
 def _find_existing_concepts(
-    table_id: int, page: int, page_size: int
+    table_id: int, page: int | None, page_size: int | None
 ) -> List[ScanReportConcept]:
     """
     Get ScanReportConcepts associated to a table.
 
-    TODO: I need to accept page/page_size as optional values, and get all if they are not there.
-
     Args:
         - table_id (int): Id of the ScanReportTable to filter by.
-        - page (int): Page to get
-        - page_size (int): Page size to get
+        - page (int | None): Page to get
+        - page_size (int | None): Page size to get
 
     Returns:
         - A list of ScanReportConcept attached to the Table Id.
     """
-    offset = page * page_size
+    if page is not None and page_size is not None:
+        offset = page * page_size
+        limit = offset + page_size
+    else:
+        offset = None
+        limit = None
 
     values = (
         ScanReportValue.objects.all()
         .filter(scan_report_field__scan_report_table=table_id, concepts__isnull=False)
         .distinct()
-        .order_by("id")[offset : offset + page_size]
+        .order_by("id")
     )
 
     # find ScanReportField associated to this table_id
@@ -81,8 +84,12 @@ def _find_existing_concepts(
         ScanReportField.objects.all()
         .filter(scan_report_table=table_id, concepts__isnull=False)
         .distinct()
-        .order_by("id")[offset : offset + page_size]
+        .order_by("id")
     )
+
+    if offset is not None and limit is not None:
+        values = values[offset:limit]
+        fields = fields[offset:limit]
 
     # retrieve all value concepts
     all_concepts = [concept for obj in values for concept in obj.concepts.all()]
