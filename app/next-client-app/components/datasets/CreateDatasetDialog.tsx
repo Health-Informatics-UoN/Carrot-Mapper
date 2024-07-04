@@ -24,7 +24,7 @@ export function CreateDatasetDialog({
   projects: Project[];
   dataPartnerList?: DataPartner[];
   description?: boolean;
-  setReloadDataset: (reloadDataset: boolean) => void;
+  setReloadDataset?: (reloadDataset: boolean) => void;
 }) {
   const [dialogOpened, setDialogOpened] = useState(false);
 

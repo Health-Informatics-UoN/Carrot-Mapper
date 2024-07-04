@@ -35,7 +35,7 @@ export function CreateDatasetForm({
   dataPartnerList?: DataPartner[];
   projectList: Project[];
   setDialogOpened: (dialogOpened: boolean) => void;
-  setReloadDataset: (reloadDataset: boolean) => void;
+  setReloadDataset?: (reloadDataset: boolean) => void;
 }) {
   const partnerOptions = FormDataFilter<DataPartner>(dataPartnerList || []);
   const projectOptions = FormDataFilter<Project>(projectList || []);
@@ -59,8 +59,10 @@ export function CreateDatasetForm({
     } else {
       toast.success("New Dataset created!");
       setError(null);
+      if (setReloadDataset) {
+        setReloadDataset(true);
+      }
       setDialogOpened(false);
-      setReloadDataset(true);
     }
   };
 
