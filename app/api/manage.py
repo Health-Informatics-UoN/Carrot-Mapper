@@ -3,10 +3,19 @@
 import os
 import sys
 
+from azure.monitor.opentelemetry import configure_azure_monitor
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def main():
     """Run administrative tasks."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+    if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+        configure_azure_monitor()
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
