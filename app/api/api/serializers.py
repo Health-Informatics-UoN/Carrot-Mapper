@@ -6,6 +6,7 @@ import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
+from mapping.services.rules import analyse_concepts
 from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
@@ -887,6 +888,15 @@ class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["name", "datasets", "members"]
+
+
+class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = ScanReport
+        fields = "__all__"
+
+    def to_representation(self, scan_report):
+        return analyse_concepts(scan_report.id)
 
 
 class ContentTypeSerializer(serializers.Serializer):

@@ -39,7 +39,6 @@ from shared.services.azurequeue import add_message
 
 from .forms import ScanReportAssertionForm, ScanReportForm
 from .permissions import has_editorship, has_viewership, is_admin
-from .services.nlp import start_nlp_field_level
 from .services.rules import get_mapping_rules_as_csv, get_mapping_rules_json, make_dag
 
 

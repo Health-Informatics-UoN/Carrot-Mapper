@@ -17,6 +17,7 @@ from api.serializers import (
     DatasetEditSerializer,
     DatasetViewSerializer,
     DatasetViewSerializerV2,
+    GetRulesAnalysis,
     MappingRuleSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,
@@ -1135,6 +1136,13 @@ class RulesList(viewsets.ModelViewSet):
             }
 
         return Response(data={"count": count, "results": rules})
+
+
+class AnalyseRules(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = GetRulesAnalysis
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["id"]
 
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
