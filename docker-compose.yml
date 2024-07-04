@@ -1,4 +1,4 @@
-name: carrot-mapper-dev
+name: carrot-mapper-dev-test
 
 services:
   db:
@@ -9,6 +9,15 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
 
+  omop-db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_DB=omop
+      - POSTGRES_PASSWORD=password
+    # use port 5433 becaue port 5432 is used for the main db. Is this correct?
+    ports:
+      - 5433:5433
+
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
@@ -16,6 +25,40 @@ services:
       - "10000:10000"
       - "10001:10001"
       - "10002:10002"
+
+  next-client:
+    image: carrot-next-client
+    build:
+      context: app/next-client-app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    # Mount the code directory
+    volumes:
+      - ./app/next-client-app:/app/next-client-app
+
+  workers:
+    image: carrot-workers
+    build:
+      context: app/workers
+      dockerfile: Dockerfile
+    # This port was assumingly taken from https://learn.microsoft.com/en-us/azure/azure-functions/functions-deploy-container?tabs=acr%2Cbash%2Cazure-cli&pivots=programming-language-python
+    ports:
+      - 8080:80
+    env_file:
+      - local.settings.json
+    # Mount the code directory
+    volumes:
+      - ./app/workers:/app/workers
+
+  omop-lite:
+    image: ghcr.io/andyrae/omop-lite
+    volumes:
+      - ./vocabs:/vocabs
+    depends_on:
+      - omop-db
 
   web:
     image: carrot
@@ -31,3 +74,5 @@ services:
     depends_on:
       - db
       - azurite
+      - workers
+      - omop-lite

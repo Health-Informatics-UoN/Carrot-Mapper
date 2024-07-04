@@ -7,8 +7,19 @@ npm run build
 # Wait until DB is available
 wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready! Listening on ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT}"
 
-# Collect static files for serving
+# Inside api directory
 cd /api
+
+# Run Django migrations
+python manage.py migrate
+
+# Load OMOP table and field names into the database
+python manage.py loaddata mapping
+
+# Create superuser
+python manage.py createsuperuser
+
+# Collect static files for serving
 rm -rf staticfiles
 mkdir staticfiles
 python /api/manage.py collectstatic
