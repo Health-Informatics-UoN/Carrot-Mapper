@@ -17,7 +17,7 @@ export function Tooltips({
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <InfoIcon className="ml-1 size-4 text-carrot" />
         </TooltipTrigger>
         <TooltipContent>
