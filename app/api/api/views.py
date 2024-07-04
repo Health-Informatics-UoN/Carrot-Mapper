@@ -11,22 +11,12 @@ import requests
 from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
-    ClassificationSystemSerializer,
-    ConceptAncestorSerializer,
-    ConceptClassSerializer,
-    ConceptRelationshipSerializer,
     ConceptSerializer,
-    ConceptSynonymSerializer,
     ContentTypeSerializer,
-    DataDictionarySerializer,
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
-    DomainSerializer,
-    DrugStrengthSerializer,
-    GetRulesAnalysis,
-    GetRulesJSON,
     MappingRuleSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,
@@ -49,7 +39,6 @@ from api.serializers import (
     ScanReportViewSerializer,
     ScanReportViewSerializerV2,
     UserSerializer,
-    VocabularySerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
@@ -58,7 +47,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -84,7 +72,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from shared.data.models import (
-    ClassificationSystem,
     DataDictionary,
     DataPartner,
     Dataset,
@@ -99,16 +86,7 @@ from shared.data.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.data.omop import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
+from shared.data.omop import Concept
 from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
@@ -131,58 +109,6 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
         "concept_code": ["in", "exact"],
         "vocabulary_id": ["in", "exact"],
     }
-
-
-class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vocabulary.objects.all()
-    serializer_class = VocabularySerializer
-
-
-class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptRelationship.objects.all()
-    serializer_class = ConceptRelationshipSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["concept_id_1", "concept_id_2", "relationship_id"]
-
-
-class ConceptRelationshipFilterViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptRelationship.objects.all()
-    serializer_class = ConceptRelationshipSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "concept_id_1": ["in", "exact"],
-        "concept_id_2": ["in", "exact"],
-        "relationship_id": ["in", "exact"],
-    }
-
-
-class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptAncestor.objects.all()
-    serializer_class = ConceptAncestorSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["ancestor_concept_id", "descendant_concept_id"]
-
-
-class ConceptClassViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptClass.objects.all()
-    serializer_class = ConceptClassSerializer
-
-
-class ConceptSynonymViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptSynonym.objects.all()
-    serializer_class = ConceptSynonymSerializer
-
-
-class DomainViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Domain.objects.all()
-    serializer_class = DomainSerializer
-
-
-class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = DrugStrength.objects.all()
-    serializer_class = DrugStrengthSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
 
 
 class CountProjects(APIView):
@@ -1082,16 +1008,6 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
-class ClassificationSystemViewSet(viewsets.ModelViewSet):
-    queryset = ClassificationSystem.objects.all()
-    serializer_class = ClassificationSystemSerializer
-
-
-class DataDictionaryViewSet(viewsets.ModelViewSet):
-    queryset = DataDictionary.objects.all()
-    serializer_class = DataDictionarySerializer
-
-
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset = DataPartner.objects.all()
     serializer_class = DataPartnerSerializer
@@ -1120,35 +1036,14 @@ class OmopTableViewSet(viewsets.ModelViewSet):
     serializer_class = OmopTableSerializer
 
 
-class OmopTableFilterViewSet(viewsets.ModelViewSet):
-    queryset = OmopTable.objects.all()
-    serializer_class = OmopTableSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"id": ["in", "exact"]}
-
-
 class OmopFieldViewSet(viewsets.ModelViewSet):
     queryset = OmopField.objects.all()
     serializer_class = OmopFieldSerializer
 
 
-class OmopFieldFilterViewSet(viewsets.ModelViewSet):
-    queryset = OmopField.objects.all()
-    serializer_class = OmopFieldSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"id": ["in", "exact"]}
-
-
 class MappingRuleViewSet(viewsets.ModelViewSet):
     queryset = MappingRule.objects.all()
     serializer_class = MappingRuleSerializer
-
-
-class DownloadJSON(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = GetRulesJSON
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["id"]
 
 
 class RulesList(viewsets.ModelViewSet):
@@ -1215,23 +1110,6 @@ class RulesList(viewsets.ModelViewSet):
             }
 
         return Response(data={"count": count, "results": rules})
-
-
-class AnalyseRules(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = GetRulesAnalysis
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["id"]
-
-
-class MappingRuleFilterViewSet(viewsets.ModelViewSet):
-    queryset = MappingRule.objects.all()
-    serializer_class = MappingRuleSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "concept": ["in", "exact"],
-    }
 
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):

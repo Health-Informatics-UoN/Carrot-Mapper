@@ -6,13 +6,10 @@ import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
-from mapping.services.rules import analyse_concepts, get_mapping_rules_json
 from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from shared.data.models import (
-    ClassificationSystem,
-    DataDictionary,
     DataPartner,
     Dataset,
     MappingRule,
@@ -26,16 +23,7 @@ from shared.data.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.data.omop import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
+from shared.data.omop import Concept
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -47,48 +35,6 @@ class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concept
-        fields = "__all__"
-
-
-class VocabularySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vocabulary
-        fields = "__all__"
-
-
-class ConceptRelationshipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptRelationship
-        fields = "__all__"
-
-
-class ConceptAncestorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptAncestor
-        fields = "__all__"
-
-
-class ConceptClassSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptClass
-        fields = "__all__"
-
-
-class ConceptSynonymSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptSynonym
-        fields = "__all__"
-
-
-class DomainSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Domain
-        fields = "__all__"
-
-
-class DrugStrengthSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DrugStrength
         fields = "__all__"
 
 
@@ -888,18 +834,6 @@ class ScanReportConceptSerializer(DynamicFieldsMixin, serializers.ModelSerialize
         fields = "__all__"
 
 
-class ClassificationSystemSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ClassificationSystem
-        fields = "__all__"
-
-
-class DataDictionarySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataDictionary
-        fields = "__all__"
-
-
 class OmopFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = OmopField
@@ -947,27 +881,6 @@ class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ["name", "datasets", "members"]
-
-
-class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
-
-    def to_representation(self, scan_report):
-        qs = MappingRule.objects.filter(scan_report=scan_report)
-        rules = get_mapping_rules_json(qs)
-        return rules
-
-
-class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
-
-    def to_representation(self, scan_report):
-        analysis = analyse_concepts(scan_report.id)
-        return analysis
 
 
 class ContentTypeSerializer(serializers.Serializer):
