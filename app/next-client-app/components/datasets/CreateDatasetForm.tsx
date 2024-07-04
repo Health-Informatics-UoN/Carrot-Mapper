@@ -78,7 +78,7 @@ export function CreateDatasetForm({
           <div>
             <AlertTitle className="flex items-center">
               <AlertCircle className="h-4 w-4 mr-2" />
-              Upload New Scan Report Failed. Error:
+              Add New Dataset Failed. Error:
             </AlertTitle>
             <AlertDescription>
               <ul>

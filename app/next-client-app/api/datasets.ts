@@ -15,7 +15,7 @@ const fetchKeys = {
     dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
   permissions: (id: string) => `dataset/${id}/permissions/`,
-  createDataset: "datasets/create/",
+  create: "datasets/create/",
 };
 
 export async function getDataSets(
@@ -130,7 +130,7 @@ export async function getDatasetPermissions(
 
 export async function createDataset(data: {}) {
   try {
-    await request(fetchKeys.createDataset, {
+    await request(fetchKeys.create, {
       method: "POST",
       headers: {
         "Content-type": "application/json",

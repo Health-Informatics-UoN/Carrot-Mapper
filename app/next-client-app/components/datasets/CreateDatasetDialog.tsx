@@ -42,7 +42,7 @@ export function CreateDatasetDialog({
         {description && (
           <DialogDescription className="justify-center items-center text-center">
             {" "}
-            Notice: Data Partner is set as the choosen Data Partner in the
+            Notice: Data Partner is set as the chosen Data Partner in the
             previous form.
           </DialogDescription>
         )}
