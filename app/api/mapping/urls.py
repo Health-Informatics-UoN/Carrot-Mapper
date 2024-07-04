@@ -62,9 +62,6 @@ urlpatterns = [
         name="scan-report-assertion-update",
     ),
     path(
-        "ajax/load-omop-fields/", views.load_omop_fields, name="ajax_load_omop_fields"
-    ),
-    path(
         "password-change/", views.CCPasswordChangeView.as_view(), name="password_change"
     ),
     path(

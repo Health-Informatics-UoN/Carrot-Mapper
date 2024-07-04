@@ -410,16 +410,6 @@ def password_reset_request(request):
     )
 
 
-def load_omop_fields(request):
-    omop_table_id = request.GET.get("omop_table")
-    omop_fields = OmopField.objects.filter(table_id=omop_table_id).order_by("field")
-    return render(
-        request,
-        "mapping/omop_table_dropdown_list_options.html",
-        {"omop_fields": omop_fields},
-    )
-
-
 @login_required
 def dataset_list_page(request):
     return render(request, "mapping/dataset_list.html")
