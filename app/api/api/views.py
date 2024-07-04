@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import os
 import random
@@ -17,6 +16,7 @@ from api.serializers import (
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
     DatasetViewSerializer,
+    DatasetViewSerializerV2,
     MappingRuleSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,
@@ -104,6 +104,18 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Concept.objects.all()
     serializer_class = ConceptSerializer
     filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "concept_id": ["in", "exact"],
+        "concept_code": ["in", "exact"],
+        "vocabulary_id": ["in", "exact"],
+    }
+
+
+class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
+    queryset = Concept.objects.all()
+    serializer_class = ConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    pagination_class = CustomPagination
     filterset_fields = {
         "concept_id": ["in", "exact"],
         "concept_code": ["in", "exact"],
@@ -533,7 +545,7 @@ class DatasetListView(generics.ListAPIView):
     API view to show all datasets.
     """
 
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "id": ["in"],
@@ -641,7 +653,7 @@ class DatasetRetrieveView(generics.RetrieveAPIView):
     This view should return a single dataset from an id
     """
 
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     permission_classes = [CanView | CanAdmin | CanEdit]
 
     def get_queryset(self):
@@ -999,6 +1011,19 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
 class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "concept__concept_id": ["in", "exact"],
+        "object_id": ["in", "exact"],
+        "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
+    }
+
+
+class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportConcept.objects.all()
+    serializer_class = ScanReportConceptSerializer
+    pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "concept__concept_id": ["in", "exact"],

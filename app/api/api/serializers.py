@@ -527,6 +527,12 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Dataset
+        fields = "__all__"
+
+
+class DatasetViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
         fields = (
             "id",
             "name",
