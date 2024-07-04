@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, FileUp } from "lucide-react";
+import { AlertCircle, FileUp, Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -15,6 +15,7 @@ import { FormikSelectEditors } from "../form-components/FormikSelectEditors";
 import { createScanReport } from "@/api/scanreports";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useState } from "react";
+import { CreateDatasetDialog } from "../datasets/CreateDatasetDialog";
 
 interface FormData {
   name: string;
@@ -27,11 +28,14 @@ interface FormData {
 
 export function CreateScanReportForm({
   dataPartners,
+  projects,
 }: {
   dataPartners: DataPartner[];
+  projects: Project[];
 }) {
   const [error, setError] = useState<string | null>(null);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
+  const [reloadDataset, setReloadDataset] = useState(false);
 
   const handleSubmit = async (data: FormData) => {
     const formData = new FormData();
@@ -114,13 +118,21 @@ export function CreateScanReportForm({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="flex">
+                <h3 className="flex items-center">
                   {" "}
                   Dataset
                   <Tooltips
                     content="The Dataset to add the new Scan Report to."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
+                  {values.dataPartner !== 0 && (
+                    <CreateDatasetDialog
+                      projects={projects}
+                      dataPartnerID={values.dataPartner}
+                      description={true}
+                      setReloadDataset={setReloadDataset}
+                    />
+                  )}
                 </h3>
                 <FormikSelectDataset
                   name="dataset"
@@ -128,6 +140,7 @@ export function CreateScanReportForm({
                   isMulti={false}
                   isDisabled={values.dataPartner === 0}
                   required={true}
+                  reloadDataset={reloadDataset}
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -150,7 +163,7 @@ export function CreateScanReportForm({
                 <h3 className="flex">
                   {" "}
                   Scan Report Name
-                  <Tooltips content="Name of the new Scan Report" />
+                  <Tooltips content="Name of the new Scan Report." />
                 </h3>
                 <Input
                   onChange={handleChange}
@@ -163,7 +176,7 @@ export function CreateScanReportForm({
                 <h3 className="flex">
                   Visibility
                   <Tooltips
-                    content="Setting the visibility of the new Scan Report"
+                    content="Setting the visibility of the new Scan Report."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                 </h3>

@@ -15,6 +15,7 @@ const fetchKeys = {
     dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
   permissions: (id: string) => `dataset/${id}/permissions/`,
+  create: "datasets/create/",
 };
 
 export async function getDataSets(
@@ -124,5 +125,20 @@ export async function getDatasetPermissions(
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { permissions: [] };
+  }
+}
+
+export async function createDataset(data: {}) {
+  try {
+    await request(fetchKeys.create, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    revalidatePath("");
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
 }
