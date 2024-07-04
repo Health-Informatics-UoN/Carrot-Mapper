@@ -137,13 +137,16 @@ export function CreateDatasetForm({
               <div className="flex flex-col gap-2">
                 <h3 className="flex items-center">
                   {" "}
-                  Project
-                  <Tooltips content="" link="" />
+                  Projects
+                  <Tooltips
+                    content="A Project is the highest-level object. A single Dataset may live in more than one Project."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/"
+                  />
                 </h3>
                 <FormikSelect
                   options={projectOptions}
                   name="projects"
-                  placeholder="Select Project"
+                  placeholder="Select Projects"
                   isMulti={true}
                   isDisabled={false}
                   required={true}
@@ -155,7 +158,7 @@ export function CreateDatasetForm({
                   Editors
                   <Tooltips
                     content="Dataset admins and editors also have Scan Report editor permissions."
-                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#scan-report-roles"
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                 </h3>
                 <FormikSelectUsers
@@ -171,7 +174,7 @@ export function CreateDatasetForm({
                   Admins
                   <Tooltips
                     content="Dataset admins and editors also have Scan Report editor permissions."
-                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#scan-report-roles"
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
                   />
                 </h3>
                 <FormikSelectUsers
