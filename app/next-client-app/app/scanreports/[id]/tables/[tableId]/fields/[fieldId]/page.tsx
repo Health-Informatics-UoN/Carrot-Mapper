@@ -14,7 +14,10 @@ import {
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
-import { getConceptFilters, getScanReportConcepts } from "@/api/concepts";
+import {
+  getAllConceptsFiltered,
+  getAllScanReportConcepts,
+} from "@/api/concepts";
 import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 import { columns } from "./columns";
@@ -46,15 +49,18 @@ export default async function ScanReportsValue({
   const permissions = await getScanReportPermissions(id);
   const scanReportsValues = await getScanReportValues(query);
 
-  const scanReportsConcepts = await getScanReportConcepts(
-    `object_id__in=${scanReportsValues.results
-      .map((item) => item.id)
-      .join(",")}`
-  );
+  const scanReportsConcepts =
+    scanReportsValues.results.length > 0
+      ? await getAllScanReportConcepts(
+          `object_id__in=${scanReportsValues.results
+            .map((item) => item.id)
+            .join(",")}`,
+        )
+      : [];
   const conceptsFilter =
     scanReportsConcepts.length > 0
-      ? await getConceptFilters(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
+      ? await getAllConceptsFiltered(
+          scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
 

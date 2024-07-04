@@ -1,22 +1,22 @@
 "use server";
 import request from "@/lib/api/request";
-import { revalidatePath } from "next/cache";
+import { fetchAllPages } from "@/lib/api/utils";
 
 const fetchKeys = {
   conceptFilter: (filter: string) =>
-    `omop/conceptsfilter/?concept_id__in=${filter}`,
+    `v2/omop/conceptsfilter/?concept_id__in=${filter}`,
   addConcept: "v2/scanreportconcept/",
   deleteConcept: (conceptId: number) => `scanreportconcepts/${conceptId}`,
   scanreportConcepts: (filter?: string) =>
-    `scanreportconceptsfilter/?${filter}`,
+    `v2/scanreportconceptsfilter/?${filter}`,
 };
 
-export async function getScanReportConcepts(
-  filter: string
+export async function getAllScanReportConcepts(
+  filter: string | undefined,
 ): Promise<ScanReportConcept[]> {
   try {
-    return await request<ScanReportConcept[]>(
-      fetchKeys.scanreportConcepts(filter)
+    return await fetchAllPages<ScanReportConcept>(
+      fetchKeys.scanreportConcepts(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -24,9 +24,11 @@ export async function getScanReportConcepts(
   }
 }
 
-export async function getConceptFilters(filter: string): Promise<Concept[]> {
+export async function getAllConceptsFiltered(
+  filter: string,
+): Promise<Concept[]> {
   try {
-    return await request<Concept[]>(fetchKeys.conceptFilter(filter));
+    return await fetchAllPages<Concept>(fetchKeys.conceptFilter(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];
