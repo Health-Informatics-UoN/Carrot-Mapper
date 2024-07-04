@@ -5,11 +5,12 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getDataPartners } from "@/api/datasets";
+import { getDataPartners, getProjects } from "@/api/datasets";
 import { CreateScanReportForm } from "@/components/scanreports/CreateScanReportForm";
 
 export default async function ScanReports() {
   const partners = await getDataPartners();
+  const projects = await getProjects();
 
   return (
     <div className="pt-10 px-16">
@@ -36,7 +37,7 @@ export default async function ScanReports() {
         <h1 className="text-4xl font-semibold">New Scan Report</h1>
       </div>
       <div className="mt-4">
-        <CreateScanReportForm dataPartners={partners} />
+        <CreateScanReportForm dataPartners={partners} projects={projects} />
       </div>
     </div>
   );
