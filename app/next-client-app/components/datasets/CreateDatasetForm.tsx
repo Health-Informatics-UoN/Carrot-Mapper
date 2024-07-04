@@ -59,10 +59,15 @@ export function CreateDatasetForm({
     } else {
       toast.success("New Dataset created!");
       setError(null);
+      setDialogOpened(false);
+      // When a new dataset created, close the dialog then reload the dataset options
       if (setReloadDataset) {
         setReloadDataset(true);
+        // After 1s, set reloadDataset to false again, in order to add again the other datasets, if needed
+        setTimeout(() => {
+          setReloadDataset(false);
+        }, 1000);
       }
-      setDialogOpened(false);
     }
   };
 
