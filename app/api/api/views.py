@@ -1078,7 +1078,7 @@ class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
     queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
     pagination_class = CustomPagination
-    ordering = "-id"
+    ordering = "id"
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {
         "concept__concept_id": ["in", "exact"],
