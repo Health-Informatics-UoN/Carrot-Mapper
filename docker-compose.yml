@@ -7,16 +7,7 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: postgres
-
-  omop-db:
-    image: postgres:latest
-    environment:
-      - POSTGRES_DB=omop
-      - POSTGRES_PASSWORD=password
-    # use port 5433 becaue port 5432 is used for the main db. Is this correct?
-    ports:
-      - 5433:5433
+      - POSTGRES_PASSWORD=postgres
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -26,39 +17,45 @@ services:
       - "10001:10001"
       - "10002:10002"
 
-  next-client:
-    image: carrot-next-client
-    build:
-      context: app/next-client-app
-      dockerfile: Dockerfile
-    ports:
-      - 3000:3000
-    env_file:
-      - .env
-    # Mount the code directory
-    volumes:
-      - ./app/next-client-app:/app/next-client-app
+  # next-client:
+  #   image: carrot-next-client
+  #   build:
+  #     context: app/next-client-app
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     - BACKEND_URL: http://web:8000
+  #     - BACKEND_ORIGIN: "web:8000"
+  #   # Mount the code directory
+  #   volumes:
+  #     - ./app/next-client-app:/app/next-client-app
 
-  workers:
-    image: carrot-workers
-    build:
-      context: app/workers
-      dockerfile: Dockerfile
-    # This port was assumingly taken from https://learn.microsoft.com/en-us/azure/azure-functions/functions-deploy-container?tabs=acr%2Cbash%2Cazure-cli&pivots=programming-language-python
-    ports:
-      - 8080:80
-    env_file:
-      - local.settings.json
-    # Mount the code directory
-    volumes:
-      - ./app/workers:/app/workers
+  # workers:
+  #   image: carrot-workers
+  #   build:
+  #     context: app/workers
+  #     dockerfile: Dockerfile
+  #   # This port was assumingly taken from https://learn.microsoft.com/en-us/azure/azure-functions/functions-deploy-container?tabs=acr%2Cbash%2Cazure-cli&pivots=programming-language-python
+  #   ports:
+  #     - 8080:80
+  #   env_file:
+  #     - local.settings.json
+  #   # Mount the code directory
+  #   volumes:
+  #     - ./app/workers:/app/workers
+  #   depends_on:
+  #     - web
 
-  omop-lite:
-    image: ghcr.io/andyrae/omop-lite
-    volumes:
-      - ./vocabs:/vocabs
-    depends_on:
-      - omop-db
+  # omop-lite:
+  #   image: ghcr.io/andyrae/omop-lite
+  #   volumes:
+  #     - ./vocabs:/vocabs
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DB_PASSWORD: password
+  #     - DB_NAME: omop
 
   web:
     image: carrot
@@ -74,5 +71,3 @@ services:
     depends_on:
       - db
       - azurite
-      - workers
-      - omop-lite
