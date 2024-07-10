@@ -152,19 +152,26 @@ export async function getScanReportField(
   }
 }
 
-export async function updateScanReport(id: number, field: string, value: any) {
+export async function updateScanReport(
+  id: number,
+  data: {},
+  needRedirect?: boolean
+) {
   try {
     await request(fetchKeys.update(id), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ [field]: value }),
+      body: JSON.stringify(data),
     });
     revalidatePath("/scanreports/");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
+  }
+  if (needRedirect) {
+    redirect(`/scanreports/`);
   }
 }
 

@@ -21,7 +21,7 @@ export const HandleArchive = async ({
       response = await archiveDataSets(id, !hidden);
       break;
     case "scanreports":
-      response = await updateScanReport(id, "hidden", !hidden);
+      response = await updateScanReport(id, { hidden: !hidden });
       break;
   }
   // Because the response only returned when there is an error

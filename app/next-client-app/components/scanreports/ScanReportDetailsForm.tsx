@@ -1,6 +1,5 @@
 "use client";
 
-import { updateDatasetDetails } from "@/api/datasets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
@@ -12,6 +11,7 @@ import { FindAndFormat, FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
 import { useState } from "react";
+import { updateScanReport } from "@/api/scanreports";
 
 interface FormData {
   name: string;
@@ -34,7 +34,8 @@ export function ScanReportDetailsForm({
   permissions: Permission[];
 }) {
   // Permissions
-  const canUpdate = permissions.includes("CanAdmin");
+  const canUpdate =
+    permissions.includes("CanEdit") || permissions.includes("CanAdmin");
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
     scanreport.visibility === "PUBLIC" ? true : false
@@ -45,7 +46,7 @@ export function ScanReportDetailsForm({
   const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
   // Find the intial parent dataset and author which is required when adding Dataset
   const initialParentDataset = datasetList.find(
-    (dataset) => scanreport.parent_dataset === dataset.name
+    (dataset) => scanreport.parent_dataset === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
   )!;
 
   const initialAuthor = users.find((user) => scanreport.author === user.id)!;
@@ -65,12 +66,17 @@ export function ScanReportDetailsForm({
       editors: data.editors || [],
       author: data.author,
     };
-    // const response = await updateDatasetDetails(dataset.id, submittingData);
-    // if (response) {
-    //   toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
-    // } else {
-    //   toast.success("Update Dataset successful!");
-    // }
+
+    const response = await updateScanReport(
+      scanreport.id,
+      submittingData,
+      true // "true" for the value "needRedirect"
+    );
+    if (response) {
+      toast.error(`Update Scan Report failed. Error: ${response.errorMessage}`);
+    } else {
+      toast.success("Update Scan Report successful!");
+    }
   };
 
   return (
