@@ -51,7 +51,9 @@ export default async function ScanreportDetails({
         </Breadcrumb>
       </div>
       <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold">Scan Report #{id} - Details</h1>
+        <h1 className="text-4xl font-semibold">
+          Details Page - Scan Report #{id}
+        </h1>
       </div>
       <div className="mt-4">
         <ScanReportDetailsForm
