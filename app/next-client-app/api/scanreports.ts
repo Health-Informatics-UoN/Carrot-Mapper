@@ -111,6 +111,10 @@ export async function getScanReport(id: string): Promise<ScanReportList> {
       status: "",
       created_at: new Date(),
       hidden: true,
+      visibility: "",
+      author: 0,
+      editors: [],
+      viewers: [],
     };
   }
 }
