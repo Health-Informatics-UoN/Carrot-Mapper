@@ -16,79 +16,72 @@ import { useState } from "react";
 interface FormData {
   name: string;
   visibility: string;
-  dataPartner: number;
+  author: number;
   viewers: number[];
   editors: number[];
-  admins: number[];
-  projects: number[];
+  parent_dataset: number;
 }
 
 export function ScanReportDetailsForm({
-  dataset,
-  dataPartners,
-  projects,
+  datasetList,
+  scanreport,
   users,
   permissions,
 }: {
-  dataset: DataSetSRList;
-  dataPartners: DataPartner[];
+  datasetList: DataSetSRList[];
+  scanreport: ScanReportList;
   users: User[];
-  projects: Project[];
   permissions: Permission[];
 }) {
   // Permissions
   const canUpdate = permissions.includes("CanAdmin");
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
-    dataset.visibility === "PUBLIC" ? true : false
+    scanreport.visibility === "PUBLIC" ? true : false
   );
 
   // Making options suitable for React Select
   const userOptions = FormDataFilter<User>(users);
-  const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
-  const projectOptions = FormDataFilter<Project>(projects);
-  // Find the intial data partner which is required when adding Dataset
-  const initialPartner = dataPartners.find(
-    (partner) => dataset.data_partner === partner.id
+  const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
+  // Find the intial parent dataset and author which is required when adding Dataset
+  const initialParentDataset = datasetList.find(
+    (dataset) => scanreport.parent_dataset === dataset.name
   )!;
+
+  const initialAuthor = users.find((user) => scanreport.author === user.id)!;
   // Find and make initial data suitable for React select
-  const initialPartnerFilter = FormDataFilter<DataPartner>(initialPartner);
-  const initialViewersFilter = FindAndFormat<User>(users, dataset.viewers);
-  const initialEditorsFilter = FindAndFormat<User>(users, dataset.editors);
-  const initialAdminsFilter = FindAndFormat<User>(users, dataset.admins);
-  const initialProjectFilter = FindAndFormat<Project>(
-    projects,
-    dataset.projects
-  );
+  const initialDatasetFilter =
+    FormDataFilter<DataSetSRList>(initialParentDataset);
+  const initialAuthorFilter = FormDataFilter<User>(initialAuthor);
+  const initialViewersFilter = FindAndFormat<User>(users, scanreport.viewers);
+  const initialEditorsFilter = FindAndFormat<User>(users, scanreport.editors);
 
   const handleSubmit = async (data: FormData) => {
     const submittingData = {
-      name: data.name,
+      dataset: data.name,
       visibility: data.visibility,
-      data_partner: data.dataPartner,
+      parent_dataset: data.parent_dataset,
       viewers: data.viewers || [],
-      admins: data.admins || [],
       editors: data.editors || [],
-      projects: data.projects || [],
+      author: data.author,
     };
-    const response = await updateDatasetDetails(dataset.id, submittingData);
-    if (response) {
-      toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
-    } else {
-      toast.success("Update Dataset successful!");
-    }
+    // const response = await updateDatasetDetails(dataset.id, submittingData);
+    // if (response) {
+    //   toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
+    // } else {
+    //   toast.success("Update Dataset successful!");
+    // }
   };
 
   return (
     <Formik
       initialValues={{
-        name: dataset.name,
-        visibility: dataset.visibility,
+        name: scanreport.dataset,
+        visibility: scanreport.visibility,
+        author: initialAuthorFilter[0].value,
         viewers: initialViewersFilter.map((viewer) => viewer.value),
         editors: initialEditorsFilter.map((editor) => editor.value),
-        dataPartner: initialPartnerFilter[0].value,
-        admins: initialAdminsFilter.map((admin) => admin.value),
-        projects: initialProjectFilter.map((project) => project.value),
+        parent_dataset: initialDatasetFilter[0].value,
       }}
       onSubmit={(data) => {
         handleSubmit(data);
@@ -104,7 +97,7 @@ export function ScanReportDetailsForm({
                 <Tooltips content="Name of the dataset." />
               </h3>
               <Input
-                placeholder={dataset.name}
+                placeholder={scanreport.dataset}
                 onChange={handleChange}
                 name="name"
                 disabled={!canUpdate}
@@ -113,13 +106,13 @@ export function ScanReportDetailsForm({
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
-                Data Partner{" "}
+                Author{" "}
                 <Tooltips content="The data partner that owns the dataset." />
               </h3>
               <FormikSelect
-                options={partnerOptions}
-                name="dataPartner"
-                placeholder="Choose an Data Partner"
+                options={userOptions}
+                name="author"
+                placeholder="Choose an author"
                 isMulti={false}
                 isDisabled={!canUpdate}
               />
@@ -139,7 +132,9 @@ export function ScanReportDetailsForm({
                   });
                   setPublicVisibility(checked);
                 }}
-                defaultChecked={dataset.visibility === "PUBLIC" ? true : false}
+                defaultChecked={
+                  scanreport.visibility === "PUBLIC" ? true : false
+                }
                 disabled={!canUpdate}
               />
               <Label className="text-lg">
@@ -179,28 +174,14 @@ export function ScanReportDetailsForm({
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
-                Admins
-                <Tooltips content="All Dataset admins also have Dataset editor permissions. Dataset admins also have Scan Report editor permissions." />
-              </h3>
-              <FormikSelect
-                options={userOptions}
-                name="admins"
-                placeholder="Choose admins"
-                isMulti={true}
-                isDisabled={!canUpdate}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="flex">
-                {" "}
-                Project
+                Dataset
                 <Tooltips content="The project that the dataset belongs to." />
               </h3>
               <FormikSelect
-                options={projectOptions}
-                name="projects"
-                placeholder="Choose projects"
-                isMulti={true}
+                options={parentDatasetOptions}
+                name="parent_dataset"
+                placeholder="Choose a parent dataset"
+                isMulti={false}
                 isDisabled={!canUpdate}
               />
             </div>
