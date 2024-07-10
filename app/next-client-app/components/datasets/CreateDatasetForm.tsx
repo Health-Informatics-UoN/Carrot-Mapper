@@ -18,6 +18,7 @@ import { createDataset } from "@/api/datasets";
 interface FormData {
   name: string;
   visibility: string;
+  viewers: number[];
   editors: number[];
   admins: number[];
   dataPartner: number;
@@ -37,6 +38,8 @@ export function CreateDatasetForm({
   setDialogOpened: (dialogOpened: boolean) => void;
   setReloadDataset?: (reloadDataset: boolean) => void;
 }) {
+  const [publicVisibility, setPublicVisibility] = useState<boolean>(true);
+
   const partnerOptions = FormDataFilter<DataPartner>(dataPartnerList || []);
   const projectOptions = FormDataFilter<Project>(projectList || []);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +49,7 @@ export function CreateDatasetForm({
       name: data.name,
       visibility: data.visibility,
       data_partner: data.dataPartner,
+      viewers: data.viewers || [],
       admins: data.admins || [],
       editors: data.editors || [],
       projects: data.projects || [],
@@ -93,6 +97,7 @@ export function CreateDatasetForm({
       <Formik
         initialValues={{
           dataPartner: dataPartnerID ? dataPartnerID : 0,
+          viewers: [],
           editors: [],
           admins: [],
           visibility: "PUBLIC",
@@ -132,7 +137,7 @@ export function CreateDatasetForm({
                 <h3 className="flex">
                   {" "}
                   Dataset Name
-                  <Tooltips content="Name of the new Dataset" />
+                  <Tooltips content="Name of the new Dataset." />
                 </h3>
                 <Input
                   onChange={handleChange}
@@ -159,6 +164,48 @@ export function CreateDatasetForm({
                   required={true}
                 />
               </div>
+              <div className="flex items-center space-x-3">
+                <h3 className="flex">
+                  Visibility
+                  <Tooltips
+                    content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset will have Dataset viewer permissions."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                  />
+                </h3>
+                <Switch
+                  onCheckedChange={(checked) => {
+                    handleChange({
+                      target: {
+                        name: "visibility",
+                        value: checked ? "PUBLIC" : "RESTRICTED",
+                      },
+                    });
+                    setPublicVisibility(checked);
+                  }}
+                  defaultChecked
+                />
+                <Label className="text-lg">
+                  {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
+                </Label>
+              </div>
+              {!publicVisibility && (
+                <div className="flex flex-col gap-2">
+                  <h3 className="flex">
+                    {" "}
+                    Viewers
+                    <Tooltips
+                      content="All Dataset admins and editors also have Dataset viewer permissions."
+                      link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                    />
+                  </h3>
+                  <FormikSelectUsers
+                    name="viewers"
+                    placeholder="Choose Viewers"
+                    isMulti={true}
+                    isDisabled={values.projects === 0}
+                  />
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <h3 className="flex">
                   {" "}
@@ -190,29 +237,6 @@ export function CreateDatasetForm({
                   isMulti={true}
                   isDisabled={values.projects === 0}
                 />
-              </div>
-              <div className="flex items-center space-x-3">
-                <h3 className="flex">
-                  Visibility
-                  <Tooltips
-                    content="Setting the visibility of the new Dataset."
-                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
-                  />
-                </h3>
-                <Switch
-                  onCheckedChange={(checked) =>
-                    handleChange({
-                      target: {
-                        name: "visibility",
-                        value: checked ? "PUBLIC" : "RESTRICTED",
-                      },
-                    })
-                  }
-                  defaultChecked
-                />
-                <Label className="text-lg">
-                  {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
-                </Label>
               </div>
               <div className="mb-5">
                 <Button

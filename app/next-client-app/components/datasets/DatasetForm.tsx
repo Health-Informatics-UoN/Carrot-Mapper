@@ -151,7 +151,7 @@ export function DatasetForm({
                 <h3 className="flex">
                   {" "}
                   Viewers
-                  <Tooltips content="All Dataset admins and editors also have Dataset viewer permissions. If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset will have Dataset viewer permissions." />
+                  <Tooltips content="All Dataset admins and editors also have Dataset viewer permissions." />
                 </h3>
                 <FormikSelect
                   options={userOptions}
