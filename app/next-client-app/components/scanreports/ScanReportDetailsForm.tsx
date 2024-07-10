@@ -100,7 +100,7 @@ export function ScanReportDetailsForm({
               <h3 className="flex">
                 {" "}
                 Name
-                <Tooltips content="Name of the dataset." />
+                <Tooltips content="Name of the Scan Report." />
               </h3>
               <Input
                 placeholder={scanreport.dataset}
@@ -113,7 +113,10 @@ export function ScanReportDetailsForm({
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 Author{" "}
-                <Tooltips content="The data partner that owns the dataset." />
+                <Tooltips
+                  content="Authors of a Scan Report can edit Scan Report details."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#authors"
+                />
               </h3>
               <FormikSelect
                 options={userOptions}
@@ -126,7 +129,10 @@ export function ScanReportDetailsForm({
             <div className="flex items-center space-x-3">
               <h3 className="flex">
                 Visibility
-                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
+                <Tooltips
+                  content="To see the contents of the Scan Report, the Scan Report must be PUBLIC, or users must be an author/editor/viewer of the Scan Report."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                />
               </h3>
               <Switch
                 onCheckedChange={(checked) => {
@@ -152,7 +158,10 @@ export function ScanReportDetailsForm({
                 <h3 className="flex">
                   {" "}
                   Viewers
-                  <Tooltips content="All Dataset admins and editors also have Dataset viewer permissions." />
+                  <Tooltips
+                    content="Viewers of a Scan Report can perform read-only actions."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#viewers"
+                  />
                 </h3>
                 <FormikSelect
                   options={userOptions}
@@ -167,7 +176,10 @@ export function ScanReportDetailsForm({
               <h3 className="flex">
                 {" "}
                 Editors
-                <Tooltips content="Dataset editors also have Scan Report editor permissions." />
+                <Tooltips
+                  content="Editors of a Scan Report can add/remove concepts, update tables and update fields."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#editors"
+                />
               </h3>
               <FormikSelect
                 options={userOptions}
@@ -181,7 +193,7 @@ export function ScanReportDetailsForm({
               <h3 className="flex">
                 {" "}
                 Dataset
-                <Tooltips content="The project that the dataset belongs to." />
+                <Tooltips content="The parent dataset of the Scan Report." />
               </h3>
               <FormikSelect
                 options={parentDatasetOptions}
