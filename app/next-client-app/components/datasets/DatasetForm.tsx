@@ -204,7 +204,7 @@ export function DatasetForm({
                 isDisabled={!canUpdate}
               />
             </div>
-            <div>
+            <div className="flex">
               <Button
                 type="submit"
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
@@ -212,6 +212,10 @@ export function DatasetForm({
               >
                 Save <Save className="ml-2" />
               </Button>
+              <Tooltips
+                content="You must be an admin of the this dataset
+                    to update its details."
+              />
             </div>
           </div>
         </Form>
