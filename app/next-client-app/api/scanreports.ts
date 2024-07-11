@@ -200,12 +200,7 @@ export async function updateScanReportTable(
   redirect(`/scanreports/${scanreportID}/`);
 }
 
-export async function updateScanReportField(
-  scanreportId: number,
-  tableId: number,
-  fieldId: string,
-  data: {}
-) {
+export async function updateScanReportField(fieldId: string, data: {}) {
   try {
     await request(fetchKeys.fieldName(fieldId), {
       method: "PATCH",

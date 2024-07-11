@@ -38,8 +38,6 @@ export function ScanReportFieldEditForm({
       };
 
       const response = await updateScanReportField(
-        scanreportId,
-        scanReportField?.scan_report_table,
         scanReportField?.id.toString(),
         submittingData
       );
