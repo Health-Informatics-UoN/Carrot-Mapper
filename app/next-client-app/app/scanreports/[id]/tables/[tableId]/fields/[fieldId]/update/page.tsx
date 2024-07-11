@@ -77,6 +77,7 @@ export default async function ScanReportsEditField({
       </div>
       <div className="mt-4">
         <ScanReportFieldEditForm
+          scanreportId={scanReportsName.id}
           scanReportField={field}
           permissions={permissions.permissions}
         />

@@ -200,6 +200,26 @@ export async function updateScanReportTable(
   redirect(`/scanreports/${scanreportID}/`);
 }
 
+export async function updateScanReportField(
+  scanreportId: number,
+  tableId: number,
+  fieldId: string,
+  data: {}
+) {
+  try {
+    await request(fetchKeys.fieldName(fieldId), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (error: any) {
+    return { errorMessage: error.message };
+  }
+  redirect(`/scanreports/${scanreportId}/tables/${tableId}/`);
+}
+
 export async function createScanReport(data: FormData) {
   try {
     await request(fetchKeys.createScanreport, {

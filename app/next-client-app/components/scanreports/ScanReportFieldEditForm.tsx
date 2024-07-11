@@ -7,6 +7,8 @@ import { Form, Formik } from "formik";
 import { Tooltips } from "../Tooltips";
 import { Checkbox } from "../ui/checkbox";
 import { Textarea } from "../ui/textarea";
+import { updateScanReportField } from "@/api/scanreports";
+import { toast } from "sonner";
 
 interface FormData {
   description: string | null;
@@ -17,28 +19,36 @@ interface FormData {
 export function ScanReportFieldEditForm({
   scanReportField,
   permissions,
+  scanreportId,
 }: {
   scanReportField: ScanReportField | null;
   permissions: Permission[];
+  scanreportId: number;
 }) {
-  // Permissions
-  const canUpdate =
-    permissions.includes("CanEdit") || permissions.includes("CanAdmin");
-
-  const handleSubmit = async (data: FormData) => {
-    const submittingData = {
-      pass_from_source: data.fromSource,
-      is_ignore: data.isIgnore,
-      description_column: data.description,
-    };
-    // const response = await updateDatasetDetails(dataset.id, submittingData);
-    // if (response) {
-    //   toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
-    // } else {
-    //   toast.success("Update Dataset successful!");
-    // }
-  };
   if (scanReportField) {
+    // Permissions
+    const canUpdate =
+      permissions.includes("CanEdit") || permissions.includes("CanAdmin");
+
+    const handleSubmit = async (data: FormData) => {
+      const submittingData = {
+        pass_from_source: data.fromSource,
+        is_ignore: data.isIgnore,
+        description_column: data.description,
+      };
+
+      const response = await updateScanReportField(
+        scanreportId,
+        scanReportField?.scan_report_table,
+        scanReportField?.id.toString(),
+        submittingData
+      );
+      if (response) {
+        toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
+      } else {
+        toast.success("Update Dataset successful!");
+      }
+    };
     return (
       <Formik
         initialValues={{
