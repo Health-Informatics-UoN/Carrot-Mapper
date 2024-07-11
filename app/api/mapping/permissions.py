@@ -39,6 +39,34 @@ def is_az_function_user(user: User) -> bool:
     return user.username == os.getenv("AZ_FUNCTION_USER")
 
 
+def is_scan_report_author(obj: Any, request: Request) -> bool:
+    """Check if the user is the author of a scan report.
+
+    Args:
+        obj (Any): The object to check (should be a ScanReport or related object).
+        request (Request): The request with the User instance.
+
+    Returns:
+        bool: `True` if the request's user is the author of the scan report, else `False`.
+    """
+    try:
+        # If `obj` is a scan report table|field|value, get the scan report
+        # it belongs to and check the user has permission to view it.
+        if sub_scan_report_query := SCAN_REPORT_QUERIES.get(type(obj)):
+            sub_scan_report = sub_scan_report_query(obj)
+        else:
+            sub_scan_report = obj
+
+        # Check if the user is the author
+        if isinstance(sub_scan_report, ScanReport):
+            is_author = sub_scan_report.author.id == request.user.id
+            return is_author
+        else:
+            return False
+    except Exception:
+        return False
+
+
 def has_viewership(obj: Any, request: Request) -> bool:
     """Check the viewership permission on an object.
 
@@ -250,6 +278,16 @@ def is_admin(obj: Any, request: Request) -> bool:
     return False
 
 
+class IsAuthor(permissions.BasePermission):
+    message = "You are not the author of this scan report."
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Return `True` if the User is the author of the scan report.
+        """
+        return is_scan_report_author(obj, request)
+
+
 class CanViewProject(permissions.BasePermission):
     message = "You must be a member of this project to view its contents."
 
@@ -357,6 +395,8 @@ def get_user_permissions_on_scan_report(request, scan_report_id):
             permissions.append("CanEdit")
         if CanAdmin().has_object_permission(request, None, scan_report):
             permissions.append("CanAdmin")
+        if IsAuthor().has_object_permission(request, None, scan_report):
+            permissions.append("IsAuthor")
 
         return permissions
     except ScanReport.DoesNotExist:

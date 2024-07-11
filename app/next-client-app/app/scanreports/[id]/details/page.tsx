@@ -5,7 +5,11 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getDataUsers, getDatasetList } from "@/api/datasets";
+import {
+  getDataUsers,
+  getDatasetList,
+  getDatasetPermissions,
+} from "@/api/datasets";
 import { ScanReportDetailsForm } from "@/components/scanreports/ScanReportDetailsForm";
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 
@@ -21,7 +25,14 @@ export default async function ScanreportDetails({
   const scanreport = await getScanReport(id);
   const datasetList = await getDatasetList();
   const users = await getDataUsers();
-  const permissions = await getScanReportPermissions(id);
+  const parent_dataset = datasetList.find(
+    (dataset) => dataset.name === scanreport.parent_dataset
+  );
+  const permissionsDS = await getDatasetPermissions(
+    parent_dataset?.id.toString() || ""
+  );
+  const permissionsSR = await getScanReportPermissions(id);
+  const isAuthor = permissionsSR.permissions.includes("IsAuthor");
 
   return (
     <div className="pt-10 px-16">
@@ -60,7 +71,8 @@ export default async function ScanreportDetails({
           scanreport={scanreport}
           datasetList={datasetList}
           users={users}
-          permissions={permissions.permissions}
+          permissions={permissionsDS.permissions}
+          isAuthor={isAuthor}
         />
       </div>
     </div>

@@ -27,15 +27,16 @@ export function ScanReportDetailsForm({
   scanreport,
   users,
   permissions,
+  isAuthor,
 }: {
   datasetList: DataSetSRList[];
   scanreport: ScanReportList;
   users: User[];
   permissions: Permission[];
+  isAuthor: boolean;
 }) {
   // Permissions
-  const canUpdate =
-    permissions.includes("CanEdit") || permissions.includes("CanAdmin");
+  const canUpdate = permissions.includes("CanAdmin") || isAuthor;
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
     scanreport.visibility === "PUBLIC" ? true : false
@@ -203,7 +204,7 @@ export function ScanReportDetailsForm({
                 isDisabled={!canUpdate}
               />
             </div>
-            <div>
+            <div className="flex">
               <Button
                 type="submit"
                 className="px-4 py-2 bg-carrot text-white rounded text-lg"
@@ -211,6 +212,10 @@ export function ScanReportDetailsForm({
               >
                 Save <Save className="ml-2" />
               </Button>
+              <Tooltips
+                content="You must be the author of the scan report or an admin of the parent dataset
+                    to update the details of this dataset."
+              />
             </div>
           </div>
         </Form>
