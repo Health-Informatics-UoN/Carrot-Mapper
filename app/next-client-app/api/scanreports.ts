@@ -217,7 +217,6 @@ export async function updateScanReportField(
   } catch (error: any) {
     return { errorMessage: error.message };
   }
-  redirect(`/scanreports/${scanreportId}/tables/${tableId}/`);
 }
 
 export async function createScanReport(data: FormData) {

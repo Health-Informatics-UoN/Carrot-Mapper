@@ -47,8 +47,14 @@ export function ScanReportFieldEditForm({
         toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
       } else {
         toast.success("Update Dataset successful!");
+        // If the redirect is used in API endpoint, the link to edit field page will be broken after succesful update
+        // This can be fixed by adding the SR id to the data of the table, but it's taking more code than the below solution
+        setTimeout(() => {
+          window.location.href = `/scanreports/${scanreportId}/tables/${scanReportField?.scan_report_table}/`;
+        }, 200); // Delay the redirection for a bit to make sure the toast is showing
       }
     };
+
     return (
       <Formik
         initialValues={{
@@ -76,9 +82,7 @@ export function ScanReportFieldEditForm({
                   defaultChecked={scanReportField?.is_ignore}
                   disabled={!canUpdate}
                 />
-                <Label className="text-lg flex">
-                  Is ignore <Tooltips content="" />
-                </Label>
+                <Label className="text-lg">Is ignore</Label>
               </div>
               <div className="flex items-center space-x-3">
                 <Checkbox
@@ -93,14 +97,10 @@ export function ScanReportFieldEditForm({
                   defaultChecked={scanReportField?.pass_from_source}
                   disabled={!canUpdate}
                 />
-                <Label className="text-lg flex">
-                  Pass from source <Tooltips content="" />
-                </Label>
+                <Label className="text-lg">Pass from source</Label>
               </div>
               <div className="flex flex-col gap-2">
-                <h3 className="flex">
-                  Description Column <Tooltips content="" />
-                </h3>
+                <h3>Description Column</h3>
                 <Textarea
                   name="description"
                   onChange={handleChange}
