@@ -89,6 +89,7 @@ export function CreateDatasetForm({
                 {error.split(" * ").map((err, index) => (
                   <li key={index}>* {err}</li>
                 ))}
+                <li>* Notice: The name of dataset should be unique *</li>
               </ul>
             </AlertDescription>
           </div>
