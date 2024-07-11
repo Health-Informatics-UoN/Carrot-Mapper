@@ -59,8 +59,7 @@ def is_scan_report_author(obj: Any, request: Request) -> bool:
 
         # Check if the user is the author
         if isinstance(sub_scan_report, ScanReport):
-            is_author = sub_scan_report.author.id == request.user.id
-            return is_author
+            return sub_scan_report.author.id == request.user.id
         else:
             return False
     except Exception:
