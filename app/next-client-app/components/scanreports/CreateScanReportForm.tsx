@@ -227,7 +227,7 @@ export function CreateScanReportForm({
                   {" "}
                   Data Dictionary
                   <Tooltips
-                    content="Optional data dictionary to enable automatic OMOP mapping"
+                    content="Optional data dictionary to enable automatic OMOP mapping."
                     link="https://carrot4omop.ac.uk/Carrot-Mapper/uploading-scan-report/#the-data-dictionary-file-format"
                   />
                 </h3>
