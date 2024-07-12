@@ -38,6 +38,11 @@ urlpatterns = [
         name="scan-report-values",
     ),
     re_path(
+        r"^scanreports/(?P<path>\d+/tables/\d+/fields/\d+/update)/$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-edit-field",
+    ),
+    re_path(
         r"^scanreports/(?P<path>\d+/tables/\d+/update)/$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
         name="scan-report-edit-table",
