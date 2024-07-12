@@ -137,18 +137,34 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
   }
 }
 
-export async function getScanReportField(
-  id: string | null
-): Promise<ScanReportField | null> {
-  if (id === null) {
-    return null;
-  }
-
+export async function getScanReportField(id: string): Promise<ScanReportField> {
   try {
     return await request<ScanReportField>(fetchKeys.fieldName(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return null;
+    return {
+      id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      name: "",
+      description_column: "",
+      type_column: "",
+      max_length: 0,
+      nrows: 0,
+      nrows_checked: 0,
+      fraction_empty: "",
+      nunique_values: 0,
+      fraction_unique: "",
+      ignore_column: null,
+      is_patient_id: false,
+      is_ignore: false,
+      classification_system: null,
+      pass_from_source: false,
+      concept_id: 0,
+      permissions: [],
+      field_description: null,
+      scan_report_table: 0,
+    };
   }
 }
 
@@ -191,10 +207,7 @@ export async function deleteScanReport(id: number) {
 
 export async function updateScanReportTable(
   id: number,
-  field_1: string,
-  value_1: number | null,
-  field_2: string,
-  value_2: number | null,
+  data: {},
   scanreportID: number
 ) {
   try {
@@ -203,10 +216,10 @@ export async function updateScanReportTable(
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ [field_1]: value_1, [field_2]: value_2 }),
+      body: JSON.stringify(data),
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
   redirect(`/scanreports/${scanreportID}/`);
 }

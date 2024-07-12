@@ -8,6 +8,7 @@ import {
 import {
   getAllScanReportFields,
   getScanReport,
+  getScanReportField,
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
@@ -33,16 +34,14 @@ export default async function UpdateTable({
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams };
-
   const query = objToQuery(combinedParams);
 
   const scanReportsFields = await getAllScanReportFields(query);
-  const shortenFields = scanReportsFields.map((item: ScanReportField) => ({
-    id: item.id,
-    name: item.name,
-  }));
+
   const scanReportsName = await getScanReport(id);
   const table = await getScanReportTable(tableId);
+  const personId = await getScanReportField(table.person_id as string);
+  const dateEvent = await getScanReportField(table.date_event as string);
   const permissions = await getScanReportPermissions(id);
 
   return (
@@ -99,11 +98,13 @@ export default async function UpdateTable({
           </div>
         </Alert>
       )}
-      <div>
+      <div className="mt-4">
         <UpdateForm
-          scanreportFields={shortenFields}
+          scanreportFields={scanReportsFields}
           scanreportTable={table}
           permissions={permissions.permissions}
+          personId={personId}
+          dateEvent={dateEvent}
         />
       </div>
     </div>
