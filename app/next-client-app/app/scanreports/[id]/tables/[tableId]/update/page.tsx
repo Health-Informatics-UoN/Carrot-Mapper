@@ -15,7 +15,7 @@ import {
 import { objToQuery } from "@/lib/client-utils";
 import { AlertCircleIcon } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { UpdateForm } from "@/components/update-SR-table/UpdateForm";
+import { ScanReportTableUpdateForm } from "@/components/scanreports/ScanReportTableUpdateForm";
 
 interface UpdateTableProps {
   params: {
@@ -99,7 +99,7 @@ export default async function UpdateTable({
         </Alert>
       )}
       <div className="mt-4">
-        <UpdateForm
+        <ScanReportTableUpdateForm
           scanreportFields={scanReportsFields}
           scanreportTable={table}
           permissions={permissions.permissions}
