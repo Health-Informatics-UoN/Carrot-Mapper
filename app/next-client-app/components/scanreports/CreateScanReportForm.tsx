@@ -244,7 +244,7 @@ export function CreateScanReportForm({
                   />
                 </div>
               </div>
-              <div className="mb-5">
+              <div className="mb-5 flex">
                 <Button
                   type="submit"
                   className="px-4 py-2 bg-carrot text-white rounded text-lg"
@@ -258,6 +258,7 @@ export function CreateScanReportForm({
                 >
                   Upload Scan Report <FileUp className="ml-2" />
                 </Button>
+                <Tooltips content="You must be either an admin or an editor of the parent dataset to add a new scan report to it." />
               </div>
             </div>
           </Form>
