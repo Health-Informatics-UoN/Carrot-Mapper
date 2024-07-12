@@ -30,9 +30,6 @@ export function ScanReportTableUpdateForm({
   const canUpdate =
     permissions.includes("CanEdit") || permissions.includes("CanAdmin");
 
-  // Making options suitable for React Select
-  // Initialize with default values
-
   const fieldOptions = FormDataFilter<ScanReportField>(scanreportFields);
 
   const initialPersonId = FormDataFilter<ScanReportField>(personId);
@@ -73,8 +70,8 @@ export function ScanReportTableUpdateForm({
               <h3 className="flex">
                 Person ID{" "}
                 <Tooltips
-                  content="Authors of a Scan Report can edit Scan Report details."
-                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#authors"
+                  content="Every CDM object must contain at least one person ID."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/mapping-rules/#1-person-id"
                 />
               </h3>
               <FormikSelect
@@ -91,8 +88,8 @@ export function ScanReportTableUpdateForm({
                 {" "}
                 Date Event
                 <Tooltips
-                  content="Viewers of a Scan Report can perform read-only actions."
-                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#viewers"
+                  content="Every CDM object must contain at least one date_event."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/mapping-rules/#2-date-events"
                 />
               </h3>
               <FormikSelect

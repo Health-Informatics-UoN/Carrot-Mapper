@@ -141,7 +141,7 @@ export async function getScanReportField(id: string): Promise<ScanReportField> {
   try {
     return await request<ScanReportField>(fetchKeys.fieldName(id));
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to fetch data. Passed ID could be null");
     return {
       id: 0,
       created_at: new Date(),
