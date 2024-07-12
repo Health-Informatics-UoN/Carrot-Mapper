@@ -20,6 +20,7 @@ import { CreateDatasetDialog } from "../datasets/CreateDatasetDialog";
 interface FormData {
   name: string;
   visibility: string;
+  viewers: number[];
   editors: number[];
   dataset: number;
   scan_report_file: File;
@@ -36,12 +37,17 @@ export function CreateScanReportForm({
   const [error, setError] = useState<string | null>(null);
   const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
   const [reloadDataset, setReloadDataset] = useState(false);
+  // State to hide/show the viewers field
+  const [publicVisibility, setPublicVisibility] = useState<boolean>(true);
 
   const handleSubmit = async (data: FormData) => {
     const formData = new FormData();
     formData.append("dataset", data.name);
     formData.append("visibility", data.visibility);
     formData.append("parent_dataset", data.dataset.toString());
+    data.viewers.forEach((viewer) => {
+      formData.append("viewers", viewer.toString());
+    });
     data.editors.forEach((editor) => {
       formData.append("editors", editor.toString());
     });
@@ -82,6 +88,7 @@ export function CreateScanReportForm({
         initialValues={{
           dataPartner: 0,
           dataset: 0,
+          viewers: [],
           editors: [],
           visibility: "PUBLIC",
           name: "",
@@ -143,6 +150,46 @@ export function CreateScanReportForm({
                   reloadDataset={reloadDataset}
                 />
               </div>
+              <div className="flex items-center space-x-3">
+                <h3 className="flex">
+                  Visibility
+                  <Tooltips
+                    content="Setting the visibility of the new Scan Report."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                  />
+                </h3>
+                <Switch
+                  onCheckedChange={(checked) => {
+                    handleChange({
+                      target: {
+                        name: "visibility",
+                        value: checked ? "PUBLIC" : "RESTRICTED",
+                      },
+                    });
+                    setPublicVisibility(checked);
+                  }}
+                  defaultChecked
+                />
+                <Label className="text-lg">
+                  {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
+                </Label>
+              </div>
+              {!publicVisibility && (
+                <div className="flex flex-col gap-2">
+                  <h3 className="flex">
+                    {" "}
+                    Viewers
+                    <Tooltips content="If the Scan Report is PUBLIC, then all users with access to the Dataset have viewer access to the Scan Report. Additionally, Dataset admins and editors have viewer access to the Scan Report in all cases." />
+                  </h3>
+                  {/* Viewers field uses the same logic and data as Editors field */}
+                  <FormikSelectEditors
+                    name="viewers"
+                    placeholder="Choose viewers"
+                    isMulti={true}
+                    isDisabled={values.dataset === 0 || values.dataset === -1}
+                  />
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <h3 className="flex">
                   {" "}
@@ -171,29 +218,6 @@ export function CreateScanReportForm({
                   className="text-lg text-carrot"
                   required
                 />
-              </div>
-              <div className="flex items-center space-x-3">
-                <h3 className="flex">
-                  Visibility
-                  <Tooltips
-                    content="Setting the visibility of the new Scan Report."
-                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
-                  />
-                </h3>
-                <Switch
-                  onCheckedChange={(checked) =>
-                    handleChange({
-                      target: {
-                        name: "visibility",
-                        value: checked ? "PUBLIC" : "RESTRICTED",
-                      },
-                    })
-                  }
-                  defaultChecked
-                />
-                <Label className="text-lg">
-                  {values.visibility === "PUBLIC" ? "PUBLIC" : "RESTRICTED"}
-                </Label>
               </div>
               <div className="flex flex-col gap-2">
                 <h3 className="flex">
