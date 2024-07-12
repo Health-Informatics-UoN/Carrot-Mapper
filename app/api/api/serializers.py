@@ -507,6 +507,9 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     editors = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.all(), required=False
     )
+    viewers = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=User.objects.all(), required=False
+    )
     parent_dataset = serializers.PrimaryKeyRelatedField(
         queryset=Dataset.objects.order_by("name"),
         required=True,
@@ -518,6 +521,7 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     class Meta:
         model = ScanReport
         fields = (
+            "viewers",
             "editors",
             "dataset",
             "parent_dataset",
