@@ -150,6 +150,10 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
             "status",
             "created_at",
             "hidden",
+            "author",
+            "viewers",
+            "editors",
+            "visibility",
         )
 
     def get_parent_dataset(self, obj):
