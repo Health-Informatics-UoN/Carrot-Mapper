@@ -47,9 +47,11 @@ export function ScanReportTableUpdateForm({
       scanreportTable.scan_report
     );
     if (response) {
-      toast.error(`Update Scan Report failed. Error: ${response.errorMessage}`);
+      toast.error(
+        `Update Scan Report Table failed. Error: ${response.errorMessage}`
+      );
     } else {
-      toast.success("Update Scan Report successful!");
+      toast.success("Update Scan Report Table successful!");
     }
   };
 
