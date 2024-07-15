@@ -31,6 +31,7 @@ import { columns } from "./columns";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AnalyseRuleDialog } from "@/components/mapping-rule/AnalyseRuleDialog";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -90,9 +91,7 @@ export default async function ScanReportsMappingRules({
             Show Summary View
             <BookText className="ml-2 size-4" />
           </Button>
-          <Button>
-            Analyse Rules <ChevronRight className="ml-2 size-4" />
-          </Button>
+          <AnalyseRuleDialog scanreportId={id} />
         </div>
         <div className="flex gap-2">
           <Dialog>
