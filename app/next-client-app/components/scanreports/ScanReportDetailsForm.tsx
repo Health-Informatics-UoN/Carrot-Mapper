@@ -214,7 +214,7 @@ export function ScanReportDetailsForm({
               </Button>
               <Tooltips
                 content="You must be the author of the scan report or an admin of the parent dataset
-                    to update the details of this dataset."
+                    to update the details of this scan report."
               />
             </div>
           </div>
