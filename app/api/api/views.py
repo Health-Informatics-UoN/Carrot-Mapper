@@ -506,7 +506,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
 
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
-        if str(valid_data_dictionary_file) == "undefined":
+        if str(valid_data_dictionary_file) == "None":
             azure_dict = {
                 "scan_report_id": scan_report.id,
                 "scan_report_blob": scan_report.name,

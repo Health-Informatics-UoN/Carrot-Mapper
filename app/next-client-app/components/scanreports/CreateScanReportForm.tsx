@@ -23,8 +23,8 @@ interface FormData {
   viewers: number[];
   editors: number[];
   dataset: number;
-  scan_report_file: File;
-  Data_dict: File;
+  scan_report_file: File | null;
+  Data_dict: File | null;
 }
 
 export function CreateScanReportForm({
@@ -51,8 +51,12 @@ export function CreateScanReportForm({
     data.editors.forEach((editor) => {
       formData.append("editors", editor.toString());
     });
-    formData.append("scan_report_file", data.scan_report_file);
-    formData.append("data_dictionary_file", data.Data_dict);
+    if (data.scan_report_file) {
+      formData.append("scan_report_file", data.scan_report_file);
+    }
+    if (data.Data_dict) {
+      formData.append("data_dictionary_file", data.Data_dict);
+    }
 
     const response = await createScanReport(formData);
 
@@ -92,8 +96,8 @@ export function CreateScanReportForm({
           editors: [],
           visibility: "PUBLIC",
           name: "",
-          scan_report_file: new File([], ""),
-          Data_dict: new File([], ""),
+          scan_report_file: null,
+          Data_dict: null,
         }}
         onSubmit={(data) => {
           toast.info("Validating ...");
@@ -276,8 +280,7 @@ export function CreateScanReportForm({
                     values.dataPartner === 0 ||
                     values.dataset === 0 ||
                     values.dataset === -1 ||
-                    values.name === "" ||
-                    values.scan_report_file.name === ""
+                    values.name === ""
                   }
                 >
                   Upload Scan Report <FileUp className="ml-2" />
