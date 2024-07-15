@@ -167,6 +167,7 @@ export default async function ScanReportsMappingRules({
           data={mappingRulesList.results}
           count={mappingRulesList.count}
           clickableRow={false}
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>
