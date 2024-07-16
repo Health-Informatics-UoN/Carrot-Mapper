@@ -91,32 +91,36 @@ export const AnalyseColumns: ColumnDef<AnalyseRuleData>[] = [
     cell: ({ row }) => {
       const { anc_desc } = row.original;
       const a_source_links = anc_desc.flatMap((ancestor) =>
-        ancestor.ancestors.map((a) => (
-          <div key={a.a_id} className="text-carrot flex gap-4">
-            {a.source.map((source) => (
-              <Link
-                key={source.source_field__id}
-                href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
-              >
-                {source.source_field__name}
-              </Link>
-            ))}
-          </div>
-        ))
+        ancestor.ancestors
+          .sort((a, b) => b.a_id - a.a_id)
+          .map((a) => (
+            <div key={a.a_id} className="text-carrot flex gap-4">
+              {a.source.map((source) => (
+                <Link
+                  key={source.source_field__id}
+                  href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
+                >
+                  {source.source_field__name}
+                </Link>
+              ))}
+            </div>
+          ))
       );
       const d_source_links = anc_desc.flatMap((descendant) =>
-        descendant.descendants.map((d) => (
-          <div key={d.d_id} className="flex text-carrot-reuse gap-4">
-            {d.source.map((source) => (
-              <Link
-                key={source.source_field__id}
-                href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
-              >
-                {source.source_field__name}
-              </Link>
-            ))}
-          </div>
-        ))
+        descendant.descendants
+          .sort((a, b) => b.d_id - a.d_id)
+          .map((d) => (
+            <div key={d.d_id} className="flex text-carrot-reuse gap-4">
+              {d.source.map((source) => (
+                <Link
+                  key={source.source_field__id}
+                  href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
+                >
+                  {source.source_field__name}
+                </Link>
+              ))}
+            </div>
+          ))
       );
 
       return (
