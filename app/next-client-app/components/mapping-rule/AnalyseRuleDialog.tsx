@@ -26,6 +26,7 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
   useEffect(() => {
     if (dialogOpened && !analyseData) {
       const fetchData = async () => {
+        // TODO: Term map show the new added concept on Fields + Values or only Values
         // TODO: How to the stop the process when the dialog is closed?
         // TODO: How to make the process of fetching faster??
         // TODO: Add pagination to the backend of analyseRule
