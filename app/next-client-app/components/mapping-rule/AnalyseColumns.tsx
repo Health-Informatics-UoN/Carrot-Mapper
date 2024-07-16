@@ -1,11 +1,8 @@
 "use client";
 
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
-import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 export const AnalyseColumns: ColumnDef<AnalyseRuleData>[] = [
   {
@@ -25,117 +22,107 @@ export const AnalyseColumns: ColumnDef<AnalyseRuleData>[] = [
     ),
     enableHiding: true,
     enableSorting: false,
-    cell: ({ row }) => {
-      const { destination_table } = row.original;
-      return destination_table.name;
-    },
   },
   {
-    id: "Destination Field",
+    id: "Ancestors/Descendants",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Destination Field" />
+      <DataTableColumnHeader
+        column={column}
+        title="Ancestors (A)/Descendants (D)"
+      />
     ),
     enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { destination_field } = row.original;
-      return destination_field.name;
-    },
-  },
-  {
-    id: "Source Table",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Source Table" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { source_table } = row.original;
-      const path = usePathname();
-      const id = path.match(/\/(\d+)\/+/) ?? [];
-
+      const { anc_desc } = row.original;
+      const ancestors = anc_desc.flatMap((ancestor) =>
+        ancestor.ancestors.map((a) => (
+          <div key={a.a_id}>{`${a.a_id} - ${a.a_name} (A)`}</div>
+        ))
+      );
+      const descendants = anc_desc.flatMap((descendant) =>
+        descendant.descendants.map((d) => (
+          <div key={d.d_id}>{`${d.d_id} - ${d.d_name} (D)`}</div>
+        ))
+      );
       return (
-        <Link href={`/scanreports/${id[1]}/tables/${source_table.id}/`}>
-          <Button variant="outline">{source_table.name}</Button>
-        </Link>
+        <div className="flex flex-col">
+          <div className="text-carrot">{ancestors}</div>
+          <div className="text-carrot-reuse">{descendants}</div>
+        </div>
       );
     },
   },
   {
-    id: "Source Field",
+    id: "Min/Max Separation",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Min/Max Separation" />
+    ),
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { anc_desc } = row.original;
+      const a_level = anc_desc.flatMap((ancestor) =>
+        ancestor.ancestors.map((a) => (
+          <div key={a.a_id}>{`${a.level.join("")}`}</div>
+        ))
+      );
+      const d_level = anc_desc.flatMap((descendant) =>
+        descendant.descendants.map((d) => (
+          <div key={d.d_id}>{`${d.level.join("")}`}</div>
+        ))
+      );
+
+      return (
+        <div className="flex flex-col">
+          <div className="text-carrot">{a_level}</div>
+          <div className="text-carrot-reuse">{d_level}</div>
+        </div>
+      );
+    },
+  },
+  {
+    id: "Source",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Source Field" />
     ),
     enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { source_table, source_field } = row.original;
-      const path = usePathname();
-      const id = path.match(/\/(\d+)\/+/) ?? [];
+      const { anc_desc } = row.original;
+      const a_source_buttons = anc_desc.flatMap((ancestor) =>
+        ancestor.ancestors.map((a) =>
+          a.source.map((source) => (
+            <div key={source.source_field__id} className="text-carrot">
+              <Link
+                href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
+              >
+                {source.source_field__name}
+              </Link>
+            </div>
+          ))
+        )
+      );
+      const d_source_buttons = anc_desc.flatMap((descendant) =>
+        descendant.descendants.map((d) =>
+          d.source.map((source) => (
+            <div key={source.source_field__id} className="text-carrot-reuse">
+              <Link
+                href={`/scanreports/${source.source_field__scan_report_table__scan_report}/tables/${source.source_field__scan_report_table__id}/fields/${source.source_field__id}/`}
+              >
+                {source.source_field__name}
+              </Link>
+            </div>
+          ))
+        )
+      );
 
       return (
-        <Link
-          href={`/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`}
-        >
-          <Button variant="outline">{source_field.name}</Button>
-        </Link>
+        <div className="flex flex-col">
+          <div>{a_source_buttons}</div>
+          <div>{d_source_buttons}</div>
+        </div>
       );
-    },
-  },
-  {
-    id: "Term Map",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Term Map" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { omop_term, term_mapping } = row.original;
-
-      return term_mapping ? (
-        <>
-          {Object.keys(term_mapping).map((key, index) => (
-            <div key={index}>
-              <div className="flex">
-                <p className="text-red-500">{key}</p>{" "}
-                <ArrowRight size="16px" className="ml-2" />
-              </div>
-              <p className="text-green-700">
-                {term_mapping[key]} {omop_term}
-              </p>
-            </div>
-          ))}
-        </>
-      ) : (
-        <></>
-      );
-    },
-  },
-  {
-    id: "Creation Type",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Creation Type"
-        description="How the Mapping Rule has been created"
-        className="cursor-pointer"
-      />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { creation_type } = row.original;
-
-      switch (creation_type) {
-        case "V":
-          return "Vocabulary";
-        case "M":
-          return "Manual";
-        case "R":
-          return "Reused";
-        default:
-          return "";
-      }
     },
   },
 ];

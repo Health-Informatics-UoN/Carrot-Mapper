@@ -28,7 +28,7 @@ interface MappingRuleTermMapping {
   [key: string]: number;
 }
 
-interface RawData {
+interface AnalyseRule {
   data: AnalyseRuleData[];
 }
 interface AnalyseRuleData {

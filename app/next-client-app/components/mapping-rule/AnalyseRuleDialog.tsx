@@ -31,7 +31,6 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
       fetchData();
     }
   }, [dialogOpened, scanreportId]);
-  console.log(analyseData);
 
   return (
     <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
@@ -40,7 +39,7 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
           Analyse Rules <BarChart3 className="ml-2 size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-full max-w-4xl">
+      <DialogContent className="w-full max-w-screen-2xl">
         <DialogHeader>
           <DialogTitle>Analyse Rules</DialogTitle>
         </DialogHeader>

@@ -56,9 +56,9 @@ export async function getMapDiagram(
   }
 }
 
-export async function getAnalyseRulesData(id: string): Promise<RawData> {
+export async function getAnalyseRulesData(id: string): Promise<AnalyseRule> {
   try {
-    return await request<RawData>(fetchKeys.analyseRules(id));
+    return await request<AnalyseRule>(fetchKeys.analyseRules(id));
   } catch (error) {
     console.warn("Failed to fetch analyse rules data.");
     return { data: [] };
