@@ -12,7 +12,7 @@ import { Button } from "../ui/button";
 import { BarChart3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DataTable } from "../data-table";
-import { getAnalyseRulesData } from "@/api/mapping-rules";
+import { getAnalyseRules } from "@/api/mapping-rules";
 import { AnalyseColumns } from "./AnalyseColumns";
 import { Loading } from "../ui/loading-indicator";
 
@@ -27,11 +27,12 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
     if (dialogOpened && !analyseData) {
       const fetchData = async () => {
         // TODO: Term map show the new added concept on Fields + Values or only Values
+        // TODO: Clean the types
         // TODO: How to the stop the process when the dialog is closed?
         // TODO: How to make the process of fetching faster??
         // TODO: Add pagination to the backend of analyseRule
         // TODO: How to control the pagination in this case of dialog, not a page with separate url
-        const analyseDataFetch = await getAnalyseRulesData(scanreportId);
+        const analyseDataFetch = await getAnalyseRules(scanreportId);
         setAnalyseData(analyseDataFetch.data);
         setLoading(false);
       };
