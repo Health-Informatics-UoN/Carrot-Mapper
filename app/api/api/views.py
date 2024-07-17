@@ -1226,6 +1226,50 @@ class RulesList(viewsets.ModelViewSet):
         return Response(data={"count": count, "results": rules})
 
 
+class SummaryRulesList(RulesList):
+    def list(self, request):
+        queryset = self.get_queryset()
+
+        rules = get_mapping_rules_list(queryset)
+
+        filtered_rules = []
+        # Filtering the rules
+        for rule in rules:
+            if (
+                not rule["destination_field"].field.endswith("_source_concept_id")
+                and rule["term_mapping"] is not None
+            ):
+                filtered_rules.append(rule)
+        # Processing all filtered rules
+        for rule in filtered_rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        count = len(filtered_rules)
+        return Response(data={"count": count, "results": filtered_rules})
+
+
 class AnalyseRules(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()
     serializer_class = GetRulesAnalysis
