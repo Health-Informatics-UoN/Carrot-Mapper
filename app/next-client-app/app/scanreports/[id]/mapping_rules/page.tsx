@@ -32,6 +32,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnalyseRuleDialog } from "@/components/mapping-rule/AnalyseRuleDialog";
+import { SummaryViewDialog } from "@/components/mapping-rule/SummaryViewDialog";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -87,10 +88,9 @@ export default async function ScanReportsMappingRules({
       </div>
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
-          <Button>
-            Show Summary View
-            <BookText className="ml-2 size-4" />
-          </Button>
+          {/* Show Summary View modal */}
+          <SummaryViewDialog scanreportId={id} />
+          {/* Analyse Rules modal */}
           <AnalyseRuleDialog scanreportId={id} />
         </div>
         <div className="flex gap-2">
