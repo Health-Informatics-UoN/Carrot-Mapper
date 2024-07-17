@@ -33,7 +33,7 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
       fetchData();
     }
   }, [dialogOpened, summaryData]);
-
+  console.log(summaryData);
   return (
     <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
       <DialogTrigger asChild>
@@ -42,9 +42,7 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`w-full max-w-screen-2xl overflow-auto ${
-          summaryData ? "h-4/5" : "h-auto"
-        }`}
+        className={`w-full max-w-screen-2xl overflow-auto max-h-screen-2xl`}
       >
         <DialogHeader>
           <DialogTitle>Summary of Mapping Rules list</DialogTitle>

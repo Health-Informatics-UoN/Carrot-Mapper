@@ -48,9 +48,7 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
         </Button>
       </DialogTrigger>
       <DialogContent
-        className={`w-full max-w-screen-2xl overflow-auto ${
-          analyseData ? "h-4/5" : "h-auto"
-        }`}
+        className={`w-full max-w-screen-2xl overflow-auto max-h-screen-2xl`}
       >
         <DialogHeader>
           <DialogTitle>Analyse Rules</DialogTitle>
