@@ -1229,7 +1229,7 @@ class RulesList(viewsets.ModelViewSet):
 class SummaryRulesList(RulesList):
     def list(self, request):
         queryset = self.get_queryset()
-
+        # Get all the rules, not only rules on page=... and pageSize=...
         rules = get_mapping_rules_list(queryset)
 
         filtered_rules = []
