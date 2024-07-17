@@ -38,7 +38,7 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
-  defaultPageSize?: 10 | 20 | 30 | 40 | 50;
+  defaultPageSize?: 2 | 10 | 20 | 30 | 40 | 50;
 }
 
 function UrlBuilder(id: string, prefix: string = "") {

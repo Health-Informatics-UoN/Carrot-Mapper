@@ -33,6 +33,7 @@ import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnalyseRuleDialog } from "@/components/mapping-rule/AnalyseRuleDialog";
 import { SummaryViewDialog } from "@/components/mapping-rule/SummaryViewDialog";
+import Link from "next/link";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -89,7 +90,10 @@ export default async function ScanReportsMappingRules({
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
           {/* Show Summary View modal */}
-          <SummaryViewDialog scanreportId={id} />
+          {/* <SummaryViewDialog scanreportId={id} /> */}
+          <Link href={`/scanreports/${id}/mapping_rules/summary/`}>
+            <Button>Show Summary View</Button>
+          </Link>
           {/* Analyse Rules modal */}
           <AnalyseRuleDialog scanreportId={id} />
         </div>

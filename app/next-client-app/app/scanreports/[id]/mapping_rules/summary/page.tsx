@@ -8,16 +8,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "../ui/button";
+
 import { PanelsTopLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import { DataTable } from "../data-table";
-import { Loading } from "../ui/loading-indicator";
+
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
+import { Loading } from "@/components/ui/loading-indicator";
+import { DataTable } from "@/components/data-table";
 
-export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
-  const [dialogOpened, setDialogOpened] = useState(false);
+interface SummaryProps {
+  params: {
+    id: string;
+  };
+}
+
+export function SummaryViewDialog({ params: { id } }: SummaryProps) {
+  const [dialogOpened, setDialogOpened] = useState(true);
   const [summaryData, setSummaryData] = useState<MappingRule[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(0);
@@ -25,7 +32,7 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
   useEffect(() => {
     if (dialogOpened && !summaryData) {
       const fetchData = async () => {
-        const fetchSumData = await getSummaryRules(scanreportId);
+        const fetchSumData = await getSummaryRules(id);
         setSummaryData(fetchSumData.results);
         setCount(fetchSumData.count);
         setLoading(false);
@@ -33,15 +40,12 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
       fetchData();
     }
   }, [dialogOpened, summaryData]);
-  console.log(summaryData);
+
   return (
     <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
-      <DialogTrigger asChild>
-        <Button className="flex">
-          Show Summary View <PanelsTopLeft className="ml-2 size-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-full max-w-screen-2xl overflow-auto max-h-screen-2xl">
+      <DialogContent
+        className={`w-full max-w-screen-2xl overflow-auto max-h-screen-2xl`}
+      >
         <DialogHeader>
           <DialogTitle>Summary of Mapping Rules list</DialogTitle>
         </DialogHeader>
@@ -69,3 +73,4 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
     </Dialog>
   );
 }
+export default SummaryViewDialog;
