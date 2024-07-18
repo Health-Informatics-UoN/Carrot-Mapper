@@ -1229,8 +1229,13 @@ class RulesList(viewsets.ModelViewSet):
 class SummaryRulesList(RulesList):
     def list(self, request):
         queryset = self.get_queryset()
-        # Get all the rules, not only rules on page=... and pageSize=...
+        # Get all the rules then filter and do separate pagiantion.
+        # If not, the summary rules will be only for p and ps from the main list
+        # However, if doing like this, can't be used for a very large scanreports
         rules = get_mapping_rules_list(queryset)
+        # Get p and page_size from request query
+        p = self.request.query_params.get("p", None)
+        page_size = self.request.query_params.get("page_size", None)
 
         filtered_rules = []
         # Filtering the rules
@@ -1267,7 +1272,17 @@ class SummaryRulesList(RulesList):
             }
 
         count = len(filtered_rules)
-        return Response(data={"count": count, "results": filtered_rules})
+        # Initialize first_index and last_index
+        first_index = 0
+        last_index = count
+
+        if p is not None:
+            first_index = (int(p) - 1) * int(page_size)
+            last_index = int(p) * int(page_size)
+
+        return Response(
+            data={"count": count, "results": filtered_rules[first_index:last_index]}
+        )
 
 
 class AnalyseRules(viewsets.ModelViewSet):

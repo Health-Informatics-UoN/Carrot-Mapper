@@ -1,55 +1,42 @@
-"use client";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
-import { PanelsTopLeft } from "lucide-react";
-import { useEffect, useState } from "react";
-
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
 import { Loading } from "@/components/ui/loading-indicator";
 import { DataTable } from "@/components/data-table";
 import { Modal } from "@/components/Modal";
+import { FilterParameters } from "@/types/filter";
+import { objToQuery } from "@/lib/client-utils";
 
 interface SummaryProps {
   params: {
     id: string;
   };
+  searchParams?: FilterParameters;
 }
 
-export function SummaryViewDialog({ params: { id } }: SummaryProps) {
-  const [dialogOpened, setDialogOpened] = useState(true);
-  const [summaryData, setSummaryData] = useState<MappingRule[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [count, setCount] = useState(0);
+export default async function SummaryViewDialog({
+  params: { id },
+  searchParams,
+}: SummaryProps) {
+  const defaultPageSize = 2; // To test the pagination. Need to be changed to 10|20|30 here, then remove 2 in other places
+  const defaultParams = {
+    id: id,
+    p: 1,
+    page_size: defaultPageSize,
+  };
+  const combinedParams = { ...defaultParams, ...searchParams };
+  const query = objToQuery(combinedParams);
+  // TODO: set loading state
+  // const [loading, setLoading] = useState(true);
+  const summaryRules = await getSummaryRules(query);
 
-  useEffect(() => {
-    if (dialogOpened && !summaryData) {
-      const fetchData = async () => {
-        const fetchSumData = await getSummaryRules(id);
-        setSummaryData(fetchSumData.results);
-        setCount(fetchSumData.count);
-        setLoading(false);
-      };
-      fetchData();
-    }
-  }, [dialogOpened, summaryData]);
-  console.log("jsdhfkjhsdkfjh");
   return (
     <Modal>
       <DataTable
         columns={columns}
-        data={summaryData || []}
-        count={count || 0}
+        data={summaryRules.results}
+        count={summaryRules.count}
         clickableRow={false}
-        defaultPageSize={2}
+        defaultPageSize={defaultPageSize}
       />
     </Modal>
     // <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
@@ -83,4 +70,3 @@ export function SummaryViewDialog({ params: { id } }: SummaryProps) {
     // </Dialog>
   );
 }
-export default SummaryViewDialog;
