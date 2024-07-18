@@ -16,7 +16,7 @@ export default async function SummaryViewDialog({
   params: { id },
   searchParams,
 }: SummaryProps) {
-  const defaultPageSize = 30;
+  const defaultPageSize = 2;
   const defaultParams = {
     id: id,
     p: 1,
@@ -26,6 +26,7 @@ export default async function SummaryViewDialog({
   const query = objToQuery(combinedParams);
   // TODO: set loading state
   // TODO: modify width and height
+  // TODO: Why when I use pagination here, the modal appear???
   // const [loading, setLoading] = useState(true);
   const summaryRules = await getSummaryRules(query);
 
