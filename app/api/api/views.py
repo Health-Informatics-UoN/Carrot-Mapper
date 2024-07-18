@@ -477,6 +477,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         valid_data_dictionary_file = validatedFiles.get("data_dictionary_file")
         valid_scan_report_file = validatedFiles.get("scan_report_file")
         valid_visibility = validatedData.get("visibility")
+        valid_viewers = validatedData.get("viewers")
         valid_editors = validatedData.get("editors")
         valid_dataset = validatedData.get("dataset")
         valid_parent_dataset = validatedData.get("parent_dataset")
@@ -495,13 +496,17 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         scan_report.author = self.request.user
         scan_report.save()
 
+        # Add viewers to the scan report if specified
+        if sr_viewers := valid_viewers:
+            scan_report.viewers.add(*sr_viewers)
+
         # Add editors to the scan report if specified
         if sr_editors := valid_editors:
             scan_report.editors.add(*sr_editors)
 
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
-        if str(valid_data_dictionary_file) == "undefined":
+        if str(valid_data_dictionary_file) == "None":
             azure_dict = {
                 "scan_report_id": scan_report.id,
                 "scan_report_blob": scan_report.name,
