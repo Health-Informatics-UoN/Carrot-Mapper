@@ -1,3 +1,5 @@
+"use client";
+import { useState, useEffect } from "react";
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
 import { Loading } from "@/components/ui/loading-indicator";
@@ -13,11 +15,15 @@ interface SummaryProps {
   searchParams?: FilterParameters;
 }
 
-export default async function SummaryViewDialog({
+export default function SummaryViewDialog({
   params: { id },
   searchParams,
 }: SummaryProps) {
-  const defaultPageSize = 2; // To test the pagination. Need to be changed to 10|20|30 here, then remove 2 in other places
+  const [loading, setLoading] = useState(true);
+  const [summaryRules, setSummaryRules] =
+    useState<PaginatedResponse<MappingRule>>();
+
+  const defaultPageSize = 10;
   const defaultParams = {
     id: id,
     p: 1,
@@ -25,48 +31,41 @@ export default async function SummaryViewDialog({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  // TODO: set loading state
-  // const [loading, setLoading] = useState(true);
-  const summaryRules = await getSummaryRules(query);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getSummaryRules(query);
+        setSummaryRules(data);
+      } catch (error) {
+        console.error("Error fetching summary rules:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [query]);
 
   return (
     <Modal>
-      <DataTable
-        columns={columns}
-        data={summaryRules.results}
-        count={summaryRules.count}
-        clickableRow={false}
-        defaultPageSize={defaultPageSize}
-      />
+      {loading ? (
+        <div className="flex justify-center">
+          <Loading text="Loading ..." />
+        </div>
+      ) : (
+        <div>
+          {summaryRules && (
+            <DataTable
+              columns={columns}
+              data={summaryRules.results}
+              count={summaryRules.count}
+              clickableRow={false}
+              defaultPageSize={defaultPageSize}
+            />
+          )}
+        </div>
+      )}
     </Modal>
-    // <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
-    //   <DialogContent
-    //     className={`w-full max-w-screen-2xl overflow-auto max-h-screen-2xl`}
-    //   >
-    //     <DialogHeader>
-    //       <DialogTitle>Summary of Mapping Rules list 2123123</DialogTitle>
-    //     </DialogHeader>
-    //     <DialogDescription className="justify-center items-center text-center">
-    //       {" "}
-    //       The table below shows the list of mapping rules which have the Term
-    //       Map and have the Desination Field name without "_source_concept_id"
-    //     </DialogDescription>
-    //     {loading ? (
-    //       <div className="flex justify-center">
-    //         <Loading text="Loading ..." />
-    //       </div>
-    //     ) : (
-    //       <div>
-    //         <DataTable
-    //           columns={columns}
-    //           data={summaryData || []}
-    //           count={count || 0}
-    //           clickableRow={false}
-    //           defaultPageSize={20}
-    //         />
-    //       </div>
-    //     )}
-    //   </DialogContent>
-    // </Dialog>
   );
 }

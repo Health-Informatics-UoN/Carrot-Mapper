@@ -1,6 +1,12 @@
 "use client";
 
-import { Dialog, DialogContent } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 export function Modal({ children }: { children: React.ReactNode }) {
   const handleOpenChange = () => {
@@ -20,7 +26,15 @@ export function Modal({ children }: { children: React.ReactNode }) {
       modal={true}
     >
       {/* TODO: Add tille and description */}
-      <DialogContent className="w-full max-w-screen-xl overflow-auto max-h-screen-xl">
+      <DialogContent className="w-full max-w-screen-2xl overflow-auto h-4/5">
+        <DialogHeader>
+          <DialogTitle>Summary of Mapping Rules list</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className="justify-center items-center text-center">
+          {" "}
+          The table below shows the list of mapping rules which have the Term
+          Map and have the Desination Field name without "_source_concept_id"
+        </DialogDescription>
         {children}
       </DialogContent>
     </Dialog>
