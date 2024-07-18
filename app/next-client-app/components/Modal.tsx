@@ -25,8 +25,7 @@ export function Modal({ children }: { children: React.ReactNode }) {
       onOpenChange={handleOpenChange}
       modal={true}
     >
-      {/* TODO: Add tille and description */}
-      <DialogContent className="w-full max-w-screen-2xl overflow-auto h-4/5">
+      <DialogContent className="w-full max-w-screen-xl overflow-auto h-4/5">
         <DialogHeader>
           <DialogTitle>Summary of Mapping Rules list</DialogTitle>
         </DialogHeader>

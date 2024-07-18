@@ -23,7 +23,7 @@ export default function SummaryViewDialog({
   const [summaryRules, setSummaryRules] =
     useState<PaginatedResponse<MappingRule>>();
 
-  const defaultPageSize = 10;
+  const defaultPageSize = 20;
   const defaultParams = {
     id: id,
     p: 1,

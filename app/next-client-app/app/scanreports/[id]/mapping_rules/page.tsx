@@ -20,6 +20,7 @@ import {
   FileJson,
   FilePieChart,
   FileSpreadsheet,
+  PanelsTopLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FilterParameters } from "@/types/filter";
@@ -32,7 +33,6 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AnalyseRuleDialog } from "@/components/mapping-rule/AnalyseRuleDialog";
-import { SummaryViewDialog } from "@/components/mapping-rule/SummaryViewDialog";
 import Link from "next/link";
 
 interface ScanReportsMappingRulesProps {
@@ -91,8 +91,14 @@ export default async function ScanReportsMappingRules({
         <div className="flex gap-2">
           {/* Show Summary View modal */}
           {/* <SummaryViewDialog scanreportId={id} /> */}
-          <Link href={`/scanreports/${id}/mapping_rules/summary/`}>
-            <Button>Show Summary View</Button>
+          <Link
+            href={`/scanreports/${id}/mapping_rules/summary/`}
+            className="flex"
+          >
+            <Button>
+              Show Summary View
+              <PanelsTopLeft className="ml-2 size-4" />
+            </Button>
           </Link>
           {/* Analyse Rules modal */}
           <AnalyseRuleDialog scanreportId={id} />

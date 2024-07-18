@@ -1,9 +1,17 @@
+"use client";
+import { useState, useEffect } from "react";
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
 import { Loading } from "@/components/ui/loading-indicator";
 import { DataTable } from "@/components/data-table";
 import { FilterParameters } from "@/types/filter";
 import { objToQuery } from "@/lib/client-utils";
+import {
+  Dialog,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface SummaryProps {
   params: {
@@ -12,11 +20,15 @@ interface SummaryProps {
   searchParams?: FilterParameters;
 }
 
-export default async function SummaryViewDialog({
+export default function SummaryViewDialog({
   params: { id },
   searchParams,
 }: SummaryProps) {
-  const defaultPageSize = 2;
+  const [loading, setLoading] = useState(true);
+  const [summaryRules, setSummaryRules] =
+    useState<PaginatedResponse<MappingRule>>();
+
+  const defaultPageSize = 20;
   const defaultParams = {
     id: id,
     p: 1,
@@ -24,19 +36,56 @@ export default async function SummaryViewDialog({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  // TODO: set loading state
-  // TODO: modify width and height
-  // TODO: Why when I use pagination here, the modal appear???
-  // const [loading, setLoading] = useState(true);
-  const summaryRules = await getSummaryRules(query);
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getSummaryRules(query);
+        setSummaryRules(data);
+      } catch (error) {
+        console.error("Error fetching summary rules:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [query]);
+  // TODO: Why when I use pagination here, the modal appear?
+  // Somehow it activate the pagination of the modal through the common URL
+  // The pagination should be deactivated here, because the purpose of this is sharing the specific info/page
   return (
-    <DataTable
-      columns={columns}
-      data={summaryRules.results}
-      count={summaryRules.count}
-      clickableRow={false}
-      defaultPageSize={defaultPageSize}
-    />
+    <div className="p-5">
+      {loading ? (
+        <div className="flex justify-center">
+          <Loading text="Loading ..." />
+        </div>
+      ) : (
+        <div>
+          <Dialog>
+            <DialogHeader>
+              <DialogTitle className="mb-2">
+                Summary of Mapping Rules list
+              </DialogTitle>
+            </DialogHeader>
+            <DialogDescription className="justify-center items-center text-center">
+              {" "}
+              The table below shows the list of mapping rules which have the
+              Term Map and have the Desination Field name without
+              "_source_concept_id"
+            </DialogDescription>
+            {summaryRules && (
+              <DataTable
+                columns={columns}
+                data={summaryRules.results}
+                count={summaryRules.count}
+                clickableRow={false}
+                defaultPageSize={defaultPageSize}
+              />
+            )}
+          </Dialog>
+        </div>
+      )}
+    </div>
   );
 }
