@@ -31,7 +31,7 @@ export default function SummaryViewDialog({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-
+  // TODO: Test stability of the page when return from the modal. Sometimes it will break, possibly due to "use client" structure
   useEffect(() => {
     async function fetchData() {
       try {

@@ -26,12 +26,11 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
   useEffect(() => {
     if (dialogOpened && !analyseData) {
       const fetchData = async () => {
-        // TODO: Term map show the new added concept on Fields + Values or only Values
         // TODO: Clean the types
         // TODO: How to the stop the process when the dialog is closed?
         // TODO: How to make the process of fetching faster??
         // TODO: Add pagination to the backend of analyseRule
-        // TODO: How to control the pagination in this case of dialog, not a page with separate url
+        // TODO: Make the modal in intercepting route
         const analyseDataFetch = await getAnalyseRules(scanreportId);
         setAnalyseData(analyseDataFetch.data);
         setLoading(false);
