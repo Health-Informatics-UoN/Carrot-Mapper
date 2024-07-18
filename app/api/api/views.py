@@ -1226,51 +1226,29 @@ class RulesList(viewsets.ModelViewSet):
         return Response(data={"count": count, "results": rules})
 
 
-class SummaryRulesList(viewsets.ModelViewSet):
-    queryset = MappingRule.objects.all().order_by("id")
-    pagination_class = CustomPagination
-    filter_backends = [DjangoFilterBackend]
-    http_method_names = ["get"]
-
-    def get_queryset(self):
-        _id = self.request.query_params.get("id", None)
-        queryset = self.queryset
-        if _id is not None:
-            queryset = queryset.filter(scan_report__id=_id)
-        return queryset
-
+class SummaryRulesList(RulesList):
     def list(self, request):
-        _id = self.request.query_params.get("id", None)
+        # Get p and page_size from query_params
         p = self.request.query_params.get("p", None)
         page_size = self.request.query_params.get("page_size", None)
+        # Get queryset
+        queryset = self.get_queryset()
 
-        queryset = self.queryset
-        # Filter on ScanReport ID
-        if _id is not None:
-            queryset = queryset.filter(scan_report__id=_id)
+        # Directly filter OmopField objects that end with "_concept_id" but not "_source_concept_id"
+        omop_fields_queryset = OmopField.objects.filter(
+            pk__in=queryset.values_list("omop_field_id", flat=True),
+            field__endswith="_concept_id",
+        ).exclude(field__endswith="_source_concept_id")
 
-        queryset_list = list(queryset)
-        omop_fields_ids = [obj.omop_field_id for obj in queryset_list]
-        omop_fields_list = list(OmopField.objects.filter(pk__in=omop_fields_ids))
-        filtered_field_list = []
-        for field in omop_fields_list:
-            if field.field.endswith("_concept_id") and not field.field.endswith(
-                "_source_concept_id"
-            ):
-                filtered_field_list.append(field)
-
-        ids_list = [field.id for field in filtered_field_list]
-
+        ids_list = omop_fields_queryset.values_list("id", flat=True)
+        # Filter the queryset based on valid omop_field_ids
         filtered_queryset = queryset.filter(omop_field_id__in=ids_list)
         count = filtered_queryset.count()
-
-        # Get all the rules then filter and do separate pagiantion.
-        # If not, the summary rules will be only for p and ps from the main list
-        # However, if doing like this, can't be used for a very large scanreports
+        # Get the rules list based on the filtered queryset
         rules = get_mapping_rules_list(
             filtered_queryset, page_number=int(p), page_size=int(page_size)
         )
-
+        # Process rules
         for rule in rules:
             rule["destination_table"] = {
                 "id": int(str(rule["destination_table"])),
