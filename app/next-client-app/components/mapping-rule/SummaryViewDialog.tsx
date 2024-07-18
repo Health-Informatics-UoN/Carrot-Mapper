@@ -15,17 +15,33 @@ import { DataTable } from "../data-table";
 import { Loading } from "../ui/loading-indicator";
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
+import { objToQuery } from "@/lib/client-utils";
+import { FilterParameters } from "@/types/filter";
 
-export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
+export function SummaryViewDialog({
+  scanreportId,
+  searchParams,
+}: {
+  scanreportId: string;
+  searchParams?: FilterParameters;
+}) {
   const [dialogOpened, setDialogOpened] = useState(false);
   const [summaryData, setSummaryData] = useState<MappingRule[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(0);
+  const defaultPageSize = 2;
+  const defaultParams = {
+    id: scanreportId,
+    p: 1,
+    page_size: defaultPageSize,
+  };
+  const combinedParams = { ...defaultParams, ...searchParams };
+  const query = objToQuery(combinedParams);
 
   useEffect(() => {
     if (dialogOpened && !summaryData) {
       const fetchData = async () => {
-        const fetchSumData = await getSummaryRules(scanreportId);
+        const fetchSumData = await getSummaryRules(query);
         setSummaryData(fetchSumData.results);
         setCount(fetchSumData.count);
         setLoading(false);
@@ -35,7 +51,7 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
   }, [dialogOpened, summaryData]);
   console.log(summaryData);
   return (
-    <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
+    <Dialog open={dialogOpened} onOpenChange={setDialogOpened} modal={true}>
       <DialogTrigger asChild>
         <Button className="flex">
           Show Summary View <PanelsTopLeft className="ml-2 size-4" />
@@ -61,7 +77,7 @@ export function SummaryViewDialog({ scanreportId }: { scanreportId: string }) {
               data={summaryData || []}
               count={count || 0}
               clickableRow={false}
-              defaultPageSize={20}
+              defaultPageSize={defaultPageSize}
             />
           </div>
         )}
