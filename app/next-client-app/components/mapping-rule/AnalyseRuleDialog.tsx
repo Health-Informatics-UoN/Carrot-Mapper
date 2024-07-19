@@ -46,18 +46,17 @@ export function AnalyseRuleDialog({ scanreportId }: { scanreportId: string }) {
           Analyse Rules <BarChart3 className="ml-2 size-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent
-        className={`w-full max-w-screen-2xl overflow-auto max-h-screen-2xl`}
-      >
+      <DialogContent className="w-full max-w-screen-2xl overflow-auto h-4/5">
         <DialogHeader>
           <DialogTitle>Analyse Rules</DialogTitle>
+          <DialogDescription className="justify-center items-center text-center">
+            {" "}
+            This analysis compares this Scanreport to all other ScanReports,
+            finding ancestors and descendants of each, and reporting the results
+            including any mismatched Concepts found.
+          </DialogDescription>
         </DialogHeader>
-        <DialogDescription className="justify-center items-center text-center">
-          {" "}
-          This analysis compares this Scanreport to all other ScanReports,
-          finding ancestors and descendants of each, and reporting the results
-          including any mismatched Concepts found.
-        </DialogDescription>
+
         {loading ? (
           <div className="flex justify-center">
             <Loading text="Analysing ..." />

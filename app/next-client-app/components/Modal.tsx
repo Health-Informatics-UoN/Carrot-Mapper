@@ -23,15 +23,15 @@ export function Modal({ children }: { children: React.ReactNode }) {
       onOpenChange={handleOpenChange}
       modal={true}
     >
-      <DialogContent className="w-full max-w-screen-xl overflow-auto h-4/5">
+      <DialogContent className="w-full max-w-screen-2xl overflow-auto h-4/5">
         <DialogHeader>
           <DialogTitle>Summary of Mapping Rules list</DialogTitle>
+          <DialogDescription className="justify-center items-center text-center">
+            {" "}
+            The table below shows the list of mapping rules which have the Term
+            Map and have the Desination Field name without "_source_concept_id"
+          </DialogDescription>
         </DialogHeader>
-        <DialogDescription className="justify-center items-center text-center">
-          {" "}
-          The table below shows the list of mapping rules which have the Term
-          Map and have the Desination Field name without "_source_concept_id"
-        </DialogDescription>
         {children}
       </DialogContent>
     </Dialog>
