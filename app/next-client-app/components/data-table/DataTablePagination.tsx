@@ -17,7 +17,7 @@ import { navigateWithSearchParam } from "@/lib/client-utils";
 
 interface DataTablePaginationProps<TData> {
   count: number;
-  defaultPageSize?: 2 | 10 | 20 | 30 | 40 | 50;
+  defaultPageSize?: 10 | 20 | 30 | 40 | 50;
   pageSizeOptions?: number[];
 }
 
@@ -32,19 +32,7 @@ export function DataTablePagination<TData>({
   const currentPage = Number(searchParams.get("p") ?? "1");
   const pageSize = Number(searchParams.get("page_size") ?? defaultPageSize);
   const numberOfPages = Math.max(Math.ceil(count / pageSize), 1);
-  // Trying to debug the pagination:
-  // For now, the pagination of the modal is still getting the below values from the main page's URL, even though using the separate Pagination components
-  // So the temp. solution is disable the condition which helps to prevent the bug of changing page-size in the last page
-  console.log(
-    "count",
-    count,
-    "pagesize",
-    pageSize,
-    "no of pages",
-    numberOfPages,
-    "current p",
-    currentPage
-  );
+
   /*
 Notice:
 The condition below avoids the parent page to break when users change the page size to a larger number
@@ -54,14 +42,14 @@ then be pushed back to the first page with the page size they have chosen. An Er
 The more effective fix can be adding some logics in the API endpoint getting the data,
 but it also means that we need to change many other API endpoints as well. So it may not be desirable.
 */
-  // if (currentPage > numberOfPages) {
-  //   navigateWithSearchParam(
-  //     "p",
-  //     Math.ceil(count / pageSize),
-  //     router,
-  //     searchParams
-  //   );
-  // }
+  if (currentPage > numberOfPages) {
+    navigateWithSearchParam(
+      "p",
+      Math.ceil(count / pageSize),
+      router,
+      searchParams
+    );
+  }
   const changePageSize = (size: number) => {
     navigateWithSearchParam("page_size", size, router, searchParams);
   };
