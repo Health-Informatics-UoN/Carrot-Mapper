@@ -48,7 +48,7 @@ export default function SummaryViewDialog({
   }, [query]);
 
   return (
-    <Modal>
+    <Modal modal="summary">
       {loading ? (
         <div className="flex justify-center">
           <Loading text="Loading ..." />

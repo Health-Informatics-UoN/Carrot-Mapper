@@ -4,7 +4,7 @@ import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHe
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 
-export const AnalyseColumns: ColumnDef<AnalyseRuleData>[] = [
+export const columns: ColumnDef<AnalyseRuleData>[] = [
   {
     id: "Rule ID",
     accessorKey: "rule_id",

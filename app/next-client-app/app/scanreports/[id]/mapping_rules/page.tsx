@@ -13,10 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  BarChart3,
   BarChartHorizontalBig,
-  BookText,
   ChevronDown,
-  ChevronRight,
   FileJson,
   FilePieChart,
   FileSpreadsheet,
@@ -90,7 +89,6 @@ export default async function ScanReportsMappingRules({
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
           {/* Show Summary View modal */}
-          {/* <SummaryViewDialog scanreportId={id} /> */}
           <Link
             href={`/scanreports/${id}/mapping_rules/summary/`}
             className="flex"
@@ -101,7 +99,15 @@ export default async function ScanReportsMappingRules({
             </Button>
           </Link>
           {/* Analyse Rules modal */}
-          <AnalyseRuleDialog scanreportId={id} />
+          <Link
+            href={`/scanreports/${id}/mapping_rules/analyse/`}
+            className="flex"
+          >
+            <Button>
+              Analyse Rules
+              <BarChart3 className="ml-2 size-4" />
+            </Button>
+          </Link>
         </div>
         <div className="flex gap-2">
           <Dialog>

@@ -25,8 +25,14 @@ export default function SummaryViewDialog({
   searchParams,
 }: SummaryProps) {
   const [loading, setLoading] = useState(true);
-  const [summaryRules, setSummaryRules] =
-    useState<PaginatedResponse<MappingRule>>();
+  const [summaryRules, setSummaryRules] = useState<
+    PaginatedResponse<MappingRule>
+  >({
+    count: 0,
+    next: null,
+    previous: null,
+    results: [],
+  });
 
   const defaultPageSize = 20;
   const defaultParams = {
@@ -56,34 +62,32 @@ export default function SummaryViewDialog({
   // Possible solution: The pagination should be deactivated here, because the purpose of this is sharing the specific info/page
   return (
     <div className="p-5">
-      {loading ? (
-        <div className="flex justify-center">
-          <Loading text="Loading ..." />
-        </div>
-      ) : (
-        <div>
-          <Dialog>
-            <DialogHeader>
-              <DialogTitle>Summary of Mapping Rules list</DialogTitle>
-              <DialogDescription className="justify-center items-center text-center">
-                {" "}
-                The table below shows the list of mapping rules which have the
-                Term Map and have the Desination Field name without
-                "_source_concept_id"
-              </DialogDescription>
-            </DialogHeader>
-            {summaryRules && (
-              <DataTable
-                columns={columns}
-                data={summaryRules.results}
-                count={summaryRules.count}
-                clickableRow={false}
-                defaultPageSize={defaultPageSize}
-              />
-            )}
-          </Dialog>
-        </div>
-      )}
+      <div>
+        <Dialog>
+          <DialogHeader>
+            <DialogTitle>Summary of Mapping Rules list</DialogTitle>
+            <DialogDescription className="justify-center items-center text-center">
+              {" "}
+              The table below shows the list of mapping rules which have the
+              Term Map and have the Desination Field name without
+              "_source_concept_id"
+            </DialogDescription>
+          </DialogHeader>
+          {loading ? (
+            <div className="flex justify-center mt-10">
+              <Loading text="Loading ..." />
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={summaryRules.results}
+              count={summaryRules.count}
+              clickableRow={false}
+              defaultPageSize={defaultPageSize}
+            />
+          )}
+        </Dialog>
+      </div>
     </div>
   );
 }

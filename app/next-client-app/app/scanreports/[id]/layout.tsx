@@ -4,11 +4,13 @@ import { Forbidden } from "@/components/core/Forbidden";
 export default async function ScanReportLayout({
   params,
   children,
-  modal,
+  summary_modal,
+  analyse_modal,
 }: Readonly<{
   params: { id: string };
   children: React.ReactNode;
-  modal: React.ReactNode;
+  summary_modal: React.ReactNode;
+  analyse_modal: React.ReactNode;
 }>) {
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
@@ -27,7 +29,8 @@ export default async function ScanReportLayout({
   return (
     <>
       <div>
-        {modal}
+        {analyse_modal}
+        {summary_modal}
         {children}
       </div>
     </>
