@@ -7,8 +7,10 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
-  datasetList: (dataPartnerId: string) =>
-    `datasets/?data_partner=${dataPartnerId}&hidden=false`,
+  datasetList: (dataPartnerId?: string) =>
+    dataPartnerId
+      ? `datasets/?data_partner=${dataPartnerId}&hidden=false`
+      : "datasets/",
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
   projects: (dataset?: string) =>
@@ -50,7 +52,9 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
   }
 }
 
-export async function getDatasetList(filter: string): Promise<DataSetSRList[]> {
+export async function getDatasetList(
+  filter?: string
+): Promise<DataSetSRList[]> {
   try {
     return await request<DataSetSRList>(fetchKeys.datasetList(filter));
   } catch (error) {

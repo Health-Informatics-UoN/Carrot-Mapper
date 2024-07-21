@@ -6,6 +6,10 @@ interface ScanReportList {
   status: string;
   created_at: Date;
   hidden: boolean;
+  visibility: string;
+  author: number;
+  viewers: number[];
+  editors: number[];
 }
 
 interface ScanReportTable {

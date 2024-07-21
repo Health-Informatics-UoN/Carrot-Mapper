@@ -23,6 +23,11 @@ urlpatterns = [
         name="scan-report-tables",
     ),
     re_path(
+        r"^scanreports/(?P<path>\d+/details)/$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-details",
+    ),
+    re_path(
         r"^scanreports/(?P<path>\d+/tables/\d+)/$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
         name="scan-report-fields",
@@ -31,6 +36,11 @@ urlpatterns = [
         r"^scanreports/(?P<path>\d+/tables/\d+/fields/\d+)/$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
         name="scan-report-values",
+    ),
+    re_path(
+        r"^scanreports/(?P<path>\d+/tables/\d+/fields/\d+/update)/$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-edit-field",
     ),
     re_path(
         r"^scanreports/(?P<path>\d+/tables/\d+/update)/$",

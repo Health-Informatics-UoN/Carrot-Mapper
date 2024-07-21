@@ -1,6 +1,5 @@
 "use client";
 
-import { updateDatasetDetails } from "@/api/datasets";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
@@ -12,83 +11,84 @@ import { FindAndFormat, FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
 import { useState } from "react";
+import { updateScanReport } from "@/api/scanreports";
 
 interface FormData {
   name: string;
   visibility: string;
-  dataPartner: number;
+  author: number;
   viewers: number[];
   editors: number[];
-  admins: number[];
-  projects: number[];
+  parent_dataset: number;
 }
 
-export function DatasetForm({
-  dataset,
-  dataPartners,
-  projects,
+export function ScanReportDetailsForm({
+  datasetList,
+  scanreport,
   users,
   permissions,
+  isAuthor,
 }: {
-  dataset: DataSetSRList;
-  dataPartners: DataPartner[];
+  datasetList: DataSetSRList[];
+  scanreport: ScanReportList;
   users: User[];
-  projects: Project[];
   permissions: Permission[];
+  isAuthor: boolean;
 }) {
   // Permissions
-  const canUpdate = permissions.includes("CanAdmin");
+  const canUpdate = permissions.includes("CanAdmin") || isAuthor;
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
-    dataset.visibility === "PUBLIC" ? true : false
+    scanreport.visibility === "PUBLIC" ? true : false
   );
 
   // Making options suitable for React Select
   const userOptions = FormDataFilter<User>(users);
-  const partnerOptions = FormDataFilter<DataPartner>(dataPartners);
-  const projectOptions = FormDataFilter<Project>(projects);
-  // Find the intial data partner which is required when adding Dataset
-  const initialPartner = dataPartners.find(
-    (partner) => dataset.data_partner === partner.id
+  const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
+  // Find the intial parent dataset and author which is required when adding Dataset
+  const initialParentDataset = datasetList.find(
+    (dataset) => scanreport.parent_dataset === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
   )!;
+
+  const initialAuthor = users.find((user) => scanreport.author === user.id)!;
   // Find and make initial data suitable for React select
-  const initialPartnerFilter = FormDataFilter<DataPartner>(initialPartner);
-  const initialViewersFilter = FindAndFormat<User>(users, dataset.viewers);
-  const initialEditorsFilter = FindAndFormat<User>(users, dataset.editors);
-  const initialAdminsFilter = FindAndFormat<User>(users, dataset.admins);
-  const initialProjectFilter = FindAndFormat<Project>(
-    projects,
-    dataset.projects
-  );
+  const initialDatasetFilter =
+    FormDataFilter<DataSetSRList>(initialParentDataset);
+  const initialAuthorFilter = FormDataFilter<User>(initialAuthor);
+  const initialViewersFilter = FindAndFormat<User>(users, scanreport.viewers);
+  const initialEditorsFilter = FindAndFormat<User>(users, scanreport.editors);
 
   const handleSubmit = async (data: FormData) => {
     const submittingData = {
-      name: data.name,
+      dataset: data.name,
       visibility: data.visibility,
-      data_partner: data.dataPartner,
+      parent_dataset: data.parent_dataset,
       viewers: data.viewers || [],
-      admins: data.admins || [],
       editors: data.editors || [],
-      projects: data.projects || [],
+      author: data.author,
     };
-    const response = await updateDatasetDetails(dataset.id, submittingData);
+
+    const response = await updateScanReport(
+      scanreport.id,
+      submittingData,
+      true // "true" for the value "needRedirect"
+    );
     if (response) {
-      toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);
+      toast.error(`Update Scan Report failed. Error: ${response.errorMessage}`);
     } else {
-      toast.success("Update Dataset successful!");
+      toast.success("Update Scan Report successful!");
     }
   };
 
   return (
     <Formik
       initialValues={{
-        name: dataset.name,
-        visibility: dataset.visibility,
+        name: scanreport.dataset,
+        visibility: scanreport.visibility,
+        author: initialAuthorFilter[0].value,
         viewers: initialViewersFilter.map((viewer) => viewer.value),
         editors: initialEditorsFilter.map((editor) => editor.value),
-        dataPartner: initialPartnerFilter[0].value,
-        admins: initialAdminsFilter.map((admin) => admin.value),
-        projects: initialProjectFilter.map((project) => project.value),
+        parent_dataset: initialDatasetFilter[0].value,
       }}
       onSubmit={(data) => {
         handleSubmit(data);
@@ -101,10 +101,10 @@ export function DatasetForm({
               <h3 className="flex">
                 {" "}
                 Name
-                <Tooltips content="Name of the dataset." />
+                <Tooltips content="Name of the Scan Report." />
               </h3>
               <Input
-                placeholder={dataset.name}
+                placeholder={scanreport.dataset}
                 onChange={handleChange}
                 name="name"
                 disabled={!canUpdate}
@@ -113,13 +113,16 @@ export function DatasetForm({
             </div>
             <div className="flex flex-col gap-2">
               <h3 className="flex">
-                Data Partner{" "}
-                <Tooltips content="The data partner that owns the dataset." />
+                Author{" "}
+                <Tooltips
+                  content="Authors of a Scan Report can edit Scan Report details."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#authors"
+                />
               </h3>
               <FormikSelect
-                options={partnerOptions}
-                name="dataPartner"
-                placeholder="Choose an Data Partner"
+                options={userOptions}
+                name="author"
+                placeholder="Choose an author"
                 isMulti={false}
                 isDisabled={!canUpdate}
               />
@@ -127,7 +130,10 @@ export function DatasetForm({
             <div className="flex items-center space-x-3">
               <h3 className="flex">
                 Visibility
-                <Tooltips content="If a Dataset is PUBLIC, then all users with access to any project associated to the Dataset can see them." />
+                <Tooltips
+                  content="To see the contents of the Scan Report, the Scan Report must be PUBLIC, or users must be an author/editor/viewer of the Scan Report."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#access-controls"
+                />
               </h3>
               <Switch
                 onCheckedChange={(checked) => {
@@ -139,7 +145,9 @@ export function DatasetForm({
                   });
                   setPublicVisibility(checked);
                 }}
-                defaultChecked={dataset.visibility === "PUBLIC" ? true : false}
+                defaultChecked={
+                  scanreport.visibility === "PUBLIC" ? true : false
+                }
                 disabled={!canUpdate}
               />
               <Label className="text-lg">
@@ -151,7 +159,10 @@ export function DatasetForm({
                 <h3 className="flex">
                   {" "}
                   Viewers
-                  <Tooltips content="All Dataset admins and editors also have Dataset viewer permissions." />
+                  <Tooltips
+                    content="Viewers of a Scan Report can perform read-only actions."
+                    link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#viewers"
+                  />
                 </h3>
                 <FormikSelect
                   options={userOptions}
@@ -166,7 +177,10 @@ export function DatasetForm({
               <h3 className="flex">
                 {" "}
                 Editors
-                <Tooltips content="Dataset editors also have Scan Report editor permissions." />
+                <Tooltips
+                  content="Editors of a Scan Report can add/remove concepts, update tables and update fields."
+                  link="https://carrot4omop.ac.uk/Carrot-Mapper/projects-datasets-and-scanreports/#editors"
+                />
               </h3>
               <FormikSelect
                 options={userOptions}
@@ -179,28 +193,14 @@ export function DatasetForm({
             <div className="flex flex-col gap-2">
               <h3 className="flex">
                 {" "}
-                Admins
-                <Tooltips content="All Dataset admins also have Dataset editor permissions. Dataset admins also have Scan Report editor permissions." />
+                Dataset
+                <Tooltips content="The parent dataset of the Scan Report." />
               </h3>
               <FormikSelect
-                options={userOptions}
-                name="admins"
-                placeholder="Choose admins"
-                isMulti={true}
-                isDisabled={!canUpdate}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="flex">
-                {" "}
-                Project
-                <Tooltips content="The project that the dataset belongs to." />
-              </h3>
-              <FormikSelect
-                options={projectOptions}
-                name="projects"
-                placeholder="Choose projects"
-                isMulti={true}
+                options={parentDatasetOptions}
+                name="parent_dataset"
+                placeholder="Choose a parent dataset"
+                isMulti={false}
                 isDisabled={!canUpdate}
               />
             </div>
@@ -213,8 +213,8 @@ export function DatasetForm({
                 Save <Save className="ml-2" />
               </Button>
               <Tooltips
-                content="You must be an admin of the this dataset
-                    to update its details."
+                content="You must be the author of the scan report or an admin of the parent dataset
+                    to update the details of this scan report."
               />
             </div>
           </div>

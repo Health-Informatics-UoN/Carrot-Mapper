@@ -54,7 +54,6 @@ export function DataTable<TData, TValue>({
   clickableRow = true,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
-  const router = useRouter();
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
