@@ -36,11 +36,23 @@ services:
   #   build:
   #     context: app/workers
   #     dockerfile: Dockerfile
-  #   # This port was assumingly taken from https://learn.microsoft.com/en-us/azure/azure-functions/functions-deploy-container?tabs=acr%2Cbash%2Cazure-cli&pivots=programming-language-python
   #   ports:
   #     - 8080:80
-  #   env_file:
-  #     - local.settings.json
+  #   environment:
+  #     IsEncrypted: 'false'
+  #     AzureWebJobsStorage: 'UseDevelopmentStorage=true'
+  #     FUNCTIONS_WORKER_RUNTIME: 'python'
+  #     STORAGE_CONN_STRING: 'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://localhost:10001/devstoreaccount1;BlobEndpoint=http://localhost:10000/devstoreaccount1;'
+  #     NLP_API_KEY: ''
+  #     APP_URL: 'http://localhost:8000/'
+  #     AZ_FUNCTION_KEY: '53756e8553c47897cebf6d6d730cf2e69ac4a46e'
+  #     SCAN_REPORT_QUEUE_NAME: 'scanreports-local'
+  #     NLP_QUEUE_NAME: 'nlpqueue-local'
+  #     UPLOAD_QUEUE_NAME: 'uploadreports-local'
+  #     CREATE_CONCEPTS_QUEUE_NAME: 'conceptqueue-local'
+  #     RULES_QUEUE_NAME: 'rules-local'
+  #     PAGE_MAX_CHARS: '30000'
+  #     CHUNK_SIZE: '6'
   #   # Mount the code directory
   #   volumes:
   #     - ./app/workers:/app/workers
@@ -54,8 +66,8 @@ services:
   #   depends_on:
   #     - db
   #   environment:
-  #     - DB_PASSWORD: password
-  #     - DB_NAME: omop
+  #     - DB_PASSWORD=postgres (authentication fail, wrong password, changed to postgres --> worked)
+  #     - DB_NAME=omop (database "omop" does not exist in db and error="pq: database \"omop\" does not exist here)
 
   web:
     image: carrot

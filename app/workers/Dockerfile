@@ -7,7 +7,7 @@ ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsWebHost__hostid=carrot-worker
 
 # Set a working directory
-WORKDIR /app
+WORKDIR /app/workers
 
 # Copy pyproject.toml and poetry.lock
 COPY pyproject.toml poetry.lock ./
@@ -16,8 +16,8 @@ COPY pyproject.toml poetry.lock ./
 RUN pip install poetry
 
 # Export requirements from pyproject.toml and install them
-RUN poetry config virtualenvs.create false \
-    && poetry export --format requirements.txt --output /api/requirements.txt --without-hashes \
-    && pip install --no-cache-dir -r /api/requirements.txt
+RUN poetry config warnings.export false \
+    && poetry config virtualenvs.create false
+# Delete the requirements.txt related code, due to errors there, deleted --> worked???
 
 COPY . /home/site/wwwroot
