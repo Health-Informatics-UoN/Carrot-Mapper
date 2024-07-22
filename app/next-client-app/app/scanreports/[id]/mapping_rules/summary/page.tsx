@@ -1,8 +1,5 @@
-"use client";
-import { useState, useEffect } from "react";
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
-import { Loading } from "@/components/ui/loading-indicator";
 import { DataTable } from "@/components/data-table";
 import { FilterParameters } from "@/types/filter";
 import { objToQuery } from "@/lib/client-utils";
@@ -20,20 +17,10 @@ interface SummaryProps {
   searchParams?: FilterParameters;
 }
 
-export default function SummaryViewDialog({
+export default async function SummaryViewDialog({
   params: { id },
   searchParams,
 }: SummaryProps) {
-  const [loading, setLoading] = useState(true);
-  const [summaryRules, setSummaryRules] = useState<
-    PaginatedResponse<MappingRule>
-  >({
-    count: 0,
-    next: null,
-    previous: null,
-    results: [],
-  });
-
   const defaultPageSize = 20;
   const defaultParams = {
     id: id,
@@ -43,20 +30,8 @@ export default function SummaryViewDialog({
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const data = await getSummaryRules(query);
-        setSummaryRules(data);
-      } catch (error) {
-        console.error("Error fetching summary rules:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [query]);
+  const summaryRules = await getSummaryRules(query);
+  // TODO: Make the loading state, if possible
   // TODO: Why when I use pagination here, the modal appear?
   // Problem: Somehow it will activate the modal and its pagination of the modal through the common URL
   // Possible solution: The pagination should be deactivated here, because the purpose of this is sharing the specific info/page
@@ -73,19 +48,13 @@ export default function SummaryViewDialog({
               "_source_concept_id"
             </DialogDescription>
           </DialogHeader>
-          {loading ? (
-            <div className="flex justify-center mt-10">
-              <Loading text="Loading ..." />
-            </div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={summaryRules.results}
-              count={summaryRules.count}
-              clickableRow={false}
-              defaultPageSize={defaultPageSize}
-            />
-          )}
+          <DataTable
+            columns={columns}
+            data={summaryRules.results}
+            count={summaryRules.count}
+            clickableRow={false}
+            defaultPageSize={defaultPageSize}
+          />
         </Dialog>
       </div>
     </div>

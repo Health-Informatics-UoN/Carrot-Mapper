@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogContent,
@@ -14,8 +16,8 @@ export function Modal({
   modal: string;
 }) {
   const handleOpenChange = () => {
-    // Make sure that the dialog will be closed and not coming back the last URL with pagination
-    // Navigate to the new URL
+    // The below logic makes sure that the dialog will be closed and not coming back the last URL with pagination param, e.g., without ?p1,?p2
+    // --> Navigating to the new URL
     if (["summary", "analyse"].includes(modal)) {
       window.location.href = `${window.location.pathname.replace(
         `/${modal}`,
