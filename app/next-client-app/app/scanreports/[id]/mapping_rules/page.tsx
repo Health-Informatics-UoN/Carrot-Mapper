@@ -31,7 +31,6 @@ import { columns } from "./columns";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AnalyseRuleDialog } from "@/components/mapping-rule/AnalyseRuleDialog";
 import Link from "next/link";
 
 interface ScanReportsMappingRulesProps {
@@ -99,7 +98,7 @@ export default async function ScanReportsMappingRules({
             </Button>
           </Link>
           {/* Analyse Rules modal */}
-          <Link
+          {/* <Link
             href={`/scanreports/${id}/mapping_rules/analyse/`}
             className="flex"
           >
@@ -107,7 +106,7 @@ export default async function ScanReportsMappingRules({
               Analyse Rules
               <BarChart3 className="ml-2 size-4" />
             </Button>
-          </Link>
+          </Link> */}
         </div>
         <div className="flex gap-2">
           <Dialog>

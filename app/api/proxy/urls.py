@@ -67,11 +67,12 @@ urlpatterns = [
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
         name="scan-report-mapping-rules",
     ),
-    re_path(
-        r"^scanreports/(?P<path>\d+/mapping_rules/analyse)/?$",
-        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
-        name="scan-report-mapping-rules",
-    ),
+    # Will turn this on when have a solution for "analyse mapping rules" logic function
+    # re_path(
+    #     r"^scanreports/(?P<path>\d+/mapping_rules/analyse)/?$",
+    #     ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+    #     name="scan-report-mapping-rules",
+    # ),
     re_path(
         "_next/(?P<path>.*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
