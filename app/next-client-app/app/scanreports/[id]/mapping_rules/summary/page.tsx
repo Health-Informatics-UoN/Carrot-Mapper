@@ -3,12 +3,6 @@ import { getSummaryRules } from "@/api/mapping-rules";
 import { DataTable } from "@/components/data-table";
 import { FilterParameters } from "@/types/filter";
 import { objToQuery } from "@/lib/client-utils";
-import {
-  Dialog,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 interface SummaryProps {
   params: {
@@ -34,27 +28,12 @@ export default async function SummaryViewDialog({
   // TODO: Make the loading state, if possible
   // TODO: When users use pagination here, the dialog modal will appear and they will have to do pagiantion there instead!?
   return (
-    <div className="p-5">
-      <div>
-        <Dialog>
-          <DialogHeader>
-            <DialogTitle>Summary of Mapping Rules list</DialogTitle>
-            <DialogDescription className="justify-center items-center text-center">
-              {" "}
-              The table below shows the list of mapping rules which have the
-              Term Map and have the Desination Field name without
-              "_source_concept_id"
-            </DialogDescription>
-          </DialogHeader>
-          <DataTable
-            columns={columns}
-            data={summaryRules.results}
-            count={summaryRules.count}
-            clickableRow={false}
-            defaultPageSize={defaultPageSize}
-          />
-        </Dialog>
-      </div>
-    </div>
+    <DataTable
+      columns={columns}
+      data={summaryRules.results}
+      count={summaryRules.count}
+      clickableRow={false}
+      defaultPageSize={defaultPageSize}
+    />
   );
 }

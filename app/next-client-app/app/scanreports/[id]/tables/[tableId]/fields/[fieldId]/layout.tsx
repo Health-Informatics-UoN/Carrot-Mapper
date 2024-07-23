@@ -30,21 +30,19 @@ export default async function ScanReportFieldsLayout({
   }
   return (
     <>
-      <div>
-        <div className="flex justify-between mt-2">
-          <TabGroup
-            path={`/scanreports/${params.id}/tables/${params.tableId}/fields/${params.fieldId}`}
-            items={[
-              {
-                text: "Scan Report Values",
-              },
-            ]}
-          />
-          <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
-        </div>
-
-        <div>{children}</div>
+      <div className="flex justify-between mt-2">
+        <TabGroup
+          path={`/scanreports/${params.id}/tables/${params.tableId}/fields/${params.fieldId}`}
+          items={[
+            {
+              text: "Scan Report Values",
+            },
+          ]}
+        />
+        <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
       </div>
+
+      <div>{children}</div>
     </>
   );
 }
