@@ -51,52 +51,19 @@ export default async function ScanReportsField({
       ? await getAllScanReportConcepts(
           `object_id__in=${scanReportsFields.results
             .map((item) => item.id)
-            .join(",")}`,
+            .join(",")}`
         )
       : [];
 
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getAllConceptsFiltered(
-          scanReportsConcepts?.map((item) => item.concept).join(","),
+          scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}`}>
-                {scanReportsName.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {tableName.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="mt-3">
-        <h1 className="text-4xl font-semibold">Fields</h1>
-      </div>
-      <ButtonsRow
-        scanreportId={parseInt(id)}
-        tableId={parseInt(tableId)}
-        permissions={permissions.permissions}
-      />
+    <div>
       <div>
         <ConceptDataTable
           count={scanReportsFields.count}

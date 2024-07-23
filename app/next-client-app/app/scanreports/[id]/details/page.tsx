@@ -35,37 +35,7 @@ export default async function ScanreportDetails({
   const isAuthor = permissionsSR.permissions.includes("IsAuthor");
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/`}>
-                {scanreport.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/details`}>
-                Details
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold">
-          Details Page - Scan Report #{id}
-        </h1>
-      </div>
+    <div>
       <div className="mt-4">
         <ScanReportDetailsForm
           scanreport={scanreport}

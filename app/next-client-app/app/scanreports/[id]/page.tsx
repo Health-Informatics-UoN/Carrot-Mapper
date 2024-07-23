@@ -49,67 +49,8 @@ export default async function ScanReportsTable({
   });
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}`}>
-                {scanReportsName.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="mt-3">
-        <h1 className="text-4xl font-semibold">Tables</h1>
-      </div>
-      <div className="flex justify-between mt-3 flex-col sm:flex-row">
-        <div className="flex gap-2">
-          <Link href={`/scanreports/${id}/details/`}>
-            <Button>
-              Scan Report Details
-              <BookText className="ml-2 size-4" />
-            </Button>
-          </Link>
-          <Link href={`/scanreports/${id}/mapping_rules/`}>
-            <Button>
-              Rules
-              <ChevronRight className="ml-2 size-4" />
-            </Button>
-          </Link>
-        </div>
-        <div className="flex gap-2">
-          <Button variant={"outline"}>
-            <a href={`/api/scanreports/${id}/download/`} download>
-              Export Scan Report
-            </a>
-            <Download className="ml-2 size-4" />
-          </Button>
-          <DeleteDialog id={Number(id)} redirect>
-            <Button variant={"outline"} className="text-red-400">
-              Delete Scan Report
-              <TrashIcon className="ml-2 size-4" />
-            </Button>
-          </DeleteDialog>
-
-          {/* TODO: This has been broken #459, needs API fixes. */}
-          {/* <Button variant={"outline"}>
-            <a href={`/api/scanreports/${id}/download/`} download>
-              Export Data Dictionary
-            </a>
-            <Download className="ml-2 size-4" />
-          </Button> */}
-        </div>
-      </div>
+    <div>
+      <div className="flex justify-between mt-3 flex-col sm:flex-row"></div>
       <div>
         <DataTable
           columns={columns}
