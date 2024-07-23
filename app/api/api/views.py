@@ -1193,8 +1193,8 @@ class RulesList(viewsets.ModelViewSet):
         count = queryset.count()
 
         # Get subset of mapping rules that fit onto the page to be displayed
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 30)
         rules = get_mapping_rules_list(
             queryset, page_number=int(p), page_size=int(page_size)
         )
@@ -1231,8 +1231,8 @@ class RulesList(viewsets.ModelViewSet):
 class SummaryRulesList(RulesList):
     def list(self, request):
         # Get p and page_size from query_params
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 20)
         # Get queryset
         queryset = self.get_queryset()
 
