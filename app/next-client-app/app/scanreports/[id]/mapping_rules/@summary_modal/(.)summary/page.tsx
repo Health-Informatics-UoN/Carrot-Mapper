@@ -24,7 +24,6 @@ export default async function SummaryViewDialog({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  // TODO: Test stability of the page when return from/close the modal.
   // TODO: Make the loading state, if possible
   const summaryRules = await getSummaryRules(query);
 

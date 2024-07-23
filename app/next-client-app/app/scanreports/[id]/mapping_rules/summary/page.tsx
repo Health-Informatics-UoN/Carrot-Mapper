@@ -32,9 +32,7 @@ export default async function SummaryViewDialog({
 
   const summaryRules = await getSummaryRules(query);
   // TODO: Make the loading state, if possible
-  // TODO: Why when I use pagination here, the modal appear?
-  // Problem: Somehow it will activate the modal and its pagination of the modal through the common URL
-  // Possible solution: The pagination should be deactivated here, because the purpose of this is sharing the specific info/page
+  // TODO: When users use pagination here, the dialog modal will appear and they will have to do pagiantion there instead!?
   return (
     <div className="p-5">
       <div>

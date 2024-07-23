@@ -5,7 +5,6 @@ const fetchKeys = {
   mappingruleslist: (filter?: string) => `mappingruleslist/?${filter}`,
   getMapDiagram: (id: string, filter?: string) =>
     `scanreports/${id}/mapping_rules/?${filter}`,
-  analyseRules: (id: string) => `analyse/${id}/`,
   summaryRules: (filter?: string) => `mappingruleslistsummary/?${filter}`,
 };
 
@@ -57,15 +56,6 @@ export async function getMapDiagram(
   }
 }
 
-export async function getAnalyseRules(id: string): Promise<AnalyseRule> {
-  try {
-    return await request<AnalyseRule>(fetchKeys.analyseRules(id));
-  } catch (error) {
-    console.warn("Failed to fetch analyse rules data.");
-    return { data: [] };
-  }
-}
-
 export async function getSummaryRules(
   filter: string
 ): Promise<PaginatedResponse<MappingRule>> {
@@ -74,7 +64,7 @@ export async function getSummaryRules(
       fetchKeys.summaryRules(filter)
     );
   } catch (error) {
-    console.warn("Failed to fetch analyse rules data.");
+    console.warn("Failed to fetch summary rules data.");
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
