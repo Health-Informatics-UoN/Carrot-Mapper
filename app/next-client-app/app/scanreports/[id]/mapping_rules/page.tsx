@@ -14,12 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   BarChartHorizontalBig,
-  BookText,
   ChevronDown,
-  ChevronRight,
   FileJson,
   FilePieChart,
   FileSpreadsheet,
+  PanelsTopLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FilterParameters } from "@/types/filter";
@@ -31,6 +30,7 @@ import { columns } from "./columns";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -86,13 +86,16 @@ export default async function ScanReportsMappingRules({
       </div>
       <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex gap-2">
-          <Button>
-            Show Summary View
-            <BookText className="ml-2 size-4" />
-          </Button>
-          <Button>
-            Analyse Rules <ChevronRight className="ml-2 size-4" />
-          </Button>
+          {/* Show Summary View modal */}
+          <Link
+            href={`/scanreports/${id}/mapping_rules/summary/`}
+            className="flex"
+          >
+            <Button>
+              Show Summary View
+              <PanelsTopLeft className="ml-2 size-4" />
+            </Button>
+          </Link>
         </div>
         <div className="flex gap-2">
           <Dialog>
@@ -167,6 +170,7 @@ export default async function ScanReportsMappingRules({
           data={mappingRulesList.results}
           count={mappingRulesList.count}
           clickableRow={false}
+          defaultPageSize={defaultPageSize}
         />
       </div>
     </div>

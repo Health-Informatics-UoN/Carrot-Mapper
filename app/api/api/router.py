@@ -115,6 +115,9 @@ router.register(r"mappingrules", views.MappingRuleViewSet, basename="mappingrule
 router.register(r"json", views.DownloadJSON, basename="getjson")
 router.register(r"mappingruleslist", views.RulesList, basename="getlist")
 router.register(
+    r"mappingruleslistsummary", views.SummaryRulesList, basename="getsummarylist"
+)
+router.register(
     r"mappingrulesfilter", views.MappingRuleFilterViewSet, basename="mappingrulefilter"
 )
 router.register(r"analyse", views.AnalyseRules, basename="getanalysis")

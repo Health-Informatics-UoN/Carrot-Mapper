@@ -5,17 +5,17 @@ const fetchKeys = {
   mappingruleslist: (filter?: string) => `mappingruleslist/?${filter}`,
   getMapDiagram: (id: string, filter?: string) =>
     `scanreports/${id}/mapping_rules/?${filter}`,
+  summaryRules: (filter?: string) => `mappingruleslistsummary/?${filter}`,
 };
 
 export async function getMappingRulesList(
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<PaginatedResponse<MappingRule>> {
   try {
     return await request<PaginatedResponse<MappingRule>>(
-      fetchKeys.mappingruleslist(filter),
+      fetchKeys.mappingruleslist(filter)
     );
   } catch (error) {
-    console.warn("Failed to fetch mapping rules.");
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
@@ -23,7 +23,7 @@ export async function getMappingRulesList(
 export async function getMapDiagram(
   id: string,
   filter: string,
-  type: "svg" | "json" | "csv",
+  type: "svg" | "json" | "csv"
 ) {
   let body;
   switch (type) {
@@ -50,7 +50,18 @@ export async function getMapDiagram(
     });
     return response;
   } catch (error) {
-    console.warn("Failed to fetch data.");
     return null;
+  }
+}
+
+export async function getSummaryRules(
+  filter: string
+): Promise<PaginatedResponse<MappingRule>> {
+  try {
+    return await request<PaginatedResponse<MappingRule>>(
+      fetchKeys.summaryRules(filter)
+    );
+  } catch (error) {
+    return { count: 0, next: null, previous: null, results: [] };
   }
 }
