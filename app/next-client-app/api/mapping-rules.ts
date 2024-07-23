@@ -16,7 +16,6 @@ export async function getMappingRulesList(
       fetchKeys.mappingruleslist(filter)
     );
   } catch (error) {
-    console.warn("Failed to fetch mapping rules.");
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
@@ -51,7 +50,6 @@ export async function getMapDiagram(
     });
     return response;
   } catch (error) {
-    console.warn("Failed to fetch data.");
     return null;
   }
 }
@@ -64,7 +62,6 @@ export async function getSummaryRules(
       fetchKeys.summaryRules(filter)
     );
   } catch (error) {
-    console.warn("Failed to fetch summary rules data.");
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
