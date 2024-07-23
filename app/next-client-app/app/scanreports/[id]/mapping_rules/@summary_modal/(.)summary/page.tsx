@@ -29,7 +29,7 @@ export default async function SummaryViewDialog({
   const summaryRules = await getSummaryRules(query);
 
   return (
-    <Modal modal="summary">
+    <Modal>
       <div>
         {summaryRules && (
           <DataTable

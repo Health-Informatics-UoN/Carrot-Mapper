@@ -97,16 +97,6 @@ export default async function ScanReportsMappingRules({
               <PanelsTopLeft className="ml-2 size-4" />
             </Button>
           </Link>
-          {/* Analyse Rules modal */}
-          {/* <Link
-            href={`/scanreports/${id}/mapping_rules/analyse/`}
-            className="flex"
-          >
-            <Button>
-              Analyse Rules
-              <BarChart3 className="ml-2 size-4" />
-            </Button>
-          </Link> */}
         </div>
         <div className="flex gap-2">
           <Dialog>
