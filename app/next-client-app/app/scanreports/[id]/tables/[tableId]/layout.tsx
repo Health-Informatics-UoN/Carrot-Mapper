@@ -21,8 +21,6 @@ export default async function ScanReportFieldsLayout({
     {
       name: "Scan Report Table Details",
       slug: "update",
-      count: 11,
-      parent: null,
     },
   ];
 

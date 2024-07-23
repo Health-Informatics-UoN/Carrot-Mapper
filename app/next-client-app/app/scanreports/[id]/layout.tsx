@@ -22,8 +22,8 @@ export default async function ScanReportLayout({
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
   const categories = [
-    { name: "Scan Report Details", slug: "details", count: 11, parent: null },
-    { name: "Mapping Rules", slug: "mapping_rules", count: 12, parent: null },
+    { name: "Scan Report Details", slug: "details" },
+    { name: "Mapping Rules", slug: "mapping_rules" },
   ];
 
   const scanreport = await getScanReport(params.id);
