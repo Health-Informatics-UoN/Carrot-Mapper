@@ -1,15 +1,5 @@
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
-  getScanReport,
-  getScanReportField,
   getScanReportPermissions,
-  getScanReportTable,
   getScanReportValues,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
@@ -18,7 +8,6 @@ import {
   getAllConceptsFiltered,
   getAllScanReportConcepts,
 } from "@/api/concepts";
-import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 import { columns } from "./columns";
 

@@ -1,12 +1,3 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { columns } from "./columns";
 import {
   getScanReport,
@@ -17,9 +8,6 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import { BookText, ChevronRight, Download } from "lucide-react";
-import { TrashIcon } from "@radix-ui/react-icons";
-import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
 interface ScanReportsTableProps {
   params: {
@@ -41,7 +29,6 @@ export default async function ScanReportsTable({
   const filter = <DataTableFilter filter="name" />;
 
   const scanReportsTables = await getScanReportsTables(query);
-  const scanReportsName = await getScanReport(id);
   const permissions = await getScanReportPermissions(id);
   const scanReportsResult = scanReportsTables.results.map((table) => {
     table.permissions = permissions.permissions;

@@ -1,10 +1,3 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { columns } from "./columns";
 import {
   getScanReport,
@@ -18,7 +11,6 @@ import {
   getAllConceptsFiltered,
   getAllScanReportConcepts,
 } from "@/api/concepts";
-import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 
 interface ScanReportsFieldProps {

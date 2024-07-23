@@ -48,6 +48,11 @@ urlpatterns = [
         name="scan-report-edit-table",
     ),
     re_path(
+        r"^scanreports/(?P<path>\d+/mapping_rules)/?$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-mapping-rules",
+    ),
+    re_path(
         r"^datasets/(?P<path>(?![\d/]).*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/datasets"),
         name="datasets-list",
@@ -67,13 +72,3 @@ urlpatterns = [
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
     ),
 ]
-
-# Conditionally enable this view until modals are complete
-if os.environ.get("ENABLE_MAPPING_RULES_PROXY", "False").lower() == "true":
-    urlpatterns.append(
-        re_path(
-            r"^scanreports/(?P<path>\d+/mapping_rules)/?$",
-            ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
-            name="scan-report-mapping-rules",
-        ),
-    )

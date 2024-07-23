@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Item } from "./tab-group";
 import { Button } from "../button";
+import { cn } from "@/lib/utils";
 
 export const Tab = ({
   path,
@@ -30,8 +31,8 @@ export const Tab = ({
     <Link href={href}>
       <Button
         variant={"outline"}
-        className={clsx("rounded-md px-3 py-1", {
-          "bg-white text-black hover:text-white hover:bg-carrot/50": !isActive,
+        className={cn("rounded-md px-3 py-1", {
+          "bg-white hover:text-carrot": !isActive,
           "bg-carrot text-white hover:bg-carrot/90": isActive,
         })}
       >
