@@ -68,6 +68,11 @@ urlpatterns = [
         name="dataset-details",
     ),
     re_path(
+        r"^scanreports/(?P<path>\d+/mapping_rules/summary)/?$",
+        ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/scanreports/"),
+        name="scan-report-mapping-rules",
+    ),
+    re_path(
         "_next/(?P<path>.*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
     ),

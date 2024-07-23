@@ -1193,13 +1193,64 @@ class RulesList(viewsets.ModelViewSet):
         count = queryset.count()
 
         # Get subset of mapping rules that fit onto the page to be displayed
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 30)
         rules = get_mapping_rules_list(
             queryset, page_number=int(p), page_size=int(page_size)
         )
 
         # Process all rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
+
+
+class SummaryRulesList(RulesList):
+    def list(self, request):
+        # Get p and page_size from query_params
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 20)
+        # Get queryset
+        queryset = self.get_queryset()
+
+        # Directly filter OmopField objects that end with "_concept_id" but not "_source_concept_id"
+        omop_fields_queryset = OmopField.objects.filter(
+            pk__in=queryset.values_list("omop_field_id", flat=True),
+            field__endswith="_concept_id",
+        ).exclude(field__endswith="_source_concept_id")
+
+        ids_list = omop_fields_queryset.values_list("id", flat=True)
+        # Filter the queryset based on valid omop_field_ids
+        filtered_queryset = queryset.filter(omop_field_id__in=ids_list)
+        count = filtered_queryset.count()
+        # Get the rules list based on the filtered queryset
+        rules = get_mapping_rules_list(
+            filtered_queryset, page_number=int(p), page_size=int(page_size)
+        )
+        # Process rules
         for rule in rules:
             rule["destination_table"] = {
                 "id": int(str(rule["destination_table"])),

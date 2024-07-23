@@ -90,7 +90,13 @@ export const columns: ColumnDef<MappingRule>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { omop_term, term_mapping } = row.original;
-
+      if (typeof term_mapping === "number") {
+        return (
+          <p className="text-green-700">
+            {term_mapping} {omop_term}
+          </p>
+        );
+      }
       return term_mapping ? (
         <>
           {Object.keys(term_mapping).map((key, index) => (
