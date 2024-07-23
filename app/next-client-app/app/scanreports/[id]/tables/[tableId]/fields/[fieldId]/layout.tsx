@@ -1,5 +1,9 @@
-import { getScanReportPermissions } from "@/api/scanreports";
+import {
+  getScanReportField,
+  getScanReportPermissions,
+} from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
+import { Button } from "@/components/ui/button";
 import { TabGroup } from "@/components/ui/layout/tab-group";
 
 export default async function ScanReportFieldsLayout({
@@ -9,6 +13,7 @@ export default async function ScanReportFieldsLayout({
   params: { id: string; tableId: string; fieldId: string };
   children: React.ReactNode;
 }>) {
+  const fieldName = await getScanReportField(params.fieldId);
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
 
@@ -35,7 +40,9 @@ export default async function ScanReportFieldsLayout({
               },
             ]}
           />
+          <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
         </div>
+
         <div>{children}</div>
       </div>
     </>
