@@ -3,9 +3,7 @@ import {
   getScanReportTable,
 } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
-import { Button } from "@/components/ui/button";
 import { Boundary } from "@/components/ui/layout/boundary";
-import { TabGroup } from "@/components/ui/layout/tab-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 
@@ -13,7 +11,7 @@ export default async function ScanReportFieldsLayout({
   params,
   children,
 }: Readonly<{
-  params: { id: string; tableId: string };
+  params: { id: string; tableId: string; fieldId?: string };
   children: React.ReactNode;
 }>) {
   const permissions = await getScanReportPermissions(params.id);
@@ -31,25 +29,10 @@ export default async function ScanReportFieldsLayout({
       </div>
     );
   }
+
   return (
     <>
-      <div className="flex justify-between mb-3">
-        <TabGroup
-          path={`/scanreports/${params.id}/tables/${params.tableId}`}
-          items={[
-            {
-              text: "Scan Report Fields",
-            },
-            {
-              text: "Scan Report Table Details",
-              slug: "update",
-            },
-          ]}
-        />
-        <Button variant={"secondary"}>Table name: {tableName.name}</Button>
-      </div>
       <Boundary>
-        {" "}
         <Suspense fallback={<Skeleton className="h-full w-full" />}>
           {children}
         </Suspense>

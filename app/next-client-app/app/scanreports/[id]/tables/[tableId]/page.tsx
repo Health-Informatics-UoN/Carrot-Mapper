@@ -2,6 +2,7 @@ import { columns } from "./columns";
 import {
   getScanReportFields,
   getScanReportPermissions,
+  getScanReportTable,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
@@ -10,6 +11,7 @@ import {
   getAllScanReportConcepts,
 } from "@/api/concepts";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
+import { Button } from "@/components/ui/button";
 
 interface ScanReportsFieldProps {
   params: {
@@ -30,7 +32,7 @@ export default async function ScanReportsField({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-
+  const tableName = await getScanReportTable(tableId);
   const scanReportsFields = await getScanReportFields(query);
   const permissions = await getScanReportPermissions(id);
 
@@ -52,6 +54,9 @@ export default async function ScanReportsField({
 
   return (
     <div>
+      <Button variant={"secondary"} className="text-lg mb-3">
+        Table name: {tableName.name}
+      </Button>
       <div>
         <ConceptDataTable
           count={scanReportsFields.count}

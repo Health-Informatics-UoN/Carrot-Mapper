@@ -1,12 +1,20 @@
 "use client";
 
-import { BookMarked, Database, FileScan, Home, Upload } from "lucide-react";
-
 // import { useMediaQuery } from "usehooks-ts";
 // import { SidebarButton } from "./sidebar-button";
 // import { SidebarMobile } from "./sidebar-mobile";
-import { SidebarItems } from "@/types";
+import { BookMarked, Database, FileScan, Home, Upload } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 import { SidebarDesktop } from "./sidebar-desktop";
+export interface SidebarItems {
+  links: Array<{
+    label: string;
+    href: string;
+    icon?: LucideIcon;
+  }>;
+  extras?: ReactNode;
+}
 
 const sidebarItems: SidebarItems = {
   links: [

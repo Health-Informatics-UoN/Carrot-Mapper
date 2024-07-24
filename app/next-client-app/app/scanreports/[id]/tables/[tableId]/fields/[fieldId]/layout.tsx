@@ -33,18 +33,6 @@ export default async function ScanReportFieldsLayout({
   }
   return (
     <>
-      <div className="flex justify-between mb-3">
-        <TabGroup
-          path={`/scanreports/${params.id}/tables/${params.tableId}/fields/${params.fieldId}`}
-          items={[
-            {
-              text: "Scan Report Values",
-            },
-          ]}
-        />
-        <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
-      </div>
-
       <Boundary>
         {" "}
         <Suspense fallback={<Skeleton className="h-full w-full" />}>

@@ -1,5 +1,7 @@
 import {
+  getScanReportField,
   getScanReportPermissions,
+  getScanReportTable,
   getScanReportValues,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
@@ -10,6 +12,8 @@ import {
 } from "@/api/concepts";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
 import { columns } from "./columns";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ScanReportsValueProps {
   params: {
@@ -33,6 +37,8 @@ export default async function ScanReportsValue({
   const query = objToQuery(combinedParams);
   const permissions = await getScanReportPermissions(id);
   const scanReportsValues = await getScanReportValues(query);
+  const tableName = await getScanReportTable(tableId);
+  const fieldName = await getScanReportField(fieldId);
 
   const scanReportsConcepts =
     scanReportsValues.results.length > 0
@@ -51,6 +57,17 @@ export default async function ScanReportsValue({
 
   return (
     <div>
+      <div className="gap-2 flex">
+        {" "}
+        <Link href={`/scanreports/${id}/tables/${tableId}`}>
+          <Button variant={"secondary"} className="text-lg mb-3">
+            Table name: {tableName.name}
+          </Button>
+        </Link>
+        <Button variant={"secondary"} className="text-lg mb-3">
+          Field name: {fieldName.name}
+        </Button>
+      </div>
       <div>
         <ConceptDataTable
           count={scanReportsValues.count}

@@ -6,6 +6,7 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import { Item } from "./tab-group";
 import { Button } from "../button";
 import { cn } from "@/lib/utils";
+import { SeparatorVertical } from "lucide-react";
 
 export const Tab = ({
   path,
@@ -28,16 +29,21 @@ export const Tab = ({
     segment === item.slug;
 
   return (
-    <Link href={href}>
-      <Button
-        variant={"outline"}
-        className={cn("rounded-md px-3 py-1", {
-          "bg-white hover:text-carrot": !isActive,
-          "bg-carrot text-white hover:bg-carrot/90": isActive,
-        })}
-      >
-        {item.text}
-      </Button>
-    </Link>
+    <>
+      {" "}
+      <Link href={href}>
+        <Button
+          variant={"ghost"}
+          className={cn("rounded-md px-0 py-1 text-xl", {
+            "bg-white hover:text-carrot": !isActive,
+            "hover:text-carrot/90 underline underline-offset-8 text-carrot":
+              isActive,
+          })}
+        >
+          {item.text}
+        </Button>
+      </Link>
+      |
+    </>
   );
 };

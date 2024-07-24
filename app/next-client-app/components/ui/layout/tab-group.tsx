@@ -17,7 +17,7 @@ export const TabGroup = ({
   items: Item[];
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-4">
       {items.map((item) => (
         <Tab
           key={path + item.slug}
