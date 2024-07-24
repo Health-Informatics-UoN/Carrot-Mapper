@@ -2,6 +2,11 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.2.9
+### Bugfixes
+- Fix pagination ordering on API endpoints for Scan Report Concepts.
+- Fix Scan Report vulnerabilities.
+
 ## v2.2.5
 ## New features
 - Carrot Mapper is now deployed on carrot.ac.uk

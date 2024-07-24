@@ -105,8 +105,8 @@ export default async function ScanReportsMappingRules({
                 <BarChartHorizontalBig className="ml-2 size-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[1200px]">
-              <ScrollArea className="w-[1000px] h-[400px]">
+            <DialogContent className="max-w-[1200px] h-5/6">
+              <ScrollArea className="w-auto">
                 <GetFile
                   name="Download Map Diagram"
                   scanreportId={id}
