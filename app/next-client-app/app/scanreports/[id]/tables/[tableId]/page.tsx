@@ -1,9 +1,7 @@
 import { columns } from "./columns";
 import {
-  getScanReport,
   getScanReportFields,
   getScanReportPermissions,
-  getScanReportTable,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
@@ -34,8 +32,6 @@ export default async function ScanReportsField({
   const query = objToQuery(combinedParams);
 
   const scanReportsFields = await getScanReportFields(query);
-  const scanReportsName = await getScanReport(id);
-  const tableName = await getScanReportTable(tableId);
   const permissions = await getScanReportPermissions(id);
 
   const scanReportsConcepts =

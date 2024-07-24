@@ -10,7 +10,14 @@ import {
 } from "@/components/ui/breadcrumb";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 import { Button } from "@/components/ui/button";
-import { Download, TrashIcon } from "lucide-react";
+import { ChevronDown, Download, TrashIcon } from "lucide-react";
+import { Boundary } from "@/components/ui/layout/boundary";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default async function ScanReportLayout({
   params,
@@ -75,22 +82,38 @@ export default async function ScanReportLayout({
               })),
             ]}
           />
-          <div className="flex gap-2">
-            <Button variant={"outline"}>
-              <a href={`/api/scanreports/${params.id}/download/`} download>
-                Export Scan Report
-              </a>
-              <Download className="ml-2 size-4" />
-            </Button>
-            <DeleteDialog id={Number(params.id)} redirect>
-              <Button variant={"outline"} className="text-red-400">
-                Delete Scan Report
-                <TrashIcon className="ml-2 size-4" />
-              </Button>
-            </DeleteDialog>
+          <div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  Scan Report Actions <ChevronDown className="ml-2 size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>
+                  <a
+                    href={`/api/scanreports/${params.id}/download/`}
+                    download
+                    className="flex"
+                  >
+                    Export Scan Report <Download className="ml-2 size-4" />
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <DeleteDialog id={Number(params.id)} redirect>
+                    <Button
+                      variant={"ghost"}
+                      className="text-red-400 px-0 py-0 h-auto"
+                    >
+                      Delete Scan Report <TrashIcon className="ml-2 size-4" />
+                    </Button>
+                  </DeleteDialog>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-        <div>{children}</div>
+        <Boundary>{children}</Boundary>
       </div>
     </>
   );

@@ -53,7 +53,7 @@ export default async function MappingRuleLayout({
   }
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-3">
         <TabGroup
           path={`/scanreports/${params.id}/mapping_rules`}
           items={[
@@ -90,7 +90,7 @@ export default async function MappingRuleLayout({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
-                Actions <ChevronDown className="ml-2 size-4" />
+                Mapping Rules Actions <ChevronDown className="ml-2 size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[230px]">

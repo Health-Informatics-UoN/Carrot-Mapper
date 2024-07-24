@@ -47,7 +47,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
       </div>
-      <div className="my-5">
+      <div className="my-3">
         <Tabs
           defaultValue={
             (searchParams as any)?.hidden

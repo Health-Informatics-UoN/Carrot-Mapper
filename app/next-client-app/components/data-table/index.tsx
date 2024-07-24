@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex justify-between my-4">
+      <div className="flex justify-between mb-3">
         {Filter}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

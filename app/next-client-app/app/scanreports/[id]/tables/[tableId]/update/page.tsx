@@ -47,7 +47,7 @@ export default async function UpdateTable({
   return (
     <div>
       {(table.date_event === null || table.person_id === null) && (
-        <Alert className="flex items-center gap-3 bg-carrot text-white mt-4 w-1/2">
+        <Alert className="flex items-center gap-3 bg-carrot text-white mt-3 w-1/2">
           <div>
             <AlertCircleIcon />
           </div>
@@ -62,7 +62,7 @@ export default async function UpdateTable({
           </div>
         </Alert>
       )}
-      <div className="mt-4">
+      <div className="mt-3">
         <ScanReportTableUpdateForm
           scanreportFields={scanReportsFields}
           scanreportTable={table}

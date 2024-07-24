@@ -36,15 +36,13 @@ export default async function ScanreportDetails({
 
   return (
     <div>
-      <div className="mt-4">
-        <ScanReportDetailsForm
-          scanreport={scanreport}
-          datasetList={datasetList}
-          users={users}
-          permissions={permissionsDS.permissions}
-          isAuthor={isAuthor}
-        />
-      </div>
+      <ScanReportDetailsForm
+        scanreport={scanreport}
+        datasetList={datasetList}
+        users={users}
+        permissions={permissionsDS.permissions}
+        isAuthor={isAuthor}
+      />
     </div>
   );
 }

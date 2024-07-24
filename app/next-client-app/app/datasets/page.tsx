@@ -49,7 +49,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Dataset List</h1>
       </div>
-      <div className="my-5 justify-between">
+      <div className="my-3 justify-between">
         <div>
           <Tabs
             defaultValue={

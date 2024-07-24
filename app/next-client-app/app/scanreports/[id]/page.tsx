@@ -1,6 +1,5 @@
 import { columns } from "./columns";
 import {
-  getScanReport,
   getScanReportPermissions,
   getScanReportsTables,
 } from "@/api/scanreports";
@@ -37,7 +36,6 @@ export default async function ScanReportsTable({
 
   return (
     <div>
-      <div className="flex justify-between mt-3 flex-col sm:flex-row"></div>
       <div>
         <DataTable
           columns={columns}

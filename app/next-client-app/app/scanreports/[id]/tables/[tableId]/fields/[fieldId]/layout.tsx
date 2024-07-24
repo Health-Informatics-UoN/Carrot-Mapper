@@ -4,6 +4,7 @@ import {
 } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
 import { Button } from "@/components/ui/button";
+import { Boundary } from "@/components/ui/layout/boundary";
 import { TabGroup } from "@/components/ui/layout/tab-group";
 
 export default async function ScanReportFieldsLayout({
@@ -30,7 +31,7 @@ export default async function ScanReportFieldsLayout({
   }
   return (
     <>
-      <div className="flex justify-between mt-2">
+      <div className="flex justify-between mb-3">
         <TabGroup
           path={`/scanreports/${params.id}/tables/${params.tableId}/fields/${params.fieldId}`}
           items={[
@@ -42,7 +43,7 @@ export default async function ScanReportFieldsLayout({
         <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
       </div>
 
-      <div>{children}</div>
+      <Boundary>{children}</Boundary>
     </>
   );
 }
