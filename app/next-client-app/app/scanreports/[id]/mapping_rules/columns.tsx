@@ -38,7 +38,8 @@ export const columns: ColumnDef<MappingRule>[] = [
       const { source_table, source_field } = row.original;
       const path = usePathname();
       const id = path.match(/\/(\d+)\/+/) ?? [];
-
+      // TODO: Where exacly should it go?
+      // TODO: Where is the Skeleton????
       return (
         <Link
           href={`/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`}
