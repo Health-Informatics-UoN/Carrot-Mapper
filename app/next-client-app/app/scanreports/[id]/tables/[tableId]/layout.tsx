@@ -1,5 +1,4 @@
 import {
-  getScanReport,
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
@@ -7,6 +6,8 @@ import { Forbidden } from "@/components/core/Forbidden";
 import { Button } from "@/components/ui/button";
 import { Boundary } from "@/components/ui/layout/boundary";
 import { TabGroup } from "@/components/ui/layout/tab-group";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense } from "react";
 
 export default async function ScanReportFieldsLayout({
   params,
@@ -18,12 +19,6 @@ export default async function ScanReportFieldsLayout({
   const permissions = await getScanReportPermissions(params.id);
   const tableName = await getScanReportTable(params.tableId);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
-  const categories = [
-    {
-      name: "Scan Report Table Details",
-      slug: "update",
-    },
-  ];
 
   if (
     !requiredPermissions.some((permission) =>
@@ -53,7 +48,12 @@ export default async function ScanReportFieldsLayout({
         />
         <Button variant={"secondary"}>Table name: {tableName.name}</Button>
       </div>
-      <Boundary>{children}</Boundary>
+      <Boundary>
+        {" "}
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+          {children}
+        </Suspense>
+      </Boundary>
     </>
   );
 }

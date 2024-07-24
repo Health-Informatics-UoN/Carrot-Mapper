@@ -18,6 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function ScanReportLayout({
   params,
@@ -113,7 +115,12 @@ export default async function ScanReportLayout({
             </DropdownMenu>
           </div>
         </div>
-        <Boundary>{children}</Boundary>
+        <Boundary>
+          {" "}
+          <Suspense fallback={<Skeleton className="h-full w-full" />}>
+            {children}
+          </Suspense>
+        </Boundary>
       </div>
     </>
   );

@@ -6,6 +6,8 @@ import { Forbidden } from "@/components/core/Forbidden";
 import { Button } from "@/components/ui/button";
 import { Boundary } from "@/components/ui/layout/boundary";
 import { TabGroup } from "@/components/ui/layout/tab-group";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense } from "react";
 
 export default async function ScanReportFieldsLayout({
   params,
@@ -43,7 +45,12 @@ export default async function ScanReportFieldsLayout({
         <Button variant={"secondary"}>Field name: {fieldName.name}</Button>
       </div>
 
-      <Boundary>{children}</Boundary>
+      <Boundary>
+        {" "}
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+          {children}
+        </Suspense>
+      </Boundary>
     </>
   );
 }

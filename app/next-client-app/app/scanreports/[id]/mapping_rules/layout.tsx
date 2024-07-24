@@ -21,6 +21,9 @@ import { GetFile } from "./get-file";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
+import { Boundary } from "@/components/ui/layout/boundary";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default async function MappingRuleLayout({
   params,
@@ -67,7 +70,6 @@ export default async function MappingRuleLayout({
           ]}
         />
         <div className="flex gap-2">
-          {/* TODO: Need to test again these buttons */}
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -134,7 +136,12 @@ export default async function MappingRuleLayout({
           </DropdownMenu>
         </div>
       </div>
-      <div>{children}</div>
+      <Boundary>
+        {" "}
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+          {children}
+        </Suspense>
+      </Boundary>
     </>
   );
 }
