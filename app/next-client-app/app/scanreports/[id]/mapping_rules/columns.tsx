@@ -9,39 +9,6 @@ import { usePathname } from "next/navigation";
 
 export const columns: ColumnDef<MappingRule>[] = [
   {
-    id: "Rule ID",
-    accessorKey: "rule_id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Rule ID" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-  },
-  {
-    id: "Destination Table",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Destination Table" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { destination_table } = row.original;
-      return destination_table.name;
-    },
-  },
-  {
-    id: "Destination Field",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Destination Field" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { destination_field } = row.original;
-      return destination_field.name;
-    },
-  },
-  {
     id: "Source Table",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Source Table" />
@@ -114,6 +81,18 @@ export const columns: ColumnDef<MappingRule>[] = [
       ) : (
         <></>
       );
+    },
+  },
+  {
+    id: "Destination Table",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Destination Table" />
+    ),
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { destination_table } = row.original;
+      return destination_table.name;
     },
   },
   {
