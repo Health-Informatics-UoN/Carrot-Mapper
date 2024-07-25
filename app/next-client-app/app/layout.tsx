@@ -21,11 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar />
+        {/* <Navbar />
         <div className="mt-[50px] mb-4">{children}</div>
-        <BootstrapClient />
-        {/* <Sidebar /> */}
-        {/* <div className="ml-[230px] mb-4">{children}</div> */}
+        <BootstrapClient /> */}
+        <Sidebar />
+        <div className="ml-[230px] mb-4">{children}</div>
 
         <Toaster
           toastOptions={{
