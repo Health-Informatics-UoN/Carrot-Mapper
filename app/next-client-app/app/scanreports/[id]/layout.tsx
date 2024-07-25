@@ -92,7 +92,7 @@ export default async function ScanReportLayout({
           </div>
           <div className="flex items-center space-x-2">
             <h3 className="text-gray-500">
-              | Dataset:
+              | Dataset:{" "}
               <span className="text-black">{scanreport.parent_dataset}</span>
             </h3>
           </div>
