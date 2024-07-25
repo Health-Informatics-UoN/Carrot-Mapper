@@ -172,7 +172,7 @@ REST_FRAMEWORK = {
 
 STATIC_URL = "/static/"
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/scanreports/"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # NLP API KEY
