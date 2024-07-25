@@ -61,7 +61,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
             }
           >
             <div className="flex justify-between items-center">
-              <TabsList>
+              <TabsList className="mb-2">
                 <a href="?hidden=false" className="h-full">
                   <TabsTrigger value="active">Active Datasets</TabsTrigger>
                 </a>
