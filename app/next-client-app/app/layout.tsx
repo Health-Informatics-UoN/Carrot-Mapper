@@ -23,7 +23,7 @@ export default function RootLayout({
       <body>
         {/* <Navbar /> */}
         <Sidebar />
-        <div className="ml-[300px]">{children}</div>
+        <div className="ml-[250px]">{children}</div>
         <Toaster
           toastOptions={{
             classNames: {

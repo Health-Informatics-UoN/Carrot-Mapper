@@ -3,6 +3,7 @@ import { getMappingRulesList } from "@/api/mapping-rules";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
+import { RulesButton } from "./rules-buttons";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -24,6 +25,7 @@ export default async function ScanReportsMappingRules({
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
   const mappingRulesList = await getMappingRulesList(query);
+  const rulesButton = <RulesButton scanreportId={id} query={query} />;
 
   return (
     <div>
@@ -33,6 +35,7 @@ export default async function ScanReportsMappingRules({
         count={mappingRulesList.count}
         clickableRow={false}
         defaultPageSize={defaultPageSize}
+        Filter={rulesButton}
       />
     </div>
   );

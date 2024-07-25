@@ -41,7 +41,7 @@ export default async function ScanReportLayout({
 
   const categories = [
     { name: "Rules", slug: "mapping_rules" },
-    { name: "Review Rules", slug: "mapping_rules/summary" },
+    { name: "Review Rules", slug: "review_rules" },
   ];
 
   const scanreport = await getScanReport(params.id);
@@ -140,7 +140,7 @@ export default async function ScanReportLayout({
                     className="flex"
                   >
                     <Edit className="mr-2 size-4" />
-                    Edit Details
+                    Edit Scan Report Details
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
