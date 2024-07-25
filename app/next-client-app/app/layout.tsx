@@ -6,7 +6,6 @@ import type { Metadata } from "next";
 import BootstrapClient from "@/components/BootstrapClient";
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
-import { Sidebar } from "@/components/ui/layout/sidebar";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -20,13 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body style={{ paddingTop: "60px", paddingBottom: "20px" }}>
         <Navbar />
-        <div className="mt-[50px] mb-4">{children}</div>
+        <div>{children}</div>
         <BootstrapClient />
-        {/* <Sidebar /> */}
-        {/* <div className="ml-[230px] mb-4">{children}</div> */}
-
         <Toaster
           toastOptions={{
             classNames: {
