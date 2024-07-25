@@ -36,7 +36,7 @@ export const Tab = ({
           variant={"ghost"}
           className={cn("rounded-md px-0 py-1 text-xl", {
             "bg-white hover:text-carrot": !isActive,
-            "hover:text-carrot/90 underline underline-offset-8 text-carrot":
+            "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot":
               isActive,
           })}
         >
