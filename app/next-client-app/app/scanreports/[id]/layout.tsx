@@ -27,6 +27,7 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
+import { Status } from "@/components/ui/layout/scanreport-status";
 
 export default async function ScanReportLayout({
   params,
@@ -84,27 +85,35 @@ export default async function ScanReportLayout({
           <FileScan className="mr-2 text-green-700" />
           <h2>{scanreport.dataset}</h2>
         </div>
-        <div className="flex items-center text-md space-x-2">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-gray-500">
-              Status: <span className="text-black">{scanreport.status}</span>
-            </h3>
+        <div className="flex items-center text-md space-x-3">
+          <div className="flex items-center">
+            <h3 className="text-gray-500">Status: </h3>
+            <div className="ml-2">
+              <Status
+                id={parseInt(params.id)}
+                status={scanreport.status}
+                dataset={scanreport.dataset}
+              />
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div>|</div>
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              | Dataset:{" "}
+              Dataset:{" "}
               <span className="text-black">{scanreport.parent_dataset}</span>
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
+          <div>|</div>
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              | Data Partner:{" "}
+              Data Partner:{" "}
               <span className="text-black">{scanreport.data_partner}</span>
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
+          <div>|</div>
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              | Created Date:{" "}
+              Created Date:{" "}
               <span className="text-black">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>

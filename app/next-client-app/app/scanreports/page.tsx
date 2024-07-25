@@ -71,6 +71,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               data={scanReports.results}
               count={scanReports.count}
               Filter={filter}
+              defaultPageSize={defaultPageSize}
             />
           </TabsContent>
           <TabsContent value="archived">

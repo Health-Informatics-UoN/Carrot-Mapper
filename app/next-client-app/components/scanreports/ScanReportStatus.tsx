@@ -8,11 +8,19 @@ import {
 } from "@/components/ui/select";
 import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
-import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
 
-export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
-  const { id, status, dataset } = row.original;
+export function ScanReportStatus({
+  id,
+  status,
+  dataset,
+  onLayout,
+}: {
+  id: number;
+  status: string;
+  dataset: string;
+  onLayout?: boolean;
+}) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
@@ -36,7 +44,11 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
 
   return (
     <Select value={status} onValueChange={handleChangeStatus}>
-      <SelectTrigger className={`${textColorClassName} w-[180px]`}>
+      <SelectTrigger
+        className={`${textColorClassName} ${
+          onLayout ? "w-[145px] h-7" : "w-[180px]"
+        }`}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
