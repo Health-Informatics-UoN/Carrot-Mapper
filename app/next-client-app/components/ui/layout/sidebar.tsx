@@ -22,7 +22,7 @@ const sidebarItems: SidebarItems = {
     { label: "Datasets", href: "/datasets/", icon: Folders },
     { label: "Scan Reports", href: "/scanreports/", icon: FileScan },
     {
-      label: "Upload New Scan Report",
+      label: "Upload Scan Report",
       href: "/scanreports/create/",
       icon: Upload,
     },
