@@ -35,14 +35,19 @@ export const columns: ColumnDef<MappingRule>[] = [
     enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { source_table, source_field } = row.original;
+      const { source_table, source_field, term_mapping } = row.original;
       const path = usePathname();
       const id = path.match(/\/(\d+)\/+/) ?? [];
-      // TODO: Where exacly should it go?
       // TODO: Where is the Skeleton????
       return (
         <Link
-          href={`/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`}
+          href={
+            term_mapping && typeof term_mapping === "object"
+              ? `/scanreports/${id[1]}/tables/${source_table.id}/fields/${
+                  source_field.id
+                }/?value__icontains=${Object.keys(term_mapping ?? {})}`
+              : `/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`
+          }
         >
           <Button variant="outline">{source_field.name}</Button>
         </Link>
