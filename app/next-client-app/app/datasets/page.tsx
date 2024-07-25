@@ -19,6 +19,7 @@ interface DataSetListProps {
 }
 
 export default async function DataSets({ searchParams }: DataSetListProps) {
+  // TODO: ADD default page size here
   const defaultParams = {
     hidden: false,
     page_size: 10,
