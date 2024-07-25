@@ -30,6 +30,7 @@ import {
 import { DataTablePagination } from "./DataTablePagination";
 import { MixerHorizontalIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
+import { Columns3 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -95,8 +96,7 @@ export function DataTable<TData, TValue>({
               variant="outline"
               className="ml-auto hidden lg:flex"
             >
-              <MixerHorizontalIcon className="mr-2 size-4" />
-              View
+              Columns <Columns3 className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
