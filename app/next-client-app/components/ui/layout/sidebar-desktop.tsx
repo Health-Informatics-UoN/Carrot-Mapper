@@ -44,10 +44,11 @@ export function SidebarDesktop(props: SidebarDesktopProps) {
             <Separator className="absolute -top-3 left-0 w-full" />
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start">
+                <Button variant="ghost" className="w-full justify-between">
                   <div className="flex justify-between items-center w-full">
                     <MoreHorizontal size={20} />
                   </div>
+                  <div>User Name</div>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="mb-2 w-56 p-3 rounded-[1rem]">
