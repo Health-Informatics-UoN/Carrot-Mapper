@@ -11,7 +11,6 @@ import {
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import {
-  ChevronDown,
   Download,
   Edit,
   FileScan,

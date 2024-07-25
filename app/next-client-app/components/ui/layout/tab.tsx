@@ -1,12 +1,10 @@
 "use client";
 
-import clsx from "clsx";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Item } from "./tab-group";
 import { Button } from "../button";
 import { cn } from "@/lib/utils";
-import { SeparatorVertical } from "lucide-react";
 
 export const Tab = ({
   path,

@@ -28,8 +28,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "./DataTablePagination";
-import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { useRouter } from "next/navigation";
 import { Columns3 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
@@ -89,6 +87,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex justify-between mb-3">
         {Filter}
+        {/* Views Columns Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -122,7 +121,6 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div></div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
