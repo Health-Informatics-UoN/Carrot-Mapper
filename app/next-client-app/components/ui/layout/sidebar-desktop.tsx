@@ -10,6 +10,7 @@ import { Separator } from "../separator";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Button } from "../button";
 import { SidebarItems } from "./sidebar";
+import Image from "next/image";
 
 interface SidebarDesktopProps {
   sidebarItems: SidebarItems;
@@ -21,9 +22,15 @@ export function SidebarDesktop(props: SidebarDesktopProps) {
   return (
     <aside className="w-[270px] max-w-xs h-screen fixed left-0 top-0 z-40 border-r">
       <div className="h-full px-3 py-4">
-        <h3 className="mx-3 text-lg font-semibold text-foreground flex">
+        <h3 className="mx-3 text-lg font-semibold text-foreground flex items-center">
           Carrot Mapper
-          <Carrot className="ml-2" />
+          <Image
+            width={25}
+            height={25}
+            src="/carrot-logo.png"
+            alt="carrot-logo"
+            className="ml-4"
+          />
         </h3>
         <div className="mt-5">
           <div className="flex flex-col gap-1 w-full">
