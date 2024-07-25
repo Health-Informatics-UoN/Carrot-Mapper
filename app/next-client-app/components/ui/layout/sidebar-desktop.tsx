@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarButton } from "./sidebar-button";
-import { SidebarItems } from "@/types";
+
 import Link from "next/link";
 
 import { Carrot, LogOut, MoreHorizontal, Settings } from "lucide-react";
@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { Separator } from "../separator";
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Button } from "../button";
+import { SidebarItems } from "./sidebar";
 
 interface SidebarDesktopProps {
   sidebarItems: SidebarItems;

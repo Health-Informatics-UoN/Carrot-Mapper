@@ -39,8 +39,8 @@ export default async function ScanReportLayout({
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
 
   const categories = [
-    { name: "Rules", slug: "mapping_rules" },
-    { name: "Review Rules", slug: "review_rules" },
+    { name: "Rules", slug: "mapping_rules", iconName: "Waypoints" },
+    { name: "Review Rules", slug: "review_rules", iconName: "SearchCheck" },
   ];
 
   const scanreport = await getScanReport(params.id);
@@ -118,10 +118,12 @@ export default async function ScanReportLayout({
             items={[
               {
                 text: "Tables",
+                iconName: "TableProperties",
               },
               ...categories.map((x) => ({
                 text: x.name,
                 slug: x.slug,
+                iconName: x.iconName,
               })),
             ]}
           />
