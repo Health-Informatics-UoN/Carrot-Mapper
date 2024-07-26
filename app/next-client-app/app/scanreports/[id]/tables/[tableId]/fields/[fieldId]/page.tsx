@@ -61,11 +61,11 @@ export default async function ScanReportsValue({
         {" "}
         <Link href={`/scanreports/${id}/tables/${tableId}`}>
           <Button variant={"secondary"} className="text-lg mb-3">
-            Table name: {tableName.name}
+            Table: {tableName.name}
           </Button>
         </Link>
         <Button variant={"secondary"} className="text-lg mb-3">
-          Field name: {fieldName.name}
+          Field: {fieldName.name}
         </Button>
       </div>
       <div>
