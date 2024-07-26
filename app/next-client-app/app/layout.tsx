@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body style={{ paddingTop: "60px", paddingBottom: "20px" }}>
         <Navbar />
-        <div>{children}</div>
+        {children}
         <BootstrapClient />
         <Toaster
           toastOptions={{

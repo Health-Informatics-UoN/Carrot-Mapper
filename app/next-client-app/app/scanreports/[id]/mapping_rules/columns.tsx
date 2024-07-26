@@ -39,6 +39,7 @@ export const columns: ColumnDef<MappingRule>[] = [
       const path = usePathname();
       const id = path.match(/\/(\d+)\/+/) ?? [];
       return (
+        // Link directly to the value having the associated concept
         <Link
           href={
             term_mapping && typeof term_mapping === "object"

@@ -30,8 +30,6 @@ export const Tab = ({
   const isActive =
     // Example home pages e.g. `/layouts`
     (!item.slug && segment === null) ||
-    (!item.slug && segment === "tables") ||
-    (!item.slug && segment === "fields") ||
     segment === item.segment ||
     // Nested pages e.g. `/layouts/electronics`
     segment === item.slug;

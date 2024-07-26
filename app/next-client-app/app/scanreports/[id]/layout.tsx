@@ -39,7 +39,11 @@ export default async function ScanReportLayout({
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
 
-  const categories = [
+  const items = [
+    {
+      name: "Tables",
+      iconName: "TableProperties",
+    },
     { name: "Rules", slug: "mapping_rules", iconName: "Waypoints" },
     { name: "Review Rules", slug: "review_rules", iconName: "SearchCheck" },
   ];
@@ -81,6 +85,7 @@ export default async function ScanReportLayout({
             </BreadcrumbList>
           </Breadcrumb>
         </div>
+        {/* Details line */}
         <div className="flex font-semibold text-3xl items-center">
           <FileScan className="mr-2 text-green-700" />
           <h2>{scanreport.dataset}</h2>
@@ -120,22 +125,19 @@ export default async function ScanReportLayout({
             </h3>
           </div>
         </div>
-
+        {/* "Tabs" group */}
         <div className="flex justify-between">
           <TabGroup
             path={`/scanreports/${params.id}`}
             items={[
-              {
-                text: "Tables",
-                iconName: "TableProperties",
-              },
-              ...categories.map((x) => ({
+              ...items.map((x) => ({
                 text: x.name,
                 slug: x.slug,
                 iconName: x.iconName,
               })),
             ]}
           />
+          {/* Actions button */}
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
