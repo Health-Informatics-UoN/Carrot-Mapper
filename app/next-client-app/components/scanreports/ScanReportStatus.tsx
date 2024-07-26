@@ -45,9 +45,7 @@ export function ScanReportStatus({
   return (
     <Select value={status} onValueChange={handleChangeStatus}>
       <SelectTrigger
-        className={`${textColorClassName} ${
-          onLayout ? "w-[145px] h-7" : "w-[180px]"
-        }`}
+        className={`w-[180px] ${textColorClassName}  ${onLayout && "h-7"}`}
       >
         <SelectValue />
       </SelectTrigger>
