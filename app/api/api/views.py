@@ -21,7 +21,6 @@ from api.serializers import (
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
-    DatasetViewSerializer,
     DatasetViewSerializerV2,
     DomainSerializer,
     DrugStrengthSerializer,
@@ -53,14 +52,14 @@ from api.serializers import (
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
-from django.views.generic import ListView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -1346,6 +1345,12 @@ class ScanReportValueViewSetV2(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     pagination_class = CustomPagination
     serializer_class = ScanReportValueViewSerializerV2
+
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
     serializer_class = ScanReportValueViewSerializer
