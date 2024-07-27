@@ -17,7 +17,7 @@ export const columns = (
       <DataTableColumnHeader column={column} title="Value" sortName="value" />
     ),
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
   },
   {
     id: "Value Description",
@@ -30,7 +30,7 @@ export const columns = (
       />
     ),
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
   },
   {
     id: "Frequency",
@@ -43,7 +43,7 @@ export const columns = (
       />
     ),
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
   },
   {
     id: "Concepts",

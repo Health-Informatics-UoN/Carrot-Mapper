@@ -67,12 +67,10 @@ interface ScanReportConcept {
 interface ScanReportValue {
   id: number;
   value: string;
-  // created_at: string;
-  // updated_at: string;
   frequency: number;
-  // conceptID: number;
-  // value_description: string;
+  value_description: string;
   scan_report_field: number;
+  // TODO: These should be added in a inherited type, as they are not returned from the API.
   concepts?: Concept[];
   permissions: Permission[];
 }
