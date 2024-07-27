@@ -67,11 +67,11 @@ interface ScanReportConcept {
 interface ScanReportValue {
   id: number;
   value: string;
-  created_at: string;
-  updated_at: string;
+  // created_at: string;
+  // updated_at: string;
   frequency: number;
-  conceptID: number;
-  value_description: string;
+  // conceptID: number;
+  // value_description: string;
   scan_report_field: number;
   concepts?: Concept[];
   permissions: Permission[];
