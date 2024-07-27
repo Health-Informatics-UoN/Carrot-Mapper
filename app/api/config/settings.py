@@ -122,6 +122,9 @@ DATABASES = {
         "TEST": {
             "NAME": "throwawaydb",
         },
+        "OPTIONS": {
+            "options": "-c statement_timeout=20s",
+        },
     }
 }
 
