@@ -57,13 +57,13 @@ export default async function ScanReportsValue({
             .join(",")}`,
         )
       : [];
-  const conceptsFilter =
-    scanReportsConcepts.length > 0
-      ? await getAllConceptsFiltered(
-          scanReportsConcepts?.map((item) => item.concept).join(","),
-        )
-      : [];
-
+  // const conceptsFilter =
+  //   scanReportsConcepts.length > 0
+  //     ? await getAllConceptsFiltered(
+  //         scanReportsConcepts?.map((item) => item.concept).join(","),
+  //       )
+  //     : [];
+  const conceptsFilter: any = [];
   return (
     <div className="pt-10 px-16">
       <div>
