@@ -49,20 +49,21 @@ export default async function ScanReportsValue({
   const permissions = await getScanReportPermissions(id);
   const scanReportsValues = await getScanReportValues(query);
 
-  const scanReportsConcepts =
-    scanReportsValues.results.length > 0
-      ? await getAllScanReportConcepts(
-          `object_id__in=${scanReportsValues.results
-            .map((item) => item.id)
-            .join(",")}`,
-        )
-      : [];
+  // const scanReportsConcepts =
+  //   scanReportsValues.results.length > 0
+  //     ? await getAllScanReportConcepts(
+  //         `object_id__in=${scanReportsValues.results
+  //           .map((item) => item.id)
+  //           .join(",")}`,
+  //       )
+  //     : [];
   // const conceptsFilter =
   //   scanReportsConcepts.length > 0
   //     ? await getAllConceptsFiltered(
   //         scanReportsConcepts?.map((item) => item.concept).join(","),
   //       )
   //     : [];
+  const scanReportsConcepts: any = [];
   const conceptsFilter: any = [];
   return (
     <div className="pt-10 px-16">
