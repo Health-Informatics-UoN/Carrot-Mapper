@@ -1342,8 +1342,8 @@ class ScanReportValueViewSetV2(ScanReportValueViewSet):
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
-    ordering_fields = ["value", "value_description", "frequency"]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
+    # ordering_fields = ["value", "value_description", "frequency"]
     pagination_class = CustomPagination
 
     def get_serializer_class(self):
