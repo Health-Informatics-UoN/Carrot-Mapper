@@ -1,9 +1,15 @@
+import csv
+from collections import Counter
+from io import BytesIO, StringIO
+
+import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
 from mapping.services_rules import analyse_concepts, get_mapping_rules_json
+from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, PermissionDenied, ParseError
+from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from shared.data.models import (
     ClassificationSystem,
     DataDictionary,
@@ -18,6 +24,7 @@ from shared.data.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
+    VisibilityChoices,
 )
 from shared.data.omop import (
     Concept,
@@ -29,12 +36,6 @@ from shared.data.omop import (
     DrugStrength,
     Vocabulary,
 )
-from openpyxl.workbook.workbook import Workbook
-from shared.data.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
-import csv
-from io import BytesIO, StringIO
-import openpyxl
-from collections import Counter
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -857,28 +858,28 @@ class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSeriali
 
 
 class ScanReportValueViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
-    value = serializers.CharField(
-        max_length=128, allow_blank=True, trim_whitespace=False
-    )
+    # value = serializers.CharField(
+    #     max_length=128, allow_blank=True, trim_whitespace=False
+    # )
 
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if srf := data.get("scan_report_field"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(srf, request)
-                    or has_editorship(srf, request)
-                ):
-                    raise PermissionDenied(
-                        "You must have editor or admin privileges on the scan report to edit its values.",
-                    )
-            else:
-                raise NotFound("Could not find the scan report field for this value.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report value."
-            )
-        return super().validate(data)
+    # def validate(self, data):
+    #     if request := self.context.get("request"):
+    #         if srf := data.get("scan_report_field"):
+    #             if not (
+    #                 is_az_function_user(request.user)
+    #                 or is_admin(srf, request)
+    #                 or has_editorship(srf, request)
+    #             ):
+    #                 raise PermissionDenied(
+    #                     "You must have editor or admin privileges on the scan report to edit its values.",
+    #                 )
+    #         else:
+    #             raise NotFound("Could not find the scan report field for this value.")
+    #     else:
+    #         raise serializers.ValidationError(
+    #             "Missing request context. Unable to validate scan report value."
+    #         )
+    #     return super().validate(data)
 
     class Meta:
         model = ScanReportValue
