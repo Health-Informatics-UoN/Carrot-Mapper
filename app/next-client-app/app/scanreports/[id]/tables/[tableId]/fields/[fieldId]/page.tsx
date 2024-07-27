@@ -43,28 +43,28 @@ export default async function ScanReportsValue({
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
 
-  // const scanReportsName = await getScanReport(id);
-  // const tableName = await getScanReportTable(tableId);
-  // const fieldName = await getScanReportField(fieldId);
+  const scanReportsName = await getScanReport(id);
+  const tableName = await getScanReportTable(tableId);
+  const fieldName = await getScanReportField(fieldId);
   const permissions = await getScanReportPermissions(id);
   const scanReportsValues = await getScanReportValues(query);
 
-  // const scanReportsConcepts =
-  //   scanReportsValues.results.length > 0
-  //     ? await getAllScanReportConcepts(
-  //         `object_id__in=${scanReportsValues.results
-  //           .map((item) => item.id)
-  //           .join(",")}`,
-  //       )
-  //     : [];
-  // const conceptsFilter =
-  //   scanReportsConcepts.length > 0
-  //     ? await getAllConceptsFiltered(
-  //         scanReportsConcepts?.map((item) => item.concept).join(","),
-  //       )
-  //     : [];
-  const scanReportsConcepts: any = [];
-  const conceptsFilter: any = [];
+  const scanReportsConcepts =
+    scanReportsValues.results.length > 0
+      ? await getAllScanReportConcepts(
+          `object_id__in=${scanReportsValues.results
+            .map((item) => item.id)
+            .join(",")}`,
+        )
+      : [];
+  const conceptsFilter =
+    scanReportsConcepts.length > 0
+      ? await getAllConceptsFiltered(
+          scanReportsConcepts?.map((item) => item.concept).join(","),
+        )
+      : [];
+  // const scanReportsConcepts: any = [];
+  // const conceptsFilter: any = [];
   return (
     <div className="pt-10 px-16">
       <div>
@@ -80,13 +80,13 @@ export default async function ScanReportsValue({
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/scanreports/${id}`}>
-                {/* {scanReportsName.dataset} */}
+                {scanReportsName.dataset}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbItem>
               <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {/* {tableName.name} */}
+                {tableName.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
@@ -94,7 +94,7 @@ export default async function ScanReportsValue({
               <BreadcrumbLink
                 href={`/scanreports/${id}/tables/${tableId}/fields/${fieldId}/`}
               >
-                {/* {fieldName?.name} */}
+                {fieldName?.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
           </BreadcrumbList>
