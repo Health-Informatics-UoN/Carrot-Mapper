@@ -857,7 +857,7 @@ class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         fields = "__all__"
 
 
-class ScanReportValueViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+class ScanReportValueViewSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = ScanReportValue
         fields = ["id", "value", "frequency", "value_description", "scan_report_field"]
