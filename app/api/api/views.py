@@ -1337,10 +1337,8 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportValueViewSetV2(viewsets.ModelViewSet):
-    queryset = (
-        ScanReportValue.objects.all()
-        .order_by("id")
-        .only("id", "value", "frequency", "value_description", "scan_report_field")
+    queryset = ScanReportValue.objects.order_by("id").only(
+        "id", "value", "frequency", "value_description", "scan_report_field"
     )
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
