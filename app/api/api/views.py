@@ -21,7 +21,6 @@ from api.serializers import (
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
-    DatasetViewSerializer,
     DatasetViewSerializerV2,
     DomainSerializer,
     DrugStrengthSerializer,
@@ -53,14 +52,14 @@ from api.serializers import (
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
-from django.views.generic import ListView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -854,6 +853,11 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
 
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
     queryset = ScanReportField.objects.all()
@@ -914,6 +918,11 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportFieldEditSerializer
         return super().get_serializer_class()
+
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
@@ -1337,23 +1346,22 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportValueViewSetV2(ScanReportValueViewSet):
+class ScanReportValueViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportValue.objects.order_by("id").only(
+        "id", "value", "frequency", "value_description", "scan_report_field"
+    )
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
-    ordering_fields = ["value", "value_description", "frequency"]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     pagination_class = CustomPagination
+    serializer_class = ScanReportValueViewSerializerV2
 
-    def get_serializer_class(self):
-        if self.request.method in ["GET", "POST"]:
-            # use the view serialiser if on GET requests
-            return ScanReportValueViewSerializerV2
-        if self.request.method in ["PUT", "PATCH", "DELETE"]:
-            # use the edit serialiser when the user tries to alter the scan report
-            return ScanReportValueEditSerializer
-        return super().get_serializer_class()
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):
