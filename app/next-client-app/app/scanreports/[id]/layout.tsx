@@ -1,6 +1,6 @@
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
-import { TabGroup } from "@/components/ui/layout/tab-group";
+import { NavGroup } from "@/components/core/nav-group";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,7 +17,7 @@ import {
   GripVertical,
   TrashIcon,
 } from "lucide-react";
-import { Boundary } from "@/components/ui/layout/boundary";
+import { Boundary } from "@/components/core/boundary";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -92,17 +92,6 @@ export default async function ScanReportLayout({
         </div>
         <div className="flex items-center text-md space-x-3">
           <div className="flex items-center">
-            <h3 className="text-gray-500">Status: </h3>
-            <div className="ml-2">
-              <Status
-                id={parseInt(params.id)}
-                status={scanreport.status}
-                dataset={scanreport.dataset}
-              />
-            </div>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
             <h3 className="text-gray-500">
               Dataset:{" "}
               <span className="text-black">{scanreport.parent_dataset}</span>
@@ -118,16 +107,26 @@ export default async function ScanReportLayout({
           <div>|</div>
           <div className="flex items-center">
             <h3 className="text-gray-500">
-              Created Date:{" "}
+              Created:{" "}
               <span className="text-black">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>
             </h3>
           </div>
+          <div>|</div>
+          <div className="flex items-center">
+            <div className="ml-2">
+              <Status
+                id={parseInt(params.id)}
+                status={scanreport.status}
+                dataset={scanreport.dataset}
+              />
+            </div>
+          </div>
         </div>
-        {/* "Tabs" group */}
+        {/* "Navs" group */}
         <div className="flex justify-between">
-          <TabGroup
+          <NavGroup
             path={`/scanreports/${params.id}`}
             items={[
               ...items.map((x) => ({

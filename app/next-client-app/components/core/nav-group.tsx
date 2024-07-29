@@ -1,4 +1,4 @@
-import { Tab } from "./tab";
+import { NavButton } from "./nav-button";
 
 export type Item = {
   text: string;
@@ -8,7 +8,7 @@ export type Item = {
   iconName?: string;
 };
 
-export const TabGroup = ({
+export const NavGroup = ({
   path,
   parallelRoutesKey,
   items,
@@ -20,7 +20,7 @@ export const TabGroup = ({
   return (
     <div className="flex flex-wrap items-center gap-4">
       {items.map((item) => (
-        <Tab
+        <NavButton
           key={path + item.slug}
           item={item}
           path={path}

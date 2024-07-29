@@ -60,11 +60,11 @@ export default async function ScanReportsValue({
       <div className="gap-2 flex">
         {" "}
         <Link href={`/scanreports/${id}/tables/${tableId}`}>
-          <Button variant={"secondary"} className="text-lg mb-3">
+          <Button variant={"secondary"} className="mb-3">
             Table: {tableName.name}
           </Button>
         </Link>
-        <Button variant={"secondary"} className="text-lg mb-3">
+        <Button variant={"secondary"} className="mb-3">
           Field: {fieldName.name}
         </Button>
       </div>

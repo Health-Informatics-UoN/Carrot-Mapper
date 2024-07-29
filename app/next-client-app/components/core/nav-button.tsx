@@ -2,21 +2,17 @@
 
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-import { Item } from "./tab-group";
-import { Button } from "../button";
+import { Item } from "./nav-group";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import {
   LucideIcon,
-  FileScan,
-  View,
-  Ruler,
-  Table,
   Waypoints,
   TableProperties,
   SearchCheck,
 } from "lucide-react";
 
-export const Tab = ({
+export const NavButton = ({
   path,
   parallelRoutesKey,
   item,
@@ -47,13 +43,13 @@ export const Tab = ({
       <Link href={href}>
         <Button
           variant={"ghost"}
-          className={cn("rounded-md px-0 py-1 text-xl", {
+          className={cn("rounded-md px-0 py-1 text-lg", {
             "bg-white hover:text-carrot": !isActive,
             "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot":
               isActive,
           })}
         >
-          {item.text} {Icon && <Icon className="ml-2 size-5" />}
+          {item.text} {Icon && <Icon className="ml-2 size-4" />}
         </Button>
       </Link>
       |

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   BarChartHorizontalBig,
-  Download,
+  ChevronDown,
   FileJson,
   FilePieChart,
   FileSpreadsheet,
@@ -53,7 +53,7 @@ export function RulesButton({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
-              Download <Download className="ml-2 size-4" />
+              Download <ChevronDown className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-[170px]">

@@ -54,7 +54,7 @@ export default async function ScanReportsField({
 
   return (
     <div>
-      <Button variant={"secondary"} className="text-lg mb-3">
+      <Button variant={"secondary"} className="mb-3">
         Table: {tableName.name}
       </Button>
       <div>
