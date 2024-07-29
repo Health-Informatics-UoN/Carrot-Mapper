@@ -64,9 +64,6 @@ router.register(
 )
 
 router.register(r"datapartners", views.DataPartnerViewSet, basename="datapartners")
-router.register(
-    r"datapartnersfilter", views.DataPartnerFilterViewSet, basename="datapartnersfilter"
-)
 
 router.register(r"omoptables", views.OmopTableViewSet, basename="omoptables")
 router.register(r"omopfields", views.OmopFieldViewSet, basename="omopfields")

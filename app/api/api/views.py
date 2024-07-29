@@ -1055,13 +1055,6 @@ class DataPartnerViewSet(viewsets.ModelViewSet):
         )
 
 
-class DataPartnerFilterViewSet(viewsets.ModelViewSet):
-    queryset = DataPartner.objects.all()
-    serializer_class = DataPartnerSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["name"]
-
-
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset = OmopTable.objects.all()
     serializer_class = OmopTableSerializer
