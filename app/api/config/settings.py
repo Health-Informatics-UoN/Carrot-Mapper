@@ -125,6 +125,7 @@ DATABASES = {
         "OPTIONS": {
             "options": "-c statement_timeout=20s",
         },
+        "CONN_MAX_AGE": None,
     }
 }
 
