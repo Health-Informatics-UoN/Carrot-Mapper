@@ -35,7 +35,7 @@ export default async function ScanReportsValue({
   params: { id, tableId, fieldId },
   searchParams,
 }: ScanReportsValueProps) {
-  const defaultPageSize = 30;
+  const defaultPageSize = 20;
   const defaultParams = {
     scan_report_field: fieldId,
     page_size: defaultPageSize,
@@ -63,7 +63,6 @@ export default async function ScanReportsValue({
           scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
-
   return (
     <div className="pt-10 px-16">
       <div>
