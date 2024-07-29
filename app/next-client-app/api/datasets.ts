@@ -7,14 +7,17 @@ const fetchKeys = {
   list: (filter?: string) =>
     filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
-  datasetList: (dataPartnerId: string) =>
-    `datasets/?data_partner=${dataPartnerId}&hidden=false`,
+  datasetList: (dataPartnerId?: string) =>
+    dataPartnerId
+      ? `datasets/?data_partner=${dataPartnerId}&hidden=false`
+      : "datasets/",
   dataPartners: () => "datapartners/",
   users: () => "usersfilter/?is_active=true",
   projects: (dataset?: string) =>
     dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
   permissions: (id: string) => `dataset/${id}/permissions/`,
+  create: "datasets/create/",
 };
 
 export async function getDataSets(
@@ -49,7 +52,9 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
   }
 }
 
-export async function getDatasetList(filter: string): Promise<DataSetSRList[]> {
+export async function getDatasetList(
+  filter?: string
+): Promise<DataSetSRList[]> {
   try {
     return await request<DataSetSRList>(fetchKeys.datasetList(filter));
   } catch (error) {
@@ -124,5 +129,20 @@ export async function getDatasetPermissions(
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { permissions: [] };
+  }
+}
+
+export async function createDataset(data: {}) {
+  try {
+    await request(fetchKeys.create, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    revalidatePath("");
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
 }

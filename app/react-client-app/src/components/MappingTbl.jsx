@@ -468,9 +468,6 @@ const MappingTbl = (props) => {
         <Button variant="blue" onClick={onOpen}>
           Show Summary view
         </Button>
-        <Button variant="blue" onClick={onOpenAnalyse}>
-          Analyse Rules
-        </Button>
       </Wrap>
 
       <div>

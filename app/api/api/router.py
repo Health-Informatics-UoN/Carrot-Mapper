@@ -73,4 +73,7 @@ router.register(r"omopfields", views.OmopFieldViewSet, basename="omopfields")
 
 router.register(r"mappingrules", views.MappingRuleViewSet, basename="mappingrule")
 router.register(r"mappingruleslist", views.RulesList, basename="getlist")
+router.register(
+    r"mappingruleslistsummary", views.SummaryRulesList, basename="getsummarylist"
+)
 router.register(r"analyse", views.AnalyseRules, basename="getanalysis")

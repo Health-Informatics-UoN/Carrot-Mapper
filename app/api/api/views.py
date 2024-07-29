@@ -113,7 +113,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
-    queryset = Concept.objects.all()
+    queryset = Concept.objects.all().order_by("concept_id")
     serializer_class = ConceptSerializer
     filter_backends = [DjangoFilterBackend]
     pagination_class = CustomPagination
@@ -402,6 +402,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         valid_data_dictionary_file = validatedFiles.get("data_dictionary_file")
         valid_scan_report_file = validatedFiles.get("scan_report_file")
         valid_visibility = validatedData.get("visibility")
+        valid_viewers = validatedData.get("viewers")
         valid_editors = validatedData.get("editors")
         valid_dataset = validatedData.get("dataset")
         valid_parent_dataset = validatedData.get("parent_dataset")
@@ -420,13 +421,17 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         scan_report.author = self.request.user
         scan_report.save()
 
+        # Add viewers to the scan report if specified
+        if sr_viewers := valid_viewers:
+            scan_report.viewers.add(*sr_viewers)
+
         # Add editors to the scan report if specified
         if sr_editors := valid_editors:
             scan_report.editors.add(*sr_editors)
 
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
-        if str(valid_data_dictionary_file) == "undefined":
+        if str(valid_data_dictionary_file) == "None":
             azure_dict = {
                 "scan_report_id": scan_report.id,
                 "scan_report_blob": scan_report.name,
@@ -633,7 +638,7 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
 
 
 class DatasetCreateView(generics.CreateAPIView):
-    serializer_class = DatasetViewSerializer
+    serializer_class = DatasetViewSerializerV2
     queryset = Dataset.objects.all()
 
     def perform_create(self, serializer):
@@ -1022,7 +1027,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportConcept.objects.all()
+    queryset = ScanReportConcept.objects.all().order_by("id")
     serializer_class = ScanReportConceptSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
@@ -1103,13 +1108,64 @@ class RulesList(viewsets.ModelViewSet):
         count = queryset.count()
 
         # Get subset of mapping rules that fit onto the page to be displayed
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 30)
         rules = get_mapping_rules_list(
             queryset, page_number=int(p), page_size=int(page_size)
         )
 
         # Process all rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
+
+
+class SummaryRulesList(RulesList):
+    def list(self, request):
+        # Get p and page_size from query_params
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 20)
+        # Get queryset
+        queryset = self.get_queryset()
+
+        # Directly filter OmopField objects that end with "_concept_id" but not "_source_concept_id"
+        omop_fields_queryset = OmopField.objects.filter(
+            pk__in=queryset.values_list("omop_field_id", flat=True),
+            field__endswith="_concept_id",
+        ).exclude(field__endswith="_source_concept_id")
+
+        ids_list = omop_fields_queryset.values_list("id", flat=True)
+        # Filter the queryset based on valid omop_field_ids
+        filtered_queryset = queryset.filter(omop_field_id__in=ids_list)
+        count = filtered_queryset.count()
+        # Get the rules list based on the filtered queryset
+        rules = get_mapping_rules_list(
+            filtered_queryset, page_number=int(p), page_size=int(page_size)
+        )
+        # Process rules
         for rule in rules:
             rule["destination_table"] = {
                 "id": int(str(rule["destination_table"])),

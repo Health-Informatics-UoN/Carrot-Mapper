@@ -19,16 +19,16 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
 
   const handleChangeStatus = async (newStatus: string) => {
     try {
-      await updateScanReport(id, "status", newStatus);
+      await updateScanReport(id, { status: newStatus });
       const newStatusText =
         statusOptions.find((option) => option.value === newStatus)?.label ?? "";
       toast.success(
-        `Scan Report ${dataset} status has changed to ${newStatusText}.`,
+        `Scan Report ${dataset} status has changed to ${newStatusText}.`
       );
     } catch (error) {
       const errorObj = JSON.parse((error as ApiError).message);
       toast.error(
-        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`,
+        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`
       );
       console.error(error);
     }

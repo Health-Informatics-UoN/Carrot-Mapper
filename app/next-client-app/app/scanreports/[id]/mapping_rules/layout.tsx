@@ -1,12 +1,14 @@
 import { getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
 
-export default async function ScanReportLayout({
+export default async function MappingRuleLayout({
   params,
   children,
+  summary_modal,
 }: Readonly<{
   params: { id: string };
   children: React.ReactNode;
+  summary_modal: React.ReactNode;
 }>) {
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
@@ -24,7 +26,10 @@ export default async function ScanReportLayout({
   }
   return (
     <>
-      <div>{children}</div>
+      <div>
+        {summary_modal}
+        {children}
+      </div>
     </>
   );
 }
