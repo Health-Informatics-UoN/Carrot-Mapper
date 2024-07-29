@@ -120,7 +120,7 @@ export default async function ScanReportLayout({
                 id={parseInt(params.id)}
                 status={scanreport.status}
                 dataset={scanreport.dataset}
-                customClassName="h-6"
+                customClassName="h-7"
               />
             </div>
           </div>
