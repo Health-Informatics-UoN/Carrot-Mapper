@@ -10,17 +10,18 @@ import {
 import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils"; // Import the cn function
 
 export function ScanReportStatus({
   id,
   status,
   dataset,
-  onLayout,
+  customClassName, // Add a className prop for additional customization
 }: {
   id: number;
   status: string;
   dataset: string;
-  onLayout?: boolean;
+  customClassName?: string;
 }) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
@@ -46,7 +47,7 @@ export function ScanReportStatus({
   return (
     <Select value={status} onValueChange={handleChangeStatus}>
       <SelectTrigger
-        className={`w-[180px] ${textColorClassName}  ${onLayout && "h-7"}`}
+        className={cn("w-[180px]", textColorClassName, customClassName)}
       >
         <SelectValue />
       </SelectTrigger>

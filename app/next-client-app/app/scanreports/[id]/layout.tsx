@@ -63,7 +63,7 @@ export default async function ScanReportLayout({
   }
   return (
     <>
-      <div className="pt-10 px-16 space-y-3">
+      <div className="pt-10 px-16 space-y-2">
         <div>
           <Breadcrumb>
             <BreadcrumbList>
@@ -90,7 +90,7 @@ export default async function ScanReportLayout({
           <FileScan className="mr-2 text-green-700" />
           <h2>{scanreport.dataset}</h2>
         </div>
-        <div className="flex items-center text-md space-x-3">
+        <div className="flex items-center text-sm space-x-3">
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Dataset:{" "}
@@ -120,7 +120,7 @@ export default async function ScanReportLayout({
                 id={parseInt(params.id)}
                 status={scanreport.status}
                 dataset={scanreport.dataset}
-                onLayout
+                customClassName="h-7"
               />
             </div>
           </div>

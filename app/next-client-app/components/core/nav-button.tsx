@@ -43,7 +43,7 @@ export const NavButton = ({
       <Link href={href}>
         <Button
           variant={"ghost"}
-          className={cn("rounded-md px-0 py-1 text-lg", {
+          className={cn("rounded-md px-0 py-1", {
             "bg-white hover:text-carrot": !isActive,
             "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot":
               isActive,
