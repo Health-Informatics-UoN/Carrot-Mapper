@@ -27,7 +27,7 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import { Status } from "@/components/ui/layout/scanreport-status";
+import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 
 export default async function ScanReportLayout({
   params,
@@ -116,10 +116,11 @@ export default async function ScanReportLayout({
           <div>|</div>
           <div className="flex items-center">
             <div className="ml-2">
-              <Status
+              <ScanReportStatus
                 id={parseInt(params.id)}
                 status={scanreport.status}
                 dataset={scanreport.dataset}
+                onLayout
               />
             </div>
           </div>

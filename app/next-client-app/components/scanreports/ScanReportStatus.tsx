@@ -1,3 +1,4 @@
+"use client";
 import { updateScanReport } from "@/api/scanreports";
 import {
   Select,
