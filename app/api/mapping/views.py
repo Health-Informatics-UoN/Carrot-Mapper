@@ -1,4 +1,3 @@
-import base64
 import datetime
 import json
 import os
@@ -6,7 +5,6 @@ import random
 import string
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
-from azure.storage.queue import QueueClient
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
@@ -41,12 +39,7 @@ from shared.services.azurequeue import add_message
 
 from .forms import ScanReportAssertionForm, ScanReportForm
 from .permissions import has_editorship, has_viewership, is_admin
-from .services_nlp import start_nlp_field_level
-from .services_rules import (
-    download_mapping_rules,
-    download_mapping_rules_as_csv,
-    view_mapping_rules,
-)
+from .services.rules import get_mapping_rules_as_csv, get_mapping_rules_json, make_dag
 
 
 @login_required
@@ -57,21 +50,19 @@ def home(request):
 @login_required
 def update_scanreport_table_page(request, sr, pk):
     try:
-        # Get the SR table
         sr_table = ScanReportTable.objects.get(id=pk)
-        # Determine if the user can edit the form
-        can_edit = False
-        if (
-            sr_table.scan_report.author.id == request.user.id
-            or sr_table.scan_report.editors.filter(id=request.user.id).exists()
-            or sr_table.scan_report.parent_dataset.editors.filter(
-                id=request.user.id
-            ).exists()
-            or sr_table.scan_report.parent_dataset.admins.filter(
-                id=request.user.id
-            ).exists()
-        ):
-            can_edit = True
+        can_edit = bool(
+            (
+                sr_table.scan_report.author.id == request.user.id
+                or sr_table.scan_report.editors.filter(id=request.user.id).exists()
+                or sr_table.scan_report.parent_dataset.editors.filter(
+                    id=request.user.id
+                ).exists()
+                or sr_table.scan_report.parent_dataset.admins.filter(
+                    id=request.user.id
+                ).exists()
+            )
+        )
         # Set the page context
         context = {"can_edit": can_edit, "pk": pk}
         if (
@@ -107,25 +98,48 @@ class StructuralMappingTableListView(ListView):
             body = {}
         if (
             request.POST.get("download_rules") is not None
-            or body.get("download_rules", None) is not None
+            or body.get("download_rules") is not None
         ):
-            qs = self.get_queryset()
-            return download_mapping_rules(request, qs)
+            return self._download_json()
         elif (
             request.POST.get("download_rules_as_csv") is not None
-            or body.get("download_rules_as_csv", None) is not None
+            or body.get("download_rules_as_csv") is not None
         ):
+            return self._download_csv()
+        elif request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
             qs = self.get_queryset()
-            return download_mapping_rules_as_csv(request, qs)
-        elif (
-            request.POST.get("get_svg") is not None
-            or body.get("get_svg", None) is not None
-        ):
-            qs = self.get_queryset()
-            return view_mapping_rules(request, qs)
+            output = get_mapping_rules_json(qs)
+
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
         else:
             messages.error(request, "not working right now!")
             return redirect(request.path)
+
+    def _download_csv(self):
+        qs = self.get_queryset()
+        scan_report = qs[0].scan_report
+        return_type = "csv"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+        _buffer = get_mapping_rules_as_csv(qs)
+
+        response = HttpResponse(_buffer, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
+
+    def _download_json(self):
+        qs = self.get_queryset()
+        output = get_mapping_rules_json(qs)
+        scan_report = qs[0].scan_report
+        return_type = "json"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+
+        response = HttpResponse(
+            json.dumps(output, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -394,39 +408,6 @@ def password_reset_request(request):
         template_name="/registration/password_reset.html",
         context={"password_reset_form": password_reset_form},
     )
-
-
-def load_omop_fields(request):
-    omop_table_id = request.GET.get("omop_table")
-    omop_fields = OmopField.objects.filter(table_id=omop_table_id).order_by("field")
-    return render(
-        request,
-        "mapping/omop_table_dropdown_list_options.html",
-        {"omop_fields": omop_fields},
-    )
-
-
-# To be removed
-# Run NLP at the field level
-def run_nlp_field_level(request):
-    search_term = request.GET.get("search", None)
-    field = ScanReportField.objects.get(pk=search_term)
-    start_nlp_field_level(request, search_term=search_term)
-
-    return redirect("/fields/?search={}".format(field.scan_report_table.id))
-
-
-# To be removed
-# Run NLP for all fields/values within a table
-def run_nlp_table_level(request):
-    search_term = request.GET.get("search", None)
-    table = ScanReportTable.objects.get(pk=search_term)
-    fields = ScanReportField.objects.filter(scan_report_table=search_term)
-
-    for item in fields:
-        start_nlp_field_level(search_term=item.id)
-
-    return redirect("/tables/?search={}".format(table.id))
 
 
 @login_required
