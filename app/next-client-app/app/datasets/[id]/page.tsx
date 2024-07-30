@@ -38,7 +38,7 @@ export default async function DatasetSRList({
           : "active"
       }
     >
-      <TabsList className="mb-2">
+      <TabsList>
         <a href="?hidden=false" className="h-full">
           <TabsTrigger value="active">Active Reports</TabsTrigger>
         </a>

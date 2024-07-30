@@ -90,7 +90,6 @@ export default async function DatasetLayout({
           <Folders className="mr-2 text-blue-700" />
           <h2>{dataset.name}</h2>
         </div>
-        {/* Details line */}
         <div className="flex items-center text-sm space-x-3">
           <div>
             <h3 className="text-gray-500 flex items-center gap-2">
