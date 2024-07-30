@@ -1,7 +1,7 @@
 import json
 
 from django.core.management.base import BaseCommand
-from mapping.services_rules import get_mapping_rules_json, make_dag
+from mapping.services.rules import get_mapping_rules_json, make_dag
 from shared.data.models import MappingRule
 
 

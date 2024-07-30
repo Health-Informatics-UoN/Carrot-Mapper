@@ -3,8 +3,8 @@ import os
 from io import StringIO
 
 from azure.storage.blob import BlobServiceClient, ContentSettings
-from django.http.response import HttpResponse
 from django.core.files.base import File
+from django.http.response import HttpResponse
 
 
 def download_data_dictionary_blob(blob_name, container="data-dictionaries"):
