@@ -10,6 +10,8 @@ import {
   Waypoints,
   TableProperties,
   SearchCheck,
+  Edit,
+  FileScan,
 } from "lucide-react";
 
 export const NavButton = ({
@@ -33,6 +35,8 @@ export const NavButton = ({
     SearchCheck,
     Waypoints,
     TableProperties,
+    FileScan,
+    Edit,
   };
 
   const Icon = item.iconName ? iconMap[item.iconName] : null;
