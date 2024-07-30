@@ -32,7 +32,7 @@ export function ScanReportStatus({
 
   const handleChangeStatus = async (newStatus: string) => {
     try {
-      await updateScanReport(id, { status: newStatus });
+      await updateScanReport(parseInt(id), { status: newStatus });
       const newStatusText =
         statusOptions.find((option) => option.value === newStatus)?.label ?? "";
       toast.success(
