@@ -326,7 +326,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportListViewSetV2(ScanReportListViewSet):
+class ScanReportListViewSetV2(viewsets.ModelViewSet):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
@@ -335,9 +335,9 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     - Includes custom filtering, ordering, and pagination.
     """
 
+    queryset = ScanReport.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     filterset_fields = {
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
@@ -347,6 +347,18 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
     pagination_class = CustomPagination
     ordering = "-created_at"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
+        return [permission() for permission in self.permission_classes]
 
     def get_scan_report_file(self, request):
         scan_report_file = request.data.get("scan_report_file", None)
