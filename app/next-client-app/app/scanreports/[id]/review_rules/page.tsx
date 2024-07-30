@@ -1,9 +1,9 @@
 import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
 import { DataTable } from "@/components/data-table";
-import { Modal } from "@/components/Modal";
 import { FilterParameters } from "@/types/filter";
 import { objToQuery } from "@/lib/client-utils";
+import { RulesButton } from "../mapping_rules/rules-buttons";
 
 interface SummaryProps {
   params: {
@@ -24,22 +24,18 @@ export default async function SummaryViewDialog({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  // TODO: Make the loading state, if possible
-  const summaryRules = await getSummaryRules(query);
 
+  const summaryRules = await getSummaryRules(query);
+  const rulesButton = <RulesButton scanreportId={id} query={query} />;
+  // TODO: Make the loading state, if possible
   return (
-    <Modal>
-      <div>
-        {summaryRules && (
-          <DataTable
-            columns={columns}
-            data={summaryRules.results}
-            count={summaryRules.count}
-            clickableRow={false}
-            defaultPageSize={defaultPageSize}
-          />
-        )}
-      </div>
-    </Modal>
+    <DataTable
+      columns={columns}
+      data={summaryRules.results}
+      count={summaryRules.count}
+      clickableRow={false}
+      defaultPageSize={defaultPageSize}
+      Filter={rulesButton}
+    />
   );
 }

@@ -9,39 +9,6 @@ import { usePathname } from "next/navigation";
 
 export const columns: ColumnDef<MappingRule>[] = [
   {
-    id: "Rule ID",
-    accessorKey: "rule_id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Rule ID" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-  },
-  {
-    id: "Destination Table",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Destination Table" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { destination_table } = row.original;
-      return destination_table.name;
-    },
-  },
-  {
-    id: "Destination Field",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Destination Field" />
-    ),
-    enableHiding: true,
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { destination_field } = row.original;
-      return destination_field.name;
-    },
-  },
-  {
     id: "Source Table",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Source Table" />
@@ -68,13 +35,19 @@ export const columns: ColumnDef<MappingRule>[] = [
     enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { source_table, source_field } = row.original;
+      const { source_table, source_field, term_mapping } = row.original;
       const path = usePathname();
       const id = path.match(/\/(\d+)\/+/) ?? [];
-
       return (
+        // Link directly to the value having the associated concept
         <Link
-          href={`/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`}
+          href={
+            term_mapping && typeof term_mapping === "object"
+              ? `/scanreports/${id[1]}/tables/${source_table.id}/fields/${
+                  source_field.id
+                }/?value__icontains=${Object.keys(term_mapping ?? {})}`
+              : `/scanreports/${id[1]}/tables/${source_table.id}/fields/${source_field.id}`
+          }
         >
           <Button variant="outline">{source_field.name}</Button>
         </Link>
@@ -114,6 +87,18 @@ export const columns: ColumnDef<MappingRule>[] = [
       ) : (
         <></>
       );
+    },
+  },
+  {
+    id: "Destination Table",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Destination Table" />
+    ),
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { destination_table } = row.original;
+      return destination_table.name;
     },
   },
   {

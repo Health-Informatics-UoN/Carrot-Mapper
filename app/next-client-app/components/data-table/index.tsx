@@ -28,8 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "./DataTablePagination";
-import { MixerHorizontalIcon } from "@radix-ui/react-icons";
-import { useRouter } from "next/navigation";
+import { Columns3 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -86,8 +85,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex justify-between my-4">
+      <div className="flex justify-between mb-3">
         {Filter}
+        {/* Views Columns Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -95,8 +95,7 @@ export function DataTable<TData, TValue>({
               variant="outline"
               className="ml-auto hidden lg:flex"
             >
-              <MixerHorizontalIcon className="mr-2 size-4" />
-              View
+              Columns <Columns3 className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -122,7 +121,6 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div></div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -196,7 +194,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-center space-x-2 py-4">
+      <div className="flex items-center justify-center space-x-2 pt-4">
         <DataTablePagination count={count} defaultPageSize={defaultPageSize} />
       </div>
     </div>

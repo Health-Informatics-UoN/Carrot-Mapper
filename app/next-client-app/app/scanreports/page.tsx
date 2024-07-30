@@ -47,7 +47,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Scan Reports</h1>
       </div>
-      <div className="my-5">
+      <div className="my-3">
         <Tabs
           defaultValue={
             (searchParams as any)?.hidden
@@ -57,7 +57,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               : "active"
           }
         >
-          <TabsList className="">
+          <TabsList className="mb-2">
             <a href="?hidden=false" className="h-full">
               <TabsTrigger value="active">Active Reports</TabsTrigger>
             </a>
@@ -71,6 +71,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
               data={scanReports.results}
               count={scanReports.count}
               Filter={filter}
+              defaultPageSize={defaultPageSize}
             />
           </TabsContent>
           <TabsContent value="archived">

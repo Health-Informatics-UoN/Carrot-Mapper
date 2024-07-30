@@ -96,7 +96,15 @@ export const columns: ColumnDef<ScanReportList>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      return <ScanReportStatus row={row} />;
+      const { id, status, dataset } = row.original;
+      return (
+        <ScanReportStatus
+          id={id.toString()}
+          status={status}
+          dataset={dataset}
+          className="w-[180px]"
+        />
+      );
     },
   },
   {
