@@ -3,11 +3,12 @@ import logging
 import os
 import random
 import string
+import json
 from typing import Any
 from urllib.parse import urljoin
 
 import requests
-from api.filters import ScanReportAccessFilter
+from api.filters import ScanReportAccessFilter, ScanReportAccessFilterV2
 from api.paginations import CustomPagination
 from api.serializers import (
     ConceptSerializer,
@@ -337,7 +338,11 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
 
     queryset = ScanReport.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+        ScanReportAccessFilter,
+    ]
     filterset_fields = {
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
