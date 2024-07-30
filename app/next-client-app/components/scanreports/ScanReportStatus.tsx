@@ -10,7 +10,7 @@ import {
 import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils"; // Import the cn function
+import { cn } from "@/lib/utils";
 import { SelectTriggerProps } from "@radix-ui/react-select";
 
 interface ScanReportStatusProps extends SelectTriggerProps {
