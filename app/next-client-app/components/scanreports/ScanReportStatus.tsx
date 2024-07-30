@@ -11,18 +11,21 @@ import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils"; // Import the cn function
+import { SelectTriggerProps } from "@radix-ui/react-select";
+
+interface ScanReportStatusProps extends SelectTriggerProps {
+  id: string;
+  status: string;
+  dataset: string;
+  className?: string;
+}
 
 export function ScanReportStatus({
   id,
   status,
   dataset,
-  customClassName, // Add a className prop for additional customization
-}: {
-  id: number;
-  status: string;
-  dataset: string;
-  customClassName?: string;
-}) {
+  className,
+}: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
@@ -46,9 +49,7 @@ export function ScanReportStatus({
 
   return (
     <Select value={status} onValueChange={handleChangeStatus}>
-      <SelectTrigger
-        className={cn("w-[180px]", textColorClassName, customClassName)}
-      >
+      <SelectTrigger className={cn(textColorClassName, className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

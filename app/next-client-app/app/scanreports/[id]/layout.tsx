@@ -117,10 +117,10 @@ export default async function ScanReportLayout({
           <div className="flex items-center">
             <div className="ml-2">
               <ScanReportStatus
-                id={parseInt(params.id)}
+                id={params.id}
                 status={scanreport.status}
                 dataset={scanreport.dataset}
-                customClassName="h-7"
+                className="w-[180px] h-7"
               />
             </div>
           </div>

@@ -13,7 +13,7 @@ const fetchKeys = {
   scanReport: (id: string | number) => `v2/scanreports/${id}/`,
   tableName: (id: string) => `scanreporttables/${id}/`,
   fieldName: (id: string | null) => `scanreportfields/${id}/`,
-  update: (id: number) => `scanreports/${id}/`,
+  update: (id: string) => `scanreports/${id}/`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
   permissions: (id: string) => `scanreports/${id}/permissions/`,
   createScanreport: "v2/scanreports/",
@@ -169,7 +169,7 @@ export async function getScanReportField(id: string): Promise<ScanReportField> {
 }
 
 export async function updateScanReport(
-  id: number,
+  id: string,
   data: {},
   needRedirect?: boolean
 ) {
