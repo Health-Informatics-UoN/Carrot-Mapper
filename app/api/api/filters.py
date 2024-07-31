@@ -20,15 +20,10 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         model = queryset.model.__name__.lower()
         relationship = self.RELATIONSHIP_MAPPING.get(model, "")
-        print(model, relationship)
         user_id = request.user.id
 
         visibility_conditions = self.get_visibility_conditions(relationship)
         permission_conditions = self.get_permission_conditions(relationship, user_id)
-        print(visibility_conditions, permission_conditions)
-        print(
-            queryset.filter((visibility_conditions & permission_conditions)).distinct()
-        )
         return queryset.filter(
             (visibility_conditions & permission_conditions)
         ).distinct()
@@ -85,47 +80,74 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
 
 
 class ScanReportAccessFilterV2(filters.BaseFilterBackend):
+    RELATIONSHIP_MAPPING = {
+        "scanreport": "",
+        "scanreporttable": "scan_report__",
+        "scanreportfield": "scan_report_table__scan_report__",
+        "scanreportvalue": "scan_report_field__scan_report_table__scan_report__",
+    }
+
     def filter_queryset(self, request, queryset, view):
         user = request.user
 
         if user.username == os.getenv("AZ_FUNCTION_USER"):
             return queryset
 
+        model = queryset.model.__name__.lower()
+        relationship = self.RELATIONSHIP_MAPPING.get(model, "")
+        # Get the conditions based on the visibility and permissions
+        conditions = self.get_visibility_and_permission_conditions(
+            relationship, user.id
+        )
+
         return (
-            queryset.filter(
-                (
-                    Q(parent_dataset__visibility=VisibilityChoices.PUBLIC)
-                    & (
-                        Q(visibility=VisibilityChoices.PUBLIC)
-                        | (
-                            Q(visibility=VisibilityChoices.RESTRICTED)
-                            & (
-                                Q(viewers=user.id)
-                                | Q(editors=user.id)
-                                | Q(author=user.id)
-                                | Q(parent_dataset__editors=user.id)
-                                | Q(parent_dataset__admins=user.id)
-                            )
-                        )
-                    )
-                )
+            queryset.filter(conditions)
+            .filter(**{f"{relationship}parent_dataset__project__members": user.id})
+            .distinct()
+        )
+
+    # Combining visibility and permission checkings, based on the original logic in V1 of SR list view
+    def get_visibility_and_permission_conditions(
+        self, relationship: str, user_id: int
+    ) -> Q:
+        dataset_visibility = f"{relationship}parent_dataset__visibility"
+        scan_report_visibility = f"{relationship}visibility"
+
+        return (
+            # The dataset is public
+            Q(**{dataset_visibility: VisibilityChoices.PUBLIC})
+            & (
+                # The dataset is public and the SR is Public
+                Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
                 | (
-                    Q(parent_dataset__visibility=VisibilityChoices.RESTRICTED)
+                    # The dataset is public and SR is Restricted
+                    Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
                     & (
-                        Q(parent_dataset__admins=user.id)
-                        | Q(parent_dataset__editors=user.id)
-                        | (
-                            Q(parent_dataset__viewers=user.id)
-                            & (
-                                Q(viewers=user.id)
-                                | Q(editors=user.id)
-                                | Q(author=user.id)
-                                | Q(visibility=VisibilityChoices.PUBLIC)
-                            )
-                        )
+                        # and user is either viewer/editor/author of SR or parent DS's editor/admin
+                        Q(**{f"{relationship}viewers": user_id})
+                        | Q(**{f"{relationship}editors": user_id})
+                        | Q(**{f"{relationship}author": user_id})
+                        | Q(**{f"{relationship}parent_dataset__editors": user_id})
+                        | Q(**{f"{relationship}parent_dataset__admins": user_id})
                     )
                 )
             )
-            .filter(parent_dataset__project__members=user.id)
-            .distinct()
+        ) | (
+            # The dataset and SR are Restricted
+            Q(**{dataset_visibility: VisibilityChoices.RESTRICTED})
+            & (
+                # And user is either admin/editor of the parent DS
+                Q(**{f"{relationship}parent_dataset__admins": user_id})
+                | Q(**{f"{relationship}parent_dataset__editors": user_id})
+                | (
+                    # Or they are viewer of the DS then they should be either SR's viewer/editor/author or that SR is Public
+                    Q(**{f"{relationship}parent_dataset__viewers": user_id})
+                    & (
+                        Q(**{f"{relationship}viewers": user_id})
+                        | Q(**{f"{relationship}editors": user_id})
+                        | Q(**{f"{relationship}author": user_id})
+                        | Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
+                    )
+                )
+            )
         )
