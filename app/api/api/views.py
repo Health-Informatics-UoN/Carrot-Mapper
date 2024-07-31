@@ -8,7 +8,7 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
-from api.filters import ScanReportAccessFilter, ScanReportAccessFilterV2
+from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
     ConceptSerializer,
@@ -341,7 +341,7 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
     filter_backends = [
         DjangoFilterBackend,
         OrderingFilter,
-        ScanReportAccessFilterV2,
+        ScanReportAccessFilter,
     ]
     filterset_fields = {
         "hidden": ["exact"],
@@ -816,7 +816,7 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
         "name": ["in", "icontains"],
         "id": ["in", "exact"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilterV2]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
     ordering = "-created_at"
@@ -958,7 +958,7 @@ class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilterV2]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
