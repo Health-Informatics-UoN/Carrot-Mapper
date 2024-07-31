@@ -31,19 +31,19 @@ export function ScanReportStatus({
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
-    try {
-      await updateScanReport(parseInt(id), { status: newStatus });
-      const newStatusText =
-        statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+    const response = await updateScanReport(parseInt(id), {
+      status: newStatus,
+    });
+    const newStatusText =
+      statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+    if (response) {
+      toast.error(
+        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`
+      );
+    } else {
       toast.success(
         `Scan Report ${dataset} status has changed to ${newStatusText}.`
       );
-    } catch (error) {
-      const errorObj = JSON.parse((error as ApiError).message);
-      toast.error(
-        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`
-      );
-      console.error(error);
     }
   };
 
