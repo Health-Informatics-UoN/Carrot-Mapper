@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import random
@@ -842,10 +843,6 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
 
-    @method_decorator(cache_page(60 * 15))
-    @method_decorator(vary_on_cookie)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
