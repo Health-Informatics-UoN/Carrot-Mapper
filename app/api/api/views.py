@@ -842,7 +842,6 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
 
-
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(
             data=request.data, many=isinstance(request.data, list)
