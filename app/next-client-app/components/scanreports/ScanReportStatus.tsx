@@ -18,6 +18,7 @@ interface ScanReportStatusProps extends SelectTriggerProps {
   status: string;
   dataset: string;
   className?: string;
+  disabled: boolean;
 }
 
 export function ScanReportStatus({
@@ -25,6 +26,7 @@ export function ScanReportStatus({
   status,
   dataset,
   className,
+  disabled,
 }: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
@@ -48,7 +50,11 @@ export function ScanReportStatus({
   };
 
   return (
-    <Select value={status} onValueChange={handleChangeStatus}>
+    <Select
+      value={status}
+      onValueChange={handleChangeStatus}
+      disabled={disabled}
+    >
       <SelectTrigger className={cn(textColorClassName, className)}>
         <SelectValue />
       </SelectTrigger>
