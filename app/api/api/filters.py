@@ -1,7 +1,6 @@
 from django.db.models.query_utils import Q
 from rest_framework import filters
 from shared.data.models import VisibilityChoices
-import os
 
 
 class ScanReportAccessFilter(filters.BaseFilterBackend):
@@ -20,10 +19,12 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         model = queryset.model.__name__.lower()
         relationship = self.RELATIONSHIP_MAPPING.get(model, "")
+
         user_id = request.user.id
 
         visibility_conditions = self.get_visibility_conditions(relationship)
         permission_conditions = self.get_permission_conditions(relationship, user_id)
+
         return queryset.filter(
             (visibility_conditions & permission_conditions)
         ).distinct()
