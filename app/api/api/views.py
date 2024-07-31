@@ -951,15 +951,29 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
+class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
+    # Need to reset to see the change in data returned?!
+    queryset = ScanReportField.objects.all()
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilterV2]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
