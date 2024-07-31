@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import random
@@ -803,11 +804,6 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
-
-    @method_decorator(cache_page(60 * 15))
-    @method_decorator(vary_on_cookie)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
