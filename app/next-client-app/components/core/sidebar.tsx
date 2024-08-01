@@ -7,6 +7,7 @@ import { BookMarked, FileScan, Folders, Home, Upload } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { SidebarDesktop } from "./sidebar-desktop";
+
 export interface SidebarItems {
   links: Array<{
     label: string;

@@ -1,11 +1,9 @@
 import "./globals.css";
 import "./custom.css";
-import "bootstrap/dist/css/bootstrap.css";
 import "react-tooltip/dist/react-tooltip.css";
 import type { Metadata } from "next";
-import BootstrapClient from "@/components/BootstrapClient";
-import { Navbar } from "@/components/Navbar";
 import { Toaster } from "sonner";
+import { Sidebar } from "@/components/core/sidebar";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -19,10 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body style={{ paddingTop: "60px", paddingBottom: "20px" }}>
-        <Navbar />
+      <body>
+        <Sidebar />
         {children}
-        <BootstrapClient />
+
         <Toaster
           toastOptions={{
             classNames: {
