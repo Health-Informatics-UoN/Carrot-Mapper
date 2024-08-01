@@ -12,6 +12,7 @@ import {
 } from "@/api/datasets";
 import { ScanReportDetailsForm } from "@/components/scanreports/ScanReportDetailsForm";
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
+import { Forbidden } from "@/components/core/Forbidden";
 
 interface ScanReportDetailsProps {
   params: {
@@ -32,7 +33,17 @@ export default async function ScanreportDetails({
     parent_dataset?.id.toString() || ""
   );
   const permissionsSR = await getScanReportPermissions(id);
+  const canEdit =
+    permissionsSR.permissions.includes("CanEdit") ||
+    permissionsSR.permissions.includes("CanAdmin");
   const isAuthor = permissionsSR.permissions.includes("IsAuthor");
+  if (!canEdit) {
+    return (
+      <div>
+        <Forbidden />
+      </div>
+    );
+  }
 
   return (
     <div>
