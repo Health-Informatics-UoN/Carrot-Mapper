@@ -16,6 +16,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { AlertCircleIcon } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { ScanReportTableUpdateForm } from "@/components/scanreports/ScanReportTableUpdateForm";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface UpdateTableProps {
   params: {
@@ -38,7 +40,6 @@ export default async function UpdateTable({
 
   const scanReportsFields = await getAllScanReportFields(query);
 
-  const scanReportsName = await getScanReport(id);
   const table = await getScanReportTable(tableId);
   const personId = await getScanReportField(table.person_id as string);
   const dateEvent = await getScanReportField(table.date_event as string);
@@ -46,6 +47,11 @@ export default async function UpdateTable({
 
   return (
     <div>
+      <Link href={`/scanreports/${id}/tables/${tableId}`}>
+        <Button variant={"secondary"} className="mb-3">
+          Update Table: {table.name}
+        </Button>
+      </Link>
       {(table.date_event === null || table.person_id === null) && (
         <Alert className="flex items-center gap-3 bg-carrot text-white mt-3 w-1/2">
           <div>
@@ -62,7 +68,7 @@ export default async function UpdateTable({
           </div>
         </Alert>
       )}
-      <div className="mt-3">
+      <div className="mt-1">
         <ScanReportTableUpdateForm
           scanreportFields={scanReportsFields}
           scanreportTable={table}
