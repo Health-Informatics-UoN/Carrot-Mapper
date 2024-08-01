@@ -33,11 +33,9 @@ export default async function ScanreportDetails({
     parent_dataset?.id.toString() || ""
   );
   const permissionsSR = await getScanReportPermissions(id);
-  const canEdit =
-    permissionsSR.permissions.includes("CanEdit") ||
-    permissionsSR.permissions.includes("CanAdmin");
   const isAuthor = permissionsSR.permissions.includes("IsAuthor");
-  if (!canEdit) {
+
+  if (permissionsDS.permissions.length === 0) {
     return (
       <div>
         <Forbidden />
