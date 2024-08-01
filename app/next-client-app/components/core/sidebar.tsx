@@ -19,6 +19,7 @@ import { usePathname } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 interface SidebarItems {
   links: Array<{
@@ -30,6 +31,10 @@ interface SidebarItems {
 
 export function Sidebar({ userName }: { userName: string }) {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   const sidebarItems: SidebarItems = {
     links: [
@@ -52,7 +57,7 @@ export function Sidebar({ userName }: { userName: string }) {
     <div className="flex gap-3 mt-4 px-10 items-center border-b-2 border-gray-300 pb-3">
       <div className="flex items-center">
         {" "}
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button size="icon" variant="ghost">
               <Menu size={25} />

@@ -30,7 +30,7 @@ export default async function ScanReportsEditField({
   const permissions = await getScanReportPermissions(id);
 
   return (
-    <div className="pt-10 px-16">
+    <div className="pt-5 px-16">
       <div>
         <Breadcrumb>
           <BreadcrumbList>
