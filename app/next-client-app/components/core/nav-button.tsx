@@ -2,21 +2,19 @@
 
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-import { Item } from "./tab-group";
-import { Button } from "../button";
+import { Item } from "./nav-group";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import {
   LucideIcon,
-  FileScan,
-  View,
-  Ruler,
-  Table,
   Waypoints,
   TableProperties,
   SearchCheck,
+  Edit,
+  FileScan,
 } from "lucide-react";
 
-export const Tab = ({
+export const NavButton = ({
   path,
   parallelRoutesKey,
   item,
@@ -30,8 +28,6 @@ export const Tab = ({
   const isActive =
     // Example home pages e.g. `/layouts`
     (!item.slug && segment === null) ||
-    (!item.slug && segment === "tables") ||
-    (!item.slug && segment === "fields") ||
     segment === item.segment ||
     // Nested pages e.g. `/layouts/electronics`
     segment === item.slug;
@@ -39,6 +35,8 @@ export const Tab = ({
     SearchCheck,
     Waypoints,
     TableProperties,
+    FileScan,
+    Edit,
   };
 
   const Icon = item.iconName ? iconMap[item.iconName] : null;
@@ -49,13 +47,13 @@ export const Tab = ({
       <Link href={href}>
         <Button
           variant={"ghost"}
-          className={cn("rounded-md px-0 py-1 text-xl", {
+          className={cn("rounded-md px-0 py-1", {
             "bg-white hover:text-carrot": !isActive,
             "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot":
               isActive,
           })}
         >
-          {item.text} {Icon && <Icon className="ml-2 size-5" />}
+          {item.text} {Icon && <Icon className="ml-2 size-4" />}
         </Button>
       </Link>
       |

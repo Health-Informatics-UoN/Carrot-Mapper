@@ -1,6 +1,6 @@
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
-import { TabGroup } from "@/components/ui/layout/tab-group";
+import { NavGroup } from "@/components/core/nav-group";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,7 +17,7 @@ import {
   GripVertical,
   TrashIcon,
 } from "lucide-react";
-import { Boundary } from "@/components/ui/layout/boundary";
+import { Boundary } from "@/components/core/boundary";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,7 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
+import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 
 export default async function ScanReportLayout({
   params,
@@ -38,7 +39,11 @@ export default async function ScanReportLayout({
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
 
-  const categories = [
+  const items = [
+    {
+      name: "Tables",
+      iconName: "TableProperties",
+    },
     { name: "Rules", slug: "mapping_rules", iconName: "Waypoints" },
     { name: "Review Rules", slug: "review_rules", iconName: "SearchCheck" },
   ];
@@ -58,7 +63,7 @@ export default async function ScanReportLayout({
   }
   return (
     <>
-      <div className="pt-10 px-16 space-y-3">
+      <div className="pt-10 px-16 space-y-2">
         <div>
           <Breadcrumb>
             <BreadcrumbList>
@@ -80,53 +85,59 @@ export default async function ScanReportLayout({
             </BreadcrumbList>
           </Breadcrumb>
         </div>
+        {/* Details line */}
         <div className="flex font-semibold text-3xl items-center">
           <FileScan className="mr-2 text-green-700" />
           <h2>{scanreport.dataset}</h2>
         </div>
-        <div className="flex items-center text-md space-x-2">
-          <div className="flex items-center space-x-2">
+        <div className="flex items-center text-sm space-x-3">
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              Status: <span className="text-black">{scanreport.status}</span>
-            </h3>
-          </div>
-          <div className="flex items-center space-x-2">
-            <h3 className="text-gray-500">
-              | Dataset:{" "}
+              Dataset:{" "}
               <span className="text-black">{scanreport.parent_dataset}</span>
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
+          <div>|</div>
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              | Data Partner:{" "}
+              Data Partner:{" "}
               <span className="text-black">{scanreport.data_partner}</span>
             </h3>
           </div>
-          <div className="flex items-center space-x-2">
+          <div>|</div>
+          <div className="flex items-center">
             <h3 className="text-gray-500">
-              | Created Date:{" "}
+              Created:{" "}
               <span className="text-black">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>
             </h3>
           </div>
+          <div>|</div>
+          <div className="flex items-center">
+            <div className="ml-2">
+              <ScanReportStatus
+                id={params.id}
+                status={scanreport.status}
+                dataset={scanreport.dataset}
+                className="w-[180px] h-7"
+              />
+            </div>
+          </div>
         </div>
-
+        {/* "Navs" group */}
         <div className="flex justify-between">
-          <TabGroup
+          <NavGroup
             path={`/scanreports/${params.id}`}
             items={[
-              {
-                text: "Tables",
-                iconName: "TableProperties",
-              },
-              ...categories.map((x) => ({
+              ...items.map((x) => ({
                 text: x.name,
                 slug: x.slug,
                 iconName: x.iconName,
               })),
             ]}
           />
+          {/* Actions button */}
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

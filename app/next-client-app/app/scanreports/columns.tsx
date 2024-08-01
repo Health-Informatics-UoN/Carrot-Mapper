@@ -96,23 +96,14 @@ export const columns: ColumnDef<ScanReportList>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      return <ScanReportStatus row={row} />;
-    },
-  },
-  {
-    id: "Rules",
-    accessorKey: "rules",
-    header: "",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const { id } = row.original;
+      const { id, status, dataset } = row.original;
       return (
-        <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
-          <Button variant={"outline"}>
-            Rules
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
+        <ScanReportStatus
+          id={id.toString()}
+          status={status}
+          dataset={dataset}
+          className="w-[180px]"
+        />
       );
     },
   },

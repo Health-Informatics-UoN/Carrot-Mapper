@@ -9,6 +9,7 @@ const config = {
     "./src/**/*.{ts,tsx}",
   ],
   safelist: [
+    "text-blue-500",
     "text-green-600",
     "text-red-900",
     "text-orange-300",

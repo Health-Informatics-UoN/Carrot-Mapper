@@ -1,3 +1,4 @@
+"use client";
 import { updateScanReport } from "@/api/scanreports";
 import {
   Select,
@@ -8,18 +9,30 @@ import {
 } from "@/components/ui/select";
 import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
-import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { SelectTriggerProps } from "@radix-ui/react-select";
 
-export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
-  const { id, status, dataset } = row.original;
+interface ScanReportStatusProps extends SelectTriggerProps {
+  id: string;
+  status: string;
+  dataset: string;
+  className?: string;
+}
+
+export function ScanReportStatus({
+  id,
+  status,
+  dataset,
+  className,
+}: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
     try {
-      await updateScanReport(id, { status: newStatus });
+      await updateScanReport(parseInt(id), { status: newStatus });
       const newStatusText =
         statusOptions.find((option) => option.value === newStatus)?.label ?? "";
       toast.success(
@@ -36,7 +49,7 @@ export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
 
   return (
     <Select value={status} onValueChange={handleChangeStatus}>
-      <SelectTrigger className={`${textColorClassName} w-[180px]`}>
+      <SelectTrigger className={cn(textColorClassName, className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

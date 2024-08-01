@@ -38,8 +38,8 @@ export const columns: ColumnDef<MappingRule>[] = [
       const { source_table, source_field, term_mapping } = row.original;
       const path = usePathname();
       const id = path.match(/\/(\d+)\/+/) ?? [];
-      // TODO: Where is the Skeleton????
       return (
+        // Link directly to the value having the associated concept
         <Link
           href={
             term_mapping && typeof term_mapping === "object"

@@ -61,11 +61,6 @@ urlpatterns = [
         views.ScanReportAssertionsUpdateView.as_view(),
         name="scan-report-assertion-update",
     ),
-    path("nlp/run", views.run_nlp_field_level, name="run-nlp"),
-    path("nlp/table/run", views.run_nlp_table_level, name="run-nlp-table"),
-    path(
-        "ajax/load-omop-fields/", views.load_omop_fields, name="ajax_load_omop_fields"
-    ),
     path(
         "password-change/", views.CCPasswordChangeView.as_view(), name="password_change"
     ),

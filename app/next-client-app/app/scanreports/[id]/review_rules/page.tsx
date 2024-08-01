@@ -28,7 +28,6 @@ export default async function SummaryViewDialog({
   const summaryRules = await getSummaryRules(query);
   const rulesButton = <RulesButton scanreportId={id} query={query} />;
   // TODO: Make the loading state, if possible
-  // TODO: When users use pagination here, the dialog modal will appear and they will have to do pagiantion there instead!?
   return (
     <DataTable
       columns={columns}
