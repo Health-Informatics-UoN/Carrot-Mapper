@@ -6,7 +6,6 @@ import {
   BookMarked,
   FileScan,
   Folders,
-  Home,
   LogOut,
   LucideIcon,
   Menu,
@@ -15,7 +14,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
-import { SidebarButtonSheet as SidebarButton } from "./sidebar-button";
+import { SidebarButton } from "./sidebar-button";
 import { usePathname } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
@@ -29,7 +28,7 @@ interface SidebarItems {
   }>;
 }
 
-export function Sidebar() {
+export function Sidebar({ userName }: { userName: string }) {
   const pathname = usePathname();
 
   const sidebarItems: SidebarItems = {
@@ -50,7 +49,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex gap-3 mt-3 px-10 items-center border-b-2 border-gray-300 pb-3">
+    <div className="flex gap-3 mt-4 px-10 items-center border-b-2 border-gray-300 pb-3">
       <div className="flex items-center">
         {" "}
         <Sheet>
@@ -59,7 +58,7 @@ export function Sidebar() {
               <Menu size={25} />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="px-3 py-4 w-[300px]">
+          <SheetContent side="left" className="px-3 py-4 w-[350px]">
             <SheetHeader className="flex flex-row justify-between items-center">
               <Link href={"/"}>
                 <div className="text-3xl text-orange-500 flex items-center font-bold">
@@ -95,17 +94,13 @@ export function Sidebar() {
                     <Button variant="outline" className="w-full justify-start">
                       <div className="flex justify-between items-center w-full">
                         <div className="flex gap-2">
-                          {/* {/* <Avatar className="h-5 w-5">
-                        <AvatarImage src="https://github.com/max-programming.png" />
-                        <AvatarFallback>Max Programming</AvatarFallback>
-                      </Avatar> */}
-                          <span>User Name</span>
+                          <span>{userName}</span>
                         </div>
                         <MoreHorizontal size={20} />
                       </div>
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent className="mb-2 p-2 w-[300px]">
+                  <DrawerContent className="mb-2 p-2 w-[350px]">
                     <div className="flex flex-col space-y-2 mt-2">
                       <Link href="/accounts/password_change/">
                         <SidebarButton

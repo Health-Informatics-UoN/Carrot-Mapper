@@ -14,6 +14,7 @@ router.register(
 
 router.register(r"users", views.UserViewSet, basename="users")
 router.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
+router.register(r"userspecific", views.SpecificUserViewSet, basename="userspecific")
 
 router.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
 router.register(

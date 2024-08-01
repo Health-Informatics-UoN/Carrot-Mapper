@@ -197,6 +197,19 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
 
 
+class SpecificUserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This view only returns a specific user object of the user who is making the request
+    """
+
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [DjangoFilterBackend]
+
+    def filter_queryset(self, queryset):
+        return queryset.filter(id=self.request.user.id)
+
+
 class ScanReportListViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"parent_dataset": ["exact"]}

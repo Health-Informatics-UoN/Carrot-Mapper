@@ -18,19 +18,11 @@ export function SidebarButton({
   return (
     <Button
       variant="ghost"
-      className={cn("gap-2 justify-start", className)}
+      className={cn("gap-2 justify-start focus-visible:ring-0", className)}
       {...props}
     >
       {Icon && <Icon size={20} />}
       <span>{children}</span>
     </Button>
-  );
-}
-
-export function SidebarButtonSheet(props: SidebarButtonProps) {
-  return (
-    <SheetClose asChild>
-      <SidebarButton {...props} />
-    </SheetClose>
   );
 }
