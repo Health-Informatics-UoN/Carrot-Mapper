@@ -381,7 +381,7 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
             return ScanReportViewSerializerV2
         if self.request.method in ["POST"]:
             return ScanReportFilesSerializer
-        if self.request.method in ["DELETE"]:
+        if self.request.method in ["DELETE", "PATCH", "PUT"]:
             return ScanReportEditSerializer
         return super().get_serializer_class()
 
