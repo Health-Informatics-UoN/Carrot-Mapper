@@ -59,14 +59,14 @@ export default async function ScanReportLayout({
     )
   ) {
     return (
-      <div className="pt-10 px-16">
+      <div className="pt-5 px-16">
         <Forbidden />
       </div>
     );
   }
   return (
     <>
-      <div className="pt-10 px-16 space-y-2">
+      <div className="pt-5 px-16 space-y-2">
         <div>
           <Breadcrumb>
             <BreadcrumbList>

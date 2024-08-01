@@ -58,7 +58,7 @@ export default async function DatasetLayout({
     )
   ) {
     return (
-      <div className="pt-10 px-16">
+      <div className="pt-5 px-16">
         <Forbidden />
       </div>
     );
