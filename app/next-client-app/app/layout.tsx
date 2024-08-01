@@ -21,7 +21,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Sidebar userName={user[0].username} />
+        <Sidebar userName={"dsf"} />
         <div className="mb-4">{children}</div>
         <Toaster
           toastOptions={{
