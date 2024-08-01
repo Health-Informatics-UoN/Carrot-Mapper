@@ -103,6 +103,7 @@ export const columns: ColumnDef<ScanReportList>[] = [
           status={status}
           dataset={dataset}
           className="w-[180px]"
+          disabled={false}
         />
       );
     },
