@@ -12,6 +12,7 @@ import {
 } from "@/api/datasets";
 import { ScanReportDetailsForm } from "@/components/scanreports/ScanReportDetailsForm";
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
+import { Forbidden } from "@/components/core/Forbidden";
 
 interface ScanReportDetailsProps {
   params: {
@@ -33,6 +34,14 @@ export default async function ScanreportDetails({
   );
   const permissionsSR = await getScanReportPermissions(id);
   const isAuthor = permissionsSR.permissions.includes("IsAuthor");
+
+  if (permissionsDS.permissions.length === 0) {
+    return (
+      <div>
+        <Forbidden />
+      </div>
+    );
+  }
 
   return (
     <div>
