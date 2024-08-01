@@ -19,48 +19,24 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         model = queryset.model.__name__.lower()
         relationship = self.RELATIONSHIP_MAPPING.get(model, "")
-
         user_id = request.user.id
 
-        visibility_conditions = self.get_visibility_conditions(relationship)
         permission_conditions = self.get_permission_conditions(relationship, user_id)
-
-        return queryset.filter(
-            (visibility_conditions & permission_conditions)
-        ).distinct()
-
-    def get_visibility_conditions(self, relationship: str) -> Q:
-        """
-        Get visibility conditions for a given relationship.
-
-        Args:
-            relationship (str): The relationship for which visibility conditions are needed.
-
-        Returns:
-            Q: Query object representing the visibility conditions.
-        """
-        dataset_visibility = f"{relationship}parent_dataset__visibility"
-        scan_report_visibility = f"{relationship}visibility"
-
-        return Q(
-            Q(**{dataset_visibility: VisibilityChoices.PUBLIC})
-            | Q(**{dataset_visibility: VisibilityChoices.RESTRICTED})
-        ) & Q(
-            Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
-            | Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
-        )
+        return queryset.filter(permission_conditions).distinct()
 
     def get_permission_conditions(self, relationship: str, user_id: str) -> Q:
         """
-        Get permission conditions for a given relationship and user.
+        Get combined visibility and permission conditions for a given relationship and user.
 
         Args:
-            relationship (str): The relationship for which permission conditions are needed.
-            user_id (str): The user ID for which permission conditions are generated.
+            relationship (str): The relationship for which conditions are needed.
+            user_id (str): The user ID for which conditions are generated.
 
         Returns:
-            Q: Query object representing the permission conditions.
+            Q: Query object representing the combined conditions.
         """
+        dataset_visibility = f"{relationship}parent_dataset__visibility"
+        scan_report_visibility = f"{relationship}visibility"
         scan_report_viewers = f"{relationship}viewers"
         scan_report_editors = f"{relationship}editors"
         scan_report_author = f"{relationship}author"
@@ -70,11 +46,38 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
         project_members = f"{relationship}parent_dataset__project__members"
 
         return Q(
-            Q(**{scan_report_viewers: user_id})
-            | Q(**{scan_report_editors: user_id})
-            | Q(**{scan_report_author: user_id})
-            | Q(**{dataset_viewers: user_id})
-            | Q(**{dataset_editors: user_id})
-            | Q(**{dataset_admins: user_id})
-            | Q(**{project_members: user_id})
-        )
+            # Public dataset and public scan report
+            Q(**{dataset_visibility: VisibilityChoices.PUBLIC})
+            & Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
+            | Q(  # Public dataset and restricted scan report
+                **{dataset_visibility: VisibilityChoices.PUBLIC}
+            )
+            & (
+                Q(**{scan_report_viewers: user_id})
+                | Q(**{scan_report_editors: user_id})
+                | Q(**{scan_report_author: user_id})
+                | Q(**{dataset_editors: user_id})
+                | Q(**{dataset_admins: user_id})
+            )
+            & Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
+            | Q(  # Restricted dataset and restricted scan report
+                **{dataset_visibility: VisibilityChoices.RESTRICTED}
+            )
+            & (
+                Q(**{scan_report_viewers: user_id})
+                | Q(**{scan_report_editors: user_id})
+                | Q(**{scan_report_author: user_id})
+                | Q(**{dataset_admins: user_id})
+                | Q(**{dataset_editors: user_id})
+            )
+            & Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
+            | Q(  # Restricted dataset and public scan report
+                **{dataset_visibility: VisibilityChoices.RESTRICTED}
+            )
+            & (
+                Q(**{dataset_editors: user_id})
+                | Q(**{dataset_admins: user_id})
+                | Q(**{dataset_viewers: user_id})
+            )
+            & Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
+        ) & Q(**{project_members: user_id})
