@@ -1,12 +1,12 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
 
 export function Forbidden() {
   return (
     <Alert variant="destructive">
       <div>
         <AlertTitle className="flex items-center">
-          <AlertCircle className="h-4 w-4 mr-2" />
+          <TriangleAlert className="h-4 w-4 mr-2" />
           Error
         </AlertTitle>
         <AlertDescription>
