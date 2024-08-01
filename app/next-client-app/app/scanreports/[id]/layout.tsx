@@ -38,6 +38,9 @@ export default async function ScanReportLayout({
 }>) {
   const permissions = await getScanReportPermissions(params.id);
   const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
+  const canEdit =
+    permissions.permissions.includes("CanEdit") ||
+    permissions.permissions.includes("CanAdmin");
 
   const items = [
     {
@@ -121,6 +124,7 @@ export default async function ScanReportLayout({
                 status={scanreport.status}
                 dataset={scanreport.dataset}
                 className="w-[180px] h-7"
+                disabled={!canEdit} // Disable when users don't have permission
               />
             </div>
           </div>

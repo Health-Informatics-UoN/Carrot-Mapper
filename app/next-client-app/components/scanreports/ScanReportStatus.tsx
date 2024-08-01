@@ -18,6 +18,7 @@ interface ScanReportStatusProps extends SelectTriggerProps {
   status: string;
   dataset: string;
   className?: string;
+  disabled: boolean;
 }
 
 export function ScanReportStatus({
@@ -25,30 +26,35 @@ export function ScanReportStatus({
   status,
   dataset,
   className,
+  disabled,
 }: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
-    try {
-      await updateScanReport(parseInt(id), { status: newStatus });
-      const newStatusText =
-        statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+    const response = await updateScanReport(parseInt(id), {
+      status: newStatus,
+    });
+    const newStatusText =
+      statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+    if (response) {
+      toast.error(
+        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`
+      );
+    } else {
       toast.success(
         `Scan Report ${dataset} status has changed to ${newStatusText}.`
       );
-    } catch (error) {
-      const errorObj = JSON.parse((error as ApiError).message);
-      toast.error(
-        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`
-      );
-      console.error(error);
     }
   };
 
   return (
-    <Select value={status} onValueChange={handleChangeStatus}>
+    <Select
+      value={status}
+      onValueChange={handleChangeStatus}
+      disabled={disabled}
+    >
       <SelectTrigger className={cn(textColorClassName, className)}>
         <SelectValue />
       </SelectTrigger>

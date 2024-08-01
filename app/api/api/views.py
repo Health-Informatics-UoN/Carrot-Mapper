@@ -327,7 +327,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportListViewSetV2(ScanReportListViewSet):
+class ScanReportListViewSetV2(viewsets.ModelViewSet):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
@@ -336,18 +336,41 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     - Includes custom filtering, ordering, and pagination.
     """
 
+    queryset = ScanReport.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+        ScanReportAccessFilter,
+    ]
     filterset_fields = {
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
         "status": ["in"],
         "parent_dataset": ["exact"],
     }
-    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
+    ordering_fields = [
+        "id",
+        "name",
+        "created_at",
+        "dataset",
+        # "data_partner", # disabled in the UI
+        "parent_dataset",  # enabled in the UI but wasn't applied here
+    ]
     pagination_class = CustomPagination
     ordering = "-created_at"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
+        return [permission() for permission in self.permission_classes]
 
     def get_scan_report_file(self, request):
         scan_report_file = request.data.get("scan_report_file", None)
@@ -786,7 +809,8 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ScanReportTableViewSetV2(ScanReportTableViewSet):
+class ScanReportTableViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportTable.objects.all()
     filterset_fields = {
         "scan_report": ["in", "exact"],
         "name": ["in", "icontains"],
@@ -795,6 +819,19 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
+    ordering = "-created_at"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -804,6 +841,68 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        """
+        Perform a partial update on the instance.
+
+        Args:
+            request (Any): The request object.
+            *args (Any): Additional positional arguments.
+            **kwargs (Any): Additional keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
+        instance = self.get_object()
+        partial = kwargs.pop("partial", True)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Delete the current mapping rules
+        delete_mapping_rules(instance.id)
+
+        # Map the table
+        scan_report_instance = instance.scan_report
+        data_dictionary_name = (
+            scan_report_instance.data_dictionary.name
+            if scan_report_instance.data_dictionary
+            else None
+        )
+
+        # Send to functions
+        msg = {
+            "scan_report_id": scan_report_instance.id,
+            "table_id": instance.id,
+            "data_dictionary_blob": data_dictionary_name,
+        }
+        base_url = f"{settings.AZ_URL}"
+        trigger = (
+            f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
+        )
+        try:
+            response = requests.post(urljoin(base_url, trigger), json=msg)
+            response.raise_for_status()
+        except request.exceptions.HTTPError as e:
+            logging.error(f"HTTP Trigger failed: {e}")
+
+        # TODO: The worker_id can be used for status, but we need to save it somewhere.
+        # resp_json = response.json()
+        # worker_id = resp_json.get("instanceId")
+
+        return Response(serializer.data)
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
@@ -847,7 +946,9 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
+class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
+    # Need to reset to see the change in data returned?!
+    queryset = ScanReportField.objects.all()
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
@@ -856,6 +957,18 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
