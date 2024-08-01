@@ -34,7 +34,6 @@ export function Sidebar() {
 
   const sidebarItems: SidebarItems = {
     links: [
-      { label: "Home", href: "/", icon: Home },
       { label: "Datasets", href: "/datasets/", icon: Folders },
       { label: "Scan Reports", href: "/scanreports/", icon: FileScan },
       {
@@ -60,14 +59,23 @@ export function Sidebar() {
               <Menu size={25} />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="px-3 py-4">
-            <SheetHeader className="flex flex-row justify-between items-center space-y-0">
-              <span className="text-lg font-semibold text-foreground mx-3">
-                Twitter
-              </span>
+          <SheetContent side="left" className="px-3 py-4 w-[300px]">
+            <SheetHeader className="flex flex-row justify-between items-center">
+              <Link href={"/"}>
+                <div className="text-3xl text-orange-500 flex items-center font-bold">
+                  <Image
+                    width={25}
+                    height={25}
+                    src="/carrot-logo.png"
+                    alt="carrot-logo"
+                    className="mr-4 ml-2"
+                  />
+                  Carrot
+                </div>
+              </Link>
             </SheetHeader>
             <div className="h-full">
-              <div className="mt-5 flex flex-col w-full gap-1">
+              <div className="mt-10 flex flex-col w-full gap-1">
                 {sidebarItems.links.map((link, idx) => (
                   <Link key={idx} href={link.href}>
                     <SidebarButton
@@ -87,30 +95,36 @@ export function Sidebar() {
                     <Button variant="outline" className="w-full justify-start">
                       <div className="flex justify-between items-center w-full">
                         <div className="flex gap-2">
-                          {/* <Avatar className="h-5 w-5">
+                          {/* {/* <Avatar className="h-5 w-5">
                         <AvatarImage src="https://github.com/max-programming.png" />
                         <AvatarFallback>Max Programming</AvatarFallback>
-                      </Avatar>
-                      <span>Max Programming</span> */}
+                      </Avatar> */}
+                          <span>User Name</span>
                         </div>
                         <MoreHorizontal size={20} />
                       </div>
                     </Button>
                   </DrawerTrigger>
-                  <DrawerContent className="mb-2 p-2">
+                  <DrawerContent className="mb-2 p-2 w-[300px]">
                     <div className="flex flex-col space-y-2 mt-2">
-                      <Link href="/">
+                      <Link href="/accounts/password_change/">
                         <SidebarButton
                           size="sm"
                           icon={Settings}
                           className="w-full"
                         >
-                          Account Settings
+                          Change Password
                         </SidebarButton>
                       </Link>
-                      <SidebarButton size="sm" icon={LogOut} className="w-full">
-                        Log Out
-                      </SidebarButton>
+                      <Link href={"/accounts/logout/"}>
+                        <SidebarButton
+                          size="sm"
+                          icon={LogOut}
+                          className="w-full"
+                        >
+                          Log Out
+                        </SidebarButton>
+                      </Link>
                     </div>
                   </DrawerContent>
                 </Drawer>
@@ -121,7 +135,7 @@ export function Sidebar() {
       </div>
       {/* TODO: Need to confirm again this link */}
       <Link href={"/"}>
-        <div className="text-2xl text-orange-500 flex items-center font-extrabold">
+        <div className="text-3xl text-orange-500 flex items-center font-bold">
           <Image
             width={25}
             height={25}

@@ -19,8 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Sidebar />
-        {children}
-
+        <div className="mb-4">{children}</div>
         <Toaster
           toastOptions={{
             classNames: {
