@@ -197,9 +197,9 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
 
 
-class SpecificUserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserNameViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    This view only returns a specific user object of the user who is making the request
+    This view returns only a specific user object of the user who is making the request
     """
 
     queryset = User.objects.all()
