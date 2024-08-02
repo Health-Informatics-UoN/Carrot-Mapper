@@ -1,7 +1,10 @@
 from api import views
 from api.router import router
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.generic.base import RedirectView
 
+
+favicon_view = RedirectView.as_view(url="/static/images/favicon.ico", permanent=True)
 urlpatterns = [
     path("", include(router.urls)),
     path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
@@ -86,4 +89,5 @@ urlpatterns = [
         views.ProjectUpdateView.as_view(),
         name="projects_update",
     ),
+    re_path(r"^favicon\.ico$", favicon_view),
 ]
