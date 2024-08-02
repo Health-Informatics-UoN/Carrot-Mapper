@@ -61,7 +61,7 @@ export function Sidebar({ userName }: { userName: string }) {
           {" "}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button size="icon" variant="ghost">
+              <Button size="icon" variant="outline">
                 <Menu size={25} />
               </Button>
             </SheetTrigger>
