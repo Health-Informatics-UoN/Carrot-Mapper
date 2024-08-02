@@ -55,7 +55,7 @@ export function Sidebar({ userName }: { userName: string }) {
   };
 
   return (
-    <div className="flex gap-3 mt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3">
+    <div className="flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3 dark:bg-orange-200/80">
       <div className="flex items-center">
         <div className="flex items-center">
           {" "}
@@ -66,7 +66,7 @@ export function Sidebar({ userName }: { userName: string }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="px-3 py-4 w-[350px]">
-              <SheetHeader className="flex flex-row justify-between items-center">
+              <SheetHeader className="flex flex-row justify-between items-center rounded-lg dark:bg-orange-200/80 w-full py-3">
                 <Link href={"/scanreports"}>
                   <div className="text-3xl text-orange-500 flex items-center font-bold">
                     <Image
@@ -81,7 +81,7 @@ export function Sidebar({ userName }: { userName: string }) {
                 </Link>
               </SheetHeader>
               <div className="h-full">
-                <div className="mt-10 flex flex-col w-full gap-1">
+                <div className="flex mt-7 flex-col w-full gap-1">
                   {sidebarItems.links.map((link, idx) => (
                     <Link key={idx} href={link.href}>
                       <SidebarButton

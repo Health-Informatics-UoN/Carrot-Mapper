@@ -97,21 +97,25 @@ export default async function ScanReportLayout({
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Dataset:{" "}
-              <span className="text-black">{scanreport.parent_dataset}</span>
+              <span className="text-black dark:text-white/90">
+                {scanreport.parent_dataset}
+              </span>
             </h3>
           </div>
           <div>|</div>
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Data Partner:{" "}
-              <span className="text-black">{scanreport.data_partner}</span>
+              <span className="text-black dark:text-white/90">
+                {scanreport.data_partner}
+              </span>
             </h3>
           </div>
           <div>|</div>
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Created:{" "}
-              <span className="text-black">
+              <span className="text-black dark:text-white/90">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>
             </h3>
