@@ -3,7 +3,9 @@ import os
 from config import settings
 from django.urls import re_path
 from revproxy.views import ProxyView
+from django.views.generic.base import RedirectView
 
+favicon_view = RedirectView.as_view(url="/static/images/favicon.ico", permanent=True)
 # A set of urls that will override any root paths requested, and proxy them to the Next.js app.
 urlpatterns = [
     # /scanreports/ and escape any further paths
@@ -76,4 +78,5 @@ urlpatterns = [
         "_next/(?P<path>.*)$",
         ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/_next"),
     ),
+    re_path(r"^favicon\.ico$", favicon_view),
 ]
