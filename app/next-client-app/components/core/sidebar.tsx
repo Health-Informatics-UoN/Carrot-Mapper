@@ -67,14 +67,14 @@ export function Sidebar({ userName }: { userName: string }) {
             </SheetTrigger>
             <SheetContent side="left" className="px-3 py-4 w-[350px]">
               <SheetHeader className="flex flex-row justify-between items-center">
-                <Link href={"/"}>
+                <Link href={"/scanreports"}>
                   <div className="text-3xl text-orange-500 flex items-center font-bold">
                     <Image
                       width={25}
                       height={25}
                       src="/carrot-logo.png"
                       alt="carrot-logo"
-                      className="mr-4 ml-2"
+                      className="mx-3"
                     />
                     Carrot
                   </div>
@@ -139,14 +139,14 @@ export function Sidebar({ userName }: { userName: string }) {
           </Sheet>
         </div>
         {/* TODO: Need to confirm again this link */}
-        <Link href={"/"}>
+        <Link href={"/scanreports"}>
           <div className="text-3xl text-orange-500 flex items-center font-bold">
             <Image
               width={25}
               height={25}
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mr-4 ml-2"
+              className="mx-3"
             />
             Carrot
           </div>
