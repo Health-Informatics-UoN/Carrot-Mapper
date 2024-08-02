@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/core/sidebar";
 import { getUserName } from "@/api";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -21,8 +22,16 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Sidebar userName={user[0].username} />
-        <div className="mb-4">{children}</div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Sidebar userName={user[0].username} />
+          <div className="mb-4">{children}</div>
+        </ThemeProvider>
+
         <Toaster
           toastOptions={{
             classNames: {
