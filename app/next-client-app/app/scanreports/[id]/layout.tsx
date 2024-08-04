@@ -28,6 +28,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { notFound } from "next/navigation";
 
 export default async function ScanReportLayout({
   params,
@@ -52,10 +53,14 @@ export default async function ScanReportLayout({
   ];
 
   const scanreport = await getScanReport(params.id);
-  const createdDate = new Date(scanreport.created_at);
+
+  if (!scanreport) {
+    return notFound();
+  }
+
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission)
+      permissions.permissions.includes(permission),
     )
   ) {
     return (
@@ -64,6 +69,8 @@ export default async function ScanReportLayout({
       </div>
     );
   }
+
+  const createdDate = new Date(scanreport.created_at);
   return (
     <>
       <div className="pt-10 px-16 space-y-2">
@@ -97,7 +104,11 @@ export default async function ScanReportLayout({
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Dataset:{" "}
-              <span className="text-black">{scanreport.parent_dataset}</span>
+              <Link href={`/datasets/${scanreport.parent_dataset.id}/`}>
+                <span className="text-black">
+                  {scanreport.parent_dataset.name}
+                </span>
+              </Link>
             </h3>
           </div>
           <div>|</div>
