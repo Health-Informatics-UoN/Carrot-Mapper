@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import { ScanReportsTableFilter } from "@/components/scanreports/ScanReportsTableFilter";
 import { FilterParameters } from "@/types/filter";
+import { FileScan } from "lucide-react";
 
 interface ScanReportsProps {
   searchParams?: { status__in: string } & FilterParameters;
@@ -30,23 +31,20 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
   const filter = <ScanReportsTableFilter filter="dataset" filterText="name" />;
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <div className="container space-y-2">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      <div className="flex font-semibold text-3xl items-center">
+        <FileScan className="mr-2 text-green-700" />
+        <h2>Scan Reports</h2>
       </div>
-      <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold">Scan Reports</h1>
-      </div>
+
       <div className="my-3">
         <Tabs
           defaultValue={
