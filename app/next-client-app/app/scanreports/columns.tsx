@@ -42,7 +42,7 @@ export const columns: ColumnDef<ScanReport>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset.name}</button>
+          <button>{row.original.dataset}</button>
         </Link>
       );
     },
@@ -58,6 +58,9 @@ export const columns: ColumnDef<ScanReport>[] = [
         sortName="parent_dataset"
       />
     ),
+    cell: ({ row }) => {
+      return <>{row.original.parent_dataset.name}</>;
+    },
     enableHiding: true,
   },
   {

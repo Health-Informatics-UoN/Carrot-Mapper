@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: Why is this file needed? It looks like a complete duplicate of SR list.
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +44,7 @@ export const columns: ColumnDef<ScanReport>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset.name}</button>
+          <button>{row.original.dataset}</button>
         </Link>
       );
     },
@@ -58,6 +60,9 @@ export const columns: ColumnDef<ScanReport>[] = [
         sortName="parent_dataset"
       />
     ),
+    cell: ({ row }) => {
+      return <>{row.original.parent_dataset.name}</>;
+    },
     enableHiding: true,
   },
   {
