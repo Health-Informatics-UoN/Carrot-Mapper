@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body style={{ paddingTop: "60px", paddingBottom: "20px" }}>
-        <Navbar />
+        {/* <Navbar /> */}
         {children}
         <BootstrapClient />
         <Toaster
