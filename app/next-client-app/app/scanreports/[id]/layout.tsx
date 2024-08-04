@@ -29,6 +29,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export default async function ScanReportLayout({
   params,
