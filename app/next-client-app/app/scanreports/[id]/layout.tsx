@@ -115,7 +115,7 @@ export default async function ScanReportLayout({
       </div>
       {/* "Navs" group */}
       <div className="flex flex-col md:flex-row justify-between">
-        <div className="order-2 md:order-1">
+        <div>
           <NavGroup
             path={`/scanreports/${params.id}`}
             items={[
@@ -129,7 +129,7 @@ export default async function ScanReportLayout({
         </div>
 
         {/* Actions button */}
-        <div className="order-1 md:order-2">
+        <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
