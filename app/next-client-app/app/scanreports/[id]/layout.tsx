@@ -114,19 +114,22 @@ export default async function ScanReportLayout({
         />
       </div>
       {/* "Navs" group */}
-      <div className="flex justify-between">
-        <NavGroup
-          path={`/scanreports/${params.id}`}
-          items={[
-            ...items.map((x) => ({
-              text: x.name,
-              slug: x.slug,
-              iconName: x.iconName,
-            })),
-          ]}
-        />
+      <div className="flex flex-col md:flex-row justify-between">
+        <div className="order-2 md:order-1">
+          <NavGroup
+            path={`/scanreports/${params.id}`}
+            items={[
+              ...items.map((x) => ({
+                text: x.name,
+                slug: x.slug,
+                iconName: x.iconName,
+              })),
+            ]}
+          />
+        </div>
+
         {/* Actions button */}
-        <div>
+        <div className="order-1 md:order-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">

@@ -18,7 +18,7 @@ export const NavGroup = ({
   items: Item[];
 }) => {
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-center gap-1 md:gap-4">
       {items.map((item) => (
         <NavButton
           key={path + item.slug}
