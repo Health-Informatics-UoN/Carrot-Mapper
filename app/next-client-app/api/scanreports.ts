@@ -96,24 +96,12 @@ export async function getScanReportValues(
   }
 }
 
-export async function getScanReport(id: string): Promise<ScanReport> {
+export async function getScanReport(id: string): Promise<ScanReport | null> {
   try {
     return await request<ScanReport>(fetchKeys.scanReport(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      dataset: "",
-      parent_dataset: "",
-      data_partner: "",
-      status: "",
-      created_at: new Date(),
-      hidden: true,
-      visibility: "",
-      author: 0,
-      editors: [],
-      viewers: [],
-    };
+    return null;
   }
 }
 
