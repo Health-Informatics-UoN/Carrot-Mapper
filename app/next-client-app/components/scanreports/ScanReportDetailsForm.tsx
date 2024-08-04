@@ -47,7 +47,7 @@ export function ScanReportDetailsForm({
   const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
   // Find the intial parent dataset and author which is required when adding Dataset
   const initialParentDataset = datasetList.find(
-    (dataset) => scanreport.parent_dataset === dataset.name, // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
+    (dataset) => scanreport.parent_dataset.name === dataset.name, // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
   )!;
 
   const initialAuthor = users.find((user) => scanreport.author === user.id)!;
