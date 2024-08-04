@@ -19,6 +19,7 @@ import {
   getProjects,
 } from "@/api/datasets";
 import { Badge } from "@/components/ui/badge";
+import { InfoItem } from "@/components/core/InfoItem";
 
 export default async function DatasetLayout({
   params,
@@ -58,88 +59,79 @@ export default async function DatasetLayout({
     )
   ) {
     return (
-      <div className="pt-10 px-16">
+      <div className="container">
         <Forbidden />
       </div>
     );
   }
   return (
-    <>
-      <div className="container space-y-2">
-        <div>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>/</BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink href={`/datasets/${params.id}/`}>
-                  {dataset.name}
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        {/* Details line */}
-        <div className="flex font-semibold text-3xl items-center my-2">
-          <Folders className="mr-2 text-blue-700" />
-          <h2>{dataset.name}</h2>
-        </div>
-        <div className="flex items-center text-sm space-x-3">
-          <div>
-            <h3 className="text-gray-500 flex items-center gap-2">
-              <div>Project(s): </div>
-              <div className="flex space-x-1">
-                {projects.map((project) => (
-                  <Badge
-                    variant={"outline"}
-                    className="bg-carrot-100"
-                    key={project.id}
-                  >
-                    {project.name}
-                  </Badge>
-                ))}
-              </div>
-            </h3>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
-            <h3 className="text-gray-500">
-              Data Partner:{" "}
-              <span className="text-black">{dataPartner[0].name}</span>
-            </h3>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
-            <h3 className="text-gray-500">
-              Created:{" "}
-              <span className="text-black">
-                {format(createdDate, "MMM dd, yyyy h:mm a")}
-              </span>
-            </h3>
-          </div>
-        </div>
-        {/* "Navs" group */}
-        <div className="flex justify-between">
-          <NavGroup
-            path={`/datasets/${params.id}`}
-            items={[
-              ...items.map((x) => ({
-                text: x.name,
-                slug: x.slug,
-                iconName: x.iconName,
-              })),
-            ]}
-          />
-        </div>
-        <Boundary>
-          {" "}
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
-            {children}
-          </Suspense>
-        </Boundary>
+    <div className="container space-y-2">
+      <div>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/datasets/${params.id}/`}>
+                {dataset.name}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
-    </>
+      {/* Details line */}
+      <div className="flex font-semibold text-3xl items-center my-2">
+        <Folders className="mr-2 text-blue-700" />
+        <h2>{dataset.name}</h2>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
+        <h3 className="text-gray-500 flex items-center gap-2 pr-2">
+          <div>Project(s): </div>
+          <div className="flex space-x-1">
+            {projects.map((project) => (
+              <Badge
+                variant={"outline"}
+                className="bg-carrot-100"
+                key={project.id}
+              >
+                {project.name}
+              </Badge>
+            ))}
+          </div>
+        </h3>
+        <InfoItem
+          label="Data Partner"
+          value={dataPartner[0].name}
+          className="py-1 md:py-0 md:px-3"
+        />
+        <InfoItem
+          label="Created"
+          value={format(createdDate, "MMM dd, yyyy h:mm a")}
+          className="py-1 md:py-0 md:px-3"
+        />
+      </div>
+      {/* "Navs" group */}
+      <div className="flex justify-between">
+        <NavGroup
+          path={`/datasets/${params.id}`}
+          items={[
+            ...items.map((x) => ({
+              text: x.name,
+              slug: x.slug,
+              iconName: x.iconName,
+            })),
+          ]}
+        />
+      </div>
+      <Boundary>
+        {" "}
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+          {children}
+        </Suspense>
+      </Boundary>
+    </div>
   );
 }
