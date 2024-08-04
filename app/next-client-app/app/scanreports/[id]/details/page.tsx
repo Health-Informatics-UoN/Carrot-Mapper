@@ -1,11 +1,4 @@
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
   getDataUsers,
   getDatasetList,
   getDatasetPermissions,
@@ -13,6 +6,7 @@ import {
 import { ScanReportDetailsForm } from "@/components/scanreports/ScanReportDetailsForm";
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
+import { notFound } from "next/navigation";
 
 interface ScanReportDetailsProps {
   params: {
@@ -27,13 +21,17 @@ export default async function ScanreportDetails({
   const datasetList = await getDatasetList();
   const users = await getDataUsers();
   const parent_dataset = datasetList.find(
-    (dataset) => dataset.name === scanreport.parent_dataset
+    (dataset) => dataset.name === scanreport?.parent_dataset.name,
   );
   const permissionsDS = await getDatasetPermissions(
-    parent_dataset?.id.toString() || ""
+    parent_dataset?.id.toString() || "",
   );
   const permissionsSR = await getScanReportPermissions(id);
   const isAuthor = permissionsSR.permissions.includes("IsAuthor");
+
+  if (!scanreport) {
+    return notFound();
+  }
 
   if (permissionsDS.permissions.length === 0) {
     return (
