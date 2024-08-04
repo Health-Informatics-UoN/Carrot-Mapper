@@ -17,7 +17,6 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
@@ -43,7 +42,7 @@ export const columns: ColumnDef<ScanReport>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset}</button>
+          <button>{row.original.dataset.name}</button>
         </Link>
       );
     },
@@ -105,23 +104,6 @@ export const columns: ColumnDef<ScanReport>[] = [
           className="w-[180px]"
           disabled={false}
         />
-      );
-    },
-  },
-  {
-    id: "Rules",
-    accessorKey: "rules",
-    header: "",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const { id } = row.original;
-      return (
-        <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
-          <Button variant={"outline"}>
-            Rules
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
       );
     },
   },

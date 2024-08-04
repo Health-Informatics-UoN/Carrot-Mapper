@@ -17,7 +17,6 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
@@ -43,7 +42,7 @@ export const columns: ColumnDef<ScanReport>[] = [
       const id = row.original.id;
       return (
         <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset}</button>
+          <button>{row.original.dataset.name}</button>
         </Link>
       );
     },
