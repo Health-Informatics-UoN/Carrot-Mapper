@@ -1,4 +1,4 @@
-interface ScanReportList {
+interface ScanReport {
   id: number;
   dataset: string;
   parent_dataset: string;

@@ -24,7 +24,7 @@ import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
-export const columns: ColumnDef<ScanReportList>[] = [
+export const columns: ColumnDef<ScanReport>[] = [
   {
     id: "id",
     accessorKey: "id",

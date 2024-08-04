@@ -20,11 +20,11 @@ const fetchKeys = {
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportTable>> {
   try {
     return await request<PaginatedResponse<ScanReportTable>>(
-      fetchKeys.tables(filter)
+      fetchKeys.tables(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -33,12 +33,10 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined
-): Promise<PaginatedResponse<ScanReportList>> {
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReport>> {
   try {
-    return await request<PaginatedResponse<ScanReportList>>(
-      fetchKeys.list(filter)
-    );
+    return await request<PaginatedResponse<ScanReport>>(fetchKeys.list(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
@@ -51,7 +49,7 @@ export async function getScanReports(
  * @returns A object with a list of the users permissions.
  */
 export async function getScanReportPermissions(
-  id: string
+  id: string,
 ): Promise<PermissionsResponse> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
@@ -62,11 +60,11 @@ export async function getScanReportPermissions(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportField>> {
   try {
     return await request<PaginatedResponse<ScanReportField>>(
-      fetchKeys.fields(filter)
+      fetchKeys.fields(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -75,7 +73,7 @@ export async function getScanReportFields(
 }
 
 export async function getAllScanReportFields(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReportField[]> {
   try {
     return await fetchAllPages<ScanReportField>(fetchKeys.fields(filter));
@@ -86,11 +84,11 @@ export async function getAllScanReportFields(
 }
 
 export async function getScanReportValues(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportValue>> {
   try {
     return await request<PaginatedResponse<ScanReportValue>>(
-      fetchKeys.values(filter)
+      fetchKeys.values(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -98,9 +96,9 @@ export async function getScanReportValues(
   }
 }
 
-export async function getScanReport(id: string): Promise<ScanReportList> {
+export async function getScanReport(id: string): Promise<ScanReport> {
   try {
-    return await request<ScanReportList>(fetchKeys.scanReport(id));
+    return await request<ScanReport>(fetchKeys.scanReport(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return {
@@ -171,7 +169,7 @@ export async function getScanReportField(id: string): Promise<ScanReportField> {
 export async function updateScanReport(
   id: number,
   data: {},
-  needRedirect?: boolean
+  needRedirect?: boolean,
 ) {
   try {
     await request(fetchKeys.update(id), {
@@ -208,7 +206,7 @@ export async function deleteScanReport(id: number) {
 export async function updateScanReportTable(
   id: number,
   data: {},
-  scanreportID: number
+  scanreportID: number,
 ) {
   try {
     await request(fetchKeys.updateTable(id), {
