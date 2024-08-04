@@ -27,7 +27,7 @@ export function RulesButton({
   query: string;
 }) {
   return (
-    <div className="flex gap-2 justify-end w-full mr-2">
+    <div className="hidden md:flex gap-2 justify-end w-full mr-2">
       <div>
         <Dialog>
           <DialogTrigger asChild>
