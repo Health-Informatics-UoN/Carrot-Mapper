@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   let session = request.cookies.get("sessionid");
   let csrfToken = request.cookies.get("csrftoken");
   if (!session || !csrfToken) {
-    return NextResponse.redirect(new URL("/accounts/login", request.url));
+    return NextResponse.redirect(new URL("/accounts/login/", request.url));
   }
 
   return NextResponse.next();
