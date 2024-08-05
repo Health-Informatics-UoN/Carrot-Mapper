@@ -6,12 +6,15 @@ import { Toaster } from "sonner";
 import { Sidebar } from "@/components/core/sidebar";
 import { getUserName } from "@/api";
 import { ThemeProvider } from "@/components/theme-provider";
-import { getDataUsers } from "@/api/datasets";
-import { getScanReport, getScanReports } from "@/api/scanreports";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
   description: "Convenient And Reusable Rapid Omop Transformer",
+  icons: {
+    icon: "/icons/favicon.ico",
+    apple: "/icons/apple-touch-icon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({
