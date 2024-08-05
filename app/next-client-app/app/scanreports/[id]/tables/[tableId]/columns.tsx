@@ -7,6 +7,7 @@ import AddConcept from "@/components/concepts/add-concept";
 import { EditButton } from "@/components/scanreports/EditButton";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePathname } from "next/navigation";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
@@ -88,7 +89,16 @@ export const columns = (
     header: "",
     cell: ({ row }) => {
       const { id, permissions } = row.original;
-      return <EditButton fieldID={id} type="field" permissions={permissions} />;
+      const path = usePathname();
+
+      return (
+        <EditButton
+          prePath={path}
+          fieldID={id}
+          type="field"
+          permissions={permissions}
+        />
+      );
     },
   },
 ];
