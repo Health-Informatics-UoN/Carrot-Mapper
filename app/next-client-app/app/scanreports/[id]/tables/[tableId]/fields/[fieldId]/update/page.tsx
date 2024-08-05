@@ -2,11 +2,11 @@ import {
   getScanReport,
   getScanReportField,
   getScanReportPermissions,
-  getScanReportTable,
 } from "@/api/scanreports";
 import { ScanReportFieldEditForm } from "@/components/scanreports/ScanReportFieldEditForm";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { notFound } from "next/navigation";
 
 interface ScanReportsEditFieldProps {
   params: {
@@ -19,10 +19,14 @@ interface ScanReportsEditFieldProps {
 export default async function ScanReportsEditField({
   params: { id, tableId, fieldId },
 }: ScanReportsEditFieldProps) {
-  const scanReportsName = await getScanReport(id);
-  const tableName = await getScanReportTable(tableId);
+  const scanReport = await getScanReport(id);
+
   const field = await getScanReportField(fieldId);
   const permissions = await getScanReportPermissions(id);
+
+  if (!scanReport) {
+    return notFound();
+  }
 
   return (
     <div>
@@ -39,7 +43,7 @@ export default async function ScanReportsEditField({
       </div>
       <div className="mt-2">
         <ScanReportFieldEditForm
-          scanreportId={scanReportsName.id}
+          scanreportId={scanReport.id}
           scanReportField={field}
           permissions={permissions.permissions}
         />
