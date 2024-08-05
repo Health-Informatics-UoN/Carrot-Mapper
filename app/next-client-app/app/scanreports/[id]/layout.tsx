@@ -28,6 +28,7 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { DeleteActionItem } from "@/components/scanreports/DeleteActionItem";
 
 export default async function ScanReportLayout({
   params,
@@ -173,17 +174,7 @@ export default async function ScanReportLayout({
                     Export Scan Report
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <DeleteDialog id={Number(params.id)} redirect>
-                    <Button
-                      variant={"ghost"}
-                      className="text-red-400 px-0 py-0 h-auto"
-                    >
-                      <TrashIcon className="mr-2 size-4" />
-                      Delete Scan Report
-                    </Button>
-                  </DeleteDialog>
-                </DropdownMenuItem>
+                <DeleteActionItem id={scanreport.id} />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
