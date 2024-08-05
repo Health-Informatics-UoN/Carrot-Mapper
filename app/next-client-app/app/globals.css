@@ -1,5 +1,4 @@
 @tailwind base;
-@tailwind components;
 @tailwind utilities;
 
 /* The code block below control the styles of react-select components in light/dark modes */
@@ -10,7 +9,7 @@
     }
 
     .my-react-select-container .my-react-select__control--is-disabled {
-      @apply bg-carrot-200 dark:bg-carrot-900 border-carrot-300 dark:border-carrot-700 cursor-not-allowed;
+      @apply bg-neutral-200 dark:bg-carrot-900 border-carrot-300 dark:border-carrot-700 cursor-not-allowed;
     }
 
     .my-react-select-container .my-react-select__control--is-focused {
