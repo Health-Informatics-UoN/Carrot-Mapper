@@ -4,8 +4,8 @@ import "react-tooltip/dist/react-tooltip.css";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Sidebar } from "@/components/core/sidebar";
-import { getUserName } from "@/api";
 import { ThemeProvider } from "@/components/theme-provider";
+import { getCurrentUser } from "@/api";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -22,7 +22,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUserName();
+  const user = await getCurrentUser();
 
   return (
     <html lang="en">

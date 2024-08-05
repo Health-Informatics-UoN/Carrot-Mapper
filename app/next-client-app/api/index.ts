@@ -2,12 +2,12 @@
 import request from "@/lib/api/request";
 
 const fetchKeys = {
-  userName: () => `user/me/`,
+  currentUser: () => `user/me/`,
 };
 
-export async function getUserName(): Promise<User[]> {
+export async function getCurrentUser(): Promise<User[]> {
   try {
-    return await request<User[]>(fetchKeys.userName());
+    return await request<User[]>(fetchKeys.currentUser());
   } catch (error) {
     return [{ id: 0, username: "Unknown User" }];
   }

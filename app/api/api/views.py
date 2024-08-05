@@ -197,7 +197,7 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
 
 
-class UserNameViewSet(viewsets.ReadOnlyModelViewSet):
+class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     This view returns only a specific user object of the user who is making the request
     """

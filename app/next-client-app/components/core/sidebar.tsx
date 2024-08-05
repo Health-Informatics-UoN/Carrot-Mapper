@@ -72,13 +72,14 @@ export function Sidebar({ userName }: { userName: string }) {
             <SheetContent side="left" className="px-3 py-4 w-[350px]">
               <SheetHeader className="flex flex-row justify-between items-center rounded-lg w-full py-3">
                 <Link href={"/scanreports"}>
-                  <div className="text-3xl flex items-center font-bold">
+                  <div className="text-2xl flex items-center font-semibold">
                     <Image
-                      width={25}
-                      height={25}
+                      width={0}
+                      height={0}
                       src="/carrot-logo.png"
                       alt="carrot-logo"
                       className="mx-3"
+                      style={{ width: "100%", height: "auto" }}
                     />
                     Carrot
                   </div>
@@ -144,13 +145,14 @@ export function Sidebar({ userName }: { userName: string }) {
         </div>
         {/* TODO: Need to confirm again this link */}
         <Link href={"/scanreports"}>
-          <div className="text-3xl flex items-center font-bold">
+          <div className="text-2xl flex items-center font-semibold">
             <Image
-              width={25}
-              height={25}
+              width={0}
+              height={0}
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mx-2"
+              className="mx-3"
+              style={{ width: "100%", height: "auto" }}
             />
             Carrot
           </div>
