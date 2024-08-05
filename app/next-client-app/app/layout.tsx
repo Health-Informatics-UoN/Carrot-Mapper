@@ -19,8 +19,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const user = await getUserName();
-  // console.log(user);
+  const user = await getUserName();
+
   return (
     <html lang="en">
       <body>
@@ -30,7 +30,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Sidebar userName={"asdasd"} />
+          <Sidebar userName={user[0].username} />
           <div className="mb-4">{children}</div>
         </ThemeProvider>
 
