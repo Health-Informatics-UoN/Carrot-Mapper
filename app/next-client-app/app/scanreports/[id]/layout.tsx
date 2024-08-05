@@ -62,7 +62,7 @@ export default async function ScanReportLayout({
 
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission),
+      permissions.permissions.includes(permission)
     )
   ) {
     return (
@@ -107,7 +107,7 @@ export default async function ScanReportLayout({
             <h3 className="text-gray-500">
               Dataset:{" "}
               <Link href={`/datasets/${scanreport.parent_dataset.id}/`}>
-                <span className="text-black">
+                <span className="text-black dark:text-white/90">
                   {scanreport.parent_dataset.name}
                 </span>
               </Link>
