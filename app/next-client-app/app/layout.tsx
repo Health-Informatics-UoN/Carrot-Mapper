@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import { Sidebar } from "@/components/core/sidebar";
 import { getUserName } from "@/api";
 import { ThemeProvider } from "@/components/theme-provider";
+import { getDataUsers } from "@/api/datasets";
+import { getScanReport, getScanReports } from "@/api/scanreports";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -17,8 +19,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getUserName();
-
+  // const user = await getUserName();
+  // console.log(user);
   return (
     <html lang="en">
       <body>
@@ -28,7 +30,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Sidebar userName={user[0].username} />
+          <Sidebar userName={"asdasd"} />
           <div className="mb-4">{children}</div>
         </ThemeProvider>
 

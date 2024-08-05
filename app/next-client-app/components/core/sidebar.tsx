@@ -55,7 +55,7 @@ export function Sidebar({ userName }: { userName: string }) {
   };
 
   return (
-    <div className="flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3 dark:bg-orange-200/80">
+    <div className="flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3">
       <div className="flex items-center">
         <div className="flex items-center">
           {" "}
@@ -70,9 +70,9 @@ export function Sidebar({ userName }: { userName: string }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="px-3 py-4 w-[350px]">
-              <SheetHeader className="flex flex-row justify-between items-center rounded-lg dark:bg-orange-200/80 w-full py-3">
+              <SheetHeader className="flex flex-row justify-between items-center rounded-lg w-full py-3">
                 <Link href={"/scanreports"}>
-                  <div className="text-3xl text-orange-500 flex items-center font-bold">
+                  <div className="text-3xl flex items-center font-bold">
                     <Image
                       width={25}
                       height={25}
@@ -144,13 +144,13 @@ export function Sidebar({ userName }: { userName: string }) {
         </div>
         {/* TODO: Need to confirm again this link */}
         <Link href={"/scanreports"}>
-          <div className="text-3xl text-orange-500 flex items-center font-bold">
+          <div className="text-3xl flex items-center font-bold">
             <Image
               width={25}
               height={25}
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mx-3"
+              className="mx-2"
             />
             Carrot
           </div>

@@ -2,7 +2,7 @@
 import request from "@/lib/api/request";
 
 const fetchKeys = {
-  userName: () => `userName`,
+  userName: () => `username`,
 };
 
 export async function getUserName(): Promise<User[]> {
