@@ -98,7 +98,7 @@ export default async function DatasetLayout({
                 {projects.map((project) => (
                   <Badge
                     variant={"outline"}
-                    className="bg-carrot-100"
+                    className="bg-carrot-100 dark:bg-carrot-700"
                     key={project.id}
                   >
                     {project.name}
@@ -111,14 +111,16 @@ export default async function DatasetLayout({
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Data Partner:{" "}
-              <span className="text-black">{dataPartner[0].name}</span>
+              <span className="text-black dark:text-white/90">
+                {dataPartner[0].name}
+              </span>
             </h3>
           </div>
           <div>|</div>
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Created:{" "}
-              <span className="text-black">
+              <span className="text-black dark:text-white/90">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>
             </h3>
