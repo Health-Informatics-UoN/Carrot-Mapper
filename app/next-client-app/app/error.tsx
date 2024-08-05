@@ -1,6 +1,6 @@
 "use client";
-import Link from "next/link";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function Error({
@@ -11,12 +11,14 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <div>
-      <h2>Something went wrong!</h2>
+    <div className="container py-16 text-center space-y-4">
+      <h2 className="font-semibold text-3xl">Something went wrong!</h2>
       <Button variant="outline" onClick={() => reset()}>
         Try again.
       </Button>
-      <Link href="/">Return Home</Link>
+      <Button variant="ghost">
+        <Link href="/">Return Home</Link>
+      </Button>
     </div>
   );
 }
