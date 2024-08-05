@@ -2,6 +2,7 @@ import {
   getScanReport,
   getScanReportField,
   getScanReportPermissions,
+  getScanReportTable,
 } from "@/api/scanreports";
 import { ScanReportFieldEditForm } from "@/components/scanreports/ScanReportFieldEditForm";
 import Link from "next/link";
@@ -20,7 +21,7 @@ export default async function ScanReportsEditField({
   params: { id, tableId, fieldId },
 }: ScanReportsEditFieldProps) {
   const scanReport = await getScanReport(id);
-
+  const table = await getScanReportTable(tableId);
   const field = await getScanReportField(fieldId);
   const permissions = await getScanReportPermissions(id);
 
@@ -34,7 +35,7 @@ export default async function ScanReportsEditField({
         {" "}
         <Link href={`/scanreports/${id}/tables/${tableId}`}>
           <Button variant={"secondary"} className="mb-3">
-            Table: {tableName.name}
+            Table: {table.name}
           </Button>
         </Link>
         <Button variant={"secondary"} className="mb-3">
