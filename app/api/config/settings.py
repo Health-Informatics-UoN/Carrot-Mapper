@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "test",
-    "proxy",
     "revproxy",
     "shared",
 ]

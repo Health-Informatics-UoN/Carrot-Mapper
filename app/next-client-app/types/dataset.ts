@@ -1,6 +1,9 @@
-interface DataSet {
+interface DatasetStrict {
   id: number;
   name: string;
+}
+
+interface DataSet extends DatasetStrict {
   hidden: boolean;
   visibility: string;
   created_at: string;

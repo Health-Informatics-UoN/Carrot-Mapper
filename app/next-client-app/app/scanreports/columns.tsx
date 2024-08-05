@@ -17,14 +17,13 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
-export const columns: ColumnDef<ScanReportList>[] = [
+export const columns: ColumnDef<ScanReport>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -59,6 +58,9 @@ export const columns: ColumnDef<ScanReportList>[] = [
         sortName="parent_dataset"
       />
     ),
+    cell: ({ row }) => {
+      return <>{row.original.parent_dataset.name}</>;
+    },
     enableHiding: true,
   },
   {

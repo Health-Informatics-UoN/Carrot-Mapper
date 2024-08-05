@@ -31,7 +31,7 @@ export function GetFile({
         data = await getMapDiagram(scanreportId, query, "svg");
       } else if (type === "application/json") {
         const resp = await getMapDiagram(scanreportId, query, "json");
-        data = JSON.stringify(resp);
+        data = JSON.stringify(resp, null, 6);
       } else {
         data = await getMapDiagram(scanreportId, query, "csv");
       }

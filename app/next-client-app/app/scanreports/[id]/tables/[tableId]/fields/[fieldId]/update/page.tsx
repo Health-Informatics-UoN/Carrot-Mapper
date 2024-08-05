@@ -1,17 +1,10 @@
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
   getScanReport,
   getScanReportField,
   getScanReportPermissions,
-  getScanReportTable,
 } from "@/api/scanreports";
 import { ScanReportFieldEditForm } from "@/components/scanreports/ScanReportFieldEditForm";
+import { notFound } from "next/navigation";
 
 interface ScanReportsEditFieldProps {
   params: {
@@ -24,60 +17,23 @@ interface ScanReportsEditFieldProps {
 export default async function ScanReportsEditField({
   params: { id, tableId, fieldId },
 }: ScanReportsEditFieldProps) {
-  const scanReportsName = await getScanReport(id);
-  const tableName = await getScanReportTable(tableId);
+  const scanReport = await getScanReport(id);
+
   const field = await getScanReportField(fieldId);
   const permissions = await getScanReportPermissions(id);
 
+  if (!scanReport) {
+    return notFound();
+  }
+
   return (
     <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}`}>
-                {scanReportsName.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {tableName.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href={`/scanreports/${id}/tables/${tableId}/fields/${fieldId}/`}
-              >
-                {field?.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href={`/scanreports/${id}/tables/${tableId}/fields/${fieldId}/update/`}
-              >
-                Update
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">Update Field - {field?.name}</h1>
       </div>
       <div className="mt-4">
         <ScanReportFieldEditForm
-          scanreportId={scanReportsName.id}
+          scanreportId={scanReport.id}
           scanReportField={field}
           permissions={permissions.permissions}
         />
