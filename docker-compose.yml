@@ -29,8 +29,17 @@ services:
       - BACKEND_URL=http://web:8000
       - BACKEND_ORIGIN="web:8000"
     # Mount the code directory
-    volumes:
-      - ./app/next-client-app:/app/next-client-app
+    # volumes:
+    #   - ./app/next-client-app:/app/next-client-app
+    develop:
+      watch:
+        - action: sync
+          path: app/next-client-app
+          target: app/next-client-app
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package-lock.json
 
   # workers:
   #   image: carrot-workers
@@ -77,9 +86,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
-    # will remove this after doing the workers containerising
-    env_file:
-      - .env
     environment:
       - NEXTJS_URL=http://next-client:3000
       - DJANGO_SUPERUSER_USERNAME=admin
@@ -92,11 +98,18 @@ services:
       - COCONNECT_DB_NAME=omop
       - COCONNECT_DB_USER=postgres
       - COCONNECT_DB_PASSWORD=postgres
+      - COCONNECT_DB_AUTH_TOKEN=
       - UPLOAD_ONLY=false
       - ENABLE_PROXY=true
       - CCOM_APP_URL= http://localhost:8000
       - AZ_FUNCTION_USER=admin
       - DEBUG=True
+      - NLP_QUEUE_NAME=nlpqueue-local
+      - SCAN_REPORT_QUEUE_NAME=scanreports-local
+      - UPLOAD_QUEUE_NAME=uploadreports-local
+      - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
+      - SECRET_KEY=secret
+      - AZURE_ACCOUNT_NAME=devstoreaccount1
     volumes:
       - ./app/api:/api
     depends_on:
