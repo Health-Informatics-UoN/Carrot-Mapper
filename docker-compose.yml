@@ -8,6 +8,7 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=omop
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -59,15 +60,15 @@ services:
   #   depends_on:
   #     - web
 
-  # omop-lite:
-  #   image: ghcr.io/andyrae/omop-lite
-  #   volumes:
-  #     - ./vocabs:/vocabs
-  #   depends_on:
-  #     - db
-  #   environment:
-  #     - DB_PASSWORD=postgres (authentication fail, wrong password, changed to postgres --> worked)
-  #     - DB_NAME=omop (database "omop" does not exist in db and error="pq: database \"omop\" does not exist here)
+  omop-lite:
+    image: ghcr.io/andyrae/omop-lite
+    volumes:
+      - ./vocabs:/vocabs
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=postgres
+      - DB_NAME=omop
 
   web:
     image: carrot
@@ -76,10 +77,26 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
+    # will remove this after doing the workers containerising
     env_file:
       - .env
     environment:
-      - NEXTJS_URL=http://localhost:3000
+      - NEXTJS_URL=http://next-client:3000
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=password
+      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web']
+      - COCONNECT_DB_ENGINE=django.db.backends.postgresql
+      - COCONNECT_DB_HOST=db
+      - COCONNECT_DB_PORT=5432
+      - COCONNECT_DB_NAME=omop
+      - COCONNECT_DB_USER=postgres
+      - COCONNECT_DB_PASSWORD=postgres
+      - UPLOAD_ONLY=false
+      - ENABLE_PROXY=true
+      - CCOM_APP_URL= http://localhost:8000
+      - AZ_FUNCTION_USER=admin
+      - DEBUG=True
     volumes:
       - ./app/api:/api
     depends_on:
