@@ -30,7 +30,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
   const filter = <ScanReportsTableFilter filter="dataset" filterText="name" />;
 
   return (
-    <div className="pt-10 px-16">
+    <div className="pt-5 px-16">
       <div>
         <Breadcrumb>
           <BreadcrumbList>

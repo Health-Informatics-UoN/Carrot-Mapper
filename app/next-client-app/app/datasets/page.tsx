@@ -33,7 +33,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   const filter = <DataTableFilter filter="name" />;
 
   return (
-    <div className="pt-10 px-16">
+    <div className="pt-5 px-16">
       <div>
         <Breadcrumb>
           <BreadcrumbList>

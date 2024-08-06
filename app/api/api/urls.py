@@ -86,4 +86,5 @@ urlpatterns = [
         views.ProjectUpdateView.as_view(),
         name="projects_update",
     ),
+    path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
 ]

@@ -8,10 +8,12 @@ export function EditButton({
   fieldID,
   type,
   permissions,
+  prePath,
 }: {
   scanreportId?: number;
   tableId?: number;
   fieldID?: number;
+  prePath?: string;
   type: string;
   permissions: Permission[];
 }) {
@@ -24,7 +26,7 @@ export function EditButton({
           ? type === "table" || type === "table-row"
             ? `/scanreports/${scanreportId}/tables/${tableId}/update`
             : type === "field"
-            ? `fields/${fieldID}/update`
+            ? `${prePath}/fields/${fieldID}/update`
             : ""
           : ""
       }
