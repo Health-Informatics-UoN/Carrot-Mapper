@@ -13,7 +13,7 @@ urlpatterns = [
     (
         re_path(r"(?P<path>.*)", ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/"))
         if os.environ.get("ENABLE_PROXY", "False").lower() == "true"
-        else None
+        else path("", include("mapping.urls"))
     ),
 ]
 

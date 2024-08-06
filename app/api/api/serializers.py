@@ -45,6 +45,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username")
 
 
+class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = ("id", "name")
+
+
 class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate(self, data):
         if request := self.context.get("request"):
@@ -84,7 +90,7 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
         NotFound: If the parent dataset is not found.
     """
 
-    parent_dataset = serializers.SerializerMethodField()
+    parent_dataset = DatasetSerializer(read_only=True)
     data_partner = serializers.SerializerMethodField()
 
     class Meta:
@@ -103,9 +109,6 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
             "editors",
             "visibility",
         )
-
-    def get_parent_dataset(self, obj):
-        return obj.parent_dataset.name if obj.parent_dataset else None
 
     def get_data_partner(self, obj):
         return (

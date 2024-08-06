@@ -272,7 +272,7 @@ export function CreateScanReportForm({
                   />
                 </div>
               </div>
-              <div className="mb-5 flex">
+              <div className="mb-5 mt-3 flex">
                 <Button
                   type="submit"
                   className="px-4 py-2 bg-carrot text-white rounded text-lg"

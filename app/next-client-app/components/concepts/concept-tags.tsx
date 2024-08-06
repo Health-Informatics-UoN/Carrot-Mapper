@@ -54,11 +54,11 @@ export const ConceptTags = React.memo(function ConceptTags({
           <LazyBadge
             className={`${
               concept.creation_type === "V"
-                ? "bg-carrot-vocab hover:bg-carrot-vocab"
+                ? "bg-carrot-vocab hover:bg-carrot-vocab dark:bg-carrot-vocab dark:text-white"
                 : concept.creation_type === "M"
-                ? "bg-carrot-manual hover:bg-carrot-manual"
+                ? "bg-carrot-manual hover:bg-carrot-manual dark:bg-carrot-manual dark:text-white"
                 : concept.creation_type === "R"
-                ? "bg-carrot-reuse hover:bg-carrot-reuse"
+                ? "bg-carrot-reuse hover:bg-carrot-reuse dark:bg-carrot-reuse dark:text-white"
                 : ""
             }`}
             key={concept.concept_code}
@@ -70,6 +70,7 @@ export const ConceptTags = React.memo(function ConceptTags({
               onClick={async () =>
                 await handleDelete(concept.scan_report_concept_id ?? 0)
               }
+              className="dark:text-white"
             >
               <Cross2Icon />
             </Button>

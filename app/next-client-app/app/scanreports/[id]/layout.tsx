@@ -53,7 +53,11 @@ export default async function ScanReportLayout({
   ];
 
   const scanreport = await getScanReport(params.id);
-  const createdDate = new Date(scanreport.created_at);
+
+  if (!scanreport) {
+    return notFound();
+  }
+
   if (
     !requiredPermissions.some((permission) =>
       permissions.permissions.includes(permission),
@@ -65,6 +69,8 @@ export default async function ScanReportLayout({
       </div>
     );
   }
+
+  const createdDate = new Date(scanreport.created_at);
   return (
     <div className="container space-y-2">
       <div>

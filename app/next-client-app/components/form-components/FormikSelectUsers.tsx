@@ -4,7 +4,6 @@ import {
   FieldProps,
   FormikProps,
   FormikValues,
-  useField,
   useFormikContext,
 } from "formik";
 import Select from "react-select";
@@ -77,26 +76,22 @@ const CustomSelect = ({
       placeholder={placeholder}
       options={options}
       isMulti={isMulti}
-      className="w-full"
+      className="my-react-select-container"
+      classNamePrefix="my-react-select"
       isDisabled={isDisabled}
       components={animatedComponents}
       styles={{
         multiValueLabel: (base) => ({
           ...base,
           fontSize: "17px",
-          backgroundColor: `${config.theme.extend.colors.carrot.DEFAULT}`, // Can't import directly "carrot" color here
-          color: "white",
         }),
         multiValueRemove: (base) => ({
           ...base,
-          backgroundColor: `${config.theme.extend.colors.carrot.DEFAULT}`,
-          color: "white",
           fontSize: "17px",
         }),
         singleValue: (base) => ({
           ...base,
           fontSize: "17px",
-          color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
     />

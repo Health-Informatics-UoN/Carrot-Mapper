@@ -13,7 +13,7 @@ export default async function ScanReports() {
   const projects = await getProjects();
 
   return (
-    <div className="pt-10 px-16">
+    <div className="pt-5 px-16">
       <div>
         <Breadcrumb>
           <BreadcrumbList>
