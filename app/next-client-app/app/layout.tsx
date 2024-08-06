@@ -34,7 +34,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <Sidebar userName={user.username} />
-          <div className="mb-4">{children}</div>
+          <div className="mb-4 py-6">{children}</div>
         </ThemeProvider>
 
         <Toaster

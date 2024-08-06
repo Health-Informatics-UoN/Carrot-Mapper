@@ -32,15 +32,7 @@ export default async function ScanReports({ searchParams }: ScanReportsProps) {
 
   return (
     <div className="container space-y-2">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="flex font-semibold text-3xl items-center">
+      <div className="flex font-semibold text-xl items-center">
         <FileScan className="mr-2 text-green-700" />
         <h2>Scan Reports</h2>
       </div>

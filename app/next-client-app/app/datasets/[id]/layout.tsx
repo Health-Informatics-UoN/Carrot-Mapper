@@ -20,6 +20,7 @@ import {
 } from "@/api/datasets";
 import { Badge } from "@/components/ui/badge";
 import { InfoItem } from "@/components/core/InfoItem";
+import Link from "next/link";
 
 export default async function DatasetLayout({
   params,
@@ -66,35 +67,22 @@ export default async function DatasetLayout({
   }
   return (
     <div className="container space-y-2">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/datasets/${params.id}/`}>
-                {dataset.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      {/* Details line */}
-      <div className="flex font-semibold text-3xl items-center my-2">
-        <Folders className="mr-2 text-blue-700" />
+      <div className="flex font-semibold text-xl items-center space-x-2">
+        <Link href={`/datasets`}>
+          <h2 className="text-gray-500 dark:text-gray-400">Datasets</h2>
+        </Link>
+        <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
         <h2>{dataset.name}</h2>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
-        <h3 className="text-gray-500 flex items-center gap-2 pr-2">
+        <h3 className="text-gray-500 dark:text-gray-400 flex items-center gap-2 pr-2">
           <div>Project(s): </div>
           <div className="flex space-x-1">
             {projects.map((project) => (
               <Badge
                 variant={"outline"}
-                className="bg-carrot-100"
+                className="bg-carrot-100 dark:bg-carrot-700"
                 key={project.id}
               >
                 {project.name}

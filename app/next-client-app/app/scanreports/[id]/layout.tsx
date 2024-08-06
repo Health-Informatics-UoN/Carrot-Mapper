@@ -29,6 +29,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { InfoItem } from "@/components/core/InfoItem";
+import { notFound } from "next/navigation";
+import Link from "next/link";
 
 export default async function ScanReportLayout({
   params,
@@ -73,24 +75,14 @@ export default async function ScanReportLayout({
   const createdDate = new Date(scanreport.created_at);
   return (
     <div className="container space-y-2">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${params.id}/`}>
-                {scanreport.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
       {/* Details line */}
-      <div className="flex font-semibold text-3xl items-center">
-        <FileScan className="mr-2 text-green-700" />
+      <div className="flex font-semibold text-xl items-center space-x-2">
+        <Link href={`/datasets/${scanreport.parent_dataset.id}`}>
+          <h2 className="text-gray-500 dark:text-gray-400">
+            {scanreport.parent_dataset.name}
+          </h2>
+        </Link>
+        <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
         <h2>{scanreport.dataset}</h2>
       </div>
 
@@ -99,11 +91,6 @@ export default async function ScanReportLayout({
           label="Data Partner"
           value={scanreport.data_partner}
           className="py-1 md:py-0 md:pr-3"
-        />
-        <InfoItem
-          label="Dataset"
-          value={scanreport.parent_dataset}
-          className="py-1 md:py-0 md:px-3"
         />
         <InfoItem
           label="Created"

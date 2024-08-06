@@ -46,8 +46,9 @@ export const NavButton = ({
       <Button
         variant={"ghost"}
         className={cn("rounded-md px-3 py-1", {
-          "bg-white hover:text-carrot": !isActive,
-          "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot":
+          "bg-white hover:text-carrot hover:bg-white dark:bg-transparent":
+            !isActive,
+          "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot dark:hover:bg-transparent":
             isActive,
         })}
       >

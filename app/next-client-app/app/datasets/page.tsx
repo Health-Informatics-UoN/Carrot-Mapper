@@ -34,16 +34,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
 
   return (
     <div className="container space-y-2">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="flex font-semibold text-3xl items-center my-2">
+      <div className="flex font-semibold text-xl items-center">
         <Folders className="mr-2 text-blue-700" />
         <h2>Datasets</h2>
       </div>
