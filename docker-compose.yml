@@ -78,8 +78,10 @@ services:
       - 8000:8000
     env_file:
       - .env
+    environment:
+      - NEXTJS_URL=http://localhost:3000
     volumes:
-      - $PWD/api:/api
+      - ./app/api:/api
     depends_on:
       - db
       - azurite
