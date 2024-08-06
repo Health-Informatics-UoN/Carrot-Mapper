@@ -26,7 +26,7 @@ RUN addgroup -q django && \
 
 # Copy 3 files to /react-client-app directory, which can be used for building dependencies
 RUN mkdir /react-client-app
-COPY ./react-client-app/package.json ./react-client-app/package-lock.json ./react-client-app/snowpack.config.js /react-client-app/
+COPY ./react-client-app/package.json ./react-client-app/package-lock.json ./react-client-app/snowpack.config.js /react-client-app
 RUN chown -R django:django /react-client-app
 
 # Install nvm as django user, and install all dependencies

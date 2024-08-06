@@ -17,19 +17,19 @@ services:
       - "10001:10001"
       - "10002:10002"
 
-  # next-client:
-  #   image: carrot-next-client
-  #   build:
-  #     context: app/next-client-app
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 3000:3000
-  #   environment:
-  #     - BACKEND_URL: http://web:8000
-  #     - BACKEND_ORIGIN: "web:8000"
-  #   # Mount the code directory
-  #   volumes:
-  #     - ./app/next-client-app:/app/next-client-app
+  next-client:
+    image: carrot-next-client
+    build:
+      context: app/next-client-app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - BACKEND_URL=http://web:8000
+      - BACKEND_ORIGIN="web:8000"
+    # Mount the code directory
+    volumes:
+      - ./app/next-client-app:/app/next-client-app
 
   # workers:
   #   image: carrot-workers

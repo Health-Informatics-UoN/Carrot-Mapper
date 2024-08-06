@@ -10,8 +10,6 @@ wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready
 # Inside api directory
 cd /api
 
-# Run Django migrations
-python manage.py migrate
 
 # Load OMOP table and field names into the database
 python manage.py loaddata mapping
