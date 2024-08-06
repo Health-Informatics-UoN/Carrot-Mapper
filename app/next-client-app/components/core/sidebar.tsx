@@ -71,10 +71,10 @@ export function Sidebar({ userName }: { userName: string }) {
             </SheetTrigger>
             <SheetContent side="left" className="px-3 py-4 w-[350px]">
               <SheetHeader className="flex flex-row justify-between items-center rounded-lg w-full py-3">
-                <Link href={"/scanreports"}>
+                <Link href={"/"}>
                   <div className="text-2xl flex items-center font-semibold">
                     <Image
-                      width={0}
+                      width={17}
                       height={0}
                       src="/carrot-logo.png"
                       alt="carrot-logo"
@@ -144,15 +144,15 @@ export function Sidebar({ userName }: { userName: string }) {
           </Sheet>
         </div>
         {/* TODO: Need to confirm again this link */}
-        <Link href={"/scanreports"}>
+        <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <Image
-              width={0}
+              width={17}
               height={0}
               src="/carrot-logo.png"
               alt="carrot-logo"
               className="mx-3"
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: "auto", height: "100%" }}
             />
             Carrot
           </div>

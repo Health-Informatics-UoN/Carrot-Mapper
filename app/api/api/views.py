@@ -197,17 +197,12 @@ class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
 
 
-class CurrentUserViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    This view returns only a specific user object of the user who is making the request
-    """
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    filter_backends = [DjangoFilterBackend]
-
-    def filter_queryset(self, queryset):
-        return queryset.filter(id=self.request.user.id)
+    def get(self, request, *args, **kwargs):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
 
 class ScanReportListViewSet(viewsets.ModelViewSet):
