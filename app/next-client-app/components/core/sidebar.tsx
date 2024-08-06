@@ -74,12 +74,11 @@ export function Sidebar({ userName }: { userName: string }) {
                 <Link href={"/"}>
                   <div className="text-2xl flex items-center font-semibold">
                     <Image
-                      width={17}
-                      height={0}
+                      width={22}
+                      height={22}
                       src="/carrot-logo.png"
                       alt="carrot-logo"
                       className="mx-3"
-                      style={{ width: "100%", height: "auto" }}
                     />
                     Carrot
                   </div>
@@ -147,12 +146,11 @@ export function Sidebar({ userName }: { userName: string }) {
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <Image
-              width={17}
-              height={0}
+              width={22}
+              height={22}
               src="/carrot-logo.png"
               alt="carrot-logo"
               className="mx-3"
-              style={{ width: "auto", height: "100%" }}
             />
             Carrot
           </div>
