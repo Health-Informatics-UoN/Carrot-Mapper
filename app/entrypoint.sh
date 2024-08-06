@@ -10,7 +10,7 @@ wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready
 
 cd /api
 
-# Load OMOP table and field names into the database
+echo "Loading mapping data"
 python manage.py loaddata mapping
 if [ $? -ne 0 ]; then
     echo "Error loading mapping data"
@@ -18,10 +18,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # Check if a superuser named 'admin' exists
-echo "Checking for existing superuser named 'admin'..."
 python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); exit(0) if User.objects.filter(username='admin', is_superuser=True).exists() else exit(1)"
 if [ $? -eq 0 ]; then
-  echo "Superuser 'admin' already exists. Skipping createsuperuser step."
+  echo "Superuser already exists. Skipping creating superuser..."
 else
   echo "Creating superuser..."
   python manage.py createsuperuser --noinput --username $DJANGO_SUPERUSER_USERNAME --email $DJANGO_SUPERUSER_EMAIL
