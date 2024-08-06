@@ -128,11 +128,7 @@ export const columns: ColumnDef<ScanReport>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <Link
-                href={`/scanreports/${id}/details/`}
-                style={{ textDecoration: "none", color: "black" }}
-                prefetch={false}
-              >
+              <Link href={`/scanreports/${id}/details/`} prefetch={false}>
                 <DropdownMenuItem>
                   Details <Pencil2Icon className="ml-auto" />
                 </DropdownMenuItem>

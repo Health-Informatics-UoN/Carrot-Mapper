@@ -30,6 +30,7 @@ import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { DeleteActionItem } from "@/components/scanreports/DeleteActionItem";
 
 export default async function ScanReportLayout({
   params,
@@ -61,11 +62,11 @@ export default async function ScanReportLayout({
 
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission),
+      permissions.permissions.includes(permission)
     )
   ) {
     return (
-      <div className="pt-10 px-16">
+      <div className="pt-5 px-16">
         <Forbidden />
       </div>
     );
@@ -74,7 +75,7 @@ export default async function ScanReportLayout({
   const createdDate = new Date(scanreport.created_at);
   return (
     <>
-      <div className="pt-10 px-16 space-y-2">
+      <div className="pt-5 px-16 space-y-2">
         <div>
           <Breadcrumb>
             <BreadcrumbList>
@@ -106,7 +107,7 @@ export default async function ScanReportLayout({
             <h3 className="text-gray-500">
               Dataset:{" "}
               <Link href={`/datasets/${scanreport.parent_dataset.id}/`}>
-                <span className="text-black">
+                <span className="text-black dark:text-white/90">
                   {scanreport.parent_dataset.name}
                 </span>
               </Link>
@@ -116,14 +117,16 @@ export default async function ScanReportLayout({
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Data Partner:{" "}
-              <span className="text-black">{scanreport.data_partner}</span>
+              <span className="text-black dark:text-white/90">
+                {scanreport.data_partner}
+              </span>
             </h3>
           </div>
           <div>|</div>
           <div className="flex items-center">
             <h3 className="text-gray-500">
               Created:{" "}
-              <span className="text-black">
+              <span className="text-black dark:text-white/90">
                 {format(createdDate, "MMM dd, yyyy h:mm a")}
               </span>
             </h3>
@@ -181,17 +184,7 @@ export default async function ScanReportLayout({
                     Export Scan Report
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <DeleteDialog id={Number(params.id)} redirect>
-                    <Button
-                      variant={"ghost"}
-                      className="text-red-400 px-0 py-0 h-auto"
-                    >
-                      <TrashIcon className="mr-2 size-4" />
-                      Delete Scan Report
-                    </Button>
-                  </DeleteDialog>
-                </DropdownMenuItem>
+                <DeleteActionItem id={scanreport.id} />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

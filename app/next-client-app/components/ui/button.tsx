@@ -18,7 +18,7 @@ const buttonVariants = cva(
         secondary:
           "bg-carrot-100 text-carrot-900 hover:bg-carrot-100/80 dark:bg-carrot-800 dark:text-carrot-50 dark:hover:bg-carrot-800/80",
         ghost:
-          "hover:bg-carrot-100 hover:text-carrot-900 dark:hover:bg-carrot-800 dark:hover:text-carrot-50",
+          "hover:bg-carrot-100 hover:text-carrot-900 dark:hover:text-white dark:text-carrot-400 dark:hover:bg-transparent",
         link: "text-carrot-900 underline-offset-4 hover:underline dark:text-carrot-50",
       },
       size: {

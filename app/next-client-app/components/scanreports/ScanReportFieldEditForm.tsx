@@ -109,7 +109,7 @@ export function ScanReportFieldEditForm({
               <div>
                 <Button
                   type="submit"
-                  className="px-4 py-2 bg-carrot text-white rounded text-lg"
+                  className="px-4 py-2 mt-3 bg-carrot text-white rounded text-lg"
                   disabled={!canUpdate}
                 >
                   Save <Save className="ml-2" />

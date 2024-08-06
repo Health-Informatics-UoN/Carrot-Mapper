@@ -107,14 +107,14 @@ const CustomSelect = ({
       placeholder={placeholder}
       options={options}
       isMulti={isMulti}
-      className="w-full"
+      className="my-react-select-container"
+      classNamePrefix="my-react-select"
       isDisabled={isDisabled}
       components={animatedComponents}
       styles={{
         singleValue: (base) => ({
           ...base,
           fontSize: "17px",
-          color: `${config.theme.extend.colors.carrot.DEFAULT}`,
         }),
       }}
       required={required}
