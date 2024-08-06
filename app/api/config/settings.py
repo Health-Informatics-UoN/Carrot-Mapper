@@ -66,7 +66,6 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "test",
-    "proxy",
     "revproxy",
     "shared",
 ]
@@ -122,6 +121,10 @@ DATABASES = {
         "TEST": {
             "NAME": "throwawaydb",
         },
+        "OPTIONS": {
+            "options": "-c statement_timeout=20s",
+        },
+        "CONN_MAX_AGE": None,
     }
 }
 
@@ -160,6 +163,13 @@ USE_TZ = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
@@ -172,7 +182,7 @@ REST_FRAMEWORK = {
 
 STATIC_URL = "/static/"
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/scanreports/"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # NLP API KEY

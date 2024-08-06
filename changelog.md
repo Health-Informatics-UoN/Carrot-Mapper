@@ -2,6 +2,17 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.2.10
+### Improvements
+- Add migrations to startup
+- Add Scan Reports and Datasets layouts
+- Optimise Scan Report Values API
+
+## v2.2.9
+### Bugfixes
+- Fix pagination ordering on API endpoints for Scan Report Concepts.
+- Fix Scan Report vulnerabilities.
+
 ## v2.2.5
 ## New features
 - Carrot Mapper is now deployed on carrot.ac.uk

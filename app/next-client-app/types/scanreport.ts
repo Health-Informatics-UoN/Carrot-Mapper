@@ -1,11 +1,15 @@
-interface ScanReportList {
+interface ScanReport {
   id: number;
   dataset: string;
-  parent_dataset: string;
+  parent_dataset: DatasetStrict;
   data_partner: string;
   status: string;
   created_at: Date;
   hidden: boolean;
+  visibility: string;
+  author: number;
+  viewers: number[];
+  editors: number[];
 }
 
 interface ScanReportTable {
@@ -63,12 +67,10 @@ interface ScanReportConcept {
 interface ScanReportValue {
   id: number;
   value: string;
-  created_at: string;
-  updated_at: string;
   frequency: number;
-  conceptID: number;
   value_description: string;
   scan_report_field: number;
+  // TODO: These should be added in a inherited type, as they are not returned from the API.
   concepts?: Concept[];
   permissions: Permission[];
 }

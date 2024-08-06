@@ -6,7 +6,6 @@ from shared.data.models import VisibilityChoices
 class ScanReportAccessFilter(filters.BaseFilterBackend):
     """
     Filter that only allows users to see Scan Reports they are allowed to view, edit, or admin.
-
     """
 
     # Each model type needs a different relationship to get the Scan Report / Dataset permissions.
@@ -18,20 +17,24 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
     }
 
     def filter_queryset(self, request, queryset, view):
-        """
-        Filters the queryset based on visibility and permissions related to datasets and scan reports.
-
-        Args:
-            - request: The request object.
-            - queryset: The queryset to be filtered based on visibility and permissions.
-
-        Returns:
-            - A filtered queryset based on the specified visibility and permission conditions.
-        """
-
         model = queryset.model.__name__.lower()
         relationship = self.RELATIONSHIP_MAPPING.get(model, "")
+        user_id = request.user.id
 
+        permission_conditions = self.get_permission_conditions(relationship, user_id)
+        return queryset.filter(permission_conditions).distinct()
+
+    def get_permission_conditions(self, relationship: str, user_id: str) -> Q:
+        """
+        Get combined visibility and permission conditions for a given relationship and user.
+
+        Args:
+            relationship (str): The relationship for which conditions are needed.
+            user_id (str): The user ID for which conditions are generated.
+
+        Returns:
+            Q: Query object representing the combined conditions.
+        """
         dataset_visibility = f"{relationship}parent_dataset__visibility"
         scan_report_visibility = f"{relationship}visibility"
         scan_report_viewers = f"{relationship}viewers"
@@ -42,107 +45,39 @@ class ScanReportAccessFilter(filters.BaseFilterBackend):
         dataset_admins = f"{relationship}parent_dataset__admins"
         project_members = f"{relationship}parent_dataset__project__members"
 
-        return queryset.filter(
-            Q(
-                # parent dataset and SR are public
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{scan_report_visibility: VisibilityChoices.PUBLIC},
+        return Q(
+            # Public dataset and public scan report
+            Q(**{dataset_visibility: VisibilityChoices.PUBLIC})
+            & Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
+            | Q(  # Public dataset and restricted scan report
+                **{dataset_visibility: VisibilityChoices.PUBLIC}
             )
-            |
-            # parent dataset is public but SR restricted checks
-            Q(
-                # parent dataset is public
-                # SR is restricted and user is in SR viewers
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{scan_report_viewers: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
+            & (
+                Q(**{scan_report_viewers: user_id})
+                | Q(**{scan_report_editors: user_id})
+                | Q(**{scan_report_author: user_id})
+                | Q(**{dataset_editors: user_id})
+                | Q(**{dataset_admins: user_id})
             )
-            | Q(
-                # parent dataset is public
-                # SR is restricted and user is in SR editors
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{scan_report_editors: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
+            & Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
+            | Q(  # Restricted dataset and restricted scan report
+                **{dataset_visibility: VisibilityChoices.RESTRICTED}
             )
-            | Q(
-                # parent dataset is public
-                # SR is restricted and user is SR author
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{scan_report_author: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
+            & (
+                Q(**{scan_report_viewers: user_id})
+                | Q(**{scan_report_editors: user_id})
+                | Q(**{scan_report_author: user_id})
+                | Q(**{dataset_admins: user_id})
+                | Q(**{dataset_editors: user_id})
             )
-            | Q(
-                # parent dataset is public
-                # SR is restricted and user is in parent dataset editors
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{dataset_editors: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
+            & Q(**{scan_report_visibility: VisibilityChoices.RESTRICTED})
+            | Q(  # Restricted dataset and public scan report
+                **{dataset_visibility: VisibilityChoices.RESTRICTED}
             )
-            | Q(
-                # parent dataset is public
-                # SR is restricted and user is in parent dataset admins
-                **{dataset_visibility: VisibilityChoices.PUBLIC},
-                **{dataset_admins: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
+            & (
+                Q(**{dataset_editors: user_id})
+                | Q(**{dataset_admins: user_id})
+                | Q(**{dataset_viewers: user_id})
             )
-            # parent dataset and SR are restricted checks
-            | Q(
-                # parent dataset and SR are restricted
-                # user is in SR viewers
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{scan_report_viewers: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
-            )
-            | Q(
-                # parent dataset and SR are restricted
-                # user is in SR editors
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{scan_report_editors: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
-            )
-            | Q(
-                # parent dataset and SR are restricted
-                # user is SR author
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{scan_report_author: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
-            )
-            | Q(
-                # parent dataset and SR are restricted
-                # user is in parent dataset admins
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{dataset_admins: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
-            )
-            | Q(
-                # parent dataset and SR are restricted
-                # user is in parent dataset editors
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{dataset_editors: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.RESTRICTED},
-            )
-            # parent dataset is restricted but SR is public checks
-            | Q(
-                # parent dataset is restricted and SR public
-                # user is in parent dataset editors
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{dataset_editors: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.PUBLIC},
-            )
-            | Q(
-                # parent dataset is restricted and SR public
-                # user is in parent dataset admins
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{dataset_admins: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.PUBLIC},
-            )
-            | Q(
-                # parent dataset is restricted and SR public
-                # user is in parent dataset viewers
-                **{dataset_visibility: VisibilityChoices.RESTRICTED},
-                **{dataset_viewers: request.user.id},
-                **{scan_report_visibility: VisibilityChoices.PUBLIC},
-            ),
-            # Must always be a member of the project.
-            **{project_members: request.user.id},
-        ).distinct()
+            & Q(**{scan_report_visibility: VisibilityChoices.PUBLIC})
+        ) & Q(**{project_members: user_id})

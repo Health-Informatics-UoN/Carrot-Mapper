@@ -17,14 +17,13 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 
-export const columns: ColumnDef<ScanReportList>[] = [
+export const columns: ColumnDef<ScanReport>[] = [
   {
     id: "id",
     accessorKey: "id",
@@ -59,6 +58,9 @@ export const columns: ColumnDef<ScanReportList>[] = [
         sortName="parent_dataset"
       />
     ),
+    cell: ({ row }) => {
+      return <>{row.original.parent_dataset.name}</>;
+    },
     enableHiding: true,
   },
   {
@@ -96,23 +98,15 @@ export const columns: ColumnDef<ScanReportList>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      return <ScanReportStatus row={row} />;
-    },
-  },
-  {
-    id: "Rules",
-    accessorKey: "rules",
-    header: "",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const { id } = row.original;
+      const { id, status, dataset } = row.original;
       return (
-        <Link href={`/scanreports/${id}/mapping_rules/`} prefetch={false}>
-          <Button variant={"outline"}>
-            Rules
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
+        <ScanReportStatus
+          id={id.toString()}
+          status={status}
+          dataset={dataset}
+          className="w-[180px]"
+          disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
+        />
       );
     },
   },

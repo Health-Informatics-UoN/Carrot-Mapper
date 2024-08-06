@@ -8,13 +8,14 @@ import {
 import {
   getAllScanReportFields,
   getScanReport,
+  getScanReportField,
   getScanReportPermissions,
   getScanReportTable,
 } from "@/api/scanreports";
 import { objToQuery } from "@/lib/client-utils";
 import { AlertCircleIcon } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
-import { UpdateForm } from "@/components/update-SR-table/UpdateForm";
+import { ScanReportTableUpdateForm } from "@/components/scanreports/ScanReportTableUpdateForm";
 
 interface UpdateTableProps {
   params: {
@@ -33,58 +34,20 @@ export default async function UpdateTable({
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams };
-
   const query = objToQuery(combinedParams);
 
   const scanReportsFields = await getAllScanReportFields(query);
-  const shortenFields = scanReportsFields.map((item: ScanReportField) => ({
-    id: item.id,
-    name: item.name,
-  }));
+
   const scanReportsName = await getScanReport(id);
   const table = await getScanReportTable(tableId);
+  const personId = await getScanReportField(table.person_id as string);
+  const dateEvent = await getScanReportField(table.date_event as string);
   const permissions = await getScanReportPermissions(id);
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}`}>
-                {scanReportsName.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {table.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href={`/scanreports/${id}/tables/${tableId}/update/`}
-              >
-                Update
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="mt-3">
-        <h1 className="text-4xl font-semibold">Update Table</h1>
-      </div>
+    <div>
       {(table.date_event === null || table.person_id === null) && (
-        <Alert className="flex items-center gap-3 bg-carrot text-white mt-4 w-1/2">
+        <Alert className="flex items-center gap-3 bg-carrot text-white mt-3 w-1/2">
           <div>
             <AlertCircleIcon />
           </div>
@@ -99,11 +62,13 @@ export default async function UpdateTable({
           </div>
         </Alert>
       )}
-      <div>
-        <UpdateForm
-          scanreportFields={shortenFields}
+      <div className="mt-3">
+        <ScanReportTableUpdateForm
+          scanreportFields={scanReportsFields}
           scanreportTable={table}
           permissions={permissions.permissions}
+          personId={personId}
+          dateEvent={dateEvent}
         />
       </div>
     </div>

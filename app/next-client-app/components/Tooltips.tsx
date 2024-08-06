@@ -34,6 +34,7 @@ export function Tooltips({
                 >
                   here
                 </a>
+                .
               </>
             )}
           </p>

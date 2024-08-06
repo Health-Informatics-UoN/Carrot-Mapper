@@ -1,12 +1,16 @@
+import csv
+from collections import Counter
+from io import BytesIO, StringIO
+
+import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
-from mapping.services_rules import analyse_concepts, get_mapping_rules_json
+from mapping.services.rules import analyse_concepts
+from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, PermissionDenied, ParseError
+from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from shared.data.models import (
-    ClassificationSystem,
-    DataDictionary,
     DataPartner,
     Dataset,
     MappingRule,
@@ -18,23 +22,9 @@ from shared.data.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
+    VisibilityChoices,
 )
-from shared.data.omop import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
-from openpyxl.workbook.workbook import Workbook
-from shared.data.models import Dataset, ScanReport, ScanReportField, VisibilityChoices
-import csv
-from io import BytesIO, StringIO
-import openpyxl
-from collections import Counter
+from shared.data.omop import Concept
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -49,52 +39,16 @@ class ConceptSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class VocabularySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Vocabulary
-        fields = "__all__"
-
-
-class ConceptRelationshipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptRelationship
-        fields = "__all__"
-
-
-class ConceptAncestorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptAncestor
-        fields = "__all__"
-
-
-class ConceptClassSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptClass
-        fields = "__all__"
-
-
-class ConceptSynonymSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ConceptSynonym
-        fields = "__all__"
-
-
-class DomainSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Domain
-        fields = "__all__"
-
-
-class DrugStrengthSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DrugStrength
-        fields = "__all__"
-
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
+
+
+class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = ("id", "name")
 
 
 class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -136,7 +90,7 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
         NotFound: If the parent dataset is not found.
     """
 
-    parent_dataset = serializers.SerializerMethodField()
+    parent_dataset = DatasetSerializer(read_only=True)
     data_partner = serializers.SerializerMethodField()
 
     class Meta:
@@ -150,10 +104,11 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
             "status",
             "created_at",
             "hidden",
+            "author",
+            "viewers",
+            "editors",
+            "visibility",
         )
-
-    def get_parent_dataset(self, obj):
-        return obj.parent_dataset.name if obj.parent_dataset else None
 
     def get_data_partner(self, obj):
         return (
@@ -503,6 +458,9 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     editors = serializers.PrimaryKeyRelatedField(
         many=True, queryset=User.objects.all(), required=False
     )
+    viewers = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=User.objects.all(), required=False
+    )
     parent_dataset = serializers.PrimaryKeyRelatedField(
         queryset=Dataset.objects.order_by("name"),
         required=True,
@@ -514,6 +472,7 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
     class Meta:
         model = ScanReport
         fields = (
+            "viewers",
             "editors",
             "dataset",
             "parent_dataset",
@@ -848,33 +807,10 @@ class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         fields = "__all__"
 
 
-class ScanReportValueViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
-    value = serializers.CharField(
-        max_length=128, allow_blank=True, trim_whitespace=False
-    )
-
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if srf := data.get("scan_report_field"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(srf, request)
-                    or has_editorship(srf, request)
-                ):
-                    raise PermissionDenied(
-                        "You must have editor or admin privileges on the scan report to edit its values.",
-                    )
-            else:
-                raise NotFound("Could not find the scan report field for this value.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report value."
-            )
-        return super().validate(data)
-
+class ScanReportValueViewSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = ScanReportValue
-        fields = "__all__"
+        fields = ["id", "value", "frequency", "value_description", "scan_report_field"]
 
 
 class ScanReportValueEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -890,18 +826,6 @@ class ScanReportValueEditSerializer(DynamicFieldsMixin, serializers.ModelSeriali
 class ScanReportConceptSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportConcept
-        fields = "__all__"
-
-
-class ClassificationSystemSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ClassificationSystem
-        fields = "__all__"
-
-
-class DataDictionarySerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataDictionary
         fields = "__all__"
 
 
@@ -954,25 +878,13 @@ class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = ["name", "datasets", "members"]
 
 
-class GetRulesJSON(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
-
-    def to_representation(self, scan_report):
-        qs = MappingRule.objects.filter(scan_report=scan_report)
-        rules = get_mapping_rules_json(qs)
-        return rules
-
-
 class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
         fields = "__all__"
 
     def to_representation(self, scan_report):
-        analysis = analyse_concepts(scan_report.id)
-        return analysis
+        return analyse_concepts(scan_report.id)
 
 
 class ContentTypeSerializer(serializers.Serializer):

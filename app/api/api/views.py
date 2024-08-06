@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import random
@@ -10,23 +11,13 @@ import requests
 from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
-    ClassificationSystemSerializer,
-    ConceptAncestorSerializer,
-    ConceptClassSerializer,
-    ConceptRelationshipSerializer,
     ConceptSerializer,
-    ConceptSynonymSerializer,
     ContentTypeSerializer,
-    DataDictionarySerializer,
     DataPartnerSerializer,
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
-    DatasetViewSerializer,
     DatasetViewSerializerV2,
-    DomainSerializer,
-    DrugStrengthSerializer,
     GetRulesAnalysis,
-    GetRulesJSON,
     MappingRuleSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,
@@ -49,18 +40,17 @@ from api.serializers import (
     ScanReportViewSerializer,
     ScanReportViewSerializerV2,
     UserSerializer,
-    VocabularySerializer,
 )
 from azure.storage.blob import BlobServiceClient
 from config import settings
-from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import redirect
-from django.views.generic import ListView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
 from mapping.permissions import (
     CanAdmin,
@@ -70,12 +60,12 @@ from mapping.permissions import (
     get_user_permissions_on_dataset,
     get_user_permissions_on_scan_report,
 )
-from mapping.services import delete_blob, modify_filename, upload_blob
-from mapping.services_rules import (
-    download_mapping_rules,
-    download_mapping_rules_as_csv,
+from mapping.services.files import delete_blob, modify_filename, upload_blob
+from mapping.services.rules import (
+    get_mapping_rules_as_csv,
+    get_mapping_rules_json,
     get_mapping_rules_list,
-    view_mapping_rules,
+    make_dag,
 )
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
@@ -86,7 +76,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from shared.data.models import (
-    ClassificationSystem,
     DataDictionary,
     DataPartner,
     Dataset,
@@ -101,16 +90,7 @@ from shared.data.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.data.omop import (
-    Concept,
-    ConceptAncestor,
-    ConceptClass,
-    ConceptRelationship,
-    ConceptSynonym,
-    Domain,
-    DrugStrength,
-    Vocabulary,
-)
+from shared.data.omop import Concept
 from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
@@ -136,7 +116,7 @@ class ConceptFilterViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
-    queryset = Concept.objects.all()
+    queryset = Concept.objects.all().order_by("concept_id")
     serializer_class = ConceptSerializer
     filter_backends = [DjangoFilterBackend]
     pagination_class = CustomPagination
@@ -145,58 +125,6 @@ class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
         "concept_code": ["in", "exact"],
         "vocabulary_id": ["in", "exact"],
     }
-
-
-class VocabularyViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Vocabulary.objects.all()
-    serializer_class = VocabularySerializer
-
-
-class ConceptRelationshipViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptRelationship.objects.all()
-    serializer_class = ConceptRelationshipSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["concept_id_1", "concept_id_2", "relationship_id"]
-
-
-class ConceptRelationshipFilterViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptRelationship.objects.all()
-    serializer_class = ConceptRelationshipSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "concept_id_1": ["in", "exact"],
-        "concept_id_2": ["in", "exact"],
-        "relationship_id": ["in", "exact"],
-    }
-
-
-class ConceptAncestorViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptAncestor.objects.all()
-    serializer_class = ConceptAncestorSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["ancestor_concept_id", "descendant_concept_id"]
-
-
-class ConceptClassViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptClass.objects.all()
-    serializer_class = ConceptClassSerializer
-
-
-class ConceptSynonymViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ConceptSynonym.objects.all()
-    serializer_class = ConceptSynonymSerializer
-
-
-class DomainViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Domain.objects.all()
-    serializer_class = DomainSerializer
-
-
-class DrugStrengthViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = DrugStrength.objects.all()
-    serializer_class = DrugStrengthSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["drug_concept_id", "ingredient_concept_id"]
 
 
 class CountProjects(APIView):
@@ -399,7 +327,7 @@ class ScanReportListViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportListViewSetV2(ScanReportListViewSet):
+class ScanReportListViewSetV2(viewsets.ModelViewSet):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
@@ -408,18 +336,41 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
     - Includes custom filtering, ordering, and pagination.
     """
 
+    queryset = ScanReport.objects.all()
     parser_classes = [MultiPartParser, FormParser]
-
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+        ScanReportAccessFilter,
+    ]
     filterset_fields = {
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
         "status": ["in"],
         "parent_dataset": ["exact"],
     }
-    ordering_fields = ["id", "name", "created_at", "dataset", "data_partner"]
+    ordering_fields = [
+        "id",
+        "name",
+        "created_at",
+        "dataset",
+        # "data_partner", # disabled in the UI
+        "parent_dataset",  # enabled in the UI but wasn't applied here
+    ]
     pagination_class = CustomPagination
     ordering = "-created_at"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
+        return [permission() for permission in self.permission_classes]
 
     def get_scan_report_file(self, request):
         scan_report_file = request.data.get("scan_report_file", None)
@@ -430,7 +381,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
             return ScanReportViewSerializerV2
         if self.request.method in ["POST"]:
             return ScanReportFilesSerializer
-        if self.request.method in ["DELETE"]:
+        if self.request.method in ["DELETE", "PATCH", "PUT"]:
             return ScanReportEditSerializer
         return super().get_serializer_class()
 
@@ -477,6 +428,7 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         valid_data_dictionary_file = validatedFiles.get("data_dictionary_file")
         valid_scan_report_file = validatedFiles.get("scan_report_file")
         valid_visibility = validatedData.get("visibility")
+        valid_viewers = validatedData.get("viewers")
         valid_editors = validatedData.get("editors")
         valid_dataset = validatedData.get("dataset")
         valid_parent_dataset = validatedData.get("parent_dataset")
@@ -495,13 +447,17 @@ class ScanReportListViewSetV2(ScanReportListViewSet):
         scan_report.author = self.request.user
         scan_report.save()
 
+        # Add viewers to the scan report if specified
+        if sr_viewers := valid_viewers:
+            scan_report.viewers.add(*sr_viewers)
+
         # Add editors to the scan report if specified
         if sr_editors := valid_editors:
             scan_report.editors.add(*sr_editors)
 
         # If there's no data dictionary supplied, only upload the scan report
         # Set data_dictionary_blob in Azure message to None
-        if str(valid_data_dictionary_file) == "undefined":
+        if str(valid_data_dictionary_file) == "None":
             azure_dict = {
                 "scan_report_id": scan_report.id,
                 "scan_report_blob": scan_report.name,
@@ -555,27 +511,50 @@ class StructuralMappingTableAPIView(APIView):
             body = {}
         if (
             request.POST.get("download_rules") is not None
-            or body.get("download_rules", None) is not None
+            or body.get("download_rules") is not None
         ):
-            qs = self.get_queryset()
-            return download_mapping_rules(request, qs)
+            return self._download_json()
         elif (
             request.POST.get("download_rules_as_csv") is not None
-            or body.get("download_rules_as_csv", None) is not None
+            or body.get("download_rules_as_csv") is not None
         ):
+            return self._download_csv()
+        elif request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
             qs = self.get_queryset()
-            return download_mapping_rules_as_csv(request, qs)
-        elif (
-            request.POST.get("get_svg") is not None
-            or body.get("get_svg", None) is not None
-        ):
-            qs = self.get_queryset()
-            return view_mapping_rules(request, qs)
+            output = get_mapping_rules_json(qs)
+
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
         else:
             return Response(
                 {"error": "Invalid request parameters"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    def _download_csv(self):
+        qs = self.get_queryset()
+        scan_report = qs[0].scan_report
+        return_type = "csv"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+        _buffer = get_mapping_rules_as_csv(qs)
+
+        response = HttpResponse(_buffer, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
+
+    def _download_json(self):
+        qs = self.get_queryset()
+        output = get_mapping_rules_json(qs)
+        scan_report = qs[0].scan_report
+        return_type = "json"
+        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
+
+        response = HttpResponse(
+            json.dumps(output, indent=6), content_type="application/json"
+        )
+        response["Content-Disposition"] = f'attachment; filename="{fname}"'
+        return response
 
     def get_queryset(self):
         qs = MappingRule.objects.all()
@@ -830,7 +809,8 @@ class ScanReportTableViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ScanReportTableViewSetV2(ScanReportTableViewSet):
+class ScanReportTableViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportTable.objects.all()
     filterset_fields = {
         "scan_report": ["in", "exact"],
         "name": ["in", "icontains"],
@@ -839,6 +819,19 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
+    ordering = "-created_at"
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
+        return [permission() for permission in self.permission_classes]
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -848,6 +841,68 @@ class ScanReportTableViewSetV2(ScanReportTableViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data=request.data, many=isinstance(request.data, list)
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+        """
+        Perform a partial update on the instance.
+
+        Args:
+            request (Any): The request object.
+            *args (Any): Additional positional arguments.
+            **kwargs (Any): Additional keyword arguments.
+
+        Returns:
+            Response: The response object.
+        """
+        instance = self.get_object()
+        partial = kwargs.pop("partial", True)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        # Delete the current mapping rules
+        delete_mapping_rules(instance.id)
+
+        # Map the table
+        scan_report_instance = instance.scan_report
+        data_dictionary_name = (
+            scan_report_instance.data_dictionary.name
+            if scan_report_instance.data_dictionary
+            else None
+        )
+
+        # Send to functions
+        msg = {
+            "scan_report_id": scan_report_instance.id,
+            "table_id": instance.id,
+            "data_dictionary_blob": data_dictionary_name,
+        }
+        base_url = f"{settings.AZ_URL}"
+        trigger = (
+            f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
+        )
+        try:
+            response = requests.post(urljoin(base_url, trigger), json=msg)
+            response.raise_for_status()
+        except request.exceptions.HTTPError as e:
+            logging.error(f"HTTP Trigger failed: {e}")
+
+        # TODO: The worker_id can be used for status, but we need to save it somewhere.
+        # resp_json = response.json()
+        # worker_id = resp_json.get("instanceId")
+
+        return Response(serializer.data)
 
 
 class ScanReportFieldViewSet(viewsets.ModelViewSet):
@@ -891,7 +946,9 @@ class ScanReportFieldViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
+class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
+    # Need to reset to see the change in data returned?!
+    queryset = ScanReportField.objects.all()
     filterset_fields = {
         "scan_report_table": ["in", "exact"],
         "name": ["in", "icontains"],
@@ -901,6 +958,18 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
     pagination_class = CustomPagination
     ordering = "name"
 
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            # user must be able to view and be an admin to delete a scan report
+            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            # user must be able to view and be either an editor or and admin
+            # to edit a scan report
+            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
+        else:
+            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
+        return [permission() for permission in self.permission_classes]
+
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
@@ -909,6 +978,11 @@ class ScanReportFieldViewSetV2(ScanReportFieldViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportFieldEditSerializer
         return super().get_serializer_class()
+
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ScanReportConceptViewSet(viewsets.ModelViewSet):
@@ -1074,7 +1148,7 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
 
 
 class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportConcept.objects.all()
+    queryset = ScanReportConcept.objects.all().order_by("id")
     serializer_class = ScanReportConceptSerializer
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
@@ -1084,16 +1158,6 @@ class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
         "id": ["in", "exact"],
         "content_type": ["in", "exact"],
     }
-
-
-class ClassificationSystemViewSet(viewsets.ModelViewSet):
-    queryset = ClassificationSystem.objects.all()
-    serializer_class = ClassificationSystemSerializer
-
-
-class DataDictionaryViewSet(viewsets.ModelViewSet):
-    queryset = DataDictionary.objects.all()
-    serializer_class = DataDictionarySerializer
 
 
 class DataPartnerViewSet(viewsets.ModelViewSet):
@@ -1112,23 +1176,9 @@ class DataPartnerViewSet(viewsets.ModelViewSet):
         )
 
 
-class DataPartnerFilterViewSet(viewsets.ModelViewSet):
-    queryset = DataPartner.objects.all()
-    serializer_class = DataPartnerSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["name"]
-
-
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset = OmopTable.objects.all()
     serializer_class = OmopTableSerializer
-
-
-class OmopTableFilterViewSet(viewsets.ModelViewSet):
-    queryset = OmopTable.objects.all()
-    serializer_class = OmopTableSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"id": ["in", "exact"]}
 
 
 class OmopFieldViewSet(viewsets.ModelViewSet):
@@ -1136,23 +1186,9 @@ class OmopFieldViewSet(viewsets.ModelViewSet):
     serializer_class = OmopFieldSerializer
 
 
-class OmopFieldFilterViewSet(viewsets.ModelViewSet):
-    queryset = OmopField.objects.all()
-    serializer_class = OmopFieldSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"id": ["in", "exact"]}
-
-
 class MappingRuleViewSet(viewsets.ModelViewSet):
     queryset = MappingRule.objects.all()
     serializer_class = MappingRuleSerializer
-
-
-class DownloadJSON(viewsets.ModelViewSet):
-    queryset = ScanReport.objects.all()
-    serializer_class = GetRulesJSON
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["id"]
 
 
 class RulesList(viewsets.ModelViewSet):
@@ -1186,8 +1222,8 @@ class RulesList(viewsets.ModelViewSet):
         count = queryset.count()
 
         # Get subset of mapping rules that fit onto the page to be displayed
-        p = self.request.query_params.get("p", None)
-        page_size = self.request.query_params.get("page_size", None)
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 30)
         rules = get_mapping_rules_list(
             queryset, page_number=int(p), page_size=int(page_size)
         )
@@ -1221,21 +1257,62 @@ class RulesList(viewsets.ModelViewSet):
         return Response(data={"count": count, "results": rules})
 
 
+class SummaryRulesList(RulesList):
+    def list(self, request):
+        # Get p and page_size from query_params
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 20)
+        # Get queryset
+        queryset = self.get_queryset()
+
+        # Directly filter OmopField objects that end with "_concept_id" but not "_source_concept_id"
+        omop_fields_queryset = OmopField.objects.filter(
+            pk__in=queryset.values_list("omop_field_id", flat=True),
+            field__endswith="_concept_id",
+        ).exclude(field__endswith="_source_concept_id")
+
+        ids_list = omop_fields_queryset.values_list("id", flat=True)
+        # Filter the queryset based on valid omop_field_ids
+        filtered_queryset = queryset.filter(omop_field_id__in=ids_list)
+        count = filtered_queryset.count()
+        # Get the rules list based on the filtered queryset
+        rules = get_mapping_rules_list(
+            filtered_queryset, page_number=int(p), page_size=int(page_size)
+        )
+        # Process rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
+
+
 class AnalyseRules(viewsets.ModelViewSet):
     queryset = ScanReport.objects.all()
     serializer_class = GetRulesAnalysis
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["id"]
-
-
-class MappingRuleFilterViewSet(viewsets.ModelViewSet):
-    queryset = MappingRule.objects.all()
-    serializer_class = MappingRuleSerializer
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "concept": ["in", "exact"],
-    }
 
 
 class ScanReportValueViewSet(viewsets.ModelViewSet):
@@ -1281,23 +1358,22 @@ class ScanReportValueViewSet(viewsets.ModelViewSet):
         )
 
 
-class ScanReportValueViewSetV2(ScanReportValueViewSet):
+class ScanReportValueViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportValue.objects.order_by("id").only(
+        "id", "value", "frequency", "value_description", "scan_report_field"
+    )
     filterset_fields = {
         "scan_report_field": ["in", "exact"],
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
-    ordering_fields = ["value", "value_description", "frequency"]
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
     pagination_class = CustomPagination
+    serializer_class = ScanReportValueViewSerializerV2
 
-    def get_serializer_class(self):
-        if self.request.method in ["GET", "POST"]:
-            # use the view serialiser if on GET requests
-            return ScanReportValueViewSerializerV2
-        if self.request.method in ["PUT", "PATCH", "DELETE"]:
-            # use the edit serialiser when the user tries to alter the scan report
-            return ScanReportValueEditSerializer
-        return super().get_serializer_class()
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ScanReportValuesFilterViewSetScanReport(viewsets.ModelViewSet):

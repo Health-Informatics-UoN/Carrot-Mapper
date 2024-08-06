@@ -1,3 +1,4 @@
+"use client";
 import { updateScanReport } from "@/api/scanreports";
 import {
   Select,
@@ -8,35 +9,53 @@ import {
 } from "@/components/ui/select";
 import { statusOptions } from "@/constants/scanReportStatus";
 import { ApiError } from "@/lib/api/error";
-import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { SelectTriggerProps } from "@radix-ui/react-select";
 
-export function ScanReportStatus({ row }: { row: Row<ScanReportList> }) {
-  const { id, status, dataset } = row.original;
+interface ScanReportStatusProps extends SelectTriggerProps {
+  id: string;
+  status: string;
+  dataset: string;
+  className?: string;
+  disabled: boolean;
+}
+
+export function ScanReportStatus({
+  id,
+  status,
+  dataset,
+  className,
+  disabled,
+}: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = statusOptions.find((option) => option.value === status);
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
-    try {
-      await updateScanReport(id, "status", newStatus);
-      const newStatusText =
-        statusOptions.find((option) => option.value === newStatus)?.label ?? "";
-      toast.success(
-        `Scan Report ${dataset} status has changed to ${newStatusText}.`,
-      );
-    } catch (error) {
-      const errorObj = JSON.parse((error as ApiError).message);
+    const response = await updateScanReport(parseInt(id), {
+      status: newStatus,
+    });
+    const newStatusText =
+      statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+    if (response) {
       toast.error(
-        `Scan Report ${dataset} status change has failed: ${errorObj.detail}.`,
+        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`
       );
-      console.error(error);
+    } else {
+      toast.success(
+        `Scan Report ${dataset} status has changed to ${newStatusText}.`
+      );
     }
   };
 
   return (
-    <Select value={status} onValueChange={handleChangeStatus}>
-      <SelectTrigger className={`${textColorClassName} w-[180px]`}>
+    <Select
+      value={status}
+      onValueChange={handleChangeStatus}
+      disabled={disabled}
+    >
+      <SelectTrigger className={cn(textColorClassName, className)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

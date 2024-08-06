@@ -20,11 +20,11 @@ const fetchKeys = {
 };
 
 export async function getScanReportsTables(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportTable>> {
   try {
     return await request<PaginatedResponse<ScanReportTable>>(
-      fetchKeys.tables(filter)
+      fetchKeys.tables(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -33,12 +33,10 @@ export async function getScanReportsTables(
 }
 
 export async function getScanReports(
-  filter: string | undefined
-): Promise<PaginatedResponse<ScanReportList>> {
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReport>> {
   try {
-    return await request<PaginatedResponse<ScanReportList>>(
-      fetchKeys.list(filter)
-    );
+    return await request<PaginatedResponse<ScanReport>>(fetchKeys.list(filter));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
@@ -51,7 +49,7 @@ export async function getScanReports(
  * @returns A object with a list of the users permissions.
  */
 export async function getScanReportPermissions(
-  id: string
+  id: string,
 ): Promise<PermissionsResponse> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
@@ -62,11 +60,11 @@ export async function getScanReportPermissions(
 }
 
 export async function getScanReportFields(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportField>> {
   try {
     return await request<PaginatedResponse<ScanReportField>>(
-      fetchKeys.fields(filter)
+      fetchKeys.fields(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -75,7 +73,7 @@ export async function getScanReportFields(
 }
 
 export async function getAllScanReportFields(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<ScanReportField[]> {
   try {
     return await fetchAllPages<ScanReportField>(fetchKeys.fields(filter));
@@ -86,11 +84,11 @@ export async function getAllScanReportFields(
 }
 
 export async function getScanReportValues(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<ScanReportValue>> {
   try {
     return await request<PaginatedResponse<ScanReportValue>>(
-      fetchKeys.values(filter)
+      fetchKeys.values(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -98,20 +96,12 @@ export async function getScanReportValues(
   }
 }
 
-export async function getScanReport(id: string): Promise<ScanReportList> {
+export async function getScanReport(id: string): Promise<ScanReport | null> {
   try {
-    return await request<ScanReportList>(fetchKeys.scanReport(id));
+    return await request<ScanReport>(fetchKeys.scanReport(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      dataset: "",
-      parent_dataset: "",
-      data_partner: "",
-      status: "",
-      created_at: new Date(),
-      hidden: true,
-    };
+    return null;
   }
 }
 
@@ -133,34 +123,57 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
   }
 }
 
-export async function getScanReportField(
-  id: string | null
-): Promise<ScanReportField | null> {
-  if (id === null) {
-    return null;
-  }
-
+export async function getScanReportField(id: string): Promise<ScanReportField> {
   try {
     return await request<ScanReportField>(fetchKeys.fieldName(id));
   } catch (error) {
-    console.warn("Failed to fetch data.");
-    return null;
+    console.warn("Failed to fetch data. Passed ID could be null");
+    return {
+      id: 0,
+      created_at: new Date(),
+      updated_at: new Date(),
+      name: "",
+      description_column: "",
+      type_column: "",
+      max_length: 0,
+      nrows: 0,
+      nrows_checked: 0,
+      fraction_empty: "",
+      nunique_values: 0,
+      fraction_unique: "",
+      ignore_column: null,
+      is_patient_id: false,
+      is_ignore: false,
+      classification_system: null,
+      pass_from_source: false,
+      concept_id: 0,
+      permissions: [],
+      field_description: null,
+      scan_report_table: 0,
+    };
   }
 }
 
-export async function updateScanReport(id: number, field: string, value: any) {
+export async function updateScanReport(
+  id: number,
+  data: {},
+  needRedirect?: boolean,
+) {
   try {
     await request(fetchKeys.update(id), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ [field]: value }),
+      body: JSON.stringify(data),
     });
     revalidatePath("/scanreports/");
   } catch (error: any) {
     // Only return a response when there is an error
     return { errorMessage: error.message };
+  }
+  if (needRedirect) {
+    redirect(`/scanreports/`);
   }
 }
 
@@ -180,11 +193,8 @@ export async function deleteScanReport(id: number) {
 
 export async function updateScanReportTable(
   id: number,
-  field_1: string,
-  value_1: number | null,
-  field_2: string,
-  value_2: number | null,
-  scanreportID: number
+  data: {},
+  scanreportID: number,
 ) {
   try {
     await request(fetchKeys.updateTable(id), {
@@ -192,12 +202,26 @@ export async function updateScanReportTable(
       headers: {
         "Content-type": "application/json",
       },
-      body: JSON.stringify({ [field_1]: value_1, [field_2]: value_2 }),
+      body: JSON.stringify(data),
     });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
   redirect(`/scanreports/${scanreportID}/`);
+}
+
+export async function updateScanReportField(fieldId: string, data: {}) {
+  try {
+    await request(fetchKeys.fieldName(fieldId), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (error: any) {
+    return { errorMessage: error.message };
+  }
 }
 
 export async function createScanReport(data: FormData) {

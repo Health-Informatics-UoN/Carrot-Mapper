@@ -1,13 +1,5 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { columns } from "./columns";
 import {
-  getScanReport,
   getScanReportFields,
   getScanReportPermissions,
   getScanReportTable,
@@ -18,8 +10,8 @@ import {
   getAllConceptsFiltered,
   getAllScanReportConcepts,
 } from "@/api/concepts";
-import { ButtonsRow } from "@/components/scanreports/ButtonsRow";
 import { ConceptDataTable } from "@/components/concepts/ConceptDataTable";
+import { Button } from "@/components/ui/button";
 
 interface ScanReportsFieldProps {
   params: {
@@ -40,10 +32,8 @@ export default async function ScanReportsField({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-
-  const scanReportsFields = await getScanReportFields(query);
-  const scanReportsName = await getScanReport(id);
   const tableName = await getScanReportTable(tableId);
+  const scanReportsFields = await getScanReportFields(query);
   const permissions = await getScanReportPermissions(id);
 
   const scanReportsConcepts =
@@ -51,52 +41,22 @@ export default async function ScanReportsField({
       ? await getAllScanReportConcepts(
           `object_id__in=${scanReportsFields.results
             .map((item) => item.id)
-            .join(",")}`,
+            .join(",")}`
         )
       : [];
 
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getAllConceptsFiltered(
-          scanReportsConcepts?.map((item) => item.concept).join(","),
+          scanReportsConcepts?.map((item) => item.concept).join(",")
         )
       : [];
 
   return (
-    <div className="pt-10 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/scanreports">Scan Reports</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}`}>
-                {scanReportsName.dataset}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/scanreports/${id}/tables/${tableId}/`}>
-                {tableName.name}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="mt-3">
-        <h1 className="text-4xl font-semibold">Fields</h1>
-      </div>
-      <ButtonsRow
-        scanreportId={parseInt(id)}
-        tableId={parseInt(tableId)}
-        permissions={permissions.permissions}
-      />
+    <div>
+      <Button variant={"secondary"} className="mb-3">
+        Table: {tableName.name}
+      </Button>
       <div>
         <ConceptDataTable
           count={scanReportsFields.count}
