@@ -60,7 +60,7 @@ services:
       - COCONNECT_DB_AUTH_TOKEN=
       - UPLOAD_ONLY=false
       - ENABLE_PROXY=true
-      - CCOM_APP_URL= http://localhost:8000
+      - CCOM_APP_URL=http://web:8000/
       - AZ_FUNCTION_USER=admin
       - DEBUG=True
       - NLP_QUEUE_NAME=nlpqueue-local
@@ -69,7 +69,7 @@ services:
       - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
       - SECRET_KEY=secret
       - AZURE_ACCOUNT_NAME=devstoreaccount1
-      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;QueueEndpoint=http://localhost:10001/devstoreaccount1;
+      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
     volumes:
       - ./app/api:/api
     depends_on:
@@ -79,26 +79,28 @@ services:
   workers:
     image: carrot-workers
     build:
-      context: app/workers
-      dockerfile: Dockerfile
+      context: app
+      dockerfile: workers/Dockerfile
     ports:
       - 8080:80
     environment:
-      - IsEncrypted='false'
-      - AzureWebJobsStorage='UseDevelopmentStorage=true'
+      - IsEncrypted=false
+      - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
       - FUNCTIONS_WORKER_RUNTIME=python
-      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://localhost:10001/devstoreaccount1;BlobEndpoint=http://localhost:10000/devstoreaccount1;
-      - NLP_API_KEY=''
-      - APP_URL='http://web:8000'
-      - AZ_FUNCTION_KEY='53756e8553c47897cebf6d6d730cf2e69ac4a46e'
-      - SCAN_REPORT_QUEUE_NAME='scanreports-local'
-      - NLP_QUEUE_NAME='nlpqueue-local'
-      - UPLOAD_QUEUE_NAME='uploadreports-local'
-      - CREATE_CONCEPTS_QUEUE_NAME='conceptqueue-local'
-      - RULES_QUEUE_NAME='rules-local'
-      - PAGE_MAX_CHARS='30000'
-      - CHUNK_SIZE='6'
+      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+      - NLP_API_KEY=
+      - APP_URL=http://web:8000/
+      - AZ_FUNCTION_KEY=53756e8553c47897cebf6d6d730cf2e69ac4a46e
+      - SCAN_REPORT_QUEUE_NAME=scanreports-local
+      - NLP_QUEUE_NAME=nlpqueue-local
+      - UPLOAD_QUEUE_NAME=uploadreports-local
+      - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
+      - RULES_QUEUE_NAME=rules-local
+      - PAGE_MAX_CHARS=30000
+      - CHUNK_SIZE=6
     volumes:
-      - ./app/workers:/app/workers
+      - ./app/workers:/home/site/wwwroot
+      - ./app/shared:/shared
     depends_on:
       - web
+      - azurite
