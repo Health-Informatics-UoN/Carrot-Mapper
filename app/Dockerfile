@@ -69,7 +69,6 @@ RUN chown -R django:django /entrypoint.sh
 
 # Set the working directory to /api
 WORKDIR /api
-COPY ./api /api
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Return to django user to run the container as this user by default

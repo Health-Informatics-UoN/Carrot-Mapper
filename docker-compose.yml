@@ -1,4 +1,4 @@
-name: carrot-mapper-dev-test
+name: carrot-mapper-dev-v2
 
 services:
   db:
@@ -28,46 +28,8 @@ services:
     environment:
       - BACKEND_URL=http://web:8000
       - BACKEND_ORIGIN="web:8000"
-    # Mount the code directory
-    # volumes:
-    #   - ./app/next-client-app:/app/next-client-app
-    develop:
-      watch:
-        - action: sync
-          path: app/next-client-app
-          target: app/next-client-app
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: package-lock.json
-
-  # workers:
-  #   image: carrot-workers
-  #   build:
-  #     context: app/workers
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 8080:80
-  #   environment:
-  #     IsEncrypted: 'false'
-  #     AzureWebJobsStorage: 'UseDevelopmentStorage=true'
-  #     FUNCTIONS_WORKER_RUNTIME: 'python'
-  #     STORAGE_CONN_STRING: 'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://localhost:10001/devstoreaccount1;BlobEndpoint=http://localhost:10000/devstoreaccount1;'
-  #     NLP_API_KEY: ''
-  #     APP_URL: 'http://localhost:8000/'
-  #     AZ_FUNCTION_KEY: '53756e8553c47897cebf6d6d730cf2e69ac4a46e'
-  #     SCAN_REPORT_QUEUE_NAME: 'scanreports-local'
-  #     NLP_QUEUE_NAME: 'nlpqueue-local'
-  #     UPLOAD_QUEUE_NAME: 'uploadreports-local'
-  #     CREATE_CONCEPTS_QUEUE_NAME: 'conceptqueue-local'
-  #     RULES_QUEUE_NAME: 'rules-local'
-  #     PAGE_MAX_CHARS: '30000'
-  #     CHUNK_SIZE: '6'
-  #   # Mount the code directory
-  #   volumes:
-  #     - ./app/workers:/app/workers
-  #   depends_on:
-  #     - web
+    volumes:
+      - ./app/next-client-app:/app/next-client-app
 
   omop-lite:
     image: ghcr.io/andyrae/omop-lite
@@ -88,9 +50,6 @@ services:
       - 8000:8000
     environment:
       - NEXTJS_URL=http://next-client:3000
-      - DJANGO_SUPERUSER_USERNAME=admin
-      - DJANGO_SUPERUSER_EMAIL=admin@example.com
-      - DJANGO_SUPERUSER_PASSWORD=password
       - ALLOWED_HOSTS=['localhost', '127.0.0.1','web']
       - COCONNECT_DB_ENGINE=django.db.backends.postgresql
       - COCONNECT_DB_HOST=db
