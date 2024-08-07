@@ -37,6 +37,7 @@
     "react-dom": "^18",
     "react-select": "^5.8.0",
     "react-tooltip": "^5.26.4",
+    "sharp": "^0.33.4",
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
