@@ -98,6 +98,7 @@ services:
       - RULES_QUEUE_NAME=rules-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
+      - DJANGO_SETTINGS_MODULE=shared_code.django_settings
     volumes:
       - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
