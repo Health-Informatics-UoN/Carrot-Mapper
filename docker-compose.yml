@@ -96,7 +96,7 @@ services:
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
     volumes:
-      - ./app/workers:/workers
+      - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
     depends_on:
       - web
