@@ -68,10 +68,12 @@ export default async function DatasetLayout({
   return (
     <div className="container space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
+        <Folders className="text-gray-500" />
         <Link href={`/datasets`}>
           <h2 className="text-gray-500 dark:text-gray-400">Datasets</h2>
         </Link>
         <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
+        <Folders className="text-blue-700" />
         <h2>{dataset.name}</h2>
       </div>
 

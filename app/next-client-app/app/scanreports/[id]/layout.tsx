@@ -14,6 +14,7 @@ import {
   Download,
   Edit,
   FileScan,
+  Folders,
   GripVertical,
   TrashIcon,
 } from "lucide-react";
@@ -77,12 +78,14 @@ export default async function ScanReportLayout({
     <div className="container space-y-2">
       {/* Details line */}
       <div className="flex font-semibold text-xl items-center space-x-2">
+        <Folders className="text-gray-500" />
         <Link href={`/datasets/${scanreport.parent_dataset.id}`}>
           <h2 className="text-gray-500 dark:text-gray-400">
             {scanreport.parent_dataset.name}
           </h2>
         </Link>
         <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
+        <FileScan className=" text-green-700" />
         <h2>{scanreport.dataset}</h2>
       </div>
 
