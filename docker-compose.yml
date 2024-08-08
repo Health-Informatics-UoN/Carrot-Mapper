@@ -95,6 +95,9 @@ services:
       - RULES_QUEUE_NAME=rules-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
+      - AzureBlobServiceConfig:BaseUrl=http://azurite:10000/
+      - AzureBlobServiceConfig:AccountName=devstoreaccount1
+      - AzureBlobServiceConfig:Password=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
     volumes:
       - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
