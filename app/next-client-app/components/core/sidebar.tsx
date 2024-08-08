@@ -117,7 +117,7 @@ export function Sidebar({ userName }: { userName: string }) {
                     </DrawerTrigger>
                     <DrawerContent className="mb-2 p-2 w-[350px]">
                       <div className="flex flex-col space-y-2 mt-2">
-                        <Link href="/accounts/password_change/">
+                        <a href="/accounts/password_change/">
                           <SidebarButton
                             size="sm"
                             icon={Settings}
@@ -125,8 +125,8 @@ export function Sidebar({ userName }: { userName: string }) {
                           >
                             Change Password
                           </SidebarButton>
-                        </Link>
-                        <Link href={"/accounts/logout/"}>
+                        </a>
+                        <a href={"/accounts/logout/"}>
                           <SidebarButton
                             size="sm"
                             icon={LogOut}
@@ -134,7 +134,7 @@ export function Sidebar({ userName }: { userName: string }) {
                           >
                             Log Out
                           </SidebarButton>
-                        </Link>
+                        </a>
                       </div>
                     </DrawerContent>
                   </Drawer>
