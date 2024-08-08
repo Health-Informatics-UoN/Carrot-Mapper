@@ -21,4 +21,7 @@ RUN pip install poetry
 
 # Export requirements from pyproject.toml and install them
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry export --format requirements.txt --output /workers/requirements.txt --without-hashes \
+    && pip install --no-cache-dir -r /workers/requirements.txt
+
+RUN chmod -R 755 /workers
