@@ -1,12 +1,7 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { getDataPartners, getProjects } from "@/api/datasets";
 import { CreateScanReportForm } from "@/components/scanreports/CreateScanReportForm";
+import { FileScan } from "lucide-react";
+import Link from "next/link";
 
 export default async function ScanReports() {
   const partners = await getDataPartners();
@@ -14,7 +9,12 @@ export default async function ScanReports() {
 
   return (
     <div className="container">
-      <div></div>
+      <div className="flex font-semibold text-xl items-center">
+        <FileScan className="mr-2 text-green-700" />
+        <Link href="/scanreports">
+          <h2 className="text-gray-500 dark:text-gray-400">Scan Reports</h2>
+        </Link>
+      </div>
       <div className="flex justify-between mt-3">
         <h1 className="text-4xl font-semibold">New Scan Report</h1>
       </div>
