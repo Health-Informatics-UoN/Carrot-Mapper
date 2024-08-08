@@ -51,7 +51,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
                   <TabsTrigger value="archived">Archived Datasets</TabsTrigger>
                 </a>
               </TabsList>
-              <div>
+              <div className="hidden md:flex">
                 <CreateDatasetDialog
                   projects={projects}
                   dataPartnerList={dataPartnerList}
