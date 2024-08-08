@@ -1,12 +1,5 @@
 import { Forbidden } from "@/components/core/Forbidden";
 import { NavGroup } from "@/components/core/nav-group";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Folders } from "lucide-react";
 import { Boundary } from "@/components/core/boundary";
 import { Suspense } from "react";

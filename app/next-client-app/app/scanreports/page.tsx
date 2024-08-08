@@ -1,10 +1,3 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { columns } from "./columns";
 import { getScanReports } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";

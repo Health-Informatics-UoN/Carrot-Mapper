@@ -1,13 +1,5 @@
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
   getAllScanReportFields,
-  getScanReport,
   getScanReportField,
   getScanReportPermissions,
   getScanReportTable,

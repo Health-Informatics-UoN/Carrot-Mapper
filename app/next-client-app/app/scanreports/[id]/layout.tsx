@@ -1,13 +1,6 @@
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
 import { NavGroup } from "@/components/core/nav-group";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import {
