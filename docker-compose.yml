@@ -29,7 +29,7 @@ services:
       - BACKEND_URL=http://web:8000
       - BACKEND_ORIGIN="web:8000"
     volumes:
-      - ./app/next-client-app:/app/next-client-app
+      - ./app/next-client-app:/next-client-app
 
   omop-lite:
     image: ghcr.io/andyrae/omop-lite
@@ -57,18 +57,14 @@ services:
       - COCONNECT_DB_NAME=omop
       - COCONNECT_DB_USER=postgres
       - COCONNECT_DB_PASSWORD=postgres
-      - COCONNECT_DB_AUTH_TOKEN=
-      - UPLOAD_ONLY=false
       - ENABLE_PROXY=true
-      - CCOM_APP_URL= http://localhost:8000
       - AZ_FUNCTION_USER=admin
       - DEBUG=True
-      - NLP_QUEUE_NAME=nlpqueue-local
-      - SCAN_REPORT_QUEUE_NAME=scanreports-local
       - UPLOAD_QUEUE_NAME=uploadreports-local
-      - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
       - SECRET_KEY=secret
       - AZURE_ACCOUNT_NAME=devstoreaccount1
+      - AZ_URL=http://workers:7071
+      - AZ_RULES_NAME=RulesOrchestrator
     volumes:
       - ./app/api:/api
     depends_on:
