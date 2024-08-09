@@ -1,19 +1,13 @@
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
 import { NavGroup } from "@/components/core/nav-group";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 import { Button } from "@/components/ui/button";
 import {
   Download,
   Edit,
   FileScan,
+  Folders,
   GripVertical,
   TrashIcon,
 } from "lucide-react";
@@ -28,9 +22,9 @@ import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { InfoItem } from "@/components/core/InfoItem";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { DeleteActionItem } from "@/components/scanreports/DeleteActionItem";
 
 export default async function ScanReportLayout({
   params,
@@ -62,90 +56,51 @@ export default async function ScanReportLayout({
 
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission)
+      permissions.permissions.includes(permission),
     )
   ) {
-    return (
-      <div className="pt-5 px-16">
-        <Forbidden />
-      </div>
-    );
+    return <Forbidden />;
   }
 
   const createdDate = new Date(scanreport.created_at);
   return (
-    <>
-      <div className="pt-5 px-16 space-y-2">
+    <div className="space-y-2">
+      {/* Details line */}
+      <div className="flex font-semibold text-xl items-center space-x-2">
+        <Folders className="text-gray-500" />
+        <Link href={`/datasets/${scanreport.parent_dataset.id}`}>
+          <h2 className="text-gray-500 dark:text-gray-400">
+            {scanreport.parent_dataset.name}
+          </h2>
+        </Link>
+        <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
+        <FileScan className=" text-green-700" />
+        <h2>{scanreport.dataset}</h2>
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
+        <InfoItem
+          label="Data Partner"
+          value={scanreport.data_partner}
+          className="py-1 md:py-0 md:pr-3"
+        />
+        <InfoItem
+          label="Created"
+          value={format(createdDate, "MMM dd, yyyy h:mm a")}
+          className="py-1 md:py-0 md:px-3"
+        />
+
+        <ScanReportStatus
+          id={params.id}
+          status={scanreport.status}
+          dataset={scanreport.dataset}
+          className="w-[180px] h-7"
+          disabled={!canEdit} // Disable when users don't have permission
+        />
+      </div>
+      {/* "Navs" group */}
+      <div className="flex flex-col md:flex-row justify-between">
         <div>
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/">Home</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>/</BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/scanreports">
-                  Scan Reports
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>/</BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink href={`/scanreports/${params.id}/`}>
-                  {scanreport.dataset}
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-        {/* Details line */}
-        <div className="flex font-semibold text-3xl items-center">
-          <FileScan className="mr-2 text-green-700" />
-          <h2>{scanreport.dataset}</h2>
-        </div>
-        <div className="flex items-center text-sm space-x-3">
-          <div className="flex items-center">
-            <h3 className="text-gray-500">
-              Dataset:{" "}
-              <Link href={`/datasets/${scanreport.parent_dataset.id}/`}>
-                <span className="text-black dark:text-white/90">
-                  {scanreport.parent_dataset.name}
-                </span>
-              </Link>
-            </h3>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
-            <h3 className="text-gray-500">
-              Data Partner:{" "}
-              <span className="text-black dark:text-white/90">
-                {scanreport.data_partner}
-              </span>
-            </h3>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
-            <h3 className="text-gray-500">
-              Created:{" "}
-              <span className="text-black dark:text-white/90">
-                {format(createdDate, "MMM dd, yyyy h:mm a")}
-              </span>
-            </h3>
-          </div>
-          <div>|</div>
-          <div className="flex items-center">
-            <div className="ml-2">
-              <ScanReportStatus
-                id={params.id}
-                status={scanreport.status}
-                dataset={scanreport.dataset}
-                className="w-[180px] h-7"
-                disabled={!canEdit} // Disable when users don't have permission
-              />
-            </div>
-          </div>
-        </div>
-        {/* "Navs" group */}
-        <div className="flex justify-between">
           <NavGroup
             path={`/scanreports/${params.id}`}
             items={[
@@ -156,46 +111,53 @@ export default async function ScanReportLayout({
               })),
             ]}
           />
-          {/* Actions button */}
-          <div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  Actions <GripVertical className="ml-2 size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>
-                  <a
-                    href={`/scanreports/${params.id}/details`}
-                    className="flex"
-                  >
-                    <Edit className="mr-2 size-4" />
-                    Edit Scan Report Details
-                  </a>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <a
-                    href={`/api/scanreports/${params.id}/download/`}
-                    download
-                    className="flex"
-                  >
-                    <Download className="mr-2 size-4" />
-                    Export Scan Report
-                  </a>
-                </DropdownMenuItem>
-                <DeleteActionItem id={scanreport.id} />
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
-        <Boundary>
-          {" "}
-          <Suspense fallback={<Skeleton className="h-full w-full" />}>
-            {children}
-          </Suspense>
-        </Boundary>
+
+        {/* Actions button */}
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Actions <GripVertical className="ml-2 size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>
+                <a href={`/scanreports/${params.id}/details`} className="flex">
+                  <Edit className="mr-2 size-4" />
+                  Edit Scan Report Details
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <a
+                  href={`/api/scanreports/${params.id}/download/`}
+                  download
+                  className="flex"
+                >
+                  <Download className="mr-2 size-4" />
+                  Export Scan Report
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <DeleteDialog id={Number(params.id)} redirect>
+                  <Button
+                    variant={"ghost"}
+                    className="text-red-400 px-0 py-0 h-auto"
+                  >
+                    <TrashIcon className="mr-2 size-4" />
+                    Delete Scan Report
+                  </Button>
+                </DeleteDialog>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
-    </>
+      <Boundary>
+        <Suspense fallback={<Skeleton className="h-full w-full" />}>
+          {children}
+        </Suspense>
+      </Boundary>
+    </div>
   );
 }

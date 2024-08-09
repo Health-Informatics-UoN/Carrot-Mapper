@@ -17,7 +17,6 @@ interface ScanReportStatusProps extends SelectTriggerProps {
   id: string;
   status: string;
   dataset: string;
-  className?: string;
   disabled: boolean;
 }
 
@@ -40,11 +39,11 @@ export function ScanReportStatus({
       statusOptions.find((option) => option.value === newStatus)?.label ?? "";
     if (response) {
       toast.error(
-        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`
+        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`,
       );
     } else {
       toast.success(
-        `Scan Report ${dataset} status has changed to ${newStatusText}.`
+        `Scan Report ${dataset} status has changed to ${newStatusText}.`,
       );
     }
   };

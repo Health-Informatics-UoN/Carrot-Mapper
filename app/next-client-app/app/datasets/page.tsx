@@ -1,10 +1,3 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { getDataPartners, getDataSets, getProjects } from "@/api/datasets";
@@ -13,13 +6,13 @@ import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { CreateDatasetDialog } from "@/components/datasets/CreateDatasetDialog";
+import { Folders } from "lucide-react";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;
 }
 
 export default async function DataSets({ searchParams }: DataSetListProps) {
-  // TODO: ADD default page size here
   const defaultParams = {
     hidden: false,
     page_size: 10,
@@ -33,22 +26,10 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   const filter = <DataTableFilter filter="name" />;
 
   return (
-    <div className="pt-5 px-16">
-      <div>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/datasets">Datasets</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div className="flex justify-between mt-3">
-        <h1 className="text-4xl font-semibold">Dataset List</h1>
+    <div className="space-y-2">
+      <div className="flex font-semibold text-xl items-center">
+        <Folders className="mr-2 text-blue-700" />
+        <h2>Datasets</h2>
       </div>
       <div className="my-3 justify-between">
         <div>
@@ -70,7 +51,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
                   <TabsTrigger value="archived">Archived Datasets</TabsTrigger>
                 </a>
               </TabsList>
-              <div>
+              <div className="hidden md:flex">
                 <CreateDatasetDialog
                   projects={projects}
                   dataPartnerList={dataPartnerList}
