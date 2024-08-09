@@ -26,7 +26,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   const filter = <DataTableFilter filter="name" />;
 
   return (
-    <div className="container space-y-2">
+    <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center">
         <Folders className="mr-2 text-blue-700" />
         <h2>Datasets</h2>

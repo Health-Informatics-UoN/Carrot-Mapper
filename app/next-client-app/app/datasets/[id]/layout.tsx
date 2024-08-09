@@ -52,14 +52,10 @@ export default async function DatasetLayout({
       permissions.permissions.includes(permission),
     )
   ) {
-    return (
-      <div className="container">
-        <Forbidden />
-      </div>
-    );
+    return <Forbidden />;
   }
   return (
-    <div className="container space-y-2">
+    <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
         <Folders className="text-gray-500" />
         <Link href={`/datasets`}>

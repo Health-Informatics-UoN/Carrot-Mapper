@@ -59,16 +59,12 @@ export default async function ScanReportLayout({
       permissions.permissions.includes(permission),
     )
   ) {
-    return (
-      <div className="container">
-        <Forbidden />
-      </div>
-    );
+    return <Forbidden />;
   }
 
   const createdDate = new Date(scanreport.created_at);
   return (
-    <div className="container space-y-2">
+    <div className="space-y-2">
       {/* Details line */}
       <div className="flex font-semibold text-xl items-center space-x-2">
         <Folders className="text-gray-500" />

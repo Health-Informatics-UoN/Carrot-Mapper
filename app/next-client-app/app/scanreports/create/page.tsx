@@ -8,7 +8,7 @@ export default async function ScanReports() {
   const projects = await getProjects();
 
   return (
-    <div className="container">
+    <>
       <div className="flex font-semibold text-xl items-center">
         <FileScan className="mr-2 text-green-700" />
         <Link href="/scanreports">
@@ -21,6 +21,6 @@ export default async function ScanReports() {
       <div className="mt-4">
         <CreateScanReportForm dataPartners={partners} projects={projects} />
       </div>
-    </div>
+    </>
   );
 }
