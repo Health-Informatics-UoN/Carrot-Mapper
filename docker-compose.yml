@@ -7,7 +7,8 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=omop
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -17,6 +18,29 @@ services:
       - "10001:10001"
       - "10002:10002"
 
+  next-client:
+    image: carrot-next-client
+    build:
+      context: app/next-client-app
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - BACKEND_URL=http://web:8000
+      - BACKEND_ORIGIN="web:8000"
+    volumes:
+      - ./app/next-client-app:/next-client-app
+
+  omop-lite:
+    image: ghcr.io/andyrae/omop-lite
+    volumes:
+      - ./vocabs:/vocabs
+    depends_on:
+      - db
+    environment:
+      - DB_PASSWORD=postgres
+      - DB_NAME=omop
+
   web:
     image: carrot
     build:
@@ -24,10 +48,25 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8000:8000
-    env_file:
-      - .env
+    environment:
+      - NEXTJS_URL=http://next-client:3000
+      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web']
+      - COCONNECT_DB_ENGINE=django.db.backends.postgresql
+      - COCONNECT_DB_HOST=db
+      - COCONNECT_DB_PORT=5432
+      - COCONNECT_DB_NAME=omop
+      - COCONNECT_DB_USER=postgres
+      - COCONNECT_DB_PASSWORD=postgres
+      - ENABLE_PROXY=true
+      - AZ_FUNCTION_USER=admin
+      - DEBUG=True
+      - UPLOAD_QUEUE_NAME=uploadreports-local
+      - SECRET_KEY=secret
+      - AZURE_ACCOUNT_NAME=devstoreaccount1
+      - AZ_URL=http://workers:7071
+      - AZ_RULES_NAME=RulesOrchestrator
     volumes:
-      - $PWD/api:/api
+      - ./app/api:/api
     depends_on:
       - db
       - azurite
