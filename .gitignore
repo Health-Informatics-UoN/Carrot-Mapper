@@ -13,3 +13,5 @@ app/api/static/javascript/react
 app/api/staticfiles
 .venv
 dist
+api/static
+vocabs
