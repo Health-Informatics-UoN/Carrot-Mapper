@@ -15,7 +15,7 @@ export default async function ProtectedLayout({
   return (
     <>
       <Sidebar userName={user.username} />
-      <section className="container my-6">{children}</section>
+      <section className="px-10 my-6">{children}</section>
     </>
   );
 }
