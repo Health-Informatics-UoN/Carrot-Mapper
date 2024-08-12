@@ -3,6 +3,7 @@ import "./custom.css";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import Footer from "@/components/core/footer";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -29,6 +30,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <Footer />
         </ThemeProvider>
 
         <Toaster
