@@ -1,7 +1,11 @@
+import Image from "next/image";
+
 export default function Default() {
   return (
     <>
-      <h2>hello!!!!</h2>
+      <div className="relative w-[600x] h-[530px] ">
+        <Image src="/logos/demo.jpeg" alt="demo" fill />
+      </div>
     </>
   );
 }

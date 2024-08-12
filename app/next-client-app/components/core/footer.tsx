@@ -4,18 +4,18 @@ import { ReceiptText, ShieldQuestion } from "lucide-react";
 
 const Footer = () => {
   return (
-    <div className="sm:flex grid grid-cols-2 items-center justify-between w-full px-5">
+    <div className="sm:flex grid grid-cols-2 items-center justify-between w-full px-5 py-3">
       <div className="relative w-[250px] h-[100px] ">
         <Image src="/logos/UoN.jpg" alt="Logo UoN" fill />
       </div>
       <div className="relative w-[125px] h-[125px] ">
-        <Image src="/logos/coconnect1.png" alt="Logo UoN" fill />
+        <Image src="/logos/coconnect1.png" alt="Logo CCN" fill />
       </div>
       <div className="relative w-[250px] h-[100px] ">
-        <Image src="/logos/UKRI.png" alt="Logo UoN" fill />
+        <Image src="/logos/UKRI.png" alt="Logo UKRI" fill />
       </div>
       <div className="relative w-[250px] h-[100px] ">
-        <Image src="/logos/alleviate.jpeg" alt="Logo UoN" fill />
+        <Image src="/logos/alleviate.jpeg" alt="Logo ALVE" fill />
       </div>
       <div className="flex flex-col justify-end">
         <p className="font-bold">Links</p>
