@@ -11,13 +11,9 @@ export default async function PublicLayout({
 }>) {
   const user = await getCurrentUser();
   return (
-    <html lang="en">
-      <body>
-        <div>
-          <MenuBar userName={user.username} />
-          {children}
-        </div>
-      </body>
-    </html>
+    <>
+      <MenuBar userName={user.username} />
+      <section>{children}</section>
+    </>
   );
 }

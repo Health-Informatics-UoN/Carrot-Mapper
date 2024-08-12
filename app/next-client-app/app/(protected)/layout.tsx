@@ -13,11 +13,9 @@ export default async function ProtectedLayout({
   const user = await getCurrentUser();
 
   return (
-    <html lang="en">
-      <body>
-        <Sidebar userName={user.username} />
-        <div className="container my-6">{children}</div>
-      </body>
-    </html>
+    <>
+      <Sidebar userName={user.username} />
+      <section className="container my-6">{children}</section>
+    </>
   );
 }
