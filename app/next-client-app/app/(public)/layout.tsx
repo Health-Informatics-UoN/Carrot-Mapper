@@ -1,7 +1,5 @@
 import "../globals.css";
 import "../custom.css";
-import "react-tooltip/dist/react-tooltip.css";
-import { Sidebar } from "../../components/core/sidebar";
 import React from "react";
 import { getCurrentUser } from "../../api/users";
 import { MenuBar } from "@/components/core/menubar";
