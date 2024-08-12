@@ -41,6 +41,7 @@ export const MenuBar = ({ userName }: { userName: string }) => {
           <div>
             <ModeToggle />
           </div>
+          {/* TODO: Need a logout button here */}
         </div>
       </div>
     </>
