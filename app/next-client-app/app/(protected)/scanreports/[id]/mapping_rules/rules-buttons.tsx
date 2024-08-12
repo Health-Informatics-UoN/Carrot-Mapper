@@ -10,7 +10,7 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { GetFile } from "@/app/scanreports/[id]/mapping_rules/get-file";
+import { GetFile } from "@/app/(protected)/scanreports/[id]/mapping_rules/get-file";
 import {
   DropdownMenu,
   DropdownMenuContent,
