@@ -401,13 +401,13 @@ dev = ["PyTest", "PyTest-Cov", "bump2version (<1)", "sphinx (<2)", "tox"]
 
 [[package]]
 name = "django"
-version = "4.2.13"
+version = "4.2.15"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "Django-4.2.13-py3-none-any.whl", hash = "sha256:a17fcba2aad3fc7d46fdb23215095dbbd64e6174bf4589171e732b18b07e426a"},
-    {file = "Django-4.2.13.tar.gz", hash = "sha256:837e3cf1f6c31347a1396a3f6b65688f2b4bb4a11c580dcb628b5afe527b68a5"},
+    {file = "Django-4.2.15-py3-none-any.whl", hash = "sha256:61ee4a130efb8c451ef3467c67ca99fdce400fedd768634efc86a68c18d80d30"},
+    {file = "Django-4.2.15.tar.gz", hash = "sha256:c77f926b81129493961e19c0e02188f8d07c112a1162df69bfab178ae447f94a"},
 ]
 
 [package.dependencies]
@@ -1399,7 +1399,7 @@ test = ["build[virtualenv] (>=1.0.3)", "filelock (>=3.4.0)", "importlib-metadata
 
 [[package]]
 name = "shared"
-version = "0.1.1"
+version = "0.1.3"
 description = "Carrot shared library"
 optional = false
 python-versions = "^3.11"
@@ -1408,7 +1408,7 @@ develop = true
 
 [package.dependencies]
 azure-storage-queue = "^12.9.0"
-django = "4.2.13"
+django = "~4.2.0"
 psycopg2-binary = "^2.9.9"
 python-dotenv = "^1.0.1"
 
@@ -1618,4 +1618,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "64d945657f6d5d236b6102421e74ed0b2fb768ed0b8e86214859ca949aafea93"
+content-hash = "d919c6553de3a3efb37c8b21678483278ddedefe3ae9a630f11bbf61c82f85b6"
