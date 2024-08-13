@@ -1,4 +1,4 @@
-import { columns } from "@/app/scanreports/[id]/mapping_rules/columns";
+import { columns } from "@/app/(protected)/scanreports/[id]/mapping_rules/columns";
 import { getSummaryRules } from "@/api/mapping-rules";
 import { DataTable } from "@/components/data-table";
 import { FilterParameters } from "@/types/filter";
