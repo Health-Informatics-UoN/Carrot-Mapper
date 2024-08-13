@@ -4,6 +4,7 @@ import { objToQuery } from "@/lib/client-utils";
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
 import { RulesButton } from "./rules-buttons";
+import { getScanReport } from "@/api/scanreports";
 
 interface ScanReportsMappingRulesProps {
   params: {
@@ -25,7 +26,11 @@ export default async function ScanReportsMappingRules({
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
   const mappingRulesList = await getMappingRulesList(query);
-  const rulesButton = <RulesButton scanreportId={id} query={query} />;
+  const scanReport = await getScanReport(id);
+  const fileName = `${scanReport?.dataset} Rules - ${new Date().toLocaleString()}`;
+  const rulesButton = (
+    <RulesButton scanreportId={id} query={query} filename={fileName} />
+  );
 
   return (
     <div>

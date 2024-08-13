@@ -9,21 +9,21 @@ const fetchKeys = {
 };
 
 export async function getMappingRulesList(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<MappingRule>> {
   try {
     return await request<PaginatedResponse<MappingRule>>(
-      fetchKeys.mappingruleslist(filter)
+      fetchKeys.mappingruleslist(filter),
     );
   } catch (error) {
     return { count: 0, next: null, previous: null, results: [] };
   }
 }
 
-export async function getMapDiagram(
+export async function getMappingRules(
   id: string,
   filter: string,
-  type: "svg" | "json" | "csv"
+  type: "svg" | "json" | "csv",
 ) {
   let body;
   switch (type) {
@@ -55,11 +55,11 @@ export async function getMapDiagram(
 }
 
 export async function getSummaryRules(
-  filter: string
+  filter: string,
 ): Promise<PaginatedResponse<MappingRule>> {
   try {
     return await request<PaginatedResponse<MappingRule>>(
-      fetchKeys.summaryRules(filter)
+      fetchKeys.summaryRules(filter),
     );
   } catch (error) {
     return { count: 0, next: null, previous: null, results: [] };
