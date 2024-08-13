@@ -1,33 +1,27 @@
 import { AnimatedBeamMultipleOutputDemo } from "@/components/AnimatedBeam";
 import { Button } from "@/components/ui/button";
+import { Carrot } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Demo1() {
   return (
     <>
-      <div className="sm:grid sm:grid-cols-2 sm:justify-between content-stretch gap-8 items-center sm:px-40 p-5">
-        <div>
-          <div className="items-center">
-            <h1 className="sm:text-5xl text-md">
-              OMOP Transforming Made Easy with Carrot
-            </h1>
-            <h3 className="opacity-80 sm:text-lg text-xs mt-2 text-left">
-              Carrot-Mapper is a web application that transforms healthcare
-              datasets to the OMOP common data model. It utilizes WhiteRabbit
-              metadata to generate JSON mapping rules, offering automated
-              vocabulary mapping, rule reuse, and manual rule creation. This
-              tool enhances data standardization efficiency for improved
-              research interoperability.
-            </h3>
-            <div className="place-self-end">
-              <Link href={"#"}>
-                <Button className="sm:text-lg text-xs place-self-end sm:mt-5 mt-2 border border-secondary">
-                  learn more
-                </Button>
-              </Link>
-            </div>
+      <div className="flex flex-col lg:grid lg:grid-cols-2 lg:gap-8 items-center lg:px-32 p-5">
+        <div className="flex flex-col lg:space-y-5 space-y-3">
+          <div className="sm:text-5xl text-3xl gap-5 text-center lg:text-left">
+            <h1 className="text-orange-600">OMOP Transforming </h1>
+            <h1> Made Easy</h1>
           </div>
+          <h3 className="text-gray text-gray-600 sm:text-lg text-md mt-2 text-justify lg:text-left">
+            Carrot-Mapper utilizes WhiteRabbit metadata to generate JSON mapping
+            rules to the OMOP standard, offering{" "}
+            <span className="text-orange-600">
+              automated vocabulary mapping, rule reuse, and manual rule creation
+            </span>
+            . Data standardization efficiency for improved research
+            interoperability.
+          </h3>
         </div>
         <div>
           <AnimatedBeamMultipleOutputDemo />

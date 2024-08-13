@@ -5,6 +5,7 @@ import React, { forwardRef, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { AnimatedBeam } from "@/components/magicui/animated-beam";
 import Image from "next/image";
+import { Rabbit } from "lucide-react";
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -14,7 +15,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex size-15 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        "z-10 flex flex-col size-24 items-center justify-center rounded-xl border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
         className
       )}
     >
@@ -34,15 +35,15 @@ export function AnimatedBeamMultipleOutputDemo({
   const div1Ref = useRef<HTMLDivElement>(null);
   const div2Ref = useRef<HTMLDivElement>(null);
   const div3Ref = useRef<HTMLDivElement>(null);
-  const div4Ref = useRef<HTMLDivElement>(null);
-  const div5Ref = useRef<HTMLDivElement>(null);
   const div6Ref = useRef<HTMLDivElement>(null);
   const div7Ref = useRef<HTMLDivElement>(null);
+  const div8Ref = useRef<HTMLDivElement>(null);
+  const div9Ref = useRef<HTMLDivElement>(null);
 
   return (
     <div
       className={cn(
-        "relative flex h-[500px] w-full items-center justify-center overflow-hidden p-10",
+        "relative flex w-full items-center justify-center overflow-hidden p-10",
         className
       )}
       ref={containerRef}
@@ -50,35 +51,35 @@ export function AnimatedBeamMultipleOutputDemo({
       <div className="flex size-full flex-row items-stretch justify-between gap-10 max-w-lg">
         <div className="flex flex-col justify-center gap-2">
           <Circle ref={div1Ref}>
-            <h2>carrot</h2>
+            <Rabbit className="mr-2" /> Metadata
           </Circle>
           <Circle ref={div2Ref}>
-            <h2>carrot</h2>
+            <h2>Cough</h2>
           </Circle>
           <Circle ref={div3Ref}>
-            <h2>carrot</h2>
-          </Circle>
-          <Circle ref={div4Ref}>
-            <h2>carrot</h2>
-          </Circle>
-          <Circle ref={div5Ref}>
-            <h2>carrot</h2>
+            <h2>(M) Male</h2>
           </Circle>
         </div>
         <div className="flex flex-col justify-center">
-          <Circle ref={div6Ref} className="size-16">
+          <Circle ref={div6Ref}>
             <Image
-              width={16}
-              height={16}
+              width={32}
+              height={32}
               src="/carrot-logo.png"
               alt="carrot-logo"
               className="mx-3"
             />
           </Circle>
         </div>
-        <div className="flex flex-col justify-center">
-          <Circle ref={div7Ref}>
-            <h2>carrot</h2>
+        <div className="flex flex-col justify-center gap-2">
+          <Circle ref={div7Ref} className="text-center">
+            OMOP mapping rules
+          </Circle>
+          <Circle ref={div8Ref} className="text-center">
+            <h2>254761 - Cough</h2>
+          </Circle>
+          <Circle ref={div9Ref} className="text-center">
+            <h2>8507 - Male</h2>
           </Circle>
         </div>
       </div>
@@ -87,34 +88,37 @@ export function AnimatedBeamMultipleOutputDemo({
         containerRef={containerRef}
         fromRef={div1Ref}
         toRef={div6Ref}
-        duration={2}
+        duration={3}
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={div2Ref}
         toRef={div6Ref}
-        duration={100}
+        duration={4}
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={div3Ref}
         toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div4Ref}
-        toRef={div6Ref}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div5Ref}
-        toRef={div6Ref}
+        duration={5}
       />
       <AnimatedBeam
         containerRef={containerRef}
         fromRef={div6Ref}
         toRef={div7Ref}
-        duration={2}
+        duration={3}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={div6Ref}
+        toRef={div8Ref}
+        duration={4}
+      />
+      <AnimatedBeam
+        containerRef={containerRef}
+        fromRef={div6Ref}
+        toRef={div9Ref}
+        duration={5}
       />
     </div>
   );
