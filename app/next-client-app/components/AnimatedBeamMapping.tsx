@@ -15,7 +15,7 @@ const Circle = forwardRef<
     <div
       ref={ref}
       className={cn(
-        "z-10 flex flex-col size-24 items-center justify-center rounded-xl border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        "z-10 flex flex-col size-24 items-center dark:text-black justify-center rounded-xl border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
         className
       )}
     >
@@ -26,11 +26,7 @@ const Circle = forwardRef<
 
 Circle.displayName = "Circle";
 
-export function AnimatedBeamMultipleOutputDemo({
-  className,
-}: {
-  className?: string;
-}) {
+export function AnimatedBeamMapping({ className }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const div1Ref = useRef<HTMLDivElement>(null);
   const div2Ref = useRef<HTMLDivElement>(null);
@@ -43,7 +39,7 @@ export function AnimatedBeamMultipleOutputDemo({
   return (
     <div
       className={cn(
-        "relative flex w-full items-center justify-center overflow-hidden p-10",
+        "relative flex w-full items-center justify-center overflow-hidden lg:p-8 p-2 mt-5",
         className
       )}
       ref={containerRef}
