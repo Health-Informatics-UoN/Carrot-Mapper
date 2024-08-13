@@ -15,7 +15,6 @@ export default async function PublicLayout({
     <>
       <MenuBar userName={user.username} />
       <section>{children}</section>
-      <Footer />
     </>
   );
 }

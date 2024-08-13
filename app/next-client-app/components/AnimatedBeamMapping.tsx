@@ -7,7 +7,7 @@ import { AnimatedBeam } from "@/components/magicui/animated-beam";
 import Image from "next/image";
 import { Rabbit } from "lucide-react";
 
-const Circle = forwardRef<
+export const Circle = forwardRef<
   HTMLDivElement,
   { className?: string; children?: React.ReactNode }
 >(({ className, children }, ref) => {

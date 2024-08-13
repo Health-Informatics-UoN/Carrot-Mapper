@@ -10,8 +10,7 @@ export const MenuBar = ({ userName }: { userName: string }) => {
   return (
     <>
       <Sidebar onPublic userName={userName} />
-
-      <div className="hidden lg:flex lg:items-center border-b-2 border-gray-300 justify-between bg-primary pt-4 px-8 pb-3">
+      <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between bg-primary pt-4 px-8 pb-3">
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <Image

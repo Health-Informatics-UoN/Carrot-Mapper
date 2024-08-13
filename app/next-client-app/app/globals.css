@@ -75,3 +75,16 @@
     }
   }
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fadeInEffect {
+  animation: fadeIn 1s forwards;
+  animation-timeline: scroll();
+}
