@@ -5,11 +5,7 @@ import {
   Github,
   Home,
   LogIn,
-  LogOut,
   LucideIcon,
-  Menu,
-  MoreHorizontal,
-  Settings,
   Upload,
 } from "lucide-react";
 
@@ -28,7 +24,6 @@ export interface SidebarItems {
 
 export const sidebarItems: SidebarItems = {
   links: [
-    { label: "Home", href: "/", icon: Home },
     { label: "Datasets", href: "/datasets/", icon: Folders },
     { label: "Scan Reports", href: "/scanreports/", icon: FileScan },
     {
