@@ -30,10 +30,9 @@ export function Sidebar({
   return (
     <div
       className={cn(
-        "flex gap-3 pt-4 px-10 items-center justify-between  pb-3",
+        "flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3",
         {
           "lg:hidden": onPublic,
-          "border-b-2 border-gray-300": !onPublic,
         }
       )}
     >

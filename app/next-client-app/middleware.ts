@@ -23,6 +23,6 @@ export const config = {
      * 5. all root files inside /public (e.g. /favicon.ico)
      * 6. folder containing logos inside "public"
      */
-    "/((?!$|api/|_next/|_static/|demo-1|logos|[\\w-]+\\.\\w+).*)",
+    "/((?!$|api/|_next/|_static/|demo-1|demo-2|logos|[\\w-]+\\.\\w+).*)",
   ],
 };
