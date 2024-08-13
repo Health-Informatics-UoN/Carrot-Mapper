@@ -2,11 +2,12 @@
 
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
-import { getMapDiagram } from "@/api/mapping-rules";
+import { getMappingRules } from "@/api/mapping-rules";
 import { Loading } from "@/components/ui/loading-indicator";
 
 interface GetFileProps {
   name: string;
+  filename: string;
   query: string;
   scanreportId: string;
   variant: "button" | "diagram";
@@ -15,6 +16,7 @@ interface GetFileProps {
 
 export function GetFile({
   name,
+  filename,
   scanreportId,
   query,
   variant,
@@ -28,12 +30,12 @@ export function GetFile({
       setLoading(true);
       let data: string;
       if (type === "image/svg+xml") {
-        data = await getMapDiagram(scanreportId, query, "svg");
+        data = await getMappingRules(scanreportId, query, "svg");
       } else if (type === "application/json") {
-        const resp = await getMapDiagram(scanreportId, query, "json");
+        const resp = await getMappingRules(scanreportId, query, "json");
         data = JSON.stringify(resp, null, 6);
       } else {
-        data = await getMapDiagram(scanreportId, query, "csv");
+        data = await getMappingRules(scanreportId, query, "csv");
       }
       createDownloadUrl(data, type);
       setLoading(false);
@@ -64,7 +66,7 @@ export function GetFile({
     if (variant !== "diagram") {
       const a = document.createElement("a");
       a.href = url;
-      a.download = name;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

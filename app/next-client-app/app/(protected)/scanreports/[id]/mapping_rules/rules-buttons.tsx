@@ -22,9 +22,11 @@ import {
 export function RulesButton({
   scanreportId,
   query,
+  filename,
 }: {
   scanreportId: string;
   query: string;
+  filename: string;
 }) {
   return (
     <div className="hidden md:flex gap-2 justify-end w-full mr-2">
@@ -40,6 +42,7 @@ export function RulesButton({
             <ScrollArea className="w-auto h-[400px]">
               <GetFile
                 name="Download Map Diagram"
+                filename={filename}
                 scanreportId={scanreportId}
                 query={query}
                 variant="diagram"
@@ -60,6 +63,7 @@ export function RulesButton({
             <DropdownMenuItem>
               <GetFile
                 name="Map Diagram"
+                filename={filename}
                 scanreportId={scanreportId}
                 query={query}
                 variant="button"
@@ -72,6 +76,7 @@ export function RulesButton({
             <DropdownMenuItem>
               <GetFile
                 name="Mapping JSON"
+                filename={filename}
                 scanreportId={scanreportId}
                 query={query}
                 variant="button"
@@ -84,6 +89,7 @@ export function RulesButton({
             <DropdownMenuItem>
               <GetFile
                 name="Mapping CSV"
+                filename={filename}
                 scanreportId={scanreportId}
                 query={query}
                 variant="button"
