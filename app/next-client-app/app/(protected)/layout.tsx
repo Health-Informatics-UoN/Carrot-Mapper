@@ -1,5 +1,4 @@
 import "../globals.css";
-import "../custom.css";
 import "react-tooltip/dist/react-tooltip.css";
 import { Sidebar } from "@/components/core/sidebar";
 import React from "react";
