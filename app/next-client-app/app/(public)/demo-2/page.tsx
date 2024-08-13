@@ -1,98 +1,13 @@
-import { cn } from "@/lib/utils";
-import AnimatedGridPattern from "@/components/magicui/animated-grid-pattern";
-import { AnimatedBeamMapping, Circle } from "@/components/AnimatedBeamMapping";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { FastForward, Lock, Recycle } from "lucide-react";
+import Features from "./features";
+import Funders from "./funders";
+import Hero from "./hero";
 
 export default function Demo2() {
   return (
     <>
-      {/* Hero section */}
-      <div className="flex-col lg:grid lg:grid-cols-2 lg:flex items-center justify-center overflow-hidden lg:px-24 py-16 p-5">
-        <div className="flex flex-col lg:space-y-5 space-y-3">
-          <div className="lg:text-5xl text-3xl gap-5 text-center lg:text-left">
-            <h1 className="text-orange-600">OMOP Transforming </h1>
-            <h1> Made Easy</h1>
-          </div>
-          <h3 className="text-gray text-gray-600 dark:text-gray-200 sm:text-lg text-md mt-2 text-justify lg:text-left">
-            Carrot-Mapper utilizes WhiteRabbit metadata to generate JSON mapping
-            rules to the OMOP standard, offering{" "}
-            <span className="text-orange-600">
-              automated vocabulary mapping, rule reuse, and manual rule creation
-            </span>
-            . Data standardization efficiency for improved research
-            interoperability.
-          </h3>
-        </div>
-        <div>
-          <AnimatedBeamMapping />
-        </div>
-        <AnimatedGridPattern
-          numSquares={60}
-          maxOpacity={0.2}
-          duration={1.2}
-          repeatDelay={1}
-          className={cn(
-            "[mask-image:radial-gradient(500px_circle_at_center,white,transparent)]",
-            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-          )}
-        />
-      </div>
-      {/* Features section */}
-      <div className="items-center text-center justify-center lg:px-40 px-5 fadeInEffect">
-        <div className="flex flex-col lg:space-y-5 space-y-3">
-          <div className="lg:text-4xl text-2xl gap-5">
-            <h1 className="font-bold">Revolutionary Features </h1>
-          </div>
-          <h3 className="text-gray text-gray-600 dark:text-gray-200 sm:text-lg text-md">
-            Working with OMOP Data Standardization? Carrot provides advanced
-            features to ease your tasks.
-          </h3>
-        </div>
-
-        <div className="lg:flex lg:flex-row items-center lg:gap-5 lg:mt-5 mt-3 flex flex-col gap-2 lg:justify-center">
-          <Card className="w-[400px] py-3 flex flex-col items-center space-y-3">
-            <div className="pt-3">
-              <Circle className="size-16 py-3 rounded-full text-red dark:bg-white bg-green-800">
-                <Recycle className="dark:text-green-800 text-white" />
-              </Circle>
-            </div>
-            <CardContent className="text-lg">
-              Save time by{" "}
-              <span className="text-orange-600">reusing mapping rules</span>{" "}
-              across datasets, ensuring consistency and accuracy in your data
-              integration.
-            </CardContent>
-          </Card>
-          <Card className="w-[400px] z-10 flex flex-col items-center space-y-3">
-            <div className="pt-3">
-              <Circle className="size-16 py-3 rounded-full text-red dark:bg-white bg-sky-800">
-                <Lock className="dark:text-sky-800 text-white" />
-              </Circle>
-            </div>
-            <CardContent className="text-lg">
-              Work securely with Carrot-Mapper, which handles only{" "}
-              <span className="text-orange-600">anonymous metadata</span>,
-              keeping your sensitive information protected.
-            </CardContent>
-          </Card>
-          <Card className="w-[400px] py-3 flex flex-col items-center space-y-3">
-            <div className="pt-3">
-              <Circle className="size-16 py-3 rounded-full text-red dark:bg-white bg-indigo-800">
-                <FastForward className="dark:text-indigo-800 text-white" />
-              </Circle>
-            </div>
-            <CardContent className="text-lg">
-              Easily create mapping rules to the OMOP standard with
-              Carrot-Mapper's{" "}
-              <span className="text-orange-600">
-                intuitive automated and manual tools
-              </span>
-              .
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Hero />
+      <Features />
+      <Funders />
     </>
   );
 }
