@@ -16,6 +16,7 @@ psycopg2-binary = "^2.9.9"
 azure-storage-queue = "^12.9.0"
 python-dotenv = "^1.0.1"
 graphviz = "^0.20.3"
+azure-storage-blob = "^12.22.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.9.0"

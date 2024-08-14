@@ -60,7 +60,6 @@ from mapping.permissions import (
     get_user_permissions_on_dataset,
     get_user_permissions_on_scan_report,
 )
-from mapping.services.files import delete_blob, modify_filename, upload_blob
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -85,6 +84,7 @@ from shared.data.models import (
     VisibilityChoices,
 )
 from shared.data.omop import Concept
+from shared.files.service import delete_blob, modify_filename, upload_blob
 from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
