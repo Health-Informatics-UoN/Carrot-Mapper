@@ -9,7 +9,7 @@ export default function Funders() {
       <div className="items-center text-center justify-center slideInEffect">
         <div className="flex flex-col space-y-2">
           <div className="lg:text-4xl text-2xl gap-5">
-            <h1 className="font-bold">Our Funders </h1>
+            <h1 className="font-bold">Sponsored by</h1>
           </div>
           <h3 className="text-gray text-gray-600 dark:text-gray-200 sm:text-lg text-md">
             Carrot comes to life and helps a lot of researchers across UK thanks

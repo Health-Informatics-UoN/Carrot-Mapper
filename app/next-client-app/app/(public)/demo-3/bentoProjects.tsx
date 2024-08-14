@@ -1,4 +1,5 @@
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
+import BoxReveal from "@/components/magicui/box-reveal";
 
 const features = [
   {
@@ -70,10 +71,26 @@ const features = [
 
 export default async function BentoProjects() {
   return (
-    <BentoGrid className="lg:grid-cols-6">
-      {features.map((feature) => (
-        <BentoCard key={feature.name} {...feature} />
-      ))}
-    </BentoGrid>
+    <div>
+      <div className="flex flex-col justify-center space-y-2 mb-5">
+        <div className="lg:text-4xl flex justify-center text-2xl">
+          <BoxReveal boxColor={"#empty"} duration={0.5}>
+            <h1 className="font-bold">Carrot has been used in...</h1>
+          </BoxReveal>
+        </div>
+        <div className="flex text-center justify-center">
+          <BoxReveal boxColor={"#empty"} duration={1}>
+            <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
+              ...several projects across the nation with the large impacts
+            </h3>
+          </BoxReveal>
+        </div>
+      </div>
+      <BentoGrid className="lg:grid-cols-6">
+        {features.map((feature) => (
+          <BentoCard key={feature.name} {...feature} />
+        ))}
+      </BentoGrid>
+    </div>
   );
 }
