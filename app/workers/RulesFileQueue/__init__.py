@@ -1,9 +1,13 @@
+import io
 import json
+from datetime import datetime
+from io import BytesIO
 from typing import Any, Literal, TypedDict
 
 import azure.functions as func
-from shared.data.models import MappingRule
-from shared.files.models import FileDownload
+from django.db.models.query import QuerySet
+from shared.data.models import MappingRule, ScanReport
+from shared.files.models import FileDownload, FileType
 from shared.files.service import upload_blob
 from shared.services.rules_export import (
     get_mapping_rules_as_csv,
@@ -12,10 +16,21 @@ from shared.services.rules_export import (
 )
 
 
+def create_json_rules(rules: QuerySet[MappingRule]):
+    data = get_mapping_rules_json(rules)
+    json_data = json.dumps(data)
+    return BytesIO(json_data.encode("utf-8"))
+
+
+def create_csv_rules(rules: QuerySet[MappingRule]):
+    data = get_mapping_rules_as_csv(rules)
+    return io.BytesIO(data.getvalue().encode("utf-8"))
+
+
 class MessageBody(TypedDict):
     scan_report_id: int
     user_id: str
-    file_type: Literal["csv", "json", "svg"]
+    file_type: Literal["text/csv", "application/json", "image/svg+xml"]
 
 
 def main(msg: func.QueueMessage) -> None:
@@ -36,26 +51,42 @@ def main(msg: func.QueueMessage) -> None:
     user_id = msg_body.get("user_id")
     file_type = msg_body.get("file_type")
 
-    # Get rules for this Scan Report
+    # Get models for this Scan Report
+    scan_report = ScanReport.objects.get(scan_report_id)
     rules = MappingRule.objects.filter(scan_report__id=scan_report_id).all()
 
     # Generate the file
-    file_type_handlers = {
-        "csv": lambda rules: get_mapping_rules_as_csv(rules),
-        "json": lambda rules: get_mapping_rules_json(rules),
-        "svg": lambda rules: make_dag(get_mapping_rules_json(rules)),
+    file_handlers = {
+        "text/csv": {
+            "handler": lambda rules: create_csv_rules(rules),
+            "file_type_value": "mapping_csv",
+        },
+        "application/json": {
+            "handler": lambda rules: create_json_rules(rules),
+            "file_type_value": "mapping_json",
+        },
+        "image/svg+xml": {
+            "handler": lambda rules: make_dag(get_mapping_rules_json(rules)),
+            "file_type_value": "mapping_svg",
+        },
     }
 
-    if file_type in file_type_handlers:
-        data: Any = file_type_handlers[file_type](rules)
-    else:
+    if file_type not in file_handlers:
         raise ValueError(f"Unsupported file type: {file_type}")
 
-    # Save file to blob
-    upload_blob("", "rules-export", data, file_type)
+    # Save to blob
+    data: Any = file_handlers[file_type]["handler"](rules)
+    filename = f"Rules - {scan_report.name} - {scan_report_id} - {datetime.now()}"
+    upload_blob(filename, "rules-export", data, file_type)
 
     # create entity
-    entity = FileDownload.objects.create(
-        name="", scan_report=scan_report_id, user=user_id, file_type="", file_url=""
+    file_type_value = file_handlers[file_type]["file_type_value"]
+    file_type_entity = FileType.objects.get(value=file_type_value)
+    file_entity = FileDownload.objects.create(
+        name=filename,
+        scan_report_id=scan_report_id,
+        user_id=user_id,
+        file_type=file_type_entity,
+        file_url="",
     )
-    entity.save()
+    file_entity.save()
