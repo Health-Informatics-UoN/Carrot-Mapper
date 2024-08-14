@@ -32,3 +32,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 minversion = "6.0"
 pythonpath = ["."]
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
