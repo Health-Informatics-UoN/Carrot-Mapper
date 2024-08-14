@@ -39,12 +39,12 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative flex w-full items-center justify-center overflow-hidden lg:p-8 p-2 mt-5",
+        "relative flex items-center justify-center lg:p-8 mt-5",
         className
       )}
       ref={containerRef}
     >
-      <div className="flex size-full flex-row items-stretch justify-between gap-10 max-w-lg">
+      <div className="flex lg:size-full flex-row lg:items-stretch justify-between gap-10 lg:max-w-lg">
         <div className="flex flex-col justify-center gap-2">
           <Circle ref={div1Ref}>
             <Rabbit className="mr-2" /> Metadata
@@ -67,14 +67,12 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
             />
           </Circle>
         </div>
-        <div className="flex flex-col justify-center gap-2">
-          <Circle ref={div7Ref} className="text-center">
-            OMOP mapping rules
-          </Circle>
-          <Circle ref={div8Ref} className="text-center">
+        <div className="flex flex-col justify-center gap-2 text-center">
+          <Circle ref={div7Ref}>OMOP mapping rules</Circle>
+          <Circle ref={div8Ref}>
             <h2>254761 - Cough</h2>
           </Circle>
-          <Circle ref={div9Ref} className="text-center">
+          <Circle ref={div9Ref}>
             <h2>8507 - Male</h2>
           </Circle>
         </div>

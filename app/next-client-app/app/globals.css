@@ -85,6 +85,26 @@
   }
 }
 .fadeInEffect {
-  animation: fadeIn 1s forwards;
+  animation: fadeIn 2s forwards;
   animation-timeline: scroll();
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slideInEffect {
+  animation: slideIn 0.75s ease-in-out;
+}
+
+.slideInEffect1 {
+  animation: slideIn 0.75s ease-in-out;
+  animation-delay: 500;
 }
