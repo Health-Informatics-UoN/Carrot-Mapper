@@ -32,7 +32,7 @@ export default function Hero() {
           repeatDelay={1}
           className={cn(
             "[mask-image:radial-gradient(700px_circle_at_center,white,transparent)]",
-            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12 z-1"
+            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
           )}
         />
       </div>

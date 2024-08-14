@@ -1,10 +1,12 @@
+import BoxReveal from "@/components/magicui/box-reveal";
 import Image from "next/image";
 
 export default function Funders() {
   return (
     <>
       {/* Funders section */}
-      <div className="items-center text-center justify-center fadeInEffect">
+
+      <div className="items-center text-center justify-center slideInEffect">
         <div className="flex flex-col space-y-2">
           <div className="lg:text-4xl text-2xl gap-5">
             <h1 className="font-bold">Our Funders </h1>

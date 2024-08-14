@@ -12,7 +12,7 @@ export default function CallToAction() {
       <div className="z-50 bg-gradient-to-b from-indigo-900 to-cyan-600 flex flex-col items-center text-white rounded-3xl p-5 text-center lg:pb-20 pb-10">
         <BoxReveal boxColor={"#e6a312"} duration={0.5}>
           <h1 className="text-white sm:text-5xl text-3xl sm:mt-7 mt-5">
-            Get Started with Carrot-Mapper today!
+            Get Started with Carrot today!
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
@@ -21,7 +21,7 @@ export default function CallToAction() {
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <Button className="sm:text-lg text-md mt-5 sm:mb-7 mb-5 bg-amber-500">
+          <Button className="sm:text-lg text-md mt-5  bg-amber-500">
             Contact us <ArrowRight className="ml-2" />
           </Button>
         </BoxReveal>
