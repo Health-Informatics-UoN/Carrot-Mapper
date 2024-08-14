@@ -90,3 +90,45 @@
 .slideInEffect {
   animation: slideIn 2s ease-in-out;
 }
+
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.gradient-background-1 {
+  background: linear-gradient(
+    332deg,
+    rgb(41, 164, 205),
+    rgb(25, 149, 190),
+    rgb(195, 216, 222),
+    rgb(120, 192, 216)
+  );
+  background-size: 240% 240%;
+  animation: gradient-animation 28s ease infinite;
+}
+
+.gradient-background-2 {
+  background: linear-gradient(332deg, #72ca29, #10902d, #cbe3cb, #74db9a);
+  background-size: 240% 240%;
+  animation: gradient-animation 28s ease infinite;
+}
+
+.gradient-background-3 {
+  background: linear-gradient(332deg, #db9035, #ba721c, #d6c1a7, #e1d4c6);
+  background-size: 240% 240%;
+  animation: gradient-animation 28s ease infinite;
+}
+
+.gradient-background-4 {
+  background: linear-gradient(332deg, #db4613, #c03809, #e9cabf, #cc8d78);
+  background-size: 240% 240%;
+  animation: gradient-animation 28s ease infinite;
+}

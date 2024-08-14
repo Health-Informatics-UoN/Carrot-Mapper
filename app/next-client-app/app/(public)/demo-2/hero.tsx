@@ -27,7 +27,7 @@ export default function Hero() {
         </div>
         <AnimatedGridPattern
           numSquares={60}
-          maxOpacity={0.2}
+          maxOpacity={0.15}
           duration={1.2}
           repeatDelay={1}
           className={cn(
