@@ -2,7 +2,7 @@ import io
 import json
 from datetime import datetime
 from io import BytesIO
-from typing import Any, Literal, TypedDict
+from typing import Any, Dict, Literal, TypedDict
 
 import azure.functions as func
 from django.db.models.query import QuerySet
@@ -56,7 +56,7 @@ def main(msg: func.QueueMessage) -> None:
     rules = MappingRule.objects.filter(scan_report__id=scan_report_id).all()
 
     # Generate the file
-    file_handlers = {
+    file_handlers: Dict[str, Dict[str, Any]] = {
         "text/csv": {
             "handler": lambda rules: create_csv_rules(rules),
             "file_type_value": "mapping_csv",
@@ -74,10 +74,13 @@ def main(msg: func.QueueMessage) -> None:
     if file_type not in file_handlers:
         raise ValueError(f"Unsupported file type: {file_type}")
 
+    # Generate the file
+    handler = file_handlers[file_type]["handler"]
+    file = handler(rules)
+
     # Save to blob
-    data: Any = file_handlers[file_type]["handler"](rules)
     filename = f"Rules - {scan_report.name} - {scan_report_id} - {datetime.now()}"
-    upload_blob(filename, "rules-export", data, file_type)
+    upload_blob(filename, "rules-export", file, file_type)
 
     # create entity
     file_type_value = file_handlers[file_type]["file_type_value"]
