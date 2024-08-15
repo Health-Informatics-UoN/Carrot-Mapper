@@ -13,7 +13,7 @@ export default function Hero() {
             <h1> Made Easy</h1>
           </div>
           <h3 className="text-gray text-gray-600 dark:text-gray-200 sm:text-lg text-md mt-2 text-justify lg:text-left">
-            Carrot-Mapper utilizes WhiteRabbit metadata to generate JSON mapping
+            Carrot utilizes scan reports' metadata to generate JSON mapping
             rules to the OMOP standard, offering{" "}
             <span className="text-orange-600">
               automated vocabulary mapping, rule reuse, and manual rule creation
