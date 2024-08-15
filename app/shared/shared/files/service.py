@@ -100,7 +100,41 @@ def upload_blob(
     Args:
         blob_name (str): The name that will be assigned to the uploaded file in Azure Blob Storage.
         container (str): The name of the Azure Blob Storage container where the file will be uploaded.
-        file (File): The file to be uploaded. This should be a file-like object (i.e., an object that has a `read()` method).
+        file (File): The file to be uploaded.
+        content_type (str): The MIME type of the file to be uploaded.
+
+    Returns:
+        None
+    """
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.getenv("STORAGE_CONN_STRING")
+    )
+
+    blob_client = blob_service_client.get_blob_client(
+        container=container, blob=blob_name
+    )
+    blob_client.upload_blob(
+        file.open(),
+        content_settings=ContentSettings(content_type=content_type),
+    )
+
+
+def upload_blob_read(
+    blob_name: str,
+    container: str,
+    file: Union[bytes, str, Iterable[AnyStr], IO[AnyStr]],
+    content_type: str,
+):
+    """
+    This function takes a file and uploads it to a specified container in Azure Blob Storage.
+    The file is stored with the provided blob name and content type.
+
+    TODO: This should be combined with `upload_blob`, but they work slightly differently.
+
+    Args:
+        blob_name (str): The name that will be assigned to the uploaded file in Azure Blob Storage.
+        container (str): The name of the Azure Blob Storage container where the file will be uploaded.
+        file (File): The file to be uploaded.
         content_type (str): The MIME type of the file to be uploaded.
 
     Returns:
