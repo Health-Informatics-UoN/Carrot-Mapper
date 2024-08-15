@@ -6,7 +6,6 @@ import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
 from mapping.permissions import has_editorship, is_admin, is_az_function_user
-from mapping.services.rules import analyse_concepts
 from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
@@ -25,6 +24,7 @@ from shared.data.models import (
     VisibilityChoices,
 )
 from shared.data.omop import Concept
+from shared.services.rules_export import analyse_concepts
 
 
 class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
