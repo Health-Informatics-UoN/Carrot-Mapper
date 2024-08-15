@@ -1,9 +1,29 @@
-from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.permissions import IsAuthenticated
+from shared.data.models import ScanReport
+from shared.files.paginations import CustomPagination
 
 from .models import FileDownload
-from .serializers import FileTypeSerializer
+from .serializers import FileDownloadSerializer
 
 
-class FileDownloadViewSet(viewsets.ModelViewSet):
-    queryset = FileDownload.objects.all()
-    serializer_class = FileTypeSerializer
+class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
+    serializer_class = FileDownloadSerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    pagination_class = CustomPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        scan_report_id = self.kwargs["scanreport_pk"]
+        scan_report = get_object_or_404(ScanReport, pk=scan_report_id)
+
+        return FileDownload.objects.filter(scan_report=scan_report)
+
+    def get(self, request, *args, **kwargs):
+        if "pk" in kwargs:
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
