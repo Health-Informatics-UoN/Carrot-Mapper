@@ -124,6 +124,6 @@ def main(msg: func.QueueMessage) -> None:
         scan_report_id=scan_report_id,
         user_id=user_id,
         file_type=file_type_entity,
-        file_url="",
+        file_url=filename,
     )
     file_entity.save()
