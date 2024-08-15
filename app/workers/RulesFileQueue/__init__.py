@@ -13,7 +13,7 @@ import django
 
 django.setup()
 
-from django.db.models.query import QuerySet  # type: ignore
+from django.db.models.query import QuerySet
 from shared.data.models import MappingRule, ScanReport
 from shared.files.models import FileDownload, FileType
 from shared.files.service import upload_blob
@@ -35,6 +35,13 @@ def create_json_rules(rules: QuerySet[MappingRule]) -> BytesIO:
 def create_csv_rules(rules: QuerySet[MappingRule]) -> BytesIO:
     data = get_mapping_rules_as_csv(rules)
     return io.BytesIO(data.getvalue().encode("utf-8"))
+
+
+def create_svg_rules(rules: QuerySet[MappingRule]) -> BytesIO:
+    data = get_mapping_rules_json(rules)
+    dag = make_dag(data["cdm"])
+    svg_bytes = dag.encode("utf-8")
+    return BytesIO(svg_bytes)
 
 
 def main(msg: func.QueueMessage) -> None:
@@ -68,7 +75,7 @@ def main(msg: func.QueueMessage) -> None:
             lambda rules: create_json_rules(rules), "mapping_json", "json"
         ),
         "image/svg+xml": FileHandlerConfig(
-            lambda rules: make_dag(get_mapping_rules_json(rules)), "mapping_svg", "svg"
+            lambda rules: create_svg_rules(rules), "mapping_svg", "svg"
         ),
     }
 
