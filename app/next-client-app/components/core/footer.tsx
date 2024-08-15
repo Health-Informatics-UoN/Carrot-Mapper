@@ -1,35 +1,48 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ReceiptText, ShieldQuestion } from "lucide-react";
+import {
+  CircleUserRound,
+  PersonStanding,
+  ReceiptText,
+  ShieldQuestion,
+} from "lucide-react";
 
 const Footer = () => {
   return (
-    <div className="sm:flex grid grid-cols-2 items-center justify-between w-full px-5 py-3">
-      <Image
-        src="/logos/UoN.jpg"
-        alt="Logo UoN"
-        height={150}
-        width={150}
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-      />
+    <footer className="bg-white rounded-lg shadow dark:bg-gray-900">
+      <div className="w-full max-w-screen-xl mx-auto p-4 md:py-8">
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <Image src="/logos/UoN.jpg" width={200} height={200} alt="UoN Logo" />
 
-      <div className="flex flex-col justify-end">
-        <p className="font-bold">Links</p>
-        <ul>
-          <li>
-            <Link href="#" className="flex items-center">
-              <ShieldQuestion size={15} className="mr-1" /> Privacy Policy
-            </Link>
-          </li>
-
-          <li>
-            <Link href="#" className="flex items-center">
-              <ReceiptText size={15} className="mr-1" /> Terms and Conditions
-            </Link>
-          </li>
-        </ul>
+          <ul className="flex flex-wrap items-center mb-6 text-sm font-medium text-gray-500 sm:mb-0 dark:text-gray-400">
+            <li>
+              <a href="#" className="hover:underline me-4 md:me-6 flex">
+                <CircleUserRound className="mr-2" /> About
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:underline me-4 md:me-6 flex">
+                <ShieldQuestion className="mr-2" /> Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a href="#" className="hover:underline me-4 md:me-6 flex">
+                <ReceiptText className="mr-2" />
+                Licensing
+              </a>
+            </li>
+          </ul>
+        </div>
+        <hr className="my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+        <span className="block text-sm text-gray-500 sm:text-center dark:text-gray-400">
+          &copy; {new Date().getFullYear()}{" "}
+          <a href="https://flowbite.com/" className="hover:underline">
+            University of Nottingham
+          </a>
+          . All Rights Reserved.
+        </span>
       </div>
-    </div>
+    </footer>
   );
 };
 

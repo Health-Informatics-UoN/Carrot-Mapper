@@ -35,20 +35,20 @@ const features = [
   },
 ];
 
-export default async function BentoFeatures() {
+export default async function BentoFeatures2() {
   return (
-    <div>
+    <div className="my-14">
       <div className="flex flex-col justify-center space-y-2 mb-5">
         <div className="lg:text-4xl flex justify-center text-2xl">
           <BoxReveal boxColor={"#empty"} duration={0.5}>
-            <h1 className="font-bold">Why Carrot? </h1>
+            <h1 className="font-bold">Meet Carrot </h1>
           </BoxReveal>
         </div>
         <div className="flex text-center justify-center">
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
-              Carrot provides advanced features which can ease your OMOP Data
-              Standardization tasks.
+              Designed to help your OMOP Data Standardization tasks with
+              advanced features.
             </h3>
           </BoxReveal>
         </div>

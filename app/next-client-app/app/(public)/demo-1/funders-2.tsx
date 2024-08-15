@@ -1,22 +1,22 @@
 import BoxReveal from "@/components/magicui/box-reveal";
 import Image from "next/image";
 
-export default function Funders() {
+export default function Funders2() {
   return (
     <>
       {/* Funders section */}
-      <div className="items-center text-center justify-center">
+      <div className="items-center text-center justify-center my-14">
         <div className="flex flex-col justify-center space-y-2 mb-5">
           <div className="lg:text-4xl flex justify-center text-2xl">
             <BoxReveal boxColor={"#empty"} duration={0.5}>
-              <h1 className="font-bold">Sponsored by</h1>
+              <h1 className="font-bold">Add don't forget its sponsors</h1>
             </BoxReveal>
           </div>
           <div className="flex text-center justify-center">
             <BoxReveal boxColor={"#empty"} duration={1}>
               <h3 className="text-gray-600 dark:text-gray-200  sm:text-lg text-md">
                 Carrot comes to life and helps a lot of researchers across UK
-                thanks to our brilliant funders.
+                thanks to our amazing funders.
               </h3>
             </BoxReveal>
           </div>

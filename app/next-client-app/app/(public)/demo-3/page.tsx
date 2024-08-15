@@ -1,10 +1,7 @@
 import CallToAction from "../demo-2/CTA";
-import Features from "../demo-2/features";
 import Funders from "../demo-2/funders";
 import Hero from "../demo-2/hero";
 import BentoFeatures from "./bentoFeatures";
-import BentoFeatures2 from "./bentoFeatures-2";
-import BentoFeatures3 from "./bentoFeatures-3";
 import BentoProjects from "./bentoProjects";
 
 export default function Demo3() {
