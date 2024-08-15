@@ -25,6 +25,15 @@ from shared.services.rules_export import (
 
 
 def create_json_rules(rules: QuerySet[MappingRule]) -> BytesIO:
+    """
+    Converts a queryset of mapping rules into a JSON byte stream.
+
+    Args:
+        rules (QuerySet[MappingRule]): A queryset containing mapping rules.
+
+    Returns:
+        BytesIO: A byte stream of JSON mapping rules.
+    """
     data = get_mapping_rules_json(rules)
     json_data = json.dumps(data, indent=6)
     json_bytes = BytesIO(json_data.encode("utf-8"))
@@ -33,11 +42,29 @@ def create_json_rules(rules: QuerySet[MappingRule]) -> BytesIO:
 
 
 def create_csv_rules(rules: QuerySet[MappingRule]) -> BytesIO:
+    """
+    Converts a queryset of mapping rules into a CSV byte stream.
+
+    Args:
+        rules (QuerySet[MappingRule]): A queryset containing mapping rules.
+
+    Returns:
+        BytesIO: A byte stream of CSV mapping rules.
+    """
     data = get_mapping_rules_as_csv(rules)
     return io.BytesIO(data.getvalue().encode("utf-8"))
 
 
 def create_svg_rules(rules: QuerySet[MappingRule]) -> BytesIO:
+    """
+    Converts a queryset of mapping rules into a SVG byte stream.
+
+    Args:
+        rules (QuerySet[MappingRule]): A queryset containing mapping rules.
+
+    Returns:
+        BytesIO: A byte stream of SVG DAG mapping rules.
+    """
     data = get_mapping_rules_json(rules)
     dag = make_dag(data["cdm"])
     svg_bytes = dag.encode("utf-8")
@@ -46,12 +73,9 @@ def create_svg_rules(rules: QuerySet[MappingRule]) -> BytesIO:
 
 def main(msg: func.QueueMessage) -> None:
     """
-    Processes a queue message
-    Unwraps the message content
-    Gets the data
-    Creates the file
-    Saves the file to storage
-    Creates the download model.
+    Creates and uploads a file for a set of Scan Report Rules.
+
+    The file can be json, csv, or svg.
 
     Args:
         msg (func.QueueMessage): The message received from the queue.
