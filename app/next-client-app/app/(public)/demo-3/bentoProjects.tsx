@@ -3,69 +3,63 @@ import BoxReveal from "@/components/magicui/box-reveal";
 
 const features = [
   {
-    name: "CO-CONNECT",
-    description:
-      "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data integration.",
-    href: "/",
-    cta: "Learn more",
-    background: (
-      <img
-        className="opacity-60 absolute -right-20 -top-20"
-        src="/logos/coconnect1.png"
-      />
-    ),
-    className: "lg:col-start-1 lg:col-end-4 lg:col-span-3",
-  },
-  {
-    name: "East Midlands SDE",
-    description:
-      "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data integration.",
-    href: "/",
-    cta: "Learn more",
-    background: (
-      <img
-        className="opacity-60 absolute -right-20 -top-20"
-        src="/logos/sde.png"
-      />
-    ),
-    className: "lg:col-end-7 lg:col-span-3",
-  },
-  {
     name: "NOTTINGHAM BRC",
     description:
-      "Work securely with Carrot-Mapper, which handles only anonymous metadata, keeping your sensitive information protected.",
-    background: <img className="opacity-60" src="/logos/nbrc.png" />,
-    className: "lg:col-start-1 lg:col-span-2",
-    href: "/",
-    cta: "Learn more",
-  },
-  {
-    name: "BY-COVID",
-    href: "/",
-    cta: "Learn more",
-    description:
-      "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules",
+      "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation. Carrot has been instrumental in managing and utilizing big data within the Nottingham University Hospitals NHS Trust and University of Nottingham’s “safe haven” environment.",
     background: (
-      <img
-        className="opacity-60 absolute -right-20 -top-20"
-        src="/logos/bycovid.png"
-      />
+      <img className="opacity-80 p-5 dark:bg-white" src="/logos/nbrc.png" />
     ),
-    className: "lg:col-start-3 lg:col-span-2",
+    href: "https://nottinghambrc.nihr.ac.uk/research/informatics",
+    cta: "Learn more",
+    className: "lg:col-start-1 lg:col-end-4 lg:col-span-3",
   },
   {
     name: "ALLEVIATE",
     description:
-      "Easily create mapping rules to the OMOP standard with Carrot-Mapper's intuitive automated and manual tools.",
+      "Alleviate has utilized Carrot to support the creation of its UK-wide pain data hub in collaboration with Health Data Research UK (HDR UK). By standardizing and curating diverse pain-related datasets, including text, genetic, and imaging data, Carrot has facilitated the discovery and analysis of complex pain conditions.",
+    background: (
+      <img className="opacity-80 p-5 w-[300px]" src="/logos/alleviate.jpeg" />
+    ),
+    href: "https://alleviate.ac.uk/",
+    cta: "Learn more",
+    className: "lg:col-end-7 lg:col-span-3",
+  },
+  {
+    name: "CO-CONNECT",
+    description:
+      "CO-CONNECT utilized Carrot to streamline the access and integration of COVID-19 data across the UK, supporting researchers in developing potential therapies and treatments.",
+    background: <img className="opacity-80" src="/logos/coconnect1.png" />,
+    href: "https://fed-a.org/co-connect-home/",
+    cta: "Learn more",
+    className: "lg:col-start-1 lg:col-span-2",
+  },
+  {
+    name: "BY-COVID",
+    description:
+      "The BeYond-COVID (BY-COVID) project leverages Carrot to facilitate comprehensive open data sharing on SARS-CoV-2 and other infectious diseases, enhancing research and public health efforts across Europe.",
     background: (
       <img
-        className="opacity-60 absolute -right-20 -top-20"
-        src="/logos/alleviate.jpeg"
+        className="opacity-80 w-[300px] dark:bg-white"
+        src="/logos/bycovid.png"
       />
     ),
-    className: "lg:col-start-5 lg:col-span-2",
-    href: "/",
+    href: "https://by-covid.org/about",
     cta: "Learn more",
+    className: "lg:col-start-3 lg:col-span-2",
+  },
+  {
+    name: "East Midlands SDE",
+    description:
+      "The East Midlands Secure Data Environment (SDE) project, in collaboration with EMRAD, utilizes Carrot to support the establishment of a secure and controlled platform for data access by authorized researchers.",
+    background: (
+      <img
+        className="opacity-80 p-5 w-[200px] dark:bg-white"
+        src="/logos/sde.png"
+      />
+    ),
+    href: "https://digital.nhs.uk/services/secure-data-environment-service",
+    cta: "Learn more",
+    className: "lg:col-start-5 lg:col-span-2",
   },
 ];
 
@@ -82,7 +76,7 @@ export default async function BentoProjects() {
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
               Many important research projects across the nation have been using
-              Carrot.
+              <span className="text-orange-600"> Carrot</span>.
             </h3>
           </BoxReveal>
         </div>
