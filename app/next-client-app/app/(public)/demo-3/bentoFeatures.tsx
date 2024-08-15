@@ -8,8 +8,6 @@ const features = [
     name: "REUSABLE MAPPING RULES",
     description:
       "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data integration.",
-
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
     className:
       "lg:col-start-1 lg:col-end-4 lg:col-span-3 gradient-background-1",
   },
@@ -18,7 +16,6 @@ const features = [
     name: "ANONYMOUS METADATA",
     description:
       "Work securely with Carrot, which handles only anonymous metadata, keeping your sensitive information protected.",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
     className: "lg:col-end-6 lg:col-span-2 gradient-background-2",
   },
   {
@@ -27,7 +24,6 @@ const features = [
 
     description:
       "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules",
-    background: <div className="gradient-background"></div>,
     className: "lg:col-start-1 lg:col-span-2 gradient-background-3",
   },
   {
@@ -35,7 +31,6 @@ const features = [
     name: "INTUITIVE TOOLS",
     description:
       "Easily create mapping rules to the OMOP standard with Carrot's intuitive automated and manual tools.",
-    background: <img className="absolute -right-20 -top-20 opacity-60" />,
     className: "lg:col-start-3 lg:col-span-3 gradient-background-4",
   },
 ];
@@ -52,13 +47,13 @@ export default async function BentoFeatures() {
         <div className="flex text-center justify-center">
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
-              In a glance, Carrot provides advanced features which can ease your
-              OMOP Data Standardization tasks.
+              <span className="text-orange-600">Carrot</span> provides advanced
+              features which can ease your OMOP Data Standardization tasks.
             </h3>
           </BoxReveal>
         </div>
       </div>
-      <BentoGrid className="lg:grid-cols-5">
+      <BentoGrid className="lg:grid-cols-5 slideInEffect">
         {features.map((feature) => (
           <BentoCard key={feature.name} {...feature} />
         ))}

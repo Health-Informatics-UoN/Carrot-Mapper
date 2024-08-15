@@ -11,7 +11,6 @@ export default function Demo3() {
   return (
     <div className="space-y-7 lg:space-y-14">
       <Hero />
-      <Features />
       <BentoFeatures />
       <BentoProjects />
       <Funders />

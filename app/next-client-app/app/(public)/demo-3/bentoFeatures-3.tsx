@@ -55,8 +55,8 @@ export default async function BentoFeatures3() {
         <div className="flex text-center justify-center">
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
-              In a glance, Carrot provides advanced features which can ease your
-              OMOP Data Standardization tasks.
+              Carrot provides advanced features which can ease your OMOP Data
+              Standardization tasks.
             </h3>
           </BoxReveal>
         </div>
