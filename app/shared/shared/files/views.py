@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
@@ -9,6 +10,7 @@ from shared.files.paginations import CustomPagination
 
 from .models import FileDownload
 from .serializers import FileDownloadSerializer
+from .service import get_blob
 
 
 class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
@@ -25,5 +27,11 @@ class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
 
     def get(self, request, *args, **kwargs):
         if "pk" in kwargs:
-            return self.retrieve(request, *args, **kwargs)
+            entity = get_object_or_404(FileDownload, pk=kwargs["pk"])
+            file = get_blob(entity.file_url, "rules-exports")
+
+            response = HttpResponse(file, content_type="application/octet-stream")
+            response["Content-Disposition"] = f'attachment; filename="{entity.name}"'
+            return response
+
         return self.list(request, *args, **kwargs)

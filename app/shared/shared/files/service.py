@@ -50,6 +50,27 @@ def download_data_dictionary_blob(blob_name, container="data-dictionaries"):
     return response
 
 
+def get_blob(blob_name: str, container: str) -> bytes:
+    """
+    Retrieves a blob from the specified container.
+
+    Args:
+        blob_name (str): The name of the blob to retrieve.
+        container (str): The name of the container where the blob is stored.
+
+    Returns:
+        bytes: The content of the blob.
+    """
+    blob_service_client = BlobServiceClient.from_connection_string(
+        os.environ.get("STORAGE_CONN_STRING")
+    )
+    container_client = blob_service_client.get_container_client(container)
+    blob_client = container_client.get_blob_client(blob_name)
+
+    download_stream = blob_client.download_blob()
+    return download_stream.readall()
+
+
 def delete_blob(blob_name: str, container: str) -> bool:
     """
     Deletes a blob from the specified container.
