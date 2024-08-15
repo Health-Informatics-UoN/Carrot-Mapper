@@ -11,7 +11,7 @@ const features = [
 
     background: <img className="absolute -right-20 -top-20 opacity-60" />,
     className:
-      "lg:col-start-1 lg:col-end-4 lg:col-span-3 gradient-background-1",
+      "lg:col-start-1 lg:col-end-4 lg:col-span-3 bg-gradient-to-tr from-orange-600 to-slate-50",
   },
   {
     Icon: Lock,
@@ -19,7 +19,8 @@ const features = [
     description:
       "Work securely with Carrot, which handles only anonymous metadata, keeping your sensitive information protected.",
     background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:col-end-6 lg:col-span-2 gradient-background-2",
+    className:
+      "lg:col-end-6 lg:col-span-2 bg-gradient-to-tr from-lime-600 to-slate-50",
   },
   {
     Icon: Route,
@@ -28,7 +29,8 @@ const features = [
     description:
       "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules",
     background: <div className="gradient-background"></div>,
-    className: "lg:col-start-1 lg:col-span-2 gradient-background-3",
+    className:
+      "lg:col-start-1 lg:col-span-2 bg-gradient-to-tr from-sky-600 to-slate-50",
   },
   {
     Icon: PencilRuler,
@@ -36,11 +38,12 @@ const features = [
     description:
       "Easily create mapping rules to the OMOP standard with Carrot's intuitive automated and manual tools.",
     background: <img className="absolute -right-20 -top-20 opacity-60" />,
-    className: "lg:col-start-3 lg:col-span-3 gradient-background-4",
+    className:
+      "lg:col-start-3 lg:col-span-3 bg-gradient-to-tr from-purple-600 to-slate-50",
   },
 ];
 
-export default async function BentoFeatures() {
+export default async function BentoFeatures3() {
   return (
     <div>
       <div className="flex flex-col justify-center space-y-2 mb-5">
