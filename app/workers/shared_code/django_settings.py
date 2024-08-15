@@ -12,6 +12,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "mapping",
     "shared",
+    "shared.files",
 ]
 
 DATABASES = {
