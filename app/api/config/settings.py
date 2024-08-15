@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "test",
     "revproxy",
     "shared",
+    "shared.files",
 ]
 
 MIDDLEWARE = [
