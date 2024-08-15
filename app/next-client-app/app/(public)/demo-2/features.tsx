@@ -16,7 +16,7 @@ export default function Features() {
           </div>
           <div className="flex text-center justify-center">
             <BoxReveal boxColor={"#empty"} duration={1}>
-              <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
+              <h3 className="text-gray text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
                 Working with OMOP Data Standardization? Carrot provides advanced
                 features which can ease your tasks.
               </h3>

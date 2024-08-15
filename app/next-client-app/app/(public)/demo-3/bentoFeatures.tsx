@@ -23,7 +23,7 @@ const features = [
     name: ">1M RULES CREATED",
 
     description:
-      "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules",
+      "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules.",
     className: "lg:col-start-1 lg:col-span-2 gradient-background-3",
   },
   {
@@ -46,9 +46,9 @@ export default async function BentoFeatures() {
         </div>
         <div className="flex text-center justify-center">
           <BoxReveal boxColor={"#empty"} duration={1}>
-            <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
-              <span className="text-orange-600">Carrot</span> provides advanced
-              features which can ease your OMOP Data Standardization tasks.
+            <h3 className="text-gray text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
+              Carrot provides advanced features which can ease your OMOP Data
+              Standardization tasks.
             </h3>
           </BoxReveal>
         </div>

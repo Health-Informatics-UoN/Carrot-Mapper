@@ -28,7 +28,12 @@ const features = [
     name: "CO-CONNECT",
     description:
       "CO-CONNECT utilized Carrot to streamline the access and integration of COVID-19 data across the UK, supporting researchers in developing potential therapies and treatments.",
-    background: <img className="opacity-80" src="/logos/coconnect1.png" />,
+    background: (
+      <img
+        className="opacity-80 w-[150px] dark:bg-white"
+        src="/logos/coconnect1.png"
+      />
+    ),
     href: "https://fed-a.org/co-connect-home/",
     cta: "Learn more",
     className: "lg:col-start-1 lg:col-span-2",
@@ -76,7 +81,7 @@ export default async function BentoProjects() {
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
               Many important research projects across the nation have been using
-              <span className="text-orange-600"> Carrot</span>.
+              Carrot.
             </h3>
           </BoxReveal>
         </div>

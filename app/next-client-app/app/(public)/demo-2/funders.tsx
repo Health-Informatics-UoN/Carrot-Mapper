@@ -5,19 +5,24 @@ export default function Funders() {
   return (
     <>
       {/* Funders section */}
-      <div className="items-center text-center justify-center slideInEffect">
-        <div className="flex flex-col space-y-2">
-          <div className="lg:text-4xl text-2xl gap-5">
-            <h1 className="font-bold">Sponsored by</h1>
+      <div className="items-center text-center justify-center">
+        <div className="flex flex-col justify-center space-y-2 mb-5">
+          <div className="lg:text-4xl flex justify-center text-2xl">
+            <BoxReveal boxColor={"#empty"} duration={0.5}>
+              <h1 className="font-bold">Sponsored by</h1>
+            </BoxReveal>
           </div>
-          <h3 className="text-gray text-gray-600 dark:text-gray-200 sm:text-lg text-md">
-            <span className="text-orange-600">Carrot</span> comes to life and
-            helps a lot of researchers across UK thanks to our brilliant
-            funders.
-          </h3>
+          <div className="flex text-center justify-center">
+            <BoxReveal boxColor={"#empty"} duration={1}>
+              <h3 className="text-gray text-gray-600 dark:text-gray-200  sm:text-lg text-md">
+                Carrot comes to life and helps a lot of researchers across UK
+                thanks to our brilliant funders.
+              </h3>
+            </BoxReveal>
+          </div>
         </div>
 
-        <div className="lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col lg:justify-between">
+        <div className="slideInEffect lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col gap-2 lg:justify-between">
           <div>
             {" "}
             <Image
@@ -44,7 +49,7 @@ export default function Funders() {
               height={400}
               width={400}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="dark:bg-white"
+              className="lg:dark:bg-white"
             />
           </div>
           <div>
