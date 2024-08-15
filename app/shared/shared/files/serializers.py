@@ -22,4 +22,4 @@ class FileDownloadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileDownload
-        fields = ["id", "name", "user", "file_type", "file_url"]
+        fields = ["id", "created_at", "name", "user", "file_type", "file_url"]
