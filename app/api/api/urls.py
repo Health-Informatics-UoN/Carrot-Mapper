@@ -1,6 +1,7 @@
 from api import views
 from api.router import router
 from django.urls import include, path
+from shared.files.views import FileDownloadView
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -74,6 +75,16 @@ urlpatterns = [
         "scanreports/<int:pk>/mapping_rules/",
         views.StructuralMappingTableAPIView.as_view(),
         name="tables-structural-mapping",
+    ),
+    path(
+        "scanreports/<int:scanreport_pk>/mapping_rules/downloads/",
+        FileDownloadView.as_view(),
+        name="filedownload-list",
+    ),
+    path(
+        "scanreports/<int:scanreport_pk>/mapping_rules/downloads/<int:pk>",
+        FileDownloadView.as_view(),
+        name="filedownload-get",
     ),
     path("projects/", views.ProjectListView.as_view(), name="project_list"),
     path(
