@@ -15,9 +15,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { requestFile } from "@/api/files";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function RulesButton({
   scanreportId,
@@ -28,12 +30,23 @@ export function RulesButton({
   query: string;
   filename: string;
 }) {
+  const router = useRouter();
+
+  const handleDownload = async (fileType: FileTypeFormat) => {
+    const resp = await requestFile(Number(scanreportId), fileType);
+    if (!resp.success) {
+      toast.error(
+        `Error downloading file: ${(resp.errorMessage as any).message}`,
+      );
+    }
+    router.push(`downloads`);
+  };
   return (
     <div className="hidden md:flex gap-2 justify-end w-full mr-2">
       <div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" disabled>
               View Map Diagram
               <BarChartHorizontalBig className="ml-2 size-4" />
             </Button>
@@ -56,48 +69,39 @@ export function RulesButton({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
-              Download <ChevronDown className="ml-2 size-4" />
+              Request Download <ChevronDown className="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[170px]">
+          <DropdownMenuContent className="w-[180px]">
             <DropdownMenuItem>
-              <GetFile
-                name="Map Diagram"
-                filename={filename}
-                scanreportId={scanreportId}
-                query={query}
-                variant="button"
-                type="image/svg+xml"
-              />
-              <DropdownMenuShortcut>
-                <FilePieChart />
-              </DropdownMenuShortcut>
+              <Button
+                onClick={() => handleDownload("image/svg+xml")}
+                variant={"ghost"}
+                size={"sm"}
+              >
+                Mapping Diagram
+                <FilePieChart className="ml-2 size-4" />
+              </Button>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <GetFile
-                name="Mapping JSON"
-                filename={filename}
-                scanreportId={scanreportId}
-                query={query}
-                variant="button"
-                type="application/json"
-              />
-              <DropdownMenuShortcut>
-                <FileJson />
-              </DropdownMenuShortcut>
+              <Button
+                onClick={() => handleDownload("application/json")}
+                variant={"ghost"}
+                size={"sm"}
+              >
+                Mapping JSON
+                <FileJson className="ml-2 size-4" />
+              </Button>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <GetFile
-                name="Mapping CSV"
-                filename={filename}
-                scanreportId={scanreportId}
-                query={query}
-                variant="button"
-                type="text/csv"
-              />
-              <DropdownMenuShortcut>
-                <FileSpreadsheet />
-              </DropdownMenuShortcut>
+              <Button
+                onClick={() => handleDownload("text/csv")}
+                variant={"ghost"}
+                size={"sm"}
+              >
+                Mapping CSV
+                <FileSpreadsheet className="ml-2 size-4" />
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
