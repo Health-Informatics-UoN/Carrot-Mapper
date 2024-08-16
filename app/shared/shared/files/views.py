@@ -1,4 +1,6 @@
-from django.http import HttpResponse
+import json
+
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
@@ -7,6 +9,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
 from shared.data.models import ScanReport
 from shared.files.paginations import CustomPagination
+from shared.services.azurequeue import add_message
 
 from .models import FileDownload
 from .serializers import FileDownloadSerializer
@@ -36,3 +39,32 @@ class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
             return response
 
         return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Requests a file to be generated for download by sending a message to the Rules Export Queue.
+        """
+        try:
+            body = request.data
+            scan_report_id = body.get("scan_report_id")
+            file_type = body.get("file_type")
+
+            if not scan_report_id or not file_type:
+                return JsonResponse(
+                    {"error": "scan_report_id and file_type are required."}, status=400
+                )
+
+            msg = {
+                "scan_report_id": scan_report_id,
+                "user_id": request.user.id,
+                "file_type": file_type,
+            }
+            # send to queue TODO: config setting
+            add_message("rules-exports-local", msg)
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data."}, status=400)
+        except Exception:
+            return JsonResponse({"error": "Internal server error."}, status=500)
+
+        return HttpResponse(status=202)
