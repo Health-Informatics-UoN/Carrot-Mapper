@@ -1,37 +1,41 @@
 import { BentoCard, BentoGrid } from "@/components/magicui/bento-grid";
 import BoxReveal from "@/components/magicui/box-reveal";
-import { Lock, PencilRuler, Recycle, Route } from "lucide-react";
 
 const features = [
   {
-    Icon: Recycle,
+    name: "FAST",
+    description:
+      "Carrot is designed for speed, allowing you to process and map large datasets to the OMOP standard quickly and efficiently.",
+    className:
+      "lg:col-start-1 lg:col-end-3 lg:row-span-2 bg-[url('/qa2.png')] bg-no-repeat bg-center bg-contain",
+  },
+  {
     name: "REUSABLE MAPPING RULES",
     description:
       "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data integration.",
     className:
-      "lg:col-start-1 lg:col-end-4 lg:col-span-3 gradient-background-1",
+      "lg:col-start-3 lg:col-end-6 lg:col-span-3 bg-[url('/we2.png')] bg-no-repeat bg-center bg-contain",
   },
   {
-    Icon: Lock,
     name: "ANONYMOUS METADATA",
     description:
       "Work securely with Carrot, which handles only anonymous metadata, keeping your sensitive information protected.",
-    className: "lg:col-end-6 lg:col-span-2 gradient-background-2",
+    className:
+      "lg:col-end-8 lg:col-span-2 bg-[url('/ty2.png')] bg-no-repeat bg-center bg-contain",
   },
   {
-    Icon: Route,
     name: ">1M RULES CREATED",
-
-    description:
-      "More than 100 datasets across many national-scale projects have been using Carrot to create OMOP Mapping rules.",
-    className: "lg:col-start-1 lg:col-span-2 gradient-background-3",
+    special: true,
+    description: "",
+    className:
+      "lg:col-start-3 lg:col-span-2 bg-[url('/rt.png')] bg-no-repeat bg-center bg-cover",
   },
   {
-    Icon: PencilRuler,
     name: "INTUITIVE TOOLS",
     description:
       "Easily create mapping rules to the OMOP standard with Carrot's intuitive automated and manual tools.",
-    className: "lg:col-start-3 lg:col-span-3 gradient-background-4",
+    className:
+      "lg:col-start-5 lg:col-span-3 bg-[url('/cv2.png')] bg-no-repeat bg-center bg-contain",
   },
 ];
 
@@ -53,7 +57,7 @@ export default async function BentoFeatures() {
           </BoxReveal>
         </div>
       </div>
-      <BentoGrid className="lg:grid-cols-5 slideInEffect">
+      <BentoGrid className="lg:grid-cols-7 slideInEffect">
         {features.map((feature) => (
           <BentoCard key={feature.name} {...feature} />
         ))}
