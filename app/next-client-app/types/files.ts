@@ -1,0 +1,23 @@
+interface FileType {
+  value:
+    | "mapping_json"
+    | "mapping_csv"
+    | "mapping_svg"
+    | "data_dictionary"
+    | "scan_report";
+  display_name:
+    | "Mapping Rules JSON"
+    | "Mapping Rules CSV"
+    | "Mapping Rules SVG"
+    | "Data Dictionary"
+    | "Scan Report";
+}
+
+interface FileDownload {
+  id: number;
+  name: string;
+  created_at: Date;
+  user: User;
+  file_type: FileType;
+  file_url: string;
+}
