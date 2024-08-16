@@ -27,9 +27,9 @@ export async function list(
 export async function requestFile(
   scan_report_id: number,
   file_type: FileTypeFormat,
-): Promise<File | null> {
+): Promise<{ success: boolean; errorMessage?: string }> {
   try {
-    return await request<File>(fetchKeys.requestFile(scan_report_id), {
+    await request(fetchKeys.requestFile(scan_report_id), {
       method: "POST",
       headers: {
         "Content-type": "application/json",
@@ -39,7 +39,8 @@ export async function requestFile(
         file_type: file_type,
       }),
     });
-  } catch (error) {
-    return null;
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, errorMessage: error.message };
   }
 }
