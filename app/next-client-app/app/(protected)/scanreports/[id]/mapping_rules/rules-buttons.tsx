@@ -40,6 +40,7 @@ export function RulesButton({
       );
     }
     router.push(`downloads`);
+    toast.warning("File requested.");
   };
   return (
     <div className="hidden md:flex gap-2 justify-end w-full mr-2">
