@@ -4,7 +4,7 @@ import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (scan_report_id: number, filter?: string) =>
-    `scanreports/${scan_report_id}/mapping_rules/downloads${filter}`,
+    `scanreports/${scan_report_id}/mapping_rules/downloads/?${filter}/`,
   download: (scan_report_id: number, file_id: number) =>
     `scanreports/${scan_report_id}/mapping_rules/downloads/?${file_id}`,
 };
@@ -14,7 +14,7 @@ export async function list(
   filter: string | undefined,
 ): Promise<PaginatedResponse<FileDownload> | null> {
   try {
-    return await request<PaginatedResponse<MappingRule>>(
+    return await request<PaginatedResponse<FileDownload>>(
       fetchKeys.list(scan_report_id, filter),
     );
   } catch (error) {
