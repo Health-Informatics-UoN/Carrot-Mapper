@@ -18,6 +18,7 @@ class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     pagination_class = CustomPagination
     permission_classes = [IsAuthenticated]
+    ordering = "-created_at"
 
     def get_queryset(self):
         scan_report_id = self.kwargs["scanreport_pk"]
