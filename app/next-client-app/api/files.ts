@@ -33,14 +33,3 @@ export async function requestFile(
     return null;
   }
 }
-
-export async function download(
-  scan_report_id: number,
-  file_id: number,
-): Promise<File | null> {
-  try {
-    return await request<File>(fetchKeys.download(scan_report_id, file_id));
-  } catch (error) {
-    return null;
-  }
-}

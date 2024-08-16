@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Link from "next/link";
 
 export const columns: ColumnDef<FileDownload>[] = [
   {
@@ -80,11 +81,13 @@ export const columns: ColumnDef<FileDownload>[] = [
     id: "Download",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { file_type } = row.original;
+      const { id } = row.original;
       return (
-        <Button variant={"outline"}>
-          Download <Download className="ml-2 size-4" />
-        </Button>
+        <Link href={`/api/scanreports/${50}/mapping_rules/downloads/${id}/`}>
+          <Button variant={"outline"}>
+            Download <Download className="ml-2 size-4" />
+          </Button>
+        </Link>
       );
     },
     enableHiding: true,
