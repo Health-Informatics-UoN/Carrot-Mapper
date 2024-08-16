@@ -1,10 +1,13 @@
+type FileTypeFormat = "application/json" | "image/svg+xml" | "text/csv";
+type FileTypeValue =
+  | "mapping_json"
+  | "mapping_csv"
+  | "mapping_svg"
+  | "data_dictionary"
+  | "scan_report";
+
 interface FileType {
-  value:
-    | "mapping_json"
-    | "mapping_csv"
-    | "mapping_svg"
-    | "data_dictionary"
-    | "scan_report";
+  value: FileTypeValue;
   display_name:
     | "Mapping Rules JSON"
     | "Mapping Rules CSV"
