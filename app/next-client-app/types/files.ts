@@ -18,6 +18,7 @@ interface FileType {
 
 interface FileDownload {
   id: number;
+  scan_report: number;
   name: string;
   created_at: Date;
   user: User;
