@@ -53,9 +53,14 @@ const BentoCard = ({
       className
     )}
   >
-    <div className="flex justify-center items-center">
-      {background && background}
-    </div>
+    {background ? (
+      <div className="flex justify-center items-center dark:bg-white w-full h-[150px]">
+        {background}
+      </div>
+    ) : (
+      <div className="flex justify-center items-center"></div>
+    )}
+
     <div className="pointer-events-none z-10 flex transform-gpu flex-col gap-1 p-6 transition-all duration-300 group-hover:-translate-y-10">
       {Icon && (
         <Icon className="h-12 w-12 origin-left transform-gpu text-neutral-700 dark:text-neutral-300 transition-all duration-300 ease-in-out group-hover:scale-75" />

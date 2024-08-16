@@ -6,7 +6,7 @@ import BentoProjects from "./bentoProjects";
 
 export default function Demo3() {
   return (
-    <div className="space-y-7 lg:space-y-14">
+    <div className="space-y-12 lg:space-y-28">
       <Hero />
       <BentoFeatures />
       <BentoProjects />

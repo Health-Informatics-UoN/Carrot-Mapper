@@ -3,7 +3,7 @@ import BoxReveal from "@/components/magicui/box-reveal";
 
 const features = [
   {
-    name: "FAST",
+    name: "FAST & RELIABLE",
     description:
       "Carrot is designed for speed, allowing you to process and map large datasets to the OMOP standard quickly and efficiently.",
     className:

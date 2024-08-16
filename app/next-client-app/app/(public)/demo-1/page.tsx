@@ -4,13 +4,14 @@ import BentoFeatures2 from "./features-2";
 import BentoProjects2 from "./projects-2";
 import Funders2 from "./funders-2";
 import CallToAction2 from "./CTA-2";
+import BentoFeatures from "../demo-3/bentoFeatures";
 
 export default function Demo1() {
   return (
     <>
       <Hero1 />
       <Hero2 />
-      <BentoFeatures2 />
+      <BentoFeatures />
       <BentoProjects2 />
       <Funders2 />
       <CallToAction2 />

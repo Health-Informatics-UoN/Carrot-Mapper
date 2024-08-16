@@ -5,7 +5,7 @@ export default function Funders2() {
   return (
     <>
       {/* Funders section */}
-      <div className="items-center text-center justify-center my-14">
+      <div className="items-center text-center justify-center my-28">
         <div className="flex flex-col justify-center space-y-2 mb-5">
           <div className="lg:text-4xl flex justify-center text-2xl">
             <BoxReveal boxColor={"#empty"} duration={0.5}>
@@ -22,7 +22,7 @@ export default function Funders2() {
           </div>
         </div>
 
-        <div className="slideInEffect lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col gap-2 lg:justify-between">
+        <div className="slideInEffect lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col gap-2 lg:justify-between dark:bg-white rounded-xl p-5">
           <div>
             {" "}
             <Image

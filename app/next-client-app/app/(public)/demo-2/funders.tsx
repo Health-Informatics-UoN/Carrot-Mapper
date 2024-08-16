@@ -22,7 +22,7 @@ export default function Funders() {
           </div>
         </div>
 
-        <div className="slideInEffect lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col gap-2 lg:justify-between">
+        <div className="slideInEffect lg:flex lg:flex-row items-center lg:gap-5 mt-5 flex flex-col gap-2 lg:justify-between dark:bg-white rounded-xl p-5">
           <div>
             {" "}
             <Image

@@ -5,7 +5,7 @@ const features = [
   {
     name: "NOTTINGHAM BRC",
     description:
-      "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation. Carrot has been instrumental in managing and utilizing big data within the Nottingham University Hospitals NHS Trust and University of Nottingham’s “safe haven” environment.",
+      "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation.",
     background: (
       <img className="opacity-80 p-5 dark:bg-white" src="/logos/nbrc.png" />
     ),
@@ -16,7 +16,7 @@ const features = [
   {
     name: "ALLEVIATE",
     description:
-      "Alleviate has utilized Carrot to support the creation of its UK-wide pain data hub in collaboration with Health Data Research UK (HDR UK). By standardizing and curating diverse pain-related datasets, including text, genetic, and imaging data, Carrot has facilitated the discovery and analysis of complex pain conditions.",
+      "Alleviate has utilized Carrot to support the creation of its UK-wide pain data hub in collaboration with Health Data Research UK (HDR UK).",
     background: (
       <img className="opacity-80 p-5 w-[300px]" src="/logos/alleviate.jpeg" />
     ),
@@ -27,13 +27,8 @@ const features = [
   {
     name: "CO-CONNECT",
     description:
-      "CO-CONNECT utilized Carrot to streamline the access and integration of COVID-19 data across the UK, supporting researchers in developing potential therapies and treatments.",
-    background: (
-      <img
-        className="opacity-80 w-[150px] dark:bg-white"
-        src="/logos/coconnect1.png"
-      />
-    ),
+      "CO-CONNECT used Carrot to streamline COVID-19 data access and integration across the UK, aiding researchers in developing therapies and treatments.",
+    background: <img className="w-[150px]" src="/logos/coconnect1.png" />,
     href: "https://fed-a.org/co-connect-home/",
     cta: "Learn more",
     className: "lg:col-start-1 lg:col-span-2",
@@ -41,13 +36,8 @@ const features = [
   {
     name: "BY-COVID",
     description:
-      "The BeYond-COVID (BY-COVID) project leverages Carrot to facilitate comprehensive open data sharing on SARS-CoV-2 and other infectious diseases, enhancing research and public health efforts across Europe.",
-    background: (
-      <img
-        className="opacity-80 w-[300px] dark:bg-white"
-        src="/logos/bycovid.png"
-      />
-    ),
+      "The BY-COVID project uses Carrot to enable open data sharing on SARS-CoV-2 and other infectious diseases, boosting research and public health efforts across Europe.",
+    background: <img className="w-[300px]" src="/logos/bycovid.png" />,
     href: "https://by-covid.org/about",
     cta: "Learn more",
     className: "lg:col-start-3 lg:col-span-2",
@@ -55,13 +45,8 @@ const features = [
   {
     name: "East Midlands SDE",
     description:
-      "The East Midlands Secure Data Environment (SDE) project, in collaboration with EMRAD, utilizes Carrot to support the establishment of a secure and controlled platform for data access by authorized researchers.",
-    background: (
-      <img
-        className="opacity-80 p-5 w-[200px] dark:bg-white"
-        src="/logos/sde.png"
-      />
-    ),
+      "The East Midlands SDE project, in collaboration with EMRAD, uses Carrot to help establish a secure platform for authorized researcher data access.",
+    background: <img className="p-2 w-[200px]" src="/logos/sde.png" />,
     href: "https://digital.nhs.uk/services/secure-data-environment-service",
     cta: "Learn more",
     className: "lg:col-start-5 lg:col-span-2",

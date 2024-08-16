@@ -6,7 +6,7 @@ import Hero from "./hero";
 
 export default function Demo2() {
   return (
-    <div className="space-y-7 lg:space-y-14">
+    <div className="space-y-12 lg:space-y-28">
       <Hero />
       <Features />
       <BentoProjects />

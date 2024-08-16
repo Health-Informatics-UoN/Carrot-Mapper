@@ -5,7 +5,7 @@ export default function Hero2() {
   return (
     <>
       {/* Hero section */}
-      <div className="flex-col flex justify-center content-start">
+      <div className="flex-col flex justify-center content-start my-28">
         <div className="lg:text-4xl flex justify-center text-2xl">
           <BoxReveal boxColor={"#e6a312"} duration={0.5}>
             <h1 className="font-bold">How about this?</h1>

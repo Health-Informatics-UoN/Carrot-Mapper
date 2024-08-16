@@ -37,7 +37,7 @@ const features = [
 
 export default async function BentoFeatures2() {
   return (
-    <div className="my-14">
+    <div className="my-28">
       <div className="flex flex-col justify-center space-y-2 mb-5">
         <div className="lg:text-4xl flex justify-center text-2xl">
           <BoxReveal boxColor={"#empty"} duration={0.5}>

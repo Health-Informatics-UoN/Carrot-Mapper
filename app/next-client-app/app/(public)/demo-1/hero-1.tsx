@@ -5,7 +5,7 @@ export default function Hero1() {
   return (
     <>
       {/* Hero section */}
-      <div className="flex-col flex  justify-center content-start h-screen">
+      <div className="flex-col flex mt-24 mb-40">
         <div className="flex flex-col lg:space-y-5 space-y-3 lg:w-3/5 mb-10">
           <div className="lg:text-5xl text-3xl gap-5 text-center lg:text-left">
             <h1> Feeling Lost Doing </h1>
@@ -17,7 +17,7 @@ export default function Hero1() {
         </div>
         <div className="flex justify-between">
           <Image
-            src="/hero1.gif"
+            src="/yH.gif"
             alt="GIF"
             height={600}
             width={600}
