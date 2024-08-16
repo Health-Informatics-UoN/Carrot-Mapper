@@ -7,8 +7,6 @@ const fetchKeys = {
     `scanreports/${scan_report_id}/mapping_rules/downloads/?${filter}`,
   requestFile: (scan_report_id: number) =>
     `scanreports/${scan_report_id}/mapping_rules/downloads/`,
-  download: (scan_report_id: number, file_id: number) =>
-    `scanreports/${scan_report_id}/mapping_rules/downloads/?${file_id}`,
 };
 
 export async function list(
