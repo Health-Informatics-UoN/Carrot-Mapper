@@ -81,9 +81,11 @@ export const columns: ColumnDef<FileDownload>[] = [
     id: "Download",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { id } = row.original;
+      const { id, scan_report } = row.original;
       return (
-        <Link href={`/api/scanreports/${50}/mapping_rules/downloads/${id}/`}>
+        <Link
+          href={`/api/scanreports/${scan_report}/mapping_rules/downloads/${id}/`}
+        >
           <Button variant={"outline"}>
             Download <Download className="ml-2 size-4" />
           </Button>
