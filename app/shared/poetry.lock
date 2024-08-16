@@ -34,6 +34,26 @@ typing-extensions = ">=4.6.0"
 aio = ["aiohttp (>=3.0)"]
 
 [[package]]
+name = "azure-storage-blob"
+version = "12.20.0"
+description = "Microsoft Azure Blob Storage Client Library for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "azure-storage-blob-12.20.0.tar.gz", hash = "sha256:eeb91256e41d4b5b9bad6a87fd0a8ade07dd58aa52344e2c8d2746e27a017d3b"},
+    {file = "azure_storage_blob-12.20.0-py3-none-any.whl", hash = "sha256:de6b3bf3a90e9341a6bcb96a2ebe981dffff993e9045818f6549afea827a52a9"},
+]
+
+[package.dependencies]
+azure-core = ">=1.28.0"
+cryptography = ">=2.1.4"
+isodate = ">=0.6.1"
+typing-extensions = ">=4.6.0"
+
+[package.extras]
+aio = ["azure-core[aio] (>=1.28.0)"]
+
+[[package]]
 name = "azure-storage-queue"
 version = "12.11.0"
 description = "Microsoft Azure Azure Queue Storage Client Library for Python"
@@ -359,6 +379,22 @@ files = [
 [package.dependencies]
 django = "*"
 typing-extensions = "*"
+
+[[package]]
+name = "graphviz"
+version = "0.20.3"
+description = "Simple Python interface for Graphviz"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "graphviz-0.20.3-py3-none-any.whl", hash = "sha256:81f848f2904515d8cd359cc611faba817598d2feaac4027b266aa3eda7b3dde5"},
+    {file = "graphviz-0.20.3.zip", hash = "sha256:09d6bc81e6a9fa392e7ba52135a9d49f1ed62526f96499325930e87ca1b5925d"},
+]
+
+[package.extras]
+dev = ["flake8", "pep8-naming", "tox (>=3)", "twine", "wheel"]
+docs = ["sphinx (>=5,<7)", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+test = ["coverage", "pytest (>=7,<8.1)", "pytest-cov", "pytest-mock (>=3)"]
 
 [[package]]
 name = "idna"
@@ -727,4 +763,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "579e9b6c5cf2b317dbd20c1ffc9dec7c7643df8935607eaaa5e5424bca5b7a2e"
+content-hash = "ee5541e5ebb88e56a6a3bf19ddf7d61da7410b076172f11fcace6552ba6b637e"
