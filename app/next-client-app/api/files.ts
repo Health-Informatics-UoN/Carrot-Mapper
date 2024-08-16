@@ -4,7 +4,7 @@ import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (scan_report_id: number, filter?: string) =>
-    `scanreports/${scan_report_id}/mapping_rules/downloads/?${filter}/`,
+    `scanreports/${scan_report_id}/mapping_rules/downloads/?${filter}`,
   download: (scan_report_id: number, file_id: number) =>
     `scanreports/${scan_report_id}/mapping_rules/downloads/?${file_id}`,
 };
