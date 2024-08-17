@@ -20,6 +20,12 @@ import {
 import { requestFile } from "@/api/files";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function RulesButton({
   scanreportId,
@@ -47,10 +53,20 @@ export function RulesButton({
       <div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" disabled>
-              View Map Diagram
-              <BarChartHorizontalBig className="ml-2 size-4" />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button variant="outline" disabled>
+                    View Map Diagram
+                    <BarChartHorizontalBig className="ml-2 size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>We've disabled this temporarily</p>
+                  <p>You can view the diagram by requesting the download.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DialogTrigger>
           <DialogContent className="max-w-[1200px]">
             <ScrollArea className="w-auto h-[400px]">
