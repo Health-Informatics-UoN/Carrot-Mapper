@@ -1,5 +1,6 @@
 import json
 
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -59,8 +60,8 @@ class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
                 "user_id": request.user.id,
                 "file_type": file_type,
             }
-            # send to queue TODO: config setting
-            add_message("rules-exports-local", msg)
+
+            add_message(settings.AZ_RULES_EXPORT_QUEUE, msg)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data."}, status=400)

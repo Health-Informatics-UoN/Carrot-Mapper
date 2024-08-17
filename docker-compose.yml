@@ -65,6 +65,7 @@ services:
       - AZURE_ACCOUNT_NAME=devstoreaccount1
       - AZ_URL=http://workers:7071
       - AZ_RULES_NAME=RulesOrchestrator
+      - AZ_RULES_EXPORT_QUEUE=rules=exports-local
     volumes:
       - ./app/api:/api
     depends_on:
