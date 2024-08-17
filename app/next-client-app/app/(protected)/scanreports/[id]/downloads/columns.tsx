@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 
 export const columns: ColumnDef<FileDownload>[] = [
   {
@@ -72,7 +73,7 @@ export const columns: ColumnDef<FileDownload>[] = [
     ),
     cell: ({ row }) => {
       const { file_type } = row.original;
-      return <>{file_type.display_name}</>;
+      return <Badge variant="outline">{file_type.display_name}</Badge>;
     },
     enableHiding: true,
     enableSorting: false,
