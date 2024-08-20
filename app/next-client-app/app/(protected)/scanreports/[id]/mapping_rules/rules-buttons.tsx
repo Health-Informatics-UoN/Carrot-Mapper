@@ -6,7 +6,7 @@ import {
   BarChartHorizontalBig,
   ChevronDown,
   FileJson,
-  FilePieChart,
+  FileSpreadsheet,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GetFile } from "@/app/(protected)/scanreports/[id]/mapping_rules/get-file";
@@ -75,22 +75,22 @@ export function RulesButton({
           <DropdownMenuContent className="w-[180px]">
             <DropdownMenuItem>
               <Button
-                onClick={() => handleDownload("image/svg+xml")}
-                variant={"ghost"}
-                size={"sm"}
-              >
-                Mapping Diagram
-                <FilePieChart className="ml-2 size-4" />
-              </Button>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Button
                 onClick={() => handleDownload("application/json")}
                 variant={"ghost"}
                 size={"sm"}
               >
                 Mapping JSON
                 <FileJson className="ml-2 size-4" />
+              </Button>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Button
+                onClick={() => handleDownload("text/csv")}
+                variant={"ghost"}
+                size={"sm"}
+              >
+                Mapping CSV
+                <FileSpreadsheet className="ml-2 size-4" />
               </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
