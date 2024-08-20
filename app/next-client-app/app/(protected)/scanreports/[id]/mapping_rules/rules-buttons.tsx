@@ -7,7 +7,6 @@ import {
   ChevronDown,
   FileJson,
   FilePieChart,
-  FileSpreadsheet,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { GetFile } from "@/app/(protected)/scanreports/[id]/mapping_rules/get-file";
@@ -20,12 +19,6 @@ import {
 import { requestFile } from "@/api/files";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 export function RulesButton({
   scanreportId,
@@ -40,33 +33,23 @@ export function RulesButton({
 
   const handleDownload = async (fileType: FileTypeFormat) => {
     const resp = await requestFile(Number(scanreportId), fileType);
-    if (!resp.success) {
-      toast.error(
-        `Error downloading file: ${(resp.errorMessage as any).message}`,
-      );
+    if (resp.success) {
+      router.push(`downloads`);
+      toast.success("File requested.");
     }
-    router.push(`downloads`);
-    toast.warning("File requested.");
+    toast.error(
+      `Error downloading file: ${(resp.errorMessage as any).message}`,
+    );
   };
   return (
     <div className="hidden md:flex gap-2 justify-end w-full mr-2">
       <div>
         <Dialog>
           <DialogTrigger asChild>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button variant="outline" disabled>
-                    View Map Diagram
-                    <BarChartHorizontalBig className="ml-2 size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>We've disabled this temporarily</p>
-                  <p>You can view the diagram by requesting the download.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Button variant="outline">
+              View Map Diagram
+              <BarChartHorizontalBig className="ml-2 size-4" />
+            </Button>
           </DialogTrigger>
           <DialogContent className="max-w-[1200px]">
             <ScrollArea className="w-auto h-[400px]">
@@ -108,16 +91,6 @@ export function RulesButton({
               >
                 Mapping JSON
                 <FileJson className="ml-2 size-4" />
-              </Button>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Button
-                onClick={() => handleDownload("text/csv")}
-                variant={"ghost"}
-                size={"sm"}
-              >
-                Mapping CSV
-                <FileSpreadsheet className="ml-2 size-4" />
               </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
