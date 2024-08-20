@@ -7,7 +7,7 @@ from .models import FileDownload, FileType
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["username"]
+        fields = ["id", "username"]
 
 
 class FileTypeSerializer(serializers.ModelSerializer):
@@ -22,4 +22,12 @@ class FileDownloadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileDownload
-        fields = ["id", "created_at", "name", "user", "file_type", "file_url"]
+        fields = [
+            "id",
+            "scan_report",
+            "created_at",
+            "name",
+            "user",
+            "file_type",
+            "file_url",
+        ]

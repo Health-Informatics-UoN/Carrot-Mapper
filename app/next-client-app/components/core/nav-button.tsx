@@ -12,6 +12,7 @@ import {
   SearchCheck,
   Edit,
   FileScan,
+  Download,
 } from "lucide-react";
 
 export const NavButton = ({
@@ -37,6 +38,7 @@ export const NavButton = ({
     TableProperties,
     FileScan,
     Edit,
+    Download,
   };
 
   const Icon = item.iconName ? iconMap[item.iconName] : null;

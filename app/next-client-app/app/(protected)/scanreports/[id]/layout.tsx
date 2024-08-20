@@ -46,6 +46,7 @@ export default async function ScanReportLayout({
     },
     { name: "Rules", slug: "mapping_rules", iconName: "Waypoints" },
     { name: "Review Rules", slug: "review_rules", iconName: "SearchCheck" },
+    { name: "Downloads", slug: "downloads", iconName: "Download" },
   ];
 
   const scanreport = await getScanReport(params.id);
