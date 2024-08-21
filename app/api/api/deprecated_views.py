@@ -7,19 +7,10 @@ import requests
 from api.filters import ScanReportAccessFilter
 from api.serializers import (
     ConceptSerializer,
-    ContentTypeSerializer,
-    MappingRuleSerializer,
-    OmopFieldSerializer,
-    OmopTableSerializer,
     ScanReportConceptSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
-    ScanReportFieldListSerializer,
     ScanReportTableEditSerializer,
-    ScanReportTableListSerializer,
-    ScanReportValueEditSerializer,
-    ScanReportValueViewSerializer,
-    ScanReportViewSerializer,
 )
 from config import settings
 from django.contrib.contenttypes.models import ContentType
@@ -47,6 +38,17 @@ from shared.mapping.models import (
 )
 from shared.mapping.permissions import CanAdmin, CanEdit, CanView
 from shared.services.rules import delete_mapping_rules
+
+from .deprecated_serializers import (
+    ContentTypeSerializer,
+    OmopFieldSerializer,
+    OmopTableSerializer,
+    ScanReportFieldListSerializer,
+    ScanReportTableListSerializer,
+    ScanReportValueEditSerializer,
+    ScanReportValueViewSerializer,
+    ScanReportViewSerializer,
+)
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -451,11 +453,6 @@ class OmopTableViewSet(viewsets.ModelViewSet):
 class OmopFieldViewSet(viewsets.ModelViewSet):
     queryset = OmopField.objects.all()
     serializer_class = OmopFieldSerializer
-
-
-class MappingRuleViewSet(viewsets.ModelViewSet):
-    queryset = MappingRule.objects.all()
-    serializer_class = MappingRuleSerializer
 
 
 class GetContentTypeID(APIView):

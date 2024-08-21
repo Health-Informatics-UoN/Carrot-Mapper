@@ -12,9 +12,6 @@ from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from shared.data.models import Concept
 from shared.mapping.models import (
     Dataset,
-    MappingRule,
-    OmopField,
-    OmopTable,
     ScanReport,
     ScanReportConcept,
     ScanReportField,
@@ -36,31 +33,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
-
-
-class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if ds := data.get("parent_dataset"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(ds, request)
-                    or has_editorship(ds, request)
-                ):
-                    raise PermissionDenied(
-                        "You must be an admin of the parent dataset to add a new scan report to it.",
-                    )
-            else:
-                raise NotFound("Could not find parent dataset.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report."
-            )
-        return super().validate(data)
-
-    class Meta:
-        model = ScanReport
-        fields = "__all__"
 
 
 class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -314,6 +286,7 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
         # Loop over the rows, and for each table, once we reach the end of the table,
         # compare the fields provided with the fields in the associated sheet
         current_table_fields = []
+        current_table_name = None
         last_value = None
         for row in fo_ws.iter_rows(min_row=2):
             # Loop over rows, collecting all fields in each table in turn
@@ -523,31 +496,6 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if sr := data.get("scan_report"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(sr, request)
-                    or has_editorship(sr, request)
-                ):
-                    raise PermissionDenied(
-                        "You must have editor or admin privileges on the scan report to edit its tables.",
-                    )
-            else:
-                raise NotFound("Could not find the scan report for this table.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report table."
-            )
-        return super().validate(data)
-
-    class Meta:
-        model = ScanReportTable
-        fields = "__all__"
-
-
 class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
 
     date_event = serializers.SerializerMethodField()
@@ -586,38 +534,6 @@ class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSeria
 class ScanReportTableEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportTable
-        fields = "__all__"
-
-
-class ScanReportFieldListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    name = serializers.CharField(
-        max_length=512, allow_blank=True, trim_whitespace=False
-    )
-    description_column = serializers.CharField(
-        max_length=512, allow_blank=True, trim_whitespace=False
-    )
-
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if srt := data.get("scan_report_table"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(srt, request)
-                    or has_editorship(srt, request)
-                ):
-                    raise PermissionDenied(
-                        "You must have editor or admin privileges on the scan report to edit its fields.",
-                    )
-            else:
-                raise NotFound("Could not find the scan report table for this field.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report field."
-            )
-        return super().validate(data)
-
-    class Meta:
-        model = ScanReportField
         fields = "__all__"
 
 
@@ -666,72 +582,15 @@ class ScanReportFieldEditSerializer(DynamicFieldsMixin, serializers.ModelSeriali
         fields = "__all__"
 
 
-class ScanReportValueViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    value = serializers.CharField(
-        max_length=128, allow_blank=True, trim_whitespace=False
-    )
-
-    def validate(self, data):
-        if request := self.context.get("request"):
-            if srf := data.get("scan_report_field"):
-                if not (
-                    is_az_function_user(request.user)
-                    or is_admin(srf, request)
-                    or has_editorship(srf, request)
-                ):
-                    raise PermissionDenied(
-                        "You must have editor or admin privileges on the scan report to edit its values.",
-                    )
-            else:
-                raise NotFound("Could not find the scan report field for this value.")
-        else:
-            raise serializers.ValidationError(
-                "Missing request context. Unable to validate scan report value."
-            )
-        return super().validate(data)
-
-    class Meta:
-        model = ScanReportValue
-        fields = "__all__"
-
-
 class ScanReportValueViewSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = ScanReportValue
         fields = ["id", "value", "frequency", "value_description", "scan_report_field"]
 
 
-class ScanReportValueEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    value = serializers.CharField(
-        max_length=128, allow_blank=True, trim_whitespace=False
-    )
-
-    class Meta:
-        model = ScanReportValue
-        fields = "__all__"
-
-
 class ScanReportConceptSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportConcept
-        fields = "__all__"
-
-
-class OmopFieldSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = OmopField
-        fields = "__all__"
-
-
-class OmopTableSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = OmopTable
-        fields = "__all__"
-
-
-class MappingRuleSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = MappingRule
         fields = "__all__"
 
 
@@ -742,18 +601,3 @@ class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):
 
     def to_representation(self, scan_report):
         return analyse_concepts(scan_report.id)
-
-
-class ContentTypeSerializer(serializers.Serializer):
-    """
-    Serializes the content type name.
-
-    Args:
-        self: The instance of the class.
-
-    Attributes:
-        type_name: The serialized content type name.
-
-    """
-
-    type_name = serializers.CharField(max_length=100)

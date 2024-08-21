@@ -40,6 +40,3 @@ router.register(
 )
 router.register(r"omoptables", deprecated_views.OmopTableViewSet, basename="omoptables")
 router.register(r"omopfields", deprecated_views.OmopFieldViewSet, basename="omopfields")
-router.register(
-    r"mappingrules", deprecated_views.MappingRuleViewSet, basename="mappingrule"
-)

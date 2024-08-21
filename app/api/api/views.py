@@ -21,7 +21,6 @@ from api.serializers import (
     ScanReportFilesSerializer,
     ScanReportTableEditSerializer,
     ScanReportTableListSerializerV2,
-    ScanReportValueViewSerializer,
     ScanReportValueViewSerializerV2,
     ScanReportViewSerializerV2,
     UserSerializer,
