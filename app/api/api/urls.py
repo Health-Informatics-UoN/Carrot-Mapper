@@ -6,6 +6,7 @@ from shared.files.views import FileDownloadView
 urlpatterns = [
     path("", include(router.urls)),
     path("datasets/", include("datasets.urls")),
+    path("projects/", include("projects.urls")),
     path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
     path(
         r"countprojects/<int:dataset>",
@@ -51,17 +52,6 @@ urlpatterns = [
         "scanreports/<int:scanreport_pk>/mapping_rules/downloads/<int:pk>",
         FileDownloadView.as_view(),
         name="filedownload-get",
-    ),
-    path("projects/", views.ProjectListView.as_view(), name="project_list"),
-    path(
-        "projects/<int:pk>/",
-        views.ProjectRetrieveView.as_view(),
-        name="project_retrieve",
-    ),
-    path(
-        r"projects/update/<int:pk>/",
-        views.ProjectUpdateView.as_view(),
-        name="projects_update",
     ),
     path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
 ]

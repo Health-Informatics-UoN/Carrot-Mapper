@@ -17,9 +17,6 @@ from api.serializers import (
     MappingRuleSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,
-    ProjectDatasetSerializer,
-    ProjectNameSerializer,
-    ProjectSerializer,
     ScanReportConceptSerializer,
     ScanReportCreateSerializer,
     ScanReportEditSerializer,
@@ -49,9 +46,8 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
@@ -77,7 +73,6 @@ from shared.mapping.permissions import (
     CanAdmin,
     CanEdit,
     CanView,
-    CanViewProject,
     get_user_permissions_on_scan_report,
 )
 from shared.services.azurequeue import add_message
@@ -133,51 +128,6 @@ class CountProjects(APIView):
             "project_count": project_count,
         }
         return Response(content)
-
-
-class ProjectListView(ListAPIView):
-    """
-    API view to show all projects' names.
-    """
-
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"name": ["in", "exact"]}
-
-    def get_serializer_class(self):
-        if (
-            self.request.GET.get("name") is not None
-            or self.request.GET.get("name__in") is not None
-        ):
-            return ProjectSerializer
-        if self.request.GET.get("datasets") is not None:
-            return ProjectDatasetSerializer
-
-        return ProjectNameSerializer
-
-    def get_queryset(self):
-        if dataset := self.request.GET.get("dataset"):
-            return Project.objects.filter(
-                datasets__exact=dataset, members__id=self.request.user.id
-            ).distinct()
-
-        return Project.objects.all()
-
-
-class ProjectRetrieveView(RetrieveAPIView):
-    """
-    API view to retrieve a single project.
-    Will return 403 Forbidden if User isn't a member.
-    """
-
-    permission_classes = [CanViewProject]
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
-
-
-class ProjectUpdateView(generics.UpdateAPIView):
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
