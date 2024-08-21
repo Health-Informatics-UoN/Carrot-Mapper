@@ -1,4 +1,5 @@
 from api import views
+from api.deprecated_router import router as deprecated_router
 from api.router import router
 from django.urls import include, path
 from shared.files.views import FileDownloadView
@@ -7,6 +8,7 @@ from .deprecated_urls import urlpatterns as deprecated_urlpatterns
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("", include(deprecated_router.urls)),
     path("datasets/", include("datasets.urls")),
     path("projects/", include("projects.urls")),
     path(
