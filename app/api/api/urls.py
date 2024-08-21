@@ -25,26 +25,6 @@ urlpatterns = [
         name="scan-report-tables",
     ),
     path(
-        "v2/scanreports/<int:pk>/tables/<int:table_pk>/",
-        views.ScanReportTableDetailV2.as_view(),
-        name="scan-report-table-detail",
-    ),
-    path(
-        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/",
-        views.ScanReportFieldIndexV2.as_view(),
-        name="scan-report-fields",
-    ),
-    path(
-        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/",
-        views.ScanReportFieldDetailV2.as_view(),
-        name="scan-report-fields-detail",
-    ),
-    path(
-        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/values/",
-        views.ScanReportValueListV2.as_view(),
-        name="scan-report-values",
-    ),
-    path(
         r"v2/scanreports/<int:pk>/downloads/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
@@ -67,6 +47,26 @@ urlpatterns = [
         "v2/scanreports/<int:scanreport_pk>/rules/downloads/<int:pk>",
         FileDownloadView.as_view(),
         name="scan-report-downloads-get",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/",
+        views.ScanReportTableDetailV2.as_view(),
+        name="scan-report-table-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/",
+        views.ScanReportFieldIndexV2.as_view(),
+        name="scan-report-fields",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/",
+        views.ScanReportFieldDetailV2.as_view(),
+        name="scan-report-fields-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/values/",
+        views.ScanReportValueListV2.as_view(),
+        name="scan-report-values",
     ),
     path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
 ]
