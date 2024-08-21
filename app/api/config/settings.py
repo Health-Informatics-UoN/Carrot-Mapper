@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "extra_views",
+    "datasets",
+    "projects",
     "api",
     "shared.data",
     "shared.mapping",

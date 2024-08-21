@@ -5,7 +5,9 @@ import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (filter?: string) =>
-    filter ? `datasets_data_partners/?${filter}` : "datasets_data_partners/",
+    filter
+      ? `datasets/datasets_data_partners/?${filter}`
+      : "datasets/datasets_data_partners/",
   dataset: (id: string) => `datasets/${id}/`,
   datasetList: (dataPartnerId?: string) =>
     dataPartnerId
@@ -16,12 +18,12 @@ const fetchKeys = {
   projects: (dataset?: string) =>
     dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
-  permissions: (id: string) => `dataset/${id}/permissions/`,
+  permissions: (id: string) => `datasets/${id}/permissions/`,
   create: "datasets/create/",
 };
 
 export async function getDataSets(
-  filter: string | undefined
+  filter: string | undefined,
 ): Promise<PaginatedResponse<DataSet>> {
   try {
     return await request<DataSet>(fetchKeys.list(filter));
@@ -53,7 +55,7 @@ export async function getDataSet(id: string): Promise<DataSetSRList> {
 }
 
 export async function getDatasetList(
-  filter?: string
+  filter?: string,
 ): Promise<DataSetSRList[]> {
   try {
     return await request<DataSetSRList>(fetchKeys.datasetList(filter));
@@ -122,7 +124,7 @@ export async function updateDatasetDetails(id: number, data: {}) {
 }
 
 export async function getDatasetPermissions(
-  id: string
+  id: string,
 ): Promise<PermissionsResponse> {
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));

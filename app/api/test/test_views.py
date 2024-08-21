@@ -3,7 +3,7 @@ from datetime import date
 from unittest import mock
 
 import pytest
-from api.views import DatasetListView
+from datasets.views import DatasetListView
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, TransactionTestCase

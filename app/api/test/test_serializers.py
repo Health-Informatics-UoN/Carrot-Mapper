@@ -1,9 +1,7 @@
-import os
-
-from api.serializers import DatasetEditSerializer, ScanReportEditSerializer
+from api.serializers import ScanReportEditSerializer
+from datasets.serializers import DatasetEditSerializer
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APIRequestFactory
 from shared.mapping.models import (
