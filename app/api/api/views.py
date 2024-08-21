@@ -105,7 +105,7 @@ class UserDetailView(APIView):
         return Response(serializer.data)
 
 
-class ScanReportListViewSetV2(viewsets.ModelViewSet):
+class ScanReportIndexV2(viewsets.ModelViewSet):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
