@@ -1,31 +1,45 @@
-from api import views
+from api import deprecated_views
 from rest_framework import routers
 
 router = routers.DefaultRouter()
 
 
-router.register(r"omop/concepts", views.ConceptViewSet, basename="concepts")
+router.register(r"omop/concepts", deprecated_views.ConceptViewSet, basename="concepts")
 router.register(
-    r"omop/conceptsfilter", views.ConceptFilterViewSet, basename="conceptsfilter"
-)
-router.register(r"scanreports", views.ScanReportListViewSet, basename="scanreports")
-router.register(
-    r"scanreporttables", views.ScanReportTableViewSet, basename="scanreporttables"
+    r"omop/conceptsfilter",
+    deprecated_views.ConceptFilterViewSet,
+    basename="conceptsfilter",
 )
 router.register(
-    r"scanreportfields", views.ScanReportFieldViewSet, basename="scanreportfields"
+    r"scanreports", deprecated_views.ScanReportListViewSet, basename="scanreports"
 )
 router.register(
-    r"scanreportvalues", views.ScanReportValueViewSet, basename="scanreportvalues"
+    r"scanreporttables",
+    deprecated_views.ScanReportTableViewSet,
+    basename="scanreporttables",
 )
 router.register(
-    r"scanreportconcepts", views.ScanReportConceptViewSet, basename="scanreportconcepts"
+    r"scanreportfields",
+    deprecated_views.ScanReportFieldViewSet,
+    basename="scanreportfields",
+)
+router.register(
+    r"scanreportvalues",
+    deprecated_views.ScanReportValueViewSet,
+    basename="scanreportvalues",
+)
+router.register(
+    r"scanreportconcepts",
+    deprecated_views.ScanReportConceptViewSet,
+    basename="scanreportconcepts",
 )
 router.register(
     r"scanreportconceptsfilter",
-    views.ScanReportConceptFilterViewSet,
+    deprecated_views.ScanReportConceptFilterViewSet,
     basename="scanreportconceptsfilter",
 )
-router.register(r"omoptables", views.OmopTableViewSet, basename="omoptables")
-router.register(r"omopfields", views.OmopFieldViewSet, basename="omopfields")
-router.register(r"mappingrules", views.MappingRuleViewSet, basename="mappingrule")
+router.register(r"omoptables", deprecated_views.OmopTableViewSet, basename="omoptables")
+router.register(r"omopfields", deprecated_views.OmopFieldViewSet, basename="omopfields")
+router.register(
+    r"mappingrules", deprecated_views.MappingRuleViewSet, basename="mappingrule"
+)
