@@ -1,7 +1,3 @@
-"""
-To come
-"""
-
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -46,7 +42,6 @@ class BaseModel(models.Model):
     """
 
     created_at = models.DateTimeField(auto_now_add=True)
-
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -73,7 +68,6 @@ class DataPartner(BaseModel):
     """
 
     name = models.CharField(max_length=64)
-    # `datasets` field added by FK field in `Dataset`
 
     class Meta:
         verbose_name = "Data Partner"
@@ -107,7 +101,6 @@ class OmopField(BaseModel):
     """
 
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
-
     field = models.CharField(max_length=64)
 
     class Meta:
@@ -124,28 +117,19 @@ class ScanReportConcept(BaseModel):
     """
 
     nlp_entity = models.CharField(max_length=64, null=True, blank=True)
-
     nlp_entity_type = models.CharField(max_length=64, null=True, blank=True)
-
     nlp_confidence = models.DecimalField(
         max_digits=3,
         decimal_places=2,
         null=True,
         blank=True,
     )
-
     nlp_vocabulary = models.CharField(max_length=64, null=True, blank=True)
-
     nlp_concept_code = models.CharField(max_length=64, null=True, blank=True)
-
     nlp_processed_string = models.CharField(max_length=256, null=True, blank=True)
-
     concept = models.ForeignKey(Concept, on_delete=models.DO_NOTHING)
-
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-
     object_id = models.PositiveIntegerField()
-
     content_object = GenericForeignKey()
 
     # save how the mapping rule was created
@@ -173,22 +157,16 @@ class ScanReport(BaseModel):
         blank=True,
         null=True,
     )
-
     name = models.CharField(max_length=256)
-
     # TODO: rename to `dataset_name`
     dataset = models.CharField(max_length=128)
-
     hidden = models.BooleanField(default=False)
-
     file = models.FileField()
-
     status = models.CharField(
         max_length=7,
         choices=Status.choices,
         default=Status.UPLOAD_IN_PROGRESS,
     )
-
     data_dictionary = models.ForeignKey(
         "DataDictionary",
         on_delete=models.CASCADE,
@@ -196,7 +174,6 @@ class ScanReport(BaseModel):
         blank=True,
         related_name="data_dictionary",
     )
-
     # TODO: rename to `dataset`
     parent_dataset = models.ForeignKey(
         "Dataset",
@@ -206,13 +183,11 @@ class ScanReport(BaseModel):
         null=True,
         blank=True,
     )
-
     visibility = models.CharField(
         max_length=10,
         choices=VisibilityChoices.choices,
         default=VisibilityChoices.PUBLIC,
     )
-
     viewers = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="scanreport_viewings",
@@ -239,7 +214,6 @@ class ScanReportTable(BaseModel):
     """
 
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
-
     name = models.CharField(max_length=256)
 
     # Quick notes:
@@ -255,7 +229,6 @@ class ScanReportTable(BaseModel):
         blank=True,
         related_name="person_id",
     )
-
     date_event = models.ForeignKey(
         "ScanReportField",
         on_delete=models.DO_NOTHING,
@@ -277,44 +250,27 @@ class ScanReportField(BaseModel):
     """
 
     scan_report_table = models.ForeignKey(ScanReportTable, on_delete=models.CASCADE)
-
     name = models.CharField(max_length=512)
-
     description_column = models.CharField(max_length=512)
-
     type_column = models.CharField(max_length=32)
-
     max_length = models.IntegerField()
-
     nrows = models.IntegerField()
-
     nrows_checked = models.IntegerField()
-
     fraction_empty = models.DecimalField(decimal_places=2, max_digits=10)
-
     nunique_values = models.IntegerField()
-
     fraction_unique = models.DecimalField(decimal_places=2, max_digits=10)
-
     ignore_column = models.CharField(max_length=64, blank=True, null=True)
-
     is_patient_id = models.BooleanField(default=False)
-
     is_ignore = models.BooleanField(default=False)
-
     classification_system = models.CharField(max_length=64, blank=True, null=True)
-
     pass_from_source = models.BooleanField(default=True)
-
     concept_id = models.IntegerField(
         default=-1,
         blank=True,
         null=True,
         # This field is not used anymore
     )
-
     field_description = models.CharField(max_length=256, blank=True, null=True)
-
     concepts = GenericRelation(ScanReportConcept)
 
     class Meta:
@@ -330,7 +286,6 @@ class ScanReportAssertion(BaseModel):
     """
 
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
-
     negative_assertion = models.CharField(max_length=64, null=True, blank=True)
 
     class Meta:
@@ -362,9 +317,7 @@ class MappingRule(BaseModel):
     source_field = models.ForeignKey(
         ScanReportField, on_delete=models.CASCADE, null=True, blank=True
     )
-
     concept = models.ForeignKey(ScanReportConcept, on_delete=models.CASCADE)
-
     approved = models.BooleanField(default=False)
 
     class Meta:
@@ -380,15 +333,10 @@ class ScanReportValue(BaseModel):
     """
 
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
-
     value = models.CharField(max_length=128)
-
     frequency = models.IntegerField()
-
     conceptID = models.IntegerField(default=-1)  # TODO rename it to concept_id
-
     concepts = GenericRelation(ScanReportConcept)
-
     value_description = models.CharField(max_length=512, blank=True, null=True)
 
     class Meta:
@@ -419,7 +367,6 @@ class NLPModel(models.Model):
     """
 
     user_string = models.TextField(max_length=1024)
-
     json_response = models.TextField(max_length=4096, blank=True, null=True)
 
     class Meta:
