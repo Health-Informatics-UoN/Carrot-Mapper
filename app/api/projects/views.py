@@ -49,8 +49,3 @@ class ProjectRetrieveView(RetrieveAPIView):
     permission_classes = [CanViewProject]
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
-
-
-class ProjectUpdateView(generics.UpdateAPIView):
-    serializer_class = ProjectSerializer
-    queryset = Project.objects.all()

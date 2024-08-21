@@ -8,9 +8,4 @@ urlpatterns = [
         views.ProjectRetrieveView.as_view(),
         name="project_retrieve",
     ),
-    path(
-        r"update/<int:pk>/",
-        views.ProjectUpdateView.as_view(),
-        name="projects_update",
-    ),
 ]
