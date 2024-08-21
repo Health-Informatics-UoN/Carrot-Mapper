@@ -36,10 +36,11 @@ export function RulesButton({
     if (resp.success) {
       router.push(`downloads`);
       toast.success("File requested.");
+    } else {
+      toast.error(
+        `Error downloading file: ${(resp.errorMessage as any).message}`,
+      );
     }
-    toast.error(
-      `Error downloading file: ${(resp.errorMessage as any).message}`,
-    );
   };
   return (
     <div className="hidden md:flex gap-2 justify-end w-full mr-2">

@@ -14,9 +14,9 @@ import django
 django.setup()
 
 from django.db.models.query import QuerySet
-from shared.data.models import MappingRule, ScanReport
 from shared.files.models import FileDownload, FileType
 from shared.files.service import upload_blob_read
+from shared.mapping.models import MappingRule, ScanReport
 from shared.services.rules_export import (
     get_mapping_rules_as_csv,
     get_mapping_rules_json,

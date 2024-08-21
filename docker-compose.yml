@@ -8,7 +8,6 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=omop
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -39,7 +38,7 @@ services:
       - db
     environment:
       - DB_PASSWORD=postgres
-      - DB_NAME=omop
+      - DB_NAME=postgres
 
   web:
     image: carrot
@@ -54,7 +53,7 @@ services:
       - COCONNECT_DB_ENGINE=django.db.backends.postgresql
       - COCONNECT_DB_HOST=db
       - COCONNECT_DB_PORT=5432
-      - COCONNECT_DB_NAME=omop
+      - COCONNECT_DB_NAME=postgres
       - COCONNECT_DB_USER=postgres
       - COCONNECT_DB_PASSWORD=postgres
       - ENABLE_PROXY=true

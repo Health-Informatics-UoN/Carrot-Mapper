@@ -4,7 +4,17 @@ from unittest import mock
 from api.views import ProjectRetrieveView
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from mapping.permissions import (
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import GenericAPIView
+from rest_framework.test import APIRequestFactory, force_authenticate
+from shared.mapping.models import (
+    DataPartner,
+    Dataset,
+    Project,
+    ScanReport,
+    VisibilityChoices,
+)
+from shared.mapping.permissions import (
     CanAdmin,
     CanEdit,
     CanView,
@@ -12,16 +22,6 @@ from mapping.permissions import (
     has_editorship,
     has_viewership,
     is_admin,
-)
-from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView
-from rest_framework.test import APIRequestFactory, force_authenticate
-from shared.data.models import (
-    DataPartner,
-    Dataset,
-    Project,
-    ScanReport,
-    VisibilityChoices,
 )
 
 

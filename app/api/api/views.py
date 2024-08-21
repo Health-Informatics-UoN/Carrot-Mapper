@@ -52,14 +52,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
-from mapping.permissions import (
-    CanAdmin,
-    CanEdit,
-    CanView,
-    CanViewProject,
-    get_user_permissions_on_dataset,
-    get_user_permissions_on_scan_report,
-)
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -68,7 +60,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from shared.data.models import (
+from shared.data.models import Concept
+from shared.files.service import delete_blob, modify_filename, upload_blob
+from shared.mapping.models import (
     DataDictionary,
     DataPartner,
     Dataset,
@@ -83,8 +77,14 @@ from shared.data.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.data.omop import Concept
-from shared.files.service import delete_blob, modify_filename, upload_blob
+from shared.mapping.permissions import (
+    CanAdmin,
+    CanEdit,
+    CanView,
+    CanViewProject,
+    get_user_permissions_on_dataset,
+    get_user_permissions_on_scan_report,
+)
 from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,

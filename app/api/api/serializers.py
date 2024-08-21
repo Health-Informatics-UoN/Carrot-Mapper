@@ -5,11 +5,11 @@ from io import BytesIO, StringIO
 import openpyxl
 from django.contrib.auth.models import User
 from drf_dynamic_fields import DynamicFieldsMixin
-from mapping.permissions import has_editorship, is_admin, is_az_function_user
 from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
-from shared.data.models import (
+from shared.data.models import Concept
+from shared.mapping.models import (
     DataPartner,
     Dataset,
     MappingRule,
@@ -23,7 +23,7 @@ from shared.data.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.data.omop import Concept
+from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
 
 

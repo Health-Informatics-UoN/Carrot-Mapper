@@ -11,8 +11,8 @@ import django
 
 django.setup()
 
-from shared.data.models import ScanReportConcept, ScanReportTable
-from shared.data.omop import Concept
+from shared.data.models import Concept
+from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
