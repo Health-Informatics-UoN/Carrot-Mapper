@@ -5,6 +5,7 @@ from shared.files.views import FileDownloadView
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("datasets/", include("datasets.urls")),
     path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
     path(
         r"countprojects/<int:dataset>",
@@ -28,36 +29,6 @@ urlpatterns = [
         name="countstatsscanreporttablefield",
     ),
     path(
-        r"datasets/",
-        views.DatasetListView.as_view(),
-        name="dataset_list",
-    ),
-    path(
-        r"datasets_data_partners/",
-        views.DatasetAndDataPartnerListView.as_view(),
-        name="dataset_data_partners_list",
-    ),
-    path(
-        r"datasets/<int:pk>/",
-        views.DatasetRetrieveView.as_view(),
-        name="dataset_retrieve",
-    ),
-    path(
-        r"datasets/update/<int:pk>/",
-        views.DatasetUpdateView.as_view(),
-        name="dataset_update",
-    ),
-    path(
-        r"datasets/delete/<int:pk>/",
-        views.DatasetDeleteView.as_view(),
-        name="dataset_delete",
-    ),
-    path(
-        r"datasets/create/",
-        views.DatasetCreateView.as_view(),
-        name="dataset_create",
-    ),
-    path(
         r"scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
@@ -65,11 +36,6 @@ urlpatterns = [
         "scanreports/<int:pk>/permissions/",
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
-    ),
-    path(
-        "dataset/<int:pk>/permissions/",
-        views.DatasetPermissionView.as_view(),
-        name="dataset-permissions",
     ),
     path(
         "scanreports/<int:pk>/mapping_rules/",

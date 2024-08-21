@@ -3,7 +3,7 @@ from django.urls import path
 
 urlpatterns = [
     path(
-        r"datasets/",
+        r"",
         views.DatasetListView.as_view(),
         name="dataset_list",
     ),
@@ -13,27 +13,27 @@ urlpatterns = [
         name="dataset_data_partners_list",
     ),
     path(
-        r"datasets/<int:pk>/",
+        r"<int:pk>/",
         views.DatasetRetrieveView.as_view(),
         name="dataset_retrieve",
     ),
     path(
-        r"datasets/update/<int:pk>/",
+        r"update/<int:pk>/",
         views.DatasetUpdateView.as_view(),
         name="dataset_update",
     ),
     path(
-        r"datasets/delete/<int:pk>/",
+        r"delete/<int:pk>/",
         views.DatasetDeleteView.as_view(),
         name="dataset_delete",
     ),
     path(
-        r"datasets/create/",
+        r"create/",
         views.DatasetCreateView.as_view(),
         name="dataset_create",
     ),
     path(
-        "dataset/<int:pk>/permissions/",
+        "<int:pk>/permissions/",
         views.DatasetPermissionView.as_view(),
         name="dataset-permissions",
     ),
