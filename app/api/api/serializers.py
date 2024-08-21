@@ -2,15 +2,15 @@ import csv
 from collections import Counter
 from io import BytesIO, StringIO
 
-import openpyxl
+import openpyxl  # type: ignore
+from datasets.serializers import DatasetSerializer
 from django.contrib.auth.models import User
-from drf_dynamic_fields import DynamicFieldsMixin
-from openpyxl.workbook.workbook import Workbook
+from drf_dynamic_fields import DynamicFieldsMixin  # type: ignore
+from openpyxl.workbook.workbook import Workbook  # type: ignore
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
 from shared.data.models import Concept
 from shared.mapping.models import (
-    DataPartner,
     Dataset,
     MappingRule,
     OmopField,
@@ -27,12 +27,6 @@ from shared.mapping.permissions import has_editorship, is_admin, is_az_function_
 from shared.services.rules_export import analyse_concepts
 
 
-class DataPartnerSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataPartner
-        fields = "__all__"
-
-
 class ConceptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concept
@@ -43,12 +37,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
-
-
-class DatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = Dataset
-        fields = ("id", "name")
 
 
 class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -534,105 +522,6 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReport
         fields = "__all__"
-
-
-class DatasetViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = Dataset
-        fields = "__all__"
-
-
-class DatasetViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "name",
-            "data_partner",
-            "admins",
-            "visibility",
-            "created_at",
-            "hidden",
-            "updated_at",
-            "projects",
-            "viewers",
-            "editors",
-        )
-
-
-class DatasetAndDataPartnerViewSerializer(
-    DynamicFieldsMixin, serializers.ModelSerializer
-):
-    data_partner = DataPartnerSerializer(read_only=True)
-
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "name",
-            "data_partner",
-            "admins",
-            "visibility",
-            "created_at",
-            "hidden",
-        )
-
-
-class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-    def validate_viewers(self, viewers):
-        if request := self.context.get("request"):
-            if not (
-                is_admin(self.instance, request) or is_az_function_user(request.user)
-            ):
-                raise serializers.ValidationError(
-                    "You must be an admin to change this field."
-                )
-        return viewers
-
-    def validate_editors(self, editors):
-        if request := self.context.get("request"):
-            if not (
-                is_admin(self.instance, request) or is_az_function_user(request.user)
-            ):
-                raise serializers.ValidationError(
-                    "You must be an admin to change this field."
-                )
-        return editors
-
-    def validate_admins(self, admins):
-        if request := self.context.get("request"):
-            if not (
-                is_admin(self.instance, request) or is_az_function_user(request.user)
-            ):
-                raise serializers.ValidationError(
-                    "You must be an admin to change this field."
-                )
-        return admins
-
-    def save(self, **kwargs):
-        projects = self.context["projects"]
-
-        if self.instance is not None:
-            self.instance = self.update(self.instance, self.validated_data)
-            return self.instance
-        dataset = Dataset.objects.create(**self.validated_data, projects=projects)
-        return dataset
-
-    class Meta:
-        model = Dataset
-        fields = (
-            "id",
-            "name",
-            "data_partner",
-            "admins",
-            "visibility",
-            "created_at",
-            "hidden",
-            "updated_at",
-            "projects",
-            "viewers",
-            "editors",
-        )
 
 
 class ScanReportTableListSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
