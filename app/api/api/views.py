@@ -283,23 +283,13 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
-class StructuralMappingTableAPIView(APIView):
+class MappingRulesList(APIView):
     def post(self, request, *args, **kwargs):
         try:
             body = request.data
         except ValueError:
             body = {}
-        if (
-            request.POST.get("download_rules") is not None
-            or body.get("download_rules") is not None
-        ):
-            return self._download_json()
-        elif (
-            request.POST.get("download_rules_as_csv") is not None
-            or body.get("download_rules_as_csv") is not None
-        ):
-            return self._download_csv()
-        elif request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
+        if request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
             qs = self.get_queryset()
             output = get_mapping_rules_json(qs)
 
@@ -311,30 +301,6 @@ class StructuralMappingTableAPIView(APIView):
                 {"error": "Invalid request parameters"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    def _download_csv(self):
-        qs = self.get_queryset()
-        scan_report = qs[0].scan_report
-        return_type = "csv"
-        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
-        _buffer = get_mapping_rules_as_csv(qs)
-
-        response = HttpResponse(_buffer, content_type="text/csv")
-        response["Content-Disposition"] = f'attachment; filename="{fname}"'
-        return response
-
-    def _download_json(self):
-        qs = self.get_queryset()
-        output = get_mapping_rules_json(qs)
-        scan_report = qs[0].scan_report
-        return_type = "json"
-        fname = f"{scan_report.parent_dataset.data_partner.name}_{scan_report.dataset}_structural_mapping.{return_type}"
-
-        response = HttpResponse(
-            json.dumps(output, indent=6), content_type="application/json"
-        )
-        response["Content-Disposition"] = f'attachment; filename="{fname}"'
-        return response
 
     def get_queryset(self):
         qs = MappingRule.objects.all()

@@ -22,7 +22,7 @@ urlpatterns = [
     ),
     path(
         "scanreports/<int:pk>/mapping_rules/",
-        views.StructuralMappingTableAPIView.as_view(),
+        views.MappingRulesList.as_view(),
         name="tables-structural-mapping",
     ),
     path(
