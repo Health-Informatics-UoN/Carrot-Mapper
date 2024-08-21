@@ -31,12 +31,20 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.filters import OrderingFilter
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -73,6 +81,11 @@ from shared.services.rules_export import (
 )
 
 
+class DataPartnerViewSet(viewsets.ModelViewSet):
+    queryset = DataPartner.objects.all()
+    serializer_class = DataPartnerSerializer
+
+
 class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
     queryset = Concept.objects.all().order_by("concept_id")
     serializer_class = ConceptSerializer
@@ -105,7 +118,7 @@ class UserDetailView(APIView):
         return Response(serializer.data)
 
 
-class ScanReportIndexV2(viewsets.ModelViewSet):
+class ScanReportIndexV2(GenericAPIView, ListModelMixin):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
@@ -137,6 +150,9 @@ class ScanReportIndexV2(viewsets.ModelViewSet):
     pagination_class = CustomPagination
     ordering = "-created_at"
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
     def get_permissions(self):
         if self.request.method == "DELETE":
             # user must be able to view and be an admin to delete a scan report
@@ -160,23 +176,6 @@ class ScanReportIndexV2(viewsets.ModelViewSet):
         if self.request.method in ["DELETE", "PATCH", "PUT"]:
             return ScanReportEditSerializer
         return super().get_serializer_class()
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def perform_destroy(self, instance):
-        try:
-            delete_blob(instance.name, "scan-reports")
-        except Exception as e:
-            raise Exception(f"Error deleting scan report: {e}")
-        if instance.data_dictionary:
-            try:
-                delete_blob(instance.data_dictionary.name, "data-dictionaries")
-            except Exception as e:
-                raise Exception(f"Error deleting data dictionary: {e}")
-        instance.delete()
 
     def create(self, request, *args, **kwargs):
         non_file_serializer = ScanReportCreateSerializer(
@@ -279,52 +278,49 @@ class ScanReportIndexV2(viewsets.ModelViewSet):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
-class MappingRulesList(APIView):
-    def post(self, request, *args, **kwargs):
+class ScanReportDetailV2(GenericAPIView, RetrieveModelMixin):
+    queryset = ScanReport.objects.all()
+    serializer_class = ScanReportViewSerializerV2
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_destroy(self, instance):
         try:
-            body = request.data
-        except ValueError:
-            body = {}
-        if request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
-            qs = self.get_queryset()
-            output = get_mapping_rules_json(qs)
-
-            # use make dag svg image
-            svg = make_dag(output["cdm"])
-            return HttpResponse(svg, content_type="image/svg+xml")
-        else:
-            return Response(
-                {"error": "Invalid request parameters"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    def get_queryset(self):
-        qs = MappingRule.objects.all()
-        search_term = self.kwargs.get("pk")
-
-        if search_term is not None:
-            qs = qs.filter(scan_report__id=search_term).order_by(
-                "concept",
-                "omop_field__table",
-                "omop_field__field",
-                "source_table__name",
-                "source_field__name",
-            )
-
-        return qs
+            delete_blob(instance.name, "scan-reports")
+        except Exception as e:
+            raise Exception(f"Error deleting scan report: {e}")
+        if instance.data_dictionary:
+            try:
+                delete_blob(instance.data_dictionary.name, "data-dictionaries")
+            except Exception as e:
+                raise Exception(f"Error deleting data dictionary: {e}")
+        instance.delete()
 
 
-class ScanReportTableViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportTable.objects.all()
+class ScanReportTableIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
     filterset_fields = {
-        "scan_report": ["in", "exact"],
-        "name": ["in", "icontains"],
-        "id": ["in", "exact"],
+        "name": ["icontains"],
     }
     filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
     ordering = "-created_at"
+    serializer_class = ScanReportTableListSerializerV2
+
+    def get(self, request, *args, **kwargs):
+        if "pk" in kwargs:
+            self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
+
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return ScanReportTable.objects.filter(scan_report=self.scan_report)
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -337,6 +333,14 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
         else:
             self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
         return [permission() for permission in self.permission_classes]
+
+
+class ScanReportTableDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMixin):
+    queryset = ScanReportTable.objects.all()
+    serializer_class = ScanReportTableListSerializerV2
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
@@ -399,17 +403,26 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
-    # Need to reset to see the change in data returned?!
+class ScanReportFieldIndexV2(GenericAPIView, ListModelMixin):
     queryset = ScanReportField.objects.all()
     filterset_fields = {
-        "scan_report_table": ["in", "exact"],
-        "name": ["in", "icontains"],
+        "name": ["icontains"],
     }
     filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
+
+    def get(self, request, *args, **kwargs):
+        if "pk" in kwargs:
+            self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
+        if "table_pk" in kwargs:
+            self.table = get_object_or_404(ScanReportTable, pk=kwargs["table_pk"])
+
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return ScanReportField.objects.filter(scan_report_table=self.table)
 
     def get_permissions(self):
         if self.request.method == "DELETE":
@@ -423,6 +436,19 @@ class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
             self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
         return [permission() for permission in self.permission_classes]
 
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+class ScanReportFieldDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMixin):
+    queryset = ScanReportField.objects.all()
+    serializer_class = ScanReportFieldListSerializerV2
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
             # use the view serialiser if on GET requests
@@ -431,6 +457,27 @@ class ScanReportFieldViewSetV2(viewsets.ModelViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportFieldEditSerializer
         return super().get_serializer_class()
+
+
+class ScanReportValueListV2(GenericAPIView, ListModelMixin):
+    queryset = ScanReportValue.objects.order_by("id").only(
+        "id", "value", "frequency", "value_description", "scan_report_field"
+    )
+    filterset_fields = {
+        "value": ["in", "icontains"],
+    }
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
+    pagination_class = CustomPagination
+    serializer_class = ScanReportValueViewSerializerV2
+
+    def get(self, request, *args, **kwargs):
+        self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
+        self.field = get_object_or_404(ScanReportField, pk=kwargs["field_pk"])
+
+        return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return ScanReportValue.objects.filter(scan_report_field=self.field)
 
     @method_decorator(cache_page(60 * 15))
     @method_decorator(vary_on_cookie)
@@ -545,27 +592,39 @@ class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
     }
 
 
-class ScanReportValueViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportValue.objects.order_by("id").only(
-        "id", "value", "frequency", "value_description", "scan_report_field"
-    )
-    filterset_fields = {
-        "scan_report_field": ["in", "exact"],
-        "value": ["in", "icontains"],
-    }
-    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
-    pagination_class = CustomPagination
-    serializer_class = ScanReportValueViewSerializerV2
+class MappingRulesList(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            body = request.data
+        except ValueError:
+            body = {}
+        if request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
+            qs = self.get_queryset()
+            output = get_mapping_rules_json(qs)
 
-    @method_decorator(cache_page(60 * 15))
-    @method_decorator(vary_on_cookie)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
+        else:
+            return Response(
+                {"error": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
+    def get_queryset(self):
+        qs = MappingRule.objects.all()
+        search_term = self.kwargs.get("pk")
 
-class DataPartnerViewSet(viewsets.ModelViewSet):
-    queryset = DataPartner.objects.all()
-    serializer_class = DataPartnerSerializer
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
+        return qs
 
 
 class RulesList(viewsets.ModelViewSet):

@@ -12,28 +12,61 @@ urlpatterns = [
     path("datasets/", include("datasets.urls")),
     path("projects/", include("projects.urls")),
     path(
-        r"scanreports/<int:pk>/download/",
+        "v2/scanreports/", views.ScanReportIndexV2.as_view(), name="scan-report-index"
+    ),
+    path(
+        "v2/scanreports/<int:pk>/",
+        views.ScanReportDetailV2.as_view(),
+        name="scan-report-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/",
+        views.ScanReportTableIndexV2.as_view(),
+        name="scan-report-tables",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/",
+        views.ScanReportTableDetailV2.as_view(),
+        name="scan-report-table-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/",
+        views.ScanReportFieldIndexV2.as_view(),
+        name="scan-report-fields",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/",
+        views.ScanReportFieldDetailV2.as_view(),
+        name="scan-report-fields-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/<int:field_pk>/values/",
+        views.ScanReportValueListV2.as_view(),
+        name="scan-report-values",
+    ),
+    path(
+        r"v2/scanreports/<int:pk>/downloads/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
     path(
-        "scanreports/<int:pk>/permissions/",
+        "v2/scanreports/<int:pk>/permissions/",
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
     ),
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.MappingRulesList.as_view(),
-        name="tables-structural-mapping",
+        name="scan-report-rules",
     ),
     path(
-        "scanreports/<int:scanreport_pk>/mapping_rules/downloads/",
+        "v2/scanreports/<int:scanreport_pk>/rules/downloads/",
         FileDownloadView.as_view(),
-        name="filedownload-list",
+        name="scan-reports-downloads",
     ),
     path(
-        "scanreports/<int:scanreport_pk>/mapping_rules/downloads/<int:pk>",
+        "v2/scanreports/<int:scanreport_pk>/rules/downloads/<int:pk>",
         FileDownloadView.as_view(),
-        name="filedownload-get",
+        name="scan-report-downloads-get",
     ),
     path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
 ]

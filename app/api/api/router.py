@@ -9,22 +9,6 @@ router.register(
 
 router.register(r"users", views.UserViewSet, basename="users")
 router.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
-router.register(r"v2/scanreports", views.ScanReportIndexV2, basename="v2scanreports")
-router.register(
-    r"v2/scanreporttables",
-    views.ScanReportTableViewSetV2,
-    basename="v2scanreporttables",
-)
-router.register(
-    r"v2/scanreportfields",
-    views.ScanReportFieldViewSetV2,
-    basename="v2scanreportfields",
-)
-router.register(
-    r"v2/scanreportvalues",
-    views.ScanReportValueViewSetV2,
-    basename="v2scanreportvalues",
-)
 router.register(
     r"v2/scanreportconcept",
     views.ScanReportConceptViewSetV2,
