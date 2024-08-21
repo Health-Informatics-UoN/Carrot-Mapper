@@ -11,7 +11,7 @@ from shared.mapping.models import Project
 from shared.mapping.permissions import CanViewProject
 
 
-class ProjectListView(ListAPIView):
+class ProjectList(ListAPIView):
     """
     API view to show all projects' names.
     """
@@ -40,7 +40,7 @@ class ProjectListView(ListAPIView):
         return Project.objects.all()
 
 
-class ProjectRetrieveView(RetrieveAPIView):
+class ProjectDetail(RetrieveAPIView):
     """
     API view to retrieve a single project.
     Will return 403 Forbidden if User isn't a member.
