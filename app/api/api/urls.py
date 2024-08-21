@@ -3,32 +3,12 @@ from api.router import router
 from django.urls import include, path
 from shared.files.views import FileDownloadView
 
+from .deprecated_urls import urlpatterns as deprecated_urlpatterns
+
 urlpatterns = [
     path("", include(router.urls)),
     path("datasets/", include("datasets.urls")),
     path("projects/", include("projects.urls")),
-    path(r"contenttypeid", views.GetContentTypeID.as_view(), name="contenttypeid"),
-    path(
-        r"countprojects/<int:dataset>",
-        views.CountProjects.as_view(),
-        name="countprojects",
-    ),
-    path(r"countstats/", views.CountStats.as_view(), name="countstats"),
-    path(
-        r"countstatsscanreport/",
-        views.CountStatsScanReport.as_view(),
-        name="countstatsscanreport",
-    ),
-    path(
-        r"countstatsscanreporttable/",
-        views.CountStatsScanReportTable.as_view(),
-        name="countstatsscanreporttable",
-    ),
-    path(
-        r"countstatsscanreporttablefield/",
-        views.CountStatsScanReportTableField.as_view(),
-        name="countstatsscanreporttablefield",
-    ),
     path(
         r"scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
@@ -55,3 +35,5 @@ urlpatterns = [
     ),
     path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
 ]
+
+urlpatterns += deprecated_urlpatterns
