@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 import os
 import random
@@ -68,7 +67,6 @@ from shared.services.rules import (
     delete_mapping_rules,
 )
 from shared.services.rules_export import (
-    get_mapping_rules_as_csv,
     get_mapping_rules_json,
     get_mapping_rules_list,
     make_dag,
@@ -134,8 +132,7 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
         "name",
         "created_at",
         "dataset",
-        # "data_partner", # disabled in the UI
-        "parent_dataset",  # enabled in the UI but wasn't applied here
+        "parent_dataset",
     ]
     pagination_class = CustomPagination
     ordering = "-created_at"
@@ -153,8 +150,7 @@ class ScanReportListViewSetV2(viewsets.ModelViewSet):
         return [permission() for permission in self.permission_classes]
 
     def get_scan_report_file(self, request):
-        scan_report_file = request.data.get("scan_report_file", None)
-        return scan_report_file
+        return request.data.get("scan_report_file", None)
 
     def get_serializer_class(self):
         if self.request.method in ["GET"]:
@@ -350,17 +346,6 @@ class ScanReportTableViewSetV2(viewsets.ModelViewSet):
             # use the edit serialiser when the user tries to alter the scan report
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data, many=isinstance(request.data, list)
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
 
     def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         """
@@ -560,20 +545,27 @@ class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
     }
 
 
+class ScanReportValueViewSetV2(viewsets.ModelViewSet):
+    queryset = ScanReportValue.objects.order_by("id").only(
+        "id", "value", "frequency", "value_description", "scan_report_field"
+    )
+    filterset_fields = {
+        "scan_report_field": ["in", "exact"],
+        "value": ["in", "icontains"],
+    }
+    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
+    pagination_class = CustomPagination
+    serializer_class = ScanReportValueViewSerializerV2
+
+    @method_decorator(cache_page(60 * 15))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
 class DataPartnerViewSet(viewsets.ModelViewSet):
     queryset = DataPartner.objects.all()
     serializer_class = DataPartnerSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data, many=isinstance(request.data, list)
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
 
 
 class RulesList(viewsets.ModelViewSet):
@@ -698,24 +690,6 @@ class AnalyseRules(viewsets.ModelViewSet):
     serializer_class = GetRulesAnalysis
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["id"]
-
-
-class ScanReportValueViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportValue.objects.order_by("id").only(
-        "id", "value", "frequency", "value_description", "scan_report_field"
-    )
-    filterset_fields = {
-        "scan_report_field": ["in", "exact"],
-        "value": ["in", "icontains"],
-    }
-    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
-    pagination_class = CustomPagination
-    serializer_class = ScanReportValueViewSerializerV2
-
-    @method_decorator(cache_page(60 * 15))
-    @method_decorator(vary_on_cookie)
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
 
 
 class DownloadScanReportViewSet(viewsets.ViewSet):
