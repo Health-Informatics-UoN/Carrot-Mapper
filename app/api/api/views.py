@@ -60,7 +60,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from shared.data.omop import Concept
+from shared.data.models import Concept
 from shared.files.service import delete_blob, modify_filename, upload_blob
 from shared.mapping.models import (
     DataDictionary,

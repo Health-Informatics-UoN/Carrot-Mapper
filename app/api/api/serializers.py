@@ -8,7 +8,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from openpyxl.workbook.workbook import Workbook
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, ParseError, PermissionDenied
-from shared.data.omop import Concept
+from shared.data.models import Concept
 from shared.mapping.models import (
     DataPartner,
     Dataset,

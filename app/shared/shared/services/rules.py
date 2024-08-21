@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from shared.data.omop.concept import Concept
+from shared.data.models import Concept
 from shared.mapping.models import (
     MappingRule,
     OmopField,

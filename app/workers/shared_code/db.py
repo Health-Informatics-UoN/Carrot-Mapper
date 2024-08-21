@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
-from shared.data.omop import Concept, ConceptRelationship
+from shared.data.models import Concept, ConceptRelationship
 from shared.mapping.models import ScanReportConcept, ScanReportField, ScanReportValue
 from shared_code.logger import logger
 from shared_code.models import (
