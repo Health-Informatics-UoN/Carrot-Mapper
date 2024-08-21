@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ValidationError
 from rest_framework.test import APIRequestFactory
-from shared.data.models import (
+from shared.mapping.models import (
     DataPartner,
     Dataset,
     Project,

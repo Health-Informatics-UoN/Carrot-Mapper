@@ -8,8 +8,8 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAuthenticated
-from shared.data.models import ScanReport
 from shared.files.paginations import CustomPagination
+from shared.mapping.models import ScanReport
 from shared.services.azurequeue import add_message
 
 from .models import FileDownload

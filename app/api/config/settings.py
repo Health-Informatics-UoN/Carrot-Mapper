@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "extra_views",
     "api",
-    "mapping",
+    "shared.mapping",
     "data",
     "rest_framework",
     "django_filters",
