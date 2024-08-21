@@ -38,7 +38,11 @@ class VisibilityChoices(models.TextChoices):
 
 class BaseModel(models.Model):
     """
-    To come
+    Abstract base model that provides common fields for all models.
+
+    Attributes:
+        created_at (DateTimeField): The timestamp when the object was created.
+        updated_at (DateTimeField): The timestamp when the object was last updated.
     """
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -64,7 +68,10 @@ class ClassificationSystem(BaseModel):
 
 class DataPartner(BaseModel):
     """
-    To come
+    Model for a DataPartner.
+
+    Attributes:
+        name (CharField): The name of the data partner, limited to 64 characters.
     """
 
     name = models.CharField(max_length=64)
@@ -83,7 +90,10 @@ class DataPartner(BaseModel):
 
 class OmopTable(BaseModel):
     """
-    To come
+    Model for a OmopTable.
+
+    Attributes:
+        table: Name of the linking table.
     """
 
     table = models.CharField(max_length=64)
@@ -97,7 +107,11 @@ class OmopTable(BaseModel):
 
 class OmopField(BaseModel):
     """
-    To come
+    Model for an OmopField.
+
+    Attributes:
+        table: FK to `OmopTable`
+        field: name of the linking field.
     """
 
     table = models.ForeignKey(OmopTable, on_delete=models.CASCADE)
@@ -112,8 +126,8 @@ class OmopField(BaseModel):
 
 class ScanReportConcept(BaseModel):
     """
-    This class stores concepts informed by the user or automatic tools (NLP)
-    and users a generic relation to connect it to a ScanReportValue or ScanReportValue
+    Model for Concepts informed by the user or automatic tools.
+    It uses a generic relation to connect it to a ScanReportValue or ScanReportValue
     """
 
     nlp_entity = models.CharField(max_length=64, null=True, blank=True)
@@ -148,7 +162,7 @@ class ScanReportConcept(BaseModel):
 
 class ScanReport(BaseModel):
     """
-    To come
+    Model for a Scan Report.
     """
 
     author = models.ForeignKey(
@@ -157,11 +171,10 @@ class ScanReport(BaseModel):
         blank=True,
         null=True,
     )
-    name = models.CharField(max_length=256)
-    # TODO: rename to `dataset_name`
-    dataset = models.CharField(max_length=128)
+    name = models.CharField(max_length=256)  # TODO: rename to `file_name`
+    dataset = models.CharField(max_length=128)  # TODO: rename to `name`
     hidden = models.BooleanField(default=False)
-    file = models.FileField()
+    file = models.FileField()  # TODO: Delete.
     status = models.CharField(
         max_length=7,
         choices=Status.choices,
@@ -210,7 +223,7 @@ class ScanReport(BaseModel):
 
 class ScanReportTable(BaseModel):
     """
-    To come
+    Model for a Scan Report Table
     """
 
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
@@ -246,7 +259,7 @@ class ScanReportTable(BaseModel):
 
 class ScanReportField(BaseModel):
     """
-    To come
+    Model for a Scan Report Field.
     """
 
     scan_report_table = models.ForeignKey(ScanReportTable, on_delete=models.CASCADE)
@@ -282,7 +295,7 @@ class ScanReportField(BaseModel):
 
 class ScanReportAssertion(BaseModel):
     """
-    To come
+    Model for a Scan Report Assertion.
     """
 
     scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
@@ -295,10 +308,9 @@ class ScanReportAssertion(BaseModel):
         return str(self.id)
 
 
-# TODO --- Give this model a better name(?)
 class MappingRule(BaseModel):
     """
-    To come
+    Model for a Mapping Rule.
     """
 
     # save the scan_report link to make it easier when performing lookups on scan_report_id
@@ -329,7 +341,7 @@ class MappingRule(BaseModel):
 
 class ScanReportValue(BaseModel):
     """
-    To come
+    Model for a Scan Report Value.
     """
 
     scan_report_field = models.ForeignKey(ScanReportField, on_delete=models.CASCADE)
@@ -348,7 +360,7 @@ class ScanReportValue(BaseModel):
 
 class DataDictionary(BaseModel):
     """
-    To come
+    Model for a Data Dictionary file.
     """
 
     name = models.CharField(max_length=256, blank=True, null=True)
