@@ -41,6 +41,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import (
     CreateModelMixin,
+    DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
     UpdateModelMixin,
@@ -118,7 +119,7 @@ class UserDetailView(APIView):
         return Response(serializer.data)
 
 
-class ScanReportIndexV2(GenericAPIView, ListModelMixin):
+class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
     """
     A custom viewset for retrieving and listing scan reports with additional functionality for version 2.
 
@@ -278,7 +279,9 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
-class ScanReportDetailV2(GenericAPIView, RetrieveModelMixin):
+class ScanReportDetailV2(
+    GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportViewSerializerV2
 
@@ -303,7 +306,7 @@ class ScanReportDetailV2(GenericAPIView, RetrieveModelMixin):
         instance.delete()
 
 
-class ScanReportTableIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
+class ScanReportTableIndexV2(GenericAPIView, ListModelMixin):
     filterset_fields = {
         "name": ["icontains"],
     }
