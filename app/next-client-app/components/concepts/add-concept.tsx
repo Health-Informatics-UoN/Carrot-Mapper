@@ -10,29 +10,25 @@ import { toast } from "sonner";
 
 interface AddConceptProps {
   rowId: number;
-  location: string;
+  tableId: string;
+  contentType: "scanreportvalue" | "scanreportfield";
   disabled: boolean;
   addSR: (concept: ScanReportConcept, c: Concept) => void;
-  tableId: string;
 }
 
 export default function AddConcept({
   rowId,
-  location,
+  tableId,
+  contentType,
   disabled,
   addSR,
-  tableId,
 }: AddConceptProps) {
   const handleSubmit = async (conceptCode: number) => {
     try {
-      const determineContentType = (location: string) => {
-        return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
-      };
-
       const response = await addConcept({
         concept: conceptCode,
         object_id: rowId,
-        content_type: determineContentType(location),
+        content_type: contentType,
         creation_type: "M",
         table_id: tableId,
       });

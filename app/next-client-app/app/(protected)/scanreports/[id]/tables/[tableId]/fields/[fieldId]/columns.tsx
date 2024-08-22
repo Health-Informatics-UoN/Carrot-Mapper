@@ -75,7 +75,7 @@ export const columns = (
         <AddConcept
           rowId={id}
           tableId={tableId}
-          location="SR-Values"
+          contentType="scanreportvalue"
           disabled={canEdit ? false : true}
           addSR={addSR}
         />
