@@ -9,12 +9,15 @@ const fetchKeys = {
     filter ? `v2/scanreports/?${filter}` : "v2/scanreports/",
   get: (id: string | number) => `v2/scanreports/${id}/`,
   permissions: (id: string) => `v2/scanreports/${id}/permissions/`,
-  table: (scanReportId: string, tableId: string) =>
+  table: (scanReportId: string | number, tableId: string | number) =>
     `v2/scanreports/${scanReportId}/tables/${tableId}/`,
   tables: (scanReportId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/?${filter}`,
-  field: (scanReportId: string, tableId: string, fieldId: string) =>
-    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/${fieldId}/`,
+  field: (
+    scanReportId: string | number,
+    tableId: string | number,
+    fieldId: string,
+  ) => `v2/scanreports/${scanReportId}/tables/${tableId}/fields/${fieldId}/`,
   fields: (scanReportId: string, tableId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${filter}`,
   values: (
@@ -138,8 +141,8 @@ export async function getScanReportTable(
 }
 
 export async function updateScanReportTable(
-  scanReportId: string,
-  tableId: string,
+  scanReportId: string | number,
+  tableId: string | number,
   data: {},
 ) {
   try {
@@ -224,8 +227,8 @@ export async function getScanReportField(
 }
 
 export async function updateScanReportField(
-  scanReportId: string,
-  tableId: string,
+  scanReportId: string | number,
+  tableId: string | number,
   fieldId: string,
   data: {},
 ) {
