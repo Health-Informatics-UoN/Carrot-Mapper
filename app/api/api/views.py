@@ -154,18 +154,6 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
-    def get_permissions(self):
-        if self.request.method == "DELETE":
-            # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
-        elif self.request.method in ["PUT", "PATCH"]:
-            # user must be able to view and be either an editor or and admin
-            # to edit a scan report
-            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
-        else:
-            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
-        return [permission() for permission in self.permission_classes]
-
     def get_scan_report_file(self, request):
         return request.data.get("scan_report_file", None)
 
@@ -279,11 +267,61 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
+class ScanReportBaseIndexView(GenericAPIView):
+    """
+    Base View for all Scan Reports Indexes to help manage permissions.
+
+    As these views are all nested under a Scan Report, we fetch it and verify permissions on it.
+
+    Index views only need the View permission.
+    """
+
+    permission_classes = [CanView]
+
+    def get_permissions(self):
+        self.scan_report = get_object_or_404(ScanReport, pk=self.kwargs["pk"])
+        permissions = [permission() for permission in self.permission_classes]
+        for permission in permissions:
+            if not permission.has_object_permission(
+                self.request, self, self.scan_report
+            ):
+                self.permission_denied(
+                    self.request, message=getattr(permission, "message", None)
+                )
+        return permissions
+
+
+class ScanReportBaseDetailView(ScanReportBaseIndexView):
+    """
+    Base View for all Scan Reports Details to help manage permissions.
+
+    Detail views need further permissions depending on the request type.
+    """
+
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            self.permission_classes = [CanAdmin]
+        elif self.request.method in ["PUT", "PATCH"]:
+            self.permission_classes = [CanEdit]
+        else:
+            self.permission_classes = [CanView]
+        return super().get_permissions()
+
+
 class ScanReportDetailV2(
-    GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
 ):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportViewSerializerV2
+
+    def get_serializer_class(self):
+        if self.request.method in ["GET"]:
+            return ScanReportViewSerializerV2
+        if self.request.method in ["POST"]:
+            return ScanReportFilesSerializer
+        if self.request.method in ["DELETE", "PATCH", "PUT"]:
+            return ScanReportEditSerializer
+        return super().get_serializer_class()
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -306,39 +344,33 @@ class ScanReportDetailV2(
         instance.delete()
 
 
-class ScanReportTableIndexV2(GenericAPIView, ListModelMixin):
+class ScanReportTableIndexV2(ScanReportBaseIndexView, ListModelMixin):
+    """
+    A paginated list of Scan Report Tables, for a specific Scan Report.
+
+    Allows ordering by name, person_id, and date_event
+    Allows filtering by name.
+    """
+
     filterset_fields = {
         "name": ["icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "person_id", "date_event"]
     pagination_class = CustomPagination
     ordering = "-created_at"
     serializer_class = ScanReportTableListSerializerV2
 
     def get(self, request, *args, **kwargs):
-        if "pk" in kwargs:
-            self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
-
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         return ScanReportTable.objects.filter(scan_report=self.scan_report)
 
-    def get_permissions(self):
-        if self.request.method == "DELETE":
-            # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
-        elif self.request.method in ["PUT", "PATCH"]:
-            # user must be able to view and be either an editor or and admin
-            # to edit a scan report
-            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
-        else:
-            self.permission_classes = [IsAuthenticated & (CanView | CanEdit | CanAdmin)]
-        return [permission() for permission in self.permission_classes]
 
-
-class ScanReportTableDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMixin):
+class ScanReportTableDetailV2(
+    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin
+):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableListSerializerV2
 
@@ -406,38 +438,23 @@ class ScanReportTableDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMix
         return Response(serializer.data)
 
 
-class ScanReportFieldIndexV2(GenericAPIView, ListModelMixin):
+class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
     queryset = ScanReportField.objects.all()
     filterset_fields = {
         "name": ["icontains"],
     }
-    filter_backends = [DjangoFilterBackend, OrderingFilter, ScanReportAccessFilter]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
     ordering = "name"
 
     def get(self, request, *args, **kwargs):
-        if "pk" in kwargs:
-            self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
-        if "table_pk" in kwargs:
-            self.table = get_object_or_404(ScanReportTable, pk=kwargs["table_pk"])
+        self.table = get_object_or_404(ScanReportTable, pk=kwargs["table_pk"])
 
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         return ScanReportField.objects.filter(scan_report_table=self.table)
-
-    def get_permissions(self):
-        if self.request.method == "DELETE":
-            # user must be able to view and be an admin to delete a scan report
-            self.permission_classes = [IsAuthenticated & CanView & CanAdmin]
-        elif self.request.method in ["PUT", "PATCH"]:
-            # user must be able to view and be either an editor or and admin
-            # to edit a scan report
-            self.permission_classes = [IsAuthenticated & CanView & (CanEdit | CanAdmin)]
-        else:
-            self.permission_classes = [IsAuthenticated & CanView | CanEdit | CanAdmin]
-        return [permission() for permission in self.permission_classes]
 
     @method_decorator(cache_page(60 * 15))
     @method_decorator(vary_on_cookie)
@@ -445,7 +462,9 @@ class ScanReportFieldIndexV2(GenericAPIView, ListModelMixin):
         return super().list(request, *args, **kwargs)
 
 
-class ScanReportFieldDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMixin):
+class ScanReportFieldDetailV2(
+    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin
+):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldListSerializerV2
 
@@ -454,27 +473,24 @@ class ScanReportFieldDetailV2(GenericAPIView, RetrieveModelMixin, UpdateModelMix
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
-            # use the view serialiser if on GET requests
             return ScanReportFieldListSerializerV2
-        if self.request.method in ["PUT", "PATCH", "DELETE"]:
-            # use the edit serialiser when the user tries to alter the scan report
+        if self.request.method in ["PUT", "PATCH"]:
             return ScanReportFieldEditSerializer
         return super().get_serializer_class()
 
 
-class ScanReportValueListV2(GenericAPIView, ListModelMixin):
+class ScanReportValueListV2(ScanReportBaseIndexView, ListModelMixin):
     queryset = ScanReportValue.objects.order_by("id").only(
         "id", "value", "frequency", "value_description", "scan_report_field"
     )
     filterset_fields = {
         "value": ["in", "icontains"],
     }
-    filter_backends = [DjangoFilterBackend, ScanReportAccessFilter]
+    filter_backends = [DjangoFilterBackend]
     pagination_class = CustomPagination
     serializer_class = ScanReportValueViewSerializerV2
 
     def get(self, request, *args, **kwargs):
-        self.scan_report = get_object_or_404(ScanReport, pk=kwargs["pk"])
         self.field = get_object_or_404(ScanReportField, pk=kwargs["field_pk"])
 
         return self.list(request, *args, **kwargs)
