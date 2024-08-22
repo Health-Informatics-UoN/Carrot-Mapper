@@ -68,7 +68,7 @@ urlpatterns = [
         views.ScanReportValueListV2.as_view(),
         name="scan-report-values",
     ),
-    path(r"user/me", views.UserDetailView.as_view(), name="currentuser"),
+    path(r"user/me/", views.UserDetailView.as_view(), name="currentuser"),
 ]
 
 urlpatterns += deprecated_urlpatterns

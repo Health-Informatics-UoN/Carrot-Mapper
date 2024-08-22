@@ -3,7 +3,6 @@ import {
   getAllConceptsFiltered,
   getAllScanReportConcepts,
 } from "@/api/concepts";
-import { getScanReportField } from "@/api/scanreports";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, Formik } from "formik";
@@ -11,18 +10,18 @@ import { toast } from "sonner";
 
 interface AddConceptProps {
   rowId: number;
-  parentId: string;
   location: string;
   disabled: boolean;
   addSR: (concept: ScanReportConcept, c: Concept) => void;
+  tableId: string;
 }
 
 export default function AddConcept({
   rowId,
-  parentId,
   location,
   disabled,
   addSR,
+  tableId,
 }: AddConceptProps) {
   const handleSubmit = async (conceptCode: number) => {
     try {
@@ -30,19 +29,12 @@ export default function AddConcept({
         return location === "SR-Values" ? "scanreportvalue" : "scanreportfield";
       };
 
-      const determineTableId = async (location: string, parentId: string) => {
-        if (location === "SR-Values") {
-          const field = await getScanReportField(parentId);
-          return field?.scan_report_table;
-        }
-        return parentId;
-      };
       const response = await addConcept({
         concept: conceptCode,
         object_id: rowId,
         content_type: determineContentType(location),
         creation_type: "M",
-        table_id: await determineTableId(location, parentId),
+        table_id: tableId,
       });
 
       if (response) {

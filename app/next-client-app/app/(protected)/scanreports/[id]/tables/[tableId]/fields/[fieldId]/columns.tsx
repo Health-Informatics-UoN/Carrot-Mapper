@@ -8,7 +8,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
-  deleteSR: (id: number) => void
+  deleteSR: (id: number) => void,
+  tableId: string,
 ): ColumnDef<ScanReportValue>[] => [
   {
     id: "Value",
@@ -67,13 +68,13 @@ export const columns = (
     id: "Add Concept",
     header: "",
     cell: ({ row }) => {
-      const { scan_report_field, id, permissions } = row.original;
+      const { id, permissions } = row.original;
       const canEdit =
         permissions.includes("CanEdit") || permissions.includes("CanAdmin");
       return (
         <AddConcept
           rowId={id}
-          parentId={scan_report_field.toString()}
+          tableId={tableId}
           location="SR-Values"
           disabled={canEdit ? false : true}
           addSR={addSR}

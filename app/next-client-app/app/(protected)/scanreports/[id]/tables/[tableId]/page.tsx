@@ -68,6 +68,7 @@ export default async function ScanReportsField({
           filterCol="name"
           filterText="field "
           linkPrefix="fields/"
+          tableId={tableId}
         />
       </div>
     </div>

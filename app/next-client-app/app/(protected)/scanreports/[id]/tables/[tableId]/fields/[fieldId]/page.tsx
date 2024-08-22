@@ -83,6 +83,7 @@ export default async function ScanReportsValue({
           clickable={false}
           filterCol="value"
           filterText="value "
+          tableId={tableId}
         />
       </div>
     </div>
