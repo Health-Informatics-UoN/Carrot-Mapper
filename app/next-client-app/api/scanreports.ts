@@ -23,7 +23,7 @@ const fetchKeys = {
     fieldId: string,
     filter?: string,
   ) =>
-    `v2/scanreports/${scanReportId}/tables/£${tableId}/fields/${fieldId}/values/?${filter}`,
+    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/${fieldId}/values/?${filter}`,
 };
 
 export async function getScanReports(
