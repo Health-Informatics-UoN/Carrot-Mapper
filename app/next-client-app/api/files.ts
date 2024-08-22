@@ -4,9 +4,9 @@ import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (scan_report_id: number, filter?: string) =>
-    `scanreports/${scan_report_id}/mapping_rules/downloads/?${filter}`,
+    `v2/scanreports/${scan_report_id}/rules/downloads/?${filter}`,
   requestFile: (scan_report_id: number) =>
-    `scanreports/${scan_report_id}/mapping_rules/downloads/`,
+    `v2/scanreports/${scan_report_id}/rules/downloads/`,
 };
 
 export async function list(
