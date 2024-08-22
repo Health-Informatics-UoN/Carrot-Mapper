@@ -326,10 +326,11 @@ class ScanReportDetailV2(
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
     def perform_destroy(self, instance):
         try:
@@ -389,7 +390,7 @@ class ScanReportTableDetailV2(
             return ScanReportTableEditSerializer
         return super().get_serializer_class()
 
-    def partial_update(self, request: Any, *args: Any, **kwargs: Any) -> Response:
+    def patch(self, request: Any, *args: Any, **kwargs: Any) -> Response:
         """
         Perform a partial update on the instance.
 
@@ -477,6 +478,9 @@ class ScanReportFieldDetailV2(
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
     def get_serializer_class(self):
         if self.request.method in ["GET", "POST"]:
