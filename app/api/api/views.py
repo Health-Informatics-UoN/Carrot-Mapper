@@ -470,11 +470,11 @@ class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
 class ScanReportFieldDetailV2(
     ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin
 ):
-    queryset = ScanReportField.objects.all()
+    model = ScanReportField
     serializer_class = ScanReportFieldListSerializerV2
 
     def get_object(self):
-        return get_object_or_404(self.queryset, pk=self.kwargs["field_pk"])
+        return get_object_or_404(self.model, pk=self.kwargs["field_pk"])
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
