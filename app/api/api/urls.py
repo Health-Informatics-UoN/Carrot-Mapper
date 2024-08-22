@@ -25,7 +25,7 @@ urlpatterns = [
         name="scan-report-tables",
     ),
     path(
-        r"v2/scanreports/<int:pk>/downloads/",
+        r"v2/scanreports/<int:pk>/download/",
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
     path(

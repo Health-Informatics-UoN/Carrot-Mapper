@@ -131,7 +131,7 @@ export default async function ScanReportLayout({
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <a
-                  href={`/api/scanreports/${params.id}/download/`}
+                  href={`/api/v2/scanreports/${params.id}/download/`}
                   download
                   className="flex"
                 >

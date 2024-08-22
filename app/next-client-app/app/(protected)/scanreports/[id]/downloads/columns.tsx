@@ -85,7 +85,7 @@ export const columns: ColumnDef<FileDownload>[] = [
       const { id, scan_report } = row.original;
       return (
         <Link
-          href={`/api/scanreports/${scan_report}/mapping_rules/downloads/${id}/`}
+          href={`/api/v2/scanreports/${scan_report}/rules/downloads/${id}/`}
         >
           <Button variant={"outline"}>
             Download <Download className="ml-2 size-4" />

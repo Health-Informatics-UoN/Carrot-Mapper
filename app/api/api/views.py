@@ -773,6 +773,7 @@ class AnalyseRules(viewsets.ModelViewSet):
 
 class DownloadScanReportViewSet(viewsets.ViewSet):
     def list(self, request, pk):
+        # TODO: This should not be a list view...
         scan_report = ScanReport.objects.get(id=pk)
         # scan_report = ScanReportSerializer(scan_reports, many=False).data
         # Set Storage Account connection string
