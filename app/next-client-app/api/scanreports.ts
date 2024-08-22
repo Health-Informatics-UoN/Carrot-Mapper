@@ -5,26 +5,34 @@ import { redirect } from "next/navigation";
 import { fetchAllPages } from "@/lib/api/utils";
 
 const fetchKeys = {
-  list: (filter?: string) =>
-    filter ? `v2/scanreports/?${filter}` : "v2/scanreports",
-  tables: (filter?: string) => `v2/scanreporttables/?${filter}`,
-  fields: (filter?: string) => `v2/scanreportfields/?${filter}`,
-  values: (filter?: string) => `v2/scanreportvalues/?${filter}`,
-  scanReport: (id: string | number) => `v2/scanreports/${id}/`,
-  tableName: (id: string) => `scanreporttables/${id}/`,
-  fieldName: (id: string | null) => `scanreportfields/${id}/`,
-  update: (id: number) => `scanreports/${id}/`,
+  index: (filter?: string) =>
+    filter ? `v2/scanreports/?${filter}` : "v2/scanreports/",
+  get: (id: string | number) => `v2/scanreports/${id}/`,
+  permissions: (id: string) => `v2/scanreports/${id}/permissions/`,
+  table: (scanReportId: string, tableId: string) =>
+    `v2/scanreports/${scanReportId}/tables/${tableId}/`,
+  tables: (scanReportId: string, filter?: string) =>
+    `v2/scanreports/${scanReportId}/tables/?${filter}`,
+  field: (scanReportId: string, tableId: string, fieldId: string) =>
+    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${fieldId}`,
+  fields: (scanReportId: string, tableId: string, filter?: string) =>
+    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${filter}`,
+  values: (
+    scanReportId: string,
+    tableId: string,
+    fieldId: string,
+    filter?: string,
+  ) =>
+    `v2/scanreports/${scanReportId}/tables/£${tableId}/fields/${fieldId}/values/?${filter}`,
   updateTable: (id: number) => `scanreporttables/${id}/`,
-  permissions: (id: string) => `scanreports/${id}/permissions/`,
-  createScanreport: "v2/scanreports/",
 };
 
-export async function getScanReportsTables(
+export async function getScanReports(
   filter: string | undefined,
-): Promise<PaginatedResponse<ScanReportTable>> {
+): Promise<PaginatedResponse<ScanReport>> {
   try {
-    return await request<PaginatedResponse<ScanReportTable>>(
-      fetchKeys.tables(filter),
+    return await request<PaginatedResponse<ScanReport>>(
+      fetchKeys.index(filter),
     );
   } catch (error) {
     console.warn("Failed to fetch data.");
@@ -32,14 +40,62 @@ export async function getScanReportsTables(
   }
 }
 
-export async function getScanReports(
-  filter: string | undefined,
-): Promise<PaginatedResponse<ScanReport>> {
+export async function createScanReport(data: FormData) {
   try {
-    return await request<PaginatedResponse<ScanReport>>(fetchKeys.list(filter));
+    await request(fetchKeys.index(), {
+      method: "POST",
+      body: data,
+    });
+  } catch (error: any) {
+    // Only return a response when there is an error
+    return { errorMessage: error.message };
+  }
+  redirect(`/scanreports/`);
+}
+
+export async function getScanReport(id: string): Promise<ScanReport | null> {
+  try {
+    return await request<ScanReport>(fetchKeys.get(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return { count: 0, next: null, previous: null, results: [] };
+    return null;
+  }
+}
+
+export async function updateScanReport(
+  id: number,
+  data: {},
+  needRedirect?: boolean,
+) {
+  try {
+    await request(fetchKeys.get(id), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+    revalidatePath("/scanreports/");
+  } catch (error: any) {
+    // Only return a response when there is an error
+    return { errorMessage: error.message };
+  }
+  if (needRedirect) {
+    redirect(`/scanreports/`);
+  }
+}
+
+export async function deleteScanReport(id: number) {
+  try {
+    await request(fetchKeys.get(id), {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    revalidatePath("/scanreports/");
+  } catch (error: any) {
+    return { errorMessage: error.message };
   }
 }
 
@@ -59,55 +115,14 @@ export async function getScanReportPermissions(
   }
 }
 
-export async function getScanReportFields(
-  filter: string | undefined,
-): Promise<PaginatedResponse<ScanReportField>> {
+export async function getScanReportTable(
+  scanReportId: string,
+  tableId: string,
+): Promise<ScanReportTable> {
   try {
-    return await request<PaginatedResponse<ScanReportField>>(
-      fetchKeys.fields(filter),
+    return await request<ScanReportTable>(
+      fetchKeys.table(scanReportId, tableId),
     );
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return { count: 0, next: null, previous: null, results: [] };
-  }
-}
-
-export async function getAllScanReportFields(
-  filter: string | undefined,
-): Promise<ScanReportField[]> {
-  try {
-    return await fetchAllPages<ScanReportField>(fetchKeys.fields(filter));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
-export async function getScanReportValues(
-  filter: string | undefined,
-): Promise<PaginatedResponse<ScanReportValue>> {
-  try {
-    return await request<PaginatedResponse<ScanReportValue>>(
-      fetchKeys.values(filter),
-    );
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return { count: 0, next: null, previous: null, results: [] };
-  }
-}
-
-export async function getScanReport(id: string): Promise<ScanReport | null> {
-  try {
-    return await request<ScanReport>(fetchKeys.scanReport(id));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return null;
-  }
-}
-
-export async function getScanReportTable(id: string): Promise<ScanReportTable> {
-  try {
-    return await request<ScanReportTable>(fetchKeys.tableName(id));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return {
@@ -123,9 +138,64 @@ export async function getScanReportTable(id: string): Promise<ScanReportTable> {
   }
 }
 
-export async function getScanReportField(id: string): Promise<ScanReportField> {
+export async function updateScanReportTable(
+  scanReportId: string,
+  tableId: string,
+  data: {},
+) {
   try {
-    return await request<ScanReportField>(fetchKeys.fieldName(id));
+    await request(fetchKeys.table(scanReportId, tableId), {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+  } catch (error: any) {
+    return { errorMessage: error.message };
+  }
+  // TODO: remove redirect here.
+  redirect(`/scanreports/${scanReportId}/`);
+}
+
+export async function getScanReportTables(
+  scanReportId: string,
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportTable>> {
+  try {
+    return await request<PaginatedResponse<ScanReportTable>>(
+      fetchKeys.tables(scanReportId, filter),
+    );
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+export async function getScanReportFields(
+  scanReportId: string,
+  tableId: string,
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportField>> {
+  try {
+    return await request<PaginatedResponse<ScanReportField>>(
+      fetchKeys.fields(scanReportId, tableId, filter),
+    );
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+export async function getScanReportField(
+  scanReportId: string,
+  tableId: string,
+  fieldId: string,
+): Promise<ScanReportField> {
+  try {
+    return await request<ScanReportField>(
+      fetchKeys.field(scanReportId, tableId, fieldId),
+    );
   } catch (error) {
     console.warn("Failed to fetch data. Passed ID could be null");
     return {
@@ -154,65 +224,14 @@ export async function getScanReportField(id: string): Promise<ScanReportField> {
   }
 }
 
-export async function updateScanReport(
-  id: number,
+export async function updateScanReportField(
+  scanReportId: string,
+  tableId: string,
+  fieldId: string,
   data: {},
-  needRedirect?: boolean,
 ) {
   try {
-    await request(fetchKeys.update(id), {
-      method: "PATCH",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    revalidatePath("/scanreports/");
-  } catch (error: any) {
-    // Only return a response when there is an error
-    return { errorMessage: error.message };
-  }
-  if (needRedirect) {
-    redirect(`/scanreports/`);
-  }
-}
-
-export async function deleteScanReport(id: number) {
-  try {
-    await request(fetchKeys.scanReport(id), {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    revalidatePath("/scanreports/");
-  } catch (error: any) {
-    return { errorMessage: error.message };
-  }
-}
-
-export async function updateScanReportTable(
-  id: number,
-  data: {},
-  scanreportID: number,
-) {
-  try {
-    await request(fetchKeys.updateTable(id), {
-      method: "PATCH",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-  } catch (error: any) {
-    return { errorMessage: error.message };
-  }
-  redirect(`/scanreports/${scanreportID}/`);
-}
-
-export async function updateScanReportField(fieldId: string, data: {}) {
-  try {
-    await request(fetchKeys.fieldName(fieldId), {
+    await request(fetchKeys.field(scanReportId, tableId, fieldId), {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
@@ -224,15 +243,33 @@ export async function updateScanReportField(fieldId: string, data: {}) {
   }
 }
 
-export async function createScanReport(data: FormData) {
+export async function getAllScanReportFields(
+  scanReportId: string,
+  tableId: string,
+  filter: string | undefined,
+): Promise<ScanReportField[]> {
   try {
-    await request(fetchKeys.createScanreport, {
-      method: "POST",
-      body: data,
-    });
-  } catch (error: any) {
-    // Only return a response when there is an error
-    return { errorMessage: error.message };
+    return await fetchAllPages<ScanReportField>(
+      fetchKeys.fields(scanReportId, tableId, filter),
+    );
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return [];
   }
-  redirect(`/scanreports/`);
+}
+
+export async function getScanReportValues(
+  scanReportId: string,
+  tableId: string,
+  fieldId: string,
+  filter: string | undefined,
+): Promise<PaginatedResponse<ScanReportValue>> {
+  try {
+    return await request<PaginatedResponse<ScanReportValue>>(
+      fetchKeys.values(scanReportId, tableId, fieldId, filter),
+    );
+  } catch (error) {
+    console.warn("Failed to fetch data.");
+    return { count: 0, next: null, previous: null, results: [] };
+  }
 }
