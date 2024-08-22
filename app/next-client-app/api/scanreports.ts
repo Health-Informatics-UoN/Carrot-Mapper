@@ -14,7 +14,7 @@ const fetchKeys = {
   tables: (scanReportId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/?${filter}`,
   field: (scanReportId: string, tableId: string, fieldId: string) =>
-    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${fieldId}`,
+    `v2/scanreports/${scanReportId}/tables/${tableId}/fields/${fieldId}/`,
   fields: (scanReportId: string, tableId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${filter}`,
   values: (
@@ -24,7 +24,6 @@ const fetchKeys = {
     filter?: string,
   ) =>
     `v2/scanreports/${scanReportId}/tables/£${tableId}/fields/${fieldId}/values/?${filter}`,
-  updateTable: (id: number) => `scanreporttables/${id}/`,
 };
 
 export async function getScanReports(
