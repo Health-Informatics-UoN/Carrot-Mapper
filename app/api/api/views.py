@@ -440,6 +440,7 @@ class ScanReportTableDetailV2(
 
 class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
     queryset = ScanReportField.objects.all()
+    serializer_class = ScanReportFieldListSerializerV2
     filterset_fields = {
         "name": ["icontains"],
     }
