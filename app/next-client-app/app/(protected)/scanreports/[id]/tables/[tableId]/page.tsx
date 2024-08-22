@@ -27,13 +27,12 @@ export default async function ScanReportsField({
 }: ScanReportsFieldProps) {
   const defaultPageSize = 20;
   const defaultParams = {
-    scan_report_table: tableId,
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const tableName = await getScanReportTable(tableId);
-  const scanReportsFields = await getScanReportFields(query);
+  const tableName = await getScanReportTable(id, tableId);
+  const scanReportsFields = await getScanReportFields(id, tableId, query);
   const permissions = await getScanReportPermissions(id);
 
   const scanReportsConcepts =
@@ -41,14 +40,14 @@ export default async function ScanReportsField({
       ? await getAllScanReportConcepts(
           `object_id__in=${scanReportsFields.results
             .map((item) => item.id)
-            .join(",")}`
+            .join(",")}`,
         )
       : [];
 
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getAllConceptsFiltered(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
+          scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
 
