@@ -21,8 +21,8 @@ export default async function ScanReportsEditField({
   params: { id, tableId, fieldId },
 }: ScanReportsEditFieldProps) {
   const scanReport = await getScanReport(id);
-  const table = await getScanReportTable(tableId);
-  const field = await getScanReportField(fieldId);
+  const table = await getScanReportTable(id, tableId);
+  const field = await getScanReportField(id, tableId, fieldId);
   const permissions = await getScanReportPermissions(id);
 
   if (!scanReport) {
