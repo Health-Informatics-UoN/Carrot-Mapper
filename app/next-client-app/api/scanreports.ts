@@ -16,7 +16,7 @@ const fetchKeys = {
   field: (
     scanReportId: string | number,
     tableId: string | number,
-    fieldId: string,
+    fieldId: string | number | undefined,
   ) => `v2/scanreports/${scanReportId}/tables/${tableId}/fields/${fieldId}/`,
   fields: (scanReportId: string, tableId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/${tableId}/fields/?${filter}`,
@@ -131,10 +131,10 @@ export async function getScanReportTable(
       id: 0,
       name: "",
       scan_report: 0,
-      person_id: "",
+      person_id: null,
       created_at: new Date(),
       updated_at: new Date(),
-      date_event: "",
+      date_event: null,
       permissions: [],
     };
   }
@@ -192,7 +192,7 @@ export async function getScanReportFields(
 export async function getScanReportField(
   scanReportId: string,
   tableId: string,
-  fieldId: string,
+  fieldId: string | number | undefined,
 ): Promise<ScanReportField> {
   try {
     return await request<ScanReportField>(

@@ -166,7 +166,7 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
             return ScanReportEditSerializer
         return super().get_serializer_class()
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         non_file_serializer = ScanReportCreateSerializer(
             data=request.data, context={"request": request}
         )
@@ -374,6 +374,9 @@ class ScanReportTableDetailV2(
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableListSerializerV2
 
+    def get_object(self):
+        return get_object_or_404(self.queryset, pk=self.kwargs["table_pk"])
+
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
 
@@ -468,6 +471,9 @@ class ScanReportFieldDetailV2(
 ):
     queryset = ScanReportField.objects.all()
     serializer_class = ScanReportFieldListSerializerV2
+
+    def get_object(self):
+        return get_object_or_404(self.queryset, pk=self.kwargs["field_pk"])
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
