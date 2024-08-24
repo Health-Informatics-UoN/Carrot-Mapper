@@ -26,7 +26,7 @@ from shared.services.rules_export import analyse_concepts
 class ConceptSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = Concept
-        fields = ["concept_id", "concept_name", "concept_code", "creation_type"]
+        fields = ["concept_id", "concept_name", "concept_code"]
 
 
 class UserSerializer(serializers.ModelSerializer):
