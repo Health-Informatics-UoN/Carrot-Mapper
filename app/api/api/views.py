@@ -83,7 +83,7 @@ from shared.services.rules_export import (
 )
 
 
-class DataPartnerViewSet(viewsets.ModelViewSet):
+class DataPartnerViewSet(GenericAPIView, ListModelMixin):
     queryset = DataPartner.objects.all()
     serializer_class = DataPartnerSerializer
 
@@ -100,16 +100,22 @@ class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
     }
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(GenericAPIView, ListModelMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
+
+class UserFilterViewSet(GenericAPIView, ListModelMixin):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class UserDetailView(APIView):

@@ -94,6 +94,9 @@ urlpatterns = [
         name="scan-report-values",
     ),
     path(r"user/me/", views.UserDetailView.as_view(), name="currentuser"),
+    path(r"v2/users", views.UserViewSet.as_view(), name="users"),
+    path(r"v2/usersfilter", views.UserFilterViewSet.as_view(), name="usersfilter"),
+    path(r"v2/datapartners", views.DataPartnerViewSet.as_view(), name="datapartners"),
 ]
 
 urlpatterns += deprecated_urlpatterns
