@@ -451,7 +451,7 @@ class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
-    ordering = "name"
+    ordering = "pk"
 
     def get(self, request, *args, **kwargs):
         self.table = get_object_or_404(ScanReportTable, pk=kwargs["table_pk"])
