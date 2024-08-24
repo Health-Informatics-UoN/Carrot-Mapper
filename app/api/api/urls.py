@@ -1,13 +1,11 @@
 from api import views
 from api.deprecated_router import router as deprecated_router
-from api.router import router
 from django.urls import include, path
 from shared.files.views import FileDownloadView
 
 from .deprecated_urls import urlpatterns as deprecated_urlpatterns
 
 urlpatterns = [
-    path("", include(router.urls)),
     path("", include(deprecated_router.urls)),
     path("datasets/", include("datasets.urls")),
     path("projects/", include("projects.urls")),
@@ -51,17 +49,17 @@ urlpatterns = [
     path(
         "scanreports/<int:pk>/mapping_rules/",
         views.MappingRulesList.as_view(),
-        name="scan-report-rules",
+        name="scan-report-rules-download-svg",
     ),
     path(
         "v2/scanreports/<int:pk>/rules/",
         views.RulesListV2.as_view(),
-        name="scan-report-rules",
+        name="scan-report-rules-list",
     ),
     path(
         "v2/scanreports/<int:pk>/rules/summary",
         views.SummaryRulesListV2.as_view(),
-        name="scan-report-rules-summary",
+        name="scan-report-rules-list-summary",
     ),
     path(
         "v2/scanreports/<int:scanreport_pk>/rules/downloads/",
@@ -94,9 +92,14 @@ urlpatterns = [
         name="scan-report-values",
     ),
     path(r"user/me/", views.UserDetailView.as_view(), name="currentuser"),
-    path(r"v2/users", views.UserViewSet.as_view(), name="users"),
+    path(r"v2/users", views.UserViewSet.as_view(), name="users-list"),
     path(r"v2/usersfilter", views.UserFilterViewSet.as_view(), name="usersfilter"),
     path(r"v2/datapartners", views.DataPartnerViewSet.as_view(), name="datapartners"),
+    path(
+        r"v2/omop/conceptsfilter",
+        views.ConceptFilterViewSetV2.as_view(),
+        name="v2conceptsfilter",
+    ),
 ]
 
 urlpatterns += deprecated_urlpatterns

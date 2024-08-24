@@ -87,8 +87,11 @@ class DataPartnerViewSet(GenericAPIView, ListModelMixin):
     queryset = DataPartner.objects.all()
     serializer_class = DataPartnerSerializer
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
-class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
+
+class ConceptFilterViewSetV2(GenericAPIView, ListModelMixin):
     queryset = Concept.objects.all().order_by("concept_id")
     serializer_class = ConceptSerializer
     filter_backends = [DjangoFilterBackend]
@@ -98,6 +101,9 @@ class ConceptFilterViewSetV2(viewsets.ReadOnlyModelViewSet):
         "concept_code": ["in", "exact"],
         "vocabulary_id": ["in", "exact"],
     }
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
 
 class UserViewSet(GenericAPIView, ListModelMixin):
