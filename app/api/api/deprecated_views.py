@@ -7,7 +7,6 @@ import requests
 from api.filters import ScanReportAccessFilter
 from api.paginations import CustomPagination
 from api.serializers import (
-    ConceptSerializer,
     GetRulesAnalysis,
     ScanReportConceptSerializer,
     ScanReportEditSerializer,
@@ -51,6 +50,7 @@ from shared.services.rules_export import (
 )
 
 from .deprecated_serializers import (
+    ConceptSerializer,
     ContentTypeSerializer,
     OmopFieldSerializer,
     OmopTableSerializer,

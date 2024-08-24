@@ -23,7 +23,7 @@ from shared.mapping.permissions import has_editorship, is_admin, is_az_function_
 from shared.services.rules_export import analyse_concepts
 
 
-class ConceptSerializer(serializers.ModelSerializer):
+class ConceptSerializerV2(serializers.ModelSerializer):
     class Meta:
         model = Concept
         fields = "__all__"

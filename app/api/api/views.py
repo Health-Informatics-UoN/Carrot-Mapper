@@ -11,7 +11,7 @@ from api.filters import ScanReportAccessFilter
 from api.mixins import ScanReportPermissionMixin
 from api.paginations import CustomPagination
 from api.serializers import (
-    ConceptSerializer,
+    ConceptSerializerV2,
     GetRulesAnalysis,
     ScanReportConceptSerializer,
     ScanReportCreateSerializer,
@@ -88,7 +88,7 @@ class DataPartnerViewSet(GenericAPIView, ListModelMixin):
 
 class ConceptFilterViewSetV2(GenericAPIView, ListModelMixin):
     queryset = Concept.objects.all().order_by("concept_id")
-    serializer_class = ConceptSerializer
+    serializer_class = ConceptSerializerV2
     filter_backends = [DjangoFilterBackend]
     pagination_class = CustomPagination
     filterset_fields = {

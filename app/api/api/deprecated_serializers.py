@@ -1,6 +1,7 @@
 from drf_dynamic_fields import DynamicFieldsMixin  # type: ignore
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
+from shared.data.models import Concept
 from shared.mapping.models import (
     OmopField,
     OmopTable,
@@ -10,6 +11,12 @@ from shared.mapping.models import (
     ScanReportValue,
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
+
+
+class ConceptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Concept
+        fields = "__all__"
 
 
 class ScanReportViewSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
