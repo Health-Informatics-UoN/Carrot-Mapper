@@ -65,7 +65,7 @@ from shared.mapping.models import (
 )
 from shared.mapping.permissions import (
     CanAdmin,
-    CanEdit,
+    CanEditOrAdmin,
     CanView,
     get_user_permissions_on_scan_report,
 )
@@ -302,7 +302,7 @@ class ScanReportBaseDetailView(ScanReportBaseIndexView):
         if self.request.method == "DELETE":
             self.permission_classes = [CanAdmin]
         elif self.request.method in ["PUT", "PATCH"]:
-            self.permission_classes = [CanEdit]
+            self.permission_classes = [CanEditOrAdmin]
         else:
             self.permission_classes = [CanView]
         return super().get_permissions()
