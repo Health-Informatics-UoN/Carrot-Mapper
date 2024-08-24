@@ -13,8 +13,8 @@ const fetchKeys = {
     dataPartnerId
       ? `datasets/?data_partner=${dataPartnerId}&hidden=false`
       : "datasets/",
-  dataPartners: () => "datapartners/",
-  users: () => "usersfilter/?is_active=true",
+  dataPartners: () => "v2/datapartners/",
+  users: () => "v2/usersfilter/?is_active=true",
   projects: (dataset?: string) =>
     dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `datasets/update/${id}/`,
