@@ -40,7 +40,7 @@ urlpatterns = [
     ),
     path(
         r"v2/scanreports/<int:pk>/analyse/",
-        views.AnalyseRules.as_view(),
+        views.AnalyseRulesV2.as_view(),
         name="scan-reports-analyse",
     ),
     path(
@@ -55,12 +55,12 @@ urlpatterns = [
     ),
     path(
         "v2/scanreports/<int:pk>/rules/",
-        views.RulesList.as_view(),
+        views.RulesListV2.as_view(),
         name="scan-report-rules",
     ),
     path(
         "v2/scanreports/<int:pk>/rules/summary",
-        views.SummaryRulesList.as_view(),
+        views.SummaryRulesListV2.as_view(),
         name="scan-report-rules-summary",
     ),
     path(

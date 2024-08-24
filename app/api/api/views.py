@@ -630,7 +630,7 @@ class MappingRulesList(APIView):
         return qs
 
 
-class RulesList(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
+class RulesListV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
     queryset = MappingRule.objects.all().order_by("id")
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
@@ -699,7 +699,7 @@ class RulesList(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
         return Response(data={"count": count, "results": rules})
 
 
-class SummaryRulesList(RulesList):
+class SummaryRulesListV2(RulesListV2):
     def list(self, request, *args, **kwargs):
         # Get p and page_size from query_params
         p = self.request.query_params.get("p", 1)
@@ -750,7 +750,7 @@ class SummaryRulesList(RulesList):
         return Response(data={"count": count, "results": rules})
 
 
-class AnalyseRules(ScanReportPermissionMixin, GenericAPIView, RetrieveModelMixin):
+class AnalyseRulesV2(ScanReportPermissionMixin, GenericAPIView, RetrieveModelMixin):
     queryset = ScanReport.objects.all()
     serializer_class = GetRulesAnalysis
     filter_backends = [DjangoFilterBackend]
