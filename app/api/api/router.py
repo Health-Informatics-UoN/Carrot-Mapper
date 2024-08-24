@@ -9,11 +9,6 @@ router.register(
 
 router.register(r"users", views.UserViewSet, basename="users")
 router.register(r"usersfilter", views.UserFilterViewSet, basename="usersfilter")
-# router.register(
-#     r"v2/scanreportconcepts",
-#     views.ScanReportConceptViewSetV2,
-#     basename="v2scanreportconcept",
-# )
 router.register(r"datapartners", views.DataPartnerViewSet, basename="datapartners")
 router.register(r"mappingruleslist", views.RulesList, basename="getlist")
 router.register(

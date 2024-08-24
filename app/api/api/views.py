@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 from api.filters import ScanReportAccessFilter
+from api.mixins import ScanReportPermissionMixin
 from api.paginations import CustomPagination
 from api.serializers import (
     ConceptSerializer,
@@ -267,49 +268,12 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
         add_message(os.environ.get("UPLOAD_QUEUE_NAME"), azure_dict)
 
 
-class ScanReportBaseIndexView(GenericAPIView):
-    """
-    Base View for all Scan Reports Indexes to help manage permissions.
-
-    As these views are all nested under a Scan Report, we fetch it and verify permissions on it.
-
-    Index views only need the View permission.
-    """
-
-    permission_classes = [CanView]
-
-    def get_permissions(self):
-        self.scan_report = get_object_or_404(ScanReport, pk=self.kwargs["pk"])
-        permissions = [permission() for permission in self.permission_classes]
-        for permission in permissions:
-            if not permission.has_object_permission(
-                self.request, self, self.scan_report
-            ):
-                self.permission_denied(
-                    self.request, message=getattr(permission, "message", None)
-                )
-        return permissions
-
-
-class ScanReportBaseDetailView(ScanReportBaseIndexView):
-    """
-    Base View for all Scan Reports Details to help manage permissions.
-
-    Detail views need further permissions depending on the request type.
-    """
-
-    def get_permissions(self):
-        if self.request.method == "DELETE":
-            self.permission_classes = [CanAdmin]
-        elif self.request.method in ["PUT", "PATCH"]:
-            self.permission_classes = [CanEditOrAdmin]
-        else:
-            self.permission_classes = [CanView]
-        return super().get_permissions()
-
-
 class ScanReportDetailV2(
-    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+    ScanReportPermissionMixin,
+    GenericAPIView,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
 ):
     queryset = ScanReport.objects.all()
     serializer_class = ScanReportViewSerializerV2
@@ -345,7 +309,7 @@ class ScanReportDetailV2(
         instance.delete()
 
 
-class ScanReportTableIndexV2(ScanReportBaseIndexView, ListModelMixin):
+class ScanReportTableIndexV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
     """
     A paginated list of Scan Report Tables, for a specific Scan Report.
 
@@ -370,7 +334,7 @@ class ScanReportTableIndexV2(ScanReportBaseIndexView, ListModelMixin):
 
 
 class ScanReportTableDetailV2(
-    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin
+    ScanReportPermissionMixin, GenericAPIView, RetrieveModelMixin, UpdateModelMixin
 ):
     queryset = ScanReportTable.objects.all()
     serializer_class = ScanReportTableListSerializerV2
@@ -442,7 +406,7 @@ class ScanReportTableDetailV2(
         return Response(serializer.data)
 
 
-class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
+class ScanReportFieldIndexV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
     queryset = ScanReportField.objects.all().order_by("id")
     serializer_class = ScanReportFieldListSerializerV2
     filterset_fields = {
@@ -467,7 +431,7 @@ class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
 
 
 class ScanReportFieldDetailV2(
-    ScanReportBaseDetailView, RetrieveModelMixin, UpdateModelMixin
+    ScanReportPermissionMixin, GenericAPIView, RetrieveModelMixin, UpdateModelMixin
 ):
     model = ScanReportField
     serializer_class = ScanReportFieldListSerializerV2
@@ -489,7 +453,7 @@ class ScanReportFieldDetailV2(
         return super().get_serializer_class()
 
 
-class ScanReportValueListV2(ScanReportBaseIndexView, ListModelMixin):
+class ScanReportValueListV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
     filterset_fields = {
         "value": ["in", "icontains"],
     }
