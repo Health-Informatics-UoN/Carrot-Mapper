@@ -747,7 +747,7 @@ class SummaryRulesList(RulesList):
         return Response(data={"count": count, "results": rules})
 
 
-class AnalyseRules(viewsets.ModelViewSet):
+class AnalyseRules(ScanReportPermissionMixin, GenericAPIView, RetrieveModelMixin):
     queryset = ScanReport.objects.all()
     serializer_class = GetRulesAnalysis
     filter_backends = [DjangoFilterBackend]

@@ -11,7 +11,6 @@ router.register(r"v2/users", views.UserViewSet, basename="users")
 router.register(r"v2/usersfilter", views.UserFilterViewSet, basename="usersfilter")
 router.register(r"v2/datapartners", views.DataPartnerViewSet, basename="datapartners")
 router.register(r"v2/mappingruleslist", views.RulesList, basename="getlist")
-router.register(
-    r"v2/mappingruleslistsummary", views.SummaryRulesList, basename="getsummarylist"
-)
-router.register(r"v2/analyse", views.AnalyseRules, basename="getanalysis")
+# router.register(
+#     r"v2/mappingruleslistsummary", views.SummaryRulesList, basename="getsummarylist"
+# )

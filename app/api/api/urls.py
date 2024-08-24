@@ -39,6 +39,11 @@ urlpatterns = [
         views.DownloadScanReportViewSet.as_view({"get": "list"}),
     ),
     path(
+        r"v2/scanreports/<int:pk>/analyse/",
+        views.AnalyseRules.as_view(),
+        name="scan-reports-analyse",
+    ),
+    path(
         "v2/scanreports/<int:pk>/permissions/",
         views.ScanReportPermissionView.as_view(),
         name="scan-report-permissions",
