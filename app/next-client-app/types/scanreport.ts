@@ -50,14 +50,6 @@ interface ScanReportField {
 
 interface ScanReportConcept {
   id: number;
-  created_at: Date;
-  updated_at: Date;
-  nlp_entity: string | null;
-  nlp_entity_type: string | null;
-  nlp_confidence: string | null;
-  nlp_vocabulary: string | null;
-  nlp_concept_code: string | null;
-  nlp_processed_string: string | null;
   object_id: number;
   creation_type: string;
   concept: Concept | number;

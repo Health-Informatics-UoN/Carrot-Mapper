@@ -585,7 +585,7 @@ class ScanReportValueViewSerializerV2(serializers.ModelSerializer):
 class ScanReportConceptSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = ScanReportConcept
-        fields = "__all__"
+        fields = ["id", "object_id", "creation_type", "concept", "content_type"]
 
 
 class GetRulesAnalysis(DynamicFieldsMixin, serializers.ModelSerializer):

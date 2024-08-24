@@ -15,6 +15,16 @@ urlpatterns = [
         "v2/scanreports/", views.ScanReportIndexV2.as_view(), name="scan-report-index"
     ),
     path(
+        "v2/scanreports/concepts/",
+        views.ScanReportConceptListV2.as_view(),
+        name="scan-report-concepts",
+    ),
+    path(
+        "v2/scanreports/concepts/<int:pk>/",
+        views.ScanReportConceptDetailV2.as_view(),
+        name="scan-report-concepts",
+    ),
+    path(
         "v2/scanreports/<int:pk>/",
         views.ScanReportDetailV2.as_view(),
         name="scan-report-detail",

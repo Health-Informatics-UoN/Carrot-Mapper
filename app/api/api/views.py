@@ -443,7 +443,7 @@ class ScanReportTableDetailV2(
 
 
 class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
-    queryset = ScanReportField.objects.all()
+    queryset = ScanReportField.objects.all().order_by("id")
     serializer_class = ScanReportFieldListSerializerV2
     filterset_fields = {
         "name": ["icontains"],
@@ -451,7 +451,6 @@ class ScanReportFieldIndexV2(ScanReportBaseIndexView, ListModelMixin):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name", "description_column", "type_column"]
     pagination_class = CustomPagination
-    ordering = "pk"
 
     def get(self, request, *args, **kwargs):
         self.table = get_object_or_404(ScanReportTable, pk=kwargs["table_pk"])
@@ -491,9 +490,6 @@ class ScanReportFieldDetailV2(
 
 
 class ScanReportValueListV2(ScanReportBaseIndexView, ListModelMixin):
-    queryset = ScanReportValue.objects.order_by("id").only(
-        "id", "value", "frequency", "value_description", "scan_report_field"
-    )
     filterset_fields = {
         "value": ["in", "icontains"],
     }
@@ -507,7 +503,11 @@ class ScanReportValueListV2(ScanReportBaseIndexView, ListModelMixin):
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return ScanReportValue.objects.filter(scan_report_field=self.field)
+        return (
+            ScanReportValue.objects.filter(scan_report_field=self.field)
+            .order_by("id")
+            .only("id", "value", "frequency", "value_description", "scan_report_field")
+        )
 
     @method_decorator(cache_page(60 * 15))
     @method_decorator(vary_on_cookie)
@@ -515,15 +515,28 @@ class ScanReportValueListV2(ScanReportBaseIndexView, ListModelMixin):
         return super().list(request, *args, **kwargs)
 
 
-class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
+class ScanReportConceptListV2(
+    GenericAPIView, ListModelMixin, CreateModelMixin, DestroyModelMixin
+):
     """
     Version V2.
     """
 
-    queryset = ScanReportConcept.objects.all()
+    queryset = ScanReportConcept.objects.all().order_by("id")
     serializer_class = ScanReportConceptSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "concept__concept_id": ["in", "exact"],
+        "object_id": ["in", "exact"],
+        "id": ["in", "exact"],
+        "content_type": ["in", "exact"],
+    }
 
-    def create(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
         body = request.data
 
         # Extract the content_type
@@ -609,17 +622,13 @@ class ScanReportConceptViewSetV2(viewsets.ModelViewSet):
         )
 
 
-class ScanReportConceptFilterViewSetV2(viewsets.ModelViewSet):
-    queryset = ScanReportConcept.objects.all().order_by("id")
+class ScanReportConceptDetailV2(GenericAPIView, DestroyModelMixin):
+    model = ScanReportConcept
+    queryset = ScanReportConcept.objects.all()
     serializer_class = ScanReportConceptSerializer
-    pagination_class = CustomPagination
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = {
-        "concept__concept_id": ["in", "exact"],
-        "object_id": ["in", "exact"],
-        "id": ["in", "exact"],
-        "content_type": ["in", "exact"],
-    }
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
 
 
 class MappingRulesList(APIView):
