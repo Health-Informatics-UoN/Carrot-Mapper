@@ -64,12 +64,7 @@ from shared.mapping.models import (
     ScanReportTable,
     ScanReportValue,
 )
-from shared.mapping.permissions import (
-    CanAdmin,
-    CanEditOrAdmin,
-    CanView,
-    get_user_permissions_on_scan_report,
-)
+from shared.mapping.permissions import get_user_permissions_on_scan_report
 from shared.services.azurequeue import add_message
 from shared.services.rules import (
     _find_destination_table,
