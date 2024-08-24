@@ -40,3 +40,18 @@ router.register(
 )
 router.register(r"omoptables", deprecated_views.OmopTableViewSet, basename="omoptables")
 router.register(r"omopfields", deprecated_views.OmopFieldViewSet, basename="omopfields")
+
+router.register(r"users", deprecated_views.UserViewSet, basename="users")
+router.register(
+    r"usersfilter", deprecated_views.UserFilterViewSet, basename="usersfilter"
+)
+router.register(
+    r"datapartners", deprecated_views.DataPartnerViewSet, basename="datapartners"
+)
+router.register(r"mappingruleslist", deprecated_views.RulesList, basename="getlist")
+router.register(
+    r"mappingruleslistsummary",
+    deprecated_views.SummaryRulesList,
+    basename="getsummarylist",
+)
+router.register(r"analyse", deprecated_views.AnalyseRules, basename="getanalysis")
