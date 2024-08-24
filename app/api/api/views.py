@@ -630,20 +630,23 @@ class MappingRulesList(APIView):
         return qs
 
 
-class RulesList(viewsets.ModelViewSet):
+class RulesList(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
     queryset = MappingRule.objects.all().order_by("id")
     pagination_class = CustomPagination
     filter_backends = [DjangoFilterBackend]
     http_method_names = ["get"]
 
     def get_queryset(self):
-        _id = self.request.query_params.get("id", None)
+        _id = self.kwargs["pk"]
         queryset = self.queryset
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
         return queryset
 
-    def list(self, request):
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
         """
         This is a somewhat strange way of doing things (because we don't use a serializer class,
         but seems to be a limitation of how django handles the combination of pagination and
@@ -654,7 +657,7 @@ class RulesList(viewsets.ModelViewSet):
         directly.
         """
         queryset = self.queryset
-        _id = self.request.query_params.get("id", None)
+        _id = self.kwargs["pk"]
         # Filter on ScanReport ID
         if _id is not None:
             queryset = queryset.filter(scan_report__id=_id)
@@ -697,7 +700,7 @@ class RulesList(viewsets.ModelViewSet):
 
 
 class SummaryRulesList(RulesList):
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # Get p and page_size from query_params
         p = self.request.query_params.get("p", 1)
         page_size = self.request.query_params.get("page_size", 20)

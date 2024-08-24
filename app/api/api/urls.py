@@ -54,6 +54,16 @@ urlpatterns = [
         name="scan-report-rules",
     ),
     path(
+        "v2/scanreports/<int:pk>/rules/",
+        views.RulesList.as_view(),
+        name="scan-report-rules",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/rules/summary",
+        views.SummaryRulesList.as_view(),
+        name="scan-report-rules-summary",
+    ),
+    path(
         "v2/scanreports/<int:scanreport_pk>/rules/downloads/",
         FileDownloadView.as_view(),
         name="scan-reports-downloads",

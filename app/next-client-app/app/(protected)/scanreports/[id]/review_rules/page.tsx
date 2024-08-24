@@ -19,14 +19,13 @@ export default async function SummaryViewDialog({
 }: SummaryProps) {
   const defaultPageSize = 20;
   const defaultParams = {
-    id: id,
     p: 1,
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
 
-  const summaryRules = await getSummaryRules(query);
+  const summaryRules = await getSummaryRules(id, query);
   const scanReport = await getScanReport(id);
   const fileName = `${scanReport?.dataset} Rules - ${new Date().toLocaleString()}`;
   const rulesButton = (
