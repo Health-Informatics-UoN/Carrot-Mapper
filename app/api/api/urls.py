@@ -7,7 +7,7 @@ from .deprecated_urls import urlpatterns as deprecated_urlpatterns
 
 urlpatterns = [
     path("", include(deprecated_router.urls)),
-    path("datasets/", include("datasets.urls")),
+    path("v2/datasets/", include("datasets.urls")),
     path("projects/", include("projects.urls")),
     path(
         "v2/scanreports/", views.ScanReportIndexV2.as_view(), name="scan-report-index"

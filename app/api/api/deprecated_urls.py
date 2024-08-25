@@ -3,6 +3,41 @@ from django.urls import path
 
 urlpatterns = [
     path(
+        r"datasets/",
+        deprecated_views.DatasetListView.as_view(),
+        name="dataset_list",
+    ),
+    path(
+        r"datasets/datasets_data_partners/",
+        deprecated_views.DatasetAndDataPartnerListView.as_view(),
+        name="dataset_data_partners_list",
+    ),
+    path(
+        r"datasets/<int:pk>/",
+        deprecated_views.DatasetRetrieveView.as_view(),
+        name="dataset_retrieve",
+    ),
+    path(
+        r"datasets/update/<int:pk>/",
+        deprecated_views.DatasetUpdateView.as_view(),
+        name="dataset_update",
+    ),
+    path(
+        r"datasets/delete/<int:pk>/",
+        deprecated_views.DatasetDeleteView.as_view(),
+        name="dataset_delete",
+    ),
+    path(
+        r"datasets/create/",
+        deprecated_views.DatasetCreateView.as_view(),
+        name="dataset_create",
+    ),
+    path(
+        "datasets/<int:pk>/permissions/",
+        deprecated_views.DatasetPermissionView.as_view(),
+        name="dataset-permissions",
+    ),
+    path(
         r"contenttypeid",
         deprecated_views.GetContentTypeID.as_view(),
         name="contenttypeid",
