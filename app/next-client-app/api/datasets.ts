@@ -8,7 +8,7 @@ const fetchKeys = {
     filter
       ? `v2/datasets/datasets_data_partners/?${filter}`
       : "v2/datasets/datasets_data_partners/",
-  dataset: (id: string) => `datasets/${id}/`,
+  dataset: (id: string) => `v2/datasets/${id}/`,
   datasetList: (dataPartnerId?: string) =>
     dataPartnerId
       ? `v2/datasets/?data_partner=${dataPartnerId}&hidden=false`
@@ -17,9 +17,9 @@ const fetchKeys = {
   users: () => "v2/usersfilter/?is_active=true",
   projects: (dataset?: string) =>
     dataset ? `projects/?dataset=${dataset}` : "projects/",
-  updateDataset: (id: number) => `v2/datasets/update/${id}/`,
+  updateDataset: (id: number) => `v2/datasets/${id}/`,
   permissions: (id: string) => `v2/datasets/${id}/permissions/`,
-  create: "v2/datasets/create/",
+  create: "v2/datasets/",
 };
 
 export async function getDataSets(
