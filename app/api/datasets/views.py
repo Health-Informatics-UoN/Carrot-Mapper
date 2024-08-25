@@ -42,6 +42,9 @@ class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
         "hidden": ["in", "exact"],
     }
 
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         admins = serializer.initial_data.get("admins")
         # If no admins given, add the user uploading the dataset
@@ -82,7 +85,7 @@ class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
         ).distinct()
 
 
-class DatasetAndDataPartnerListView(generics.ListAPIView):
+class DatasetAndDataPartnerListView(GenericAPIView, ListModelMixin):
     """
     API view to show all datasets.
     """
@@ -97,6 +100,9 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
         "name": ["in", "icontains"],
     }
     ordering = "-created_at"
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         """
@@ -167,9 +173,6 @@ class DatasetDetail(
 
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        return self.destroy(request, *args, **kwargs)
 
 
 class DatasetPermissionView(APIView):
