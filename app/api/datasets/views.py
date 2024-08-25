@@ -45,6 +45,9 @@ class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         admins = serializer.initial_data.get("admins")
         # If no admins given, add the user uploading the dataset
