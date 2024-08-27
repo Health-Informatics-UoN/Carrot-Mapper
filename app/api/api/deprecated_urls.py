@@ -8,7 +8,7 @@ urlpatterns = [
         name="dataset_list",
     ),
     path(
-        r"datasets/datasets_data_partners/",
+        r"datasets_data_partners/",
         deprecated_views.DatasetAndDataPartnerListView.as_view(),
         name="dataset_data_partners_list",
     ),
