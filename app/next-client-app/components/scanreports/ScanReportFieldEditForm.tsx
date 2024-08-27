@@ -38,8 +38,10 @@ export function ScanReportFieldEditForm({
       };
 
       const response = await updateScanReportField(
+        scanreportId,
+        scanReportField.scan_report_table,
         scanReportField?.id.toString(),
-        submittingData
+        submittingData,
       );
       if (response) {
         toast.error(`Update Dataset failed. Error: ${response.errorMessage}`);

@@ -19,13 +19,12 @@ export default async function ScanReportsMappingRules({
 }: ScanReportsMappingRulesProps) {
   const defaultPageSize = 30;
   const defaultParams = {
-    id: id,
     p: 1,
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const mappingRulesList = await getMappingRulesList(query);
+  const mappingRulesList = await getMappingRulesList(id, query);
   const scanReport = await getScanReport(id);
   const fileName = `${scanReport?.dataset} Rules - ${new Date().toLocaleString()}`;
   const rulesButton = (

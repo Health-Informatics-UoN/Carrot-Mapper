@@ -6,20 +6,20 @@ import { redirect } from "next/navigation";
 const fetchKeys = {
   list: (filter?: string) =>
     filter
-      ? `datasets/datasets_data_partners/?${filter}`
-      : "datasets/datasets_data_partners/",
-  dataset: (id: string) => `datasets/${id}/`,
+      ? `v2/datasets/datasets_data_partners/?${filter}`
+      : "v2/datasets/datasets_data_partners/",
+  dataset: (id: string) => `v2/datasets/${id}/`,
   datasetList: (dataPartnerId?: string) =>
     dataPartnerId
-      ? `datasets/?data_partner=${dataPartnerId}&hidden=false`
-      : "datasets/",
-  dataPartners: () => "datapartners/",
-  users: () => "usersfilter/?is_active=true",
+      ? `v2/datasets/?data_partner=${dataPartnerId}&hidden=false`
+      : "v2/datasets/",
+  dataPartners: () => "v2/datapartners/",
+  users: () => "v2/usersfilter/?is_active=true",
   projects: (dataset?: string) =>
     dataset ? `projects/?dataset=${dataset}` : "projects/",
-  updateDataset: (id: number) => `datasets/update/${id}/`,
-  permissions: (id: string) => `datasets/${id}/permissions/`,
-  create: "datasets/create/",
+  updateDataset: (id: number) => `v2/datasets/${id}/`,
+  permissions: (id: string) => `v2/datasets/${id}/permissions/`,
+  create: "v2/datasets/",
 };
 
 export async function getDataSets(

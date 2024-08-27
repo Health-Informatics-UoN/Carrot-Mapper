@@ -5,19 +5,23 @@ from urllib.parse import urljoin
 
 import requests
 from api.filters import ScanReportAccessFilter
+from api.paginations import CustomPagination
 from api.serializers import (
-    ConceptSerializer,
+    GetRulesAnalysis,
     ScanReportConceptSerializer,
     ScanReportEditSerializer,
     ScanReportFieldEditSerializer,
     ScanReportTableEditSerializer,
+    UserSerializer,
 )
 from config import settings
+from datasets.serializers import DataPartnerSerializer
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query_utils import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.renderers import JSONRenderer
@@ -25,6 +29,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from shared.data.models import Concept
 from shared.mapping.models import (
+    DataPartner,
+    Dataset,
     MappingRule,
     OmopField,
     OmopTable,
@@ -36,11 +42,25 @@ from shared.mapping.models import (
     ScanReportValue,
     VisibilityChoices,
 )
-from shared.mapping.permissions import CanAdmin, CanEdit, CanView
+from shared.mapping.permissions import (
+    CanAdmin,
+    CanEdit,
+    CanView,
+    get_user_permissions_on_dataset,
+)
 from shared.services.rules import delete_mapping_rules
+from shared.services.rules_export import (
+    get_mapping_rules_json,
+    get_mapping_rules_list,
+    make_dag,
+)
 
 from .deprecated_serializers import (
+    ConceptSerializer,
     ContentTypeSerializer,
+    DatasetAndDataPartnerViewSerializer,
+    DatasetEditSerializer,
+    DatasetViewSerializerV2,
     OmopFieldSerializer,
     OmopTableSerializer,
     ScanReportFieldListSerializer,
@@ -49,6 +69,23 @@ from .deprecated_serializers import (
     ScanReportValueViewSerializer,
     ScanReportViewSerializer,
 )
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserFilterViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"id": ["in", "exact"], "is_active": ["exact"]}
+
+
+class DataPartnerViewSet(viewsets.ModelViewSet):
+    queryset = DataPartner.objects.all()
+    serializer_class = DataPartnerSerializer
 
 
 class ConceptViewSet(viewsets.ReadOnlyModelViewSet):
@@ -445,6 +482,165 @@ class ScanReportConceptFilterViewSet(viewsets.ModelViewSet):
     }
 
 
+class MappingRulesList(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            body = request.data
+        except ValueError:
+            body = {}
+        if request.POST.get("get_svg") is not None or body.get("get_svg") is not None:
+            qs = self.get_queryset()
+            output = get_mapping_rules_json(qs)
+
+            # use make dag svg image
+            svg = make_dag(output["cdm"])
+            return HttpResponse(svg, content_type="image/svg+xml")
+        else:
+            return Response(
+                {"error": "Invalid request parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def get_queryset(self):
+        qs = MappingRule.objects.all()
+        search_term = self.kwargs.get("pk")
+
+        if search_term is not None:
+            qs = qs.filter(scan_report__id=search_term).order_by(
+                "concept",
+                "omop_field__table",
+                "omop_field__field",
+                "source_table__name",
+                "source_field__name",
+            )
+
+        return qs
+
+
+class RulesList(viewsets.ModelViewSet):
+    queryset = MappingRule.objects.all().order_by("id")
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend]
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        _id = self.request.query_params.get("id", None)
+        queryset = self.queryset
+        if _id is not None:
+            queryset = queryset.filter(scan_report__id=_id)
+        return queryset
+
+    def list(self, request):
+        """
+        This is a somewhat strange way of doing things (because we don't use a serializer class,
+        but seems to be a limitation of how django handles the combination of pagination and
+        filtering on ID of a model (ScanReport) that's not that being returned (MappingRule).
+
+        Instead, this is in effect a ListSerializer for MappingRule but that only works for in
+        the scenario we have. This means that get_mapping_rules_list() must now handle pagination
+        directly.
+        """
+        queryset = self.queryset
+        _id = self.request.query_params.get("id", None)
+        # Filter on ScanReport ID
+        if _id is not None:
+            queryset = queryset.filter(scan_report__id=_id)
+        count = queryset.count()
+
+        # Get subset of mapping rules that fit onto the page to be displayed
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 30)
+        rules = get_mapping_rules_list(
+            queryset, page_number=int(p), page_size=int(page_size)
+        )
+
+        # Process all rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
+
+
+class SummaryRulesList(RulesList):
+    def list(self, request):
+        # Get p and page_size from query_params
+        p = self.request.query_params.get("p", 1)
+        page_size = self.request.query_params.get("page_size", 20)
+        # Get queryset
+        queryset = self.get_queryset()
+
+        # Directly filter OmopField objects that end with "_concept_id" but not "_source_concept_id"
+        omop_fields_queryset = OmopField.objects.filter(
+            pk__in=queryset.values_list("omop_field_id", flat=True),
+            field__endswith="_concept_id",
+        ).exclude(field__endswith="_source_concept_id")
+
+        ids_list = omop_fields_queryset.values_list("id", flat=True)
+        # Filter the queryset based on valid omop_field_ids
+        filtered_queryset = queryset.filter(omop_field_id__in=ids_list)
+        count = filtered_queryset.count()
+        # Get the rules list based on the filtered queryset
+        rules = get_mapping_rules_list(
+            filtered_queryset, page_number=int(p), page_size=int(page_size)
+        )
+        # Process rules
+        for rule in rules:
+            rule["destination_table"] = {
+                "id": int(str(rule["destination_table"])),
+                "name": rule["destination_table"].table,
+            }
+
+            rule["destination_field"] = {
+                "id": int(str(rule["destination_field"])),
+                "name": rule["destination_field"].field,
+            }
+
+            rule["domain"] = {
+                "name": rule["domain"],
+            }
+
+            rule["source_table"] = {
+                "id": int(str(rule["source_table"])),
+                "name": rule["source_table"].name,
+            }
+
+            rule["source_field"] = {
+                "id": int(str(rule["source_field"])),
+                "name": rule["source_field"].name,
+            }
+
+        return Response(data={"count": count, "results": rules})
+
+
+class AnalyseRules(viewsets.ModelViewSet):
+    queryset = ScanReport.objects.all()
+    serializer_class = GetRulesAnalysis
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["id"]
+
+
 class OmopTableViewSet(viewsets.ModelViewSet):
     queryset = OmopTable.objects.all()
     serializer_class = OmopTableSerializer
@@ -577,3 +773,155 @@ class CountStatsScanReportTableField(APIView):
             }
             jsonrecords.append(scanreportfield_content)
         return Response(jsonrecords)
+
+
+class DatasetListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
+
+    serializer_class = DatasetViewSerializerV2
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {
+        "id": ["in"],
+        "data_partner": ["in", "exact"],
+        "hidden": ["in", "exact"],
+    }
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.all().distinct()
+
+        return Dataset.objects.filter(
+            Q(visibility=VisibilityChoices.PUBLIC)
+            | Q(
+                viewers=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                editors=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            )
+            | Q(
+                admins=self.request.user.id,
+                visibility=VisibilityChoices.RESTRICTED,
+            ),
+            project__members=self.request.user.id,
+        ).distinct()
+
+
+class DatasetAndDataPartnerListView(generics.ListAPIView):
+    """
+    API view to show all datasets.
+    """
+
+    serializer_class = DatasetAndDataPartnerViewSerializer
+    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["id", "name", "created_at", "visibility", "data_partner"]
+    filterset_fields = {
+        "id": ["in"],
+        "hidden": ["in", "exact"],
+        "name": ["in", "icontains"],
+    }
+    ordering = "-created_at"
+
+    def get_queryset(self):
+        """
+        If the User is the `AZ_FUNCTION_USER`, return all Datasets.
+
+        Else, return only the Datasets which are on projects a user is a member,
+        which are "PUBLIC", or "RESTRICTED" Datasets that a user is a viewer of.
+        """
+
+        if self.request.user.username == os.getenv("AZ_FUNCTION_USER"):
+            return Dataset.objects.prefetch_related("data_partner").all().distinct()
+
+        return (
+            Dataset.objects.filter(
+                Q(visibility=VisibilityChoices.PUBLIC)
+                | Q(
+                    viewers=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                )
+                | Q(
+                    editors=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                )
+                | Q(
+                    admins=self.request.user.id,
+                    visibility=VisibilityChoices.RESTRICTED,
+                ),
+                project__members=self.request.user.id,
+            )
+            .prefetch_related("data_partner")
+            .distinct()
+            .order_by("-id")
+        )
+
+
+class DatasetCreateView(generics.CreateAPIView):
+    serializer_class = DatasetViewSerializerV2
+    queryset = Dataset.objects.all()
+
+    def perform_create(self, serializer):
+        admins = serializer.initial_data.get("admins")
+        # If no admins given, add the user uploading the dataset
+        if not admins:
+            serializer.save(admins=[self.request.user])
+        # If the user is not in the admins, add them
+        elif self.request.user.id not in admins:
+            serializer.save(admins=admins + [self.request.user.id])
+        # All is well, save
+        else:
+            serializer.save()
+
+
+class DatasetRetrieveView(generics.RetrieveAPIView):
+    """
+    This view should return a single dataset from an id
+    """
+
+    serializer_class = DatasetViewSerializerV2
+    permission_classes = [CanView | CanAdmin | CanEdit]
+
+    def get_queryset(self):
+        return Dataset.objects.filter(id=self.kwargs.get("pk"))
+
+
+class DatasetUpdateView(generics.UpdateAPIView):
+    serializer_class = DatasetEditSerializer
+    # User must be able to view and be an admin or an editor
+    permission_classes = [CanView & (CanAdmin | CanEdit)]
+
+    def get_queryset(self):
+        return Dataset.objects.filter(id=self.kwargs.get("pk"))
+
+    def get_serializer_context(self):
+        return {"projects": self.request.data.get("projects")}
+
+
+class DatasetDeleteView(generics.DestroyAPIView):
+    serializer_class = DatasetEditSerializer
+    # User must be able to view and be an admin
+    permission_classes = [CanView & CanAdmin]
+
+    def get_queryset(self):
+        return Dataset.objects.filter(id=self.kwargs.get("pk"))
+
+
+class DatasetPermissionView(APIView):
+    """
+    API for permissions a user has on a specific dataset.
+    """
+
+    def get(self, request, pk):
+        permissions = get_user_permissions_on_dataset(request, pk)
+
+        return Response({"permissions": permissions}, status=status.HTTP_200_OK)

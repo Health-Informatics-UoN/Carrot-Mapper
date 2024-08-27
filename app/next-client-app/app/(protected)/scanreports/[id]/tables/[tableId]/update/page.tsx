@@ -23,18 +23,17 @@ export default async function UpdateTable({
 }: UpdateTableProps) {
   const defaultPageSize = 50;
   const defaultParams = {
-    scan_report_table: tableId,
     fields: "name,id",
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams };
   const query = objToQuery(combinedParams);
 
-  const scanReportsFields = await getAllScanReportFields(query);
+  const scanReportsFields = await getAllScanReportFields(id, tableId, query);
 
-  const table = await getScanReportTable(tableId);
-  const personId = await getScanReportField(table.person_id as string);
-  const dateEvent = await getScanReportField(table.date_event as string);
+  const table = await getScanReportTable(id, tableId);
+  const personId = await getScanReportField(id, tableId, table.person_id?.id);
+  const dateEvent = await getScanReportField(id, tableId, table.date_event?.id);
   const permissions = await getScanReportPermissions(id);
 
   return (

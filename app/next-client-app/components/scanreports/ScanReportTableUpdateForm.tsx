@@ -42,13 +42,13 @@ export function ScanReportTableUpdateForm({
     };
 
     const response = await updateScanReportTable(
+      scanreportTable.scan_report,
       scanreportTable.id,
       submittingData,
-      scanreportTable.scan_report
     );
     if (response) {
       toast.error(
-        `Update Scan Report Table failed. Error: ${response.errorMessage}`
+        `Update Scan Report Table failed. Error: ${response.errorMessage}`,
       );
     } else {
       toast.success("Update Scan Report Table successful!");

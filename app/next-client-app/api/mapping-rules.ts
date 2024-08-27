@@ -2,18 +2,21 @@
 import request from "@/lib/api/request";
 
 const fetchKeys = {
-  mappingruleslist: (filter?: string) => `mappingruleslist/?${filter}`,
+  mappingruleslist: (id: string, filter?: string) =>
+    `v2/scanreports/${id}/rules/?${filter}`,
   getMapDiagram: (id: string, filter?: string) =>
     `scanreports/${id}/mapping_rules/?${filter}`,
-  summaryRules: (filter?: string) => `mappingruleslistsummary/?${filter}`,
+  summaryRules: (id: string, filter?: string) =>
+    `v2/scanreports/${id}/rules/summary/?${filter}`,
 };
 
 export async function getMappingRulesList(
+  id: string,
   filter: string | undefined,
 ): Promise<PaginatedResponse<MappingRule>> {
   try {
     return await request<PaginatedResponse<MappingRule>>(
-      fetchKeys.mappingruleslist(filter),
+      fetchKeys.mappingruleslist(id, filter),
     );
   } catch (error) {
     return { count: 0, next: null, previous: null, results: [] };
@@ -55,11 +58,12 @@ export async function getMappingRules(
 }
 
 export async function getSummaryRules(
+  id: string,
   filter: string,
 ): Promise<PaginatedResponse<MappingRule>> {
   try {
     return await request<PaginatedResponse<MappingRule>>(
-      fetchKeys.summaryRules(filter),
+      fetchKeys.summaryRules(id, filter),
     );
   } catch (error) {
     return { count: 0, next: null, previous: null, results: [] };

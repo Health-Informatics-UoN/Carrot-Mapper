@@ -13,6 +13,8 @@ interface DownloadsProps {
   searchParams?: FilterParameters;
 }
 
+export const revalidate = 30;
+
 export default async function Downloads({
   params: { id },
   searchParams,

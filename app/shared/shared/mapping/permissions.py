@@ -241,6 +241,41 @@ def has_editorship(obj: Any, request: Request) -> bool:
     return False
 
 
+def can_edit(obj: Any, user: User) -> bool:
+    """Check the editorship permission on an object.
+
+    Args:
+        obj (Any): The object to check the permissions on.
+        user (User): User instance.
+
+    Returns:
+        bool: `True` if the request's user has permission, else `False`.
+    """
+    # Permission checks to perform
+    checks = {
+        ScanReport: lambda x: ScanReport.objects.filter(
+            Q(parent_dataset__editors__id=user.id)
+            | Q(parent_dataset__admins__id=user.id)
+            | Q(editors__id=user.id)
+            | Q(author__id=user.id),
+            parent_dataset__project__members__id=user.id,
+            id=x.id,
+        ).exists(),
+    }
+
+    # If `obj` is a scan report table|field|value, get the scan report
+    # it belongs to and check the user has permission to edit it.
+    if sub_scan_report := SCAN_REPORT_QUERIES.get(type(obj)):
+        sub_scan_report = sub_scan_report(obj)
+        return checks.get(type(sub_scan_report))(sub_scan_report)
+
+    # If `obj` is a dataset or scan report, check the user can edit it.
+    if permission_check := checks.get(type(obj)):
+        return permission_check(obj)
+
+    return False
+
+
 def is_admin(obj: Any, request: Request) -> bool:
     """Check the admin permission on an object.
 
@@ -312,6 +347,17 @@ class CanView(permissions.BasePermission):
         if is_az_function_user(request.user):
             return True
         return has_viewership(obj, request)
+
+
+class CanEditOrAdmin(permissions.BasePermission):
+    message = "You do not have permission to edit this."
+
+    def has_object_permission(self, request: Request, view, obj):
+        """
+        Return `True` in any of the following cases:
+            - the User is an Object editor or Admin.
+        """
+        return can_edit(obj, request.user)
 
 
 class CanEdit(permissions.BasePermission):

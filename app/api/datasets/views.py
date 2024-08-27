@@ -10,6 +10,14 @@ from django.db.models.query_utils import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework.filters import OrderingFilter
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from shared.mapping.models import Dataset, VisibilityChoices
@@ -21,7 +29,7 @@ from shared.mapping.permissions import (
 )
 
 
-class DatasetListView(generics.ListAPIView):
+class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
     """
     API view to show all datasets.
     """
@@ -33,6 +41,24 @@ class DatasetListView(generics.ListAPIView):
         "data_partner": ["in", "exact"],
         "hidden": ["in", "exact"],
     }
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        admins = serializer.initial_data.get("admins")
+        # If no admins given, add the user uploading the dataset
+        if not admins:
+            serializer.save(admins=[self.request.user])
+        # If the user is not in the admins, add them
+        elif self.request.user.id not in admins:
+            serializer.save(admins=admins + [self.request.user.id])
+        # All is well, save
+        else:
+            serializer.save()
 
     def get_queryset(self):
         """
@@ -62,7 +88,7 @@ class DatasetListView(generics.ListAPIView):
         ).distinct()
 
 
-class DatasetAndDataPartnerListView(generics.ListAPIView):
+class DatasetAndDataPartnerListView(GenericAPIView, ListModelMixin):
     """
     API view to show all datasets.
     """
@@ -77,6 +103,9 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
         "name": ["in", "icontains"],
     }
     ordering = "-created_at"
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
         """
@@ -112,54 +141,41 @@ class DatasetAndDataPartnerListView(generics.ListAPIView):
         )
 
 
-class DatasetCreateView(generics.CreateAPIView):
-    serializer_class = DatasetViewSerializerV2
-    queryset = Dataset.objects.all()
-
-    def perform_create(self, serializer):
-        admins = serializer.initial_data.get("admins")
-        # If no admins given, add the user uploading the dataset
-        if not admins:
-            serializer.save(admins=[self.request.user])
-        # If the user is not in the admins, add them
-        elif self.request.user.id not in admins:
-            serializer.save(admins=admins + [self.request.user.id])
-        # All is well, save
-        else:
-            serializer.save()
-
-
-class DatasetRetrieveView(generics.RetrieveAPIView):
+class DatasetDetail(
+    GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
+):
     """
-    This view should return a single dataset from an id
+    Detail View for Datasets.
+
+    Allows for update and deleting.
     """
 
-    serializer_class = DatasetViewSerializerV2
     permission_classes = [CanView | CanAdmin | CanEdit]
 
+    def initial(self, request, *args, **kwargs):
+        self.permission_classes = [CanView | CanAdmin | CanEdit]
+        if self.request.method in ["POST", "PATCH", "PUT"]:
+            self.permission_classes = [CanView & (CanAdmin | CanEdit)]
+        if self.request.method in ["DELETE"]:
+            self.permission_classes = [CanView & CanAdmin]
+        return super().initial(request)
+
     def get_queryset(self):
         return Dataset.objects.filter(id=self.kwargs.get("pk"))
 
-
-class DatasetUpdateView(generics.UpdateAPIView):
-    serializer_class = DatasetEditSerializer
-    # User must be able to view and be an admin or an editor
-    permission_classes = [CanView & (CanAdmin | CanEdit)]
-
-    def get_queryset(self):
-        return Dataset.objects.filter(id=self.kwargs.get("pk"))
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PATCH", "PUT", "DELETE"]:
+            return DatasetEditSerializer
+        return DatasetViewSerializerV2
 
     def get_serializer_context(self):
         return {"projects": self.request.data.get("projects")}
 
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
-class DatasetDeleteView(generics.DestroyAPIView):
-    serializer_class = DatasetEditSerializer
-    # User must be able to view and be an admin
-    permission_classes = [CanView & CanAdmin]
-
-    def get_queryset(self):
-        return Dataset.objects.filter(id=self.kwargs.get("pk"))
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
 
 
 class DatasetPermissionView(APIView):

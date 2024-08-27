@@ -4,7 +4,7 @@ from django.urls import path
 urlpatterns = [
     path(
         r"",
-        views.DatasetListView.as_view(),
+        views.DatasetIndex.as_view(),
         name="dataset_list",
     ),
     path(
@@ -14,23 +14,8 @@ urlpatterns = [
     ),
     path(
         r"<int:pk>/",
-        views.DatasetRetrieveView.as_view(),
+        views.DatasetDetail.as_view(),
         name="dataset_retrieve",
-    ),
-    path(
-        r"update/<int:pk>/",
-        views.DatasetUpdateView.as_view(),
-        name="dataset_update",
-    ),
-    path(
-        r"delete/<int:pk>/",
-        views.DatasetDeleteView.as_view(),
-        name="dataset_delete",
-    ),
-    path(
-        r"create/",
-        views.DatasetCreateView.as_view(),
-        name="dataset_create",
     ),
     path(
         "<int:pk>/permissions/",
