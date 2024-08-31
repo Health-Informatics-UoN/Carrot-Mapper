@@ -414,7 +414,6 @@ class ScanReportTableDetailV2(
 
 
 class ScanReportFieldIndexV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
-    queryset = ScanReportField.objects.all().order_by("id")
     serializer_class = ScanReportFieldListSerializerV2
     filterset_fields = {
         "name": ["icontains"],
@@ -429,7 +428,9 @@ class ScanReportFieldIndexV2(ScanReportPermissionMixin, GenericAPIView, ListMode
         return self.list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return ScanReportField.objects.filter(scan_report_table=self.table)
+        return ScanReportField.objects.filter(scan_report_table=self.table).order_by(
+            "id"
+        )
 
     @method_decorator(cache_page(60 * 15))
     @method_decorator(vary_on_cookie)
