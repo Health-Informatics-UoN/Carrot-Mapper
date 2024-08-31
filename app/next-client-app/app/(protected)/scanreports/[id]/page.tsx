@@ -19,9 +19,7 @@ export default async function ScanReportsTable({
   params: { id },
   searchParams,
 }: ScanReportsTableProps) {
-  const defaultParams = {
-    scan_report: id,
-  };
+  const defaultParams = {};
 
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
