@@ -49,6 +49,7 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
         NotFound: If the parent dataset is not found.
     """
 
+    author = UserSerializer(read_only=True)
     parent_dataset = DatasetSerializer(read_only=True)
     data_partner = serializers.SerializerMethodField()
 

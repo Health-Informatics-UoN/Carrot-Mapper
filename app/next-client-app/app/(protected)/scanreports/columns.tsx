@@ -73,6 +73,19 @@ export const columns: ColumnDef<ScanReport>[] = [
     enableSorting: false,
   },
   {
+    id: "Author",
+    accessorKey: "author",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Author" />
+    ),
+    enableHiding: true,
+    enableSorting: true,
+    cell: ({ row }) => {
+      const { author } = row.original;
+      return author.username;
+    },
+  },
+  {
     id: "Uploaded",
     accessorKey: "created_at",
     header: ({ column }) => (
