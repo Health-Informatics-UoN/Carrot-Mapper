@@ -21,6 +21,16 @@ class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
+        fields = ["id", "name"]
+
+
+class ProjectWithMembersSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    """
+    Serialiser for showing the names and members of Projects. Use in non-admin ListViews.
+    """
+
+    class Meta:
+        model = Project
         fields = ["id", "name", "members"]
 
 

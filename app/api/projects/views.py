@@ -1,8 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from projects.serializers import (
     ProjectDatasetSerializer,
-    ProjectNameSerializer,
     ProjectSerializer,
+    ProjectWithMembersSerializer,
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -28,7 +28,7 @@ class ProjectList(ListAPIView):
         if self.request.GET.get("datasets") is not None:
             return ProjectDatasetSerializer
 
-        return ProjectNameSerializer
+        return ProjectWithMembersSerializer
 
     def get_queryset(self):
         if dataset := self.request.GET.get("dataset"):
