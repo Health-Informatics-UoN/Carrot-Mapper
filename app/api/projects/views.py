@@ -4,7 +4,6 @@ from projects.serializers import (
     ProjectNameSerializer,
     ProjectSerializer,
 )
-from rest_framework import generics
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from shared.mapping.models import Project
@@ -37,7 +36,7 @@ class ProjectList(ListAPIView):
                 datasets__exact=dataset, members__id=self.request.user.id
             ).distinct()
 
-        return Project.objects.all()
+        return Project.objects.filter(members__id=self.request.user.id).distinct()
 
 
 class ProjectDetail(RetrieveAPIView):
