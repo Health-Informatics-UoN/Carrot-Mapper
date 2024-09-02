@@ -5,12 +5,7 @@ import { Boundary } from "@/components/core/boundary";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import {
-  getDataPartners,
-  getDataSet,
-  getDatasetPermissions,
-  getProjects,
-} from "@/api/datasets";
+import { getDataSet, getDatasetPermissions } from "@/api/datasets";
 import { Badge } from "@/components/ui/badge";
 import { InfoItem } from "@/components/core/InfoItem";
 import Link from "next/link";
@@ -34,22 +29,15 @@ export default async function DatasetLayout({
   ];
 
   const dataset = await getDataSet(params.id);
-  // Get the list of data partners then filter it
-  const dataPartnersList = await getDataPartners();
-  const dataPartner = dataPartnersList.filter(
-    (partner) => partner.id === dataset.data_partner,
-  );
-  // Get the list of projects then filter it
-  const projectsList = await getProjects();
-  const projects = projectsList.filter((project) =>
-    dataset.projects.includes(project.id),
-  );
+
+  const dataPartner = dataset.data_partner;
+  const projects = dataset.projects;
 
   const createdDate = new Date(dataset.created_at);
   // Checking permissions
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission),
+      permissions.permissions.includes(permission)
     )
   ) {
     return <Forbidden />;
@@ -83,7 +71,7 @@ export default async function DatasetLayout({
         </h3>
         <InfoItem
           label="Data Partner"
-          value={dataPartner[0].name}
+          value={dataPartner.name}
           className="py-1 md:py-0 md:px-3"
         />
         <InfoItem
