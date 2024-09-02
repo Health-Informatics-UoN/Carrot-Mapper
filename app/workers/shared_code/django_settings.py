@@ -10,8 +10,10 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
-    "mapping",
+    "shared.data",
+    "shared.mapping",
     "shared",
+    "shared.files",
 ]
 
 DATABASES = {

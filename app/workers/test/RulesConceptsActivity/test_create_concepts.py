@@ -5,7 +5,7 @@ from RulesConceptsActivity import (
     _set_defaults_for_none_vocab,
     _update_entries_with_standard_concepts,
 )
-from shared.data.omop import Concept
+from shared.data.models import Concept
 
 
 def test__create_concepts():

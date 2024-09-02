@@ -46,6 +46,7 @@ export default async function ScanReportLayout({
     },
     { name: "Rules", slug: "mapping_rules", iconName: "Waypoints" },
     { name: "Review Rules", slug: "review_rules", iconName: "SearchCheck" },
+    { name: "Downloads", slug: "downloads", iconName: "Download" },
   ];
 
   const scanreport = await getScanReport(params.id);
@@ -78,7 +79,7 @@ export default async function ScanReportLayout({
         <h2>{scanreport.dataset}</h2>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
+      <div className="flex flex-col md:flex-row md:items-center h-7 text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
         <InfoItem
           label="Data Partner"
           value={scanreport.data_partner}
@@ -89,14 +90,15 @@ export default async function ScanReportLayout({
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
           className="py-1 md:py-0 md:px-3"
         />
-
-        <ScanReportStatus
-          id={params.id}
-          status={scanreport.status}
-          dataset={scanreport.dataset}
-          className="w-[180px] h-7"
-          disabled={!canEdit} // Disable when users don't have permission
-        />
+        <div className="py-1 md:py-0 md:px-3 h-5">
+          <ScanReportStatus
+            id={params.id}
+            status={scanreport.status}
+            dataset={scanreport.dataset}
+            className="w-[180px] h-5"
+            disabled={!canEdit} // Disable when users don't have permission
+          />
+        </div>
       </div>
       {/* "Navs" group */}
       <div className="flex flex-col md:flex-row justify-between">
@@ -130,7 +132,7 @@ export default async function ScanReportLayout({
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <a
-                  href={`/api/scanreports/${params.id}/download/`}
+                  href={`/api/v2/scanreports/${params.id}/download/`}
                   download
                   className="flex"
                 >

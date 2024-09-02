@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, NotRequired, Optional, TypedDict, Union
+from typing import Any, Callable, Dict, Literal, NotRequired, Optional, TypedDict, Union
 
 
 class ScanReportConceptContentType(Enum):
@@ -21,3 +22,16 @@ class ScanReportValueDict(TypedDict):
     value_description: Optional[str]
     vocabulary_id: NotRequired[Optional[str]]
     standard_concept: NotRequired[Optional[str]]
+
+
+class RulesFileMessage(TypedDict):
+    scan_report_id: int
+    user_id: str
+    file_type: Literal["text/csv", "application/json", "image/svg+xml"]
+
+
+@dataclass
+class FileHandlerConfig:
+    handler: Callable[[Any], Any]
+    file_type_value: str
+    file_extension: str

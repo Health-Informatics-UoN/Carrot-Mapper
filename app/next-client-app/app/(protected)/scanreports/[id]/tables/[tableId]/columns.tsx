@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 
 export const columns = (
   addSR: (concept: ScanReportConcept, c: Concept) => void,
-  deleteSR: (id: number) => void
+  deleteSR: (id: number) => void,
 ): ColumnDef<ScanReportField>[] => [
   {
     id: "Name",
@@ -76,8 +76,8 @@ export const columns = (
       return (
         <AddConcept
           rowId={id}
-          parentId={scan_report_table.toString()}
-          location="SR-Fields"
+          tableId={scan_report_table.toString()}
+          contentType="scanreportfield"
           disabled={canEdit ? false : true}
           addSR={addSR}
         />

@@ -1,7 +1,5 @@
-import "../globals.css";
-import "../custom.css";
 import React from "react";
-import { getCurrentUser } from "../../api/users";
+import { getCurrentUser } from "@/api/users";
 import { MenuBar } from "@/components/core/menubar";
 import Footer from "@/components/core/footer";
 

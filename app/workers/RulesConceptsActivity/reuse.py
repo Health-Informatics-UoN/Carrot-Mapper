@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Union
 
-from shared.data.models import ScanReportConcept, ScanReportField, ScanReportValue
+from shared.mapping.models import ScanReportConcept, ScanReportField, ScanReportValue
 from shared_code import db
 from shared_code.logger import logger
 from shared_code.models import (

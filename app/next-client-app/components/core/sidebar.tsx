@@ -32,8 +32,9 @@ export function Sidebar({
       className={cn(
         "flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3",
         {
-          "lg:hidden px-0": onPublic,
-        }
+          "lg:hidden": onPublic,
+          "border-b-2 border-gray-300": !onPublic,
+        },
       )}
     >
       <div className="flex items-center">
@@ -127,7 +128,6 @@ export function Sidebar({
             </SheetContent>
           </Sheet>
         </div>
-        {/* TODO: Need to confirm again this link */}
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <Image

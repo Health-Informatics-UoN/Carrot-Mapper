@@ -24,8 +24,12 @@ export const columns: ColumnDef<ScanReportTable>[] = [
         sortName="person_id"
       />
     ),
+    cell: ({ row }) => {
+      const { person_id } = row.original;
+      return <>{person_id?.name}</>;
+    },
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
   },
   {
     id: "Event Date",
@@ -37,8 +41,12 @@ export const columns: ColumnDef<ScanReportTable>[] = [
         sortName="date_event"
       />
     ),
+    cell: ({ row }) => {
+      const { date_event } = row.original;
+      return <>{date_event?.name}</>;
+    },
     enableHiding: true,
-    enableSorting: true,
+    enableSorting: false,
   },
   {
     id: "edit",

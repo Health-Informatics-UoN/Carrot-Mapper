@@ -1,9 +1,7 @@
-import "../globals.css";
-import "../custom.css";
 import "react-tooltip/dist/react-tooltip.css";
-import { Sidebar } from "../../components/core/sidebar";
+import { Sidebar } from "@/components/core/sidebar";
 import React from "react";
-import { getCurrentUser } from "../../api/users";
+import { getCurrentUser } from "@/api/users";
 
 export default async function ProtectedLayout({
   children,
@@ -15,7 +13,7 @@ export default async function ProtectedLayout({
   return (
     <>
       <Sidebar userName={user.username} />
-      <section className="px-10 my-6">{children}</section>
+      <section className="container my-6">{children}</section>
     </>
   );
 }

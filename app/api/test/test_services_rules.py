@@ -4,9 +4,9 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
-from mapping.services.rules import analyse_concepts
 from rest_framework.authtoken.models import Token
-from shared.data.models import (
+from shared.data.models import Concept
+from shared.mapping.models import (
     DataPartner,
     Dataset,
     MappingRule,
@@ -19,7 +19,6 @@ from shared.data.models import (
     ScanReportTable,
     ScanReportValue,
 )
-from shared.data.omop import Concept
 
 
 class TestMisalignedMappings(TestCase):
@@ -265,22 +264,4 @@ class TestMisalignedMappings(TestCase):
             source_table=self.scan_report_table_2,
             source_field=self.scan_report_field_desc,
             concept=self.scan_report_concept_cough_desc,
-        )
-
-    @pytest.mark.skip(reason="This test relies on a more complete OMOP db.")
-    def test_analyse_concepts(self):
-        data = analyse_concepts(self.scan_report1.id)
-        test_data = data["data"][0]
-
-        expected_rule_id = self.concept_prod_cough.concept_id
-        expected_rule_name = self.concept_prod_cough.concept_name
-        expected_descendant = self.concept_cough_desc.concept_id
-        expected_ancestor = self.concept_cough.concept_id
-        self.assertEqual(test_data["rule_id"], expected_rule_id)
-        self.assertEqual(test_data["rule_name"], expected_rule_name)
-        self.assertEqual(
-            test_data["anc_desc"][0]["descendants"][0]["d_id"], expected_descendant
-        )
-        self.assertEqual(
-            test_data["anc_desc"][0]["ancestors"][0]["a_id"], expected_ancestor
         )

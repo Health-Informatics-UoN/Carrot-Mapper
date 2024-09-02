@@ -30,28 +30,32 @@ export default async function ScanReportsValue({
 }: ScanReportsValueProps) {
   const defaultPageSize = 20;
   const defaultParams = {
-    scan_report_field: fieldId,
     page_size: defaultPageSize,
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
   const permissions = await getScanReportPermissions(id);
-  const scanReportsValues = await getScanReportValues(query);
-  const tableName = await getScanReportTable(tableId);
-  const fieldName = await getScanReportField(fieldId);
+  const table = await getScanReportTable(id, tableId);
+  const field = await getScanReportField(id, tableId, fieldId);
+  const scanReportsValues = await getScanReportValues(
+    id,
+    tableId,
+    fieldId,
+    query,
+  );
 
   const scanReportsConcepts =
     scanReportsValues.results.length > 0
       ? await getAllScanReportConcepts(
           `object_id__in=${scanReportsValues.results
             .map((item) => item.id)
-            .join(",")}`
+            .join(",")}`,
         )
       : [];
   const conceptsFilter =
     scanReportsConcepts.length > 0
       ? await getAllConceptsFiltered(
-          scanReportsConcepts?.map((item) => item.concept).join(",")
+          scanReportsConcepts?.map((item) => item.concept).join(","),
         )
       : [];
   return (
@@ -60,11 +64,11 @@ export default async function ScanReportsValue({
         {" "}
         <Link href={`/scanreports/${id}/tables/${tableId}`}>
           <Button variant={"secondary"} className="mb-3">
-            Table: {tableName.name}
+            Table: {table.name}
           </Button>
         </Link>
         <Button variant={"secondary"} className="mb-3">
-          Field: {fieldName.name}
+          Field: {field.name}
         </Button>
       </div>
       <div>
@@ -79,6 +83,7 @@ export default async function ScanReportsValue({
           clickable={false}
           filterCol="value"
           filterText="value "
+          tableId={tableId}
         />
       </div>
     </div>

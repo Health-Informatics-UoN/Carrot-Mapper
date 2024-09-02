@@ -3,13 +3,13 @@ from datetime import date
 from unittest import mock
 
 import pytest
-from api.views import DatasetListView
+from datasets.views import DatasetIndex
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase, TransactionTestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
-from shared.data.models import (
+from shared.mapping.models import (
     Concept,
     DataPartner,
     Dataset,
@@ -75,7 +75,7 @@ class TestDatasetListView(TestCase):
         self.factory = APIRequestFactory()
 
         # The view for the tests
-        self.view = DatasetListView.as_view()
+        self.view = DatasetIndex.as_view()
 
     def test_dataset_returns(self):
         # Make the request for Datasets

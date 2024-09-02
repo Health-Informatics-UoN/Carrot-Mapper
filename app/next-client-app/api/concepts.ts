@@ -5,10 +5,9 @@ import { fetchAllPages } from "@/lib/api/utils";
 const fetchKeys = {
   conceptFilter: (filter: string) =>
     `v2/omop/conceptsfilter/?concept_id__in=${filter}`,
-  addConcept: "v2/scanreportconcept/",
-  deleteConcept: (conceptId: number) => `v2/scanreportconcept/${conceptId}/`,
-  scanreportConcepts: (filter?: string) =>
-    `v2/scanreportconceptsfilter/?${filter}`,
+  addConcept: "v2/scanreports/concepts/",
+  deleteConcept: (conceptId: number) => `v2/scanreports/concepts/${conceptId}/`,
+  scanreportConcepts: (filter?: string) => `v2/scanreports/concepts/?${filter}`,
 };
 
 export async function getAllScanReportConcepts(
