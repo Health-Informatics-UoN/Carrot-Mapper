@@ -37,7 +37,9 @@ export function CreateDatasetDialog({
       </DialogTrigger>
       <DialogContent className="w-full">
         <DialogHeader>
-          <DialogTitle>Create a New Dataset</DialogTitle>
+          <DialogTitle className="text-center">
+            Create a New Dataset
+          </DialogTitle>
         </DialogHeader>
         {description && (
           <DialogDescription className="justify-center items-center text-center">
