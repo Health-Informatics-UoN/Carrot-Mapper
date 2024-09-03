@@ -28,15 +28,17 @@ export function ScanReportDetailsForm({
   users,
   permissions,
   isAuthor,
+  disabledDataset,
 }: {
   datasetList: DataSetSRList[];
   scanreport: ScanReport;
   users: User[];
-  permissions: Permission[];
+  permissions?: Permission[];
   isAuthor: boolean;
+  disabledDataset: boolean;
 }) {
   // Permissions
-  const canUpdate = permissions.includes("CanAdmin") || isAuthor;
+  const canUpdate = permissions?.includes("CanAdmin") || isAuthor;
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
     scanreport.visibility === "PUBLIC" ? true : false
@@ -45,15 +47,16 @@ export function ScanReportDetailsForm({
   // Making options suitable for React Select
   const userOptions = FormDataFilter<User>(users);
   const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
+  console.log(parentDatasetOptions);
   // Find the intial parent dataset and author which is required when adding Dataset
-  const initialParentDataset = datasetList.find(
-    (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
-  )!;
+  // const initialParentDataset = datasetList.find(
+  //   (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
+  // )!;
 
   const initialAuthor = users.find((user) => scanreport.author.id === user.id)!;
   // Find and make initial data suitable for React select
-  const initialDatasetFilter =
-    FormDataFilter<DataSetSRList>(initialParentDataset);
+  // const initialDatasetFilter =
+  //   FormDataFilter<DataSetSRList>(initialParentDataset);
   const initialAuthorFilter = FormDataFilter<User>(initialAuthor);
   const initialViewersFilter = FindAndFormat<User>(users, scanreport.viewers);
   const initialEditorsFilter = FindAndFormat<User>(users, scanreport.editors);
@@ -88,7 +91,7 @@ export function ScanReportDetailsForm({
         author: initialAuthorFilter[0].value,
         viewers: initialViewersFilter.map((viewer) => viewer.value),
         editors: initialEditorsFilter.map((editor) => editor.value),
-        parent_dataset: initialDatasetFilter[0].value,
+        parent_dataset: parentDatasetOptions[0].value,
       }}
       onSubmit={(data) => {
         handleSubmit(data);
@@ -201,7 +204,7 @@ export function ScanReportDetailsForm({
                 name="parent_dataset"
                 placeholder="Choose a parent dataset"
                 isMulti={false}
-                isDisabled={!canUpdate}
+                isDisabled={!canUpdate || disabledDataset}
               />
             </div>
             <div className="flex mt-3">

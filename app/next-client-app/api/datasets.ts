@@ -134,7 +134,7 @@ export async function getDatasetPermissions(
   try {
     return await request<PermissionsResponse>(fetchKeys.permissions(id));
   } catch (error) {
-    console.warn("Failed to fetch data.");
+    console.warn("Failed to fetch data about dataset permissions.");
     return { permissions: [] };
   }
 }

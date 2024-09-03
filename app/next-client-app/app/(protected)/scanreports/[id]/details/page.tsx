@@ -18,20 +18,38 @@ export default async function ScanreportDetails({
   params: { id },
 }: ScanReportDetailsProps) {
   const scanreport = await getScanReport(id);
-  const datasetList = await getDatasetList();
-  const users = await getDataUsers();
-  const parent_dataset = datasetList.find(
-    (dataset) => dataset.name === scanreport?.parent_dataset.name,
-  );
-  const permissionsDS = await getDatasetPermissions(
-    parent_dataset?.id.toString() || "",
-  );
-  const permissionsSR = await getScanReportPermissions(id);
-  const isAuthor = permissionsSR.permissions.includes("IsAuthor");
-
   if (!scanreport) {
     return notFound();
   }
+  const permissionsSR = await getScanReportPermissions(id);
+  const isAuthor = permissionsSR.permissions.includes("IsAuthor");
+  const datasetList = await getDatasetList();
+  const users = await getDataUsers();
+  const parent_dataset = datasetList.find(
+    (dataset) => dataset.name === scanreport?.parent_dataset.name
+  );
+  if (!parent_dataset && isAuthor) {
+    const initialParentDataset = [
+      datasetList.find(
+        (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
+      )!,
+    ];
+    return (
+      <div>
+        <ScanReportDetailsForm
+          scanreport={scanreport}
+          datasetList={initialParentDataset}
+          users={users}
+          isAuthor={isAuthor}
+          disabledDataset={true}
+        />
+      </div>
+    );
+  }
+
+  const permissionsDS = await getDatasetPermissions(
+    parent_dataset?.id.toString() || ""
+  );
 
   if (permissionsDS.permissions.length === 0) {
     return (
@@ -49,6 +67,7 @@ export default async function ScanreportDetails({
         users={users}
         permissions={permissionsDS.permissions}
         isAuthor={isAuthor}
+        disabledDataset={false}
       />
     </div>
   );
