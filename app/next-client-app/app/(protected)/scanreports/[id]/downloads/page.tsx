@@ -30,21 +30,22 @@ export default async function Downloads({
 
   return (
     <div>
-      <Alert className="max-w-sm">
-        <AlertDescription className="flex">
-          <InfoIcon className="h-4 w-4 mr-2" />
-          <AlertTitle>
-            Downloads might take a few minutes to be ready.
-          </AlertTitle>
-        </AlertDescription>
-      </Alert>
-
       {filesList && (
         <DataTable
           columns={columns}
           data={filesList.results}
           count={filesList.count}
           clickableRow={false}
+          Filter={
+            <Alert className="max-w-sm h-10 flex items-center">
+              <AlertDescription className="flex">
+                <InfoIcon className="h-4 w-4 mr-2" />
+                <AlertTitle>
+                  Downloads might take a few minutes to be ready.
+                </AlertTitle>
+              </AlertDescription>
+            </Alert>
+          }
           defaultPageSize={defaultPageSize}
         />
       )}
