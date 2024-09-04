@@ -21,7 +21,7 @@ export default function Default() {
         )}
       />{" "}
       {/* Content */}
-      <div className="space-y-12 lg:space-y-28">
+      <div className="space-y-12 lg:space-y-32">
         <Hero />
         {process.env.ENABLE_FEATURES_SECTION === "true" && <Features />}
         {process.env.ENABLE_PROJECTS_SECTION === "true" && <BentoProjects />}
