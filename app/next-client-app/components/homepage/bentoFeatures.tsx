@@ -57,7 +57,7 @@ export default async function BentoFeatures() {
           </BoxReveal>
         </div>
       </div>
-      <BentoGrid className="lg:grid-cols-7 slideInEffect">
+      <BentoGrid className="lg:grid-cols-7">
         {features.map((feature) => (
           <BentoCard key={feature.name} {...feature} />
         ))}
