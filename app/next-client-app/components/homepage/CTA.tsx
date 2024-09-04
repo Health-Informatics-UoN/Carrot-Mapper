@@ -1,26 +1,43 @@
 import BoxReveal from "@/components/magicui/box-reveal";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { Github, Rocket } from "lucide-react";
+import Link from "next/link";
 
 export default function CallToAction() {
+  const deployLink: string = "";
   return (
     <>
       {/* CTA section */}
-      <div className="z-10 bg-gradient-to-b from-indigo-900 to-cyan-600 flex flex-col items-center text-white rounded-3xl text-center px-5 lg:px-0 slideInEffect">
-        <BoxReveal boxColor={"#e6a312"} duration={0.5}>
-          <h1 className="text-white sm:text-5xl text-pretty text-3xl mt-10">
-            Get Started with Carrot today!
+      <div className="flex flex-col items-center text-center px-5 lg:px-0">
+        <BoxReveal boxColor={"#e6a312"} duration={1.0}>
+          <h1 className="sm:text-5xl text-pretty text-3xl">
+            Join our community
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <h1 className="text-white opacity-80 sm:text-2xl text-pretty text-md my-2">
-            Learn more and start using Carrot for your research projects now.
+          <h1 className="opacity-80 sm:text-2xl text-pretty text-md my-4">
+            Start a Github discussion or deploy your own Carrot today!
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <Button className="sm:text-lg text-md my-10 bg-amber-500">
-            Contact us <ArrowRight className="ml-2" />
-          </Button>
+          <div className="flex gap-5">
+            <Link
+              href={
+                "https://github.com/Health-Informatics-UoN/Carrot-Mapper/discussions"
+              }
+            >
+              <Button className="lg:text-lg text-md hover:bg-orange-600/80 dark:hover:bg-orange-600/80 bg-orange-600 dark:bg-orange-600 dark:text-white">
+                <Github className="mr-2" /> GitHub Discussions
+              </Button>
+            </Link>
+            {deployLink !== "" && (
+              <Link href={deployLink}>
+                <Button className="lg:text-lg text-md hover:border-orange-900 dark:hover:border-orange-900 text-orange-600 dark:text-orange-600 bg-white dark:bg-white border border-orange-600">
+                  <Rocket className="mr-2" /> Deploy your own Carrot
+                </Button>
+              </Link>
+            )}
+          </div>
         </BoxReveal>
       </div>
     </>
