@@ -4,7 +4,7 @@ import { Github, Rocket } from "lucide-react";
 import Link from "next/link";
 
 export default function CallToAction() {
-  const deployLink: string = "";
+  const deployLink = process.env.DEPLOY_LINK ?? "";
   return (
     <>
       {/* CTA section */}
@@ -16,11 +16,12 @@ export default function CallToAction() {
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
           <h1 className="opacity-80 sm:text-2xl text-pretty text-md my-4">
-            Start a Github discussion or deploy your own Carrot today!
+            Start a Github discussion{" "}
+            {deployLink !== "" && <span>deploy your own Carrot</span>} today!
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <div className="flex gap-5">
+          <div className="flex gap-5 lg:flex-row flex-col">
             <Link
               href={
                 "https://github.com/Health-Informatics-UoN/Carrot-Mapper/discussions"
