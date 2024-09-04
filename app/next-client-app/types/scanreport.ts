@@ -7,7 +7,7 @@ interface ScanReport {
   created_at: Date;
   hidden: boolean;
   visibility: string;
-  author: number;
+  author: User;
   viewers: number[];
   editors: number[];
 }

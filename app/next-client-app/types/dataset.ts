@@ -25,11 +25,11 @@ interface DataSetSRList {
   name: string;
   visibility: string;
   hidden: boolean | null;
-  data_partner: number;
+  data_partner: DataPartner;
   viewers: number[];
   admins: number[];
   editors: number[];
-  projects: number[];
+  projects: Project[];
 }
 interface Project {
   id: number;

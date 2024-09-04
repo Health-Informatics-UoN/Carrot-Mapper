@@ -57,7 +57,7 @@ export default async function ScanReportLayout({
 
   if (
     !requiredPermissions.some((permission) =>
-      permissions.permissions.includes(permission),
+      permissions.permissions.includes(permission)
     )
   ) {
     return <Forbidden />;
@@ -84,6 +84,11 @@ export default async function ScanReportLayout({
           label="Data Partner"
           value={scanreport.data_partner}
           className="py-1 md:py-0 md:pr-3"
+        />
+        <InfoItem
+          label="Author"
+          value={scanreport.author.username}
+          className="py-1 md:py-0 md:px-3"
         />
         <InfoItem
           label="Created"

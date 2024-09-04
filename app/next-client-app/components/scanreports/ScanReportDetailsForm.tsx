@@ -39,7 +39,7 @@ export function ScanReportDetailsForm({
   const canUpdate = permissions.includes("CanAdmin") || isAuthor;
   // State control for viewers fields
   const [publicVisibility, setPublicVisibility] = useState<boolean>(
-    scanreport.visibility === "PUBLIC" ? true : false,
+    scanreport.visibility === "PUBLIC" ? true : false
   );
 
   // Making options suitable for React Select
@@ -47,10 +47,10 @@ export function ScanReportDetailsForm({
   const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
   // Find the intial parent dataset and author which is required when adding Dataset
   const initialParentDataset = datasetList.find(
-    (dataset) => scanreport.parent_dataset.name === dataset.name, // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
+    (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
   )!;
 
-  const initialAuthor = users.find((user) => scanreport.author === user.id)!;
+  const initialAuthor = users.find((user) => scanreport.author.id === user.id)!;
   // Find and make initial data suitable for React select
   const initialDatasetFilter =
     FormDataFilter<DataSetSRList>(initialParentDataset);
@@ -71,7 +71,7 @@ export function ScanReportDetailsForm({
     const response = await updateScanReport(
       scanreport.id,
       submittingData,
-      true, // "true" for the value "needRedirect"
+      true // "true" for the value "needRedirect"
     );
     if (response) {
       toast.error(`Update Scan Report failed. Error: ${response.errorMessage}`);
