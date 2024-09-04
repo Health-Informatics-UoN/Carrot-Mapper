@@ -32,9 +32,9 @@ export function Sidebar({
       className={cn(
         "flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3",
         {
-          "lg:hidden": onPublic,
+          "lg:hidden px-0": onPublic,
           "border-b-2 border-gray-300": !onPublic,
-        },
+        }
       )}
     >
       <div className="flex items-center">
