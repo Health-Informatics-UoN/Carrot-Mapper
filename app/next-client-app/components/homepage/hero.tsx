@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <>
       {/* Hero section */}
-      <div className="flex-col lg:flex lg:flex-row lg:justify-between items-center pt-10">
+      <div className="flex-col overflow-hidden lg:flex lg:flex-row lg:justify-between items-center pt-10">
         <div className="flex flex-col lg:space-y-5 space-y-3 lg:w-3/5">
           <div className="lg:text-5xl text-3xl gap-5 text-center lg:text-left">
             <h1 className="text-orange-600">OMOP Transforming </h1>
@@ -25,16 +25,6 @@ export default function Hero() {
         <div className="lg:w-2/5">
           <AnimatedBeamMapping />
         </div>
-        <AnimatedGridPattern
-          numSquares={60}
-          maxOpacity={0.15}
-          duration={1.2}
-          repeatDelay={1}
-          className={cn(
-            "[mask-image:radial-gradient(900px_circle_at_center,white,transparent)]",
-            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-          )}
-        />
       </div>
     </>
   );
