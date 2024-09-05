@@ -7,6 +7,17 @@ import { cn } from "@/lib/utils";
 import AnimatedGridPattern from "@/components/magicui/animated-grid-pattern";
 
 export default function Default() {
+  const components = [
+    { Component: Hero, enabled: true },
+    { Component: Features, enabled: process.env.ENABLE_FEATURES === "true" },
+    {
+      Component: BentoProjects,
+      enabled: process.env.ENABLE_PROJECTS === "true",
+    },
+    { Component: Funders, enabled: process.env.ENABLE_FUNDERS === "true" },
+    { Component: CallToAction, enabled: true },
+  ];
+
   return (
     <>
       {/* Background */}
@@ -22,11 +33,10 @@ export default function Default() {
       />{" "}
       {/* Content */}
       <div className="space-y-12 lg:space-y-32">
-        <Hero />
-        {process.env.ENABLE_FEATURES === "true" && <Features />}
-        {process.env.ENABLE_PROJECTS === "true" && <BentoProjects />}
-        {process.env.ENABLE_FUNDERS === "true" && <Funders />}
-        <CallToAction />
+        {components.map(
+          ({ Component, enabled }, index) =>
+            enabled && <Component key={index} />
+        )}
       </div>
     </>
   );
