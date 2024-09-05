@@ -11,11 +11,11 @@ export default async function PublicLayout({
   const cookieStore = cookies();
   const csrfToken = cookieStore.get("csrftoken");
   const session = cookieStore.get("sessionid");
-  const userIsLogged: boolean = !!(session && csrfToken);
+  const userLoggedIn: boolean = !!(session && csrfToken);
   return (
     <>
       <section className="container">
-        <MenuBar userIsLogged={userIsLogged} />
+        <MenuBar userLoggedIn={userLoggedIn} />
         {children}
         <Footer />
       </section>

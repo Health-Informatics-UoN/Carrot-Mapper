@@ -52,9 +52,6 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
           <Circle ref={div2Ref}>
             <h2>Cough</h2>
           </Circle>
-          <Circle ref={div3Ref}>
-            <h2>(M) Male</h2>
-          </Circle>
         </div>
         <div className="flex flex-col justify-center">
           <Circle ref={div6Ref}>
@@ -71,9 +68,6 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
           <Circle ref={div7Ref}>OMOP Mapping</Circle>
           <Circle ref={div8Ref}>
             <h2>254761 - Cough</h2>
-          </Circle>
-          <Circle ref={div9Ref}>
-            <h2>8507 - Male</h2>
           </Circle>
         </div>
       </div>
@@ -107,12 +101,6 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
         fromRef={div6Ref}
         toRef={div8Ref}
         duration={4}
-      />
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div6Ref}
-        toRef={div9Ref}
-        duration={5}
       />
     </div>
   );

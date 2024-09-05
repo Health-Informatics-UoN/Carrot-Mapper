@@ -12,7 +12,7 @@ export default function Default() {
       {/* Background */}
       <AnimatedGridPattern
         numSquares={60}
-        maxOpacity={0.15}
+        maxOpacity={0.1}
         duration={1.2}
         repeatDelay={1}
         className={cn(
