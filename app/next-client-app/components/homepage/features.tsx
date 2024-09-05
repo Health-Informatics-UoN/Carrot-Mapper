@@ -6,7 +6,6 @@ import { FastForward, Lock, Recycle } from "lucide-react";
 export default function Features() {
   return (
     <>
-      {/* Features section */}
       <div className="items-center text-center justify-center w-full">
         <div className="flex flex-col justify-center space-y-2">
           <div className="lg:text-4xl flex justify-center text-2xl">

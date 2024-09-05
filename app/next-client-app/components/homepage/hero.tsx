@@ -1,11 +1,8 @@
 import { AnimatedBeamMapping } from "@/components/AnimatedBeamMapping";
-import AnimatedGridPattern from "@/components/magicui/animated-grid-pattern";
-import { cn } from "@/lib/utils";
 
 export default function Hero() {
   return (
     <>
-      {/* Hero section */}
       <div className="flex-col overflow-hidden lg:flex lg:flex-row lg:justify-between items-center pt-10">
         <div className="flex flex-col lg:space-y-5 space-y-3 lg:w-3/5">
           <div className="lg:text-5xl text-3xl gap-5 text-center lg:text-left">

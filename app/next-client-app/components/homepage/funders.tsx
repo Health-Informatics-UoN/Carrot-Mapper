@@ -4,7 +4,6 @@ import Image from "next/image";
 export default function Funders() {
   return (
     <>
-      {/* Funders section */}
       <div className="items-center text-center justify-center">
         <div className="flex flex-col justify-center space-y-2 mb-5">
           <div className="lg:text-4xl flex justify-center text-2xl">
