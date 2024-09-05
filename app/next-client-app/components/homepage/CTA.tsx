@@ -15,28 +15,23 @@ export default function CallToAction() {
           </h1>
         </BoxReveal>
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <h1 className="opacity-80 sm:text-2xl text-pretty text-md my-4">
-            Start a Github discussion{" "}
-            {deployLink !== "" && <span>deploy your own Carrot</span>} today!
-          </h1>
-        </BoxReveal>
-        <BoxReveal boxColor={"#e6a312"} duration={1.0}>
-          <div className="flex gap-5 lg:flex-row flex-col">
-            <Link
+          <div className="flex mt-3 gap-5 lg:flex-row flex-col">
+            <a
               href={
                 "https://github.com/Health-Informatics-UoN/Carrot-Mapper/discussions"
               }
+              target="_blank"
             >
-              <Button className="lg:text-lg text-md hover:bg-orange-600/80 dark:hover:bg-orange-600/80 bg-orange-600 dark:bg-orange-600 dark:text-white">
-                <Github className="mr-2" /> GitHub Discussions
+              <Button className="lg:text-lg text-md hover:bg-[#333333]/85 dark:hover:bg-gray-200 bg-[#333333] dark:bg-white dark:text-[#333333]">
+                <Github className="mr-2" /> Start a GitHub Discussion
               </Button>
-            </Link>
-            {deployLink !== "" && (
-              <Link href={deployLink}>
-                <Button className="lg:text-lg text-md hover:border-orange-900 dark:hover:border-orange-900 text-orange-600 dark:text-orange-600 bg-white dark:bg-white border border-orange-600">
+            </a>
+            {deployLink && (
+              <a href={deployLink} target="_blank">
+                <Button className="lg:text-lg dark:hover:bg-gray-100 hover:bg-gray-100 text-md hover:border-orange-900 dark:hover:border-orange-900 text-orange-600 dark:text-orange-600 bg-white dark:bg-white border border-orange-600">
                   <Rocket className="mr-2" /> Deploy your own Carrot
                 </Button>
-              </Link>
+              </a>
             )}
           </div>
         </BoxReveal>
