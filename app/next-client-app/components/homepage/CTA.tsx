@@ -6,7 +6,7 @@ export default function CallToAction() {
   const deployLink = process.env.DEPLOY_LINK ?? "";
   return (
     <>
-      <div className="flex flex-col items-center text-center px-5 gap-7 lg:px-0">
+      <div className="flex flex-col items-center text-center px-5 lg:gap-7 gap-4 lg:px-0">
         <BoxReveal boxColor={"#e6a312"} duration={1.0}>
           <h1 className="sm:text-4xl text-pretty text-2xl">
             Join our community
