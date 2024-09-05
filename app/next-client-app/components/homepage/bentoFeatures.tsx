@@ -3,16 +3,16 @@ import BoxReveal from "@/components/magicui/box-reveal";
 
 const features = [
   {
-    name: "FAST & RELIABLE",
+    name: "FAST AND SCALABLE",
     description:
-      "Carrot is designed for speed, allowing you to process and map large datasets to the OMOP standard quickly and efficiently.",
+      "Carrot is designed for speed, enabling you to map large datasets to the OMOP standard quickly and efficiently.",
     className:
       "lg:col-start-1 lg:col-end-3 lg:row-span-2 bg-[url('/qa2.png')] bg-no-repeat bg-center bg-contain",
   },
   {
     name: "REUSABLE MAPPING RULES",
     description:
-      "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data integration.",
+      "Save time by reusing mapping rules across datasets, ensuring consistency and accuracy in your data pipeline.",
     className:
       "lg:col-start-3 lg:col-end-6 lg:col-span-3 bg-[url('/we2.png')] bg-no-repeat bg-center bg-contain",
   },
@@ -24,7 +24,7 @@ const features = [
       "lg:col-end-8 lg:col-span-2 bg-[url('/ty2.png')] bg-no-repeat bg-center bg-contain",
   },
   {
-    name: ">1M RULES CREATED",
+    name: ">500,000 RULES CREATED",
     special: true,
     description: "",
     className:
@@ -52,7 +52,7 @@ export default async function BentoFeatures() {
           <BoxReveal boxColor={"#empty"} duration={1}>
             <h3 className="text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
               Carrot provides advanced features which can ease your OMOP Data
-              Standardization tasks.
+              mapping tasks.
             </h3>
           </BoxReveal>
         </div>

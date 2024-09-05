@@ -68,7 +68,7 @@ export function AnimatedBeamMapping({ className }: { className?: string }) {
           </Circle>
         </div>
         <div className="flex flex-col justify-center gap-2 text-center">
-          <Circle ref={div7Ref}>OMOP mapping rules</Circle>
+          <Circle ref={div7Ref}>OMOP Mapping</Circle>
           <Circle ref={div8Ref}>
             <h2>254761 - Cough</h2>
           </Circle>

@@ -3,13 +3,11 @@ import BoxReveal from "@/components/magicui/box-reveal";
 
 const features = [
   {
-    name: "NOTTINGHAM BRC",
+    name: "CO-CONNECT",
     description:
-      "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation.",
-    background: (
-      <img className="opacity-80 p-5 dark:bg-white" src="/logos/nbrc.png" />
-    ),
-    href: "https://nottinghambrc.nihr.ac.uk/research/informatics",
+      "CO-CONNECT developed Carrot to streamline COVID-19 data access and integration across the UK, aiding researchers in developing therapies and treatments.",
+    background: <img className="w-[150px]" src="/logos/coconnect1.png" />,
+    href: "https://fed-a.org/co-connect-home/",
     cta: "Learn more",
     className: "lg:col-start-1 lg:col-end-4 lg:col-span-3",
   },
@@ -25,11 +23,13 @@ const features = [
     className: "lg:col-end-7 lg:col-span-3",
   },
   {
-    name: "CO-CONNECT",
+    name: "NOTTINGHAM BRC",
     description:
-      "CO-CONNECT used Carrot to streamline COVID-19 data access and integration across the UK, aiding researchers in developing therapies and treatments.",
-    background: <img className="w-[150px]" src="/logos/coconnect1.png" />,
-    href: "https://fed-a.org/co-connect-home/",
+      "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation.",
+    background: (
+      <img className="opacity-80 p-5 dark:bg-white" src="/logos/nbrc.png" />
+    ),
+    href: "https://nottinghambrc.nihr.ac.uk/research/informatics",
     cta: "Learn more",
     className: "lg:col-start-1 lg:col-span-2",
   },
@@ -45,9 +45,9 @@ const features = [
   {
     name: "East Midlands SDE",
     description:
-      "The East Midlands SDE project, in collaboration with EMRAD, uses Carrot to help establish a secure platform for authorized researcher data access.",
+      "The East Midlands SDE project uses Carrot to transform data for Cohort Discovery.",
     background: <img className="p-2 w-[200px]" src="/logos/sde.png" />,
-    href: "https://digital.nhs.uk/services/secure-data-environment-service",
+    href: "https://www.emsde.net/emsde/",
     cta: "Learn more",
     className: "lg:col-start-5 lg:col-span-2",
   },
@@ -60,14 +60,6 @@ export default async function BentoProjects() {
         <div className="lg:text-4xl flex justify-center text-2xl">
           <BoxReveal boxColor={"#empty"} duration={0.5}>
             <h1 className="font-bold">Supporting Researchers</h1>
-          </BoxReveal>
-        </div>
-        <div className="flex text-center justify-center">
-          <BoxReveal boxColor={"#empty"} duration={1}>
-            <h3 className="text-gray-600 dark:text-gray-200  sm:text-lg text-md">
-              Many important research projects across the nation have been using
-              Carrot.
-            </h3>
           </BoxReveal>
         </div>
       </div>
