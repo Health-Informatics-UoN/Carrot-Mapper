@@ -9,7 +9,7 @@ import { Form, Formik } from "formik";
 import { toast } from "sonner";
 import { FindAndFormat, FormDataFilter } from "../form-components/FormikUtils";
 import { Tooltips } from "../Tooltips";
-import { FormikSelect } from "../form-components/FormikSelect";
+import { FormikSelect, Option } from "../form-components/FormikSelect";
 import { useState } from "react";
 import { updateScanReport } from "@/api/scanreports";
 
@@ -28,14 +28,16 @@ export function ScanReportDetailsForm({
   users,
   permissions,
   isAuthor,
-  disabledDataset,
+  initialDataset,
+  disableDatasetChange,
 }: {
-  datasetList: DataSetSRList[];
+  datasetList?: DataSetSRList[];
   scanreport: ScanReport;
   users: User[];
   permissions?: Permission[];
   isAuthor: boolean;
-  disabledDataset: boolean;
+  initialDataset?: Option[];
+  disableDatasetChange: boolean;
 }) {
   // Permissions
   const canUpdate = permissions?.includes("CanAdmin") || isAuthor;
@@ -44,22 +46,25 @@ export function ScanReportDetailsForm({
     scanreport.visibility === "PUBLIC" ? true : false
   );
 
-  // Making options suitable for React Select
-  const userOptions = FormDataFilter<User>(users);
-  const parentDatasetOptions = FormDataFilter<DataSetSRList>(datasetList);
-  console.log(parentDatasetOptions);
-  // Find the intial parent dataset and author which is required when adding Dataset
-  // const initialParentDataset = datasetList.find(
-  //   (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
-  // )!;
+  let datasetOptions: Option[] = [];
+  let initialDatasetFilter: Option[] = [];
 
+  // dataset options and initial dataset data are made based on the datasetList was provided (meaning user have access to the parent dataset) or not
+  if (datasetList) {
+    datasetOptions = FormDataFilter<DataSetSRList>(datasetList);
+    const initialDataset = datasetList.find(
+      (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
+    )!;
+    initialDatasetFilter = FormDataFilter<DataSetSRList>(initialDataset);
+  } else {
+    datasetOptions = initialDataset ?? [];
+  }
+  // Making options and initial data suitable for React Select
   const initialAuthor = users.find((user) => scanreport.author.id === user.id)!;
-  // Find and make initial data suitable for React select
-  // const initialDatasetFilter =
-  //   FormDataFilter<DataSetSRList>(initialParentDataset);
   const initialAuthorFilter = FormDataFilter<User>(initialAuthor);
   const initialViewersFilter = FindAndFormat<User>(users, scanreport.viewers);
   const initialEditorsFilter = FindAndFormat<User>(users, scanreport.editors);
+  const userOptions = FormDataFilter<User>(users);
 
   const handleSubmit = async (data: FormData) => {
     const submittingData = {
@@ -91,7 +96,9 @@ export function ScanReportDetailsForm({
         author: initialAuthorFilter[0].value,
         viewers: initialViewersFilter.map((viewer) => viewer.value),
         editors: initialEditorsFilter.map((editor) => editor.value),
-        parent_dataset: parentDatasetOptions[0].value,
+        parent_dataset: datasetList
+          ? initialDatasetFilter[0].value
+          : datasetOptions[0].value, // users without access to the parent dataset can't change the details of SR about it, only can see it here.
       }}
       onSubmit={(data) => {
         handleSubmit(data);
@@ -200,11 +207,11 @@ export function ScanReportDetailsForm({
                 <Tooltips content="The parent dataset of the Scan Report." />
               </h3>
               <FormikSelect
-                options={parentDatasetOptions}
+                options={datasetOptions}
                 name="parent_dataset"
                 placeholder="Choose a parent dataset"
                 isMulti={false}
-                isDisabled={!canUpdate || disabledDataset}
+                isDisabled={!canUpdate || disableDatasetChange}
               />
             </div>
             <div className="flex mt-3">

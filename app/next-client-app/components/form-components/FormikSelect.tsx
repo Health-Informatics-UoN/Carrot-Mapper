@@ -1,9 +1,8 @@
 import { Field, FieldInputProps, FieldProps, FormikProps } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import config from "@/tailwind.config";
 
-type Option = Object & {
+export type Option = Object & {
   value: number;
   label: string | undefined;
 };

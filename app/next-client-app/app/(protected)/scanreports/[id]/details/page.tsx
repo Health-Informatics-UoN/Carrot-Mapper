@@ -7,6 +7,7 @@ import { ScanReportDetailsForm } from "@/components/scanreports/ScanReportDetail
 import { getScanReport, getScanReportPermissions } from "@/api/scanreports";
 import { Forbidden } from "@/components/core/Forbidden";
 import { notFound } from "next/navigation";
+import { FormDataFilter } from "@/components/form-components/FormikUtils";
 
 interface ScanReportDetailsProps {
   params: {
@@ -29,19 +30,17 @@ export default async function ScanreportDetails({
     (dataset) => dataset.name === scanreport?.parent_dataset.name
   );
   if (!parent_dataset && isAuthor) {
-    const initialParentDataset = [
-      datasetList.find(
-        (dataset) => scanreport.parent_dataset.name === dataset.name // parent's dataset is unique (set by the models.py) so can be used to find the initial parent dataset here
-      )!,
-    ];
+    const initialParentDataset = scanreport.parent_dataset;
+    const initialDatasetFilter =
+      FormDataFilter<DatasetStrict>(initialParentDataset);
     return (
       <div>
         <ScanReportDetailsForm
           scanreport={scanreport}
-          datasetList={initialParentDataset}
+          initialDataset={initialDatasetFilter}
           users={users}
           isAuthor={isAuthor}
-          disabledDataset={true}
+          disableDatasetChange={true}
         />
       </div>
     );
@@ -67,7 +66,7 @@ export default async function ScanreportDetails({
         users={users}
         permissions={permissionsDS.permissions}
         isAuthor={isAuthor}
-        disabledDataset={false}
+        disableDatasetChange={false}
       />
     </div>
   );
