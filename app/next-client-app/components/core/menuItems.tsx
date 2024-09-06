@@ -3,7 +3,6 @@ import {
   FileScan,
   Folders,
   Github,
-  Home,
   LogIn,
   LucideIcon,
   Upload,
