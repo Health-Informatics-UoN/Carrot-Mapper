@@ -391,6 +391,20 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         )
         rules.append(rule_domain_value_as_number)
 
+    # When the concept has the domain "Observation", one more mapping rule to the OMOP field "value_as_number" will be added
+    if domain == "observation":
+        # create/update a model for the domain value_as_number
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_number", "observation"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_number)
+
     # now we are sure all rules have been created, we can save them safely
     for rule in rules:
         rule.save()
