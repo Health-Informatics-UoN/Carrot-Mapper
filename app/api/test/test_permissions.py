@@ -1,10 +1,20 @@
 import os
 from unittest import mock
 
-from api.views import ProjectRetrieveView
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from mapping.permissions import (
+from projects.views import ProjectDetail
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import GenericAPIView
+from rest_framework.test import APIRequestFactory, force_authenticate
+from shared.mapping.models import (
+    DataPartner,
+    Dataset,
+    Project,
+    ScanReport,
+    VisibilityChoices,
+)
+from shared.mapping.permissions import (
     CanAdmin,
     CanEdit,
     CanView,
@@ -12,16 +22,6 @@ from mapping.permissions import (
     has_editorship,
     has_viewership,
     is_admin,
-)
-from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView
-from rest_framework.test import APIRequestFactory, force_authenticate
-from shared.data.models import (
-    DataPartner,
-    Dataset,
-    Project,
-    ScanReport,
-    VisibilityChoices,
 )
 
 
@@ -392,7 +392,7 @@ class TestCanViewProject(TestCase):
         # Request factory for setting up requests
         self.factory = APIRequestFactory()
         # The instance of the view required for the permission class
-        self.view = ProjectRetrieveView.as_view()
+        self.view = ProjectDetail.as_view()
 
         # The permission class
         self.permission = CanViewProject()

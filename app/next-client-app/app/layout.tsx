@@ -1,11 +1,7 @@
 import "./globals.css";
-import "./custom.css";
-import "react-tooltip/dist/react-tooltip.css";
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
-import { Sidebar } from "@/components/core/sidebar";
 import { ThemeProvider } from "@/components/theme-provider";
-import { getCurrentUser } from "@/api/users";
 
 export const metadata: Metadata = {
   title: "Carrot Mapper",
@@ -22,8 +18,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getCurrentUser();
-
   return (
     <html lang="en">
       <body>
@@ -33,8 +27,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Sidebar userName={user.username} />
-          <div className="mb-4">{children}</div>
+          {children}
         </ThemeProvider>
 
         <Toaster

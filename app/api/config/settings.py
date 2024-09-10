@@ -58,9 +58,11 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "extra_views",
+    "datasets",
+    "projects",
     "api",
-    "mapping",
-    "data",
+    "shared.data",
+    "shared.mapping",
     "rest_framework",
     "django_filters",
     "rest_framework.authtoken",
@@ -68,6 +70,7 @@ INSTALLED_APPS = [
     "test",
     "revproxy",
     "shared",
+    "shared.files",
 ]
 
 MIDDLEWARE = [
@@ -184,9 +187,9 @@ STATIC_URL = "/static/"
 
 LOGIN_REDIRECT_URL = "/scanreports/"
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# NLP API KEY
-NLP_API_KEY = os.getenv("NLP_API_KEY")
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(
+    os.environ.get("DATA_UPLOAD_MAX_MEMORY_SIZE", 2621440)
+)
 
 SESSION_COOKIE_AGE = 86400  # session length is 24 hours
 
@@ -197,3 +200,4 @@ NEXTJS_URL = os.environ.get("NEXTJS_URL", "http://localhost:3000")
 AZ_URL = os.environ.get("AZ_URL", "http://localhost:7071")
 AZ_RULES_NAME = os.environ.get("AZ_RULES_NAME", "RulesOrchestrator")
 AZ_RULES_KEY = os.environ.get("AZ_RULES_KEY", "")
+AZ_RULES_EXPORT_QUEUE = os.environ.get("AZ_RULES_EXPORT_QUEUE", "rules-exports-local")

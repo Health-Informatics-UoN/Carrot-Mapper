@@ -21,7 +21,8 @@ export const config = {
      * 3. /_next (Next.js internals)
      * 4. /_static (inside /public)
      * 5. all root files inside /public (e.g. /favicon.ico)
+     * 6. folder containing logos inside "public"
      */
-    "/((?!$|api/|_next/|_static/|[\\w-]+\\.\\w+).*)",
+    "/((?!$|api/|_next/|_static/|logos|[\\w-]+\\.\\w+).*)",
   ],
 };

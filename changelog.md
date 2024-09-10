@@ -2,6 +2,14 @@
 
 Please append a line to the changelog for each change made.
 
+## v2.2.11
+### Improvements
+- Dark Mode for Carrot
+- Sidebar / layout improvements
+
+## Bugfixes
+- Fix downloads formatting and naming
+
 ## v2.2.10
 ### Improvements
 - Add migrations to startup

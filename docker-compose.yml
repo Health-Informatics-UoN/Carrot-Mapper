@@ -1,4 +1,4 @@
-name: carrot-mapper-dev-v2
+name: carrot-mapper-dev
 
 services:
   db:
@@ -8,7 +8,6 @@ services:
       - 5432:5432
     environment:
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=omop
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite
@@ -39,7 +38,7 @@ services:
       - db
     environment:
       - DB_PASSWORD=postgres
-      - DB_NAME=omop
+      - DB_NAME=postgres
 
   web:
     image: carrot
@@ -54,7 +53,7 @@ services:
       - COCONNECT_DB_ENGINE=django.db.backends.postgresql
       - COCONNECT_DB_HOST=db
       - COCONNECT_DB_PORT=5432
-      - COCONNECT_DB_NAME=omop
+      - COCONNECT_DB_NAME=postgres
       - COCONNECT_DB_USER=postgres
       - COCONNECT_DB_PASSWORD=postgres
       - ENABLE_PROXY=true
@@ -65,6 +64,7 @@ services:
       - AZURE_ACCOUNT_NAME=devstoreaccount1
       - AZ_URL=http://workers:7071
       - AZ_RULES_NAME=RulesOrchestrator
+      - AZ_RULES_EXPORT_QUEUE=rules=exports-local
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
     volumes:
       - ./app/api:/api

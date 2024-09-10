@@ -46,6 +46,7 @@ jobs:
       with:
         name: functionsapp
         path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+        include-hidden-files: true
 
   build-and-publish-web:
     runs-on: 'ubuntu-latest'
@@ -112,6 +113,7 @@ jobs:
         with:
           path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/.next/standalone
           name: frontendwebapp
+          include-hidden-files: true
 
   # Deploy Workers Production
   deploy-workers-production:

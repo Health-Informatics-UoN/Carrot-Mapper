@@ -49,7 +49,7 @@ export function DatasetForm({
   const projectOptions = FormDataFilter<Project>(projects);
   // Find the intial data partner which is required when adding Dataset
   const initialPartner = dataPartners.find(
-    (partner) => dataset.data_partner === partner.id
+    (partner) => dataset.data_partner.id === partner.id
   )!;
   // Find and make initial data suitable for React select
   const initialPartnerFilter = FormDataFilter<DataPartner>(initialPartner);
@@ -58,7 +58,7 @@ export function DatasetForm({
   const initialAdminsFilter = FindAndFormat<User>(users, dataset.admins);
   const initialProjectFilter = FindAndFormat<Project>(
     projects,
-    dataset.projects
+    dataset.projects.map((project) => project.id)
   );
 
   const handleSubmit = async (data: FormData) => {

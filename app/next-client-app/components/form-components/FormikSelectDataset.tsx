@@ -4,12 +4,10 @@ import {
   FieldProps,
   FormikProps,
   FormikValues,
-  useField,
   useFormikContext,
 } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import config from "@/tailwind.config";
 import { getDatasetList, getProjects } from "@/api/datasets";
 import { useEffect, useState } from "react";
 
@@ -38,15 +36,17 @@ async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
 
   // Process datasets, adding them to the appropriate project group in projectMap
   datasets.forEach((dataset) => {
-    dataset.projects.forEach((projectId) => {
-      const projectGroup = projectMap.get(projectId);
-      if (projectGroup) {
-        projectGroup.options.push({
-          value: dataset.id,
-          label: dataset.name,
-        });
-      }
-    });
+    dataset.projects
+      .map((project) => project.id)
+      .forEach((projectId) => {
+        const projectGroup = projectMap.get(projectId);
+        if (projectGroup) {
+          projectGroup.options.push({
+            value: dataset.id,
+            label: dataset.name,
+          });
+        }
+      });
   });
 
   // Ensure all projects without datasets have a "None" option

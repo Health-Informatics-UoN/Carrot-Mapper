@@ -12,6 +12,7 @@ import {
   SearchCheck,
   Edit,
   FileScan,
+  Download,
 } from "lucide-react";
 
 export const NavButton = ({
@@ -37,27 +38,24 @@ export const NavButton = ({
     TableProperties,
     FileScan,
     Edit,
+    Download,
   };
 
   const Icon = item.iconName ? iconMap[item.iconName] : null;
 
   return (
-    <>
-      {" "}
-      <Link href={href}>
-        <Button
-          variant={"ghost"}
-          className={cn("rounded-md px-0 py-1", {
-            "bg-white hover:text-carrot hover:bg-white dark:bg-transparent":
-              !isActive,
-            "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot dark:hover:bg-transparent":
-              isActive,
-          })}
-        >
-          {item.text} {Icon && <Icon className="ml-2 size-4" />}
-        </Button>
-      </Link>
-      |
-    </>
+    <Link href={href}>
+      <Button
+        variant={"ghost"}
+        className={cn("rounded-md px-3 py-1", {
+          "bg-white hover:text-carrot hover:bg-white dark:bg-transparent":
+            !isActive,
+          "hover:bg-white hover:text-carrot/90 underline underline-offset-8 text-carrot dark:hover:bg-transparent":
+            isActive,
+        })}
+      >
+        {item.text} {Icon && <Icon className="ml-2 size-4" />}
+      </Button>
+    </Link>
   );
 };

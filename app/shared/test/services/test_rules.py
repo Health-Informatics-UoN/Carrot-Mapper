@@ -8,7 +8,7 @@ import django
 
 django.setup()
 
-from shared.data.models import OmopField, ScanReportField, ScanReportTable
+from shared.mapping.models import OmopField, ScanReportField, ScanReportTable
 from shared.services import rules
 
 

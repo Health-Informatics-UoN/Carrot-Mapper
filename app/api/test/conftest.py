@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.db import connection
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from pytest_django import DjangoDbBlocker
-from shared.data.omop import Concept
+from shared.data.models import Concept
 
 
 def run_sql(db: str, sql: str):
