@@ -1,4 +1,4 @@
-name: carrot-mapper-dev
+name: carrot-mapper-dev-v2
 
 services:
   db:
@@ -10,12 +10,19 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   azurite:
+    container_name: azurite
     image: mcr.microsoft.com/azure-storage/azurite
     restart: always
+    volumes:
+      - ./app/azurite:/azurite
     ports:
       - 10000:10000
       - 10001:10001
       - 10002:10002
+    command: azurite --blobHost azurite --queueHost azurite --tableHost azurite --location /data --debug /data/debug.log --loose --skipApiVersionCheck
+    hostname: azurite
+    environment:
+      - AZURITE_ACCOUNTS=devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
 
   next-client:
     image: carrot-next-client
@@ -82,10 +89,9 @@ services:
       - 8080:80
     environment:
       - IsEncrypted=false
-      - AzureWebJobsStorage=UseDevelopmentStorage=true
+      - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
       - FUNCTIONS_WORKER_RUNTIME=python
-      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
-      - NLP_API_KEY=
+      - AzureWebJobsSTORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;QueueEndpoint=http://azurite:10001/devstoreaccount1;BlobEndpoint=http://azurite:10000/devstoreaccount1;
       - APP_URL=http://web:8000/
       - AZ_FUNCTION_KEY=95bb281f24d0a4571157d265f611702bd8b5c064
       - SCAN_REPORT_QUEUE_NAME=scanreports-local
@@ -93,6 +99,7 @@ services:
       - UPLOAD_QUEUE_NAME=uploadreports-local
       - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
       - RULES_QUEUE_NAME=rules-local
+      - RULES_FILE_QUEUE_NAME=rules-file-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
       - AzureBlobServiceConfig:BaseUrl=http://azurite:10000/

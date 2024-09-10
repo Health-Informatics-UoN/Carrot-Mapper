@@ -3,8 +3,7 @@
 FROM mcr.microsoft.com/azure-functions/python:4-python3.11
 
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-    AzureFunctionsJobHost__Logging__Console__IsEnabled=true \
-    AzureFunctionsWebHost__hostid=carrot-worker
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
 USER root
 RUN mkdir /workers
@@ -24,4 +23,4 @@ RUN poetry config virtualenvs.create false \
     && poetry export --format requirements.txt --output /workers/requirements.txt --without-hashes \
     && pip install --no-cache-dir -r /workers/requirements.txt
 
-RUN chmod -R 755 /workers
+RUN chmod u+x /workers
