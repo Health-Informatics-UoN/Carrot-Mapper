@@ -9,21 +9,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
 
-  azurite:
-    container_name: azurite
-    image: mcr.microsoft.com/azure-storage/azurite
-    restart: always
-    volumes:
-      - ./app/azurite:/azurite
-    ports:
-      - 10000:10000
-      - 10001:10001
-      - 10002:10002
-    command: azurite --blobHost azurite --queueHost azurite --tableHost azurite --location /data --debug /data/debug.log --loose --skipApiVersionCheck
-    hostname: azurite
-    environment:
-      - AZURITE_ACCOUNTS=devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
-
   next-client:
     image: carrot-next-client
     build:
@@ -102,12 +87,24 @@ services:
       - RULES_FILE_QUEUE_NAME=rules-file-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
-      - AzureBlobServiceConfig:BaseUrl=http://azurite:10000/
-      - AzureBlobServiceConfig:AccountName=devstoreaccount1
-      - AzureBlobServiceConfig:Password=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
     volumes:
       - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
     depends_on:
       - web
       - azurite
+
+  azurite:
+    container_name: azurite
+    image: mcr.microsoft.com/azure-storage/azurite
+    restart: always
+    volumes:
+      - ./app/azurite:/azurite
+    ports:
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+    command: azurite --blobHost azurite --queueHost azurite --tableHost azurite --location /data --debug /data/debug.log --loose --skipApiVersionCheck
+    hostname: azurite
+    environment:
+      - AZURITE_ACCOUNTS=devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
