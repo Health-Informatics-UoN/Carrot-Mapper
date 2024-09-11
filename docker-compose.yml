@@ -41,7 +41,7 @@ services:
       - 8000:8000
     environment:
       - NEXTJS_URL=http://next-client:3000
-      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web']
+      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web', 'workers']
       - COCONNECT_DB_ENGINE=django.db.backends.postgresql
       - COCONNECT_DB_HOST=db
       - COCONNECT_DB_PORT=5432
@@ -54,7 +54,7 @@ services:
       - UPLOAD_QUEUE_NAME=uploadreports-local
       - SECRET_KEY=secret
       - AZURE_ACCOUNT_NAME=devstoreaccount1
-      - AZ_URL=http://web:7071
+      - AZ_URL=http://workers:7071
       - AZ_RULES_NAME=RulesOrchestrator
       - AZ_RULES_EXPORT_QUEUE=rules=exports-local
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
@@ -70,7 +70,6 @@ services:
       context: app
       dockerfile: workers/Dockerfile
     ports:
-      # 7071???
       - 8080:80
     environment:
       - IsEncrypted=false
@@ -78,6 +77,7 @@ services:
       - FUNCTIONS_WORKER_RUNTIME=python
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
       - APP_URL=http://web:8000/
+      # The key below needed for authentication and can be obtained through localhost:8000/admin/ --> add tokens
       - AZ_FUNCTION_KEY=2d374a1f460fc9627d69e99c6cbeabf3f759d517
       - SCAN_REPORT_QUEUE_NAME=scanreports-local
       - NLP_QUEUE_NAME=nlpqueue-local
