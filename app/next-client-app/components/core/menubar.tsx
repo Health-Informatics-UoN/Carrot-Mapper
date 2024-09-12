@@ -14,8 +14,8 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <Image
-              width={22}
-              height={22}
+              width={32}
+              height={45}
               src="/carrot-logo.png"
               alt="carrot-logo"
               className="mx-3"
