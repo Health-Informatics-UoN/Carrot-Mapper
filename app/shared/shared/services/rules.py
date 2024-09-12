@@ -308,6 +308,8 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
 
     concept = scan_report_concept.concept
 
+    type_column = source_field.type_column
+
     # start looking up what table we're looking at
     destination_table = _find_destination_table(concept)
     if destination_table is None:
@@ -391,8 +393,9 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         )
         rules.append(rule_domain_value_as_number)
 
-    # When the concept has the domain "Observation", one more mapping rule to the OMOP field "value_as_number" will be added
-    if domain == "observation":
+    # When the concept has the domain "Observation", one more mapping rule to the OMOP field "value_as_number"/"value_as_string" will be added based on the field's datatype
+    # TODO: Users are not expected to add an "Observation" concept to the field which is not "VARCHAR"/"REAL"/"INT". In that case, we may need to inform/give an alert
+    if domain == "observation" and (type_column == "INT" or type_column == "REAL"):
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
@@ -404,6 +407,19 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
             approved=True,
         )
         rules.append(rule_domain_value_as_number)
+
+    if domain == "observation" and (type_column == "VARCHAR"):
+        # create/update a model for the domain value_as_number
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_string, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_string", "observation"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_string)
 
     # now we are sure all rules have been created, we can save them safely
     for rule in rules:
