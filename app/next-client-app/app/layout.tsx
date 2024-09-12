@@ -1,17 +1,6 @@
 import "./globals.css";
-import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
-
-export const metadata: Metadata = {
-  title: "Carrot Mapper",
-  description: "Convenient And Reusable Rapid Omop Transformer",
-  icons: {
-    icon: "/icons/favicon.ico",
-    apple: "/icons/apple-touch-icon.png",
-  },
-  manifest: "/manifest.json",
-};
 
 export default async function RootLayout({
   children,
