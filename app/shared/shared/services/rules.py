@@ -287,6 +287,11 @@ def _find_destination_table(concept: Concept) -> Optional[OmopTable]:
     return destination_table
 
 
+def _check_data_type(type_column: str, domain: str) -> bool:
+    if domain == "observation" and type_column not in ["REAL", "INT", "VARCHAR"]:
+        return False
+
+
 def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     """
     Save mapping rules from a given ScanReportConcept.
@@ -309,6 +314,9 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     concept = scan_report_concept.concept
 
     type_column = source_field.type_column
+
+    if _check_data_type(type_column, concept.domain_id.lower()) == False:
+        return False
 
     # start looking up what table we're looking at
     destination_table = _find_destination_table(concept)
