@@ -18,7 +18,7 @@ services:
       - 3000:3000
     environment:
       - BACKEND_URL=http://web:8000
-      - BACKEND_ORIGIN='web:8000'
+      - BACKEND_ORIGIN=localhost:8000
     volumes:
       - ./app/next-client-app:/next-client-app
 
