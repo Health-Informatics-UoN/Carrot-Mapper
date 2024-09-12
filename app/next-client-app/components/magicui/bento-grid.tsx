@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
-import { ArrowRightIcon } from "@radix-ui/react-icons";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ExternalLink } from "lucide-react";
 
 const BentoGrid = ({
   children,
@@ -86,7 +85,7 @@ const BentoCard = ({
       <Button variant="ghost" asChild size="sm" className="pointer-events-auto">
         <a href={href}>
           {cta}
-          {cta && <ArrowRightIcon className="ml-2 h-4 w-4" />}
+          {cta && <ExternalLink className="ml-2 h-4 w-4 text-gray-600" />}
         </a>
       </Button>
     </div>
