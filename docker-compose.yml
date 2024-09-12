@@ -1,4 +1,4 @@
-name: carrot-mapper-dev-v2
+name: carrot-mapper-dev
 
 services:
   db:
