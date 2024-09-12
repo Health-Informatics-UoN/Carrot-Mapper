@@ -54,7 +54,7 @@ services:
       - UPLOAD_QUEUE_NAME=uploadreports-local
       - SECRET_KEY=secret
       - AZURE_ACCOUNT_NAME=devstoreaccount1
-      - AZ_URL=http://workers:7071
+      - AZ_URL=http://workers:80
       - AZ_RULES_NAME=RulesOrchestrator
       - AZ_RULES_EXPORT_QUEUE=rules=exports-local
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
@@ -71,6 +71,7 @@ services:
       dockerfile: workers/Dockerfile
     ports:
       - 8080:80
+      - 7071:80
     environment:
       - IsEncrypted=false
       - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
@@ -87,6 +88,8 @@ services:
       - RULES_FILE_QUEUE_NAME=rules-file-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
+      # The address that can be used to reach the function app from outside
+      - WEBSITE_HOSTNAME=localhost:7071
     volumes:
       - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
