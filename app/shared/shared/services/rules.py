@@ -409,7 +409,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         rules.append(rule_domain_value_as_number)
 
     if domain == "observation" and (type_column == "VARCHAR"):
-        # create/update a model for the domain value_as_number
+        # create/update a model for the domain value_as_string
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
         rule_domain_value_as_string, created = MappingRule.objects.update_or_create(
