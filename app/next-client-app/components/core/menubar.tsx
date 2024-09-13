@@ -13,12 +13,10 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
       <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between bg-primary pt-4 px-8 pb-3">
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
-            <Image
-              width={32}
-              height={45}
+            <img
+              className="mx-3 w-[25px]"
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mx-3"
             />
             Carrot
           </div>

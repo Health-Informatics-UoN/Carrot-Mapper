@@ -48,6 +48,7 @@ export function Sidebar({
                 variant="outline"
                 size={"sm"}
                 className="mr-4 flex items-center justify-center"
+                aria-label="Menu Button"
               >
                 <Menu size={25} />
               </Button>
@@ -56,12 +57,10 @@ export function Sidebar({
               <SheetHeader className="flex flex-row justify-between items-center rounded-lg w-full py-3">
                 <Link href={"/"}>
                   <div className="text-2xl flex items-center font-semibold">
-                    <Image
-                      width={22}
-                      height={22}
+                    <img
+                      className="mx-3 w-[25px]"
                       src="/carrot-logo.png"
                       alt="carrot-logo"
-                      className="mx-3"
                     />
                     Carrot
                   </div>
@@ -132,12 +131,10 @@ export function Sidebar({
         </div>
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
-            <Image
-              width={32}
-              height={45}
+            <img
+              className="mx-3 w-[25px]"
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mx-3"
             />
             Carrot
           </div>
