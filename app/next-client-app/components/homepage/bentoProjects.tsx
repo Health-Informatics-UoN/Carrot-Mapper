@@ -6,9 +6,11 @@ const features = [
     name: "CO-CONNECT",
     description:
       "CO-CONNECT developed Carrot to streamline COVID-19 data access and integration across the UK, aiding researchers in developing therapies and treatments.",
-    background: <img className="w-[150px]" src="/logos/coconnect1.png" />,
+    background: (
+      <img className="w-[150px]" src="/logos/coconnect1.png" alt="CO-CONNECT" />
+    ),
     href: "https://fed-a.org/co-connect-home/",
-    cta: "Learn more",
+    cta: "Find out more",
     className: "lg:col-start-1 lg:col-end-4 lg:col-span-3",
   },
   {
@@ -16,10 +18,14 @@ const features = [
     description:
       "Alleviate has utilized Carrot to support the creation of its UK-wide pain data hub in collaboration with Health Data Research UK (HDR UK).",
     background: (
-      <img className="opacity-80 p-5 w-[300px]" src="/logos/alleviate.jpeg" />
+      <img
+        className="opacity-80 p-5 w-[300px]"
+        src="/logos/alleviate.jpeg"
+        alt="ALLEVIATE"
+      />
     ),
     href: "https://alleviate.ac.uk/",
-    cta: "Learn more",
+    cta: "Find out more",
     className: "lg:col-end-7 lg:col-span-3",
   },
   {
@@ -27,28 +33,40 @@ const features = [
     description:
       "The Nottingham BRC has leveraged Carrot in its mission to advance health informatics by driving translational research and innovation.",
     background: (
-      <img className="opacity-80 p-5 dark:bg-white" src="/logos/nbrc.png" />
+      <img
+        className="opacity-80 p-5 dark:bg-white"
+        src="/logos/nbrc.png"
+        alt="NOTTINGHAM BRC"
+      />
     ),
     href: "https://nottinghambrc.nihr.ac.uk/research/informatics",
-    cta: "Learn more",
+    cta: "Find out more",
     className: "lg:col-start-1 lg:col-span-2",
   },
   {
     name: "BY-COVID",
     description:
       "The BY-COVID project uses Carrot to enable open data sharing on SARS-CoV-2 and other infectious diseases, boosting research and public health efforts across Europe.",
-    background: <img className="w-[300px]" src="/logos/bycovid.png" />,
+    background: (
+      <img className="w-[300px]" src="/logos/bycovid.png" alt="BY-COVID" />
+    ),
     href: "https://by-covid.org/about",
-    cta: "Learn more",
+    cta: "Find out more",
     className: "lg:col-start-3 lg:col-span-2",
   },
   {
     name: "East Midlands SDE",
     description:
       "The East Midlands SDE project uses Carrot to transform data for Cohort Discovery.",
-    background: <img className="p-2 w-[200px]" src="/logos/sde.png" />,
+    background: (
+      <img
+        className="p-2 w-[200px]"
+        src="/logos/sde.png"
+        alt="East Midlands SDE"
+      />
+    ),
     href: "https://www.emsde.net/emsde/",
-    cta: "Learn more",
+    cta: "Find out more",
     className: "lg:col-start-5 lg:col-span-2",
   },
 ];

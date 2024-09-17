@@ -9,10 +9,10 @@ export default function Hero() {
             <h1 className="text-orange-600">Streamlined Data Mapping</h1>
             <h1>to OMOP</h1>
           </div>
-          <h3 className="text-gray-600 dark:text-gray-200 sm:text-lg text-md mt-2 text-center text-pretty lg:text-left">
+          <h1 className="text-gray-600 dark:text-gray-200 sm:text-lg text-md mt-2 text-center text-pretty lg:text-left">
             Carrot automates vocabulary mapping, and enables reuse across
             datasets.
-          </h3>
+          </h1>
         </div>
         <div className="lg:w-2/5">
           <AnimatedBeamMapping />
