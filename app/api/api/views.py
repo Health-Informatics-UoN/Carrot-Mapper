@@ -515,6 +515,18 @@ class ScanReportConceptListV2(
         content_type_str = body.pop("content_type", None)
         content_type = ContentType.objects.get(model=content_type_str)
         body["content_type"] = content_type.id
+        concept_id = body.get("concept", None)
+        domain = Concept.objects.get(pk=concept_id).domain_id.lower()
+        field_datatype = ScanReportField.objects.get(pk=body["object_id"]).type_column
+
+        # Checking field's datatype for concept with domain Observation
+        if domain == "observation" and field_datatype not in ["REAL", "INT", "VARCHAR"]:
+            return Response(
+                {
+                    "detail": "Concept having 'Observation' domain should be only added to fields having REAL, INT, or VARCHAR data type."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # validate person_id and date event are set on table
         table_id = body.pop("table_id", None)
@@ -543,7 +555,6 @@ class ScanReportConceptListV2(
             )
 
         # validate that the concept exists.
-        concept_id = body.get("concept", None)
         try:
             concept = Concept.objects.get(pk=concept_id)
         except ObjectDoesNotExist:

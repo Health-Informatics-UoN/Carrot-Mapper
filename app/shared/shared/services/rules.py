@@ -309,17 +309,12 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     concept = scan_report_concept.concept
 
     type_column = source_field.type_column
+    # get the omop field for the source_concept_id for this domain
+    domain = concept.domain_id.lower()
 
     # start looking up what table we're looking at
     destination_table = _find_destination_table(concept)
     if destination_table is None:
-        return False
-
-    # get the omop field for the source_concept_id for this domain
-    domain = concept.domain_id.lower()
-
-    # Checking the data type of the SR Field
-    if domain == "observation" and type_column not in ["REAL", "INT", "VARCHAR"]:
         return False
 
     omop_field = _get_omop_field(f"{domain}_source_concept_id")
@@ -398,9 +393,8 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         )
         rules.append(rule_domain_value_as_number)
 
-    # When the concept has the domain "Observation", one more mapping rule to the OMOP field "value_as_number"/"value_as_string" will be added based on the field's datatype
-    # TODO: Users are not expected to add an "Observation" concept to the field which is not "VARCHAR"/"REAL"/"INT". In that case, we may need to inform/give an alert/give an error
-    # Tried to check the data type here --> toast and debug console said rule can't be saved but on UI still appear the "invalid" concept, after refreshing
+    # When the concept has the domain "Observation", one more mapping rule to the OMOP field
+    # "value_as_number"/"value_as_string" will be added based on the field's datatype
     if domain == "observation" and (type_column == "INT" or type_column == "REAL"):
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
