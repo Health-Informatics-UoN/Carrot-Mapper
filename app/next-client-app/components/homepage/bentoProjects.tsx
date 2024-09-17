@@ -10,7 +10,7 @@ const features = [
       <img className="w-[150px]" src="/logos/coconnect1.png" alt="CO-CONNECT" />
     ),
     href: "https://fed-a.org/co-connect-home/",
-    cta: "Learn more here",
+    cta: "Find out more",
     className: "lg:col-start-1 lg:col-end-4 lg:col-span-3",
   },
   {
@@ -25,7 +25,7 @@ const features = [
       />
     ),
     href: "https://alleviate.ac.uk/",
-    cta: "Learn more here",
+    cta: "Find out more",
     className: "lg:col-end-7 lg:col-span-3",
   },
   {
@@ -40,7 +40,7 @@ const features = [
       />
     ),
     href: "https://nottinghambrc.nihr.ac.uk/research/informatics",
-    cta: "Learn more here",
+    cta: "Find out more",
     className: "lg:col-start-1 lg:col-span-2",
   },
   {
@@ -51,7 +51,7 @@ const features = [
       <img className="w-[300px]" src="/logos/bycovid.png" alt="BY-COVID" />
     ),
     href: "https://by-covid.org/about",
-    cta: "Learn more here",
+    cta: "Find out more",
     className: "lg:col-start-3 lg:col-span-2",
   },
   {
@@ -66,7 +66,7 @@ const features = [
       />
     ),
     href: "https://www.emsde.net/emsde/",
-    cta: "Learn more here",
+    cta: "Find out more",
     className: "lg:col-start-5 lg:col-span-2",
   },
 ];
