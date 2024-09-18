@@ -5,6 +5,7 @@ from datasets.serializers import (
     DatasetAndDataPartnerViewSerializer,
     DatasetEditSerializer,
     DatasetViewSerializerV2,
+    DatasetCreateSerializerV2,
 )
 from django.db.models.query_utils import Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -41,6 +42,11 @@ class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
         "data_partner": ["in", "exact"],
         "hidden": ["in", "exact"],
     }
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST"]:
+            return DatasetCreateSerializerV2
+        return super().get_serializer_class()
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

@@ -34,11 +34,11 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
               )
             )}
             {userLoggedIn && (
-              <Link href={"/accounts/logout/"}>
+              <a href={"/accounts/logout/"}>
                 <SidebarButton icon={LogOut} className="w-full">
                   {"Log out"}
                 </SidebarButton>
-              </Link>
+              </a>
             )}
           </div>
           <div>
