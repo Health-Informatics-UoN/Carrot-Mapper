@@ -50,10 +50,10 @@ export default async function BentoFeatures() {
         </div>
         <div className="flex text-center justify-center">
           <BoxReveal boxColor={"#empty"} duration={1}>
-            <h3 className="text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
+            <h1 className="text-gray-600 dark:text-gray-200 text-pretty sm:text-lg text-md">
               Carrot provides advanced features which can ease your OMOP Data
               mapping tasks.
-            </h3>
+            </h1>
           </BoxReveal>
         </div>
       </div>
