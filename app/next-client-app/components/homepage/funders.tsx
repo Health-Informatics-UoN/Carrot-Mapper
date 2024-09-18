@@ -13,10 +13,10 @@ export default function Funders() {
           </div>
           <div className="flex text-center justify-center">
             <BoxReveal boxColor={"#empty"} duration={1}>
-              <h3 className="text-gray-600 dark:text-gray-200  sm:text-lg text-md">
+              <h1 className="text-gray-600 dark:text-gray-200  sm:text-lg text-md">
                 Carrot comes to life and helps a lot of researchers across UK
                 thanks to our brilliant funders.
-              </h3>
+              </h1>
             </BoxReveal>
           </div>
         </div>
