@@ -81,11 +81,10 @@ services:
       # The key below needed for authentication and can be obtained through localhost:8000/admin/ --> add tokens
       - AZ_FUNCTION_KEY=2d374a1f460fc9627d69e99c6cbeabf3f759d517
       - SCAN_REPORT_QUEUE_NAME=scanreports-local
-      - NLP_QUEUE_NAME=nlpqueue-local
       - UPLOAD_QUEUE_NAME=uploadreports-local
-      - CREATE_CONCEPTS_QUEUE_NAME=conceptqueue-local
       - RULES_QUEUE_NAME=rules-local
       - RULES_FILE_QUEUE_NAME=rules-file-local
+      - AZ_RULES_EXPORT_QUEUE=rules-exports-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
       # The address that can be used to reach the function app from outside
