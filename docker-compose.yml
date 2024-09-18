@@ -80,12 +80,11 @@ services:
       - APP_URL=http://web:8000/
       # The key below needed for authentication and can be obtained through localhost:8000/admin/ --> add tokens
       - AZ_FUNCTION_KEY=2d374a1f460fc9627d69e99c6cbeabf3f759d517
-      # Five queues below need adding to Azure local storage
+      # Four queues below need adding to Azure local storage
       - SCAN_REPORT_QUEUE_NAME=scanreports-local
       - UPLOAD_QUEUE_NAME=uploadreports-local
       - RULES_QUEUE_NAME=rules-local
-      - RULES_FILE_QUEUE_NAME=rules-file-local
-      - AZ_RULES_EXPORT_QUEUE=rules-exports-local
+      - RULES_FILE_QUEUE_NAME=rules-exports-local
       - PAGE_MAX_CHARS=30000
       - CHUNK_SIZE=6
       # The address that can be used to reach the function app from outside
