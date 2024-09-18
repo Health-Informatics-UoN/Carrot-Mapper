@@ -46,6 +46,7 @@ class DatasetIndex(GenericAPIView, ListModelMixin, CreateModelMixin):
     def get_serializer_class(self):
         if self.request.method in ["POST"]:
             return DatasetCreateSerializerV2
+        return super().get_serializer_class()
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
