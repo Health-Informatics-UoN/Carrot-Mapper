@@ -21,6 +21,7 @@ m_allowed_tables = [
     "drug_exposure",
     "procedure_occurrence",
     "specimen",
+    "device_exposure",
 ]
 
 # look up of date-events in all the allowed (destination) tables
@@ -32,6 +33,10 @@ m_date_field_mapper = {
     "drug_exposure": ["drug_exposure_start_datetime", "drug_exposure_end_datetime"],
     "procedure_occurrence": ["procedure_datetime"],
     "specimen": ["specimen_datetime"],
+    "device_exposure": [
+        "device_exposure_start_datetime",
+        "device_exposure_end_datetime",
+    ],
 }
 
 
