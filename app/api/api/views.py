@@ -553,7 +553,16 @@ class ScanReportConceptListV2(
 
         # Get the domain and data type of the field for the check below
         domain = concept.domain_id.lower()
-        field_datatype = ScanReportField.objects.get(pk=body["object_id"]).type_column
+        # If users add the concept at "SR_Field" level
+        try:
+            field_datatype = ScanReportField.objects.get(
+                pk=body["object_id"]
+            ).type_column
+        # If users add the concept at "SR_Value" level
+        except:
+            field_datatype = ScanReportValue.objects.get(
+                pk=body["object_id"]
+            ).scan_report_field.type_column
 
         # Checking field's datatype for concept with domain Observation
         if domain == "observation" and field_datatype not in ["REAL", "INT", "VARCHAR"]:
