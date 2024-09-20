@@ -1,5 +1,6 @@
 import os
 
+from authn.views import CustomLoginView
 from config import settings
 from django.contrib import admin
 from django.urls import include, path, re_path
@@ -8,7 +9,9 @@ from revproxy.views import ProxyView  # type: ignore
 urlpatterns = [
     path("api/", include("api.urls")),
     path("api_auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("api/auth/", include("authn.urls")),
     path("admin/", admin.site.urls),
+    path("accounts/login/", CustomLoginView.as_view(), name="custom_login"),
     path("accounts/", include("django.contrib.auth.urls")),
     (
         re_path(r"(?P<path>.*)", ProxyView.as_view(upstream=f"{settings.NEXTJS_URL}/"))
