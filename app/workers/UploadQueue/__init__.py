@@ -1,4 +1,5 @@
 import asyncio
+import os
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
@@ -7,15 +8,20 @@ import azure.functions as func
 from openpyxl import Workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.worksheet.worksheet import Worksheet
+from shared.mapping.models import Status
 from shared_code import blob_parser, helpers
 from shared_code.api import (
-    ScanReportStatus,
     post_chunks,
     post_scan_report_field_entries,
     post_scan_report_table_entries,
-    update_scan_report_status,
 )
+from shared_code.db import update_scan_report_status
 from shared_code.logger import logger
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
+import django
+
+django.setup()
 
 
 def _get_unique_table_names(worksheet: Worksheet) -> List[str]:
@@ -460,7 +466,7 @@ def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
     logger.info(f"dequeue_count {msg.dequeue_count}")
 
     if msg.dequeue_count == 2:
-        update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
+        update_scan_report_status(scan_report_id, Status.UPLOAD_FAILED)
     if msg.dequeue_count > 1:
         raise ValueError("dequeue_count > 1")
 
@@ -482,7 +488,7 @@ def main(msg: func.QueueMessage) -> None:
     )
     _handle_failure(msg, scan_report_id)
 
-    update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_IN_PROGRESS)
+    update_scan_report_status(scan_report_id, Status.UPLOAD_IN_PROGRESS)
 
     wb = blob_parser.get_scan_report(scan_report_blob)
     data_dictionary, _ = blob_parser.get_data_dictionary(data_dictionary_blob)
@@ -496,4 +502,4 @@ def main(msg: func.QueueMessage) -> None:
         _create_fields(fo_ws, wb, scan_report_id, table_name_to_id_map, data_dictionary)
     )
 
-    update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_COMPLETE)
+    update_scan_report_status(scan_report_id, Status.UPLOAD_COMPLETE)
