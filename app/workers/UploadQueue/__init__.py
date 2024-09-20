@@ -8,13 +8,13 @@ import azure.functions as func
 from openpyxl import Workbook
 from openpyxl.cell.cell import Cell
 from openpyxl.worksheet.worksheet import Worksheet
-from shared.mapping.models import Status
-from shared_code import blob_parser, helpers
-from shared_code.api import (
-    post_chunks,
-    post_scan_report_field_entries,
-    post_scan_report_table_entries,
+from shared.mapping.models import (
+    ScanReportField,
+    ScanReportTable,
+    ScanReportValue,
+    Status,
 )
+from shared_code import blob_parser, helpers
 from shared_code.db import update_scan_report_status
 from shared_code.logger import logger
 
@@ -47,7 +47,7 @@ def _get_unique_table_names(worksheet: Worksheet) -> List[str]:
     return table_names
 
 
-def _create_table_entry(table_name: str, id: str) -> Dict[str, str]:
+def _create_table_entry(table_name: str, id: str) -> ScanReportTable:
     """
     Creates a ScanReportTable entry.
 
@@ -56,24 +56,15 @@ def _create_table_entry(table_name: str, id: str) -> Dict[str, str]:
         id (str): The ID of the scan report.
 
     Returns:
-        Dict[str, str]: A dictionary representing the table entry.
+        ScanReportTable: A model of the new ScanReporTable.
     """
     # Truncate table names because sheet names are truncated to 31 characters in Excel
     short_table_name = table_name[:31]
-    return {
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "name": short_table_name,
-        "scan_report": id,
-        "person_id": None,
-        "birth_date": None,
-        "measurement_date": None,
-        "condition_date": None,
-        "observation_date": None,
-    }
+
+    return ScanReportTable(name=short_table_name, scan_report=id)
 
 
-def _create_field_entry(row: Tuple[Cell], scan_report_table_id: str) -> Dict[str, str]:
+def _create_field_entry(row: Tuple[Cell], scan_report_table_id: str) -> ScanReportField:
     """
     Creates a ScanReportFieldEntry.
 
@@ -82,23 +73,20 @@ def _create_field_entry(row: Tuple[Cell], scan_report_table_id: str) -> Dict[str
         scan_report_table_id (str): The ID of the scan report table
 
     Returns:
-        Dict[str, str]: A dictionary representing the field entry.
+        ScanReportField: A dictionary representing the field entry.
     """
-    return {
-        "scan_report_table": scan_report_table_id,
-        "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-        "name": str(row[1].value),
-        "description_column": str(row[2].value),
-        "type_column": str(row[3].value),
-        "max_length": row[4].value,
-        "nrows": row[5].value,
-        "nrows_checked": row[6].value,
-        "fraction_empty": round(helpers.default_zero(row[7].value), 2),
-        "nunique_values": row[8].value,
-        "fraction_unique": round(helpers.default_zero(row[9].value), 2),
-        "ignore_column": None,
-    }
+    return ScanReportField(
+        scan_report_table=scan_report_table_id,
+        name=str(row[1].value),
+        description_column=str(row[2].value),
+        type_column=str(row[3].value),
+        max_length=row[4].value,
+        nrows=row[5].value,
+        nrows_checked=row[6].value,
+        fraction_empty=round(helpers.default_zero(row[7].value), 2),
+        nunique_values=row[8].value,
+        fraction_unique=round(helpers.default_zero(row[9].value), 2),
+    )
 
 
 def _transform_scan_report_sheet_table(sheet: Worksheet) -> defaultdict[Any, List]:
@@ -160,28 +148,26 @@ def _transform_scan_report_sheet_table(sheet: Worksheet) -> defaultdict[Any, Lis
 
 
 def _create_value_entries(
-    values_details: List[Dict[str, Any]], fieldnames_to_ids_dict: Dict[str, str]
-) -> List[Dict[str, Any]]:
+    values_details: List[Dict[str, Any]], fields: list[ScanReportField]
+) -> List[ScanReportValue]:
     """
     Create value entries based on values_details and fieldnames_to_ids_dict.
 
     Args:
         values_details (List[Dict[str, Any]]): A list of dictionaries of the value
             details for each fieldname-value pair.
-        fieldnames_to_ids_dict (Dict[str, str]): A dictionary mapping fieldnames to their IDs.
+        fields (List[ScanReportField]): A list of SCan Report Fields.
 
     Returns:
-        List[Dict[str, Any]]: A list of dictionaries of value entries.
+        List[ScanReportValue]: A list of ScanReportValues.
     """
     return [
-        {
-            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            "value": entry["full_value"][:127],
-            "frequency": int(entry["frequency"]),
-            "value_description": entry["val_desc"],
-            "scan_report_field": fieldnames_to_ids_dict[entry["fieldname"]],
-        }
+        ScanReportValue(
+            value=entry["full_value"][:127],
+            frequency=int(entry["frequency"]),
+            value_description=entry["val_desc"],
+            scan_report_field=next(f for f in fields if f.name == entry["fieldname"]),
+        )
         for entry in values_details
     ]
 
@@ -262,9 +248,8 @@ async def _add_SRValues_and_value_descriptions(
     fieldname_value_freq_dict: Dict[str, Tuple[str]],
     current_table_name: str,
     data_dictionary: Dict[Any, Dict],
-    fieldnames_to_ids_dict: Dict[str, str],
-    scan_report_id: str,
-):
+    fields: list[ScanReportField],
+) -> None:
     """
     Add ScanReportValues and value descriptions to the values_details list.
 
@@ -273,8 +258,7 @@ async def _add_SRValues_and_value_descriptions(
             value-frequency tuples as values.
         current_table_name: The name of the current table.
         data_dictionary: The data dictionary containing field-value descriptions.
-        fieldnames_to_ids_dict: A dictionary mapping field names to field IDs.
-        scan_report_id (str): The ID of the scan report.
+        fields: A list of Scan Report Fields.
 
     Returns:
         The response content after posting the values.
@@ -292,30 +276,15 @@ async def _add_SRValues_and_value_descriptions(
         logger.debug("apply data dictionary")
         _apply_data_dictionary(values_details, data_dictionary)
 
-    # Convert basic information about SRValues into entries for posting to the endpoint.
+    # Convert basic information about SRValues into entries
     logger.debug("create value_entries_to_post")
-    value_entries = _create_value_entries(values_details, fieldnames_to_ids_dict)
-
-    # Chunk the SRValues data ready for upload, and then upload via the endpoint.
-    logger.info(f"POST {len(value_entries)} values to table {current_table_name}")
-    chunked_value_entries = helpers.perform_chunking(value_entries)
-    logger.debug(f"chunked values list len: {len(chunked_value_entries)}")
-
-    response_content = await post_chunks(
-        chunked_value_entries,
-        "scanreportvalues",
-        "values",
-        table_name=current_table_name,
-        scan_report_id=scan_report_id,
-    )
-    logger.info("POST values all finished")
-
-    return response_content
+    value_entries = _create_value_entries(values_details, fields)
+    ScanReportValue.objects.bulk_create(value_entries)
 
 
 async def _handle_single_table(
     current_table_name: str,
-    field_entries: List[Dict[str, str]],
+    field_entries: list[ScanReportField],
     scan_report_id: str,
     workbook: Workbook,
     data_dictionary: Dict[Any, Dict],
@@ -330,20 +299,10 @@ async def _handle_single_table(
     Raises:
         Exception: ValueError: Trying to access a sheet in the workbook that does not exist.
     """
-    fields_response_content = post_scan_report_field_entries(
-        field_entries, scan_report_id
-    )
-
-    # Create a dictionary with field names and field ids from the response
-    # as key value pairs
-    # e.g ("Field Name": Field ID)
-    fieldnames_to_ids_dict = {
-        str(element.get("name", None)): str(element.get("id", None))
-        for element in fields_response_content
-    }
+    fields = ScanReportField.objects.bulk_create(field_entries)
 
     if current_table_name not in workbook.sheetnames:
-        helpers.process_failure(scan_report_id)
+        update_scan_report_status(scan_report_id, Status.UPLOAD_FAILED)
         raise ValueError(
             f"Attempting to access sheet '{current_table_name}'"
             f" in scan report, but no such sheet exists."
@@ -357,43 +316,34 @@ async def _handle_single_table(
         fieldname_value_freq_dict,
         current_table_name,
         data_dictionary,
-        fieldnames_to_ids_dict,
-        scan_report_id,
+        fields,
     )
 
 
-def _create_tables(worksheet: Worksheet, id: str) -> Dict[str, str]:
+def _create_tables(worksheet: Worksheet, id: str) -> list[ScanReportTable]:
     """
     Creates tables extracted from the Field Overview worksheet.
 
-    For each table create a scan_report_table entry,
-    Append entry to table_entries_to_post[] list,
-    Create JSON array with all the entries,
-    Send POST request to API with JSON as input,
-    Save the response data(table IDs)
+    For each table name create a ScanReportTable.
 
     Args:
         worksheet (Worksheet): The worksheet containing table names.
         id (str): The ID of the scan report.
 
     Returns:
-        Dict[str, str]: A dictionary mapping table names to their IDs.
+        list[ScanReportTable]: A list of the ScanReportTables created.
     """
     table_names = _get_unique_table_names(worksheet)
     logger.info(f"TABLES NAMES >>> {table_names}")
-    table_entries = [_create_table_entry(name, id) for name in table_names]
-    logger.info("POST tables")
-    table_ids = post_scan_report_table_entries(table_entries)
-    logger.info("POST tables finished")
-    logger.info(f"TABLE IDs {table_ids}")
-    return dict(zip(table_names, table_ids))
+    table_models = [_create_table_entry(name, id) for name in table_names]
+    return ScanReportTable.objects.bulk_create(table_models)
 
 
 async def _create_fields(
     worksheet: Worksheet,
     workbook: Workbook,
     id: str,
-    table_name_to_id_map: str,
+    tables: list[ScanReportTable],
     data_dictionary: Dict[Any, Dict],
 ) -> None:
     """
@@ -424,9 +374,10 @@ async def _create_fields(
         # the list ready for processing at the end of this table.
         if row[0].value != "" and row[0].value is not None:
             current_table_name = row[0].value
-            table_id = table_name_to_id_map[current_table_name]
+            table = next(t for t in tables if t.name == current_table_name)
+            # get the current table in the list of tables by name.
 
-            field_entry = _create_field_entry(row, table_id)
+            field_entry = _create_field_entry(row, table.pk)
             field_entries_to_post.append(field_entry)
         else:
             # This is the scenario where the line is empty, so we're at the end of
