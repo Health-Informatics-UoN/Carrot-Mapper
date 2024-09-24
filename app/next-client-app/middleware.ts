@@ -3,11 +3,11 @@ import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   // Redirect logged out users.
-  let session = request.cookies.get("sessionid");
-  let csrfToken = request.cookies.get("csrftoken");
-  if (!session || !csrfToken) {
-    return NextResponse.redirect(new URL("/accounts/login/", request.url));
-  }
+  // let session = request.cookies.get("sessionid");
+  // let csrfToken = request.cookies.get("csrftoken");
+  // if (!session || !csrfToken) {
+  //   return NextResponse.redirect(new URL("/accounts/login/", request.url));
+  // }
 
   return NextResponse.next();
 }
