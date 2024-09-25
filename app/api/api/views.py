@@ -565,7 +565,13 @@ class ScanReportConceptListV2(
             ).scan_report_field.type_column
 
         # Checking field's datatype for concept with domain Observation
-        if domain == "observation" and field_datatype not in ["REAL", "INT", "VARCHAR"]:
+        if domain == "observation" and field_datatype.lower() not in [
+            "real",
+            "int",
+            "varchar",
+            "nvarchar",
+            "float",
+        ]:
             return Response(
                 {
                     "detail": "Concept having 'Observation' domain should be only added to fields having REAL, INT, or VARCHAR data type."
