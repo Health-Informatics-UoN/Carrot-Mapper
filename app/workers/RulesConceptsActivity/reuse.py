@@ -181,7 +181,7 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
     # create dictionary that maps existing field ids to scan report concepts
     # from the list of existing scan report concepts from active SRs
     existing_field_id_to_concept_map = {
-        str(element.object_id): str(element.concept)
+        str(element.object_id): str(element.concept.pk)
         for element in existing_field_concepts
     }
     logger.debug(
