@@ -21,6 +21,7 @@ m_allowed_tables = [
     "drug_exposure",
     "procedure_occurrence",
     "specimen",
+    "device_exposure",
 ]
 
 # look up of date-events in all the allowed (destination) tables
@@ -32,6 +33,10 @@ m_date_field_mapper = {
     "drug_exposure": ["drug_exposure_start_datetime", "drug_exposure_end_datetime"],
     "procedure_occurrence": ["procedure_datetime"],
     "specimen": ["specimen_datetime"],
+    "device_exposure": [
+        "device_exposure_start_datetime",
+        "device_exposure_end_datetime",
+    ],
 }
 
 
@@ -308,13 +313,15 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
 
     concept = scan_report_concept.concept
 
+    type_column = source_field.type_column
+    # get the omop field for the source_concept_id for this domain
+    domain = concept.domain_id.lower()
+
     # start looking up what table we're looking at
     destination_table = _find_destination_table(concept)
     if destination_table is None:
         return False
 
-    # get the omop field for the source_concept_id for this domain
-    domain = concept.domain_id.lower()
     omop_field = _get_omop_field(f"{domain}_source_concept_id")
 
     # obtain the source table
@@ -390,6 +397,34 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
             approved=True,
         )
         rules.append(rule_domain_value_as_number)
+
+    # When the concept has the domain "Observation", one more mapping rule to the OMOP field
+    # "value_as_number"/"value_as_string" will be added based on the field's datatype
+    if domain == "observation" and (type_column == "INT" or type_column == "REAL"):
+        # create/update a model for the domain value_as_number
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_number", "observation"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_number)
+
+    if domain == "observation" and (type_column == "VARCHAR"):
+        # create/update a model for the domain value_as_string
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_string, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_string", "observation"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_string)
 
     # now we are sure all rules have been created, we can save them safely
     for rule in rules:

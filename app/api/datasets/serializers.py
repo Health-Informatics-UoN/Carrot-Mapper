@@ -68,6 +68,24 @@ class DatasetViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
         )
 
 
+class DatasetCreateSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+            "data_partner",
+            "admins",
+            "visibility",
+            "created_at",
+            "hidden",
+            "updated_at",
+            "projects",
+            "viewers",
+            "editors",
+        )
+
+
 class DatasetEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     def validate_viewers(self, viewers):
         if request := self.context.get("request"):
