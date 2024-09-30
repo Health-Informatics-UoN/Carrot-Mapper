@@ -313,7 +313,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
 
     concept = scan_report_concept.concept
 
-    type_column = source_field.type_column
+    type_column = source_field.type_column.lower()
     # get the omop field for the source_concept_id for this domain
     domain = concept.domain_id.lower()
 
@@ -400,7 +400,9 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
 
     # When the concept has the domain "Observation", one more mapping rule to the OMOP field
     # "value_as_number"/"value_as_string" will be added based on the field's datatype
-    if domain == "observation" and (type_column == "INT" or type_column == "REAL"):
+    if domain == "observation" and (
+        type_column == "int" or type_column == "real" or type_column == "float"
+    ):
         # create/update a model for the domain value_as_number
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
@@ -413,7 +415,9 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         )
         rules.append(rule_domain_value_as_number)
 
-    if domain == "observation" and (type_column == "VARCHAR"):
+    if domain == "observation" and (
+        type_column == "varchar" or type_column == "nvarchar"
+    ):
         # create/update a model for the domain value_as_string
         #  - for this destination_field and source_field
         #  - do_term_mapping is set to false
