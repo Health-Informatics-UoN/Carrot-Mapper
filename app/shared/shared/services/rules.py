@@ -280,6 +280,8 @@ def _find_destination_table(concept: Concept) -> Optional[OmopTable]:
         - destination_table (OmopTable): The destination table for the concept.
     """
     domain = concept.domain_id.lower()
+    if domain == "meas value":
+        domain = "measurement"
     # get the omop field for the source_concept_id for this domain
     omop_field = _get_omop_field(f"{domain}_source_concept_id")
     if omop_field is None:
@@ -322,8 +324,6 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     if destination_table is None:
         return False
 
-    omop_field = _get_omop_field(f"{domain}_source_concept_id")
-
     # obtain the source table
     source_table = source_field.scan_report_table
 
@@ -343,6 +343,33 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     )
     rules += date_rules
 
+    if domain == "measurement":
+        # create/update a model for the domain value_as_number
+        #  - for this destination_field and source_field
+        #  - do_term_mapping is set to false
+        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_number", "measurement"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_number)
+
+    if domain == "meas value":
+        # create/update a model for the domain value_as_concept_id
+        rule_domain_value_as_concept_id, created = MappingRule.objects.update_or_create(
+            scan_report=scan_report,
+            omop_field=_get_omop_field("value_as_concept_id", "measurement"),
+            source_field=source_field,
+            concept=scan_report_concept,
+            approved=True,
+        )
+        rules.append(rule_domain_value_as_concept_id)
+        # Then convert to Measument domain
+        domain = "measurement"
+
+    omop_field = _get_omop_field(f"{domain}_source_concept_id")
     # create/update a model for the domain source_concept_id
     #  - for this destination_field and source_field
     #  - do_term_mapping is set to true:
@@ -367,6 +394,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
         concept=scan_report_concept,
         approved=True,
     )
+    # TODO: confirm if we need this rule if already had "value_as_concept_id"? if not or yes, modify the SummaryRulesListV2 accordingly to show the review mapping rules
     rules.append(rule_domain_concept_id)
 
     # create/update a model for the domain source_value
@@ -384,19 +412,6 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
     # - but we need to preserve the link,
     #   so when all associated concepts are deleted, the rule is deleted
     rules.append(rule_domain_source_value)
-
-    if domain == "measurement":
-        # create/update a model for the domain value_as_number
-        #  - for this destination_field and source_field
-        #  - do_term_mapping is set to false
-        rule_domain_value_as_number, created = MappingRule.objects.update_or_create(
-            scan_report=scan_report,
-            omop_field=_get_omop_field("value_as_number", "measurement"),
-            source_field=source_field,
-            concept=scan_report_concept,
-            approved=True,
-        )
-        rules.append(rule_domain_value_as_number)
 
     # When the concept has the domain "Observation", one more mapping rule to the OMOP field
     # "value_as_number"/"value_as_string" will be added based on the field's datatype
@@ -429,7 +444,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
             approved=True,
         )
         rules.append(rule_domain_value_as_string)
-
+    print(rules)
     # now we are sure all rules have been created, we can save them safely
     for rule in rules:
         rule.save()
