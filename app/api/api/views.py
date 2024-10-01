@@ -76,6 +76,7 @@ from shared.services.rules_export import (
     get_mapping_rules_list,
     make_dag,
 )
+from django.db.models import Q
 
 
 class DataPartnerViewSet(GenericAPIView, ListModelMixin):
@@ -745,7 +746,10 @@ class SummaryRulesListV2(RulesListV2):
         omop_fields_queryset = OmopField.objects.filter(
             pk__in=queryset.values_list("omop_field_id", flat=True),
             field__endswith="_concept_id",
-        ).exclude(field__endswith="_source_concept_id")
+        ).exclude(
+            Q(field__endswith="_source_concept_id")
+            | Q(field__endswith="value_as_concept_id")
+        )
 
         ids_list = omop_fields_queryset.values_list("id", flat=True)
         # Filter the queryset based on valid omop_field_ids
