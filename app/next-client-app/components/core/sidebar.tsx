@@ -17,9 +17,11 @@ import { cn } from "@/lib/utils";
 export function Sidebar({
   userName,
   onPublic,
+  userLoggedIn,
 }: {
-  userName: string;
+  userName?: string;
   onPublic?: boolean;
+  userLoggedIn?: boolean;
 }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,11 +32,11 @@ export function Sidebar({
   return (
     <div
       className={cn(
-        "flex gap-3 pt-4 px-10 items-center justify-between  pb-3",
+        "flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3",
         {
-          "lg:hidden": onPublic,
+          "lg:hidden px-0": onPublic,
           "border-b-2 border-gray-300": !onPublic,
-        },
+        }
       )}
     >
       <div className="flex items-center">
@@ -46,6 +48,7 @@ export function Sidebar({
                 variant="outline"
                 size={"sm"}
                 className="mr-4 flex items-center justify-center"
+                aria-label="Menu Button"
               >
                 <Menu size={25} />
               </Button>
@@ -54,12 +57,10 @@ export function Sidebar({
               <SheetHeader className="flex flex-row justify-between items-center rounded-lg w-full py-3">
                 <Link href={"/"}>
                   <div className="text-2xl flex items-center font-semibold">
-                    <Image
-                      width={22}
-                      height={22}
+                    <img
+                      className="mx-3 w-[25px]"
                       src="/carrot-logo.png"
                       alt="carrot-logo"
-                      className="mx-3"
                     />
                     Carrot
                   </div>
@@ -67,9 +68,9 @@ export function Sidebar({
               </SheetHeader>
               <div className="h-full">
                 <div className="flex mt-7 flex-col w-full gap-1">
-                  {(userName === "Unknown User"
-                    ? sidebarItems.routes
-                    : sidebarItems.links
+                  {(userName || userLoggedIn
+                    ? sidebarItems.links
+                    : sidebarItems.routes
                   ).map((link, idx) => (
                     <Link key={idx} href={link.href}>
                       <SidebarButton
@@ -82,7 +83,7 @@ export function Sidebar({
                     </Link>
                   ))}
                 </div>
-                {userName !== "Unknown User" && (
+                {(userName || userLoggedIn) && (
                   <div className="absolute w-full bottom-4 px-1 left-0">
                     <Separator className="absolute -top-3 left-0 w-full" />
                     <Drawer>
@@ -130,12 +131,10 @@ export function Sidebar({
         </div>
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
-            <Image
-              width={22}
-              height={22}
+            <img
+              className="mx-3 w-[25px]"
               src="/carrot-logo.png"
               alt="carrot-logo"
-              className="mx-3"
             />
             Carrot
           </div>

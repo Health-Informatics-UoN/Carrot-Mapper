@@ -9,14 +9,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
 
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    restart: always
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "10002:10002"
-
   next-client:
     image: carrot-next-client
     build:
@@ -26,7 +18,7 @@ services:
       - 3000:3000
     environment:
       - BACKEND_URL=http://web:8000
-      - BACKEND_ORIGIN="web:8000"
+      - BACKEND_ORIGIN=localhost:8000
     volumes:
       - ./app/next-client-app:/next-client-app
 
@@ -49,7 +41,7 @@ services:
       - 8000:8000
     environment:
       - NEXTJS_URL=http://next-client:3000
-      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web']
+      - ALLOWED_HOSTS=['localhost', '127.0.0.1','web', 'workers']
       - COCONNECT_DB_ENGINE=django.db.backends.postgresql
       - COCONNECT_DB_HOST=db
       - COCONNECT_DB_PORT=5432
@@ -62,11 +54,59 @@ services:
       - UPLOAD_QUEUE_NAME=uploadreports-local
       - SECRET_KEY=secret
       - AZURE_ACCOUNT_NAME=devstoreaccount1
-      - AZ_URL=http://workers:7071
+      - AZ_URL=http://workers:80
       - AZ_RULES_NAME=RulesOrchestrator
       - AZ_RULES_EXPORT_QUEUE=rules=exports-local
+      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
     volumes:
       - ./app/api:/api
     depends_on:
       - db
       - azurite
+
+  workers:
+    image: carrot-workers
+    build:
+      context: app
+      dockerfile: workers/Dockerfile
+    ports:
+      - 8080:80
+      - 7071:80
+    environment:
+      - IsEncrypted=false
+      - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      - FUNCTIONS_WORKER_RUNTIME=python
+      - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      - APP_URL=http://web:8000/
+      # The key below needed for authentication and can be obtained through localhost:8000/admin/ --> add tokens
+      - AZ_FUNCTION_KEY=2d374a1f460fc9627d69e99c6cbeabf3f759d517
+      # Four queues below need adding to Azure local storage
+      - SCAN_REPORT_QUEUE_NAME=scanreports-local
+      - UPLOAD_QUEUE_NAME=uploadreports-local
+      - RULES_QUEUE_NAME=rules-local
+      - RULES_FILE_QUEUE_NAME=rules-exports-local
+      - PAGE_MAX_CHARS=30000
+      - CHUNK_SIZE=6
+      # The address that can be used to reach the function app from outside
+      - WEBSITE_HOSTNAME=localhost:7071
+    volumes:
+      - ./app/workers:/home/site/wwwroot
+      - ./app/shared:/shared
+    depends_on:
+      - web
+      - azurite
+
+  azurite:
+    container_name: azurite
+    image: mcr.microsoft.com/azure-storage/azurite
+    restart: always
+    volumes:
+      - ./app/azurite:/azurite
+    ports:
+      - 10000:10000
+      - 10001:10001
+      - 10002:10002
+    command: azurite --blobHost azurite --queueHost azurite --tableHost azurite --location /data --debug /data/debug.log --loose --skipApiVersionCheck
+    hostname: azurite
+    environment:
+      - AZURITE_ACCOUNTS=devstoreaccount1:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
