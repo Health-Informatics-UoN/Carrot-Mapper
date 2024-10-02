@@ -2,24 +2,22 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
-import { LogOut, Menu, MoreHorizontal, Settings } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { SidebarButton } from "./sidebar-button";
 import { usePathname } from "next/navigation";
-import { Separator } from "../ui/separator";
-import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ModeToggle } from "./mode-toggle";
 import { sidebarItems } from "./menuItems";
 import { cn } from "@/lib/utils";
+import { UserMenu } from "@/components/core/UserMenu";
 
 export function Sidebar({
   userName,
   onPublic,
   userLoggedIn,
 }: {
-  userName?: string;
+  userName?: string | undefined;
   onPublic?: boolean;
   userLoggedIn?: boolean;
 }) {
@@ -36,7 +34,7 @@ export function Sidebar({
         {
           "lg:hidden px-0": onPublic,
           "border-b-2 border-gray-300": !onPublic,
-        }
+        },
       )}
     >
       <div className="flex items-center">
@@ -83,7 +81,8 @@ export function Sidebar({
                     </Link>
                   ))}
                 </div>
-                {(userName || userLoggedIn) && (
+                <UserMenu />
+                {/* {(userName || userLoggedIn) && (
                   <div className="absolute w-full bottom-4 px-1 left-0">
                     <Separator className="absolute -top-3 left-0 w-full" />
                     <Drawer>
@@ -112,7 +111,8 @@ export function Sidebar({
                             </SidebarButton>
                           </a>
                           <a href={"/accounts/logout/"}>
-                            <SidebarButton
+                            <LogoutButton />
+                            {/* <SidebarButton
                               size="sm"
                               icon={LogOut}
                               className="w-full"
@@ -124,7 +124,7 @@ export function Sidebar({
                       </DrawerContent>
                     </Drawer>
                   </div>
-                )}
+                )} */}
               </div>
             </SheetContent>
           </Sheet>

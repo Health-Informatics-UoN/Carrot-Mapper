@@ -1,10 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { SidebarButton } from "./sidebar-button";
 import { sidebarItems } from "./menuItems";
 import { Sidebar } from "./sidebar";
 import { ModeToggle } from "./mode-toggle";
-import { LogOut } from "lucide-react";
+import { UserMenu } from "@/components/core/UserMenu";
 
 export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
   return (
@@ -31,15 +30,9 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
                     {link.label}
                   </SidebarButton>
                 </Link>
-              )
+              ),
             )}
-            {userLoggedIn && (
-              <a href={"/accounts/logout/"}>
-                <SidebarButton icon={LogOut} className="w-full">
-                  {"Log out"}
-                </SidebarButton>
-              </a>
-            )}
+            <UserMenu />
           </div>
           <div>
             <ModeToggle />
