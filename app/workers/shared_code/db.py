@@ -139,16 +139,26 @@ def get_scan_report_active_concepts(
     Returns:
         - QuerySet[ScanReportConcept]: The list of Scan Report Concepts.
     """
+
     content_type_model = ContentType.objects.get(model=content_type.value)
 
-    value_ids = ScanReportValue.objects.filter(
-        scan_report_field__scan_report_table__scan_report__hidden=False,
-        scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-        scan_report_field__scan_report_table__scan_report__status="COMPLET",
-    ).values_list("id", flat=True)
+    if content_type == ScanReportConceptContentType.FIELD:
+        object_ids = ScanReportField.objects.filter(
+            scan_report_table__scan_report__hidden=False,
+            scan_report_table__scan_report__parent_dataset__hidden=False,
+            scan_report_table__scan_report__status="COMPLET",
+        ).values_list("id", flat=True)
+    elif content_type == ScanReportConceptContentType.VALUE:
+        object_ids = ScanReportValue.objects.filter(
+            scan_report_field__scan_report_table__scan_report__hidden=False,
+            scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+            scan_report_field__scan_report_table__scan_report__status="COMPLET",
+        ).values_list("id", flat=True)
+    else:
+        raise ValueError(f"Unsupported content type: {content_type}")
 
     return ScanReportConcept.objects.filter(
-        content_type=content_type_model, object_id__in=value_ids
+        content_type=content_type_model, object_id__in=object_ids
     ).all()
 
 
