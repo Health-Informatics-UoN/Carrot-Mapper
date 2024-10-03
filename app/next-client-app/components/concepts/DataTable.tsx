@@ -34,6 +34,7 @@ export function DataTableUpdate<
   const [data, setData] = useState(scanReportsData);
 
   const setDeath = (death: boolean, id: number) => {
+    // TODO: ADD connection between FE and BE here, maybe using useEffect
     console.log("setDeath called with:", death, "for id:", id);
     const updatedData = data.map((table) => {
       if (table.id === id) {
