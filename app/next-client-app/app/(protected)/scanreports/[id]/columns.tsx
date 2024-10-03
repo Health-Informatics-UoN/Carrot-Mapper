@@ -57,13 +57,13 @@ export const columns = (
       <DataTableColumnHeader column={column} title="Death table?" />
     ),
     cell: ({ row }) => {
-      const { id, death } = row.original;
+      const { id, death_table } = row.original;
       return (
         <Switch
           onCheckedChange={(checked) => {
             setDeath(checked, id);
           }}
-          defaultChecked={death}
+          defaultChecked={death_table}
         />
       );
     },

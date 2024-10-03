@@ -19,7 +19,7 @@ export function DataTableUpdate<
     id: number;
     concepts?: Concept[];
     permissions: Permission[];
-    death: boolean;
+    death_table: boolean;
   }
 >({
   scanReportsData,

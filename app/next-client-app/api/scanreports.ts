@@ -136,7 +136,7 @@ export async function getScanReportTable(
       updated_at: new Date(),
       date_event: null,
       permissions: [],
-      death: false,
+      death_table: false,
     };
   }
 }
