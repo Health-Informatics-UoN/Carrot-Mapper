@@ -575,7 +575,7 @@ class ScanReportConceptListV2(
         ]:
             return Response(
                 {
-                    "detail": "Concept having 'Observation' domain should be only added to fields having REAL, INT, or VARCHAR data type."
+                    "detail": "Concept having 'Observation' domain should be only added to fields having REAL, INT, FLOAT, NVARCHAR or VARCHAR data type."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
