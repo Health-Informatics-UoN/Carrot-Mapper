@@ -3,8 +3,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
+import { Switch } from "@/components/ui/switch";
 
-export const columns: ColumnDef<ScanReportTable>[] = [
+export const columns = (
+  setDeath: (death: boolean, id: number) => void
+): ColumnDef<ScanReportTable>[] => [
   {
     id: "Name",
     accessorKey: "name",
@@ -47,6 +50,23 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     },
     enableHiding: true,
     enableSorting: false,
+  },
+  {
+    id: "death",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Death table?" />
+    ),
+    cell: ({ row }) => {
+      const { id, death } = row.original;
+      return (
+        <Switch
+          onCheckedChange={(checked) => {
+            setDeath(checked, id);
+          }}
+          defaultChecked={death}
+        />
+      );
+    },
   },
   {
     id: "edit",
