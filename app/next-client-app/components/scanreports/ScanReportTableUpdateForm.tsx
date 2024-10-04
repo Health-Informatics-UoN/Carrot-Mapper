@@ -8,10 +8,13 @@ import { FormDataFilter } from "../form-components/FormikUtils";
 import { Form, Formik } from "formik";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
 
 interface FormData {
   personId: number | null;
   dateEvent: number | null;
+  death_table: boolean;
 }
 
 export function ScanReportTableUpdateForm({
@@ -39,16 +42,17 @@ export function ScanReportTableUpdateForm({
     const submittingData = {
       person_id: data.personId !== 0 ? data.personId : null,
       date_event: data.dateEvent !== 0 ? data.dateEvent : null,
+      death_table: data.death_table,
     };
 
     const response = await updateScanReportTable(
       scanreportTable.scan_report,
       scanreportTable.id,
-      submittingData,
+      submittingData
     );
     if (response) {
       toast.error(
-        `Update Scan Report Table failed. Error: ${response.errorMessage}`,
+        `Update Scan Report Table failed. Error: ${response.errorMessage}`
       );
     } else {
       toast.success("Update Scan Report Table successful!");
@@ -60,12 +64,13 @@ export function ScanReportTableUpdateForm({
       initialValues={{
         dateEvent: initialDateEvent[0].value,
         personId: initialPersonId[0].value,
+        death_table: scanreportTable.death_table,
       }}
       onSubmit={(data) => {
         handleSubmit(data);
       }}
     >
-      {({ handleSubmit }) => (
+      {({ handleSubmit, handleChange, values }) => (
         <Form className="w-full" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex flex-col gap-2">
@@ -101,6 +106,28 @@ export function ScanReportTableUpdateForm({
                 isMulti={false}
                 isDisabled={!canUpdate}
               />
+            </div>
+
+            <div className="flex gap-2">
+              <h3 className="flex">
+                {" "}
+                Is this a Death table?
+                <Tooltips content="If this is set to YES, all of the concepts added to this table will be mapped to DEATH table" />
+              </h3>
+              <Switch
+                onCheckedChange={(checked) => {
+                  handleChange({
+                    target: {
+                      name: "death_table",
+                      value: checked ? true : false,
+                    },
+                  });
+                }}
+                checked={values.death_table}
+              />
+              <Label className="text-lg">
+                {values.death_table === true ? "YES" : "NO"}
+              </Label>
             </div>
 
             <div className="flex mt-3">
