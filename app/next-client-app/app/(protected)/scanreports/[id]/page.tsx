@@ -8,6 +8,7 @@ import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { DataTableUpdate } from "../../../../components/concepts/DataTable";
+import { columns2 } from "./columns2";
 
 interface ScanReportsTableProps {
   params: {
@@ -27,11 +28,16 @@ export default async function ScanReportsTable({
 
   const scanReportsTables = await getScanReportTables(id, query);
   const permissions = await getScanReportPermissions(id);
+  const scanReportsResult = scanReportsTables.results.map((table) => {
+    table.permissions = permissions.permissions;
+    return table;
+  });
+  const filter = <DataTableFilter filter="name" />;
 
   return (
     <div>
       <div>
-        <DataTableUpdate
+        {/* <DataTableUpdate
           count={scanReportsTables.count}
           scanReportsData={scanReportsTables.results}
           columns={columns}
@@ -39,6 +45,13 @@ export default async function ScanReportsTable({
           filterText="name "
           linkPrefix="tables/"
           permissions={permissions}
+        /> */}
+        <DataTable
+          columns={columns2}
+          data={scanReportsResult}
+          count={scanReportsTables.count}
+          Filter={filter}
+          linkPrefix="tables/"
         />
       </div>
     </div>
