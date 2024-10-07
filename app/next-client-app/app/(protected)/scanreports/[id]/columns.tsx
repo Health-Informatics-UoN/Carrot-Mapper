@@ -3,11 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
-import { Switch } from "@/components/ui/switch";
+import { Tooltips } from "@/components/Tooltips";
 
-export const columns = (
-  setDeath: (death: boolean, id: number) => void
-): ColumnDef<ScanReportTable>[] => [
+export const columns: ColumnDef<ScanReportTable>[] = [
   {
     id: "Name",
     accessorKey: "name",
@@ -52,19 +50,22 @@ export const columns = (
     enableSorting: false,
   },
   {
-    id: "death",
+    id: "note",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Death table?" />
+      <DataTableColumnHeader column={column} title="Note" />
     ),
     cell: ({ row }) => {
-      const { id, death_table } = row.original;
+      const { death_table } = row.original;
       return (
-        <Switch
-          onCheckedChange={(checked) => {
-            setDeath(checked, id);
-          }}
-          defaultChecked={death_table}
-        />
+        <div>
+          {death_table && (
+            <h3 className="flex">
+              {" "}
+              Death table
+              <Tooltips content="All of the concepts added to this table will be mapped to DEATH table" />
+            </h3>
+          )}
+        </div>
       );
     },
   },

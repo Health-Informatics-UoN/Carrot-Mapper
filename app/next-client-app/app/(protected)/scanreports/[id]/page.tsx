@@ -1,4 +1,3 @@
-import { columns } from "./columns";
 import {
   getScanReportPermissions,
   getScanReportTables,
@@ -7,8 +6,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import { DataTableUpdate } from "../../../../components/concepts/DataTable";
-import { columns2 } from "./columns2";
+import { columns } from "./columns";
 
 interface ScanReportsTableProps {
   params: {
@@ -37,17 +35,8 @@ export default async function ScanReportsTable({
   return (
     <div>
       <div>
-        {/* <DataTableUpdate
-          count={scanReportsTables.count}
-          scanReportsData={scanReportsTables.results}
-          columns={columns}
-          filterCol="name"
-          filterText="name "
-          linkPrefix="tables/"
-          permissions={permissions}
-        /> */}
         <DataTable
-          columns={columns2}
+          columns={columns}
           data={scanReportsResult}
           count={scanReportsTables.count}
           Filter={filter}
