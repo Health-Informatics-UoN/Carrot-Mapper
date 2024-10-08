@@ -1,7 +1,6 @@
 import asyncio
 import os
 from collections import defaultdict
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple
 
 import azure.functions as func
@@ -383,7 +382,7 @@ async def _create_fields(
             # This is the scenario where the line is empty, so we're at the end of
             # the table. Don't add a field entry, but process all those so far.
             await _handle_single_table(
-                current_table_name,
+                str(current_table_name),
                 field_entries_to_post,
                 id,
                 workbook,
@@ -395,7 +394,7 @@ async def _create_fields(
     # sometimes the iter_rows() seems to now allow you to go beyond the last row.
     if field_entries_to_post:
         await _handle_single_table(
-            current_table_name,
+            str(current_table_name),
             field_entries_to_post,
             id,
             workbook,
