@@ -111,11 +111,11 @@ export const columns: ColumnDef<ScanReport>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const { id, status, dataset } = row.original;
+      const { id, upload_status, dataset } = row.original;
       return (
         <ScanReportStatus
           id={id.toString()}
-          status={status}
+          upload_status={upload_status}
           dataset={dataset}
           className="w-[180px]"
           disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error

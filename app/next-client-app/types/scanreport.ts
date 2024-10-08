@@ -3,7 +3,8 @@ interface ScanReport {
   dataset: string;
   parent_dataset: DatasetStrict;
   data_partner: string;
-  status: string;
+  mapping_status: string;
+  upload_status: string;
   created_at: Date;
   hidden: boolean;
   visibility: string;
