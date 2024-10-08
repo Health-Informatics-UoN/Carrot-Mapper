@@ -31,6 +31,7 @@ def update_scan_report_status(id: str, status: Status) -> None:
     """
     scan_report = ScanReport.objects.get(id=id)
     scan_report.status = status
+    scan_report.save()
 
 
 def create_concept(
