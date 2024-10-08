@@ -29,7 +29,7 @@ async def main(req: func.HttpRequest, starter: str) -> func.HttpResponse:
 
     client = df.DurableOrchestrationClient(starter)
     status = await client.get_status(instance_id)
-
+    # TODO: update upload status and mapping status in workers as well
     if not status:
         return func.HttpResponse(
             f"Instance with ID '{instance_id}' not found.", status_code=404
