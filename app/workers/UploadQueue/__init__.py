@@ -61,7 +61,7 @@ def _create_table_entry(table_name: str, id: str) -> ScanReportTable:
     # Truncate table names because sheet names are truncated to 31 characters in Excel
     short_table_name = table_name[:31]
 
-    return ScanReportTable(name=short_table_name, scan_report=id)
+    return ScanReportTable(name=short_table_name, scan_report_id=id)
 
 
 def _create_field_entry(row: Tuple[Cell], scan_report_table_id: str) -> ScanReportField:
@@ -76,7 +76,7 @@ def _create_field_entry(row: Tuple[Cell], scan_report_table_id: str) -> ScanRepo
         ScanReportField: A dictionary representing the field entry.
     """
     return ScanReportField(
-        scan_report_table=scan_report_table_id,
+        scan_report_table_id=scan_report_table_id,
         name=str(row[1].value),
         description_column=str(row[2].value),
         type_column=str(row[3].value),
@@ -279,7 +279,7 @@ async def _add_SRValues_and_value_descriptions(
     # Convert basic information about SRValues into entries
     logger.debug("create value_entries_to_post")
     value_entries = _create_value_entries(values_details, fields)
-    ScanReportValue.objects.bulk_create(value_entries)
+    await ScanReportValue.objects.abulk_create(value_entries)
 
 
 async def _handle_single_table(
@@ -299,7 +299,7 @@ async def _handle_single_table(
     Raises:
         Exception: ValueError: Trying to access a sheet in the workbook that does not exist.
     """
-    fields = ScanReportField.objects.bulk_create(field_entries)
+    fields = await ScanReportField.objects.abulk_create(field_entries)
 
     if current_table_name not in workbook.sheetnames:
         update_scan_report_status(scan_report_id, Status.UPLOAD_FAILED)
@@ -439,7 +439,7 @@ def main(msg: func.QueueMessage) -> None:
     )
     _handle_failure(msg, scan_report_id)
 
-    update_scan_report_status(scan_report_id, Status.UPLOAD_IN_PROGRESS)
+    # update_scan_report_status(scan_report_id, Status.UPLOAD_IN_PROGRESS)
 
     wb = blob_parser.get_scan_report(scan_report_blob)
     data_dictionary, _ = blob_parser.get_data_dictionary(data_dictionary_blob)
