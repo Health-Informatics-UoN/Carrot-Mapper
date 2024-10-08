@@ -3,7 +3,7 @@
 import { FacetsFilter } from "@/components/scanreports/FacetsFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { statusOptions } from "@/constants/scanReportStatus";
+import { UploadStatusOptions } from "@/constants/scanReportStatus";
 import { navigateWithSearchParam } from "@/lib/client-utils";
 import { FilterOption } from "@/types/filter";
 import { Plus } from "lucide-react";
@@ -29,8 +29,8 @@ export function ScanReportsTableFilter({
     const statusParam = searchParam.get("status__in");
     if (statusParam) {
       const statusValues = statusParam.split(",");
-      const filteredOptions = statusOptions.filter((option) =>
-        statusValues.includes(option.value),
+      const filteredOptions = UploadStatusOptions.filter((option) =>
+        statusValues.includes(option.value)
       );
       setOptions(filteredOptions);
     }
@@ -44,7 +44,7 @@ export function ScanReportsTableFilter({
           `${filter}__icontains`,
           query,
           router,
-          searchParam,
+          searchParam
         );
       } else if (query.length === 0) {
         // Handle resetting the filter
@@ -52,23 +52,23 @@ export function ScanReportsTableFilter({
           `${filter}__icontains`,
           "",
           router,
-          searchParam,
+          searchParam
         );
       }
     },
-    300,
+    300
   );
 
   const handleSelectOption = (option: FilterOption) => {
     const updatedOptions = selectedOptions ? [...selectedOptions] : [];
     const isSelected = updatedOptions.some(
-      (item) => item.value === option.value,
+      (item) => item.value === option.value
     );
 
     if (isSelected) {
       // Remove if it's already selected
       const index = updatedOptions.findIndex(
-        (item) => item.value === option.value,
+        (item) => item.value === option.value
       );
       updatedOptions.splice(index, 1);
     } else {
@@ -84,7 +84,7 @@ export function ScanReportsTableFilter({
       "status__in",
       options?.map((option) => option.value) || "",
       router,
-      searchParam,
+      searchParam
     );
   };
 
@@ -99,7 +99,7 @@ export function ScanReportsTableFilter({
       <div className="max-sm:hidden">
         <FacetsFilter
           title="Status"
-          options={statusOptions}
+          options={UploadStatusOptions}
           selectedOptions={selectedOptions}
           handleSelect={handleSelectOption}
           handleClear={() => (setOptions([]), handleFacetsFilter())}

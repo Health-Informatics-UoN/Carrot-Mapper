@@ -29,8 +29,9 @@ export function ScanReportStatus({
 }: ScanReportStatusProps) {
   // Safely extract the color
   const statusInfo = UploadStatusOptions.find(
-    (option) => option.value === status
+    (option) => option.value === upload_status
   );
+  console.log(upload_status);
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
