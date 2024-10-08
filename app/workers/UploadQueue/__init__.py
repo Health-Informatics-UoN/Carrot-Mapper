@@ -439,7 +439,7 @@ def main(msg: func.QueueMessage) -> None:
     )
     _handle_failure(msg, scan_report_id)
 
-    # update_scan_report_status(scan_report_id, Status.UPLOAD_IN_PROGRESS)
+    update_scan_report_status(scan_report_id, Status.UPLOAD_IN_PROGRESS)
 
     wb = blob_parser.get_scan_report(scan_report_blob)
     data_dictionary, _ = blob_parser.get_data_dictionary(data_dictionary_blob)
