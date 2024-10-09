@@ -289,7 +289,7 @@ def _find_destination_table(
     if domain == "meas value":
         omop_field = _get_omop_field("value_as_concept_id", "measurement")
     # TODO: Need to get a full list of this?
-    elif table.death_table and domain not in ["gender"]:
+    elif table.death_table and domain not in ["gender", "race", "ethnicity"]:
         omop_field = _get_omop_field("cause_source_concept_id", "death")
     else:
         omop_field = _get_omop_field(f"{domain}_source_concept_id")
@@ -356,7 +356,7 @@ def _save_mapping_rules(scan_report_concept: ScanReportConcept) -> bool:
 
     # Convert domain of concepts added to Death table to "CAUSE", in order to facilitate the get OMOP field process
     # TODO: Need to get a full list of this?
-    if source_table.death_table and domain not in ["gender"]:
+    if source_table.death_table and domain not in ["gender", "race", "ethnicity"]:
         domain = "cause"
 
     # In case of domain = "meas value", this rule will not be generated.
