@@ -7,50 +7,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { statusOptions } from "@/constants/scanReportStatus";
-import { ApiError } from "@/lib/api/error";
+import { UploadStatusOptions } from "@/constants/scanReportStatus";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SelectTriggerProps } from "@radix-ui/react-select";
 
 interface ScanReportStatusProps extends SelectTriggerProps {
   id: string;
-  status: string;
+  upload_status: string;
   dataset: string;
   disabled: boolean;
 }
 
 export function ScanReportStatus({
   id,
-  status,
+  upload_status,
   dataset,
   className,
   disabled,
 }: ScanReportStatusProps) {
   // Safely extract the color
-  const statusInfo = statusOptions.find((option) => option.value === status);
+  const statusInfo = UploadStatusOptions.find(
+    (option) => option.value === upload_status
+  );
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
     const response = await updateScanReport(parseInt(id), {
-      status: newStatus,
+      upload_status: newStatus,
     });
     const newStatusText =
-      statusOptions.find((option) => option.value === newStatus)?.label ?? "";
+      UploadStatusOptions.find((option) => option.value === newStatus)?.label ??
+      "";
     if (response) {
       toast.error(
-        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`,
+        `Scan Report ${dataset} status change has failed: ${response.errorMessage}.`
       );
     } else {
       toast.success(
-        `Scan Report ${dataset} status has changed to ${newStatusText}.`,
+        `Scan Report ${dataset} status has changed to ${newStatusText}.`
       );
     }
   };
 
   return (
     <Select
-      value={status}
+      value={upload_status}
       onValueChange={handleChangeStatus}
       disabled={disabled}
     >
@@ -58,7 +60,7 @@ export function ScanReportStatus({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {statusOptions.map((option) => (
+        {UploadStatusOptions.map((option) => (
           <SelectItem key={option.value} value={option.value}>
             {option.label}
           </SelectItem>

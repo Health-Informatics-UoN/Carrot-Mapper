@@ -102,7 +102,7 @@ export default async function ScanReportLayout({
         <div className="py-1 md:py-0 md:px-3 h-5">
           <ScanReportStatus
             id={params.id}
-            status={scanreport.status}
+            upload_status={scanreport.upload_status}
             dataset={scanreport.dataset}
             className="w-[180px] h-5"
             disabled={!canEdit} // Disable when users don't have permission
