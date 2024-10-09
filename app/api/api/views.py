@@ -148,6 +148,7 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
         "hidden": ["exact"],
         "dataset": ["in", "icontains"],
         "upload_status": ["in"],
+        "mapping_status": ["in"],
         "parent_dataset": ["exact"],
     }
     ordering_fields = [

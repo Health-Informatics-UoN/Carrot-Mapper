@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { MappingStatusFilter } from "./MappingStatusFilter";
 
 export function ScanReportsTableFilter({
   filter,
@@ -89,30 +90,33 @@ export function ScanReportsTableFilter({
   };
 
   return (
-    <div className="flex w-full">
-      <Input
-        placeholder={`Filter by ${filterText}...`}
-        onChange={handleFilter}
-        className="max-w-xs mr-4"
-      />
-
-      <div className="max-sm:hidden">
-        <FacetsFilter
-          title="Status"
-          options={UploadStatusOptions}
-          selectedOptions={selectedOptions}
-          handleSelect={handleSelectOption}
-          handleClear={() => (setOptions([]), handleFacetsFilter())}
+    <div className="flex w-full justify-between">
+      <div className="flex gap-4">
+        <Input
+          placeholder={`Filter by ${filterText}...`}
+          onChange={handleFilter}
+          className="max-w-xs"
         />
-      </div>
-      <div className="flex-grow"></div>
 
-      <Link href="/scanreports/create" prefetch={false}>
-        <Button variant={"outline"} className="ml-auto mr-4">
-          New Scan Report
-          <Plus className="ml-2 h-4 w-4" />
-        </Button>
-      </Link>
+        <div className="max-sm:hidden">
+          <FacetsFilter
+            title="Upload Status"
+            options={UploadStatusOptions}
+            selectedOptions={selectedOptions}
+            handleSelect={handleSelectOption}
+            handleClear={() => (setOptions([]), handleFacetsFilter())}
+          />
+        </div>
+        <MappingStatusFilter />
+      </div>
+      <div>
+        <Link href="/scanreports/create" prefetch={false}>
+          <Button variant={"outline"} className="ml-auto mr-4">
+            New Scan Report
+            <Plus className="ml-2 h-4 w-4" />
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }
