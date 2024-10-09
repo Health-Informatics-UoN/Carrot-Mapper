@@ -112,7 +112,7 @@ export function ScanReportTableUpdateForm({
               <h3 className="flex">
                 {" "}
                 Is this a Death table?
-                <Tooltips content="If this is set to YES, all of the concepts added to this table will be mapped to DEATH table" />
+                <Tooltips content="If this is set to YES, concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to PERSON table. ALL of other concepts added here will be mapped to DEATH table" />
               </h3>
               <Switch
                 onCheckedChange={(checked) => {

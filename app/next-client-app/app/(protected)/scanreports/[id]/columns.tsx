@@ -62,7 +62,7 @@ export const columns: ColumnDef<ScanReportTable>[] = [
             <h3 className="flex">
               {" "}
               Death table
-              <Tooltips content="All of the concepts added to this table will be mapped to DEATH table" />
+              <Tooltips content="Concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to PERSON table. ALL of other concepts added here will be mapped to DEATH table" />
             </h3>
           )}
         </div>
