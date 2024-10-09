@@ -1,8 +1,7 @@
 "use client";
 
-import { CheckIcon, PlusCircledIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "@radix-ui/react-icons";
 import { FilterOption } from "@/types/filter";
-
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Filter } from "lucide-react";
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   title?: string;
@@ -41,7 +41,7 @@ export function FacetsFilter<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" className="">
-          <PlusCircledIcon className="mr-2 size-4" />
+          <Filter className="mr-2 size-4" />
           {title}
           {selectedOptions && selectedOptions?.length > 0 && (
             <>

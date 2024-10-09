@@ -24,7 +24,7 @@ class MappingStatus(models.TextChoices):
     IN_PROGRESS_25PERCENT = "INPRO25", "Mapping 25%"
     IN_PROGRESS_50PERCENT = "INPRO50", "Mapping 50%"
     IN_PROGRESS_75PERCENT = "INPRO75", "Mapping 75%"
-    COMPLETE = "COMPLET", "Mapping Complete"  # TODO:change in reuse funciton as well
+    COMPLETE = "COMPLET", "Mapping Complete"
     BLOCKED = "BLOCKED", "Blocked"
 
 

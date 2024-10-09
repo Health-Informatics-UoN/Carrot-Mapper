@@ -137,7 +137,7 @@ export const columns: ColumnDef<ScanReport>[] = [
               disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
             />
           ) : (
-            "Not applicable"
+            "N/A"
           )}{" "}
         </div>
       );
