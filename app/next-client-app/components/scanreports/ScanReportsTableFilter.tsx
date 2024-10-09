@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { UploadStatusOptions } from "@/constants/scanReportStatus";
 import { navigateWithSearchParam } from "@/lib/client-utils";
 import { FilterOption } from "@/types/filter";
-import { Plus } from "lucide-react";
+import { Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -112,8 +112,8 @@ export function ScanReportsTableFilter({
       <div>
         <Link href="/scanreports/create" prefetch={false}>
           <Button variant={"outline"} className="ml-auto mr-4">
-            New Scan Report
-            <Plus className="ml-2 h-4 w-4" />
+            <Upload className="mr-2 h-4 w-4" />
+            Upload Scan Report
           </Button>
         </Link>
       </div>
