@@ -25,6 +25,7 @@ import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { InfoItem } from "@/components/core/InfoItem";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { MappingStatus } from "@/components/scanreports/MappingStatus";
 
 export default async function ScanReportLayout({
   params,
@@ -99,8 +100,18 @@ export default async function ScanReportLayout({
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
           className="py-1 md:py-0 md:px-3"
         />
-        <div className="py-1 md:py-0 md:px-3 h-5">
+        <div className="py-1 md:py-0 md:px-3 h-5 flex items-center">
+          Upload status:{" "}
           <UploadStatus upload_status={scanreport.upload_status} />
+        </div>
+        <div className="py-1 md:py-0 md:px-3 h-5">
+          <MappingStatus
+            id={params.id}
+            mapping_status={scanreport.mapping_status}
+            dataset={scanreport.dataset}
+            className="w-[180px] h-5"
+            disabled={!canEdit || scanreport.upload_status !== "UPCOMPL"} // Disable when users don't have permission or upload status is not complete
+          />
         </div>
       </div>
       {/* "Navs" group */}
