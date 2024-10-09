@@ -14,7 +14,7 @@ requests = "2.32.3"
 openpyxl = "3.1.3"
 Resource = "^0.2.1"
 httpx = "0.27"
-shared = {path = "../shared", develop = true}
+shared = {path = "../shared"}
 python-dotenv = "^1.0.1"
 azure-functions-durable = "^1.2.9"
 
@@ -25,6 +25,7 @@ mypy = "^1.10.0"
 django-stubs = "^5.0.0"
 types-openpyxl = "^3.1.0.20240428"
 types-requests = "^2.31.0.20240406"
+shared = {path = "../shared", develop = true}
 
 
 [tool.poetry.group.test.dependencies]
