@@ -25,6 +25,7 @@ class ScanReportStatus(Enum):
     UPLOAD_IN_PROGRESS = "UPINPRO"
     UPLOAD_COMPLETE = "UPCOMPL"
     UPLOAD_FAILED = "UPFAILE"
+    # Are these two below correct here?
     PENDING = "PENDING"
     COMPLETE = "COMPLET"
 
@@ -42,7 +43,7 @@ def update_scan_report_status(id: str, status: ScanReportStatus) -> None:
     """
     response = requests.patch(
         url=f"{API_URL}scanreports/{id}/",
-        data=json.dumps({"status": status.value}),
+        data=json.dumps({"upload_status": status.value}),
         headers=HEADERS,
     )
     response.raise_for_status()
