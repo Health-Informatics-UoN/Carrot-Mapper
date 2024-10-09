@@ -4,13 +4,34 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
 from shared.data.models import Concept, ConceptRelationship
-from shared.mapping.models import ScanReportConcept, ScanReportField, ScanReportValue
+from shared.mapping.models import (
+    ScanReport,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportValue,
+    Status,
+)
 from shared_code.logger import logger
 from shared_code.models import (
     ScanReportConceptContentType,
     ScanReportFieldDict,
     ScanReportValueDict,
 )
+
+
+def update_scan_report_status(id: str, status: Status) -> None:
+    """
+    Updates the status of a scan report.
+
+    Args:
+        id (str): The ID of the scan report.
+        status (Status): The status to update the Scan Report with.
+
+    Returns: None
+    """
+    scan_report = ScanReport.objects.get(id=id)
+    scan_report.status = status
+    scan_report.save()
 
 
 def create_concept(
