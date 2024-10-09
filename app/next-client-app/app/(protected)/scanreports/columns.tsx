@@ -17,11 +17,12 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
+import { MappingStatus } from "@/components/scanreports/MappingStatus";
 
 export const columns: ColumnDef<ScanReport>[] = [
   {
@@ -103,23 +104,42 @@ export const columns: ColumnDef<ScanReport>[] = [
     },
   },
   {
-    id: "Status",
-    accessorKey: "status",
+    id: "Upload Status",
+    accessorKey: "upload_status",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
+      <DataTableColumnHeader column={column} title="Upload Status" />
     ),
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const { id, upload_status, dataset } = row.original;
+      const { upload_status } = row.original;
+      return <UploadStatus upload_status={upload_status} />;
+    },
+  },
+  {
+    id: "Mapping Status",
+    accessorKey: "mapping_status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Mapping Status" />
+    ),
+    enableHiding: false,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { id, mapping_status, upload_status, dataset } = row.original;
       return (
-        <ScanReportStatus
-          id={id.toString()}
-          upload_status={upload_status}
-          dataset={dataset}
-          className="w-[180px]"
-          disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
-        />
+        <div className="flex justify-center text-center">
+          {upload_status === "UPCOMPL" ? (
+            <MappingStatus
+              id={id.toString()}
+              mapping_status={mapping_status}
+              dataset={dataset}
+              className="w-[180px]"
+              disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
+            />
+          ) : (
+            "Not applicable"
+          )}{" "}
+        </div>
       );
     },
   },
