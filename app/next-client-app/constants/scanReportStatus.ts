@@ -1,16 +1,21 @@
+import { Check, Loader2, X } from "lucide-react";
+
 export const UploadStatusOptions = [
   {
     label: "Upload Complete",
+    icon: Check,
     value: "UPCOMPL",
     color: "text-blue-800",
   },
   {
     label: "Upload Failed",
+    icon: X,
     value: "UPFAILE",
     color: "text-red-500 dark:text-red-500",
   },
   {
-    label: "Upload in Progress",
+    label: "Upload In Progress",
+    icon: Loader2,
     value: "UPINPRO",
     color: "text-orange-600 dark:text-orange-600",
   },

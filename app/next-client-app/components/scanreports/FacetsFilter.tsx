@@ -65,8 +65,8 @@ export function FacetsFilter<TData, TValue>({
                     .filter((option) =>
                       selectedOptions?.some(
                         (selectedOption) =>
-                          selectedOption.value === option.value,
-                      ),
+                          selectedOption.value === option.value
+                      )
                     )
                     .map((option) => (
                       <Badge
@@ -91,7 +91,7 @@ export function FacetsFilter<TData, TValue>({
             <CommandGroup>
               {options.map((option) => {
                 const isSelected = selectedOptions?.some(
-                  (selectedOption) => selectedOption.value === option.value,
+                  (selectedOption) => selectedOption.value === option.value
                 );
 
                 return (
@@ -104,17 +104,11 @@ export function FacetsFilter<TData, TValue>({
                         "mr-2 flex size-4 items-center justify-center rounded-sm border border-carrot",
                         isSelected
                           ? "bg-carrot text-white"
-                          : "opacity-50 [&_svg]:invisible",
+                          : "opacity-50 [&_svg]:invisible"
                       )}
                     >
                       <CheckIcon className="size-4" aria-hidden="true" />
                     </div>
-                    {option.icon && (
-                      <option.icon
-                        className="mr-2 size-4 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    )}
                     <span>{option.label}</span>
                   </CommandItem>
                 );

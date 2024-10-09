@@ -21,7 +21,7 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { InfoItem } from "@/components/core/InfoItem";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -100,13 +100,7 @@ export default async function ScanReportLayout({
           className="py-1 md:py-0 md:px-3"
         />
         <div className="py-1 md:py-0 md:px-3 h-5">
-          <ScanReportStatus
-            id={params.id}
-            upload_status={scanreport.upload_status}
-            dataset={scanreport.dataset}
-            className="w-[180px] h-5"
-            disabled={!canEdit} // Disable when users don't have permission
-          />
+          <UploadStatus upload_status={scanreport.upload_status} />
         </div>
       </div>
       {/* "Navs" group */}

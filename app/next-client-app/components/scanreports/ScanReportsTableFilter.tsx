@@ -26,7 +26,7 @@ export function ScanReportsTableFilter({
 
   // Runs on load to populate the selectedOptions from params
   useEffect(() => {
-    const statusParam = searchParam.get("status__in");
+    const statusParam = searchParam.get("upload_status__in");
     if (statusParam) {
       const statusValues = statusParam.split(",");
       const filteredOptions = UploadStatusOptions.filter((option) =>
@@ -81,7 +81,7 @@ export function ScanReportsTableFilter({
 
   const handleFacetsFilter = (options?: FilterOption[]) => {
     navigateWithSearchParam(
-      "status__in",
+      "upload_status__in",
       options?.map((option) => option.value) || "",
       router,
       searchParam
