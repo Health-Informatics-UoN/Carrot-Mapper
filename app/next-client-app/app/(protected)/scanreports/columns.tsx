@@ -39,19 +39,11 @@ export const columns: ColumnDef<ScanReport>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="dataset" />
     ),
-    cell: ({ row }) => {
-      const id = row.original.id;
-      return (
-        <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset}</button>
-        </Link>
-      );
-    },
     enableHiding: true,
   },
   {
     id: "Dataset",
-    accessorKey: "parent_dataset",
+    accessorKey: "parent_dataset.name",
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
@@ -59,9 +51,6 @@ export const columns: ColumnDef<ScanReport>[] = [
         sortName="parent_dataset"
       />
     ),
-    cell: ({ row }) => {
-      return <>{row.original.parent_dataset.name}</>;
-    },
     enableHiding: true,
   },
   {
@@ -75,16 +64,12 @@ export const columns: ColumnDef<ScanReport>[] = [
   },
   {
     id: "Author",
-    accessorKey: "author",
+    accessorKey: "author.username",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Author" />
     ),
     enableHiding: true,
     enableSorting: true,
-    cell: ({ row }) => {
-      const { author } = row.original;
-      return author.username;
-    },
   },
   {
     id: "Uploaded",
@@ -106,10 +91,8 @@ export const columns: ColumnDef<ScanReport>[] = [
   {
     id: "Upload Status",
     accessorKey: "upload_status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Upload Status" />
-    ),
-    enableHiding: false,
+    header: () => <div className="text-center"> Upload Status</div>,
+    enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
       const { upload_status } = row.original;
@@ -118,11 +101,8 @@ export const columns: ColumnDef<ScanReport>[] = [
   },
   {
     id: "Mapping Status",
-    accessorKey: "mapping_status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Mapping Status" />
-    ),
-    enableHiding: false,
+    header: () => <div className="text-center"> Mapping Status</div>,
+    enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
       const { id, mapping_status, upload_status, dataset } = row.original;
@@ -145,7 +125,6 @@ export const columns: ColumnDef<ScanReport>[] = [
   },
   {
     id: "Actions",
-    accessorKey: "actions",
     header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {

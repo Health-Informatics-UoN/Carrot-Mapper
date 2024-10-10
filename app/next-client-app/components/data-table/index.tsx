@@ -171,7 +171,6 @@ export function DataTable<TData, TValue>({
                             }
                           }
                         }}
-                        className="inline-block"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
