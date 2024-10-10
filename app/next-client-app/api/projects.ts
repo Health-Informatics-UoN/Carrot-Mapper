@@ -4,13 +4,12 @@ import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (filter?: string) => (filter ? `projects/?${filter}` : "projects/"),
-  projects: "projects/",
   projectsDataset: (dataset: string) => `projects/?dataset=${dataset}`,
   project: (id: string) => `projects/${id}/`,
 };
 
 export async function getProjectsList(
-  filter: string | undefined
+  filter?: string | undefined
 ): Promise<PaginatedResponse<Project>> {
   try {
     return await request<Project>(fetchKeys.list(filter));
@@ -23,15 +22,6 @@ export async function getProjectsList(
 export async function getProjectsDataset(dataset: string): Promise<Project[]> {
   try {
     return request<Project[]>(fetchKeys.projectsDataset(dataset));
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
-export async function getProjects(): Promise<Project[]> {
-  try {
-    return request<Project[]>(fetchKeys.projects);
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];

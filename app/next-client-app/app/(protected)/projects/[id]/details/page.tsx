@@ -4,7 +4,7 @@ import {
   getDataUsers,
   getDatasetPermissions,
 } from "@/api/datasets";
-import { getProjects } from "@/api/projects";
+import { getProjectsList } from "@/api/projects";
 import { DatasetForm } from "@/components/datasets/DatasetForm";
 
 interface ProjectProps {
