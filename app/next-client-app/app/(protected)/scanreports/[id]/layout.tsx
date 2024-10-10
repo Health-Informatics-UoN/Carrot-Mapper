@@ -100,7 +100,7 @@ export default async function ScanReportLayout({
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
           className="py-1 md:py-0 md:px-3"
         />
-        <div className="py-1 md:py-0 md:px-3 h-5 flex items-center">
+        <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
           Upload status:{" "}
           <UploadStatus upload_status={scanreport.upload_status} />
         </div>

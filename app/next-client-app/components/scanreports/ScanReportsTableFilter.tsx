@@ -95,7 +95,7 @@ export function ScanReportsTableFilter({
         <Input
           placeholder={`Filter by ${filterText}...`}
           onChange={handleFilter}
-          className="max-w-xs"
+          className="w-[250px]"
         />
 
         <div className="max-sm:hidden">
