@@ -8,6 +8,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from shared.mapping.models import Project
 from shared.mapping.permissions import CanViewProject
+from api.paginations import CustomPagination
 
 
 class ProjectList(ListAPIView):
@@ -17,7 +18,10 @@ class ProjectList(ListAPIView):
 
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = {"name": ["in", "exact"]}
+    pagination_class = CustomPagination
+    filterset_fields = {"name": ["in", "icontains"]}
+    ordering_fields = ["id", "name"]
+    ordering = "-created_at"
 
     def get_serializer_class(self):
         if (
