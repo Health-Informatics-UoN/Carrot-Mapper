@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { SelectTriggerProps } from "@radix-ui/react-select";
 
-interface ScanReportStatusProps extends SelectTriggerProps {
+interface MappingStatusProps extends SelectTriggerProps {
   id: string;
   mapping_status: string;
   dataset: string;
@@ -25,7 +25,7 @@ export function MappingStatus({
   dataset,
   className,
   disabled,
-}: ScanReportStatusProps) {
+}: MappingStatusProps) {
   // Safely extract the color
   const statusInfo = MappingStatusOptions.find(
     (option) => option.value === mapping_status
