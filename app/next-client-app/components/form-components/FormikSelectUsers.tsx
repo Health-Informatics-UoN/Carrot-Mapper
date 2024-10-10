@@ -8,9 +8,10 @@ import {
 } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { getDataUsers, getProjects } from "@/api/datasets";
+import { getDataUsers } from "@/api/datasets";
 import { useEffect, useState } from "react";
 import { FindAndFormat } from "./FormikUtils";
+import { getProjects } from "@/api/projects";
 
 type Option = Object & {
   value: number;

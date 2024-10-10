@@ -1,12 +1,13 @@
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
-import { getDataPartners, getDataSets, getProjects } from "@/api/datasets";
+import { getDataPartners, getDataSets } from "@/api/datasets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { CreateDatasetDialog } from "@/components/datasets/CreateDatasetDialog";
 import { Folders } from "lucide-react";
+import { getProjects } from "@/api/projects";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;

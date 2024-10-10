@@ -3,8 +3,8 @@ import {
   getDataSet,
   getDataUsers,
   getDatasetPermissions,
-  getProjects,
 } from "@/api/datasets";
+import { getProjects } from "@/api/projects";
 import { DatasetForm } from "@/components/datasets/DatasetForm";
 
 interface DataSetListProps {

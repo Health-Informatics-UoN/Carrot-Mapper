@@ -9,9 +9,10 @@ import {
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import config from "@/tailwind.config";
-import { getDataUsers, getProjects } from "@/api/datasets";
+import { getDataUsers } from "@/api/datasets";
 import { useEffect, useState } from "react";
 import { FindAndFormat } from "./FormikUtils";
+import { getProjectsDataset } from "@/api/projects";
 
 type Option = Object & {
   value: number;
@@ -19,7 +20,7 @@ type Option = Object & {
 };
 
 async function fetchProjectMembers(dataset: string) {
-  const projects = await getProjects(dataset);
+  const projects = await getProjectsDataset(dataset);
   const users = await getDataUsers();
   const membersIds = new Set<number>();
   projects.forEach((project) => {

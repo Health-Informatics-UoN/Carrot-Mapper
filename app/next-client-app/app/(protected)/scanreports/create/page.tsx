@@ -1,4 +1,5 @@
-import { getDataPartners, getProjects } from "@/api/datasets";
+import { getDataPartners } from "@/api/datasets";
+import { getProjects } from "@/api/projects";
 import { CreateScanReportForm } from "@/components/scanreports/CreateScanReportForm";
 import { FileScan } from "lucide-react";
 import Link from "next/link";
