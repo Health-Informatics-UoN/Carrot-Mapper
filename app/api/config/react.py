@@ -1,7 +1,9 @@
-from shared.mapping.models import Status
+from shared.mapping.models import UploadStatus
 
 
 def react(request):
     return {
-        "status": [{"id": id, "label": label} for id, label in Status.choices],
+        "upload_status": [
+            {"id": id, "label": label} for id, label in UploadStatus.choices
+        ],
     }

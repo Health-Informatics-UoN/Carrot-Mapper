@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, FileUp, Plus } from "lucide-react";
+import { AlertCircle, Upload } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Form, Formik } from "formik";
@@ -283,7 +283,8 @@ export function CreateScanReportForm({
                     values.name === ""
                   }
                 >
-                  Upload Scan Report <FileUp className="ml-2" />
+                  <Upload className="mr-2" />
+                  Upload Scan Report
                 </Button>
                 <Tooltips content="You must be either an admin or an editor of the parent dataset to add a new scan report to it." />
               </div>

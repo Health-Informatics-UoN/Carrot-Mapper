@@ -95,7 +95,8 @@ export function DataTable<TData, TValue>({
               variant="outline"
               className="ml-auto hidden lg:flex"
             >
-              Columns <Columns3 className="ml-2 size-4" />
+              <Columns3 className="mr-2 size-4" />
+              Columns
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -170,7 +171,6 @@ export function DataTable<TData, TValue>({
                             }
                           }
                         }}
-                        className="inline-block"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

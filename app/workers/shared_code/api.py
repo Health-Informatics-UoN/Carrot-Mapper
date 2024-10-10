@@ -21,28 +21,26 @@ HEADERS = {
 }
 
 
-class ScanReportStatus(Enum):
+class UploadStatus(Enum):
     UPLOAD_IN_PROGRESS = "UPINPRO"
     UPLOAD_COMPLETE = "UPCOMPL"
     UPLOAD_FAILED = "UPFAILE"
-    PENDING = "PENDING"
-    COMPLETE = "COMPLET"
 
 
-def update_scan_report_status(id: str, status: ScanReportStatus) -> None:
+def update_scan_report_status(id: str, status: UploadStatus) -> None:
     """
     Updates the status of a scan report.
 
     Args:
         id (str): The ID of the scan report.
-        status (ScanReportStatus): The message received from the queue.
+        status (UploadStatus): The message received from the queue.
 
     Raises:
         Exception: requests.HTTPError: If the request fails.
     """
     response = requests.patch(
         url=f"{API_URL}scanreports/{id}/",
-        data=json.dumps({"status": status.value}),
+        data=json.dumps({"upload_status": status.value}),
         headers=HEADERS,
     )
     response.raise_for_status()
@@ -103,7 +101,7 @@ def post_scan_report_field_entries(
         )
 
         if response.status_code != 201:
-            update_scan_report_status(scan_report_id, ScanReportStatus.UPLOAD_FAILED)
+            update_scan_report_status(scan_report_id, UploadStatus.UPLOAD_FAILED)
         response.raise_for_status()
         fields_response_content += response.json()
 
@@ -161,9 +159,7 @@ async def post_chunks(
             )
 
             if response.status_code != 201:
-                update_scan_report_status(
-                    scan_report_id, ScanReportStatus.UPLOAD_FAILED
-                )
+                update_scan_report_status(scan_report_id, UploadStatus.UPLOAD_FAILED)
                 response.raise_for_status()
 
             response_content += response.json()
