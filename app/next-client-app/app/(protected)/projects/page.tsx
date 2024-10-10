@@ -3,7 +3,7 @@ import { columns } from "./columns";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
-import { Projector } from "lucide-react";
+import { BriefcaseBusiness } from "lucide-react";
 import { getProjectsList } from "@/api/projects";
 
 interface ProjectListProps {
@@ -23,7 +23,7 @@ export default async function Projects({ searchParams }: ProjectListProps) {
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center">
-        <Projector className="mr-2 text-blue-700" />
+        <BriefcaseBusiness className="mr-2 text-orange-700" />
         <h2>Projects</h2>
       </div>
       <div>
