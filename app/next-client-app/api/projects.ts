@@ -19,12 +19,14 @@ export async function getProjectsList(
   }
 }
 
-export async function getProjectsDataset(dataset: string): Promise<Project[]> {
+export async function getProjectsDataset(
+  dataset: string
+): Promise<PaginatedResponse<Project>> {
   try {
-    return request<Project[]>(fetchKeys.projectsDataset(dataset));
+    return request<Project>(fetchKeys.projectsDataset(dataset));
   } catch (error) {
     console.warn("Failed to fetch data.");
-    return [];
+    return { count: 0, next: null, previous: null, results: [] };
   }
 }
 
