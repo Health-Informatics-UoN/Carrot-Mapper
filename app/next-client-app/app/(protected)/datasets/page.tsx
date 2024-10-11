@@ -6,7 +6,7 @@ import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { CreateDatasetDialog } from "@/components/datasets/CreateDatasetDialog";
-import { Folders } from "lucide-react";
+import { Database } from "lucide-react";
 import { getProjectsList } from "@/api/projects";
 
 interface DataSetListProps {
@@ -29,7 +29,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center">
-        <Folders className="mr-2 text-blue-700" />
+        <Database className="mr-2 text-blue-700" />
         <h2>Datasets</h2>
       </div>
       <div className="my-3 justify-between">

@@ -1,6 +1,6 @@
 import {
   BookMarked,
-  BriefcaseBusiness,
+  Database,
   FileScan,
   Folders,
   Github,
@@ -24,8 +24,8 @@ export interface SidebarItems {
 
 export const sidebarItems: SidebarItems = {
   links: [
-    { label: "Projects", href: "/projects/", icon: BriefcaseBusiness },
-    { label: "Datasets", href: "/datasets/", icon: Folders },
+    { label: "Projects", href: "/projects/", icon: Folders },
+    { label: "Datasets", href: "/datasets/", icon: Database },
     { label: "Scan Reports", href: "/scanreports/", icon: FileScan },
     {
       label: "Upload Scan Report",

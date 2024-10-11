@@ -13,6 +13,8 @@ import {
   Edit,
   FileScan,
   Download,
+  Database,
+  BookText,
 } from "lucide-react";
 
 export const NavButton = ({
@@ -39,6 +41,8 @@ export const NavButton = ({
     FileScan,
     Edit,
     Download,
+    Database,
+    BookText,
   };
 
   const Icon = item.iconName ? iconMap[item.iconName] : null;

@@ -1,6 +1,6 @@
 import { Forbidden } from "@/components/core/Forbidden";
 import { NavGroup } from "@/components/core/nav-group";
-import { BriefcaseBusiness } from "lucide-react";
+import { Folders } from "lucide-react";
 import { Boundary } from "@/components/core/boundary";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,16 +19,14 @@ export default async function DatasetLayout({
   const items = [
     {
       name: "Datasets",
-      iconName: "Folders",
+      iconName: "Database",
     },
-    { name: "Edit Details", slug: "details", iconName: "Edit" },
+    { name: "Details", slug: "details", iconName: "BookText" },
   ];
 
   const project = await getproject(params.id);
   const createdDate = new Date(project.created_at);
-  const updatedDate = new Date(project.updated_at);
 
-  // Checking permissions: Confirm: Members of project can see the project details?
   // If user is not a member of the project, the API result will be failed and empty ==> forbidden
   if (project.id === 0) {
     return <Forbidden />;
@@ -36,12 +34,12 @@ export default async function DatasetLayout({
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
-        <BriefcaseBusiness className="text-gray-500" />
+        <Folders className="text-gray-500" />
         <Link href={`/projects`}>
           <h2 className="text-gray-500 dark:text-gray-400">Projects</h2>
         </Link>
         <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
-        <BriefcaseBusiness className="text-orange-700" />
+        <Folders className="text-orange-700" />
         <h2>{project.name}</h2>
       </div>
 
@@ -54,11 +52,6 @@ export default async function DatasetLayout({
         <InfoItem
           label="Created"
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
-          className="py-1 md:py-0 md:px-3"
-        />
-        <InfoItem
-          label="Updated"
-          value={format(updatedDate, "MMM dd, yyyy h:mm a")}
           className="py-1 md:py-0 md:px-3"
         />
       </div>
