@@ -44,6 +44,7 @@ class DatasetAndDataPartnerViewSerializer(
             "visibility",
             "created_at",
             "hidden",
+            "projects",
         )
 
 
