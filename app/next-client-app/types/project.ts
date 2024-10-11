@@ -1,7 +1,7 @@
 interface Project {
   id: number;
   name: string;
-  members: number[];
+  members: User[];
   datasets: DataSet[];
   created_at: Date;
   updated_at: Date;

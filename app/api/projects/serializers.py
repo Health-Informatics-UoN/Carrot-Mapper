@@ -1,6 +1,13 @@
 from drf_dynamic_fields import DynamicFieldsMixin  # type: ignore
 from rest_framework import serializers
 from shared.mapping.models import Project
+from django.contrib.auth.models import User
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username")
 
 
 class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -8,6 +15,8 @@ class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     Serialiser for showing all details of a Project. Use in RetrieveViews
     where User is permitted to view a particular Project.
     """
+
+    members = UserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project

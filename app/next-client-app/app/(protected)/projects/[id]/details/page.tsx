@@ -1,11 +1,5 @@
-import {
-  getDataPartners,
-  getDataSet,
-  getDataUsers,
-  getDatasetPermissions,
-} from "@/api/datasets";
-import { getProjectsList } from "@/api/projects";
-import { DatasetForm } from "@/components/datasets/DatasetForm";
+import { getproject } from "@/api/projects";
+import { AvatarList } from "@/components/core/avatar-list";
 
 interface ProjectProps {
   params: {
@@ -14,20 +8,26 @@ interface ProjectProps {
 }
 
 export default async function ProjectDetails({ params: { id } }: ProjectProps) {
-  // const dataset = await getDataSet(id);
-  // const partners = await getDataPartners();
-  // const users = await getDataUsers();
-  // const projects = await getProjects();
-  // const permissions = await getDatasetPermissions(id);
+  const project = await getproject(id);
 
   return (
-    // <DatasetForm
-    //   dataset={dataset}
-    //   dataPartners={partners}
-    //   users={users}
-    //   projects={projects}
-    //   permissions={permissions.permissions}
-    // />
-    <div></div>
+    <div className="flex flex-col gap-3 text-lg">
+      <div className="flex items-center space-x-3">
+        <h3 className="flex">
+          Project Name: <span className="text-carrot ml-2">{project.name}</span>
+        </h3>
+      </div>
+      <div className="flex items-center space-x-3">
+        <h3 className="flex items-center">
+          Members:{" "}
+          <span className="text-carrot ml-2">
+            <AvatarList
+              numPeople={project.members.length}
+              names={project.members.map((member) => member.username)}
+            />
+          </span>
+        </h3>
+      </div>
+    </div>
   );
 }
