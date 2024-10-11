@@ -21,7 +21,6 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   const combinedParams = { ...defaultParams, ...searchParams };
 
   const projects = await getProjectsList();
-  console.log(projects);
   const dataPartnerList = await getDataPartners();
   const query = objToQuery(combinedParams);
   const dataset = await getDataSets(query);

@@ -1,32 +1,6 @@
 from drf_dynamic_fields import DynamicFieldsMixin  # type: ignore
 from rest_framework import serializers
 from shared.mapping.models import Project
-from shared.mapping.models import DataPartner, Dataset
-
-
-class DataPartner(DynamicFieldsMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DataPartner
-        fields = [
-            "id",
-            "name",
-        ]
-
-
-class Dataset(DynamicFieldsMixin, serializers.ModelSerializer):
-
-    data_partner = DataPartner(read_only=True)
-
-    class Meta:
-        model = Dataset
-        fields = [
-            "id",
-            "name",
-            "data_partner",
-            "visibility",
-            "created_at",
-            "updated_at",
-        ]
 
 
 class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -35,14 +9,9 @@ class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     where User is permitted to view a particular Project.
     """
 
-    datasets = Dataset(
-        read_only=True,
-        many=True,
-    )
-
     class Meta:
         model = Project
-        fields = ["id", "name", "members", "datasets", "created_at", "updated_at"]
+        fields = ["id", "name", "members", "created_at", "updated_at"]
 
 
 class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
