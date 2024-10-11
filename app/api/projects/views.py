@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from shared.mapping.models import Project
 from shared.mapping.permissions import CanViewProject
 from api.paginations import CustomPagination
+from rest_framework.filters import OrderingFilter
 
 
 class ProjectList(ListAPIView):
@@ -17,8 +18,8 @@ class ProjectList(ListAPIView):
     """
 
     permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
-    pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    pagination_class = CustomPagination  # TODO: Be careful if more than 10 projects
     filterset_fields = {"name": ["in", "icontains"]}
     ordering_fields = ["id", "name"]
     ordering = "-created_at"
