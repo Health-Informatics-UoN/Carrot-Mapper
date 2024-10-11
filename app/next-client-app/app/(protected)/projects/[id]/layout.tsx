@@ -5,8 +5,6 @@ import { Boundary } from "@/components/core/boundary";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import { getDataSet, getDatasetPermissions } from "@/api/datasets";
-import { Badge } from "@/components/ui/badge";
 import { InfoItem } from "@/components/core/InfoItem";
 import Link from "next/link";
 import { getproject } from "@/api/projects";
@@ -18,9 +16,6 @@ export default async function DatasetLayout({
   params: { id: string };
   children: React.ReactNode;
 }>) {
-  // const permissions = await getDatasetPermissions(params.id);
-  // const requiredPermissions: Permission[] = ["CanAdmin", "CanEdit", "CanView"];
-
   const items = [
     {
       name: "Datasets",
@@ -30,19 +25,14 @@ export default async function DatasetLayout({
   ];
 
   const project = await getproject(params.id);
-
-  // const dataPartner = dataset.data_partner;
-
   const createdDate = new Date(project.created_at);
   const updatedDate = new Date(project.updated_at);
-  // Checking permissions
-  // if (
-  //   !requiredPermissions.some((permission) =>
-  //     permissions.permissions.includes(permission)
-  //   )
-  // ) {
-  //   return <Forbidden />;
-  // }
+
+  // Checking permissions: Confirm: Members of project can see the project details?
+  // If user is not a member of the project, the API result will be failed and empty ==> forbidden
+  if (project.id === 0) {
+    return <Forbidden />;
+  }
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
@@ -57,7 +47,7 @@ export default async function DatasetLayout({
 
       <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
         <InfoItem
-          label="Members number"
+          label="Number of Members"
           value={project.members.length.toString()}
           className="py-1 md:py-0 md:pr-3"
         />
