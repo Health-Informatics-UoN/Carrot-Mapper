@@ -13,21 +13,6 @@ STATUS_CHOICES = [
 ]
 
 
-class UploadStatus(models.TextChoices):
-    UPLOAD_IN_PROGRESS = "UPINPRO", "Upload in Progress"
-    UPLOAD_COMPLETE = "UPCOMPL", "Upload Complete"
-    UPLOAD_FAILED = "UPFAILE", "Upload Failed"
-
-
-class MappingStatus(models.TextChoices):
-    PENDING = "PENDING", "Mapping 0%"
-    IN_PROGRESS_25PERCENT = "INPRO25", "Mapping 25%"
-    IN_PROGRESS_50PERCENT = "INPRO50", "Mapping 50%"
-    IN_PROGRESS_75PERCENT = "INPRO75", "Mapping 75%"
-    COMPLETE = "COMPLET", "Mapping Complete"
-    BLOCKED = "BLOCKED", "Blocked"
-
-
 class CreationType(models.TextChoices):
     Manual = "M", "Manual"
     Vocab = "V", "Vocab"
@@ -188,16 +173,6 @@ class ScanReport(BaseModel):
     dataset = models.CharField(max_length=128)  # TODO: rename to `name`
     hidden = models.BooleanField(default=False)
     file = models.FileField()  # TODO: Delete.
-    upload_status = models.CharField(
-        max_length=7,
-        choices=UploadStatus.choices,
-        default=UploadStatus.UPLOAD_IN_PROGRESS,
-    )
-    mapping_status = models.CharField(
-        max_length=7,
-        choices=MappingStatus.choices,
-        default=MappingStatus.PENDING,
-    )
     upload_status = models.ForeignKey(
         "UploadStatus",
         null=True,
