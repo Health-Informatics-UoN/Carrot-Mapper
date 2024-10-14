@@ -52,6 +52,16 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class UploadStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
+class MappingStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -179,6 +189,20 @@ class ScanReport(BaseModel):
         max_length=7,
         choices=Status.choices,
         default=Status.UPLOAD_IN_PROGRESS,
+    )
+    upload_status = models.ForeignKey(
+        "UploadStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="upload_status",
+    )
+    mapping_status = models.ForeignKey(
+        "MappingStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="mapping_status",
     )
     data_dictionary = models.ForeignKey(
         "DataDictionary",
