@@ -9,7 +9,7 @@ from shared.mapping.models import (
     ScanReportConcept,
     ScanReportField,
     ScanReportValue,
-    Status,
+    UploadStatus,
 )
 from shared_code.logger import logger
 from shared_code.models import (
@@ -19,7 +19,7 @@ from shared_code.models import (
 )
 
 
-def update_scan_report_status(id: str, status: Status) -> None:
+def update_scan_report_status(id: str, status: UploadStatus) -> None:
     """
     Updates the status of a scan report.
 
