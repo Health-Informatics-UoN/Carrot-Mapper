@@ -8,6 +8,7 @@ import { format } from "date-fns/format";
 import { InfoItem } from "@/components/core/InfoItem";
 import Link from "next/link";
 import { getproject } from "@/api/projects";
+import { AvatarList } from "@/components/core/avatar-list";
 
 export default async function DatasetLayout({
   params,
@@ -19,9 +20,9 @@ export default async function DatasetLayout({
   const items = [
     {
       name: "Datasets",
+      slug: "",
       iconName: "Database",
     },
-    { name: "Details", slug: "details", iconName: "BookText" },
   ];
 
   const project = await getproject(params.id);
@@ -45,15 +46,13 @@ export default async function DatasetLayout({
 
       <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
         <InfoItem
-          label="Number of Members"
-          value={project.members.length.toString()}
-          className="py-1 md:py-0 md:pr-3"
-        />
-        <InfoItem
           label="Created"
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
-          className="py-1 md:py-0 md:px-3"
+          className="py-1 md:py-0 md:pr-3"
         />
+        <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
+          Members: <AvatarList members={project.members} />
+        </div>
       </div>
       {/* "Navs" group */}
       <div className="flex justify-between">
