@@ -1,8 +1,7 @@
 from django.db import migrations, models
 
 
-# Apply this function to safely migrate the current data about SR status to two new columns of status
-def migrate_status_data(apps, schema_editor):
+def migrate_status_data_forward(apps, schema_editor):
     ScanReport = apps.get_model("mapping", "ScanReport")
     for report in ScanReport.objects.all():
         if report.status in ["UPINPRO", "UPCOMPL", "UPFAILE"]:
@@ -14,13 +13,20 @@ def migrate_status_data(apps, schema_editor):
         report.save()
 
 
+def migrate_status_data_backward(apps, schema_editor):
+    ScanReport = apps.get_model("mapping", "ScanReport")
+    for report in ScanReport.objects.all():
+        if report.upload_status in ["UPINPRO", "UPFAILE"]:
+            report.status = report.upload_status
+        elif report.upload_status == "UPCOMPL":
+            report.status = report.mapping_status
+        report.save()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        (
-            "mapping",
-            "0003_handmade_20220428_1503",
-        ),
+        ("mapping", "0003_handmade_20220428_1503"),
     ]
 
     operations = [
@@ -53,7 +59,7 @@ class Migration(migrations.Migration):
                 max_length=7,
             ),
         ),
-        migrations.RunPython(migrate_status_data),
+        migrations.RunPython(migrate_status_data_forward, migrate_status_data_backward),
         migrations.RemoveField(
             model_name="scanreport",
             name="status",
