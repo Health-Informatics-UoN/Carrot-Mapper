@@ -2,19 +2,16 @@
   {
     "model": "mapping.uploadstatus",
     "pk": 1,
-    "fields": {
-      "value": "UPLOAD_IN_PROGRESS",
-      "display_name": "Upload in Progress"
-    }
+    "fields": { "value": "IN_PROGRESS", "display_name": "Upload in Progress" }
   },
   {
     "model": "mapping.uploadstatus",
     "pk": 2,
-    "fields": { "value": "UPLOAD_COMPLETE", "display_name": "Upload Complete" }
+    "fields": { "value": "COMPLETE", "display_name": "Upload Complete" }
   },
   {
     "model": "mapping.uploadstatus",
     "pk": 3,
-    "fields": { "value": "UPLOAD_FAILED", "display_name": "Upload Failed" }
+    "fields": { "value": "FAILED", "display_name": "Upload Failed" }
   }
 ]

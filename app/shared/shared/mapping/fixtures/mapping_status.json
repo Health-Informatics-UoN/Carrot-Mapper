@@ -2,7 +2,7 @@
   {
     "model": "mapping.mappingstatus",
     "pk": 1,
-    "fields": { "value": "PENDING_MAPPING", "display_name": "Pending Mapping" }
+    "fields": { "value": "PENDING", "display_name": "Pending Mapping" }
   },
   {
     "model": "mapping.mappingstatus",
@@ -22,10 +22,7 @@
   {
     "model": "mapping.mappingstatus",
     "pk": 5,
-    "fields": {
-      "value": "MAPPING_COMPLETE",
-      "display_name": "Mapping Complete"
-    }
+    "fields": { "value": "COMPLETE", "display_name": "Mapping Complete" }
   },
   {
     "model": "mapping.mappingstatus",
