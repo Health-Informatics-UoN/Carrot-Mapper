@@ -175,12 +175,14 @@ def get_scan_report_active_concepts(
         object_ids = ScanReportField.objects.filter(
             scan_report_table__scan_report__hidden=False,
             scan_report_table__scan_report__parent_dataset__hidden=False,
+            # TODO: Need to update code here
             scan_report_table__scan_report__mapping_status="COMPLET",
         ).values_list("id", flat=True)
     elif content_type == ScanReportConceptContentType.VALUE:
         object_ids = ScanReportValue.objects.filter(
             scan_report_field__scan_report_table__scan_report__hidden=False,
             scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
+            # TODO: Need to update code here
             scan_report_field__scan_report_table__scan_report__mapping_status="COMPLET",
         ).values_list("id", flat=True)
     else:
