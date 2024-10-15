@@ -64,6 +64,8 @@ def migrate_status_data_forwards(apps, schema_editor):
 
 def migrate_status_data_backwards(apps, schema_editor):
     ScanReport = apps.get_model("mapping", "ScanReport")
+    UploadStatus = apps.get_model("mapping", "UploadStatus")
+    MappingStatus = apps.get_model("mapping", "MappingStatus")
 
     # Mapping of new status combinations to old status values
     reverse_mapping = {
@@ -80,13 +82,17 @@ def migrate_status_data_backwards(apps, schema_editor):
 
     for report in ScanReport.objects.all():
         upload_status = (
-            report.upload_status_id.value if report.upload_status_id else None
+            UploadStatus.objects.get(id=report.upload_status_id)
+            if report.upload_status_id
+            else None
         )
         mapping_status = (
-            report.mapping_status_id.value if report.mapping_status_id else None
+            MappingStatus.objects.get(id=report.mapping_status_id)
+            if report.mapping_status_id
+            else None
         )
         old_status = reverse_mapping.get(
-            (upload_status, mapping_status), "UPINPRO"
+            (upload_status.value, mapping_status.value), "UPINPRO"
         )  # Default to 'UPINPRO' if no match
         report.status = old_status
         report.save()
@@ -104,9 +110,5 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(
             migrate_status_data_forwards, migrate_status_data_backwards
-        ),
-        migrations.RemoveField(
-            model_name="scanreport",
-            name="status",
         ),
     ]
