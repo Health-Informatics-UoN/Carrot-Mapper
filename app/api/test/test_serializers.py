@@ -11,8 +11,10 @@ from shared.mapping.models import (
     ScanReport,
     VisibilityChoices,
 )
+import pytest
 
 
+@pytest.mark.django_db
 class TestScanReportEditSerializer(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -212,6 +214,7 @@ class TestScanReportEditSerializer(TestCase):
         self.assertEqual(serializer.validate_author(new_author), new_author)
 
 
+@pytest.mark.django_db
 class TestDatasetEditSerializer(TestCase):
     def setUp(self):
         User = get_user_model()

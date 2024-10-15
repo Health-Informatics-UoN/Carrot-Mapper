@@ -23,6 +23,7 @@ from shared.mapping.models import (
 )
 
 
+@pytest.mark.django_db
 class TestDatasetListView(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -186,6 +187,7 @@ class TestDatasetListView(TestCase):
         self.assertEqual(len(response_data), Dataset.objects.all().count())
 
 
+@pytest.mark.django_db
 class TestDatasetUpdateView(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -255,6 +257,7 @@ class TestDatasetUpdateView(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
+@pytest.mark.django_db
 class TestDatasetRetrieveView(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -317,6 +320,7 @@ class TestDatasetRetrieveView(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
+@pytest.mark.django_db
 class TestDatasetDeleteView(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -378,6 +382,7 @@ class TestDatasetDeleteView(TestCase):
         self.assertEqual(response.status_code, 403)
 
 
+@pytest.mark.django_db
 class TestScanReportListViewset(TransactionTestCase):
     def setUp(self):
         # Set up Data Partner
@@ -625,6 +630,7 @@ class TestScanReportListViewset(TransactionTestCase):
         self.assertListEqual(observed_objs, expected_objs)
 
 
+@pytest.mark.django_db
 class TestScanReportActiveConceptFilterViewSet(TestCase):
     def setUp(self):
         # Set up Data Partner

@@ -2,10 +2,8 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-import pytest
 
 
-@pytest.mark.django_db
 def migrate_status_data_forwards(apps, schema_editor):
     ScanReport = apps.get_model("mapping", "ScanReport")
     UploadStatus = apps.get_model("mapping", "UploadStatus")
@@ -63,7 +61,6 @@ def migrate_status_data_forwards(apps, schema_editor):
             report.save()
 
 
-@pytest.mark.django_db
 def migrate_status_data_backwards(apps, schema_editor):
     ScanReport = apps.get_model("mapping", "ScanReport")
     UploadStatus = apps.get_model("mapping", "UploadStatus")
