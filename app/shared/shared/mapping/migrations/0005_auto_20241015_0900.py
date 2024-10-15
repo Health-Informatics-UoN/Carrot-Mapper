@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
+import pytest
 
 
 def migrate_status_data_forwards(apps, schema_editor):
@@ -97,6 +98,7 @@ def migrate_status_data_backwards(apps, schema_editor):
         report.save()
 
 
+@pytest.mark.django_db
 class Migration(migrations.Migration):
 
     dependencies = [
