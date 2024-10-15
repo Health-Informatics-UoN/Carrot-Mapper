@@ -14,7 +14,7 @@ import { SelectTriggerProps } from "@radix-ui/react-select";
 
 interface MappingStatusProps extends SelectTriggerProps {
   id: string;
-  mapping_status: string;
+  mapping_status: Status;
   dataset: string;
   disabled: boolean;
 }
@@ -28,13 +28,16 @@ export function MappingStatus({
 }: MappingStatusProps) {
   // Safely extract the color
   const statusInfo = MappingStatusOptions.find(
-    (option) => option.value === mapping_status
+    (option) => option.value === mapping_status.value
   );
   const textColorClassName = statusInfo?.color ?? "text-black";
 
   const handleChangeStatus = async (newStatus: string) => {
     const response = await updateScanReport(parseInt(id), {
-      mapping_status: newStatus,
+      // tried updating data wiht "value" but not successful, needed the id of the new mapping status here
+      mapping_status:
+        MappingStatusOptions.find((option) => option.value === newStatus)?.id ??
+        0,
     });
     const newStatusText =
       MappingStatusOptions.find((option) => option.value === newStatus)
@@ -52,7 +55,7 @@ export function MappingStatus({
 
   return (
     <Select
-      value={mapping_status}
+      value={mapping_status.value}
       onValueChange={handleChangeStatus}
       disabled={disabled}
     >
