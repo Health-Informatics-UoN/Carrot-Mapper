@@ -23,10 +23,8 @@ from shared.mapping.permissions import (
     has_viewership,
     is_admin,
 )
-import pytest
 
 
-@pytest.mark.django_db
 class TestHasViewership(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -139,7 +137,6 @@ class TestHasViewership(TestCase):
         self.assertFalse(has_viewership(self.restricted_scanreport, self.request))
 
 
-@pytest.mark.django_db
 class TestHasEditorship(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -257,7 +254,6 @@ class TestHasEditorship(TestCase):
         self.assertFalse(has_editorship(self.restricted_scanreport, self.request))
 
 
-@pytest.mark.django_db
 class TestIsAdmin(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -371,7 +367,6 @@ class TestIsAdmin(TestCase):
         self.assertFalse(is_admin(self.restricted_scanreport, self.request))
 
 
-@pytest.mark.django_db
 class TestCanViewProject(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -433,7 +428,6 @@ class TestCanViewProject(TestCase):
         )
 
 
-@pytest.mark.django_db
 class TestCanView(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -563,7 +557,6 @@ class TestCanView(TestCase):
         )
 
 
-@pytest.mark.django_db
 class TestCanEdit(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -663,7 +656,6 @@ class TestCanEdit(TestCase):
         )
 
 
-@pytest.mark.django_db
 class TestCanAdmin(TestCase):
     def setUp(self):
         User = get_user_model()

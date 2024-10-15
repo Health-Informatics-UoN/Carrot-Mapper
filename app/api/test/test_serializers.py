@@ -14,7 +14,6 @@ from shared.mapping.models import (
 import pytest
 
 
-@pytest.mark.django_db
 class TestScanReportEditSerializer(TestCase):
     def setUp(self):
         User = get_user_model()
@@ -163,6 +162,7 @@ class TestScanReportEditSerializer(TestCase):
         request.user = self.admin_user
         self.assertListEqual(serializer.validate_viewers([new_viewer]), [new_viewer])
 
+    @pytest.mark.django_db
     def test_validate_author(self):
         User = get_user_model()
         new_author = User.objects.create(username="samwise", password="ejojwejfefe")
@@ -214,7 +214,6 @@ class TestScanReportEditSerializer(TestCase):
         self.assertEqual(serializer.validate_author(new_author), new_author)
 
 
-@pytest.mark.django_db
 class TestDatasetEditSerializer(TestCase):
     def setUp(self):
         User = get_user_model()
