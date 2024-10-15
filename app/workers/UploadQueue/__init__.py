@@ -13,7 +13,11 @@ from shared.mapping.models import (
     ScanReportValue,
 )
 from shared_code import blob_parser, helpers
-from shared_code.db import update_scan_report_status, UploadStatusConstant
+from shared_code.db import (
+    update_scan_report_status,
+    UploadStatusConstant,
+    MappingStatusConstant,
+)
 from shared_code.logger import logger
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
@@ -300,7 +304,9 @@ async def _handle_single_table(
     fields = await ScanReportField.objects.abulk_create(field_entries)
 
     if current_table_name not in workbook.sheetnames:
-        update_scan_report_status(scan_report_id, UploadStatusConstant.FAILED)
+        update_scan_report_status(
+            scan_report_id, UploadStatusConstant.FAILED, MappingStatusConstant.PENDING
+        )
         raise ValueError(
             f"Attempting to access sheet '{current_table_name}'"
             f" in scan report, but no such sheet exists."
@@ -415,7 +421,9 @@ def _handle_failure(msg: func.QueueMessage, scan_report_id: str) -> None:
     logger.info(f"dequeue_count {msg.dequeue_count}")
 
     if msg.dequeue_count == 2:
-        update_scan_report_status(scan_report_id, UploadStatusConstant.FAILED)
+        update_scan_report_status(
+            scan_report_id, UploadStatusConstant.FAILED, MappingStatusConstant.PENDING
+        )
     if msg.dequeue_count > 1:
         raise ValueError("dequeue_count > 1")
 
@@ -437,7 +445,9 @@ def main(msg: func.QueueMessage) -> None:
     )
     _handle_failure(msg, scan_report_id)
 
-    update_scan_report_status(scan_report_id, UploadStatusConstant.IN_PROGRESS)
+    update_scan_report_status(
+        scan_report_id, UploadStatusConstant.IN_PROGRESS, MappingStatusConstant.PENDING
+    )
 
     wb = blob_parser.get_scan_report(scan_report_blob)
     data_dictionary, _ = blob_parser.get_data_dictionary(data_dictionary_blob)
@@ -451,4 +461,6 @@ def main(msg: func.QueueMessage) -> None:
         _create_fields(fo_ws, wb, scan_report_id, table_name_to_id_map, data_dictionary)
     )
 
-    update_scan_report_status(scan_report_id, UploadStatusConstant.COMPLETE)
+    update_scan_report_status(
+        scan_report_id, UploadStatusConstant.COMPLETE, MappingStatusConstant.PENDING
+    )

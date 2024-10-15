@@ -11,6 +11,7 @@ from shared.mapping.models import (
     ScanReportField,
     ScanReportValue,
     UploadStatus,
+    MappingStatus,
 )
 from shared_code.logger import logger
 from shared_code.models import (
@@ -26,7 +27,18 @@ class UploadStatusConstant(Enum):
     FAILED = "Upload Failed"
 
 
-def update_scan_report_status(id: str, status: UploadStatusConstant) -> None:
+class MappingStatusConstant(Enum):
+    PENDING = "Pending Mapping"
+    COMPLETE = "Mapping Complete"
+    BLOCKED = "Blocked"
+    MAPPING_25PERCENT = "Mapping 25%"
+    MAPPING_50PERCENT = "Mapping 50%"
+    MAPPING_75PERCENT = "Mapping 75%"
+
+
+def update_scan_report_status(
+    id: str, upload_status: UploadStatusConstant, mapping_status: MappingStatusConstant
+) -> None:
     """
     Updates the status of a scan report.
 
@@ -36,9 +48,11 @@ def update_scan_report_status(id: str, status: UploadStatusConstant) -> None:
 
     Returns: None
     """
-    status_entity = UploadStatus.objects.get(value=status.name)
+    upload_status_entity = UploadStatus.objects.get(value=upload_status.name)
+    mapping_status_entity = MappingStatus.objects.get(value=mapping_status.name)
     scan_report = ScanReport.objects.get(id=id)
-    scan_report.upload_status = status_entity
+    scan_report.upload_status = upload_status_entity
+    scan_report.mapping_status = mapping_status_entity
     scan_report.save()
 
 
@@ -175,15 +189,12 @@ def get_scan_report_active_concepts(
         object_ids = ScanReportField.objects.filter(
             scan_report_table__scan_report__hidden=False,
             scan_report_table__scan_report__parent_dataset__hidden=False,
-            # TODO: Need to update code here
-            scan_report_table__scan_report__mapping_status="COMPLET",
+            scan_report_table__scan_report__mapping_status__value="COMPLETE",
         ).values_list("id", flat=True)
     elif content_type == ScanReportConceptContentType.VALUE:
         object_ids = ScanReportValue.objects.filter(
             scan_report_field__scan_report_table__scan_report__hidden=False,
-            scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-            # TODO: Need to update code here
-            scan_report_field__scan_report_table__scan_report__mapping_status="COMPLET",
+            scan_report_field__scan_report_table__scan_report__mapping_status__value="COMPLETE",
         ).values_list("id", flat=True)
     else:
         raise ValueError(f"Unsupported content type: {content_type}")
