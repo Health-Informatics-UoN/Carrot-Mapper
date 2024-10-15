@@ -11,7 +11,6 @@ from shared.mapping.models import (
     ScanReport,
     VisibilityChoices,
 )
-import pytest
 
 
 class TestScanReportEditSerializer(TestCase):
@@ -162,7 +161,6 @@ class TestScanReportEditSerializer(TestCase):
         request.user = self.admin_user
         self.assertListEqual(serializer.validate_viewers([new_viewer]), [new_viewer])
 
-    @pytest.mark.django_db
     def test_validate_author(self):
         User = get_user_model()
         new_author = User.objects.create(username="samwise", password="ejojwejfefe")
