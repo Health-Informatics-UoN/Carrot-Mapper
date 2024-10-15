@@ -15,7 +15,7 @@ export function MappingStatusFilter() {
 
   // Runs on load to populate the selectedOptions from params
   useEffect(() => {
-    const statusParam = searchParam.get("mapping_status__in");
+    const statusParam = searchParam.get("mapping_status__value__in");
     if (statusParam) {
       const statusValues = statusParam.split(",");
       const filteredOptions = MappingStatusOptions.filter((option) =>
@@ -47,7 +47,7 @@ export function MappingStatusFilter() {
 
   const handleFacetsFilter = (options?: FilterOption[]) => {
     navigateWithSearchParam(
-      "mapping_status__in",
+      "mapping_status__value__in",
       options?.map((option) => option.value) || "",
       router,
       searchParam
