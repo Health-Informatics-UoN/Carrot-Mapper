@@ -52,6 +52,16 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class UploadStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
+class MappingStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
