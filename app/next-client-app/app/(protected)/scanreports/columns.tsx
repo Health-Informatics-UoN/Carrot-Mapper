@@ -113,7 +113,7 @@ export const columns: ColumnDef<ScanReport>[] = [
             mapping_status={mapping_status}
             dataset={dataset}
             className="w-[180px]"
-            disabled={upload_status === "UPCOMPL" ? false : true} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
+            disabled={upload_status.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
           />
         </div>
       );
