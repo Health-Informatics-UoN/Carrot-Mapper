@@ -190,20 +190,6 @@ class ScanReport(BaseModel):
         choices=Status.choices,
         default=Status.UPLOAD_IN_PROGRESS,
     )
-    upload_status = models.ForeignKey(
-        "UploadStatus",
-        null=True,
-        blank=True,
-        on_delete=models.DO_NOTHING,
-        related_name="upload_status",
-    )
-    mapping_status = models.ForeignKey(
-        "MappingStatus",
-        null=True,
-        blank=True,
-        on_delete=models.DO_NOTHING,
-        related_name="mapping_status",
-    )
     data_dictionary = models.ForeignKey(
         "DataDictionary",
         on_delete=models.CASCADE,
