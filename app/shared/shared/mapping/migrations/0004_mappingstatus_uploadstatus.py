@@ -6,24 +6,40 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mapping', '0003_handmade_20220428_1503'),
+        ("mapping", "0003_handmade_20220428_1503"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MappingStatus',
+            name="MappingStatus",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(max_length=64)),
-                ('display_name', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.CharField(max_length=64)),
+                ("display_name", models.CharField(max_length=64)),
             ],
         ),
         migrations.CreateModel(
-            name='UploadStatus',
+            name="UploadStatus",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.CharField(max_length=64)),
-                ('display_name', models.CharField(max_length=64)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("value", models.CharField(max_length=64)),
+                ("display_name", models.CharField(max_length=64)),
             ],
         ),
     ]
