@@ -55,16 +55,14 @@ def migrate_status_data_forwards(apps, schema_editor):
                 report.status, (None, None)
             )
             if upload_status:
-                report.upload_status_id = upload_status.id
+                report.upload_status = upload_status
             if mapping_status:
-                report.mapping_status_id = mapping_status.id
+                report.mapping_status = mapping_status
             report.save()
 
 
 def migrate_status_data_backwards(apps, schema_editor):
     ScanReport = apps.get_model("mapping", "ScanReport")
-    UploadStatus = apps.get_model("mapping", "UploadStatus")
-    MappingStatus = apps.get_model("mapping", "MappingStatus")
 
     # Mapping of new status combinations to old status values
     reverse_mapping = {
@@ -80,18 +78,15 @@ def migrate_status_data_backwards(apps, schema_editor):
     }
 
     for report in ScanReport.objects.all():
-        upload_status = (
-            UploadStatus.objects.get(id=report.upload_status_id)
-            if report.upload_status_id
-            else None
-        )
-        mapping_status = (
-            MappingStatus.objects.get(id=report.mapping_status_id)
-            if report.mapping_status_id
-            else None
-        )
+        upload_status = report.upload_status
+        mapping_status = report.mapping_status
         old_status = reverse_mapping.get(
-            (upload_status.value, mapping_status.value), "UPINPRO"
+            (
+                (upload_status.value, mapping_status.value)
+                if upload_status and mapping_status
+                else (None, None)
+            ),
+            "UPINPRO",
         )  # Default to 'UPINPRO' if no match
         report.status = old_status
         report.save()
