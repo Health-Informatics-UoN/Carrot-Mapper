@@ -18,6 +18,8 @@ from shared.mapping.models import (
     ScanReportTable,
     ScanReportValue,
     VisibilityChoices,
+    UploadStatus,
+    MappingStatus,
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
@@ -33,6 +35,18 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
+
+
+class UploadStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadStatus
+        fields = ["value"]
+
+
+class MappingStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MappingStatus
+        fields = ["value"]
 
 
 class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -52,6 +66,8 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
     author = UserSerializer(read_only=True)
     parent_dataset = DatasetSerializer(read_only=True)
     data_partner = serializers.SerializerMethodField()
+    mapping_status = MappingStatusSerializer()
+    upload_status = UploadStatusSerializer(read_only=True)
 
     class Meta:
         model = ScanReport
