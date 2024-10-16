@@ -512,12 +512,13 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
         return editors
 
     def update(self, instance, validated_data):
-        #  To update the "value" (not the id) of the Mapping status, the MappingStatusSerializer needs to be added, then to make changes there, this update function is needed.
-        new_mapping_status = MappingStatus.objects.get(
-            value=validated_data.pop("mapping_status").pop("value")
-        )
-
-        instance.mapping_status = new_mapping_status
+        #  To update the "value" (not the id) of the Mapping status, the MappingStatusSerializer needs to be added,
+        #  then to make changes there, the logic below is needed.
+        if "mapping_status" in validated_data:
+            new_mapping_status = MappingStatus.objects.get(
+                value=validated_data.pop("mapping_status").pop("value")
+            )
+            instance.mapping_status = new_mapping_status
 
         return super().update(instance, validated_data)
 
