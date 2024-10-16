@@ -4,7 +4,7 @@ import request from "@/lib/api/request";
 
 const fetchKeys = {
   list: (filter?: string) => (filter ? `projects/?${filter}` : "projects/"),
-  projectsDataset: (dataset: string) => `projects/?datasets=${dataset}`,
+  projectsDataset: (dataset: string) => `projects/?dataset=${dataset}`,
   project: (id: string) => `projects/${id}/`,
 };
 

@@ -20,7 +20,7 @@ class ProjectSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["id", "name", "members", "created_at", "updated_at"]
+        fields = ["id", "name", "members", "created_at"]
 
 
 class ProjectNameSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -38,17 +38,17 @@ class ProjectWithMembersSerializer(DynamicFieldsMixin, serializers.ModelSerializ
     Serialiser for showing the names and members of Projects. Use in non-admin ListViews.
     """
 
+    members = UserSerializer(read_only=True, many=True)
+
     class Meta:
         model = Project
-        fields = ["id", "name", "members", "created_at", "updated_at"]
+        fields = ["id", "name", "members", "created_at"]
 
 
 class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Serialiser for only showing the names of Projects. Use in non-admin ListViews.
     """
-
-    members = UserSerializer(read_only=True, many=True)
 
     class Meta:
         model = Project
