@@ -48,6 +48,8 @@ class ProjectDatasetSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
     Serialiser for only showing the names of Projects. Use in non-admin ListViews.
     """
 
+    members = UserSerializer(read_only=True, many=True)
+
     class Meta:
         model = Project
         fields = ["name", "datasets", "members"]

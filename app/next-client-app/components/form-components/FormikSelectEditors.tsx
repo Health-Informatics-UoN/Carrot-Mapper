@@ -25,7 +25,7 @@ async function fetchProjectMembers(dataset: string) {
   const membersIds = new Set<number>();
   projects.results.forEach((project) => {
     project.members.forEach((memberId) => {
-      membersIds.add(memberId);
+      membersIds.add(memberId.id);
     });
   });
   const membersArray = Array.from(membersIds);
