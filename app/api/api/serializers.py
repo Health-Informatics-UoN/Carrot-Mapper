@@ -18,6 +18,8 @@ from shared.mapping.models import (
     ScanReportTable,
     ScanReportValue,
     VisibilityChoices,
+    UploadStatus,
+    MappingStatus,
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
@@ -33,6 +35,18 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username")
+
+
+class UploadStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadStatus
+        fields = ["value"]
+
+
+class MappingStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MappingStatus
+        fields = ["value"]
 
 
 class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -52,6 +66,8 @@ class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer
     author = UserSerializer(read_only=True)
     parent_dataset = DatasetSerializer(read_only=True)
     data_partner = serializers.SerializerMethodField()
+    mapping_status = MappingStatusSerializer()
+    upload_status = UploadStatusSerializer(read_only=True)
 
     class Meta:
         model = ScanReport
@@ -460,6 +476,8 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    mapping_status = MappingStatusSerializer()
+
     def validate_author(self, author):
         if request := self.context.get("request"):
             if not (
@@ -492,6 +510,17 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                     to change this field."""
                 )
         return editors
+
+    def update(self, instance, validated_data):
+        #  To update the "value" (not the id) of the Mapping status, the MappingStatusSerializer needs to be added,
+        #  then to make changes there, the logic below is needed.
+        if "mapping_status" in validated_data:
+            new_mapping_status = MappingStatus.objects.get(
+                value=validated_data.pop("mapping_status").pop("value")
+            )
+            instance.mapping_status = new_mapping_status
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = ScanReport

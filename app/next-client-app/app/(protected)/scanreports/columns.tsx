@@ -108,17 +108,13 @@ export const columns: ColumnDef<ScanReport>[] = [
       const { id, mapping_status, upload_status, dataset } = row.original;
       return (
         <div className="flex justify-center text-center">
-          {upload_status === "UPCOMPL" ? (
-            <MappingStatus
-              id={id.toString()}
-              mapping_status={mapping_status}
-              dataset={dataset}
-              className="w-[180px]"
-              disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
-            />
-          ) : (
-            "N/A"
-          )}{" "}
+          <MappingStatus
+            id={id.toString()}
+            mapping_status={mapping_status || { value: "PENDING" }}
+            dataset={dataset}
+            className="w-[180px]"
+            disabled={upload_status.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
+          />
         </div>
       );
     },

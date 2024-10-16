@@ -1,10 +1,14 @@
+interface Status {
+  value: string;
+}
+
 interface ScanReport {
   id: number;
   dataset: string;
   parent_dataset: DatasetStrict;
   data_partner: string;
-  mapping_status: string;
-  upload_status: string;
+  mapping_status: Status;
+  upload_status: Status;
   created_at: Date;
   hidden: boolean;
   visibility: string;
