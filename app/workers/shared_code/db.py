@@ -21,13 +21,13 @@ from shared_code.models import (
 )
 
 
-class UploadStatusConstant(Enum):
+class UploadStatusType(Enum):
     IN_PROGRESS = "Upload in Progress"
     COMPLETE = "Upload Complete"
     FAILED = "Upload Failed"
 
 
-def update_scan_report_status(id: str, upload_status: UploadStatusConstant) -> None:
+def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
     """
     Updates the status of a scan report.
 
