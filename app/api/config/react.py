@@ -1,2 +1,10 @@
+from shared.mapping.models import UploadStatus
+
+
 def react(request):
-    return {}
+    return {
+        "upload_status": [
+            {"id": status.id, "label": status.display_name}
+            for status in UploadStatus.objects.all()
+        ],
+    }
