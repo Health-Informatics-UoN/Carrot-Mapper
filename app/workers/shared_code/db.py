@@ -27,18 +27,7 @@ class UploadStatusConstant(Enum):
     FAILED = "Upload Failed"
 
 
-class MappingStatusConstant(Enum):
-    PENDING = "Pending Mapping"
-    COMPLETE = "Mapping Complete"
-    BLOCKED = "Blocked"
-    MAPPING_25PERCENT = "Mapping 25%"
-    MAPPING_50PERCENT = "Mapping 50%"
-    MAPPING_75PERCENT = "Mapping 75%"
-
-
-def update_scan_report_status(
-    id: str, upload_status: UploadStatusConstant, mapping_status: MappingStatusConstant
-) -> None:
+def update_scan_report_status(id: str, upload_status: UploadStatusConstant) -> None:
     """
     Updates the status of a scan report.
 
@@ -49,10 +38,8 @@ def update_scan_report_status(
     Returns: None
     """
     upload_status_entity = UploadStatus.objects.get(value=upload_status.name)
-    mapping_status_entity = MappingStatus.objects.get(value=mapping_status.name)
     scan_report = ScanReport.objects.get(id=id)
     scan_report.upload_status = upload_status_entity
-    scan_report.mapping_status = mapping_status_entity
     scan_report.save()
 
 

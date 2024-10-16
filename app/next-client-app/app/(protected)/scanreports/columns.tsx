@@ -110,7 +110,7 @@ export const columns: ColumnDef<ScanReport>[] = [
         <div className="flex justify-center text-center">
           <MappingStatus
             id={id.toString()}
-            mapping_status={mapping_status}
+            mapping_status={mapping_status || { value: "PENDING" }}
             dataset={dataset}
             className="w-[180px]"
             disabled={upload_status.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
