@@ -1,0 +1,32 @@
+[
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 1,
+    "fields": { "value": "PENDING", "display_name": "Pending Mapping" }
+  },
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 2,
+    "fields": { "value": "MAPPING_25PERCENT", "display_name": "Mapping 25%" }
+  },
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 3,
+    "fields": { "value": "MAPPING_50PERCENT", "display_name": "Mapping 50%" }
+  },
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 4,
+    "fields": { "value": "MAPPING_75PERCENT", "display_name": "Mapping 75%" }
+  },
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 5,
+    "fields": { "value": "COMPLETE", "display_name": "Mapping Complete" }
+  },
+  {
+    "model": "mapping.mappingstatus",
+    "pk": 6,
+    "fields": { "value": "BLOCKED", "display_name": "Blocked" }
+  }
+]

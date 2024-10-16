@@ -1,0 +1,17 @@
+[
+  {
+    "model": "mapping.uploadstatus",
+    "pk": 1,
+    "fields": { "value": "IN_PROGRESS", "display_name": "Upload in Progress" }
+  },
+  {
+    "model": "mapping.uploadstatus",
+    "pk": 2,
+    "fields": { "value": "COMPLETE", "display_name": "Upload Complete" }
+  },
+  {
+    "model": "mapping.uploadstatus",
+    "pk": 3,
+    "fields": { "value": "FAILED", "display_name": "Upload Failed" }
+  }
+]
