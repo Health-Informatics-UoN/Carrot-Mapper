@@ -26,8 +26,8 @@ async function fetchProjectMembers(selectedProjects: number[]) {
   const users = await getDataUsers();
   const membersIds = new Set<number>();
   filterProjects.forEach((project) => {
-    project.members.forEach((memberId) => {
-      membersIds.add(memberId.id);
+    project.members.forEach((member) => {
+      membersIds.add(member.id);
     });
   });
   const membersArray = Array.from(membersIds);
