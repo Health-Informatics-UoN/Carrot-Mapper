@@ -34,10 +34,7 @@ export function MappingStatus({
 
   const handleChangeStatus = async (newStatus: string) => {
     const response = await updateScanReport(parseInt(id), {
-      // tried updating data wiht "value" but not successful, needed the id of the new mapping status here
-      mapping_status:
-        MappingStatusOptions.find((option) => option.value === newStatus)?.id ??
-        0,
+      mapping_status: { value: newStatus },
     });
     const newStatusText =
       MappingStatusOptions.find((option) => option.value === newStatus)

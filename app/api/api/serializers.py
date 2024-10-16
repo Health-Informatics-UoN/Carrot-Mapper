@@ -476,6 +476,8 @@ class ScanReportCreateSerializer(DynamicFieldsMixin, serializers.ModelSerializer
 
 
 class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
+    mapping_status = MappingStatusSerializer()
+
     def validate_author(self, author):
         if request := self.context.get("request"):
             if not (
@@ -508,6 +510,16 @@ class ScanReportEditSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
                     to change this field."""
                 )
         return editors
+
+    def update(self, instance, validated_data):
+        #  To update the "value" (not the id) of the Mapping status, the MappingStatusSerializer needs to be added, then to make changes there, this update function is needed.
+        new_mapping_status = MappingStatus.objects.get(
+            value=validated_data.pop("mapping_status").pop("value")
+        )
+
+        instance.mapping_status = new_mapping_status
+
+        return super().update(instance, validated_data)
 
     class Meta:
         model = ScanReport
