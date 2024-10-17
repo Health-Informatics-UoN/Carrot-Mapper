@@ -107,6 +107,11 @@ export function ScanReportTableUpdateForm({
                 isDisabled={!canUpdate}
               />
             </div>
+            {/* Should this only to be turn on/off when Person ID and date event is filled? because change here will also trigger re-use and omop building functions*/}
+            {/* Should this only turned on once? because mapping when "on" will be different than "off", after being "on" */}
+            {/* On should be always on, and off should be always off */}
+            {/* Because this setting will permanent, should have an dialog warning about turning on this setting will be permanent */}
+            {/* give more support/info and notice in tooltips */}
 
             <div className="flex gap-2">
               <h3 className="flex">
