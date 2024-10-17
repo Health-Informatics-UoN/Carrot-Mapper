@@ -7,7 +7,7 @@ import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { CreateDatasetDialog } from "@/components/datasets/CreateDatasetDialog";
 import { Database } from "lucide-react";
-import { getProjectsList } from "@/api/projects";
+import { getAllProjects } from "@/api/projects";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;
@@ -20,7 +20,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   };
   const combinedParams = { ...defaultParams, ...searchParams };
 
-  const projects = await getProjectsList();
+  const projects = await getAllProjects();
   const dataPartnerList = await getDataPartners();
   const query = objToQuery(combinedParams);
   const dataset = await getDataSets(query);
@@ -54,7 +54,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
               </TabsList>
               <div className="hidden md:flex">
                 <CreateDatasetDialog
-                  projects={projects.results}
+                  projects={projects}
                   dataPartnerList={dataPartnerList}
                 />
               </div>

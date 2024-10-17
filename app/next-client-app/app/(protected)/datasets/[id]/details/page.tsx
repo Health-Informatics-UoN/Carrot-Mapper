@@ -4,7 +4,7 @@ import {
   getDataUsers,
   getDatasetPermissions,
 } from "@/api/datasets";
-import { getProjectsList } from "@/api/projects";
+import { getAllProjects } from "@/api/projects";
 import { DatasetForm } from "@/components/datasets/DatasetForm";
 
 interface DataSetListProps {
@@ -19,7 +19,7 @@ export default async function DatasetDetails({
   const dataset = await getDataSet(id);
   const partners = await getDataPartners();
   const users = await getDataUsers();
-  const projects = await getProjectsList();
+  const projects = await getAllProjects();
   const permissions = await getDatasetPermissions(id);
 
   return (
@@ -27,7 +27,7 @@ export default async function DatasetDetails({
       dataset={dataset}
       dataPartners={partners}
       users={users}
-      projects={projects.results}
+      projects={projects}
       permissions={permissions.permissions}
     />
   );

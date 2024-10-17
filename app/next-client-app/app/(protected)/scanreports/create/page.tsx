@@ -1,12 +1,12 @@
 import { getDataPartners } from "@/api/datasets";
-import { getProjectsList } from "@/api/projects";
+import { getAllProjects } from "@/api/projects";
 import { CreateScanReportForm } from "@/components/scanreports/CreateScanReportForm";
 import { FileScan } from "lucide-react";
 import Link from "next/link";
 
 export default async function ScanReports() {
   const partners = await getDataPartners();
-  const projects = await getProjectsList();
+  const projects = await getAllProjects();
 
   return (
     <>
@@ -20,10 +20,7 @@ export default async function ScanReports() {
         <h1 className="text-4xl font-semibold">New Scan Report</h1>
       </div>
       <div className="mt-4">
-        <CreateScanReportForm
-          dataPartners={partners}
-          projects={projects.results}
-        />
+        <CreateScanReportForm dataPartners={partners} projects={projects} />
       </div>
     </>
   );

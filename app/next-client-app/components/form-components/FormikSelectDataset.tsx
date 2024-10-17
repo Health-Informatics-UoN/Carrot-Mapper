@@ -10,7 +10,7 @@ import Select from "react-select";
 import makeAnimated from "react-select/animated";
 import { getDatasetList } from "@/api/datasets";
 import { useEffect, useState } from "react";
-import { getProjectsList } from "@/api/projects";
+import { getAllProjects } from "@/api/projects";
 
 type Option = {
   value: number;
@@ -24,11 +24,11 @@ type GroupedOption = {
 
 async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
   const datasets = await getDatasetList(dataPartner);
-  const projects = await getProjectsList();
+  const projects = await getAllProjects();
 
   // Initialize projectMap with all projects, ensuring each is represented
   const projectMap = new Map<number, GroupedOption>();
-  projects.results.forEach((project) => {
+  projects.forEach((project) => {
     projectMap.set(project.id, {
       label: `Project: ${project.name}`,
       options: [], // Initially empty, to be filled with datasets or a placeholder

@@ -1,6 +1,7 @@
 "use server";
 
 import request from "@/lib/api/request";
+import { fetchAllPages } from "@/lib/api/utils";
 
 const fetchKeys = {
   list: (filter?: string) => (filter ? `projects/?${filter}` : "projects/"),
@@ -16,6 +17,16 @@ export async function getProjectsList(
   } catch (error) {
     console.warn("Failed to fetch data.");
     return { count: 0, next: null, previous: null, results: [] };
+  }
+}
+
+export async function getAllProjects(): Promise<Project[]> {
+  try {
+    // If there are more than 100 projects in Carrot, adjust the page size below
+    return await fetchAllPages<Project>(fetchKeys.list("page_size=100"));
+  } catch (error) {
+    console.warn("Failed to fetch all projects data");
+    return [];
   }
 }
 
