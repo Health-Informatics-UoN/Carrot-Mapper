@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mapping', '0005_auto_20241015_0900'),
+        ("mapping", "0005_auto_20241015_0900"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scanreporttable',
-            name='death_table',
+            model_name="scanreporttable",
+            name="death_table",
             field=models.BooleanField(default=False, null=True),
         ),
     ]
