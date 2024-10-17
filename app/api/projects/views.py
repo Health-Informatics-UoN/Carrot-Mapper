@@ -19,7 +19,7 @@ class ProjectList(ListAPIView):
 
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    pagination_class = CustomPagination  # TODO: Be careful if more than 10 projects
+    pagination_class = CustomPagination
     filterset_fields = {"name": ["in", "icontains"]}
     ordering_fields = ["id", "name"]
     ordering = "-created_at"
