@@ -21,10 +21,11 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { InfoItem } from "@/components/core/InfoItem";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { MappingStatus } from "@/components/scanreports/MappingStatus";
 
 export default async function ScanReportLayout({
   params,
@@ -99,13 +100,17 @@ export default async function ScanReportLayout({
           value={format(createdDate, "MMM dd, yyyy h:mm a")}
           className="py-1 md:py-0 md:px-3"
         />
+        <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
+          Upload status:{" "}
+          <UploadStatus upload_status={scanreport.upload_status} />
+        </div>
         <div className="py-1 md:py-0 md:px-3 h-5">
-          <ScanReportStatus
+          <MappingStatus
             id={params.id}
-            status={scanreport.status}
+            mapping_status={scanreport.mapping_status || { value: "PENDING" }}
             dataset={scanreport.dataset}
             className="w-[180px] h-5"
-            disabled={!canEdit} // Disable when users don't have permission
+            disabled={!canEdit || scanreport.upload_status.value !== "COMPLETE"} // Disable when users don't have permission or upload status is not complete
           />
         </div>
       </div>

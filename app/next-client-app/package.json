@@ -36,7 +36,7 @@
     "react": "^18",
     "react-dom": "^18",
     "react-select": "^5.8.0",
-    "react-tooltip": "^5.26.4",
+    "react-tooltip": "^5.28.0",
     "sharp": "^0.33.4",
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.5.1",
