@@ -8,9 +8,10 @@ import {
 } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { getDataUsers, getProjects } from "@/api/datasets";
+import { getDataUsers } from "@/api/datasets";
 import { useEffect, useState } from "react";
 import { FindAndFormat } from "./FormikUtils";
+import { getAllProjects } from "@/api/projects";
 
 type Option = Object & {
   value: number;
@@ -18,15 +19,15 @@ type Option = Object & {
 };
 
 async function fetchProjectMembers(selectedProjects: number[]) {
-  const allProjects = await getProjects();
+  const allProjects = await getAllProjects();
   const filterProjects = allProjects.filter((project) =>
     selectedProjects.includes(project.id)
   );
   const users = await getDataUsers();
   const membersIds = new Set<number>();
   filterProjects.forEach((project) => {
-    project.members.forEach((memberId) => {
-      membersIds.add(memberId);
+    project.members.forEach((member) => {
+      membersIds.add(member.id);
     });
   });
   const membersArray = Array.from(membersIds);
