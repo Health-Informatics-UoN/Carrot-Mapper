@@ -54,7 +54,8 @@ export const NavButton = ({
             isActive,
         })}
       >
-        {item.text} {Icon && <Icon className="ml-2 size-4" />}
+        {Icon && <Icon className="mr-2 size-4" />}
+        {item.text}
       </Button>
     </Link>
   );

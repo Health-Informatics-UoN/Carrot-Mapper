@@ -1,5 +1,6 @@
 from collections import OrderedDict, defaultdict
 from typing import Any, Dict, List, Literal, Optional, Union
+from enum import Enum
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
@@ -9,7 +10,8 @@ from shared.mapping.models import (
     ScanReportConcept,
     ScanReportField,
     ScanReportValue,
-    Status,
+    UploadStatus,
+    MappingStatus,
 )
 from shared_code.logger import logger
 from shared_code.models import (
@@ -19,7 +21,13 @@ from shared_code.models import (
 )
 
 
-def update_scan_report_status(id: str, status: Status) -> None:
+class UploadStatusType(Enum):
+    IN_PROGRESS = "Upload in Progress"
+    COMPLETE = "Upload Complete"
+    FAILED = "Upload Failed"
+
+
+def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
     """
     Updates the status of a scan report.
 
@@ -29,8 +37,9 @@ def update_scan_report_status(id: str, status: Status) -> None:
 
     Returns: None
     """
+    upload_status_entity = UploadStatus.objects.get(value=upload_status.name)
     scan_report = ScanReport.objects.get(id=id)
-    scan_report.status = status
+    scan_report.upload_status = upload_status_entity
     scan_report.save()
 
 
@@ -167,13 +176,12 @@ def get_scan_report_active_concepts(
         object_ids = ScanReportField.objects.filter(
             scan_report_table__scan_report__hidden=False,
             scan_report_table__scan_report__parent_dataset__hidden=False,
-            scan_report_table__scan_report__status="COMPLET",
+            scan_report_table__scan_report__mapping_status__value="COMPLETE",
         ).values_list("id", flat=True)
     elif content_type == ScanReportConceptContentType.VALUE:
         object_ids = ScanReportValue.objects.filter(
             scan_report_field__scan_report_table__scan_report__hidden=False,
-            scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-            scan_report_field__scan_report_table__scan_report__status="COMPLET",
+            scan_report_field__scan_report_table__scan_report__mapping_status__value="COMPLETE",
         ).values_list("id", flat=True)
     else:
         raise ValueError(f"Unsupported content type: {content_type}")
