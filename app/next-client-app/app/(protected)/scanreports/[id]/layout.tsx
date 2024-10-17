@@ -107,7 +107,7 @@ export default async function ScanReportLayout({
         <div className="py-1 md:py-0 md:px-3 h-5">
           <MappingStatus
             id={params.id}
-            mapping_status={scanreport.mapping_status}
+            mapping_status={scanreport.mapping_status || { value: "PENDING" }}
             dataset={scanreport.dataset}
             className="w-[180px] h-5"
             disabled={!canEdit || scanreport.upload_status.value !== "COMPLETE"} // Disable when users don't have permission or upload status is not complete
