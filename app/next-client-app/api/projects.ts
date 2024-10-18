@@ -22,8 +22,7 @@ export async function getProjectsList(
 
 export async function getAllProjects(): Promise<Project[]> {
   try {
-    // If there are more than 100 projects in Carrot, adjust the page size below
-    return await fetchAllPages<Project>(fetchKeys.list("page_size=100"));
+    return await fetchAllPages<Project>(fetchKeys.list("p"));
   } catch (error) {
     console.warn("Failed to fetch all projects data");
     return [];
@@ -41,18 +40,10 @@ export async function getProjectsDataset(
   }
 }
 
-export async function getproject(id: string): Promise<Project> {
+export async function getProject(id: string): Promise<Project | null> {
   try {
-    return await request<Project>(fetchKeys.project(id));
+    return await request<Project | null>(fetchKeys.project(id));
   } catch (error) {
-    console.warn("Failed to fetch data.");
-    return {
-      id: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
-      name: "",
-      datasets: [],
-      members: [],
-    };
+    return null;
   }
 }

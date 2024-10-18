@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
 import { InfoItem } from "@/components/core/InfoItem";
 import Link from "next/link";
-import { getproject } from "@/api/projects";
+import { getProject } from "@/api/projects";
 import { AvatarList } from "@/components/core/avatar-list";
 
 export default async function DatasetLayout({
@@ -25,13 +25,15 @@ export default async function DatasetLayout({
     },
   ];
 
-  const project = await getproject(params.id);
-  const createdDate = new Date(project.created_at);
+  const project = await getProject(params.id);
+  let createdDate = new Date();
 
-  // If user is not a member of the project, the API result will be failed and empty ==> forbidden
-  if (project.id === 0) {
+  if (!project) {
     return <Forbidden />;
   }
+
+  createdDate = new Date(project.created_at);
+
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
@@ -41,7 +43,7 @@ export default async function DatasetLayout({
         </Link>
         <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
         <Folders className="text-orange-700" />
-        <h2>{project.name}</h2>
+        <h2>{project?.name}</h2>
       </div>
 
       <div className="flex flex-col md:flex-row md:items-center text-sm space-y-2 md:space-y-0 divide-y md:divide-y-0 md:divide-x divide-gray-300">
@@ -51,7 +53,7 @@ export default async function DatasetLayout({
           className="py-1 md:py-0 md:pr-3"
         />
         <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
-          Members: <AvatarList members={project.members} />
+          Members: <AvatarList members={project?.members || []} />
         </div>
       </div>
       {/* "Navs" group */}

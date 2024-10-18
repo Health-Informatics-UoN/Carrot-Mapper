@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { Tooltip } from "react-tooltip";
 
-export function AvatarList({ members }: { members: User[] }) {
+export function AvatarList({ members }: { members: User[] | [] }) {
   return (
     <div className={cn("z-10 flex -space-x-2")}>
       {members
