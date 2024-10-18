@@ -107,6 +107,7 @@ class DatasetAndDataPartnerListView(GenericAPIView, ListModelMixin):
         "id": ["in"],
         "hidden": ["in", "exact"],
         "name": ["in", "icontains"],
+        "project": ["exact"],
     }
     ordering = "-created_at"
 

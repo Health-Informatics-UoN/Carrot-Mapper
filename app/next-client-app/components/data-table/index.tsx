@@ -77,6 +77,9 @@ export function DataTable<TData, TValue>({
     if (/datasets\/\d+/.test(location)) {
       location = "/scanreports/";
     }
+    if (/projects\/\d+/.test(location)) {
+      location = "/datasets/";
+    }
     window.location.href = UrlBuilder(
       id,
       `${location.endsWith("/") ? location : location + "/"}${linkPrefix}`

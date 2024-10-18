@@ -7,7 +7,7 @@ import { Tooltip } from "react-tooltip";
 
 export function UploadStatus({ upload_status }: { upload_status: Status }) {
   const statusInfo = UploadStatusOptions.find(
-    (option) => option.value === upload_status.value ?? "IN_PROGRESS"
+    (option) => option.value === upload_status.value
   );
 
   const Icon = statusInfo?.icon;

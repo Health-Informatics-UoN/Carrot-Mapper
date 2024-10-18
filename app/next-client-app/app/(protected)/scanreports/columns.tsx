@@ -96,7 +96,11 @@ export const columns: ColumnDef<ScanReport>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { upload_status } = row.original;
-      return <UploadStatus upload_status={upload_status} />;
+      return (
+        <UploadStatus
+          upload_status={upload_status || { value: "IN_PROGRESS" }}
+        />
+      );
     },
   },
   {
@@ -106,6 +110,7 @@ export const columns: ColumnDef<ScanReport>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { id, mapping_status, upload_status, dataset } = row.original;
+      const upload_status_check = upload_status ?? { value: "IN_PROGRESS" };
       return (
         <div className="flex justify-center text-center">
           <MappingStatus
@@ -113,7 +118,7 @@ export const columns: ColumnDef<ScanReport>[] = [
             mapping_status={mapping_status || { value: "PENDING" }}
             dataset={dataset}
             className="w-[180px]"
-            disabled={upload_status.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
+            disabled={upload_status_check.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
           />
         </div>
       );
