@@ -8,8 +8,9 @@ import {
 } from "formik";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { getDatasetList, getProjects } from "@/api/datasets";
+import { getDatasetList } from "@/api/datasets";
 import { useEffect, useState } from "react";
+import { getAllProjects } from "@/api/projects";
 
 type Option = {
   value: number;
@@ -23,7 +24,7 @@ type GroupedOption = {
 
 async function fetchDataset(dataPartner: string): Promise<GroupedOption[]> {
   const datasets = await getDatasetList(dataPartner);
-  const projects = await getProjects();
+  const projects = await getAllProjects();
 
   // Initialize projectMap with all projects, ensuring each is represented
   const projectMap = new Map<number, GroupedOption>();

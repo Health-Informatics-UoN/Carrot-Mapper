@@ -31,12 +31,6 @@ interface DataSetSRList {
   editors: number[];
   projects: Project[];
 }
-interface Project {
-  id: number;
-  name: string;
-  members: number[];
-  datasets: number[];
-}
 
 interface User {
   id: number;

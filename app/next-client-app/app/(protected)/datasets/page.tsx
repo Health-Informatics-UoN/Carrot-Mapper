@@ -1,12 +1,13 @@
 import { DataTable } from "@/components/data-table";
 import { columns } from "./columns";
-import { getDataPartners, getDataSets, getProjects } from "@/api/datasets";
+import { getDataPartners, getDataSets } from "@/api/datasets";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { objToQuery } from "@/lib/client-utils";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
 import { FilterParameters } from "@/types/filter";
 import { CreateDatasetDialog } from "@/components/datasets/CreateDatasetDialog";
-import { Folders } from "lucide-react";
+import { Database } from "lucide-react";
+import { getAllProjects } from "@/api/projects";
 
 interface DataSetListProps {
   searchParams?: FilterParameters;
@@ -19,7 +20,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   };
   const combinedParams = { ...defaultParams, ...searchParams };
 
-  const projects = await getProjects();
+  const projects = await getAllProjects();
   const dataPartnerList = await getDataPartners();
   const query = objToQuery(combinedParams);
   const dataset = await getDataSets(query);
@@ -28,7 +29,7 @@ export default async function DataSets({ searchParams }: DataSetListProps) {
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center">
-        <Folders className="mr-2 text-blue-700" />
+        <Database className="mr-2 text-blue-700" />
         <h2>Datasets</h2>
       </div>
       <div className="my-3 justify-between">
