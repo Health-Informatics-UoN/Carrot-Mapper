@@ -1,8 +1,8 @@
 "use client";
-
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { updateScanReportTable } from "@/api/scanreports";
-import { Save } from "lucide-react";
+import { Check, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { FormDataFilter } from "../form-components/FormikUtils";
 import { Form, Formik } from "formik";
@@ -10,6 +10,16 @@ import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface FormData {
   personId: number | null;
@@ -30,6 +40,9 @@ export function ScanReportTableUpdateForm({
   personId: ScanReportField;
   dateEvent: ScanReportField;
 }) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [pendingValue, setPendingValue] = useState(false);
+
   const canUpdate =
     permissions.includes("CanEdit") || permissions.includes("CanAdmin");
 
@@ -70,7 +83,7 @@ export function ScanReportTableUpdateForm({
         handleSubmit(data);
       }}
     >
-      {({ handleSubmit, handleChange, values }) => (
+      {({ handleSubmit, handleChange, values, setFieldValue }) => (
         <Form className="w-full" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex flex-col gap-2">
@@ -107,29 +120,74 @@ export function ScanReportTableUpdateForm({
                 isDisabled={!canUpdate}
               />
             </div>
-            {/* Should this only to be turn on/off when Person ID and date event is filled? because change here will also trigger re-use and omop building functions*/}
-            {/* Should this only turned on once? because mapping when "on" will be different than "off", after being "on" */}
-            {/* On should be always on, and off should be always off */}
-            {/* Because this setting will permanent, should have an dialog warning about turning on this setting will be permanent */}
-            {/* give more support/info and notice in tooltips */}
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-2">
               <h3 className="flex">
-                {" "}
-                Is this a Death table?
-                <Tooltips content="If this is set to YES, concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to PERSON table. ALL of other concepts added here will be mapped to DEATH table" />
+                This table contains data mapped to the DEATH table in OMOP CDM?
+                <Tooltips content="If 'YES', concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to the PERSON table. ALL of other concepts added here will be mapped to the DEATH table" />
               </h3>
-              <Switch
-                onCheckedChange={(checked) => {
-                  handleChange({
-                    target: {
-                      name: "death_table",
-                      value: checked ? true : false,
-                    },
-                  });
-                }}
-                checked={values.death_table}
-              />
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger
+                  asChild
+                  className={cn(
+                    "bg-carrot-200",
+                    values.death_table && "bg-carrot"
+                  )}
+                >
+                  <Switch
+                    checked={values.death_table}
+                    onCheckedChange={(checked) => {
+                      setPendingValue(checked);
+                      setIsDialogOpen(true);
+                    }}
+                    disabled={!canUpdate || scanreportTable.death_table}
+                  />
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Let's double check</DialogTitle>
+                    <DialogDescription>
+                      Are you sure to make this table a DEATH table? This will
+                      make:
+                      <ul className="text-gray-500 list-disc pl-4 pt-2">
+                        <li>
+                          Concepts added to this table with domains RACE,
+                          ETHNICITY and GENDER to be mapped to the PERSON table
+                          in OMOP CDM
+                        </li>
+                        <li>
+                          <span className="font-bold">
+                            All concepts with other domains
+                          </span>{" "}
+                          to be mapped to the DEATH table in OMOP CDM
+                        </li>
+                        <li className="text-red-500">
+                          Once the "YES" setting is saved, this setting will be
+                          permanent and can't be undone{" "}
+                        </li>
+                      </ul>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="flex gap-3">
+                    <Button
+                      onClick={() => {
+                        setIsDialogOpen(false);
+                      }}
+                      variant={"outline"}
+                    >
+                      Cancel <X className="size-4 ml-2" />
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setFieldValue("death_table", pendingValue);
+                        setIsDialogOpen(false);
+                      }}
+                    >
+                      Confirm <Check className="size-4 ml-2" />
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
               <Label className="text-lg">
                 {values.death_table === true ? "YES" : "NO"}
               </Label>
