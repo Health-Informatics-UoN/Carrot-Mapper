@@ -22,7 +22,8 @@ export async function getProjectsList(
 
 export async function getAllProjects(): Promise<Project[]> {
   try {
-    return await fetchAllPages<Project>(fetchKeys.list("p"));
+    // Add a fake filter to the query to ensure the fetchAllPages call works normally
+    return await fetchAllPages<Project>(fetchKeys.list(" "));
   } catch (error) {
     console.warn("Failed to fetch all projects data");
     return [];
