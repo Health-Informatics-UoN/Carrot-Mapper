@@ -570,7 +570,7 @@ class ScanReportConceptListV2(
         if domain == "meas value" and table.death_table:
             return Response(
                 {
-                    "detail": "Concepts with 'Meas Value' domain should not be added to DEATH table."
+                    "detail": "Because concepts with 'Meas Value' domain will be mapped to Measurement table as 'value_as_concept_id', they should not be added to DEATH table."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
