@@ -2,7 +2,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from projects.serializers import (
     ProjectDatasetSerializer,
     ProjectSerializer,
-    ProjectWithMembersSerializer,
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -25,15 +24,10 @@ class ProjectList(ListAPIView):
     ordering = "-created_at"
 
     def get_serializer_class(self):
-        if (
-            self.request.GET.get("name") is not None
-            or self.request.GET.get("name__in") is not None
-        ):
-            return ProjectSerializer
         if self.request.GET.get("datasets") is not None:
             return ProjectDatasetSerializer
 
-        return ProjectWithMembersSerializer
+        return ProjectSerializer
 
     def get_queryset(self):
         if dataset := self.request.GET.get("dataset"):
