@@ -102,7 +102,9 @@ export default async function ScanReportLayout({
         />
         <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
           Upload status:{" "}
-          <UploadStatus upload_status={scanreport.upload_status} />
+          <UploadStatus
+            upload_status={scanreport.upload_status || { value: "IN_PROGRESS" }}
+          />
         </div>
         <div className="py-1 md:py-0 md:px-3 h-5">
           <MappingStatus
