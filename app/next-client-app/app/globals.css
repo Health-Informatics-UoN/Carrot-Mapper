@@ -13,7 +13,7 @@
     }
 
     .my-react-select-container .my-react-select__control--is-focused {
-      @apply border-carrot-500 hover:border-carrot-500 dark:border-carrot-400 dark:hover:border-carrot-400 shadow-none;
+      @apply ring-2 ring-carrot-950 ring-offset-2 hover:border-carrot-500 dark:border-carrot-400 dark:hover:border-carrot-400 shadow-none;
     }
 
     .my-react-select-container .my-react-select__menu {
