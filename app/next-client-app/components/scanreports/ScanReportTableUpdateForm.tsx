@@ -140,7 +140,7 @@ export function ScanReportTableUpdateForm({
                           </span>{" "}
                           will be mapped to the{" "}
                           <span className="font-bold">PERSON</span> table in
-                          OMOP CDM
+                          OMOP CDM.
                         </li>
                         <li>
                           <span className="font-bold">
@@ -148,7 +148,7 @@ export function ScanReportTableUpdateForm({
                           </span>{" "}
                           will be mapped to the{" "}
                           <span className="font-bold">DEATH</span> table in OMOP
-                          CDM
+                          CDM.
                         </li>
                       </ul>
                       <h2 className="text-red-500 flex items-center">
