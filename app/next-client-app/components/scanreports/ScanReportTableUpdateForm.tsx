@@ -17,9 +17,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../ui/dialog";
-import { cn } from "@/lib/utils";
 
 interface FormData {
   personId: number | null;
@@ -122,7 +120,8 @@ export function ScanReportTableUpdateForm({
 
             <div className="flex gap-2 mt-2">
               <h3 className="flex">
-                This table contains data mapped to the DEATH table in OMOP CDM?
+                Does this table only contain data that need mapping to the DEATH
+                table in OMOP CDM?
                 <Tooltips content="If 'YES', concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to the PERSON table. ALL of other concepts added here will be mapped to the DEATH table" />
               </h3>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

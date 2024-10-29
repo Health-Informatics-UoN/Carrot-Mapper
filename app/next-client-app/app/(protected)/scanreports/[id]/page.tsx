@@ -1,3 +1,4 @@
+import { columns } from "./columns";
 import {
   getScanReportPermissions,
   getScanReportTables,
@@ -6,7 +7,6 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import { columns } from "./columns";
 
 interface ScanReportsTableProps {
   params: {
@@ -23,6 +23,7 @@ export default async function ScanReportsTable({
 
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
+  const filter = <DataTableFilter filter="name" />;
 
   const scanReportsTables = await getScanReportTables(id, query);
   const permissions = await getScanReportPermissions(id);
@@ -30,7 +31,6 @@ export default async function ScanReportsTable({
     table.permissions = permissions.permissions;
     return table;
   });
-  const filter = <DataTableFilter filter="name" />;
 
   return (
     <div>
