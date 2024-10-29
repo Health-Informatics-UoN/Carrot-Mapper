@@ -8,7 +8,6 @@ import { SidebarButton } from "./sidebar-button";
 import { usePathname } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ModeToggle } from "./mode-toggle";
 import { sidebarItems } from "./menuItems";

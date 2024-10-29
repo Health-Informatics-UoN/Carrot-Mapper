@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { SidebarButton } from "./sidebar-button";
 import { sidebarItems } from "./menuItems";
 import { Sidebar } from "./sidebar";
