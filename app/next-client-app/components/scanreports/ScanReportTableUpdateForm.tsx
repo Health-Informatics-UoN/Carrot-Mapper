@@ -41,7 +41,6 @@ export function ScanReportTableUpdateForm({
   dateEvent: ScanReportField;
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [pendingValue, setPendingValue] = useState(false);
 
   const canUpdate =
     permissions.includes("CanEdit") || permissions.includes("CanAdmin");
@@ -83,7 +82,7 @@ export function ScanReportTableUpdateForm({
         handleSubmit(data);
       }}
     >
-      {({ handleSubmit, handleChange, values, setFieldValue }) => (
+      {({ handleSubmit, values, setFieldValue }) => (
         <Form className="w-full" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-3 text-lg">
             <div className="flex flex-col gap-2">
@@ -127,22 +126,6 @@ export function ScanReportTableUpdateForm({
                 <Tooltips content="If 'YES', concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to the PERSON table. ALL of other concepts added here will be mapped to the DEATH table" />
               </h3>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger
-                  asChild
-                  className={cn(
-                    "bg-carrot-200",
-                    values.death_table && "bg-carrot"
-                  )}
-                >
-                  <Switch
-                    checked={values.death_table}
-                    onCheckedChange={(checked) => {
-                      setPendingValue(checked);
-                      setIsDialogOpen(true);
-                    }}
-                    disabled={!canUpdate || scanreportTable.death_table}
-                  />
-                </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Let's double check</DialogTitle>
@@ -179,7 +162,7 @@ export function ScanReportTableUpdateForm({
                     </Button>
                     <Button
                       onClick={() => {
-                        setFieldValue("death_table", pendingValue);
+                        setFieldValue("death_table", true);
                         setIsDialogOpen(false);
                       }}
                     >
@@ -188,9 +171,29 @@ export function ScanReportTableUpdateForm({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+              <Switch
+                checked={values.death_table}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    // When switching from NO to YES, show confirmation dialog
+                    setIsDialogOpen(true);
+                  } else {
+                    // When switching from YES to NO, change immediately
+                    setFieldValue("death_table", false);
+                  }
+                }}
+                disabled={!canUpdate || scanreportTable.death_table}
+                className={cn(
+                  "bg-carrot-200",
+                  values.death_table && "bg-carrot"
+                )}
+              />
               <Label className="text-lg">
                 {values.death_table === true ? "YES" : "NO"}
               </Label>
+              {scanreportTable.death_table && (
+                <Tooltips content="This setting is permanent, once set" />
+              )}
             </div>
 
             <div className="flex mt-3">
