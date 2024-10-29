@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { updateScanReportTable } from "@/api/scanreports";
-import { Check, Save, X } from "lucide-react";
+import { Check, Save, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { FormDataFilter } from "../form-components/FormikUtils";
 import { Form, Formik } from "formik";
@@ -128,27 +128,37 @@ export function ScanReportTableUpdateForm({
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Let's double check</DialogTitle>
+                    <DialogTitle>Please Confirm Your Choice</DialogTitle>
                     <DialogDescription>
-                      Are you sure to make this table a DEATH table? This will
-                      make:
+                      Are you sure you want to set this table as a DEATH table?
+                      Doing so will result in the following:
                       <ul className="text-gray-500 list-disc pl-4 pt-2">
                         <li>
-                          Concepts added to this table with domains RACE,
-                          ETHNICITY and GENDER to be mapped to the PERSON table
-                          in OMOP CDM
+                          Concepts added to this table with domains{" "}
+                          <span className="font-bold">
+                            RACE, ETHNICITY and GENDER
+                          </span>{" "}
+                          will be mapped to the{" "}
+                          <span className="font-bold">PERSON</span> table in
+                          OMOP CDM
                         </li>
                         <li>
                           <span className="font-bold">
                             All concepts with other domains
                           </span>{" "}
-                          to be mapped to the DEATH table in OMOP CDM
-                        </li>
-                        <li className="text-red-500">
-                          Once the "YES" setting is saved, this setting will be
-                          permanent and can't be undone{" "}
+                          will be mapped to the{" "}
+                          <span className="font-bold">DEATH</span> table in OMOP
+                          CDM
                         </li>
                       </ul>
+                      <h2 className="text-red-500 flex items-center">
+                        <TriangleAlert className="size-4 mr-1 animate-pulse" />{" "}
+                        <span className="underline underline-offset-2 mr-1">
+                          Warning:
+                        </span>{" "}
+                        Once saved, this setting is permanent and cannot be
+                        undone.{" "}
+                      </h2>
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter className="flex gap-3">
@@ -183,10 +193,6 @@ export function ScanReportTableUpdateForm({
                   }
                 }}
                 disabled={!canUpdate || scanreportTable.death_table}
-                className={cn(
-                  "bg-carrot-200",
-                  values.death_table && "bg-carrot"
-                )}
               />
               <Label className="text-lg">
                 {values.death_table === true ? "YES" : "NO"}
