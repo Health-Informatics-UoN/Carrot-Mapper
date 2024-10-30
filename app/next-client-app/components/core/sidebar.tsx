@@ -8,11 +8,9 @@ import { SidebarButton } from "./sidebar-button";
 import { usePathname } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ModeToggle } from "./mode-toggle";
 import { sidebarItems } from "./menuItems";
-import { cn } from "@/lib/utils";
 
 export function Sidebar({
   userName,
@@ -30,15 +28,7 @@ export function Sidebar({
   }, [pathname]);
 
   return (
-    <div
-      className={cn(
-        "flex gap-3 pt-4 px-10 items-center justify-between border-b-2 border-gray-300 pb-3",
-        {
-          "lg:hidden px-0": onPublic,
-          "border-b-2 border-gray-300": !onPublic,
-        }
-      )}
-    >
+    <div className="flex gap-3 p-5 items-center justify-between border-b-2 border-gray-300 mb-5 lg:hidden">
       <div className="flex items-center">
         <div className="flex items-center">
           {" "}

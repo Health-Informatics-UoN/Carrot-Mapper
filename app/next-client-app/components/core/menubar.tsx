@@ -1,16 +1,15 @@
 import Link from "next/link";
-import Image from "next/image";
 import { SidebarButton } from "./sidebar-button";
 import { sidebarItems } from "./menuItems";
 import { Sidebar } from "./sidebar";
 import { ModeToggle } from "./mode-toggle";
 import { LogOut } from "lucide-react";
 
-export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
+export const MenuBar = ({ user }: { user: User | null }) => {
   return (
     <>
-      <Sidebar onPublic userLoggedIn={userLoggedIn} />
-      <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between bg-primary pt-4 px-8 pb-3">
+      <Sidebar onPublic userName={user?.username} />
+      <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between p-5 mb-5">
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <img
@@ -24,7 +23,7 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
 
         <div className="flex items-center gap-3">
           <div className="flex">
-            {(!userLoggedIn ? sidebarItems.routes : sidebarItems.links).map(
+            {(!user ? sidebarItems.routes : sidebarItems.links).map(
               (link, idx) => (
                 <Link key={idx} href={link.href}>
                   <SidebarButton icon={link.icon} className="w-full">
@@ -33,7 +32,7 @@ export const MenuBar = ({ userLoggedIn }: { userLoggedIn: boolean }) => {
                 </Link>
               )
             )}
-            {userLoggedIn && (
+            {user && (
               <a href={"/accounts/logout/"}>
                 <SidebarButton icon={LogOut} className="w-full">
                   {"Log out"}
