@@ -20,7 +20,7 @@ export function Sidebar({ userName }: { userName?: string }) {
   }, [pathname]);
 
   return (
-    <div className="flex gap-3 p-5 items-center justify-between border-b-2 border-gray-300 mb-5 lg:hidden">
+    <div className="flex gap-3 p-4 items-center justify-between border-b-2 border-gray-300 mb-4 lg:hidden">
       <div className="flex items-center">
         <div className="flex items-center">
           {" "}

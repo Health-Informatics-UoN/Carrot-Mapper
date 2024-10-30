@@ -6,12 +6,13 @@ import { ModeToggle } from "./mode-toggle";
 import { CircleUserRound, LogOut, Settings } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
 
 export const MenuBar = ({ user }: { user: User | null }) => {
   return (
     <>
       <Sidebar userName={user?.username} />
-      <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between p-5 mb-5">
+      <div className="hidden lg:flex lg:items-center sticky top-0 z-50 backdrop-blur border-b-2 border-gray-300 justify-between p-4 mb-4">
         <Link href={"/"}>
           <div className="text-2xl flex items-center font-semibold">
             <img
@@ -35,36 +36,44 @@ export const MenuBar = ({ user }: { user: User | null }) => {
               )
             )}
             {user && (
-              // <a href={"/accounts/logout/"}>
-              //   <SidebarButton icon={LogOut} className="w-full">
-              //     {"Log out"}
-              //   </SidebarButton>
-              // </a>
               <div>
                 <Popover>
-                  <PopoverTrigger asChild>
+                  <PopoverTrigger>
                     <div className="flex justify-between items-center mx-4">
-                      <CircleUserRound className="size-5" />
+                      <CircleUserRound className="size-5 dark:text-carrot-400" />
                     </div>
                   </PopoverTrigger>
                   <PopoverContent className="w-[12.5rem] my-2 p-2">
-                    <div className="flex flex-col space-y-2 mt-2">
-                      <div className="flex gap-2">
+                    <div className="flex flex-col mt-2">
+                      <div className="flex text-sm font-medium">
                         <span>Hi, {user.username}</span>
                       </div>
-                      <Separator className="w-full" />
+                      <Separator className="w-full my-2" />
                       <a
                         href="/accounts/password_change/"
                         className="flex items-center"
                       >
-                        Change Password <Settings className="size-4 ml-2" />
+                        <Button
+                          variant={"ghost"}
+                          size={"sm"}
+                          className="w-full"
+                        >
+                          <Settings className="size-4 mr-2" />
+                          Change Password
+                        </Button>
                       </a>
                       <a
                         href={"/accounts/logout/"}
                         className="flex items-center"
                       >
-                        Log Out
-                        <LogOut className="size-4 ml-2" />
+                        <Button
+                          variant={"ghost"}
+                          size={"sm"}
+                          className="w-full"
+                        >
+                          <LogOut className="size-4 mr-2" />
+                          Log Out
+                        </Button>
                       </a>
                     </div>
                   </PopoverContent>
