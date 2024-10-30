@@ -12,15 +12,7 @@ import { useEffect, useState } from "react";
 import { ModeToggle } from "./mode-toggle";
 import { sidebarItems } from "./menuItems";
 
-export function Sidebar({
-  userName,
-  onPublic,
-  userLoggedIn,
-}: {
-  userName?: string;
-  onPublic?: boolean;
-  userLoggedIn?: boolean;
-}) {
+export function Sidebar({ userName }: { userName?: string }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   useEffect(() => {
@@ -58,22 +50,23 @@ export function Sidebar({
               </SheetHeader>
               <div className="h-full">
                 <div className="flex mt-7 flex-col w-full gap-1">
-                  {(userName || userLoggedIn
-                    ? sidebarItems.links
-                    : sidebarItems.routes
-                  ).map((link, idx) => (
-                    <Link key={idx} href={link.href}>
-                      <SidebarButton
-                        variant={pathname === link.href ? "secondary" : "ghost"}
-                        icon={link.icon}
-                        className="w-full"
-                      >
-                        {link.label}
-                      </SidebarButton>
-                    </Link>
-                  ))}
+                  {(userName ? sidebarItems.links : sidebarItems.routes).map(
+                    (link, idx) => (
+                      <Link key={idx} href={link.href}>
+                        <SidebarButton
+                          variant={
+                            pathname === link.href ? "secondary" : "ghost"
+                          }
+                          icon={link.icon}
+                          className="w-full"
+                        >
+                          {link.label}
+                        </SidebarButton>
+                      </Link>
+                    )
+                  )}
                 </div>
-                {(userName || userLoggedIn) && (
+                {userName && (
                   <div className="absolute w-full bottom-4 px-1 left-0">
                     <Separator className="absolute -top-3 left-0 w-full" />
                     <Drawer>
