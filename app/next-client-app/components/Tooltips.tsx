@@ -6,12 +6,13 @@ import {
 } from "@/components/ui/tooltip";
 
 import { InfoIcon } from "lucide-react";
+import { ReactElement } from "react";
 
 export function Tooltips({
   content,
   link,
 }: {
-  content: string;
+  content: string | ReactElement;
   link?: string;
 }) {
   return (

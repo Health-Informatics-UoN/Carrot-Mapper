@@ -120,9 +120,25 @@ export function ScanReportTableUpdateForm({
 
             <div className="flex gap-2 mt-2">
               <h3 className="flex">
-                Does this table only contain data that need mapping to the DEATH
-                table in OMOP CDM?
-                <Tooltips content="If 'YES', concepts added here with domains RACE, ETHNICITY and GENDER will be mapped to the PERSON table. ALL of other concepts added here will be mapped to the DEATH table" />
+                Does this table only contain data that needs mapping to the
+                DEATH table in the OMOP CDM?
+                <Tooltips
+                  content={
+                    <h2>
+                      If <span className="font-bold">Yes</span>, concepts added
+                      to this table with domains{" "}
+                      <span className="font-bold">
+                        Race, Ethnicity and Gender
+                      </span>{" "}
+                      will be mapped to the{" "}
+                      <span className="font-bold">Person</span> table. Concepts
+                      added here with{" "}
+                      <span className="font-bold">other domains</span> will be
+                      mapped to the <span className="font-bold">Death</span>{" "}
+                      table.
+                    </h2>
+                  }
+                />
               </h3>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent>
@@ -135,19 +151,16 @@ export function ScanReportTableUpdateForm({
                         <li>
                           Concepts added to this table with domains{" "}
                           <span className="font-bold">
-                            RACE, ETHNICITY and GENDER
+                            Race, Ethnicity and Gender
                           </span>{" "}
                           will be mapped to the{" "}
-                          <span className="font-bold">PERSON</span> table in
-                          OMOP CDM.
+                          <span className="font-bold">Person</span> table.
                         </li>
                         <li>
-                          <span className="font-bold">
-                            All concepts with other domains
-                          </span>{" "}
-                          will be mapped to the{" "}
-                          <span className="font-bold">DEATH</span> table in OMOP
-                          CDM.
+                          Concepts added here with{" "}
+                          <span className="font-bold">other domains</span> will
+                          be mapped to the{" "}
+                          <span className="font-bold">Death</span> table.
                         </li>
                       </ul>
                       <h2 className="text-red-500 flex items-center">
