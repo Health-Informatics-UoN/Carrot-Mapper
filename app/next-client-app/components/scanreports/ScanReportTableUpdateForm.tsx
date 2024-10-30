@@ -121,7 +121,7 @@ export function ScanReportTableUpdateForm({
             <div className="flex gap-2 mt-2">
               <h3 className="flex">
                 Does this table only contain data that needs mapping to the
-                DEATH table in the OMOP CDM?
+                Death table in the OMOP CDM?
                 <Tooltips
                   content={
                     <h2>
@@ -145,7 +145,7 @@ export function ScanReportTableUpdateForm({
                   <DialogHeader>
                     <DialogTitle>Please Confirm Your Choice</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to set this table as a DEATH table?
+                      Are you sure you want to set this table as a Death table?
                       Doing so will result in the following:
                       <ul className="text-gray-500 list-disc pl-4 pt-2">
                         <li>
