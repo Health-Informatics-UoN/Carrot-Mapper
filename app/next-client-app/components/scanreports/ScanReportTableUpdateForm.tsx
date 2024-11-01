@@ -204,7 +204,7 @@ export function ScanReportTableUpdateForm({
                     setFieldValue("death_table", false);
                   }
                 }}
-                disabled={!canUpdate || scanreportTable.death_table}
+                disabled={!canUpdate}
               />
               <Label className="text-lg">
                 {values.death_table === true ? "YES" : "NO"}
