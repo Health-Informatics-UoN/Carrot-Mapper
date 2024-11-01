@@ -223,20 +223,17 @@ def _update_entries_with_standard_concepts(
     Returns:
         - None
 
-    Raises:
-        - RuntimeWarning: If the relevant entry's concept ID is None.
     """
-    for nonstandard_concept, standard_concepts in standard_concepts_map.items():
-        relevant_entry = helpers.get_by_concept_id(entries, nonstandard_concept)
-        if relevant_entry is None:
-            """
-            This is the case where pairs_for_use contains an entry that
-            doesn't have a counterpart in entries, so this
-            should error or warn
-            """
-            raise RuntimeWarning
-        elif isinstance(relevant_entry["concept_id"], (int, str)):
-            relevant_entry["concept_id"] = standard_concepts
+    # Convert standard_concepts_map to a normal dictionary
+    standard_concepts_dict = dict(standard_concepts_map)
+    # Loop over all the entries
+    for entry in entries:
+        concept_id = int(
+            entry["concept_id"]
+        )  # Convert concept_id to int to match the keys in the dictionary
+        # If the concept_id match the key of the dict (which is the non stantard concept), update it with the value of the key (with is the standard concept)
+        if concept_id in standard_concepts_dict:
+            entry["concept_id"] = standard_concepts_dict[concept_id]
 
 
 def _handle_table(

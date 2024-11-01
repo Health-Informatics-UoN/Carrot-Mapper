@@ -15,8 +15,6 @@ const fetchKeys = {
       : "v2/datasets/",
   dataPartners: () => "v2/datapartners/",
   users: () => "v2/usersfilter/?is_active=true",
-  projects: (dataset?: string) =>
-    dataset ? `projects/?dataset=${dataset}` : "projects/",
   updateDataset: (id: number) => `v2/datasets/${id}/`,
   permissions: (id: string) => `v2/datasets/${id}/permissions/`,
   create: "v2/datasets/",
@@ -82,15 +80,6 @@ export async function getDataPartners(): Promise<DataPartner[]> {
 export async function getDataUsers(): Promise<User[]> {
   try {
     return request<User[]>(fetchKeys.users());
-  } catch (error) {
-    console.warn("Failed to fetch data.");
-    return [];
-  }
-}
-
-export async function getProjects(dataset?: string): Promise<Project[]> {
-  try {
-    return request<Project[]>(fetchKeys.projects(dataset));
   } catch (error) {
     console.warn("Failed to fetch data.");
     return [];

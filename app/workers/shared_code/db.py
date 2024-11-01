@@ -1,16 +1,46 @@
 from collections import OrderedDict, defaultdict
 from typing import Any, Dict, List, Literal, Optional, Union
+from enum import Enum
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.query import QuerySet
 from shared.data.models import Concept, ConceptRelationship
-from shared.mapping.models import ScanReportConcept, ScanReportField, ScanReportValue
+from shared.mapping.models import (
+    ScanReport,
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportValue,
+    UploadStatus,
+    MappingStatus,
+)
 from shared_code.logger import logger
 from shared_code.models import (
     ScanReportConceptContentType,
     ScanReportFieldDict,
     ScanReportValueDict,
 )
+
+
+class UploadStatusType(Enum):
+    IN_PROGRESS = "Upload in Progress"
+    COMPLETE = "Upload Complete"
+    FAILED = "Upload Failed"
+
+
+def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
+    """
+    Updates the status of a scan report.
+
+    Args:
+        id (str): The ID of the scan report.
+        status (Status): The status to update the Scan Report with.
+
+    Returns: None
+    """
+    upload_status_entity = UploadStatus.objects.get(value=upload_status.name)
+    scan_report = ScanReport.objects.get(id=id)
+    scan_report.upload_status = upload_status_entity
+    scan_report.save()
 
 
 def create_concept(
@@ -139,16 +169,25 @@ def get_scan_report_active_concepts(
     Returns:
         - QuerySet[ScanReportConcept]: The list of Scan Report Concepts.
     """
+
     content_type_model = ContentType.objects.get(model=content_type.value)
 
-    value_ids = ScanReportValue.objects.filter(
-        scan_report_field__scan_report_table__scan_report__hidden=False,
-        scan_report_field__scan_report_table__scan_report__parent_dataset__hidden=False,
-        scan_report_field__scan_report_table__scan_report__status="COMPLET",
-    ).values_list("id", flat=True)
+    if content_type == ScanReportConceptContentType.FIELD:
+        object_ids = ScanReportField.objects.filter(
+            scan_report_table__scan_report__hidden=False,
+            scan_report_table__scan_report__parent_dataset__hidden=False,
+            scan_report_table__scan_report__mapping_status__value="COMPLETE",
+        ).values_list("id", flat=True)
+    elif content_type == ScanReportConceptContentType.VALUE:
+        object_ids = ScanReportValue.objects.filter(
+            scan_report_field__scan_report_table__scan_report__hidden=False,
+            scan_report_field__scan_report_table__scan_report__mapping_status__value="COMPLETE",
+        ).values_list("id", flat=True)
+    else:
+        raise ValueError(f"Unsupported content type: {content_type}")
 
     return ScanReportConcept.objects.filter(
-        content_type=content_type_model, object_id__in=value_ids
+        content_type=content_type_model, object_id__in=object_ids
     ).all()
 
 

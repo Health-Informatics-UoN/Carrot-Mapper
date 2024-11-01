@@ -1,8 +1,8 @@
 import "react-tooltip/dist/react-tooltip.css";
-import { Sidebar } from "@/components/core/sidebar";
 import React from "react";
 import { getServerSession } from "next-auth";
 import { options } from "@/auth/options";
+import { MenuBar } from "@/components/core/menubar";
 
 export default async function ProtectedLayout({
   children,
@@ -10,12 +10,14 @@ export default async function ProtectedLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(options);
-  const username = session?.user?.name;
+  const user = session?.user;
 
   return (
     <>
-      <Sidebar userName={username} />
-      <section className="container my-6">{children}</section>
+      <section className="container mb-5">
+        <MenuBar user={user} />
+        {children}
+      </section>
     </>
   );
 }

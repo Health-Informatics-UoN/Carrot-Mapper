@@ -1,6 +1,6 @@
 import { Forbidden } from "@/components/core/Forbidden";
 import { NavGroup } from "@/components/core/nav-group";
-import { Folders } from "lucide-react";
+import { Database } from "lucide-react";
 import { Boundary } from "@/components/core/boundary";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,12 +45,12 @@ export default async function DatasetLayout({
   return (
     <div className="space-y-2">
       <div className="flex font-semibold text-xl items-center space-x-2">
-        <Folders className="text-gray-500" />
+        <Database className="text-gray-500" />
         <Link href={`/datasets`}>
           <h2 className="text-gray-500 dark:text-gray-400">Datasets</h2>
         </Link>
         <h2 className="text-gray-500 dark:text-gray-400">{"/"}</h2>
-        <Folders className="text-blue-700" />
+        <Database className="text-blue-700" />
         <h2>{dataset.name}</h2>
       </div>
 

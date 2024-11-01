@@ -13,18 +13,6 @@ STATUS_CHOICES = [
 ]
 
 
-class Status(models.TextChoices):
-    UPLOAD_IN_PROGRESS = "UPINPRO", "Upload in Progress"
-    UPLOAD_COMPLETE = "UPCOMPL", "Upload Complete"
-    UPLOAD_FAILED = "UPFAILE", "Upload Failed"
-    PENDING = "PENDING", "Mapping 0%"
-    IN_PROGRESS_25PERCENT = "INPRO25", "Mapping 25%"
-    IN_PROGRESS_50PERCENT = "INPRO50", "Mapping 50%"
-    IN_PROGRESS_75PERCENT = "INPRO75", "Mapping 75%"
-    COMPLETE = "COMPLET", "Mapping Complete"
-    BLOCKED = "BLOCKED", "Blocked"
-
-
 class CreationType(models.TextChoices):
     Manual = "M", "Manual"
     Vocab = "V", "Vocab"
@@ -50,6 +38,16 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class UploadStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
+class MappingStatus(models.Model):
+    value = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
 
 
 class ClassificationSystem(BaseModel):
@@ -175,10 +173,19 @@ class ScanReport(BaseModel):
     dataset = models.CharField(max_length=128)  # TODO: rename to `name`
     hidden = models.BooleanField(default=False)
     file = models.FileField()  # TODO: Delete.
-    status = models.CharField(
-        max_length=7,
-        choices=Status.choices,
-        default=Status.UPLOAD_IN_PROGRESS,
+    upload_status = models.ForeignKey(
+        "UploadStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="upload_status",
+    )
+    mapping_status = models.ForeignKey(
+        "MappingStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="mapping_status",
     )
     data_dictionary = models.ForeignKey(
         "DataDictionary",

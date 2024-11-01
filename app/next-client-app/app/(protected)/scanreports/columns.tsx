@@ -17,11 +17,12 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { ScanReportStatus } from "@/components/scanreports/ScanReportStatus";
+import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
+import { MappingStatus } from "@/components/scanreports/MappingStatus";
 
 export const columns: ColumnDef<ScanReport>[] = [
   {
@@ -38,19 +39,11 @@ export const columns: ColumnDef<ScanReport>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" sortName="dataset" />
     ),
-    cell: ({ row }) => {
-      const id = row.original.id;
-      return (
-        <Link href={`/scanreports/${id}`} prefetch={false}>
-          <button>{row.original.dataset}</button>
-        </Link>
-      );
-    },
     enableHiding: true,
   },
   {
     id: "Dataset",
-    accessorKey: "parent_dataset",
+    accessorKey: "parent_dataset.name",
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
@@ -58,9 +51,6 @@ export const columns: ColumnDef<ScanReport>[] = [
         sortName="parent_dataset"
       />
     ),
-    cell: ({ row }) => {
-      return <>{row.original.parent_dataset.name}</>;
-    },
     enableHiding: true,
   },
   {
@@ -74,16 +64,12 @@ export const columns: ColumnDef<ScanReport>[] = [
   },
   {
     id: "Author",
-    accessorKey: "author",
+    accessorKey: "author.username",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Author" />
     ),
     enableHiding: true,
     enableSorting: true,
-    cell: ({ row }) => {
-      const { author } = row.original;
-      return author.username;
-    },
   },
   {
     id: "Uploaded",
@@ -103,29 +89,43 @@ export const columns: ColumnDef<ScanReport>[] = [
     },
   },
   {
-    id: "Status",
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    enableHiding: false,
+    id: "Upload Status",
+    accessorKey: "upload_status",
+    header: () => <div className="text-center"> Upload Status</div>,
+    enableHiding: true,
     enableSorting: false,
     cell: ({ row }) => {
-      const { id, status, dataset } = row.original;
+      const { upload_status } = row.original;
       return (
-        <ScanReportStatus
-          id={id.toString()}
-          status={status}
-          dataset={dataset}
-          className="w-[180px]"
-          disabled={false} // Will let all the users do this on SR list page. Then users who don't have permissions will see the error
+        <UploadStatus
+          upload_status={upload_status || { value: "IN_PROGRESS" }}
         />
       );
     },
   },
   {
+    id: "Mapping Status",
+    header: () => <div className="text-center"> Mapping Status</div>,
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { id, mapping_status, upload_status, dataset } = row.original;
+      const upload_status_check = upload_status ?? { value: "IN_PROGRESS" };
+      return (
+        <div className="flex justify-center text-center">
+          <MappingStatus
+            id={id.toString()}
+            mapping_status={mapping_status || { value: "PENDING" }}
+            dataset={dataset}
+            className="w-[180px]"
+            disabled={upload_status_check.value === "COMPLETE" ? false : true} // Users who don't have permissions will see the error
+          />
+        </div>
+      );
+    },
+  },
+  {
     id: "Actions",
-    accessorKey: "actions",
     header: "Actions",
     enableHiding: false,
     cell: ({ row }) => {
