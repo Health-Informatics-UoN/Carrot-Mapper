@@ -1,7 +1,7 @@
 import "react-tooltip/dist/react-tooltip.css";
-import { Sidebar } from "@/components/core/sidebar";
 import React from "react";
 import { getCurrentUser } from "@/api/users";
+import { MenuBar } from "@/components/core/menubar";
 
 export default async function ProtectedLayout({
   children,
@@ -12,8 +12,10 @@ export default async function ProtectedLayout({
 
   return (
     <>
-      <Sidebar userName={user.username} />
-      <section className="container my-6">{children}</section>
+      <section className="container mb-5">
+        <MenuBar user={user} />
+        {children}
+      </section>
     </>
   );
 }
