@@ -45,6 +45,7 @@ const DeleteDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => setOpen(false)}>
+      {/* TODO: Make the dropdown close when the trigger is clicked */}
       {needTrigger && (
         <DialogTrigger asChild>
           <div className="hover:bg-carrot-200 text-red-400 relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-carrot-100 focus:text-carrot-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-carrot-800 dark:focus:text-carrot-50">
