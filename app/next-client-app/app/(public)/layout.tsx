@@ -1,21 +1,19 @@
 import React from "react";
 import { MenuBar } from "@/components/core/menubar";
 import Footer from "@/components/core/footer";
-import { cookies } from "next/headers";
+import { getCurrentUser } from "@/api/users";
 
 export default async function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies();
-  const csrfToken = cookieStore.get("csrftoken");
-  const session = cookieStore.get("sessionid");
-  const userLoggedIn: boolean = !!(session && csrfToken);
+  const user = await getCurrentUser();
+
   return (
     <>
       <section className="container">
-        <MenuBar userLoggedIn={userLoggedIn} />
+        <MenuBar user={user} />
         {children}
         <Footer />
       </section>
