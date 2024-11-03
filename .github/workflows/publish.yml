@@ -77,6 +77,7 @@ jobs:
       - name: Build and push workers image
         uses: docker/build-push-action@v5.3.0
         with:
+          context: ./app
           file: ./app/workers/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
