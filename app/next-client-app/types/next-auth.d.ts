@@ -10,6 +10,11 @@ declare module "next-auth" {
   interface Session extends Session {
     token: JWT;
     access_token: string;
+    user: {
+      pk: number;
+      username: string;
+      email: string | null;
+    };
   }
 }
 
