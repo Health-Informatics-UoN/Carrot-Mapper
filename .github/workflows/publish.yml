@@ -1,8 +1,13 @@
 name: Publish release images to Github Registry
 
+# on:
+#   release:
+#     types: [released]
 on:
-  release:
-    types: [released]
+  push:
+    branches:
+      - feat/863/add-release-workflow
+
 
 env:
   app-name: carrot
@@ -39,7 +44,6 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/frontend:${{ github.event.release.tag_name }}
             ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/frontend:${{ github.sha }}
 
       - name: Build and push backend image
@@ -50,7 +54,6 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/backend:${{ github.event.release.tag_name }}
             ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/backend:${{ github.sha }}
 
       - name: Build and push workers image
@@ -61,5 +64,4 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/workers:${{ github.event.release.tag_name }}
             ${{ env.registry }}/${{ env.repo-owner }}/${{ env.app-name }}/workers:${{ github.sha }}
