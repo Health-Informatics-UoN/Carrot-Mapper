@@ -10,7 +10,7 @@ export default async function ProtectedLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(options);
-  const user = session?.user;
+  const user = session?.token?.user;
 
   return (
     <>

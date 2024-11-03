@@ -1,8 +1,6 @@
 import { LogOut, Settings } from "lucide-react";
-import { getServerSession } from "next-auth";
 
 import { LoginButton, LogoutButton } from "@/auth/login";
-import { options } from "@/auth/options";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,16 +12,15 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export async function UserMenu() {
-  const session = await getServerSession(options);
-
-  if (!session) {
+export async function UserMenu({ username }: { username?: string }) {
+  if (!username) {
     return <LoginButton />;
   }
 
   const initials =
-    session.user?.name
+    username
       ?.split(" ")
       .map((word) => word[0].toUpperCase())
       .join("") ?? "";
@@ -32,14 +29,9 @@ export async function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost">
-          {session.user?.name}
-          {/* <Avatar className="ml-2">
-            <AvatarImage
-              src={session.user?.image ?? ""}
-              alt={session.user?.name ?? ""}
-            />
+          <Avatar className="ml-2">
             <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar> */}
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">

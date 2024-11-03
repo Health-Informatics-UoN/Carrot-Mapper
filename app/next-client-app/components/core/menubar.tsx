@@ -5,7 +5,7 @@ import { Sidebar } from "./sidebar";
 import { ModeToggle } from "./mode-toggle";
 import { UserMenu } from "@/components/core/UserMenu";
 
-export const MenuBar = ({ user }: { user: User | null }) => {
+export const MenuBar = ({ user }: { user?: User | null }) => {
   return (
     <>
       <Sidebar userName={user?.username} />
@@ -32,7 +32,7 @@ export const MenuBar = ({ user }: { user: User | null }) => {
                 </Link>
               ),
             )}
-            <UserMenu />
+            <UserMenu username={user?.username} />
           </div>
           <div>
             <ModeToggle />
