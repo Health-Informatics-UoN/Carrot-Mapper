@@ -16,6 +16,9 @@ export const options: NextAuthOptions = {
     strategy: "jwt",
     maxAge: BACKEND_REFRESH_TOKEN_LIFETIME,
   },
+  pages: {
+    signIn: "/accounts/login",
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
