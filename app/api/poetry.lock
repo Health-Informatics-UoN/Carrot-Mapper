@@ -543,24 +543,6 @@ mypy = ">=0.750"
 typing-extensions = ">=3.7.4"
 
 [[package]]
-name = "django-revproxy"
-version = "0.12.0"
-description = "Yet another Django reverse proxy application"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "django_revproxy-0.12.0-py3-none-any.whl", hash = "sha256:bd8e735414783477e18a79b3bb1e2180e0c60d412cd2bfdcf34d8898406b26e4"},
-]
-
-[package.dependencies]
-Django = ">=3.0"
-urllib3 = ">=1.12"
-
-[package.extras]
-diazo = ["diazo (>=1.0.5)", "lxml (>=3.4)"]
-tests = ["coverage", "diazo", "flake8", "lxml (>=3.4)"]
-
-[[package]]
 name = "django-select2"
 version = "8.1.2"
 description = "This is a Django_ integration of Select2_."
@@ -1730,4 +1712,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4af19e3d07b61de4c445e03f971ebdef31371dae065cc66f4d94d432b349d9b6"
+content-hash = "cbd781c53ab372d3a08c2fda6296dec8fc32615f87659bb9147498f0ea6cc875"
