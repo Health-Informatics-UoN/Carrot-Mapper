@@ -1,4 +1,4 @@
-name: carrot-mapper-dev
+name: carrot-mapper-dev-tempo-fix
 
 services:
   db:
@@ -19,6 +19,9 @@ services:
     environment:
       - BACKEND_URL=http://web:8000
       - BACKEND_ORIGIN=localhost:8000
+      - NEXTAUTH_URL=http://next-client:3000/
+      - NEXTAUTH_SECRET=verycomplexsecretkey
+      - NEXTAUTH_BACKEND_URL=http://web:8000/api/
     volumes:
       - ./app/next-client-app:/next-client-app
 
@@ -56,8 +59,10 @@ services:
       - AZURE_ACCOUNT_NAME=devstoreaccount1
       - AZ_URL=http://workers:80
       - AZ_RULES_NAME=RulesOrchestrator
-      - AZ_RULES_EXPORT_QUEUE=rules=exports-local
+      - AZ_RULES_KEY=rules_key
+      - AZ_RULES_EXPORT_QUEUE=rules-exports-local
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      - SIGNING_KEY=secret
     volumes:
       - ./app/api:/api
     depends_on:
@@ -73,13 +78,13 @@ services:
       - 8080:80
       - 7071:80
     environment:
+      # Set Docker to look for secrets locally
+      - AzureWebJobsSecretStorageType=files
       - IsEncrypted=false
       - AzureWebJobsStorage=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
       - FUNCTIONS_WORKER_RUNTIME=python
       - STORAGE_CONN_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
       - APP_URL=http://web:8000/
-      # The key below needed for authentication and can be obtained through localhost:8000/admin/ --> add tokens
-      - AZ_FUNCTION_KEY=2d374a1f460fc9627d69e99c6cbeabf3f759d517
       # Four queues below need adding to Azure local storage
       - SCAN_REPORT_QUEUE_NAME=scanreports-local
       - UPLOAD_QUEUE_NAME=uploadreports-local
@@ -89,9 +94,18 @@ services:
       - CHUNK_SIZE=6
       # The address that can be used to reach the function app from outside
       - WEBSITE_HOSTNAME=localhost:7071
+      # Database setup
+      - COCONNECT_DB_ENGINE=django.db.backends.postgresql
+      - COCONNECT_DB_HOST=db
+      - COCONNECT_DB_PORT=5432
+      - COCONNECT_DB_NAME=postgres
+      - COCONNECT_DB_USER=postgres
+      - COCONNECT_DB_PASSWORD=postgres
     volumes:
       - ./app/workers:/home/site/wwwroot
       - ./app/shared:/shared
+      # Mount the local secret to Docker container
+      - ./app/workers/Secrets:/azure-functions-host/Secrets/
     depends_on:
       - web
       - azurite
