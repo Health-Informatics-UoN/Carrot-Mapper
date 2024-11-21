@@ -147,29 +147,32 @@ export function ScanReportTableUpdateForm({
                     <DialogDescription>
                       Are you sure you want to set this table as a Death table?
                       Doing so will result in the following:
-                      <ul className="text-gray-500 list-disc pl-4 pt-2">
+                      <ul className="text-gray-500 list-disc pl-4 py-2">
                         <li>
-                          Concepts added to this table with domains{" "}
-                          <span className="font-bold">
-                            Race, Ethnicity and Gender
-                          </span>{" "}
-                          will be mapped to the{" "}
-                          <span className="font-bold">Person</span> table.
+                          Mapping Rules that are created either manually or
+                          automatically (built from OMOP vocabulary or Reused)
+                          will have Destination table as{" "}
+                          <span className="font-bold">Death</span>.
                         </li>
                         <li>
-                          Concepts added here with{" "}
-                          <span className="font-bold">other domains</span> will
-                          be mapped to the{" "}
-                          <span className="font-bold">Death</span> table.
+                          All concepts in this table will be recognised as{" "}
+                          <span className="font-bold">Cause of Death</span> in
+                          OMOP CDM.
+                        </li>
+                        <li>
+                          Destination of Date Event will be{" "}
+                          <span className="font-bold">Death date</span> field in
+                          OMOP CDM.
                         </li>
                       </ul>
-                      <h2 className="text-red-500 flex items-center">
-                        <TriangleAlert className="size-4 mr-1 animate-pulse" />{" "}
-                        <span className="underline underline-offset-2 mr-1">
-                          Warning:
+                      <h2 className="text-red-500 text-pretty">
+                        <span className="underline underline-offset-2">
+                          Notice:
                         </span>{" "}
-                        Once saved, this setting is permanent and cannot be
-                        undone.{" "}
+                        You can turn off this setting later, and the Destination
+                        table of all the mapping rules will be reverted back to
+                        the original. However, the process of "re-generating"
+                        mapping rules may take time.{" "}
                       </h2>
                     </DialogDescription>
                   </DialogHeader>
