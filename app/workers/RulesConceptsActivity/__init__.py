@@ -233,7 +233,7 @@ def _update_entries_with_standard_concepts(
         )  # Convert concept_id to int to match the keys in the dictionary
         # If the concept_id match the key of the dict (which is the non stantard concept), update it with the value of the key (with is the standard concept)
         if concept_id in standard_concepts_dict:
-            entry["concept_id"] = standard_concepts_dict[concept_id][0]
+            entry["concept_id"] = standard_concepts_dict[concept_id]
 
 
 def _handle_table(

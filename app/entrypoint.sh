@@ -2,7 +2,6 @@
 
 # Run npm build
 export PATH=$PATH:/home/django/.nvm/versions/node/v12.18.3/bin
-npm run build
 
 # Wait until DB is available
 wait-for-it ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT} -- echo "Database is ready! Listening on ${COCONNECT_DB_HOST}:${COCONNECT_DB_PORT}"
