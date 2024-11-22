@@ -10,6 +10,10 @@ from shared_code.logger import logger
 django.setup()
 
 from shared.services.rules import find_existing_concepts_count
+from shared_code.db import (
+    update_table_rules_activity,
+    RulesActivityType,
+)
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
@@ -49,7 +53,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         for page_num in range(num_pages)
     ]
     results = yield context.task_all(tasks)
-
+    update_table_rules_activity(table_id, RulesActivityType.QUEUED)
     return [result, results]
 
 

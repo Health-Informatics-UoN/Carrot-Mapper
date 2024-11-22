@@ -7,11 +7,13 @@ from django.db.models.query import QuerySet
 from shared.data.models import Concept, ConceptRelationship
 from shared.mapping.models import (
     ScanReport,
+    ScanReportTable,
     ScanReportConcept,
     ScanReportField,
     ScanReportValue,
     UploadStatus,
-    MappingStatus,
+    RulesActivity,
+    ActivityStatus,
 )
 from shared_code.logger import logger
 from shared_code.models import (
@@ -25,6 +27,19 @@ class UploadStatusType(Enum):
     IN_PROGRESS = "Upload in Progress"
     COMPLETE = "Upload Complete"
     FAILED = "Upload Failed"
+
+
+class RulesActivityType(Enum):
+    QUEUED = "Rules activity is queued."
+    BUILDING_FROM_VOCAB = "Building mapping rules from vocabulary dictionary."
+    REUSING_CONCEPTS = "Reusing Concepts from completed Scan Report."
+    FINISHED = "Rules generation activities finished."
+    FAILED = "Rules generation activities failed."
+
+
+class ActivityStatusType(Enum):
+    IN_PROGRESS = "The rules activity is in progress."
+    FAILED = "The rules activity has failed."
 
 
 def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
@@ -41,6 +56,41 @@ def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
     scan_report = ScanReport.objects.get(id=id)
     scan_report.upload_status = upload_status_entity
     scan_report.save()
+
+
+def update_table_rules_activity(
+    id: str,
+    rules_activity: RulesActivityType,
+    activity_status: Optional[ActivityStatusType] = None,
+) -> None:
+    """
+    Updates the status of rules activity of a scan report table.
+
+    Args:
+        id (str): The ID of the scan report.
+        rules_activity (RulesActivityType): The rules activity to update the Scan Report with.
+        activity_status (Optional[ActivityStatusType]): The activity status to update the Rules Activity with.
+
+    Returns: None
+    """
+    # Get the RulesActivity entity based on the provided rules_activity name
+    rules_activity_entity = RulesActivity.objects.get(activity=rules_activity.name)
+
+    # Get the ScanReportTable entity based on the provided id
+    scan_report_table = ScanReportTable.objects.get(id=id)
+
+    # Update the current_rules_activity field of the ScanReportTable entity
+    scan_report_table.current_rules_activity = rules_activity_entity
+
+    # If activity_status is provided, update the status of the RulesActivity entity
+    if activity_status:
+        table_activity = scan_report_table.current_rules_activity
+        activity_status_entity = ActivityStatus.objects.get(status=activity_status.name)
+        table_activity.status = activity_status_entity
+        table_activity.save()
+
+    # Save the ScanReportTable entity
+    scan_report_table.save()
 
 
 def create_concept(
