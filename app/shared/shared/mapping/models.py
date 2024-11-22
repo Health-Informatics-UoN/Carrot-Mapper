@@ -50,6 +50,17 @@ class MappingStatus(models.Model):
     display_name = models.CharField(max_length=64)
 
 
+class ActivityStatus(models.Model):
+    status = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+    details = models.CharField(max_length=256, null=True, blank=True)
+
+
+class RulesActivity(models.Model):
+    activity = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
@@ -256,6 +267,20 @@ class ScanReportTable(BaseModel):
         null=True,
         blank=True,
         related_name="date_event",
+    )
+    current_rules_activity = models.ForeignKey(
+        "RulesActivity",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="rules_activity",
+    )
+    activity_status = models.ForeignKey(
+        "ActivityStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="activity_status",
     )
 
     class Meta:
