@@ -84,10 +84,8 @@ def update_table_rules_activity(
 
     # If activity_status is provided, update the status of the RulesActivity entity
     if activity_status:
-        table_activity = scan_report_table.current_rules_activity
         activity_status_entity = ActivityStatus.objects.get(status=activity_status.name)
-        table_activity.status = activity_status_entity
-        table_activity.save()
+        scan_report_table.activity_status = activity_status_entity
 
     # Save the ScanReportTable entity
     scan_report_table.save()
