@@ -23,7 +23,7 @@ def seeding_objects(apps, schema_editor):
         {
             "id": 4,
             "value": "GENERATE_RULES",
-            "display_name": "Generate mapping rules from available concepts",
+            "display_name": "Auto generate mapping rules from available concepts",
         },
         {
             "id": 5,
