@@ -11,7 +11,9 @@ from shared.mapping.models import (
     ScanReportField,
     ScanReportValue,
     UploadStatus,
-    MappingStatus,
+    JobStage,
+    StageStatus,
+    ScanReportJob,
 )
 from shared_code.logger import logger
 from shared_code.models import (
@@ -25,6 +27,40 @@ class UploadStatusType(Enum):
     IN_PROGRESS = "Upload in Progress"
     COMPLETE = "Upload Complete"
     FAILED = "Upload Failed"
+
+
+class StageStatusType(Enum):
+    IN_PROGRESS = "The job stage is in progress"
+    COMPLETED = "The job stage has been completed"
+    FAILED = "The job stage has failed"
+
+
+class JobStageType(Enum):
+    UPLOAD_SCAN_REPORT = "Upload Scan Report"
+    BUILDING_FROM_DICT = "Building concepts from OMOP Vocabs dictionary"
+    REUSING_CONCEPTS = "Reusing concepts from other scan reports"
+    GENERATING_RULES = "Generating mapping rules from available concepts"
+    DOWNLOAD_RULES = "Generate and download mapping rules JSON"
+
+
+def update_scan_report_job(
+    scan_report_id: str, stage: JobStageType, status: StageStatusType
+) -> None:
+    """
+    Updates the status of a scan report.
+
+    Args:
+        id (str): The ID of the scan report.
+        status (Status): The status to update the Scan Report with.
+
+    Returns: None
+    """
+    job_stage_entity = JobStage.objects.get(value=stage.name)
+    stage_status_entity = StageStatus.objects.get(value=status.name)
+    scan_report_job = ScanReportJob.objects.get(scan_report_id=scan_report_id)
+    scan_report_job.stage = job_stage_entity
+    scan_report_job.status = stage_status_entity
+    scan_report_job.save()
 
 
 def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
