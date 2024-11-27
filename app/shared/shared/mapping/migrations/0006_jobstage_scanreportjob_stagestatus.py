@@ -9,25 +9,25 @@ def seeding_objects(apps, schema_editor):
     StageStatus = apps.get_model("mapping", "StageStatus")
 
     job_stages = [
-        {"id": 1, "stage": "UPLOAD_SCAN_REPORT", "display_name": "Upload Scan Report"},
+        {"id": 1, "value": "UPLOAD_SCAN_REPORT", "display_name": "Upload Scan Report"},
         {
             "id": 2,
-            "stage": "BUILDING_FROM_DICT",
+            "value": "BUILDING_FROM_DICT",
             "display_name": "Building concepts from OMOP Vocabs dictionary",
         },
         {
             "id": 3,
-            "stage": "REUSING_CONCEPTS",
+            "value": "REUSING_CONCEPTS",
             "display_name": "Reusing concepts from other scan reports",
         },
         {
             "id": 4,
-            "stage": "GENERATING_RULES",
+            "value": "GENERATING_RULES",
             "display_name": "Generating mapping rules from available concepts",
         },
         {
             "id": 5,
-            "stage": "DOWNLOAD_RULES",
+            "value": "DOWNLOAD_RULES",
             "display_name": "Generate and download mapping rules JSON",
         },
     ]
@@ -35,28 +35,28 @@ def seeding_objects(apps, schema_editor):
     for stage in job_stages:
         JobStage.objects.create(
             id=stage["id"],
-            stage=stage["stage"],
+            value=stage["value"],
             display_name=stage["display_name"],
         )
 
     stage_statuses = [
         {
             "id": 1,
-            "status": "IN_PROGRESS",
+            "value": "IN_PROGRESS",
             "display_name": "The job stage is in progress",
         },
         {
             "id": 2,
-            "status": "COMPLETED",
+            "value": "COMPLETED",
             "display_name": "The job stage has been completed",
         },
-        {"id": 3, "status": "FAILED", "display_name": "The job stage has failed"},
+        {"id": 3, "value": "FAILED", "display_name": "The job stage has failed"},
     ]
 
     for status in stage_statuses:
         StageStatus.objects.create(
             id=status["id"],
-            status=status["status"],
+            value=status["value"],
             display_name=status["display_name"],
         )
 
@@ -88,7 +88,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("stage", models.CharField(max_length=64)),
+                ("value", models.CharField(max_length=64)),
                 ("display_name", models.CharField(max_length=64)),
             ],
         ),
@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("status", models.CharField(max_length=64)),
+                ("value", models.CharField(max_length=64)),
                 ("display_name", models.CharField(max_length=64)),
             ],
         ),

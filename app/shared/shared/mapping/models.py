@@ -51,12 +51,12 @@ class MappingStatus(models.Model):
 
 
 class JobStage(models.Model):
-    stage = models.CharField(max_length=64)
+    value = models.CharField(max_length=64)
     display_name = models.CharField(max_length=64)
 
 
 class StageStatus(models.Model):
-    status = models.CharField(max_length=64)
+    value = models.CharField(max_length=64)
     display_name = models.CharField(max_length=64)
 
 
