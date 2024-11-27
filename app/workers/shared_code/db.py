@@ -30,21 +30,24 @@ class UploadStatusType(Enum):
 
 
 class StageStatusType(Enum):
-    IN_PROGRESS = "The job stage is in progress"
-    COMPLETED = "The job stage has been completed"
-    FAILED = "The job stage has failed"
+    IN_PROGRESS = "Job in Progress"
+    COMPLETE = "Job Complete"
+    FAILED = "Job Failed"
 
 
 class JobStageType(Enum):
     UPLOAD_SCAN_REPORT = "Upload Scan Report"
-    BUILDING_FROM_DICT = "Building concepts from OMOP Vocabs dictionary"
-    REUSING_CONCEPTS = "Reusing concepts from other scan reports"
-    GENERATING_RULES = "Generating mapping rules from available concepts"
+    BUILD_CONCEPTS_FROM_DICT = "Build concepts from OMOP Data dictionary"
+    REUSE_CONCEPTS = "Reuse concepts from other scan reports"
+    GENERATE_RULES = "Generate mapping rules from available concepts"
     DOWNLOAD_RULES = "Generate and download mapping rules JSON"
 
 
 def update_scan_report_job(
-    scan_report_id: str, stage: JobStageType, status: StageStatusType
+    scan_report_id: str,
+    stage: JobStageType,
+    status: StageStatusType,
+    details: Optional[str] = None,
 ) -> None:
     """
     Updates the status of a scan report.
@@ -60,6 +63,8 @@ def update_scan_report_job(
     scan_report_job = ScanReportJob.objects.get(scan_report_id=scan_report_id)
     scan_report_job.stage = job_stage_entity
     scan_report_job.status = stage_status_entity
+    if details:
+        scan_report_job.details = details
     scan_report_job.save()
 
 
