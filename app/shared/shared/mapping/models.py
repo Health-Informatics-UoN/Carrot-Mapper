@@ -61,16 +61,16 @@ class StageStatus(models.Model):
 
 
 class ScanReportJob(BaseModel):
-    scan_report_id: models.IntegerField(null=True)
-    scan_report_table_id: models.IntegerField(null=True)
-    stage: models.ForeignKey(
+    scan_report_id = models.IntegerField(null=True)
+    scan_report_table_id = models.IntegerField(null=True)
+    stage = models.ForeignKey(
         "JobStage",
         null=True,
         blank=True,
         on_delete=models.DO_NOTHING,
         related_name="job_stage",
     )
-    status: models.ForeignKey(
+    status = models.ForeignKey(
         "StageStatus",
         null=True,
         blank=True,
