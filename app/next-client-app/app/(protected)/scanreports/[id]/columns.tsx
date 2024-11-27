@@ -4,6 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
 import { Tooltips } from "@/components/Tooltips";
+import { RulesActivityStatus } from "@/components/scanreports/RulesActivityStatus";
+import { ActivityStatus } from "../../../../constants/rulesActivity";
+import Link from "next/link";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -80,6 +83,25 @@ export const columns: ColumnDef<ScanReportTable>[] = [
             </h3>
           )}
         </div>
+      );
+    },
+  },
+  {
+    id: "Rules Activity Progress",
+    header: () => <div className="text-center"> Rules Activity Progress</div>,
+    enableHiding: true,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { current_rules_activity, id, scan_report } = row.original;
+      console.log(current_rules_activity);
+      return (
+        <Link href={`/scanreports/${scan_report}/tables/${id}/jobs/`}>
+          <div className="flex justify-center text-center">
+            <RulesActivityStatus
+              activity={current_rules_activity || { activity: "NOT_STARTED" }}
+            />
+          </div>
+        </Link>
       );
     },
   },

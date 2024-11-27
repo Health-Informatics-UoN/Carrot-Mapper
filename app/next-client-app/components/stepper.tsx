@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ActivityStatus, RulesActivities } from "@/constants/rulesActivity";
 
 // Define steps
 const Stages = [
@@ -48,69 +49,75 @@ const STEPS = [
   },
 ];
 
-function StepperComponent() {
+function StepperComponent({
+  ruleActivity,
+  activityStatus,
+}: {
+  ruleActivity: Activity;
+  activityStatus: ActivityStatus;
+}) {
   // This should be passed as a prop or controlled by parent component
-  const currentState = 0; // Example fixed state
-  const currentSubStage = 1;
+  const currentState = ruleActivity; // Example fixed state
 
-  const currentIndex = STEPS.findIndex((step) => step.id === currentState);
+  const currentIndex = RulesActivities.findIndex(
+    (step) => step.activity === currentState.activity
+  );
+  const currentStatus = ActivityStatus.findIndex(
+    (step) => step.status === activityStatus.status
+  );
+  console.log("🚀 ~ currentStatus:", currentStatus);
 
-  const renderStepContent = () => {
-    switch (currentState) {
-      case 1:
-        return <ShippingComponent />;
-      case 2:
-        return <PaymentComponent />;
-      case 3:
-        return <CompleteComponent />;
-      default:
-        return null;
-    }
-  };
+  // const renderStepContent = () => {
+  //   switch (currentState) {
+  //     case 1:
+  //       return <ShippingComponent />;
+  //     case 2:
+  //       return <PaymentComponent />;
+  //     case 3:
+  //       return <CompleteComponent />;
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
-    <div className="space-y-6 p-6 border rounded-lg w-[450px]">
-      <div className="flex justify-between">
-        <h2 className="text-lg font-medium">Checkout</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Step {currentIndex + 1} of {STEPS.length}
-          </span>
-        </div>
-      </div>
-
+    <div className="space-y-6 p-6 rounded-lg w-full">
       <ol
         className="flex items-center justify-between gap-2"
         aria-orientation="horizontal"
       >
-        {STEPS.map((step, index, array) => (
+        {RulesActivities.map((step, index, array) => (
           <React.Fragment key={step.id}>
             <li className="flex items-center gap-4 flex-shrink-0">
               <Button
                 type="button"
                 role="tab"
-                aria-current={currentState === step.id ? "step" : undefined}
+                aria-current={
+                  currentState.activity === step.activity ? "step" : undefined
+                }
                 aria-posinset={index + 1}
-                aria-setsize={STEPS.length}
-                aria-selected={currentState === step.id}
+                aria-setsize={RulesActivities.length}
+                aria-selected={currentState.activity === step.activity}
                 className={cn(
                   "flex size-10 items-center justify-center rounded-full bg-carrot-200",
                   index == currentIndex &&
-                    currentSubStage == 2 &&
+                    currentStatus == 0 &&
                     "bg-yellow-500",
-                  index == currentIndex && currentSubStage == 3 && "bg-red-500",
-                  index < currentIndex && "bg-green-500"
+                  index == currentIndex && currentStatus == 1 && "bg-red-500",
+                  (index < currentIndex || currentIndex == 4) && "bg-green-500"
                 )}
               >
-                {index < currentIndex && <Check className="size-5" />}
-                {index == currentIndex && currentSubStage == 2 && (
+                {(index < currentIndex || currentIndex == 4) && (
+                  <Check className="size-5" />
+                )}
+                {index == currentIndex && currentStatus == 0 && (
                   <Loader2 className="animate-spin size-5" />
                 )}
-                {index == currentIndex && currentSubStage == 3 && (
+                {index == currentIndex && currentStatus == 1 && (
                   <X className=" size-5" />
                 )}
               </Button>
-              <span className="text-sm font-medium">{step.title}</span>
+              <span className="text-sm font-medium">{step.activity}</span>
             </li>
             {index < array.length - 1 && (
               <Separator
@@ -122,8 +129,8 @@ function StepperComponent() {
           </React.Fragment>
         ))}
       </ol>
-
-      <div className="space-y-4">{renderStepContent()}</div>
+      {/* <span className="text-sm font-medium">{ruleActivity.activity}</span> */}
+      {/* <div className="space-y-4">{renderStepContent()}</div> */}
     </div>
   );
 }

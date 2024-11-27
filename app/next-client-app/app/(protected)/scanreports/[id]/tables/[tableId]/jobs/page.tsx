@@ -39,7 +39,10 @@ export default async function UpdateTable({
 
   return (
     <div>
-      <StepperComponent />
+      <StepperComponent
+        ruleActivity={table.current_rules_activity}
+        activityStatus={table.activity_status}
+      />
     </div>
   );
 }

@@ -20,6 +20,8 @@ from shared.mapping.models import (
     VisibilityChoices,
     UploadStatus,
     MappingStatus,
+    RulesActivity,
+    ActivityStatus,
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
@@ -47,6 +49,18 @@ class MappingStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = MappingStatus
         fields = ["value"]
+
+
+class RulesActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RulesActivity
+        fields = ["activity"]
+
+
+class ActivityStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActivityStatus
+        fields = ["status"]
 
 
 class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
@@ -563,6 +577,8 @@ class ScanReportTableListSerializerV2(DynamicFieldsMixin, serializers.ModelSeria
 
     date_event = ScanReportFieldListSerializerV2()
     person_id = ScanReportFieldListSerializerV2()
+    current_rules_activity = RulesActivitySerializer()
+    activity_status = ActivityStatusSerializer()
 
     class Meta:
         model = ScanReportTable

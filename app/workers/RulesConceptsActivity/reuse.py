@@ -8,6 +8,11 @@ from shared_code.models import (
     ScanReportFieldDict,
     ScanReportValueDict,
 )
+from shared_code.db import (
+    update_table_rules_activity,
+    RulesActivityType,
+    ActivityStatusType,
+)
 
 """
 Functions for finding, mapping, and creation of reusable Scan Report Concepts.
@@ -19,7 +24,9 @@ This happens for Scan Report Fields and Values.
 """
 
 
-def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> None:
+def reuse_existing_value_concepts(
+    new_values_map: List[ScanReportValueDict], table_id
+) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
@@ -29,6 +36,9 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         new_fields_map (Dict[str, str]): A map of field names to Ids.
     """
     logger.info("reuse_existing_value_concepts")
+    update_table_rules_activity(
+        table_id, RulesActivityType.REUSING_CONCEPTS, ActivityStatusType.IN_PROGRESS
+    )
     content_type = ScanReportConceptContentType.VALUE
 
     existing_value_concepts = db.get_scan_report_active_concepts(content_type)
@@ -169,7 +179,9 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         logger.info("No concepts to reuse at value level")
 
 
-def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> None:
+def reuse_existing_field_concepts(
+    new_fields_map: List[ScanReportFieldDict], table_id
+) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
@@ -184,6 +196,9 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
         None
     """
     logger.info("reuse_existing_field_concepts")
+    update_table_rules_activity(
+        table_id, RulesActivityType.REUSING_CONCEPTS, ActivityStatusType.IN_PROGRESS
+    )
     content_type = ScanReportConceptContentType.FIELD
 
     existing_field_concepts = db.get_scan_report_active_concepts(content_type)

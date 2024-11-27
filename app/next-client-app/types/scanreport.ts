@@ -2,6 +2,14 @@ interface Status {
   value: string;
 }
 
+interface Activity {
+  activity: string;
+}
+
+interface ActivityStatus {
+  status: string;
+}
+
 interface ScanReport {
   id: number;
   dataset: string;
@@ -27,6 +35,8 @@ interface ScanReportTable {
   date_event: ScanReportField | null;
   permissions: Permission[];
   death_table: boolean;
+  current_rules_activity: Activity;
+  activity_status: ActivityStatus;
 }
 
 interface ScanReportField {

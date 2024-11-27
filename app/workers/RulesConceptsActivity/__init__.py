@@ -14,6 +14,11 @@ django.setup()
 from shared.data.models import Concept
 from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
+from shared_code.db import (
+    update_table_rules_activity,
+    RulesActivityType,
+    ActivityStatusType,
+)
 
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
@@ -53,7 +58,7 @@ def _create_concepts(
     return concepts
 
 
-def _transform_concepts(table_values: List[ScanReportValueDict]) -> None:
+def _transform_concepts(table_values: List[ScanReportValueDict], table_id) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
     Transforms the values in place.
@@ -86,7 +91,7 @@ def _transform_concepts(table_values: List[ScanReportValueDict]) -> None:
             # Set to defaults, and skip all the remaining processing that a vocab would require
             _set_defaults_for_none_vocab(value)
         else:
-            _process_concepts_for_vocab(vocab, value)
+            _process_concepts_for_vocab(vocab, value, table_id)
 
 
 def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
@@ -105,7 +110,9 @@ def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
         entry["standard_concept"] = None
 
 
-def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) -> None:
+def _process_concepts_for_vocab(
+    vocab: str, entries: List[ScanReportValueDict], table_id
+) -> None:
     """
     Process concepts for a specific vocabulary.
 
@@ -117,6 +124,9 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
         - None
 
     """
+    update_table_rules_activity(
+        table_id, RulesActivityType.BUILDING_FROM_VOCAB, ActivityStatusType.IN_PROGRESS
+    )
     logger.info(f"begin {vocab}")
     concept_vocab_content = _get_concepts_for_vocab(vocab, entries)
 
@@ -258,7 +268,7 @@ def _handle_table(
     # Add vocab id to each entry from the vocab dict
     helpers.add_vocabulary_id_to_entries(table_values, vocab, table.name)
 
-    _transform_concepts(table_values)
+    _transform_concepts(table_values, table.pk)
     logger.debug("finished standard concepts lookup")
 
     concepts = _create_concepts(table_values)
@@ -270,8 +280,8 @@ def _handle_table(
     logger.info("Create concepts all finished")
 
     # handle reuse of concepts
-    reuse_existing_field_concepts(table_fields)
-    reuse_existing_value_concepts(table_values)
+    reuse_existing_field_concepts(table_fields, table.pk)
+    reuse_existing_value_concepts(table_values, table.pk)
 
 
 def main(msg: Dict[str, str]):
@@ -294,3 +304,4 @@ def main(msg: Dict[str, str]):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     _handle_table(table, vocab_dictionary)
+    update_table_rules_activity(table_id, RulesActivityType.FINISHED)
