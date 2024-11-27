@@ -28,6 +28,11 @@ urlpatterns = [
         name="scan-report-detail",
     ),
     path(
+        "v2/scanreports/<int:pk>/jobs/",
+        views.ScanReportJobView.as_view(),
+        name="scan-report-jobs",
+    ),
+    path(
         "v2/scanreports/<int:pk>/tables/",
         views.ScanReportTableIndexV2.as_view(),
         name="scan-report-tables",
