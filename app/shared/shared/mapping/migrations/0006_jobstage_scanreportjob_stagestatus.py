@@ -12,18 +12,18 @@ def seeding_objects(apps, schema_editor):
         {"id": 1, "value": "UPLOAD_SCAN_REPORT", "display_name": "Upload Scan Report"},
         {
             "id": 2,
-            "value": "BUILDING_FROM_DICT",
-            "display_name": "Building concepts from OMOP Vocabs dictionary",
+            "value": "BUILD_CONCEPTS_FROM_DICT",
+            "display_name": "Build concepts from OMOP Data dictionary",
         },
         {
             "id": 3,
-            "value": "REUSING_CONCEPTS",
-            "display_name": "Reusing concepts from other scan reports",
+            "value": "REUSE_CONCEPTS",
+            "display_name": "Reuse concepts from other scan reports",
         },
         {
             "id": 4,
-            "value": "GENERATING_RULES",
-            "display_name": "Generating mapping rules from available concepts",
+            "value": "GENERATE_RULES",
+            "display_name": "Generate mapping rules from available concepts",
         },
         {
             "id": 5,
@@ -43,14 +43,14 @@ def seeding_objects(apps, schema_editor):
         {
             "id": 1,
             "value": "IN_PROGRESS",
-            "display_name": "The job stage is in progress",
+            "display_name": "Job in Progress",
         },
         {
             "id": 2,
-            "value": "COMPLETED",
-            "display_name": "The job stage has been completed",
+            "value": "COMPLETE",
+            "display_name": "Job Complete",
         },
-        {"id": 3, "value": "FAILED", "display_name": "The job stage has failed"},
+        {"id": 3, "value": "FAILED", "display_name": "Job Failed"},
     ]
 
     for status in stage_statuses:
