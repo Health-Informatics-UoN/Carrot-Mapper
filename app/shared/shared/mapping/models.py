@@ -77,7 +77,7 @@ class ScanReportJob(BaseModel):
         on_delete=models.DO_NOTHING,
         related_name="stage_status",
     )
-    details = models.CharField(max_length=256)
+    details = models.CharField(max_length=256, null=True, blank=True)
 
 
 class ClassificationSystem(BaseModel):

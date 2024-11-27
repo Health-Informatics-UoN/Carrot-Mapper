@@ -143,7 +143,7 @@ class Migration(migrations.Migration):
                         to="mapping.stagestatus",
                     ),
                 ),
-                ("details", models.CharField(max_length=256)),
+                ("details", models.CharField(max_length=256, null=True, blank=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
             ],
