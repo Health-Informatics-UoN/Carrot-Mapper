@@ -50,6 +50,36 @@ class MappingStatus(models.Model):
     display_name = models.CharField(max_length=64)
 
 
+class JobStage(models.Model):
+    stage = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
+class StageStatus(models.Model):
+    status = models.CharField(max_length=64)
+    display_name = models.CharField(max_length=64)
+
+
+class ScanReportJob(BaseModel):
+    scan_report_id: models.IntegerField(null=True)
+    scan_report_table_id: models.IntegerField(null=True)
+    stage: models.ForeignKey(
+        "JobStage",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="job_stage",
+    )
+    status: models.ForeignKey(
+        "StageStatus",
+        null=True,
+        blank=True,
+        on_delete=models.DO_NOTHING,
+        related_name="stage_status",
+    )
+    details = models.CharField(max_length=256)
+
+
 class ClassificationSystem(BaseModel):
     """
     Class for 'classification system', i.e. SNOMED or ICD-10 etc.
