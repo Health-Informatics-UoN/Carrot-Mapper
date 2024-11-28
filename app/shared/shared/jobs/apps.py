@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class FilesConfig(AppConfig):
+class JobsConfig(AppConfig):
     name = "shared.jobs"
     label = "jobs"
