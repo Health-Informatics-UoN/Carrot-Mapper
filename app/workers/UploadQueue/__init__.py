@@ -11,13 +11,13 @@ from shared.mapping.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    ScanReportJob,
 )
 from shared_code import blob_parser, helpers
 from shared_code.db import (
     update_scan_report_status,
     UploadStatusType,
-    update_scan_report_job,
+    create_job,
+    update_job,
     JobStageType,
     StageStatusType,
 )
@@ -447,10 +447,12 @@ def main(msg: func.QueueMessage) -> None:
     update_scan_report_status(scan_report_id, UploadStatusType.IN_PROGRESS)
 
     # Create an initial record of SR uploading job
-    ScanReportJob.objects.create(scan_report_id=scan_report_id)
+    create_job(stage=JobStageType.UPLOAD_SCAN_REPORT, scan_report_id=scan_report_id)
     # Update Job and its Status
-    update_scan_report_job(
-        scan_report_id, JobStageType.UPLOAD_SCAN_REPORT, StageStatusType.IN_PROGRESS
+    update_job(
+        JobStageType.UPLOAD_SCAN_REPORT,
+        StageStatusType.IN_PROGRESS,
+        scan_report_id=scan_report_id,
     )
     wb = blob_parser.get_scan_report(scan_report_blob)
     data_dictionary, _ = blob_parser.get_data_dictionary(data_dictionary_blob)
@@ -465,6 +467,8 @@ def main(msg: func.QueueMessage) -> None:
     )
 
     update_scan_report_status(scan_report_id, UploadStatusType.COMPLETE)
-    update_scan_report_job(
-        scan_report_id, JobStageType.UPLOAD_SCAN_REPORT, StageStatusType.COMPLETE
+    update_job(
+        JobStageType.UPLOAD_SCAN_REPORT,
+        StageStatusType.COMPLETE,
+        scan_report_id=scan_report_id,
     )
