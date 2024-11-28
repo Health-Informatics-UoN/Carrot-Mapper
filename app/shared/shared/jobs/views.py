@@ -8,8 +8,9 @@ from .serializers import JobSerializer
 
 class JobView(GenericAPIView, ListModelMixin):
     """
-    View to list Jobs for a specific Scan Report.
-    This view allows filtering Scan Report Jobs based on the scan_report_id
+    View for list of Jobs records of a specific object.
+
+    This view allows filtering Jobs record based on the scan_report_id or scan_report_table_id
     passed as a URL parameter and the stage passed as a query parameter.
     """
 
