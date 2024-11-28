@@ -43,18 +43,34 @@ class JobStageType(Enum):
 
 def create_job(
     stage: JobStageType,
+    status: Optional[StageStatusType] = None,
     scan_report_id: Optional[str] = None,
     scan_report_table_id: Optional[str] = None,
+    details: Optional[str] = None,
 ) -> None:
     """
     Function to create a job record based on the passed stage and object's ID
     """
     job_stage_entity = JobStage.objects.get(value=stage.name)
+
+    if status:
+        status_entity = StageStatus.objects.get(value=status.name)
+    else:
+        status_entity = None
+
     if scan_report_id:
-        Job.objects.create(scan_report_id=scan_report_id, stage=job_stage_entity)
+        Job.objects.create(
+            scan_report_id=scan_report_id,
+            stage=job_stage_entity,
+            status=status_entity,
+            details=details,
+        )
     if scan_report_table_id:
         Job.objects.create(
-            scan_report_table_id=scan_report_table_id, stage=job_stage_entity
+            scan_report_table_id=scan_report_table_id,
+            stage=job_stage_entity,
+            status=status_entity,
+            details=details,
         )
 
 
