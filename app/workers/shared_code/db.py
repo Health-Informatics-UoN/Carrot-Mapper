@@ -11,7 +11,6 @@ from shared.mapping.models import (
     ScanReportField,
     ScanReportValue,
     UploadStatus,
-    MappingStatus,
 )
 from shared_code.logger import logger
 from shared_code.models import (
