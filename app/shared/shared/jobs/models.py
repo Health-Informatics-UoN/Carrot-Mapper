@@ -1,17 +1,5 @@
-from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.constraints import UniqueConstraint
-from shared.data.models import Concept
-
-
-class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        abstract = True
+from shared.mapping.models import BaseModel
 
 
 class JobStage(models.Model):
