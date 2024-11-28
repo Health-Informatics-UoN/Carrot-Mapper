@@ -23,7 +23,6 @@ from api.serializers import (
     ScanReportTableListSerializerV2,
     ScanReportValueViewSerializerV2,
     ScanReportViewSerializerV2,
-    ScanReportJobSerializer,
     UserSerializer,
 )
 from azure.storage.blob import BlobServiceClient
@@ -64,7 +63,6 @@ from shared.mapping.models import (
     ScanReportField,
     ScanReportTable,
     ScanReportValue,
-    ScanReportJob,
 )
 from shared.mapping.permissions import get_user_permissions_on_scan_report
 from shared.services.azurequeue import add_message
@@ -318,35 +316,6 @@ class ScanReportDetailV2(
             except Exception as e:
                 raise Exception(f"Error deleting data dictionary: {e}")
         instance.delete()
-
-
-class ScanReportJobView(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):
-    """
-    View to list Scan Report Jobs for a specific Scan Report.
-
-    This view allows filtering Scan Report Jobs based on the scan_report_id
-    passed as a URL parameter and the stage passed as a query parameter.
-
-    """
-
-    queryset = ScanReportJob.objects.all().order_by("id")
-    filter_backends = [DjangoFilterBackend]
-    serializer_class = ScanReportJobSerializer
-
-    def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
-
-    def get_queryset(self):
-        scan_report_id = self.kwargs.get("pk")
-        queryset = self.queryset
-        stage = self.request.query_params.get("stage")
-        if scan_report_id is not None:
-            if stage == "upload":
-                queryset = queryset.filter(scan_report_id=scan_report_id, stage=1)
-            if stage == "download":
-                queryset = queryset.filter(scan_report_id=scan_report_id, stage=5)
-        queryset = queryset.filter(scan_report_id=scan_report_id)
-        return queryset
 
 
 class ScanReportTableIndexV2(ScanReportPermissionMixin, GenericAPIView, ListModelMixin):

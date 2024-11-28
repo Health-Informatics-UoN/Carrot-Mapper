@@ -20,9 +20,6 @@ from shared.mapping.models import (
     VisibilityChoices,
     UploadStatus,
     MappingStatus,
-    ScanReportJob,
-    StageStatus,
-    JobStage,
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
@@ -50,28 +47,6 @@ class MappingStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = MappingStatus
         fields = ["value"]
-
-
-class StageStatusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StageStatus
-        fields = ["value"]
-
-
-class JobStageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JobStage
-        fields = ["value"]
-
-
-class ScanReportJobSerializer(DynamicFieldsMixin, serializers.ModelSerializer):
-
-    stage = JobStageSerializer()
-    status = StageStatusSerializer()
-
-    class Meta:
-        model = ScanReportJob
-        fields = "__all__"
 
 
 class ScanReportViewSerializerV2(DynamicFieldsMixin, serializers.ModelSerializer):
