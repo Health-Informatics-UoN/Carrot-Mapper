@@ -296,6 +296,7 @@ def _handle_table(
             details=f"Created {len(concepts)} concepts for table {table.name}.",
         )
 
+    # Starting the concepts reusing process
     create_or_update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
@@ -337,6 +338,8 @@ def main(msg: Dict[str, str]):
 
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
+
+    # Starting the concepts building from OMOP vocab process
     create_or_update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
