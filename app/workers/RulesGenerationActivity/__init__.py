@@ -26,6 +26,7 @@ def main(msg: Dict[str, Any]):
     page_size = msg.pop("page_size")
 
     logger.info(f"Generating mapping rules for table: {table_id}, page: {page}")
+
     refresh_mapping_rules(table_id, page, page_size)
     logger.info(f"Finished mapping rules for table: {table_id}")
 
