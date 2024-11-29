@@ -286,14 +286,14 @@ def _handle_table(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table_id=table.pk,
-            details=f"No concepts created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
+            details=f"No concepts was created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
         )
     else:
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table_id=table.pk,
-            details=f"Created {len(concepts)} concepts for table {table.name}",
+            details=f"Created {len(concepts)} concepts for table {table.name}.",
         )
 
     # handle reuse of concepts
