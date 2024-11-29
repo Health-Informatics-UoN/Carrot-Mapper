@@ -296,18 +296,26 @@ def _handle_table(
             details=f"Created {len(concepts)} concepts for table {table.name}.",
         )
 
-    # handle reuse of concepts
     create_or_update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
         scan_report_table_id=table.pk,
     )
-    reuse_existing_field_concepts(table_fields)
-    reuse_existing_value_concepts(table_values)
+    # handle reuse of concepts at field level
+    reuse_existing_field_concepts(table_fields, table.pk)
+    update_job(
+        JobStageType.REUSE_CONCEPTS,
+        StageStatusType.IN_PROGRESS,
+        scan_report_table_id=table.pk,
+        details="Finished reusing concepts at field level. Reusing concepts at value level...",
+    )
+    # handle reuse of concepts at value level
+    reuse_existing_value_concepts(table_values, table.pk)
     update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.COMPLETE,
         scan_report_table_id=table.pk,
+        details="Reusing concepts finished.",
     )
 
 
