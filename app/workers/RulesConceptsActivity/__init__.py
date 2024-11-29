@@ -14,7 +14,12 @@ django.setup()
 from shared.data.models import Concept
 from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
-from shared_code.db import create_job, update_job, JobStageType, StageStatusType
+from shared_code.db import (
+    create_or_update_job,
+    update_job,
+    JobStageType,
+    StageStatusType,
+)
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
 
@@ -85,12 +90,6 @@ def _transform_concepts(table_values: List[ScanReportValueDict], table_id: str) 
         if vocab is None:
             # Set to defaults, and skip all the remaining processing that a vocab would require
             _set_defaults_for_none_vocab(value)
-            create_job(
-                JobStageType.BUILD_CONCEPTS_FROM_DICT,
-                StageStatusType.COMPLETE,
-                scan_report_table_id=table_id,
-                details="Skipped, because no data dictionary was provided.",
-            )
         else:
             _process_concepts_for_vocab(vocab, value, table_id)
 
@@ -125,10 +124,11 @@ def _process_concepts_for_vocab(
         - None
 
     """
-    create_job(
+    update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
         scan_report_table_id=table_id,
+        details=f"Building concepts for {vocab} vocabulary",
     )
     logger.info(f"begin {vocab}")
     concept_vocab_content = _get_concepts_for_vocab(vocab, entries)
@@ -281,14 +281,23 @@ def _handle_table(
     ScanReportConcept.objects.bulk_create(concepts)
 
     logger.info("Create concepts all finished")
-    update_job(
-        JobStageType.BUILD_CONCEPTS_FROM_DICT,
-        StageStatusType.COMPLETE,
-        scan_report_table_id=table.pk,
-    )
+    if len(concepts) == 0:
+        update_job(
+            JobStageType.BUILD_CONCEPTS_FROM_DICT,
+            StageStatusType.COMPLETE,
+            scan_report_table_id=table.pk,
+            details=f"No concepts created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
+        )
+    else:
+        update_job(
+            JobStageType.BUILD_CONCEPTS_FROM_DICT,
+            StageStatusType.COMPLETE,
+            scan_report_table_id=table.pk,
+            details=f"Created {len(concepts)} concepts for table {table.name}",
+        )
 
     # handle reuse of concepts
-    create_job(
+    create_or_update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
         scan_report_table_id=table.pk,
@@ -320,5 +329,9 @@ def main(msg: Dict[str, str]):
 
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
-
+    create_or_update_job(
+        JobStageType.BUILD_CONCEPTS_FROM_DICT,
+        StageStatusType.IN_PROGRESS,
+        scan_report_table_id=table_id,
+    )
     _handle_table(table, vocab_dictionary)
