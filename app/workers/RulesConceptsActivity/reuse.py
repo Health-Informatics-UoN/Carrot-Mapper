@@ -8,6 +8,11 @@ from shared_code.models import (
     ScanReportFieldDict,
     ScanReportValueDict,
 )
+from shared_code.db import (
+    update_job,
+    JobStageType,
+    StageStatusType,
+)
 
 """
 Functions for finding, mapping, and creation of reusable Scan Report Concepts.
@@ -19,7 +24,9 @@ This happens for Scan Report Fields and Values.
 """
 
 
-def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> None:
+def reuse_existing_value_concepts(
+    new_values_map: List[ScanReportValueDict], table_id: str
+) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
     uploaded scanreport and creates new concepts if any matching names are found
@@ -162,6 +169,7 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         new_values_full_details,
         value_details_to_value_and_concept_id_map,
         content_type,
+        table_id,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
@@ -169,7 +177,9 @@ def reuse_existing_value_concepts(new_values_map: List[ScanReportValueDict]) -> 
         logger.info("No concepts to reuse at value level")
 
 
-def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> None:
+def reuse_existing_field_concepts(
+    new_fields_map: List[ScanReportFieldDict], table_id: str
+) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
     field with an associated concept.
@@ -273,11 +283,12 @@ def reuse_existing_field_concepts(new_fields_map: List[ScanReportFieldDict]) -> 
         new_fields_full_details,
         existing_field_name_to_field_and_concept_id_map,
         content_type,
+        table_id,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
     else:
-        logger.info("No concepts to to reuse at field level")
+        logger.info("No concepts to reuse at field level")
 
 
 def select_concepts_to_post(
@@ -290,6 +301,7 @@ def select_concepts_to_post(
         ],
     ],
     content_type: ScanReportConceptContentType,
+    table_id,
 ) -> List[ScanReportConcept]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
@@ -327,6 +339,12 @@ def select_concepts_to_post(
                 str(new_content_detail["field_name"]),
             )
         else:
+            update_job(
+                JobStageType.REUSE_CONCEPTS,
+                StageStatusType.FAILED,
+                scan_report_table_id=table_id,
+                details=f"Reusing concepts failed: Unsupported content_type: {content_type}",
+            )
             raise ValueError(f"Unsupported content_type: {content_type}")
 
         try:
