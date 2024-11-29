@@ -41,37 +41,55 @@ class JobStageType(Enum):
     DOWNLOAD_RULES = "Generate and download mapping rules JSON"
 
 
-def create_job(
+def create_or_update_job(
     stage: JobStageType,
-    status: Optional[StageStatusType] = None,
+    # The initial status. For a job that doesn't have any further updates, this is the final status.
+    status: StageStatusType,
     scan_report_id: Optional[str] = None,
     scan_report_table_id: Optional[str] = None,
     details: Optional[str] = None,
 ) -> None:
     """
-    Function to create a job record based on the passed stage and object's ID
+    Function to create or update (if that is the second time running this function) a job record,
+    based on the passed stage, status and object's ID
     """
-    job_stage_entity = JobStage.objects.get(value=stage.name)
-
-    if status:
-        status_entity = StageStatus.objects.get(value=status.name)
-    else:
-        status_entity = None
-
+    stage_entity = JobStage.objects.get(value=stage.name)
+    status_entity = StageStatus.objects.get(value=status.name)
+    # For a job related to SR
     if scan_report_id:
-        Job.objects.create(
-            scan_report_id=scan_report_id,
-            stage=job_stage_entity,
-            status=status_entity,
-            details=details,
-        )
+        # Check if the record already exists
+        if not Job.objects.filter(
+            scan_report_id=scan_report_id, stage=stage_entity
+        ).exists():
+            # If not, create a new record
+            Job.objects.create(
+                scan_report_id=scan_report_id,
+                stage=stage_entity,
+                status=status_entity,
+                details=details,
+            )
+        else:
+            # If yes, update it, in case re-running the job
+            update_job(stage, status, scan_report_id=scan_report_id, details=details)
+    # For a job related to SR table
     if scan_report_table_id:
-        Job.objects.create(
-            scan_report_table_id=scan_report_table_id,
-            stage=job_stage_entity,
-            status=status_entity,
-            details=details,
-        )
+        # Check if the record already exists
+        if not Job.objects.filter(
+            scan_report_table_id=scan_report_table_id, stage=stage_entity
+        ).exists():
+            Job.objects.create(
+                scan_report_table_id=scan_report_table_id,
+                stage=stage_entity,
+                status=status_entity,
+                details=details,
+            )
+        else:
+            update_job(
+                stage,
+                status,
+                scan_report_table_id=scan_report_table_id,
+                details=details,
+            )
 
 
 def update_job(
@@ -82,7 +100,7 @@ def update_job(
     details: Optional[str] = None,
 ) -> None:
     """
-    Updates the stage and stage status of a job.
+    Updates the stage and stage status of an existed job.
     Args:
         scan_report_id | scan_report_table_id (str): The ID of the object that need updating.
         stage (JobStageType): The stage that need status updating.
