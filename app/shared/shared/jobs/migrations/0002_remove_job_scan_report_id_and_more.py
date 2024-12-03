@@ -7,27 +7,39 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mapping', '0005_auto_20241015_0900'),
-        ('jobs', '0001_initial'),
+        ("mapping", "0005_auto_20241015_0900"),
+        ("jobs", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='job',
-            name='scan_report_id',
+            model_name="job",
+            name="scan_report_id",
         ),
         migrations.RemoveField(
-            model_name='job',
-            name='scan_report_table_id',
+            model_name="job",
+            name="scan_report_table_id",
         ),
         migrations.AddField(
-            model_name='job',
-            name='scan_report',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='scan_report', to='mapping.scanreport'),
+            model_name="job",
+            name="scan_report",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="scan_report",
+                to="mapping.scanreport",
+            ),
         ),
         migrations.AddField(
-            model_name='job',
-            name='scan_report_table',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='scan_report_table', to='mapping.scanreporttable'),
+            model_name="job",
+            name="scan_report_table",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="scan_report_table",
+                to="mapping.scanreporttable",
+            ),
         ),
     ]
