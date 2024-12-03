@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
+import JobDialog from "@/components/jobs/JobDialog";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -47,6 +48,18 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     },
     enableHiding: true,
     enableSorting: false,
+  },
+  {
+    id: "jobs",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Jobs Progress" />
+    ),
+    cell: ({ row }) => {
+      const { id, scan_report } = row.original;
+      return (
+        <JobDialog scan_report_id={scan_report} scan_report_table_id={id} />
+      );
+    },
   },
   {
     id: "edit",
