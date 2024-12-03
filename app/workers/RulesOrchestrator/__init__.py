@@ -16,6 +16,7 @@ from shared_code.db import (
     JobStageType,
     StageStatusType,
 )
+from shared.mapping.models import ScanReportTable
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
@@ -49,7 +50,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         create_or_update_job(
             JobStageType.GENERATE_RULES,
             StageStatusType.IN_PROGRESS,
-            scan_report_table_id=table_id,
+            scan_report_table=ScanReportTable.objects.get(id=table_id),
             details=f"Generating mapping rules from {concepts_count} concepts found.",
         )
         # Fan out
@@ -65,7 +66,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         update_job(
             JobStageType.GENERATE_RULES,
             StageStatusType.COMPLETE,
-            scan_report_table_id=table_id,
+            scan_report_table=ScanReportTable.objects.get(id=table_id),
             details="Automatic mapping rules generation finished.",
         )
         return [result, results]
@@ -74,7 +75,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         update_job(
             JobStageType.GENERATE_RULES,
             StageStatusType.FAILED,
-            scan_report_table_id=table_id,
+            scan_report_table=ScanReportTable.objects.get(id=table_id),
             details=f"Rules Orchestrator function failed: {e}",
         )
         raise

@@ -58,7 +58,9 @@ def _create_concepts(
     return concepts
 
 
-def _transform_concepts(table_values: List[ScanReportValueDict], table_id: str) -> None:
+def _transform_concepts(
+    table_values: List[ScanReportValueDict], table: ScanReportTable
+) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
     Transforms the values in place.
@@ -91,7 +93,7 @@ def _transform_concepts(table_values: List[ScanReportValueDict], table_id: str) 
             # Set to defaults, and skip all the remaining processing that a vocab would require
             _set_defaults_for_none_vocab(value)
         else:
-            _process_concepts_for_vocab(vocab, value, table_id)
+            _process_concepts_for_vocab(vocab, value, table)
 
 
 def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
@@ -111,7 +113,7 @@ def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
 
 
 def _process_concepts_for_vocab(
-    vocab: str, entries: List[ScanReportValueDict], table_id: str
+    vocab: str, entries: List[ScanReportValueDict], table: ScanReportTable
 ) -> None:
     """
     Process concepts for a specific vocabulary.
@@ -127,7 +129,7 @@ def _process_concepts_for_vocab(
     update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
-        scan_report_table_id=table_id,
+        scan_report_table=table,
         details=f"Building concepts for {vocab} vocabulary",
     )
     logger.info(f"begin {vocab}")
@@ -271,7 +273,7 @@ def _handle_table(
     # Add vocab id to each entry from the vocab dict
     helpers.add_vocabulary_id_to_entries(table_values, vocab, table.name)
 
-    _transform_concepts(table_values, table.pk)
+    _transform_concepts(table_values, table)
     logger.debug("finished standard concepts lookup")
 
     concepts = _create_concepts(table_values)
@@ -285,14 +287,14 @@ def _handle_table(
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
-            scan_report_table_id=table.pk,
+            scan_report_table=table,
             details=f"No concepts was created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
         )
     else:
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
-            scan_report_table_id=table.pk,
+            scan_report_table=table,
             details=f"Created {len(concepts)} concepts for table {table.name}.",
         )
 
@@ -300,22 +302,22 @@ def _handle_table(
     create_or_update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
-        scan_report_table_id=table.pk,
+        scan_report_table=table,
     )
     # handle reuse of concepts at field level
-    reuse_existing_field_concepts(table_fields, table.pk)
+    reuse_existing_field_concepts(table_fields, table)
     update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
-        scan_report_table_id=table.pk,
+        scan_report_table=table,
         details="Finished reusing concepts at field level. Reusing concepts at value level...",
     )
     # handle reuse of concepts at value level
-    reuse_existing_value_concepts(table_values, table.pk)
+    reuse_existing_value_concepts(table_values, table)
     update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.COMPLETE,
-        scan_report_table_id=table.pk,
+        scan_report_table=table,
         details="Reusing concepts finished.",
     )
 
@@ -343,6 +345,6 @@ def main(msg: Dict[str, str]):
     create_or_update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
-        scan_report_table_id=table_id,
+        scan_report_table=table,
     )
     _handle_table(table, vocab_dictionary)

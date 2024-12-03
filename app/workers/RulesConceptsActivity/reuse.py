@@ -1,6 +1,11 @@
 from typing import Dict, List, Tuple, Union
 from collections import defaultdict
-from shared.mapping.models import ScanReportConcept, ScanReportField, ScanReportValue
+from shared.mapping.models import (
+    ScanReportConcept,
+    ScanReportField,
+    ScanReportValue,
+    ScanReportTable,
+)
 from shared_code import db
 from shared_code.logger import logger
 from shared_code.models import (
@@ -25,7 +30,7 @@ This happens for Scan Report Fields and Values.
 
 
 def reuse_existing_value_concepts(
-    new_values_map: List[ScanReportValueDict], table_id: str
+    new_values_map: List[ScanReportValueDict], table: ScanReportTable
 ) -> None:
     """
     This expects a dict of value names to ids which have been generated in a newly
@@ -169,7 +174,7 @@ def reuse_existing_value_concepts(
         new_values_full_details,
         value_details_to_value_and_concept_id_map,
         content_type,
-        table_id,
+        table,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_value_concepts")
@@ -178,7 +183,7 @@ def reuse_existing_value_concepts(
 
 
 def reuse_existing_field_concepts(
-    new_fields_map: List[ScanReportFieldDict], table_id: str
+    new_fields_map: List[ScanReportFieldDict], table: ScanReportTable
 ) -> None:
     """
     Creates new concepts associated to any field that matches the name of an existing
@@ -283,7 +288,7 @@ def reuse_existing_field_concepts(
         new_fields_full_details,
         existing_field_name_to_field_and_concept_id_map,
         content_type,
-        table_id,
+        table,
     ):
         ScanReportConcept.objects.bulk_create(concepts_to_post)
         logger.info("POST concepts all finished in reuse_existing_field_concepts")
@@ -301,7 +306,7 @@ def select_concepts_to_post(
         ],
     ],
     content_type: ScanReportConceptContentType,
-    table_id,
+    table: ScanReportTable,
 ) -> List[ScanReportConcept]:
     """
     Depending on the content_type, generate a list of `ScanReportConcepts` to be created.
@@ -342,7 +347,7 @@ def select_concepts_to_post(
             update_job(
                 JobStageType.REUSE_CONCEPTS,
                 StageStatusType.FAILED,
-                scan_report_table_id=table_id,
+                scan_report_table=table,
                 details=f"Reusing concepts failed: Unsupported content_type: {content_type}",
             )
             raise ValueError(f"Unsupported content_type: {content_type}")
