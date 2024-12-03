@@ -76,6 +76,7 @@ from shared.services.rules_export import (
     get_mapping_rules_list,
     make_dag,
 )
+from shared.jobs.models import Job, JobStage
 from django.db.models import Q
 
 
@@ -220,6 +221,12 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
 
         scan_report.author = self.request.user
         scan_report.save()
+        # Create the initial Job record for upload SR and downloading rules stages
+        for stage in ["UPLOAD_SCAN_REPORT", "DOWNLOAD_RULES"]:
+            Job.objects.create(
+                scan_report=scan_report,
+                stage=JobStage.objects.get(value=stage),
+            )
 
         # Add viewers to the scan report if specified
         if sr_viewers := valid_viewers:
