@@ -288,14 +288,14 @@ def _handle_table(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"No concepts was created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
+            details=f"No concepts was created for table {table.name}.",
         )
     else:
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"Created {len(concepts)} concepts for table {table.name}.",
+            details=f"Created {len(concepts)} concepts for table {table.name} based on provided data dictionary.",
         )
 
     # Starting the concepts reusing process
