@@ -18,6 +18,7 @@ from shared_code.db import (
     UploadStatusType,
 )
 from shared_code.logger import logger
+from shared.jobs.models import Job, JobStage
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "shared_code.django_settings")
 import django
@@ -450,6 +451,15 @@ def main(msg: func.QueueMessage) -> None:
     fo_ws = wb.worksheets[0]
 
     table_name_to_id_map = _create_tables(fo_ws, scan_report_id)
+
+    # Create the initial Job record for Rules activity stages
+    for table in table_name_to_id_map:
+        for stage in ["BUILD_CONCEPTS_FROM_DICT", "REUSE_CONCEPTS", "GENERATE_RULES"]:
+            Job.objects.create(
+                scan_report_table=table,
+                stage=JobStage.objects.get(value=stage),
+            )
+
     asyncio.run(
         _create_fields(fo_ws, wb, scan_report_id, table_name_to_id_map, data_dictionary)
     )
