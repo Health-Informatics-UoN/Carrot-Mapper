@@ -10,6 +10,7 @@ from shared.mapping.models import (
     ScanReportConcept,
     ScanReportField,
     ScanReportValue,
+    ScanReportTable,
     UploadStatus,
 )
 from shared_code.logger import logger
@@ -45,8 +46,8 @@ def create_or_update_job(
     stage: JobStageType,
     # The initial status. For a job that doesn't have any further updates, this is the final status.
     status: StageStatusType,
-    scan_report_id: Optional[str] = None,
-    scan_report_table_id: Optional[str] = None,
+    scan_report: Optional[ScanReport] = None,
+    scan_report_table: Optional[ScanReportTable] = None,
     details: Optional[str] = None,
 ) -> None:
     """
@@ -56,29 +57,27 @@ def create_or_update_job(
     stage_entity = JobStage.objects.get(value=stage.name)
     status_entity = StageStatus.objects.get(value=status.name)
     # For a job related to SR
-    if scan_report_id:
+    if scan_report:
         # Check if the record already exists
-        if not Job.objects.filter(
-            scan_report_id=scan_report_id, stage=stage_entity
-        ).exists():
+        if not Job.objects.filter(scan_report=scan_report, stage=stage_entity).exists():
             # If not, create a new record
             Job.objects.create(
-                scan_report_id=scan_report_id,
+                scan_report=scan_report,
                 stage=stage_entity,
                 status=status_entity,
                 details=details,
             )
         else:
             # If yes, update it, in case re-running the job
-            update_job(stage, status, scan_report_id=scan_report_id, details=details)
+            update_job(stage, status, scan_report=scan_report, details=details)
     # For a job related to SR table
-    if scan_report_table_id:
+    if scan_report_table:
         # Check if the record already exists
         if not Job.objects.filter(
-            scan_report_table_id=scan_report_table_id, stage=stage_entity
+            scan_report_table=scan_report_table, stage=stage_entity
         ).exists():
             Job.objects.create(
-                scan_report_table_id=scan_report_table_id,
+                scan_report_table=scan_report_table,
                 stage=stage_entity,
                 status=status_entity,
                 details=details,
@@ -87,7 +86,7 @@ def create_or_update_job(
             update_job(
                 stage,
                 status,
-                scan_report_table_id=scan_report_table_id,
+                scan_report_table=scan_report_table,
                 details=details,
             )
 
@@ -95,8 +94,8 @@ def create_or_update_job(
 def update_job(
     stage: JobStageType,
     status: StageStatusType,
-    scan_report_id: Optional[str] = None,
-    scan_report_table_id: Optional[str] = None,
+    scan_report: Optional[ScanReport] = None,
+    scan_report_table: Optional[ScanReportTable] = None,
     details: Optional[str] = None,
 ) -> None:
     """
@@ -112,13 +111,13 @@ def update_job(
     job_stage_entity = JobStage.objects.get(value=stage.name)
     stage_status_entity = StageStatus.objects.get(value=status.name)
     # Get the job enity based on the passed id and stage
-    if scan_report_id:
+    if scan_report:
         scan_report_job = Job.objects.get(
-            scan_report_id=scan_report_id, stage=job_stage_entity
+            scan_report=scan_report, stage=job_stage_entity
         )
-    if scan_report_table_id:
+    if scan_report_table:
         scan_report_job = Job.objects.get(
-            scan_report_table_id=scan_report_table_id, stage=job_stage_entity
+            scan_report_table=scan_report_table, stage=job_stage_entity
         )
     # Update status and details
     scan_report_job.status = stage_status_entity
