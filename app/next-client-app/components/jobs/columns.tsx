@@ -3,25 +3,30 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { format } from "date-fns/format";
+import { Status } from "./StageStatus";
+import { JobStage } from "@/constants/job";
 
 export const columns: ColumnDef<Job>[] = [
   {
     id: "Stage",
-    accessorKey: "stage.value",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Stage" />
     ),
-    // TODO: Rendered based on the constants here
+    cell: ({ row }) => {
+      const { stage } = row.original;
+      return JobStage.find((option) => option.value == stage.value)
+        ?.display_name;
+    },
     enableSorting: false,
     enableHiding: true,
   },
   {
     id: "Status",
-    accessorKey: "status.value",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    // TODO: Rendered based on the constants here
+    header: () => <div className="text-center">Status</div>,
+    cell: ({ row }) => {
+      const { status } = row.original;
+      return <Status status={status || { value: "QUEUED" }} />;
+    },
     enableSorting: false,
     enableHiding: true,
   },
