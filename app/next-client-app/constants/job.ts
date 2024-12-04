@@ -26,19 +26,19 @@ export const JobStage = [
 
 export const StageStatus = [
   {
-    label: "Upload Complete",
+    label: "Job Complete",
     icon: Check,
     value: "COMPLETE",
     color: "text-green-600 dark:text-green-600",
   },
   {
-    label: "Upload Failed",
+    label: "Job Failed",
     icon: X,
     value: "FAILED",
     color: "text-red-500 dark:text-red-500",
   },
   {
-    label: "Upload In Progress",
+    label: "Job In Progress",
     icon: Loader2,
     value: "IN_PROGRESS",
     color: "text-orange-500 dark:text-orange-500",
