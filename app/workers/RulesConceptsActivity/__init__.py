@@ -15,7 +15,6 @@ from shared.data.models import Concept
 from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
 from shared_code.db import (
-    create_or_update_job,
     update_job,
     JobStageType,
     StageStatusType,
@@ -299,7 +298,7 @@ def _handle_table(
         )
 
     # Starting the concepts reusing process
-    create_or_update_job(
+    update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
         scan_report_table=table,
@@ -342,7 +341,7 @@ def main(msg: Dict[str, str]):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     # Starting the concepts building from OMOP vocab process
-    create_or_update_job(
+    update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
         scan_report_table=table,

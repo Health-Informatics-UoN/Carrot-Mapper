@@ -42,55 +42,6 @@ class JobStageType(Enum):
     DOWNLOAD_RULES = "Generate and download mapping rules JSON"
 
 
-def create_or_update_job(
-    stage: JobStageType,
-    # The initial status. For a job that doesn't have any further updates, this is the final status.
-    status: StageStatusType,
-    scan_report: Optional[ScanReport] = None,
-    scan_report_table: Optional[ScanReportTable] = None,
-    details: Optional[str] = None,
-) -> None:
-    """
-    Function to create or update (if that is the second time running this function) a job record,
-    based on the passed stage, status and object's ID
-    """
-    stage_entity = JobStage.objects.get(value=stage.name)
-    status_entity = StageStatus.objects.get(value=status.name)
-    # For a job related to SR
-    if scan_report:
-        # Check if the record already exists
-        if not Job.objects.filter(scan_report=scan_report, stage=stage_entity).exists():
-            # If not, create a new record
-            Job.objects.create(
-                scan_report=scan_report,
-                stage=stage_entity,
-                status=status_entity,
-                details=details,
-            )
-        else:
-            # If yes, update it, in case re-running the job
-            update_job(stage, status, scan_report=scan_report, details=details)
-    # For a job related to SR table
-    if scan_report_table:
-        # Check if the record already exists
-        if not Job.objects.filter(
-            scan_report_table=scan_report_table, stage=stage_entity
-        ).exists():
-            Job.objects.create(
-                scan_report_table=scan_report_table,
-                stage=stage_entity,
-                status=status_entity,
-                details=details,
-            )
-        else:
-            update_job(
-                stage,
-                status,
-                scan_report_table=scan_report_table,
-                details=details,
-            )
-
-
 def update_job(
     stage: JobStageType,
     status: StageStatusType,
@@ -110,15 +61,19 @@ def update_job(
     # Get stage and status entities
     job_stage_entity = JobStage.objects.get(value=stage.name)
     stage_status_entity = StageStatus.objects.get(value=status.name)
-    # Get the job enity based on the passed id and stage
+
+    # Get the job entity based on the passed id and stage,
+    # then filter and order to get the latest job record to update
     if scan_report:
-        scan_report_job = Job.objects.get(
+        scan_report_job = Job.objects.filter(
             scan_report=scan_report, stage=job_stage_entity
-        )
+        ).order_by("-created_at")[0]
+
     if scan_report_table:
-        scan_report_job = Job.objects.get(
+        scan_report_job = Job.objects.filter(
             scan_report_table=scan_report_table, stage=job_stage_entity
-        )
+        ).order_by("-created_at")[0]
+
     # Update status and details
     scan_report_job.status = stage_status_entity
     if details:

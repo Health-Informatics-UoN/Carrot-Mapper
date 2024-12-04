@@ -11,7 +11,6 @@ django.setup()
 
 from shared.services.rules import find_existing_concepts_count
 from shared_code.db import (
-    create_or_update_job,
     update_job,
     JobStageType,
     StageStatusType,
@@ -47,7 +46,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         page_size = int(os.environ.get("PAGE_SIZE", "1000"))
         num_pages = max((concepts_count + page_size - 1) // page_size, 1)
 
-        create_or_update_job(
+        update_job(
             JobStageType.GENERATE_RULES,
             StageStatusType.IN_PROGRESS,
             scan_report_table=ScanReportTable.objects.get(id=table_id),
