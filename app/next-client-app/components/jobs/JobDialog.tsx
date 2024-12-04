@@ -5,11 +5,9 @@ import { DialogTrigger } from "@radix-ui/react-dialog";
 import { useEffect, useState } from "react";
 import { DataTable } from "../data-table";
 import { columns } from "./columns";
-import { StageStatus, JobStage, GeneralStatus } from "@/constants/job";
-import StepperComponent from "./JobStepper";
+import { GeneralStatus } from "@/constants/job";
 import { Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
 import { Tooltip } from "react-tooltip";
 
 interface JobProps {
@@ -81,7 +79,7 @@ export default function JobDialog({
   return (
     <Dialog>
       <DialogTrigger disabled={generalStatus == "NOT_STARTED"}>
-        <Button className="flex" variant={"ghost"}>
+        <div className="flex" role="button" tabIndex={0}>
           <a
             data-tooltip-id="icon-tooltip"
             data-tooltip-content={`${generalStatusFilter?.label}`}
@@ -97,7 +95,7 @@ export default function JobDialog({
               )}
             />
           </a>
-        </Button>
+        </div>
       </DialogTrigger>
       <DialogContent className="max-w-screen-xl overflow-auto h-3/5">
         <DialogHeader>
@@ -105,9 +103,10 @@ export default function JobDialog({
             Table: {table_name} - Job Progress Details
           </DialogTitle>
         </DialogHeader>
-        {jobGroups
-          ? jobGroups.map((jobs) => (
+        {jobGroups.length > 0
+          ? jobGroups.map((jobs, index) => (
               <DataTable
+                key={index}
                 columns={columns}
                 data={jobs}
                 count={jobs.length}

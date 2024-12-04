@@ -14,8 +14,11 @@ export const columns: ColumnDef<Job>[] = [
     ),
     cell: ({ row }) => {
       const { stage } = row.original;
-      return JobStage.find((option) => option.value == stage.value)
-        ?.display_name;
+      return (
+        <div className="w-[450px]">
+          {JobStage.find((option) => option.value == stage.value)?.display_name}
+        </div>
+      );
     },
     enableSorting: false,
     enableHiding: true,
@@ -58,10 +61,13 @@ export const columns: ColumnDef<Job>[] = [
   },
   {
     id: "Details",
-    accessorKey: "details",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Details" />
     ),
+    cell: ({ row }) => {
+      const { details } = row.original;
+      return <div className="w-[250px]">{details}</div>;
+    },
     enableSorting: false,
     enableHiding: true,
   },
