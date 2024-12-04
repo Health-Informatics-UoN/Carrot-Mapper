@@ -16,6 +16,7 @@ from shared_code.db import (
     StageStatusType,
 )
 from shared.mapping.models import ScanReportTable
+from shared.jobs.models import Job, JobStage, StageStatus
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
@@ -35,12 +36,17 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         # CreateConcepts
         msg: Dict[str, Any] = context.get_input()
         # Start updating job record of building concepts from dict.
-        update_job(
-            JobStageType.BUILD_CONCEPTS_FROM_DICT,
-            StageStatusType.IN_PROGRESS,
+        if not Job.objects.filter(
             scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
-            details="Building concepts from data dictionary started.",
-        )
+            stage=JobStage.objects.get(value="BUILD_CONCEPTS_FROM_DICT"),
+            status=StageStatus.objects.get(value="COMPLETE"),
+        ).exists():
+            update_job(
+                JobStageType.BUILD_CONCEPTS_FROM_DICT,
+                StageStatusType.IN_PROGRESS,
+                scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
+                details="Building concepts from data dictionary started.",
+            )
         result = yield context.call_activity("RulesConceptsActivity", msg)
 
         table_id = msg.pop("table_id")
@@ -57,7 +63,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             JobStageType.GENERATE_RULES,
             StageStatusType.IN_PROGRESS,
             scan_report_table=ScanReportTable.objects.get(id=table_id),
-            details=f"Generating mapping rules from {concepts_count} concepts found.",
+            details=f"Generating mapping rules from available concepts.",
         )
         # Fan out
         tasks = [
@@ -73,7 +79,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             JobStageType.GENERATE_RULES,
             StageStatusType.COMPLETE,
             scan_report_table=ScanReportTable.objects.get(id=table_id),
-            details="Automatic mapping rules generation finished.",
+            details="Finished",
         )
         return [result, results]
     except Exception as e:
