@@ -340,10 +340,4 @@ def main(msg: Dict[str, str]):
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    # Starting the concepts building from OMOP vocab process
-    update_job(
-        JobStageType.BUILD_CONCEPTS_FROM_DICT,
-        StageStatusType.IN_PROGRESS,
-        scan_report_table=table,
-    )
     _handle_table(table, vocab_dictionary)

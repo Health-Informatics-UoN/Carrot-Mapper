@@ -34,6 +34,13 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     try:
         # CreateConcepts
         msg: Dict[str, Any] = context.get_input()
+        # Start updating job record of building concepts from dict.
+        update_job(
+            JobStageType.BUILD_CONCEPTS_FROM_DICT,
+            StageStatusType.IN_PROGRESS,
+            scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
+            details="Building concepts from data dictionary started.",
+        )
         result = yield context.call_activity("RulesConceptsActivity", msg)
 
         table_id = msg.pop("table_id")
