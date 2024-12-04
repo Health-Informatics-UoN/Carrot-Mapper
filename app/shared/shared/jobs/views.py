@@ -14,7 +14,7 @@ class JobView(GenericAPIView, ListModelMixin):
     passed as a URL parameter and the stage passed as a query parameter.
     """
 
-    queryset = Job.objects.all().order_by("id")
+    queryset = Job.objects.all().order_by("-created_at")
     filter_backends = [DjangoFilterBackend]
     serializer_class = JobSerializer
 
