@@ -55,9 +55,13 @@ export const columns: ColumnDef<ScanReportTable>[] = [
       <DataTableColumnHeader column={column} title="Jobs Progress" />
     ),
     cell: ({ row }) => {
-      const { id, scan_report } = row.original;
+      const { id, scan_report, name } = row.original;
       return (
-        <JobDialog scan_report_id={scan_report} scan_report_table_id={id} />
+        <JobDialog
+          scan_report_id={scan_report}
+          scan_report_table_id={id}
+          table_name={name}
+        />
       );
     },
   },
