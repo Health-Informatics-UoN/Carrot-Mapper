@@ -15,7 +15,6 @@ from shared.data.models import Concept
 from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
 from shared_code.db import (
-    create_or_update_job,
     update_job,
     JobStageType,
     StageStatusType,
@@ -288,18 +287,18 @@ def _handle_table(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"No concepts was created for table {table.name}. The data dict. may not be provided or the vocabs building function was called before.",
+            details=f"No concepts was created for table {table.name}.",
         )
     else:
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"Created {len(concepts)} concepts for table {table.name}.",
+            details=f"Created {len(concepts)} concepts for table {table.name} based on provided data dictionary.",
         )
 
     # Starting the concepts reusing process
-    create_or_update_job(
+    update_job(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
         scan_report_table=table,
@@ -342,7 +341,7 @@ def main(msg: Dict[str, str]):
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
     # Starting the concepts building from OMOP vocab process
-    create_or_update_job(
+    update_job(
         JobStageType.BUILD_CONCEPTS_FROM_DICT,
         StageStatusType.IN_PROGRESS,
         scan_report_table=table,
