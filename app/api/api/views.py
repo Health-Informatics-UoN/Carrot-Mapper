@@ -221,12 +221,6 @@ class ScanReportIndexV2(GenericAPIView, ListModelMixin, CreateModelMixin):
 
         scan_report.author = self.request.user
         scan_report.save()
-        # Create the initial Job record for upload SR and downloading rules stages
-        for stage in ["UPLOAD_SCAN_REPORT", "DOWNLOAD_RULES"]:
-            Job.objects.create(
-                scan_report=scan_report,
-                stage=JobStage.objects.get(value=stage),
-            )
 
         # Add viewers to the scan report if specified
         if sr_viewers := valid_viewers:
@@ -410,8 +404,20 @@ class ScanReportTableDetailV2(
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
         try:
+            # Create Job records for each update first
+            for stage in [
+                "BUILD_CONCEPTS_FROM_DICT",
+                "REUSE_CONCEPTS",
+                "GENERATE_RULES",
+            ]:
+                Job.objects.create(
+                    scan_report_table=instance,
+                    stage=JobStage.objects.get(value=stage),
+                )
+            # Then send the request to workers, in case there is error, the Job record was created already
             response = requests.post(urljoin(base_url, trigger), json=msg)
             response.raise_for_status()
+
         except request.exceptions.HTTPError as e:
             logging.error(f"HTTP Trigger failed: {e}")
 
