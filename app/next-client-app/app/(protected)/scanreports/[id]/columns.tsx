@@ -56,13 +56,8 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     cell: ({ row }) => {
       const { id, name, jobs } = row.original;
       // Filter the jobs based on the scanReportTable ID
-      let jobsData: Job[] = [];
-      console.log("🚀 ~ jobsData:", jobsData);
-      jobs.map((job) => {
-        if (job.scan_report_table == id) {
-          jobsData.push(job);
-        }
-      });
+      const jobsData: Job[] = jobs.filter((job) => job.scan_report_table == id);
+
       // Get the general status of the table
       const generalStatus = FindGeneralStatus(jobsData);
 
