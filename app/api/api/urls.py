@@ -83,11 +83,6 @@ urlpatterns = [
         name="scan-report-table-detail",
     ),
     path(
-        "v2/scanreports/<int:pk>/tables/<int:table_pk>/jobs/",
-        JobView.as_view(),
-        name="scan-report-table-jobs",
-    ),
-    path(
         "v2/scanreports/<int:pk>/tables/<int:table_pk>/fields/",
         views.ScanReportFieldIndexV2.as_view(),
         name="scan-report-fields",
