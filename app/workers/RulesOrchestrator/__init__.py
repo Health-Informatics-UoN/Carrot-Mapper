@@ -33,9 +33,10 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         None
     """
     try:
-        # CreateConcepts
         msg: Dict[str, Any] = context.get_input()
-        # Start updating job record of building concepts from dict.
+
+        # Start updating job record of building concepts from dict. earlier,
+        # after checking existence of Complete job
         if not Job.objects.filter(
             scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
             stage=JobStage.objects.get(value="BUILD_CONCEPTS_FROM_DICT"),
@@ -47,6 +48,8 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
                 scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
                 details="Building concepts from data dictionary started.",
             )
+
+        # CreateConcepts
         result = yield context.call_activity("RulesConceptsActivity", msg)
 
         table_id = msg.pop("table_id")
