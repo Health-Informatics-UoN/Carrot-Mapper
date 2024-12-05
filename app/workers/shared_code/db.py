@@ -10,6 +10,7 @@ from shared.mapping.models import (
     ScanReportConcept,
     ScanReportField,
     ScanReportValue,
+    ScanReportTable,
     UploadStatus,
 )
 from shared_code.logger import logger
@@ -18,12 +19,66 @@ from shared_code.models import (
     ScanReportFieldDict,
     ScanReportValueDict,
 )
+from shared.jobs.models import Job, JobStage, StageStatus
 
 
 class UploadStatusType(Enum):
     IN_PROGRESS = "Upload in Progress"
     COMPLETE = "Upload Complete"
     FAILED = "Upload Failed"
+
+
+class StageStatusType(Enum):
+    IN_PROGRESS = "Job in Progress"
+    COMPLETE = "Job Complete"
+    FAILED = "Job Failed"
+
+
+class JobStageType(Enum):
+    UPLOAD_SCAN_REPORT = "Upload Scan Report"
+    BUILD_CONCEPTS_FROM_DICT = "Build concepts from OMOP Data dictionary"
+    REUSE_CONCEPTS = "Reuse concepts from other scan reports"
+    GENERATE_RULES = "Generate mapping rules from available concepts"
+    DOWNLOAD_RULES = "Generate and download mapping rules JSON"
+
+
+def update_job(
+    stage: JobStageType,
+    status: StageStatusType,
+    scan_report: Optional[ScanReport] = None,
+    scan_report_table: Optional[ScanReportTable] = None,
+    details: Optional[str] = None,
+) -> None:
+    """
+    Updates the stage and stage status of an existed job.
+    Args:
+        scan_report_id | scan_report_table_id (str): The ID of the object that need updating.
+        stage (JobStageType): The stage that need status updating.
+        status (StageStatusType): The status to update the Scan Report with.
+        details (str): The details of the update
+    Returns: None
+    """
+    # Get stage and status entities
+    job_stage_entity = JobStage.objects.get(value=stage.name)
+    stage_status_entity = StageStatus.objects.get(value=status.name)
+
+    # Get the job entity based on the passed id and stage,
+    # then filter and order to get the latest job record to update
+    if scan_report:
+        scan_report_job = Job.objects.filter(
+            scan_report=scan_report, stage=job_stage_entity
+        ).order_by("-created_at")[0]
+
+    if scan_report_table:
+        scan_report_job = Job.objects.filter(
+            scan_report_table=scan_report_table, stage=job_stage_entity
+        ).order_by("-created_at")[0]
+
+    # Update status and details
+    scan_report_job.status = stage_status_entity
+    if details:
+        scan_report_job.details = details
+    scan_report_job.save()
 
 
 def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:

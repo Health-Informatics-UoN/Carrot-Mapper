@@ -76,6 +76,7 @@ from shared.services.rules_export import (
     get_mapping_rules_list,
     make_dag,
 )
+from shared.jobs.models import Job, JobStage
 from django.db.models import Q
 
 
@@ -403,8 +404,20 @@ class ScanReportTableDetailV2(
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
         try:
+            # Create Job records for each update first
+            for stage in [
+                "BUILD_CONCEPTS_FROM_DICT",
+                "REUSE_CONCEPTS",
+                "GENERATE_RULES",
+            ]:
+                Job.objects.create(
+                    scan_report_table=instance,
+                    stage=JobStage.objects.get(value=stage),
+                )
+            # Then send the request to workers, in case there is error, the Job record was created already
             response = requests.post(urljoin(base_url, trigger), json=msg)
             response.raise_for_status()
+
         except request.exceptions.HTTPError as e:
             logging.error(f"HTTP Trigger failed: {e}")
 

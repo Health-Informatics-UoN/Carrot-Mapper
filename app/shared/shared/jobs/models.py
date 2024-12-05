@@ -1,5 +1,5 @@
 from django.db import models
-from shared.mapping.models import BaseModel
+from shared.mapping.models import BaseModel, ScanReport, ScanReportTable
 
 
 class JobStage(models.Model):
@@ -13,8 +13,20 @@ class StageStatus(models.Model):
 
 
 class Job(BaseModel):
-    scan_report_id = models.IntegerField(null=True)
-    scan_report_table_id = models.IntegerField(null=True)
+    scan_report = models.ForeignKey(
+        ScanReport,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="scan_report",
+    )
+    scan_report_table = models.ForeignKey(
+        ScanReportTable,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="scan_report_table",
+    )
     stage = models.ForeignKey(
         "JobStage",
         null=True,
