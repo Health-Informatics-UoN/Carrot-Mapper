@@ -26,6 +26,7 @@ interface ScanReportTable {
   person_id: ScanReportField | null;
   date_event: ScanReportField | null;
   permissions: Permission[];
+  jobs: Job[];
 }
 
 interface ScanReportField {

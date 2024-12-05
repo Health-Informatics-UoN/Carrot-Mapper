@@ -37,6 +37,7 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
+  normalTable?: boolean;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   linkPrefix = "",
   Filter,
   clickableRow = true,
+  normalTable = true,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -91,39 +93,41 @@ export function DataTable<TData, TValue>({
       <div className="flex justify-between mb-3">
         {Filter}
         {/* Views Columns Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              aria-label="Toggle columns"
-              variant="outline"
-              className="ml-auto hidden lg:flex"
-            >
-              <Columns3 className="mr-2 size-4" />
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {normalTable && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                aria-label="Toggle columns"
+                variant="outline"
+                className="ml-auto hidden lg:flex"
+              >
+                <Columns3 className="mr-2 size-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       <div className="rounded-md border">
         <Table>
@@ -197,9 +201,14 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-center space-x-2 pt-4">
-        <DataTablePagination count={count} defaultPageSize={defaultPageSize} />
-      </div>
+      {normalTable && (
+        <div className="flex items-center justify-center space-x-2 pt-4">
+          <DataTablePagination
+            count={count}
+            defaultPageSize={defaultPageSize}
+          />
+        </div>
+      )}
     </div>
   );
 }
