@@ -35,20 +35,6 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     try:
         msg: Dict[str, Any] = context.get_input()
 
-        # Start updating job record of building concepts from dict. earlier,
-        # after checking existence of Complete job
-        if not Job.objects.filter(
-            scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
-            stage=JobStage.objects.get(value="BUILD_CONCEPTS_FROM_DICT"),
-            status=StageStatus.objects.get(value="COMPLETE"),
-        ).exists():
-            update_job(
-                JobStageType.BUILD_CONCEPTS_FROM_DICT,
-                StageStatusType.IN_PROGRESS,
-                scan_report_table=ScanReportTable.objects.get(id=msg["table_id"]),
-                details="Building concepts from data dictionary started.",
-            )
-
         # CreateConcepts
         result = yield context.call_activity("RulesConceptsActivity", msg)
 

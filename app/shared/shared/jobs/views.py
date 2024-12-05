@@ -23,16 +23,12 @@ class JobView(GenericAPIView, ListModelMixin):
 
     def get_queryset(self):
         scan_report_id = self.kwargs.get("pk")
-        scan_report_table_id = self.kwargs.get("table_pk")
 
         queryset = self.queryset
         stage = self.request.query_params.get("stage")
-        if scan_report_id is not None and scan_report_table_id is None:
+        if scan_report_id is not None:
             if stage == "upload":
                 return queryset.filter(scan_report_id=scan_report_id, stage=1)
             if stage == "download":
                 return queryset.filter(scan_report_id=scan_report_id, stage=5)
             return queryset.filter(scan_report_id=scan_report_id)
-
-        if scan_report_table_id is not None:
-            return queryset.filter(scan_report_table_id=scan_report_table_id)
