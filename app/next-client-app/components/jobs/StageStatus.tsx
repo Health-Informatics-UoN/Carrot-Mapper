@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 
+// TODO: Generalise the status options type then COMBINE with other similar components
 export function Status({ status }: { status: Status }) {
   const statusInfo = StageStatus.find(
     (option) => option.value === status.value
