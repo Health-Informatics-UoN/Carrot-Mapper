@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
 import JobDialog from "@/components/jobs/JobDialog";
+import { FindGeneralStatus } from "@/components/jobs/JobUtils";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -51,17 +52,47 @@ export const columns: ColumnDef<ScanReportTable>[] = [
   },
   {
     id: "jobs",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Jobs Progress" />
-    ),
+    header: () => <div className="text-center">Jobs Progress</div>,
     cell: ({ row }) => {
-      const { id, scan_report, name } = row.original;
+      const { id, name, jobs } = row.original;
+      // Filter the jobs based on the scanReportTable ID
+      let jobsData: Job[] = [];
+      console.log("🚀 ~ jobsData:", jobsData);
+      jobs.map((job) => {
+        if (job.scan_report_table == id) {
+          jobsData.push(job);
+        }
+      });
+      // Get the general status of the table
+      const generalStatus = FindGeneralStatus(jobsData);
+
+      // Divide the jobs of each table to group of three (each group demostrates each run)
+      let jobGroups: Job[][] = [];
+      if (jobsData.length > 0) {
+        let jobs: Job[] = [];
+        jobsData.forEach((job) => {
+          jobs.push(job);
+          if (jobs.length === 3) {
+            // Sort jobs based on the "created_at" field
+            jobs.sort(
+              (a, b) =>
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime()
+            );
+            jobGroups.push(jobs);
+            jobs = [];
+          }
+        });
+      }
+
       return (
-        <JobDialog
-          scan_report_id={scan_report}
-          scan_report_table_id={id}
-          table_name={name}
-        />
+        <div className="flex justify-center">
+          <JobDialog
+            jobGroups={jobGroups}
+            table_name={name}
+            generalStatus={generalStatus}
+          />
+        </div>
       );
     },
   },
@@ -69,13 +100,16 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     id: "edit",
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
-      const { id, scan_report, permissions } = row.original;
+      const { id, scan_report, permissions, jobs } = row.original;
+      // Get the general status of the whole scan report
+      const generalStatus = FindGeneralStatus(jobs);
       return (
         <EditButton
           scanreportId={scan_report}
           tableId={id}
           type="table"
           permissions={permissions}
+          generalStatus={generalStatus}
         />
       );
     },
