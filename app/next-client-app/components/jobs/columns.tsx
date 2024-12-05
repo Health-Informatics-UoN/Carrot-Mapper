@@ -15,7 +15,7 @@ export const columns: ColumnDef<Job>[] = [
     cell: ({ row }) => {
       const { stage } = row.original;
       return (
-        <div className="w-[450px]">
+        <div className="w-[400px]">
           {JobStage.find((option) => option.value == stage.value)?.display_name}
         </div>
       );
@@ -66,7 +66,7 @@ export const columns: ColumnDef<Job>[] = [
     ),
     cell: ({ row }) => {
       const { details } = row.original;
-      return <div className="w-[250px]">{details}</div>;
+      return <div className="w-[300px]">{details}</div>;
     },
     enableSorting: false,
     enableHiding: true,
