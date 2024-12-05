@@ -4,7 +4,10 @@ import { DataTable } from "@/components/data-table";
 import { list } from "@/api/files";
 import { columns } from "./columns";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { InfoIcon, Loader2, LucideIcon } from "lucide-react";
+import { getJobs } from "@/api/scanreports";
+import { GeneralStatus } from "@/constants/job";
+import { cn } from "@/lib/utils";
 
 interface DownloadsProps {
   params: {
@@ -26,8 +29,23 @@ export default async function Downloads({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
+  const downloadingJob = await getJobs(id, "download");
   const filesList = await list(Number(id), query);
 
+  let Icon = null;
+  let currentJob: Job | null = null;
+
+  if (downloadingJob) {
+    currentJob = downloadingJob[0];
+
+    if (currentJob.status.value == "IN_PROGRESS") {
+      const currentStatusOption = GeneralStatus.find(
+        (option) => option.value == currentJob?.status.value
+      );
+      Icon = currentStatusOption?.icon || Loader2;
+    }
+  }
+  console.log("🚀 ~ currentJob121212:", currentJob);
   return (
     <div>
       {filesList && (
@@ -37,12 +55,18 @@ export default async function Downloads({
           count={filesList.count}
           clickableRow={false}
           Filter={
-            <Alert className="max-w-sm h-10 flex items-center">
-              <AlertDescription className="flex">
-                <InfoIcon className="h-4 w-4 mr-2" />
-                <AlertTitle>
-                  Downloads might take a few minutes to be ready.
-                </AlertTitle>
+            <Alert
+              className={cn(
+                "max-w-sm h-10 flex items-center border-2",
+                Icon ? "border-orange-400" : "border-green-300"
+              )}
+            >
+              <AlertDescription className="flex items-center">
+                {Icon && (
+                  <Icon className="animate-spin text-orange-500 dark:text-orange-500 size-5 mr-2" />
+                )}
+
+                <div>{currentJob?.details}</div>
               </AlertDescription>
             </Alert>
           }

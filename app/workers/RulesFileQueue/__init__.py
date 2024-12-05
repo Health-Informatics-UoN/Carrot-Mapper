@@ -22,6 +22,11 @@ from shared.services.rules_export import (
     get_mapping_rules_json,
     make_dag,
 )
+from shared_code.db import (
+    update_job,
+    JobStageType,
+    StageStatusType,
+)
 
 
 def create_json_rules(rules: QuerySet[MappingRule]) -> BytesIO:
@@ -104,6 +109,12 @@ def main(msg: func.QueueMessage) -> None:
     }
 
     if file_type not in file_handlers:
+        update_job(
+            JobStageType.DOWNLOAD_RULES,
+            StageStatusType.FAILED,
+            scan_report=ScanReport.objects.get(id=scan_report_id),
+            details=f"Unsupported file type: {file_type}",
+        )
         raise ValueError(f"Unsupported file type: {file_type}")
 
     config = file_handlers[file_type]
@@ -127,3 +138,10 @@ def main(msg: func.QueueMessage) -> None:
         file_url=filename,
     )
     file_entity.save()
+    # update job status
+    update_job(
+        JobStageType.DOWNLOAD_RULES,
+        StageStatusType.COMPLETE,
+        scan_report=ScanReport.objects.get(id=scan_report_id),
+        details="Requested file is ready for downloading.",
+    )
