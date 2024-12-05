@@ -13,8 +13,10 @@ const fetchKeys = {
     `v2/scanreports/${scanReportId}/tables/${tableId}/`,
   tables: (scanReportId: string, filter?: string) =>
     `v2/scanreports/${scanReportId}/tables/?${filter}`,
-  table_jobs: (scanReportId: string | number, tableId: string | number) =>
-    `v2/scanreports/${scanReportId}/tables/${tableId}/jobs/`,
+  jobs: (scanReportId: string | number, filter?: string) =>
+    filter
+      ? `v2/scanreports/${scanReportId}/jobs/?stage=${filter}`
+      : `v2/scanreports/${scanReportId}/jobs/`,
   field: (
     scanReportId: string | number,
     tableId: string | number,
@@ -138,18 +140,16 @@ export async function getScanReportTable(
       updated_at: new Date(),
       date_event: null,
       permissions: [],
+      jobs: [],
     };
   }
 }
 
 export async function getScanReportTableJobs(
-  scanReportId: number,
-  tableId: number
+  scanReportId: string
 ): Promise<Job[] | null> {
   try {
-    return await request<Job[] | null>(
-      fetchKeys.table_jobs(scanReportId, tableId)
-    );
+    return await request<Job[] | null>(fetchKeys.jobs(scanReportId));
   } catch (error) {
     console.warn("Failed to fetch jobs data.");
     return null;
