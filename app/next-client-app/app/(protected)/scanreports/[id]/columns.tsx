@@ -61,7 +61,7 @@ export const columns: ColumnDef<ScanReportTable>[] = [
       // Get the general status of the table
       const generalStatus = FindGeneralStatus(jobsData);
 
-      // Divide the jobs of each table to group of three (each group demostrates each run)
+      // Divide the jobs of each table to group of three (each group demonstrates each run)
       let jobGroups: Job[][] = [];
       if (jobsData.length > 0) {
         let jobs: Job[] = [];
