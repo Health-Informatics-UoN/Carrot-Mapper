@@ -5,9 +5,7 @@ import { DialogTrigger } from "@radix-ui/react-dialog";
 import { DataTable } from "../data-table";
 import { columns } from "./columns";
 import { GeneralStatus } from "@/constants/job";
-import { Loader2, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Tooltip } from "react-tooltip";
+import { StatusIcon } from "../core/StatusIcon";
 
 interface JobProps {
   jobGroups: Job[][];
@@ -20,29 +18,14 @@ export default function JobDialog({
   table_name,
   generalStatus,
 }: JobProps) {
-  const generalStatusOption = GeneralStatus.find(
-    (option) => option.value == generalStatus
-  );
-  const Icon = generalStatusOption?.icon || X;
-
   return (
     <Dialog>
       <DialogTrigger disabled={generalStatus == "NOT_STARTED"}>
         <div role="button">
-          <a
-            data-tooltip-id="icon-tooltip"
-            data-tooltip-content={`${generalStatusOption?.label}`}
-            data-tooltip-place="top"
-          >
-            <Tooltip id="icon-tooltip" />
-            <Icon
-              className={cn(
-                generalStatusOption?.color,
-                "size-4",
-                Icon === Loader2 && "animate-spin"
-              )}
-            />
-          </a>
+          <StatusIcon
+            status={{ value: generalStatus }}
+            statusOptions={GeneralStatus}
+          />
         </div>
       </DialogTrigger>
       <DialogContent className="max-w-screen-xl overflow-auto h-1/2">

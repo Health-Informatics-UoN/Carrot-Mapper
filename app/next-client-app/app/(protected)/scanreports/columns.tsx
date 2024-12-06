@@ -17,12 +17,13 @@ import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { Button } from "@/components/ui/button";
-import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { format } from "date-fns/format";
 import { HandleArchive } from "@/components/HandleArchive";
 import { useState } from "react";
 import DeleteDialog from "@/components/scanreports/DeleteDialog";
 import { MappingStatus } from "@/components/scanreports/MappingStatus";
+import { UploadStatusOptions } from "@/constants/scanReportStatus";
+import { StatusIcon } from "@/components/core/StatusIcon";
 
 export const columns: ColumnDef<ScanReport>[] = [
   {
@@ -97,8 +98,9 @@ export const columns: ColumnDef<ScanReport>[] = [
     cell: ({ row }) => {
       const { upload_status } = row.original;
       return (
-        <UploadStatus
-          upload_status={upload_status || { value: "IN_PROGRESS" }}
+        <StatusIcon
+          statusOptions={UploadStatusOptions}
+          status={upload_status || { value: "IN_PROGRESS" }}
         />
       );
     },
