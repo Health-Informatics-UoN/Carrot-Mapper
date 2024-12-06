@@ -1,6 +1,7 @@
 import { columns } from "./columns";
 import {
   getScanReportPermissions,
+  getJobs,
   getScanReportTables,
 } from "@/api/scanreports";
 import { DataTable } from "@/components/data-table";
@@ -27,8 +28,14 @@ export default async function ScanReportsTable({
 
   const scanReportsTables = await getScanReportTables(id, query);
   const permissions = await getScanReportPermissions(id);
+  // Get data about jobs then inject it to the SR table data
+  const jobs = await getJobs(id);
   const scanReportsResult = scanReportsTables.results.map((table) => {
     table.permissions = permissions.permissions;
+    if (jobs) {
+      table.jobs = jobs;
+    }
+
     return table;
   });
 

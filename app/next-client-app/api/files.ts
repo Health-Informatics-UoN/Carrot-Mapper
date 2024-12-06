@@ -1,6 +1,7 @@
 "use server";
 
 import request from "@/lib/api/request";
+import { redirect } from "next/navigation";
 
 const fetchKeys = {
   list: (scan_report_id: number, filter?: string) =>
@@ -11,11 +12,11 @@ const fetchKeys = {
 
 export async function list(
   scan_report_id: number,
-  filter: string | undefined,
+  filter: string | undefined
 ): Promise<PaginatedResponse<FileDownload> | null> {
   try {
     return await request<PaginatedResponse<FileDownload>>(
-      fetchKeys.list(scan_report_id, filter),
+      fetchKeys.list(scan_report_id, filter)
     );
   } catch (error) {
     return null;
@@ -24,8 +25,8 @@ export async function list(
 
 export async function requestFile(
   scan_report_id: number,
-  file_type: FileTypeFormat,
-): Promise<{ success: boolean; errorMessage?: string }> {
+  file_type: FileTypeFormat
+) {
   try {
     await request(fetchKeys.requestFile(scan_report_id), {
       method: "POST",
@@ -37,8 +38,8 @@ export async function requestFile(
         file_type: file_type,
       }),
     });
-    return { success: true };
   } catch (error: any) {
     return { success: false, errorMessage: error.message };
   }
+  redirect(`/scanreports/${scan_report_id}/downloads`);
 }
