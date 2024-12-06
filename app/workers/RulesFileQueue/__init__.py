@@ -143,5 +143,4 @@ def main(msg: func.QueueMessage) -> None:
         JobStageType.DOWNLOAD_RULES,
         StageStatusType.COMPLETE,
         scan_report=ScanReport.objects.get(id=scan_report_id),
-        details="Requested file is ready for downloading.",
     )
