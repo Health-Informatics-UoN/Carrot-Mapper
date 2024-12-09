@@ -1,4 +1,4 @@
-name: carrot-mapper-dev-tempo-fix
+name: carrot-mapper-dev
 
 services:
   db:
@@ -14,6 +14,8 @@ services:
     build:
       context: app/next-client-app
       dockerfile: Dockerfile
+      target: dev
+    command: npm run dev
     ports:
       - 3000:3000
     environment:
@@ -22,8 +24,12 @@ services:
       - NEXTAUTH_URL=http://next-client:3000/
       - NEXTAUTH_SECRET=verycomplexsecretkey
       - NEXTAUTH_BACKEND_URL=http://web:8000/api/
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
     volumes:
-      - ./app/next-client-app:/next-client-app
+      - ./app/next-client-app:/app
+      - /app/node_modules
+      - /app/.next
 
   omop-lite:
     image: ghcr.io/andyrae/omop-lite
