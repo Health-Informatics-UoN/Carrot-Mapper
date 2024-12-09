@@ -10,17 +10,17 @@ export const JobStage = [
   {
     id: 3,
     value: "REUSE_CONCEPTS",
-    display_name: "Reusing concepts from other scan reports",
+    display_name: "Reusing mappings from available data",
   },
   {
     id: 4,
     value: "GENERATE_RULES",
-    display_name: "Automatic generating mapping rules from available concepts",
+    display_name: "Generating rules from available mappings",
   },
   {
     id: 5,
     value: "DOWNLOAD_RULES",
-    display_name: "Generate and download mapping rules JSON",
+    display_name: "Generate mapping rules file",
   },
 ];
 
