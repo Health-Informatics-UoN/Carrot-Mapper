@@ -1,3 +1,4 @@
+from turtle import mode
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -121,11 +122,48 @@ class OmopField(BaseModel):
     def __str__(self):
         return str(self.id)
 
+class RuleSet(BaseModel):
+    """
+    A RuleSet is a set of Rules (obviously).
+
+    Every Rule belongs to a RuleSet.
+
+    A RuleSet is created when a ScanReport is uploaded.
+    And every time a user creates a new version.
+
+    A RuleSet is created when a Rules file is uploaded.
+
+    """
+    # who created it (uploaded or forked)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
+
+    name = models.CharField(max_length=64)
+
+    # Version string - set by user? we encourage semver but it's up to them.
+    version = models.CharField(max_length=64)
+
+    # this could be another table in future ofc.
+    license = models.CharField(max_length=64)
+
+    # allow rules for sharing ?
+    public = models.BooleanField(default=False)
+
+    # if a new version has been created ? or do we just check if it has any children?
+    locked = models.BooleanField(default=False)
+
+    # if there is a parent version
+    parent = models.ForeignKey('RuleSet', null=True, blank=True)
+
 
 class ScanReportConcept(BaseModel):
     """
     Model for Concepts informed by the user or automatic tools.
-    It uses a generic relation to connect it to a ScanReportValue or ScanReportValue
+    It uses a generic relation to connect it to a ScanReportValue or ScanReportField
     """
 
     nlp_entity = models.CharField(max_length=64, null=True, blank=True)
@@ -150,6 +188,17 @@ class ScanReportConcept(BaseModel):
         choices=CreationType.choices,
         default=CreationType.Manual,
     )
+
+    # Attaches to the set of Rules it was created in
+    rule_set = models.ForeignKey(RuleSet, on_delete=models.DO_NOTHING)
+
+    # Soft delete - this marks the Rule set version number that the Concept was "deleted" in
+    deleted = models.ForeignKey(RuleSet, on_delete=models.DO_NOTHING, null=True, blank=True)
+
+    # TODO: Add a nullable self referential field - provenance (if this is a reuse, where from?)
+    # TODO: Add created_by - provenance who ? User id. 
+    # TODO: Add tool - provenance how ? (This could be a table, but probably just 'carrot mapper' string)
+    # TODO: Add description - provenance why ? (text field ?)
 
     class Meta:
         app_label = "mapping"
@@ -220,6 +269,8 @@ class ScanReport(BaseModel):
         related_query_name="scanreport_editor",
         blank=True,
     )
+    # The current "live" Rule Set for a Scan Report
+    rule_set = models.ForeignKey(RuleSet, on_delete=models.CASCADE)
 
     class Meta:
         app_label = "mapping"
@@ -233,7 +284,8 @@ class ScanReportTable(BaseModel):
     Model for a Scan Report Table
     """
 
-    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE, null=True)
+    rule_set = models.ForeignKey(RuleSet, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
 
     # Quick notes:
@@ -321,7 +373,11 @@ class MappingRule(BaseModel):
     """
 
     # save the scan_report link to make it easier when performing lookups on scan_report_id
-    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE)
+    # TODO: make this optional?
+    scan_report = models.ForeignKey(ScanReport, on_delete=models.CASCADE, null=True)
+
+    # We now create a rule set for everyrule ! 
+    rule_set = models.ForeignKey(RuleSet, on_delete=models.CASCADE)
 
     # connect the rule to a destination_field (and therefore destination_table)
     # e.g. condition_concept_id
@@ -333,6 +389,7 @@ class MappingRule(BaseModel):
     )
 
     # connect the rule with a source_field (and therefore source_table)
+    # problem here - you can't have rules without source_fields (despite it being nullable lol?)
     source_field = models.ForeignKey(
         ScanReportField, on_delete=models.CASCADE, null=True, blank=True
     )
