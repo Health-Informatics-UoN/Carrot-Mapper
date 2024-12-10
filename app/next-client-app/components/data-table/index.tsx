@@ -37,7 +37,8 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
-  normalTable?: boolean;
+  viewColumns?: boolean;
+  paginated?: boolean;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -52,7 +53,8 @@ export function DataTable<TData, TValue>({
   linkPrefix = "",
   Filter,
   clickableRow = true,
-  normalTable = true,
+  viewColumns = true,
+  paginated = true,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -93,7 +95,7 @@ export function DataTable<TData, TValue>({
       <div className="flex justify-between mb-3">
         {Filter}
         {/* Views Columns Menu */}
-        {normalTable && (
+        {viewColumns && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -201,7 +203,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      {normalTable && (
+      {paginated && (
         <div className="flex items-center justify-center space-x-2 pt-4">
           <DataTablePagination
             count={count}

@@ -59,7 +59,8 @@ export default function JobDialog({
                 data={jobs}
                 count={jobs.length}
                 clickableRow={false}
-                normalTable={false}
+                paginated={false}
+                viewColumns={false}
               />
             ))
           : "Retrieving Jobs"}
