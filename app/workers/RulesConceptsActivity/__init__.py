@@ -14,7 +14,11 @@ django.setup()
 from shared.data.models import Concept
 from shared.mapping.models import ScanReportConcept, ScanReportTable
 from shared_code import db
-
+from shared_code.db import (
+    update_job,
+    JobStageType,
+    StageStatusType,
+)
 from .reuse import reuse_existing_field_concepts, reuse_existing_value_concepts
 
 
@@ -53,7 +57,9 @@ def _create_concepts(
     return concepts
 
 
-def _transform_concepts(table_values: List[ScanReportValueDict]) -> None:
+def _transform_concepts(
+    table_values: List[ScanReportValueDict], table: ScanReportTable
+) -> None:
     """
     For each vocab, set "concept_id" and "standard_concept" in each entry in the vocab.
     Transforms the values in place.
@@ -86,7 +92,7 @@ def _transform_concepts(table_values: List[ScanReportValueDict]) -> None:
             # Set to defaults, and skip all the remaining processing that a vocab would require
             _set_defaults_for_none_vocab(value)
         else:
-            _process_concepts_for_vocab(vocab, value)
+            _process_concepts_for_vocab(vocab, value, table)
 
 
 def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
@@ -105,7 +111,9 @@ def _set_defaults_for_none_vocab(entries: List[ScanReportValueDict]) -> None:
         entry["standard_concept"] = None
 
 
-def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) -> None:
+def _process_concepts_for_vocab(
+    vocab: str, entries: List[ScanReportValueDict], table: ScanReportTable
+) -> None:
     """
     Process concepts for a specific vocabulary.
 
@@ -117,6 +125,12 @@ def _process_concepts_for_vocab(vocab: str, entries: List[ScanReportValueDict]) 
         - None
 
     """
+    update_job(
+        JobStageType.BUILD_CONCEPTS_FROM_DICT,
+        StageStatusType.IN_PROGRESS,
+        scan_report_table=table,
+        details=f"Building concepts for {vocab} vocabulary",
+    )
     logger.info(f"begin {vocab}")
     concept_vocab_content = _get_concepts_for_vocab(vocab, entries)
 
@@ -258,7 +272,7 @@ def _handle_table(
     # Add vocab id to each entry from the vocab dict
     helpers.add_vocabulary_id_to_entries(table_values, vocab, table.name)
 
-    _transform_concepts(table_values)
+    _transform_concepts(table_values, table)
     logger.debug("finished standard concepts lookup")
 
     concepts = _create_concepts(table_values)
@@ -268,10 +282,43 @@ def _handle_table(
     ScanReportConcept.objects.bulk_create(concepts)
 
     logger.info("Create concepts all finished")
+    if len(concepts) == 0:
+        update_job(
+            JobStageType.BUILD_CONCEPTS_FROM_DICT,
+            StageStatusType.COMPLETE,
+            scan_report_table=table,
+            details=f"Finished",
+        )
+    else:
+        update_job(
+            JobStageType.BUILD_CONCEPTS_FROM_DICT,
+            StageStatusType.COMPLETE,
+            scan_report_table=table,
+            details=f"Created {len(concepts)} concepts based on provided data dictionary.",
+        )
 
-    # handle reuse of concepts
-    reuse_existing_field_concepts(table_fields)
-    reuse_existing_value_concepts(table_values)
+    # Starting the concepts reusing process
+    update_job(
+        JobStageType.REUSE_CONCEPTS,
+        StageStatusType.IN_PROGRESS,
+        scan_report_table=table,
+    )
+    # handle reuse of concepts at field level
+    reuse_existing_field_concepts(table_fields, table)
+    update_job(
+        JobStageType.REUSE_CONCEPTS,
+        StageStatusType.IN_PROGRESS,
+        scan_report_table=table,
+        details="Finished at field level. Continuing at value level...",
+    )
+    # handle reuse of concepts at value level
+    reuse_existing_value_concepts(table_values, table)
+    update_job(
+        JobStageType.REUSE_CONCEPTS,
+        StageStatusType.COMPLETE,
+        scan_report_table=table,
+        details="Finished",
+    )
 
 
 def main(msg: Dict[str, str]):

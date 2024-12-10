@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     "shared.mapping",
     "shared",
     "shared.files",
+    "shared.jobs",
 ]
 
 DATABASES = {
