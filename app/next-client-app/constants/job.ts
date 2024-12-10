@@ -1,5 +1,3 @@
-import { Check, CircleSlash, Loader2, X } from "lucide-react";
-
 export const JobStage = [
   { id: 1, value: "UPLOAD_SCAN_REPORT", display_name: "Upload Scan Report" },
   {
@@ -27,31 +25,31 @@ export const JobStage = [
 export const StageStatus = [
   {
     label: "Not Started",
-    icon: CircleSlash,
+    icon: "CircleSlash",
     value: "NOT_STARTED",
     color: "text-gray-600 dark:text-gray-600",
   },
   {
     label: "Job Queued",
-    icon: CircleSlash,
+    icon: "CircleSlash",
     value: "QUEUED",
     color: "text-gray-600 dark:text-gray-600",
   },
   {
     label: "Job Complete",
-    icon: Check,
+    icon: "Check",
     value: "COMPLETE",
     color: "text-green-600 dark:text-green-600",
   },
   {
     label: "Job Failed",
-    icon: X,
+    icon: "X",
     value: "FAILED",
     color: "text-red-500 dark:text-red-500",
   },
   {
     label: "Job In Progress",
-    icon: Loader2,
+    icon: "Loader2",
     value: "IN_PROGRESS",
     color: "text-orange-500 dark:text-orange-500",
   },
@@ -61,25 +59,25 @@ export const GeneralStatus = [
   {
     label:
       "Not Started or No data yet. Start by update table's Person ID and Date event",
-    icon: CircleSlash,
+    icon: "CircleSlash",
     value: "NOT_STARTED",
     color: "text-gray-600 dark:text-gray-600",
   },
   {
     label: "Complete. Click for details.",
-    icon: Check,
+    icon: "Check",
     value: "COMPLETE",
     color: "text-green-600 dark:text-green-600",
   },
   {
     label: "Failed. Click for details.",
-    icon: X,
+    icon: "X",
     value: "FAILED",
     color: "text-red-500 dark:text-red-500",
   },
   {
     label: "In Progress. Click for details.",
-    icon: Loader2,
+    icon: "Loader2",
     value: "IN_PROGRESS",
     color: "text-orange-500 dark:text-orange-500",
   },

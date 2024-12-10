@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { requestFile } from "@/api/files";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 export function RulesButton({
   scanreportId,
@@ -29,17 +28,14 @@ export function RulesButton({
   query: string;
   filename: string;
 }) {
-  const router = useRouter();
-
   const handleDownload = async (fileType: FileTypeFormat) => {
     const resp = await requestFile(Number(scanreportId), fileType);
-    if (resp.success) {
-      router.push(`downloads`);
-      toast.success("File requested.");
-    } else {
+    if (resp) {
       toast.error(
-        `Error downloading file: ${(resp.errorMessage as any).message}`,
+        `Error downloading file: ${(resp.errorMessage as any).message}`
       );
+    } else {
+      toast.success("File requested.");
     }
   };
   return (

@@ -3,8 +3,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { format } from "date-fns/format";
-import { Status } from "./StageStatus";
-import { JobStage } from "@/constants/job";
+import { JobStage, StageStatus } from "@/constants/job";
+import { StatusIcon } from "@/components/core/StatusIcon";
 
 export const columns: ColumnDef<Job>[] = [
   {
@@ -28,7 +28,12 @@ export const columns: ColumnDef<Job>[] = [
     header: () => <div className="text-center">Status</div>,
     cell: ({ row }) => {
       const { status } = row.original;
-      return <Status status={status || { value: "QUEUED" }} />;
+      return (
+        <StatusIcon
+          status={status || { value: "QUEUED" }}
+          statusOptions={StageStatus}
+        />
+      );
     },
     enableSorting: false,
     enableHiding: true,

@@ -14,7 +14,7 @@ import { SelectTriggerProps } from "@radix-ui/react-select";
 
 interface MappingStatusProps extends SelectTriggerProps {
   id: string;
-  mapping_status: Status;
+  mapping_status: { value: string };
   dataset: string;
   disabled: boolean;
 }

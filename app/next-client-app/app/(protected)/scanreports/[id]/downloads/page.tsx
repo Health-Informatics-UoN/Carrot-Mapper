@@ -3,8 +3,8 @@ import { objToQuery } from "@/lib/client-utils";
 import { DataTable } from "@/components/data-table";
 import { list } from "@/api/files";
 import { columns } from "./columns";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { getJobs } from "@/api/scanreports";
+import { DownloadStatus } from "./download-status";
 
 interface DownloadsProps {
   params: {
@@ -12,8 +12,6 @@ interface DownloadsProps {
   };
   searchParams?: FilterParameters;
 }
-
-export const revalidate = 30;
 
 export default async function Downloads({
   params: { id },
@@ -26,7 +24,14 @@ export default async function Downloads({
   };
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
+  const downloadingJob = await getJobs(id, "download");
   const filesList = await list(Number(id), query);
+
+  let lastestJob: Job | null = null;
+
+  if (downloadingJob) {
+    lastestJob = downloadingJob[0];
+  }
 
   return (
     <div>
@@ -37,14 +42,10 @@ export default async function Downloads({
           count={filesList.count}
           clickableRow={false}
           Filter={
-            <Alert className="max-w-sm h-10 flex items-center">
-              <AlertDescription className="flex">
-                <InfoIcon className="h-4 w-4 mr-2" />
-                <AlertTitle>
-                  Downloads might take a few minutes to be ready.
-                </AlertTitle>
-              </AlertDescription>
-            </Alert>
+            lastestJob?.status.value == "IN_PROGRESS" ||
+            lastestJob?.status.value == "FAILED" ? (
+              <DownloadStatus lastestJob={lastestJob} />
+            ) : undefined
           }
           defaultPageSize={defaultPageSize}
         />
