@@ -287,14 +287,14 @@ def _handle_table(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"No concepts was created for table {table.name}.",
+            details=f"Finished",
         )
     else:
         update_job(
             JobStageType.BUILD_CONCEPTS_FROM_DICT,
             StageStatusType.COMPLETE,
             scan_report_table=table,
-            details=f"Created {len(concepts)} concepts for table {table.name} based on provided data dictionary.",
+            details=f"Created {len(concepts)} concepts based on provided data dictionary.",
         )
 
     # Starting the concepts reusing process
@@ -309,7 +309,7 @@ def _handle_table(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.IN_PROGRESS,
         scan_report_table=table,
-        details="Finished reusing concepts at field level. Reusing concepts at value level...",
+        details="Finished at field level. Continuing at value level...",
     )
     # handle reuse of concepts at value level
     reuse_existing_value_concepts(table_values, table)
@@ -317,7 +317,7 @@ def _handle_table(
         JobStageType.REUSE_CONCEPTS,
         StageStatusType.COMPLETE,
         scan_report_table=table,
-        details="Reusing concepts finished.",
+        details="Finished",
     )
 
 
@@ -340,10 +340,4 @@ def main(msg: Dict[str, str]):
     # get the vocab dictionary
     _, vocab_dictionary = blob_parser.get_data_dictionary(data_dictionary_blob)
 
-    # Starting the concepts building from OMOP vocab process
-    update_job(
-        JobStageType.BUILD_CONCEPTS_FROM_DICT,
-        StageStatusType.IN_PROGRESS,
-        scan_report_table=table,
-    )
     _handle_table(table, vocab_dictionary)

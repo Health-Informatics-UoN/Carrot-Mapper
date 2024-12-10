@@ -76,7 +76,7 @@ from shared.services.rules_export import (
     get_mapping_rules_list,
     make_dag,
 )
-from shared.jobs.models import Job, JobStage
+from shared.jobs.models import Job, JobStage, StageStatus
 from django.db.models import Q
 
 
@@ -404,13 +404,20 @@ class ScanReportTableDetailV2(
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
         try:
-            # Create Job records for each update first
+            # Create Job records
+            # For the first stage, default status is IN_PROGRESS
+            Job.objects.create(
+                scan_report=scan_report_instance,
+                scan_report_table=instance,
+                stage=JobStage.objects.get(value="BUILD_CONCEPTS_FROM_DICT"),
+                status=StageStatus.objects.get(value="IN_PROGRESS"),
+            )
             for stage in [
-                "BUILD_CONCEPTS_FROM_DICT",
                 "REUSE_CONCEPTS",
                 "GENERATE_RULES",
             ]:
                 Job.objects.create(
+                    scan_report=scan_report_instance,
                     scan_report_table=instance,
                     stage=JobStage.objects.get(value=stage),
                 )

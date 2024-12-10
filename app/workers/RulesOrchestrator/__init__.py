@@ -16,6 +16,7 @@ from shared_code.db import (
     StageStatusType,
 )
 from shared.mapping.models import ScanReportTable
+from shared.jobs.models import Job, JobStage, StageStatus
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
@@ -32,8 +33,9 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         None
     """
     try:
-        # CreateConcepts
         msg: Dict[str, Any] = context.get_input()
+
+        # CreateConcepts
         result = yield context.call_activity("RulesConceptsActivity", msg)
 
         table_id = msg.pop("table_id")
@@ -50,7 +52,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             JobStageType.GENERATE_RULES,
             StageStatusType.IN_PROGRESS,
             scan_report_table=ScanReportTable.objects.get(id=table_id),
-            details=f"Generating mapping rules from {concepts_count} concepts found.",
+            details=f"Generating mapping rules from available concepts.",
         )
         # Fan out
         tasks = [
@@ -66,7 +68,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
             JobStageType.GENERATE_RULES,
             StageStatusType.COMPLETE,
             scan_report_table=ScanReportTable.objects.get(id=table_id),
-            details="Automatic mapping rules generation finished.",
+            details="Finished",
         )
         return [result, results]
     except Exception as e:
