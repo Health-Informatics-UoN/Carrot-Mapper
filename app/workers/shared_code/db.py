@@ -22,12 +22,6 @@ from shared_code.models import (
 from shared.jobs.models import Job, JobStage, StageStatus
 
 
-class UploadStatusType(Enum):
-    IN_PROGRESS = "Upload in Progress"
-    COMPLETE = "Upload Complete"
-    FAILED = "Upload Failed"
-
-
 class StageStatusType(Enum):
     IN_PROGRESS = "Job in Progress"
     COMPLETE = "Job Complete"
@@ -61,40 +55,30 @@ def update_job(
     # Get stage and status entities
     job_stage_entity = JobStage.objects.get(value=stage.name)
     stage_status_entity = StageStatus.objects.get(value=status.name)
+    upload_status_entity = UploadStatus.objects.get(value=status.name)
 
-    # Get the job entity based on the passed id and stage,
-    # then filter and order to get the latest job record to update
-    if scan_report:
-        scan_report_job = Job.objects.filter(
-            scan_report=scan_report, stage=job_stage_entity
-        ).order_by("-created_at")[0]
+    # Update scan report upload status if the stage is UPLOAD_SCAN_REPORT
+    if scan_report and stage.name == "UPLOAD_SCAN_REPORT":
+        scan_report.upload_status = upload_status_entity
+        scan_report.save()
+    else:
+        # Get the latest job record to update based on scan_report or scan_report_table
+        job = None
+        if scan_report:
+            job = Job.objects.filter(
+                scan_report=scan_report, stage=job_stage_entity
+            ).order_by("-created_at")[0]
+        elif scan_report_table:
+            job = Job.objects.filter(
+                scan_report_table=scan_report_table, stage=job_stage_entity
+            ).order_by("-created_at")[0]
 
-    if scan_report_table:
-        scan_report_job = Job.objects.filter(
-            scan_report_table=scan_report_table, stage=job_stage_entity
-        ).order_by("-created_at")[0]
-
-    # Update status and details
-    scan_report_job.status = stage_status_entity
-    if details:
-        scan_report_job.details = details
-    scan_report_job.save()
-
-
-def update_scan_report_status(id: str, upload_status: UploadStatusType) -> None:
-    """
-    Updates the status of a scan report.
-
-    Args:
-        id (str): The ID of the scan report.
-        status (Status): The status to update the Scan Report with.
-
-    Returns: None
-    """
-    upload_status_entity = UploadStatus.objects.get(value=upload_status.name)
-    scan_report = ScanReport.objects.get(id=id)
-    scan_report.upload_status = upload_status_entity
-    scan_report.save()
+        if job:
+            # Update status and details
+            job.status = stage_status_entity
+            if details:
+                job.details = details
+            job.save()
 
 
 def create_concept(
