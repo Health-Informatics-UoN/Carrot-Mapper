@@ -170,11 +170,10 @@ export async function updateScanReportTable(
       },
       body: JSON.stringify(data),
     });
+    revalidatePath(`/scanreports/${scanReportId}/`);
   } catch (error: any) {
     return { errorMessage: error.message };
   }
-  // TODO: remove redirect here.
-  redirect(`/scanreports/${scanReportId}/`);
 }
 
 export async function getScanReportTables(
