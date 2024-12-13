@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataTablePagination } from "./DataTablePagination";
 import { Columns3 } from "lucide-react";
+import { RefreshJobsButton } from "../jobs/RefreshButton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,6 +40,7 @@ interface DataTableProps<TData, TValue> {
   clickableRow?: boolean;
   viewColumns?: boolean;
   paginated?: boolean;
+  RefreshJobsButton?: JSX.Element;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -55,6 +57,7 @@ export function DataTable<TData, TValue>({
   clickableRow = true,
   viewColumns = true,
   paginated = true,
+  RefreshJobsButton,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -92,8 +95,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex justify-between mb-3">
+      <div className="flex justify-between items-center mb-3">
         {Filter}
+        {RefreshJobsButton}
         {/* Views Columns Menu */}
         {viewColumns && (
           <DropdownMenu>

@@ -8,6 +8,7 @@ import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
 import { DataTableFilter } from "@/components/data-table/DataTableFilter";
+import ScanReportsTableClient from "@/components/jobs/SRTableTest";
 
 interface ScanReportsTableProps {
   params: {
@@ -24,7 +25,6 @@ export default async function ScanReportsTable({
 
   const combinedParams = { ...defaultParams, ...searchParams };
   const query = objToQuery(combinedParams);
-  const filter = <DataTableFilter filter="name" />;
 
   const scanReportsTables = await getScanReportTables(id, query);
   const permissions = await getScanReportPermissions(id);
@@ -42,12 +42,16 @@ export default async function ScanReportsTable({
   return (
     <div>
       <div>
-        <DataTable
+        {/* <DataTable
           columns={columns}
           data={scanReportsResult}
           count={scanReportsTables.count}
           Filter={filter}
           linkPrefix="tables/"
+        /> */}
+        <ScanReportsTableClient
+          scanReportId={id}
+          initialScanReportsResult={scanReportsResult}
         />
       </div>
     </div>
