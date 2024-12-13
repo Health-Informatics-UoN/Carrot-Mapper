@@ -1,14 +1,11 @@
-import { columns } from "./columns";
 import {
   getScanReportPermissions,
   getJobs,
   getScanReportTables,
 } from "@/api/scanreports";
-import { DataTable } from "@/components/data-table";
 import { objToQuery } from "@/lib/client-utils";
 import { FilterParameters } from "@/types/filter";
-import { DataTableFilter } from "@/components/data-table/DataTableFilter";
-import ScanReportsTableClient from "@/components/jobs/SRTableTest";
+import ScanReportsTableClient from "@/components/jobs/ScanReportsTableClient";
 
 interface ScanReportsTableProps {
   params: {

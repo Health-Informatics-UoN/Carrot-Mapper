@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { getJobs } from "@/api/scanreports";
+import { toast } from "sonner";
 
 interface RefreshJobsButtonProps {
   scanReportId: string;
@@ -19,16 +20,13 @@ export function RefreshJobsButton({
   const handleRefresh = async () => {
     try {
       setIsRefreshing(true);
-
-      // Fetch updated jobs
+      // Fetch jobs data
       const updatedJobs = await getJobs(scanReportId);
       if (updatedJobs) {
         onJobsRefresh(updatedJobs);
       }
-      // Call the provided callback to update parent component
-    } catch (error) {
-      console.error("Failed to refresh jobs:", error);
-      // Optionally add error toast or notification
+    } catch (error: any) {
+      toast.error("Failed to refresh jobs:", error);
     } finally {
       setIsRefreshing(false);
     }
