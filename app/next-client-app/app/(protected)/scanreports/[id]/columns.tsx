@@ -4,8 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
 import JobDialog from "@/components/jobs/JobDialog";
-import { FindGeneralStatus } from "@/components/jobs/JobUtils";
-import { DivideJobs } from "../../../../components/jobs/JobUtils";
+import { FindGeneralStatus, DivideJobs } from "@/components/jobs/JobUtils";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
