@@ -410,7 +410,7 @@ class ScanReportTableDetailV2(
         ):
             return Response(
                 {
-                    "detail": "Please wait until the jobs running on this table finished before updating it."
+                    "detail": "There is a job running for this table. Please wait until it complete before updating."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
