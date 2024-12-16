@@ -39,6 +39,7 @@ interface DataTableProps<TData, TValue> {
   clickableRow?: boolean;
   viewColumns?: boolean;
   paginated?: boolean;
+  overflow?: boolean;
   RefreshJobsButton?: JSX.Element;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
@@ -56,6 +57,7 @@ export function DataTable<TData, TValue>({
   clickableRow = true,
   viewColumns = true,
   paginated = true,
+  overflow = true,
   RefreshJobsButton,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
@@ -135,7 +137,7 @@ export function DataTable<TData, TValue>({
         )}
       </div>
       <div className="rounded-md border">
-        <Table>
+        <Table overflow={overflow}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
