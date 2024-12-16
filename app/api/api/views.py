@@ -403,6 +403,18 @@ class ScanReportTableDetailV2(
         trigger = (
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
+
+        if Job.objects.filter(
+            scan_report_table=instance,
+            status=StageStatus.objects.get(value="IN_PROGRESS"),
+        ):
+            return Response(
+                {
+                    "detail": "Please wait until the jobs running on this table finished before updating it."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             # Create Job records
             # For the first stage, default status is IN_PROGRESS
