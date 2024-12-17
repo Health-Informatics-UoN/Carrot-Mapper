@@ -44,6 +44,7 @@ export default function JobDialog({
                 clickableRow={false}
                 paginated={false}
                 viewColumns={false}
+                overflow={false}
               />
             ))
           : "Retrieving Jobs"}

@@ -403,6 +403,18 @@ class ScanReportTableDetailV2(
         trigger = (
             f"/api/orchestrators/{settings.AZ_RULES_NAME}?code={settings.AZ_RULES_KEY}"
         )
+        # Prevent double-updating from backend
+        if Job.objects.filter(
+            scan_report_table=instance,
+            status=StageStatus.objects.get(value="IN_PROGRESS"),
+        ):
+            return Response(
+                {
+                    "detail": "There is a job running for this table. Please wait until it complete before updating."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         try:
             # Create Job records
             # For the first stage, default status is IN_PROGRESS

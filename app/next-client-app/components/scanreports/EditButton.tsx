@@ -45,7 +45,7 @@ export function EditButton({
         <Pencil className="ml-2 size-4" />
       </Button>
       {generalStatus == "IN_PROGRESS" && (
-        <Tooltips content="You can update the table after jobs running in this scan report finished." />
+        <Tooltips content="You can update the table fields after jobs running in this table finished." />
       )}
     </Link>
   );

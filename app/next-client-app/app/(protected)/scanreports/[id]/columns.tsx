@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/DataTableColumnHeader";
 import { EditButton } from "@/components/scanreports/EditButton";
 import JobDialog from "@/components/jobs/JobDialog";
-import { FindGeneralStatus } from "@/components/jobs/JobUtils";
+import { FindGeneralStatus, DivideJobs } from "@/components/jobs/JobUtils";
 
 export const columns: ColumnDef<ScanReportTable>[] = [
   {
@@ -57,28 +57,10 @@ export const columns: ColumnDef<ScanReportTable>[] = [
       const { id, name, jobs } = row.original;
       // Filter the jobs based on the scanReportTable ID
       const jobsData: Job[] = jobs.filter((job) => job.scan_report_table == id);
-
-      // Get the general status of the table
-      const generalStatus = FindGeneralStatus(jobsData);
-
-      // Divide the jobs of each table to group of three (each group demonstrates each run)
-      let jobGroups: Job[][] = [];
-      if (jobsData.length > 0) {
-        let jobs: Job[] = [];
-        jobsData.forEach((job) => {
-          jobs.push(job);
-          if (jobs.length === 3) {
-            // Sort jobs based on the "created_at" field
-            jobs.sort(
-              (a, b) =>
-                new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime()
-            );
-            jobGroups.push(jobs);
-            jobs = [];
-          }
-        });
-      }
+      // Divide jobs into jobs groups
+      const jobGroups = DivideJobs(jobsData);
+      // Get the general status of the table for the lastest run
+      const generalStatus = FindGeneralStatus(jobGroups[0]);
 
       return (
         <div className="flex justify-center">
@@ -96,8 +78,12 @@ export const columns: ColumnDef<ScanReportTable>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="" />,
     cell: ({ row }) => {
       const { id, scan_report, permissions, jobs } = row.original;
-      // Get the general status of the whole scan report
-      const generalStatus = FindGeneralStatus(jobs);
+      // Filter the jobs based on the scanReportTable ID
+      const jobsData: Job[] = jobs.filter((job) => job.scan_report_table == id);
+      // Divide jobs into jobs groups
+      const jobGroups = DivideJobs(jobsData);
+      // Get the general status of the table for the lastest run
+      const generalStatus = FindGeneralStatus(jobGroups[0]);
       return (
         <EditButton
           scanreportId={scan_report}

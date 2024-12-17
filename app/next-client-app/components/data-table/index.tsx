@@ -39,6 +39,8 @@ interface DataTableProps<TData, TValue> {
   clickableRow?: boolean;
   viewColumns?: boolean;
   paginated?: boolean;
+  overflow?: boolean;
+  RefreshButton?: JSX.Element;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -55,6 +57,8 @@ export function DataTable<TData, TValue>({
   clickableRow = true,
   viewColumns = true,
   paginated = true,
+  overflow = true,
+  RefreshButton,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -92,8 +96,9 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex justify-between mb-3">
+      <div className="flex justify-between items-center mb-3">
         {Filter}
+        {RefreshButton}
         {/* Views Columns Menu */}
         {viewColumns && (
           <DropdownMenu>
@@ -132,7 +137,7 @@ export function DataTable<TData, TValue>({
         )}
       </div>
       <div className="rounded-md border">
-        <Table>
+        <Table overflow={overflow}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
