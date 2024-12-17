@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/data-table";
-import { RefreshJobsButton } from "../jobs/RefreshButton";
+import { RefreshButton } from "../jobs/RefreshButton";
 import { columns } from "@/app/(protected)/scanreports/[id]/columns";
 
 export default function ScanReportsTableClient({
@@ -41,8 +41,8 @@ export default function ScanReportsTableClient({
         columns={columns}
         data={scanReportsResult}
         count={count}
-        RefreshJobsButton={
-          <RefreshJobsButton
+        RefreshButton={
+          <RefreshButton
             scanReportId={scanReportId}
             onJobsRefresh={handleJobsRefresh}
           />

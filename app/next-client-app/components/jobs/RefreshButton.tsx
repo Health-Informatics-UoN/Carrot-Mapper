@@ -6,15 +6,15 @@ import { RefreshCw } from "lucide-react";
 import { getJobs } from "@/api/scanreports";
 import { toast } from "sonner";
 
-interface RefreshJobsButtonProps {
+interface RefreshButtonProps {
   scanReportId: string;
   onJobsRefresh: (updatedJobs: Job[]) => void;
 }
 
-export function RefreshJobsButton({
+export function RefreshButton({
   scanReportId,
   onJobsRefresh,
-}: RefreshJobsButtonProps) {
+}: RefreshButtonProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {

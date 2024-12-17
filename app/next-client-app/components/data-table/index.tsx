@@ -40,7 +40,7 @@ interface DataTableProps<TData, TValue> {
   viewColumns?: boolean;
   paginated?: boolean;
   overflow?: boolean;
-  RefreshJobsButton?: JSX.Element;
+  RefreshButton?: JSX.Element;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -58,7 +58,7 @@ export function DataTable<TData, TValue>({
   viewColumns = true,
   paginated = true,
   overflow = true,
-  RefreshJobsButton,
+  RefreshButton,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex justify-between items-center mb-3">
         {Filter}
-        {RefreshJobsButton}
+        {RefreshButton}
         {/* Views Columns Menu */}
         {viewColumns && (
           <DropdownMenu>
