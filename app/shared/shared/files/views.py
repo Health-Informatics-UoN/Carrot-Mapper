@@ -15,6 +15,7 @@ from shared.services.azurequeue import add_message
 from .models import FileDownload
 from .serializers import FileDownloadSerializer
 from .service import get_blob
+from shared.jobs.models import Job, JobStage, StageStatus
 
 
 class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
@@ -62,7 +63,13 @@ class FileDownloadView(GenericAPIView, ListModelMixin, RetrieveModelMixin):
             }
 
             add_message(settings.AZ_RULES_EXPORT_QUEUE, msg)
-
+            # Create job record for downloading file
+            Job.objects.create(
+                scan_report=ScanReport.objects.get(id=scan_report_id),
+                stage=JobStage.objects.get(value="DOWNLOAD_RULES"),
+                status=StageStatus.objects.get(value="IN_PROGRESS"),
+                details=f'A Mapping Rules {"JSON" if file_type=="application/json" else "CSV"} is being generated.',
+            )
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data."}, status=400)
         except Exception:

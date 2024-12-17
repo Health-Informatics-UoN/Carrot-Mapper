@@ -8,6 +8,7 @@ import { FormDataFilter } from "../form-components/FormikUtils";
 import { Form, Formik } from "formik";
 import { Tooltips } from "../Tooltips";
 import { FormikSelect } from "../form-components/FormikSelect";
+import { useRouter } from "next/navigation";
 
 interface FormData {
   personId: number | null;
@@ -27,6 +28,7 @@ export function ScanReportTableUpdateForm({
   personId: ScanReportField;
   dateEvent: ScanReportField;
 }) {
+  const router = useRouter();
   const canUpdate =
     permissions.includes("CanEdit") || permissions.includes("CanAdmin");
 
@@ -44,14 +46,15 @@ export function ScanReportTableUpdateForm({
     const response = await updateScanReportTable(
       scanreportTable.scan_report,
       scanreportTable.id,
-      submittingData,
+      submittingData
     );
     if (response) {
       toast.error(
-        `Update Scan Report Table failed. Error: ${response.errorMessage}`,
+        `Update Scan Report Table failed. Error: ${response.errorMessage}`
       );
     } else {
       toast.success("Update Scan Report Table successful!");
+      router.push(`/scanreports/${scanreportTable.scan_report}/`);
     }
   };
 

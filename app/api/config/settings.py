@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "revproxy",
     "shared",
     "shared.files",
+    "shared.jobs",
 ]
 
 MIDDLEWARE = [

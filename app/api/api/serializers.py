@@ -23,6 +23,7 @@ from shared.mapping.models import (
 )
 from shared.mapping.permissions import has_editorship, is_admin, is_az_function_user
 from shared.services.rules_export import analyse_concepts
+from config.settings import DATA_UPLOAD_MAX_MEMORY_SIZE
 
 
 class ConceptSerializerV2(serializers.ModelSerializer):
@@ -417,6 +418,11 @@ class ScanReportFilesSerializer(DynamicFieldsMixin, serializers.ModelSerializer)
             raise ParseError(
                 "You have attempted to upload a scan report which "
                 "is not in XLSX format. Please upload a .xlsx file."
+            )
+        # Validate Scan report size before attempting to upload it
+        if scan_report.size > DATA_UPLOAD_MAX_MEMORY_SIZE:
+            raise ParseError(
+                f"Please upload a smaller Scan report. The maximum size of a Scan report is {DATA_UPLOAD_MAX_MEMORY_SIZE / 1024 / 1024} MB"
             )
 
         # Load in the Excel sheet, grab the first workbook

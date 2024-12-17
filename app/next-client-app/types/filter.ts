@@ -11,6 +11,6 @@ export interface FilterParameters {
 export interface FilterOption {
   label: string;
   value: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: string;
   color?: string;
 }

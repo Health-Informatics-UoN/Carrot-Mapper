@@ -1,14 +1,14 @@
-interface Status {
-  value: string;
-}
-
 interface ScanReport {
   id: number;
   dataset: string;
   parent_dataset: DatasetStrict;
   data_partner: string;
-  mapping_status: Status;
-  upload_status: Status;
+  mapping_status: {
+    value: string;
+  };
+  upload_status: {
+    value: string;
+  };
   created_at: Date;
   hidden: boolean;
   visibility: string;
@@ -26,6 +26,7 @@ interface ScanReportTable {
   person_id: ScanReportField | null;
   date_event: ScanReportField | null;
   permissions: Permission[];
+  jobs: Job[];
 }
 
 interface ScanReportField {
