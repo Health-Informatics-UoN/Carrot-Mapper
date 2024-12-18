@@ -60,7 +60,8 @@ export const columns: ColumnDef<ScanReportTable>[] = [
       // Divide jobs into jobs groups
       const jobGroups = DivideJobs(jobsData);
       // Get the general status of the table for the lastest run
-      const generalStatus = FindGeneralStatus(jobGroups[0]);
+      const generalStatus =
+        jobGroups.length > 0 ? FindGeneralStatus(jobGroups[0]) : "NOT_STARTED";
 
       return (
         <div className="flex justify-center">
@@ -83,7 +84,8 @@ export const columns: ColumnDef<ScanReportTable>[] = [
       // Divide jobs into jobs groups
       const jobGroups = DivideJobs(jobsData);
       // Get the general status of the table for the lastest run
-      const generalStatus = FindGeneralStatus(jobGroups[0]);
+      const generalStatus =
+        jobGroups.length > 0 ? FindGeneralStatus(jobGroups[0]) : "NOT_STARTED";
       return (
         <EditButton
           scanreportId={scan_report}
