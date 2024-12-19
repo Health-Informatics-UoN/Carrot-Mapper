@@ -29,7 +29,7 @@ export async function UserMenu({ username }: { username?: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost">
-          <Avatar className="ml-2">
+          <Avatar>
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
