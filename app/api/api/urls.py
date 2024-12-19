@@ -100,7 +100,7 @@ urlpatterns = [
     path(r"user/me/", views.UserDetailView.as_view(), name="currentuser"),
     path(r"v2/users", views.UserViewSet.as_view(), name="users-list"),
     path(r"v2/usersfilter", views.UserFilterViewSet.as_view(), name="usersfilter"),
-    path(r"v2/datapartners", views.DataPartnerViewSet.as_view(), name="datapartners"),
+    path(r"v2/datapartners/", views.DataPartnerViewSet.as_view(), name="datapartners"),
     path(
         r"v2/omop/conceptsfilter",
         views.ConceptFilterViewSetV2.as_view(),
