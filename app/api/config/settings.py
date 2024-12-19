@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "shared",
     "shared.files",
+    "shared.jobs",
 ]
 
 MIDDLEWARE = [

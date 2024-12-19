@@ -2,6 +2,7 @@ from api import views
 from api.deprecated_router import router as deprecated_router
 from django.urls import include, path
 from shared.files.views import FileDownloadView
+from shared.jobs.views import JobView
 
 from .deprecated_urls import urlpatterns as deprecated_urlpatterns
 
@@ -26,6 +27,11 @@ urlpatterns = [
         "v2/scanreports/<int:pk>/",
         views.ScanReportDetailV2.as_view(),
         name="scan-report-detail",
+    ),
+    path(
+        "v2/scanreports/<int:pk>/jobs/",
+        JobView.as_view(),
+        name="scan-report-jobs",
     ),
     path(
         "v2/scanreports/<int:pk>/tables/",

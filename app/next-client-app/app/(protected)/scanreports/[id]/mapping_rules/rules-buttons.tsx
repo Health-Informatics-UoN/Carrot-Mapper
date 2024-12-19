@@ -38,7 +38,7 @@ export function RulesButton({
       toast.success("File requested.");
     } else {
       toast.error(
-        `Error downloading file: ${(resp.errorMessage as any).message}`,
+        `Error downloading file: ${(resp.errorMessage as any).message}`
       );
     }
   };

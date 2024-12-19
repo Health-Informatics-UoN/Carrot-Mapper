@@ -21,11 +21,12 @@ import {
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns/format";
-import { UploadStatus } from "@/components/scanreports/UploadStatus";
 import { InfoItem } from "@/components/core/InfoItem";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { MappingStatus } from "@/components/scanreports/MappingStatus";
+import { StatusIcon } from "@/components/core/StatusIcon";
+import { UploadStatusOptions } from "@/constants/scanReportStatus";
 
 export default async function ScanReportLayout({
   params,
@@ -102,8 +103,9 @@ export default async function ScanReportLayout({
         />
         <div className="py-1 md:py-0 md:px-3 h-5 flex items-center gap-2">
           Upload status:{" "}
-          <UploadStatus
-            upload_status={scanreport.upload_status || { value: "IN_PROGRESS" }}
+          <StatusIcon
+            statusOptions={UploadStatusOptions}
+            status={scanreport.upload_status || { value: "IN_PROGRESS" }}
           />
         </div>
         <div className="py-1 md:py-0 md:px-3 h-5">
@@ -156,17 +158,7 @@ export default async function ScanReportLayout({
                   Export Scan Report
                 </a>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <DeleteDialog id={Number(params.id)} redirect>
-                  <Button
-                    variant={"ghost"}
-                    className="text-red-400 px-0 py-0 h-auto"
-                  >
-                    <TrashIcon className="mr-2 size-4" />
-                    Delete Scan Report
-                  </Button>
-                </DeleteDialog>
-              </DropdownMenuItem>
+              <DeleteDialog id={Number(params.id)} redirect needTrigger />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

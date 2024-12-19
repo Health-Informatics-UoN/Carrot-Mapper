@@ -37,6 +37,10 @@ interface DataTableProps<TData, TValue> {
   linkPrefix?: string;
   Filter?: JSX.Element;
   clickableRow?: boolean;
+  viewColumns?: boolean;
+  paginated?: boolean;
+  overflow?: boolean;
+  RefreshButton?: JSX.Element;
   defaultPageSize?: 10 | 20 | 30 | 40 | 50;
 }
 
@@ -51,6 +55,10 @@ export function DataTable<TData, TValue>({
   linkPrefix = "",
   Filter,
   clickableRow = true,
+  viewColumns = true,
+  paginated = true,
+  overflow = true,
+  RefreshButton,
   defaultPageSize,
 }: DataTableProps<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] =
@@ -88,45 +96,48 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex justify-between mb-3">
+      <div className="flex justify-between items-center mb-3">
         {Filter}
+        {RefreshButton}
         {/* Views Columns Menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              aria-label="Toggle columns"
-              variant="outline"
-              className="ml-auto hidden lg:flex"
-            >
-              <Columns3 className="mr-2 size-4" />
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {viewColumns && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                aria-label="Toggle columns"
+                variant="outline"
+                className="ml-auto hidden lg:flex"
+              >
+                <Columns3 className="mr-2 size-4" />
+                Columns
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       <div className="rounded-md border">
-        <Table>
+        <Table overflow={overflow}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -197,9 +208,14 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-center space-x-2 pt-4">
-        <DataTablePagination count={count} defaultPageSize={defaultPageSize} />
-      </div>
+      {paginated && (
+        <div className="flex items-center justify-center space-x-2 pt-4">
+          <DataTablePagination
+            count={count}
+            defaultPageSize={defaultPageSize}
+          />
+        </div>
+      )}
     </div>
   );
 }
