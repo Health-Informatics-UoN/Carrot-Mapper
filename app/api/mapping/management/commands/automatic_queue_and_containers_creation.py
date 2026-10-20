@@ -156,6 +156,8 @@ class Command(BaseCommand):
                 access_key=self.MINIO_ACCESS_KEY,
                 secret_key=self.MINIO_SECRET_KEY,
                 secure=False,
+                # Fixed region skips the GetBucketLocation lookup on S3-compatible servers
+                region="us-east-1",
             )
 
             # Create MinIO Buckets

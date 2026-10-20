@@ -71,6 +71,8 @@ class StorageService:
                 access_key=minio_access_key,
                 secret_key=minio_secret_key,
                 secure=False,
+                # Fixed region skips the GetBucketLocation lookup on S3-compatible servers
+                region="us-east-1",
             )
         except Exception as e:
             logger.error(f"Error connecting to MinIO: {e}")
