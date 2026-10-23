@@ -458,6 +458,12 @@ def connect_to_storage() -> None:
                         "endpoint_url": AIRFLOW_VAR_MINIO_ENDPOINT,
                         "aws_access_key_id": AIRFLOW_VAR_MINIO_ACCESS_KEY,
                         "aws_secret_access_key": AIRFLOW_VAR_MINIO_SECRET_KEY,
+                        # Self-hosted S3 (RustFS/MinIO): use path-style URLs
+                        # (http://host:9000/bucket/key) rather than
+                        # virtual-hosted (bucket.host), and a fixed region so
+                        # boto3 doesn't try to discover one.
+                        "region_name": "us-east-1",
+                        "config_kwargs": {"s3": {"addressing_style": "path"}},
                     },
                 )
                 session.add(conn)
